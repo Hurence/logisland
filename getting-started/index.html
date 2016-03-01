@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Getting Started &middot; LogIsland
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/syntax.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="/">
+          LogIsland
+        </a>
+      </h1>
+      <p class="lead">Scalable event mining framework</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/license/">License</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/architecture/">Architecture</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/build/">Build</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/faq/">FAQ</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="/getting-started/">Getting Started</a>
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/plugins/">Plugins</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/tests/">Tests</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="/api">API</a>
+      <span class="sidebar-nav-item">Current version v0.9.1</span>
+    </nav>
+
+    <p>&copy; 2016. Hurence.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">Getting Started</h1>
+  <p>In the following getting started tutorial we&#39;ll drive you through the process of Apache log mining with LogIsland platform.</p>
+
+<p>We will start a Docker container hosting all the LogIsland services, launch two streaming process and send some apache logs
+to the system in order to analyze them in a dashboard.</p>
+
+<blockquote>
+<p>So how can I play as fast as possible ?</p>
+</blockquote>
+
+<h3>Start LogIsland as a Docker container</h3>
+
+<p>LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub. 
+The docker container is build from a Centos 6.4 image with the following tools enabled</p>
+
+<ul>
+<li>Spark</li>
+<li>Elasticsearch</li>
+<li>Kibana</li>
+<li>Logstash</li>
+<li>Flume</li>
+<li>Nginx</li>
+<li>LogIsland</li>
+</ul>
+
+<p>Pull the image from Docker Repository (it may take some time)</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">docker pull hurence/log-island
+</code></pre></div>
+<blockquote>
+<p>You should be aware that this Docker is quite eager in RAM and will need at leat 8G of memory to run smoothly.</p>
+</blockquote>
+
+<p>Now run the container </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">docker run \
+    -it \
+    -p 80:80 \
+    -p 9200-9300:9200-9300 \
+    -p 5601:5601 \
+    -p 2181:2181 \
+    -p 9092:9092 \
+    -p 9000:9000 \
+    -p 4050-4060:4050-4060 \
+    --name log-island \
+    -h sandbox \
+    hurence/log-island:2.1.0 bash
+</code></pre></div>
+<p>You can now browse the web ui of each tools :</p>
+
+<ul>
+<li>elasticsearch <a href="http://sandbox:9200/_plugin/kopf">http://sandbox:9200/_plugin/kopf</a> </li>
+<li>kibana <a href="http://sandbox:5601/">http://sandbox:5601/</a></li>
+<li>kafka manager <a href="http://sandbox:9000/">http://sandbox:9000/</a></li>
+<li>spark manager <a href="http://sandbox:4050/">http://sandbox:4050/</a></li>
+</ul>
+
+<p>All we need now is a log parser and an event mapper, both are Java (or Scala) classes compiled into a jar file.</p>
+
+<blockquote>
+<p>Open 2 shell windows in your Docker container to launch the following streaming jobs.</p>
+</blockquote>
+
+<h3>Start a log parser</h3>
+
+<p>A <code>Log</code> parser takes a log line as a String and computes an Event as a sequence of fields. 
+Let&#39;s start a <code>LogParser</code> streaming job with a custom <code>ApacheLogParser</code>. 
+This stream will process log entries as soon as they will be queued into <code>li-apache-logs</code> Kafka topics, each log will
+be parsed as an event which will be pushed back to Kafka in the <code>li-apache-event</code> topic.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$LOGISLAND_HOME/bin/log-parser \
+    --kafka-brokers sandbox:9092 \
+    --input-topics li-apache-logs \
+    --output-topics li-apache-event \
+    --max-rate-per-partition 10000 \
+    --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser
+</code></pre></div>
+<h3>Start an event mapper</h3>
+
+<p>An <em>event mapper</em> takes an event and serialize it as an Elasticsearch document.
+Let&#39;s start an <code>EventIndexer</code> with a custom mapper.
+This stream will process event entries as soon as they will be queued into <code>li-apache-event</code> Kafka topics. 
+Each event will be sent to Elasticsearch by bulk. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$LOGISLAND_HOME/bin/event-indexer \
+    --kafka-brokers sandbox:9092 \
+    --es-host sandbox \
+    --index-name li-apache \
+    --input-topics li-apache-event \
+    --max-rate-per-partition 10000 \
+    --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper
+</code></pre></div>
+<blockquote>
+<p>Please note that those streams will created automatically if they do not exists yet.</p>
+</blockquote>
+
+<h3>Inject some Apache logs into LogIsland (outside Docker)</h3>
+
+<p>We could setup a logstash or flume agent to load some apache logs into a kafka topic 
+but there&#39;s a super useful tool in the Kafka ecosystem : <a href="https://github.com/edenhill/kafkacat">kafkacat</a>, 
+a <code>generic command line non-JVM Apache Kafka producer and consumer</code> which can be easily installed.</p>
+
+<p>On recent enough Debian systems:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">apt-get install kafkacat
+</code></pre></div>
+<p>And on Mac OS X with homebrew installed:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">brew install kafkacat
+</code></pre></div>
+<p>If you don&#39;t have your own httpd logs available, you can use some freely available log files from 
+<a href="http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html">NASA-HTTP</a> web site access:</p>
+
+<ul>
+<li><a href="ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz">Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed</a></li>
+<li><a href="ftp://ita.ee.lbl.gov/traces/NASA_access_log_Aug95.gz">Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed</a></li>
+</ul>
+
+<p>Send logs to LogIsland with kafkacat to <code>li-apache-logs</code> Kafka topic</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">unzip NASA_access_log_Jul95.gz
+cat NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t li-apache-logs
+</code></pre></div>
+<h3>Use Kibana to inspect the logs</h3>
+
+<p>Open up your browser and go to <a href="http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:&#x27;1995-05-08T12:14:53.216Z&#x27;,mode:absolute,to:&#x27;1995-11-25T05:30:52.010Z&#x27;))&amp;_a=(columns:!(_source),filters:!(),index:&#x27;li-*&#x27;,interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!(&#x27;@timestamp&#x27;,desc),vis:(aggs:!((params:(field:host,orderBy:&#x27;2&#x27;,size:20),schema:segment,type:terms),(id:&#x27;2&#x27;,schema:metric,type:count)),type:histogram))&amp;indexPattern=li-*&amp;type=histogram">http://sandbox:5601/</a> and you should be able to explore your apache logs.</p>
+
+<p><img src="/public/kibana-explore.png" alt="kibana"></p>
+
+<h3>Monitor your spark jobs and Kafka topics</h3>
+
+<p>Now go to <a href="http://sandbox:4050/streaming/">http://sandbox:4050/streaming/</a> to see how fast Spark can process
+your data</p>
+
+<p><img src="/public/streaming-rate.png" alt="streaming-rate"></p>
+
+<p>Another tool can help you to tweak and monitor your processing <a href="http://sandbox:9000">http://sandbox:9000/</a> </p>
+
+<p><img src="/public/kafka-mgr.png" alt="kafka-mgr"></p>
+
+</div>
+
+    </div>
+
+  </body>
+</html>

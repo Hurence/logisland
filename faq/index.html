@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      FAQ &middot; LogIsland
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/syntax.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="/">
+          LogIsland
+        </a>
+      </h1>
+      <p class="lead">Scalable event mining framework</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/license/">License</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/architecture/">Architecture</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/build/">Build</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="/faq/">FAQ</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/getting-started/">Getting Started</a>
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/plugins/">Plugins</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/tests/">Tests</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="/api">API</a>
+      <span class="sidebar-nav-item">Current version v0.9.1</span>
+    </nav>
+
+    <p>&copy; 2016. Hurence.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">FAQ</h1>
+  <p>Frequently Asked Questions.</p>
+
+<h3>I already use ELK, why would I need to use LogIsland ?</h3>
+
+<p>Well, at first one could say that that both stacks are overlapping, 
+but the real purpose of the LogIsland framework is the abstraction of scalability of log aggregation.</p>
+
+<p>In fact if you already have an ELK stack you&#39;ll likely want to make it scale (without pain) in both volume and features ways. 
+LogIsland will be used for this purpose as an EOM (Event Oriented Middleware) based on Kafka &amp; Spark, where you can plug advanced features
+with ease.</p>
+
+<p>So you just have to route your logs from the Logstash (or Flume, or Collectd, ...) agents to Kafka topics and launch parsers and processors.</p>
+
+<h3>Do I need Hadoop to play with LogIsland ?</h3>
+
+<p>No, if your goal is simply to aggregate a massive amount of logs in an Elasticsearch cluster, 
+and to define comple event processing rules to generate new events you definitely don&#39;t need an Haddoop cluster. </p>
+
+<p>Kafka topics can be used as an high throughput log buffer for sliding-windows event processing. 
+But if you need advanced batch analytics, it&#39;s really easy to dump your logs into an haddoop cluster to build machine learning models.</p>
+
+<h3>How do I make it scale ?</h3>
+
+<p>LogIsland relies on Spark and Kafka which are both scalable by essence, to scale LogIsland just have to add more kafka brokers and more Spark slaves.
+This is the <em>manual</em> way, but we&#39;ve planned in further releases to provide either Docker Swarn support or Mesos Marathon.</p>
+
+<h3>What&#39;s the difference between Apache NIFI and LogIsland ?</h3>
+
+<p>Apache NIFI is a scalable ETL very well suited to process incomming data such as logs file, process &amp; enrich them and send them out to any datastore.
+You can do that as well with LogIsland but LogIsland is an event oriented framework designed to process huge amount of event in a Complex Event Processing
+manner not a Single Event Processing as NIFI does.</p>
+
+<p>Anyway you can use Apache NIFI to process your logs and send them to Kafka in order to be processed by LogIsland</p>
+
+</div>
+
+    </div>
+
+  </body>
+</html>

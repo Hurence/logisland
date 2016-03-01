@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>LogIsland</title>
+ <link href="http://hurence.com/atom.xml" rel="self"/>
+ <link href="http://hurence.com/"/>
+ <updated>2016-03-01T18:30:58+01:00</updated>
+ <id>http://hurence.com</id>
+ <author>
+   <name>Thomas Bailet</name>
+   <email></email>
+ </author>
+
+ 
+ <entry>
+   <title>Introduction</title>
+   <link href="http://hurence.com/2016/02/02/intro/"/>
+   <updated>2016-02-02T00:00:00+01:00</updated>
+   <id>http://hurence.com/2016/02/02/intro</id>
+   <content type="html">&lt;p&gt;LogIsland is an event mining platform based on spark and Kafka to ingest a huge amount of log files.&lt;/p&gt;
+
+&lt;p&gt;please follow the &lt;a href=&quot;/getting-started&quot;&gt;getting started guide&lt;/a&gt; if you want to start playing right now.&lt;/p&gt;
+
+&lt;h3&gt;First public release&lt;/h3&gt;
+
+&lt;p&gt;This piece of software was born on mid 2013 as a log analysis tool that tried to detect malwares from Cisco firewall logs.
+It has been is production since then, and had experienced several reworks to simplify the technological stack.
+At first it was designed as a workflow of Flume agents, Pig ETL jobs and Mahout machine learning Map/reduce routines, but 
+now it has evolved into a Spark/Kafka &lt;/p&gt;
+
+&lt;p&gt;This project is now released as an OpenSource framework to help you scale and expand your traditionnal &lt;a href=&quot;https://www.elastic.co/downloads&quot;&gt;ELK&lt;/a&gt; or &lt;a href=&quot;https://flume.apache.org/&quot;&gt;FLume&lt;/a&gt;/&lt;a href=&quot;https://hadoop.apache.org/&quot;&gt;Hadoop&lt;/a&gt; stack.&lt;/p&gt;
+
+&lt;h3&gt;Additional advanced plugins&lt;/h3&gt;
+
+&lt;p&gt;The original analytic part has been removed to an external plugin called Botsearch which is available on demand at &lt;a href=&quot;mailto:contact@hurence.com&quot;&gt;contact@hurence.com&lt;/a&gt;
+but not as Open Source&lt;/p&gt;
+</content>
+ </entry>
+ 
+
+</feed>
