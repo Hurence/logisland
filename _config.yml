@@ -1,0 +1,26 @@
+# Dependencies
+markdown:         redcarpet
+highlighter:      pygments
+
+# Permalinks
+permalink:        pretty
+relative_permalinks: false
+
+
+gems:             ['jekyll-paginate']
+
+# Setup
+title:            LogIsland
+tagline:          'Log Mining BigData-Middleware'
+description:      'Scalable event mining framework'
+url:              http://hurence.com
+baseurl:          /
+
+author:
+  name:           'Thomas Bailet'
+  url:            https://twitter.com/bailett
+
+paginate:         5
+
+# Custom vars
+version:          0.9.1
