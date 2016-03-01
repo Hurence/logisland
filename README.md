@@ -3,7 +3,7 @@
 
 LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
 
-
+You can start right now to play by following the [getting started guide](https://github.com/Hurence/log-island/wiki/Getting-started)
 
 
 ## Basic Workflow
