@@ -4,7 +4,7 @@ highlighter:      pygments
 
 # Permalinks
 permalink:        pretty
-relative_permalinks: false
+relative_permalinks: true
 
 
 gems:             ['jekyll-paginate']
@@ -13,8 +13,8 @@ gems:             ['jekyll-paginate']
 title:            LogIsland
 tagline:          'Log Mining BigData-Middleware'
 description:      'Scalable event mining framework'
-url:              http://hurence.com
-baseurl:          /
+#url:              http://hurence.com
+#baseurl:          /
 
 author:
   name:           'Thomas Bailet'
