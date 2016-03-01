@@ -11,7 +11,7 @@ title:            LogIsland
 tagline:          'Log Mining BigData-Middleware'
 description:      'Scalable event mining framework'
 url:              http://hurence.com
-baseurl:          /log-island
+baseurl:          http://hurence.github.io/log-island/
 
 author:
   name:           'Thomas Bailet'
