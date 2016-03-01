@@ -1,6 +1,6 @@
 # Dependencies
 markdown:         kramdown
-highlighter:      pygments
+highlighter:      rouge
 
 
 
@@ -10,8 +10,8 @@ gems:             ['jekyll-paginate']
 title:            LogIsland
 tagline:          'Log Mining BigData-Middleware'
 description:      'Scalable event mining framework'
-#url:              http://hurence.com
-#baseurl:          /
+url:              http://hurence.com
+baseurl:          /log-island
 
 author:
   name:           'Thomas Bailet'
