@@ -20,10 +20,10 @@ So you just have to route your logs from the Logstash (or Flume, or Collectd, ..
 
 ### Do I need Hadoop to play with LogIsland ?
 No, if your goal is simply to aggregate a massive amount of logs in an Elasticsearch cluster, 
-and to define comple event processing rules to generate new events you definitely don't need an Haddoop cluster. 
+and to define complex event processing rules to generate new events you definitely don't need an Hadoop cluster. 
 
 Kafka topics can be used as an high throughput log buffer for sliding-windows event processing. 
-But if you need advanced batch analytics, it's really easy to dump your logs into an haddoop cluster to build machine learning models.
+But if you need advanced batch analytics, it's really easy to dump your logs into an hadoop cluster to build machine learning models.
 
 
 ### How do I make it scale ?
@@ -32,8 +32,8 @@ This is the *manual* way, but we've planned in further releases to provide eithe
 
 
 ### What's the difference between Apache NIFI and LogIsland ?
-Apache NIFI is a scalable ETL very well suited to process incomming data such as logs file, process & enrich them and send them out to any datastore.
-You can do that as well with LogIsland but LogIsland is an event oriented framework designed to process huge amount of event in a Complex Event Processing
+Apache NIFI is a scalable ETL very well suited to process incoming data such as logs file, process & enrich them and send them out to any datastore.
+You can do that as well with LogIsland but LogIsland is an event oriented framework designed to process huge amount of events in a Complex Event Processing
 manner not a Single Event Processing as NIFI does.
 
 Anyway you can use Apache NIFI to process your logs and send them to Kafka in order to be processed by LogIsland
