@@ -111,7 +111,7 @@ a `generic command line non-JVM Apache Kafka producer and consumer` which can be
 On recent enough Debian systems:
 
 ```
-apt-get install kafkacat
+sudo apt-get install kafkacat
 ```
 
 And on Mac OS X with homebrew installed:
