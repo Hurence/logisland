@@ -6,14 +6,14 @@ permalink: /getting-started/
 
 In the following getting started tutorial we'll drive you through the process of Apache log mining with LogIsland platform.
 
-We will start a Docker container hosting all the LogIsland services, launch two streaming process and send some apache logs
+We will start a Docker container hosting all the LogIsland services, launch two streaming processes and send some apache logs
 to the system in order to analyze them in a dashboard.
 
 > So how can I play as fast as possible ?
 
 ### Start LogIsland as a Docker container
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub. 
-The docker container is build from a Centos 6.4 image with the following tools enabled
+The docker container is built from a Centos 6.4 image with the following tools enabled
 
 - Spark
 - Elasticsearch
