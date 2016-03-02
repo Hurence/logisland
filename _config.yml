@@ -3,15 +3,14 @@ markdown:         kramdown
 highlighter:      rouge
 
 
-
 gems:             ['jekyll-paginate']
 
 # Setup
 title:            LogIsland
 tagline:          'Log Mining BigData-Middleware'
 description:      'Scalable event mining framework'
-url:              http://hurence.github.io/log-island/
-baseurl:          /
+url:              http://hurence.github.io/
+baseurl:          /log-island/
 
 author:
   name:           'Thomas Bailet'
