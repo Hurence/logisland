@@ -46,6 +46,8 @@ When it comes to scale, you'll need a cluster. Log-Island is just a framework th
 
 For now Log-Island is compatible with HDP 2.3.2.
 
+get [log-island-0.9.1.tgz]({{ site.baseurl }}/public/log-island-0.9.1.tgz)
+
 
 ### 3. Elastic scale with Mesos/Marathon
 // TO BE DONE
