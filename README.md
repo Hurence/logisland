@@ -1,89 +1,32 @@
-
-
-
 LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
 
-You can start right now to play by following the [getting started guide](https://github.com/Hurence/log-island/wiki/Getting-started)
+![log-island architecture](http://hurence.github.io/log-island//public/LogIsland-architecture.png)
+
+You can start right now to play with LogIsland through the Docker image, by following the [getting started guide](http://hurence.github.io/log-island/getting-started/)
+
+The [documentation](http://hurence.github.io/log-island/) also explains how to [build]((http://hurence.github.io/log-island/build)) the source code in order to implement your own [plugins](http://hurence.github.io/log-island/plugins/).
+
+Once you know how to run and build your own parsers and processors, you'll want to [deploy](http://hurence.github.io/log-island/deploy/) and scale them.
+
 
 
 ## Basic Workflow
 
-1. Raw log files are sent to Kafka topics by a Logstash / Flume / Collectd (or whatever) agent 
+1. Raw log files are sent to Kafka topics by a NIFI / Logstash / Flume / Collectd (or whatever) agent 
 3. Logs in Kafka topic are translated into Events and pushed back to another Kafka topic by a Spark streaming job
 3. Events in Kafka topic are sent to Elasticsearch (or Solr or whatever backend) for online analytics (Kibana or Banana) by a Spark streaming job
 4. Log topics can also dumped to HDFS (master dataset) for offline analytics
+5. Event processor do some time window based analytics on events to build new events
 
 
-## Build source code
 
-to build only the source code
-
-    sbt package
-
-to build all dependecies into one single jar
-
-    sbt assemblyPackageDependency
-
-to publish jar to local ivy cache
-
-    sbt publishLocal
-    
-    
-    
-## Build a distribution
-to build API documentation
-
-    sbt doc
-    cp target/scala-2.10/api/ docs/_site/
-
-to build user documentation
-
-    cd docs
-    jekyll build
-
-    
-## Build Docker image
-The build the docker image, build log-island.tgz and kafka-manager tool
-
-    # build a tgz archive with full standalone dependencies
-    sbt universal:packageZipTarball 
-    cp target/universal/log-island-*.tgz docker/
-    
-    # build kafka-manager
-    git clone https://github.com/yahoo/kafka-manager.git
-    cd kafka-manager
-    sbt clean dist
-    
-    # build docker
-    docker build --rm -t hurence/log-island:0.9.1 -f docker/Dockerfile .
-
-
-## Running the image
-
-* if using boot2docker make sure your VM has more than 2GB memory
-* in your /etc/hosts file add $(boot2docker ip) as host 'sandbox' to make it easier to access your sandbox UI
-* open yarn UI ports when running container
-
-        docker run \
-            -it \
-            -p 80:80 \
-            -p 9200-9300:9200-9300 \
-            -p 5601:5601 \
-            -p 2181:2181 \
-            -p 9092:9092 \
-            -p 9000:9000 \
-            -p 4050-4060:4050-4060 \
-            --name log-island \
-            -h sandbox \
-            hurence/log-island:0.9.1 bash
     
 
 ## Start a log parser 
 
-A `Log` parser takes a log line as a String and computes an Event as a sequence of fields. 
+A *Log parser* takes a log line as a String and computes an Event as a sequence of fields. 
 Let's start a `LogParser` streaming job with a custom `ApacheLogParser`. 
-This stream will process log entries as soon as they will be queued into `li-apache-logs` Kafka topics, each log will
-be parsed as an event which will be pushed back to Kafka in the `li-apache-event` topic.
+This stream will process log entries as soon as they will be queued into `li-apache-logs` Kafka topics, each log will be parsed as an event which will be pushed back to Kafka in the `li-apache-event` topic.
 
 
     $LOGISLAND_HOME/bin/log-parser \
@@ -109,3 +52,8 @@ Each event will be sent to Elasticsearch by bulk.
         --input-topics li-apache-event \
         --max-rate-per-partition 10000 \
         --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper
+
+
+## Start an event processor
+
+//TODO 
