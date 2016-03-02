@@ -26,7 +26,7 @@ The docker container is built from a Centos 6.4 image with the following tools e
 Pull the image from Docker Repository (it may take some time)
 
 ```
-docker pull hurence/log-island:0.9.1
+docker pull hurence/log-island:latest
 ```
 
 > You should be aware that this Docker is quite eager in RAM and will need at leat 8G of memory to run smoothly.
@@ -34,6 +34,7 @@ docker pull hurence/log-island:0.9.1
 Now run the container 
 
 ```
+# run container
 docker run \
     -it \
     -p 80:80 \
@@ -45,21 +46,23 @@ docker run \
     -p 4050-4060:4050-4060 \
     --name log-island \
     -h sandbox \
-    hurence/log-island:2.1.0 bash
+    hurence/log-island:latest bash
+
+# get container ip
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' log-island
+
+# or if your are on mac os
+docker-machine ip default
 ```
 
-You can now browse the web ui of each tools :
-
-- elasticsearch [http://sandbox:9200/_plugin/kopf](http://sandbox:9200/_plugin/kopf) 
-- kibana [http://sandbox:5601/](http://sandbox:5601/)
-- kafka manager [http://sandbox:9000/](http://sandbox:9000/)
-- spark manager [http://sandbox:4050/](http://sandbox:4050/)
+> you should add an entry for sandbox (with the container ip) in your /etc/hosts as it will be easier to access to all web services in log-island running container. 
 
 
 All we need now is a log parser and an event mapper, both are Java (or Scala) classes compiled into a jar file.
 
-> Open 2 shell windows in your Docker container to launch the following streaming jobs.
+> Connect 2 shells to your log-island container to launch the following streaming jobs.
 
+    docker exec -ti log-island bash
 
 ### Start a log parser 
 
