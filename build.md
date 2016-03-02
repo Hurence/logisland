@@ -30,14 +30,16 @@ jekyll build
 ### Build Docker image
 The build the docker image, build log-island.tgz and kafka-manager tool
 
-    # build a tgz archive with full standalone dependencies
-    sbt universal:packageZipTarball 
-    cp target/universal/log-island-*.tgz docker/
+```sh
+# build a tgz archive with full standalone dependencies
+sbt universal:packageZipTarball 
+cp target/universal/log-island-*.tgz docker/
     
-    # build kafka-manager
-    git clone https://github.com/yahoo/kafka-manager.git
-    cd kafka-manager
-    sbt clean dist
+# build kafka-manager
+git clone https://github.com/yahoo/kafka-manager.git
+cd kafka-manager
+sbt clean dist
     
-    # build docker
-    docker build --rm -t hurence/log-island:0.9.1 -f docker/Dockerfile .
+# build docker
+docker build --rm -t hurence/log-island:0.9.1 -f docker/Dockerfile .
+```
