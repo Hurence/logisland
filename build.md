@@ -9,24 +9,19 @@ In the following section you'll find all the commands needed to build the source
 ### Build source code
 Log-Island is written in Java and Scala, we then use [Scala Build Tool](http://www.scala-sbt.org) to build it
 
-to build only the source code
-
+    # to build only the source code
     sbt package
 
-to build all dependecies into one single jar
-
+    # to build all dependencies into one single jar
     sbt assemblyPackageDependency
 
-to publish jar to local ivy cache to develop your own plugins
-
+    # to publish jar to local ivy cache to develop your own plugins
     sbt publishLocal
     
-to build API documentation
-
+    # to build API documentation
     sbt doc
 
-to build user documentation
-
+    # to build user documentation
     cd docs
     jekyll build
 
