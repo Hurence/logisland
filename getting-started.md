@@ -132,7 +132,7 @@ cat NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t li-apache-logs
 ### Use Kibana to inspect the logs
 Open up your browser and go to [http://sandbox:5601/](http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram) and you should be able to explore your apache logs.
 
-![kibana](/public/kibana-explore.png)
+![kibana]({{ site.baseurl }}/public/kibana-explore.png)
 
 
 ### Monitor your spark jobs and Kafka topics
