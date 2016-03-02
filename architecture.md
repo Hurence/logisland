@@ -16,7 +16,7 @@ Large and complex systems, made of number of heterogeneous components are not ea
 
 ### Data driven architecture
 
-![data driven computing](/public/data-driven-computing.png)
+![data driven computing]({{ site.baseurl }}/public/data-driven-computing.png)
 
 
 ### Technical design
@@ -30,4 +30,4 @@ LogIsland glue those technologies to simplify log complex event processing at sc
  
 Just write a custom LogParser and EventMapper class, deploy them as a new jar and launch
 
-![architecture](/public/LogIsland-architecture.png)
+![architecture]({{ site.baseurl }}/public/LogIsland-architecture.png)
