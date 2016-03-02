@@ -139,9 +139,9 @@ Open up your browser and go to [http://sandbox:5601/](http://sandbox:5601/app/ki
 Now go to [http://sandbox:4050/streaming/](http://sandbox:4050/streaming/) to see how fast Spark can process
 your data
 
-![streaming-rate](/public/streaming-rate.png)
+![streaming-rate]({{ site.baseurl }}/public/streaming-rate.png)
 
 
 Another tool can help you to tweak and monitor your processing [http://sandbox:9000/](http://sandbox:9000) 
 
-![kafka-mgr](/public/kafka-mgr.png)
+![kafka-mgr]({{ site.baseurl }}/public/kafka-mgr.png)
