@@ -50,13 +50,13 @@ docker run \
     hurence/log-island:latest bash
 
 # get container ip
-docker inspect --format '\{\{ .NetworkSettings.IPAddress \}\}' log-island
+docker inspect log-island
 
 # or if your are on mac os
 docker-machine ip default
 ```
 
-> you should add an entry for sandbox (with the container ip) in your /etc/hosts as it will be easier to access to all web services in log-island running container. 
+> you should add an entry for **sandbox** (with the container ip) in your `/etc/hosts` as it will be easier to access to all web services in log-island running container. 
 
 
 All we need now is a log parser and an event mapper, both are Java (or Scala) classes compiled into a jar file.
@@ -99,9 +99,11 @@ $LOGISLAND_HOME/bin/event-indexer \
 ```
 
 
-> Please note that those streams will created automatically if they do not exists yet.
+> Please note that those kafka topics will created automatically if they do not exists yet.
 
 ### Inject some Apache logs into LogIsland (outside Docker)
+> Now we're going to work on the host machine, outside log-island Docker container.
+
 We could setup a logstash or flume agent to load some apache logs into a kafka topic 
 but there's a super useful tool in the Kafka ecosystem : [kafkacat](https://github.com/edenhill/kafkacat), 
 a `generic command line non-JVM Apache Kafka producer and consumer` which can be easily installed.
@@ -127,7 +129,7 @@ If you don't have your own httpd logs available, you can use some freely availab
 Send logs to LogIsland with kafkacat to `li-apache-logs` Kafka topic
 
 ```
-unzip NASA_access_log_Jul95.gz
+gunzip NASA_access_log_Jul95.gz
 cat NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t li-apache-logs
 ```
 
