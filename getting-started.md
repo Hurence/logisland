@@ -15,6 +15,7 @@ to the system in order to analyze them in a dashboard.
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub. 
 The docker container is built from a Centos 6.4 image with the following tools enabled
 
+- Kafka
 - Spark
 - Elasticsearch
 - Kibana
@@ -29,11 +30,11 @@ Pull the image from Docker Repository (it may take some time)
 docker pull hurence/log-island:latest
 ```
 
-> You should be aware that this Docker is quite eager in RAM and will need at leat 8G of memory to run smoothly.
+> You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
 
 Now run the container 
 
-```
+```sh
 # run container
 docker run \
     -it \
@@ -49,7 +50,7 @@ docker run \
     hurence/log-island:latest bash
 
 # get container ip
-docker inspect --format '{{ .NetworkSettings.IPAddress }}' log-island
+docker inspect --format '\{\{ .NetworkSettings.IPAddress \}\}' log-island
 
 # or if your are on mac os
 docker-machine ip default
