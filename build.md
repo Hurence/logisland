@@ -10,6 +10,10 @@ In the following section you'll find all the commands needed to build the source
 Log-Island is written in Java and Scala, we then use [Scala Build Tool](http://www.scala-sbt.org) to build it
 
 ```sh
+# get the source
+git clone https://github.com/Hurence/log-island.git
+cd log-island
+
 # to build only the source code
 sbt package
 

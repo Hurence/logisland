@@ -9,7 +9,7 @@ The main goal of LogIsland framework is to provide tools to automatically extrac
 1. Grab events from logs
 2. Perform Event Pattern Mining (EPM)
 
-Log/Event properties :
+What we know about `Log`/`Event` properties :
 
 - they're naturally temporal
 - they carry a global type (user request, error, operation, system failure...)
