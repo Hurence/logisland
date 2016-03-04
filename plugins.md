@@ -273,3 +273,71 @@ In another Docker shell, you should see that some events are going into Kafka (e
 
 	/usr/local/kafka/bin/kafka-console-consumer.sh --from-beginning --topic li-proxy-event --zookeeper sandbox:2181
 
+
+
+### Implement an EventMapper
+For sure Kryo serialized class are not really sexy. We could be happy to browse our events inside ElasticSearch
+
+
+```java
+public class ProxyEventMapper implements EventMapper {
+
+    private static String EVENT_TYPE = "proxy";
+
+    public XContentBuilder getMapping() {
+        XContentBuilder builder = null;
+
+        try{
+
+            builder = jsonBuilder().startObject().startObject(EVENT_TYPE)
+                    .startObject("_ttl").field("enabled", "true").field("default", "30d").endObject()
+                    .startObject("properties")
+                    .startObject("date").field("type", "string").field("store", "yes").endObject()
+                    .startObject("@timestamp").field("type", "date").field("format", "dateOptionalTime").endObject()
+                    .startObject("method").field("type", "string").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("ipSource").field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject("ipTarget").field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject("urlScheme").field("type", "string").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("urlHost").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
+                    .startObject("urlPort").field("type", "string").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("urlPath").field("type", "string").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("requestSize").field("type", "long").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("responseSize").field("type", "long").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("isOutsideOfficeHours").field("type", "boolean").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("isHostBlacklisted").field("type", "boolean").field("store", "yes").field("index", "not_analyzed").endObject()
+                    .startObject("tags").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
+                    .endObject()
+                    .endObject().endObject();
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+        return builder;
+    }
+
+    public String getDocumentType() {
+        return EVENT_TYPE;
+    }
+
+
+}
+```
+
+
+Rebuild your jar, redeploy it to `log-island/lib` dir and launch a mapper job in the Docker container :
+
+```sh
+Each event will be sent to Elasticsearch by bulk. 
+
+```
+$LOGISLAND_HOME/bin/event-indexer \
+    --kafka-brokers sandbox:9092 \
+    --es-host sandbox \
+    --index-name li-apache \
+    --input-topics li-apache-event \
+    --max-rate-per-partition 10000 \
+    --event-mapper com.hurence.logisland.plugin.apache.ProxyEventMapper
+```
+
+
+Open up your browser and go to [http://sandbox:5601/](http://sandbox:5601/). Enjoy !
