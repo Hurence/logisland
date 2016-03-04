@@ -6,9 +6,8 @@ permalink: /plugins/
 
 How to extend LogIsland ?
 
-### Dependencies
+In this new tutorial we will learn how to create a custom log parser and how to run it inside log-island Docker container
 
-    
 
 ### Maven setup
 Create a folder for your `super-plugin` project :
@@ -24,7 +23,7 @@ First you need to build log-island and to get the pom and jars availables for yo
     cp target/logisland-core-0.9.2.jar super-plugin/lib
 
 
-> log-island jar dependencies are not yet released on maven central (comming soon) so youll need to build them and copy the artefact somewhere in your project (lib folder for instance) in order to use it in your maven project
+> log-island jar dependencies are not yet released on maven central (comming soon) so you'll need to build them and copy the artefact somewhere in your project (lib folder for instance) in order to use it in your maven project
 
 ```
 ├── lib
@@ -63,10 +62,18 @@ Edit your `pom.xml` as follows
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/logisland-core-0.9.2.jar</systemPath>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
     </dependencies>
 </project>
 ```
 
+### Write a custom log parser
 
 Write your a custom LogParser for your super-plugin in `/src/main/java/com/hurence/logisland/MyLogParser.java`
 
@@ -173,6 +180,7 @@ public class ProxyLogParser implements LogParser {
 }
 ```
 
+### Test your parser with JUnit
 
 which can be tested (not really deeply ...) with a small unit test
 
@@ -193,18 +201,12 @@ public class ProxyLogParserTest {
 
 
     private static String[] flows = {
-            "Thu Jan 02 08:43:39 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/RightJauge.gif	724	409	false	false",
-            "Thu Jan 02 08:43:40 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/fondJauge.gif	723	402	false	false",
-            "Thu Jan 02 08:43:42 CET 2014	GET	10.118.32.164	193.252.23.209	http	static1.lecloud.wanadoo.fr	80	/home/fr_FR/20131202100641/img/sprite-icons.pn	495	92518	false	false",
-            "Thu Jan 02 08:43:43 CET 2014	GET	10.118.32.164	173.194.66.94	https	www.google.fr	443	/complete/search	736	812	false	false",
-            "Thu Jan 02 08:43:45 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/digiposte/archiver-btn.png	736	2179	false	false",
-            "Thu Jan 02 08:43:49 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/picto_trash.gif	725	544	false	false"};
+            "Thu Jan 02 08:43:39 CET 2014	GET	101.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/RightJauge.gif	724	409	false	false"};
 
 
-    @Test(timeout = 10000)
+    @Test
     public void ParsingBasicTest() throws IOException {
         LogParser parser = new ProxyLogParser();
-
 
         Event[] parsedEvents = parser.parse(flows[0]);
         assertTrue(parsedEvents.length == 1);
@@ -214,4 +216,60 @@ public class ProxyLogParserTest {
 }
 ```
 
+
+### Deploy the custom component to Docker container
+Now you have a fully functionnal plugin and you can build it with maven by running
+
+	mvn package
+
+It's time to deploy our splendid little plugin to log-island. We'll get the Docker image, run this container by `mounting a host directory into the container` to shar the brand new jar we have built.
+
+```sh
+docker pull hurence/log-island:latest
+docker run \
+    -it \
+    -p 80:80 \
+    -p 9200-9300:9200-9300 \
+    -p 5601:5601 \
+    -p 2181:2181 \
+    -p 9092:9092 \
+    -p 9000:9000 \
+    -p 4050-4060:4050-4060 \
+    --name log-island \
+    -h sandbox \
+    -v $HOME/Documents/workspace/hurence/projects/super-plugin/:/usr/local/log-island/super-plugin  \
+    hurence/log-island:latest bash
+
+cd $LOGISLAND_HOME
+cp super-plugin/target/super-plugin-1.0-SNAPSHOT.jar lib/
+```
+
+
+### Start a log parser 
+
+A `Log` parser takes a log line as a String and computes an Event as a sequence of fields. 
+Let's start a `LogParser` streaming job with a custom `ApacheLogParser`. 
+This stream will process log entries as soon as they will be queued into `li-apache-logs` Kafka topics, each log will
+be parsed as an event which will be pushed back to Kafka in the `li-apache-event` topic.
+
+```
+$LOGISLAND_HOME/bin/log-parser \
+    --kafka-brokers sandbox:9092 \
+    --input-topics li-proxy-logs \
+    --output-topics li-proxy-events \
+    --max-rate-per-partition 10000 \
+    --log-parser com.hurence.logisland.ProxyLogParser
+```
+
+As in the [getting started guide]({{ site.baseurl }}/getting-started) you can use `kafkacat` tool to inject the following [proxy log file]({{ site.baseurl }}/public/proxy.log)
+
+
+
+```sh
+cat proxy.log | kafkacat -P -b sandbox -t li-proxy-logs
+```
+
+In another Docker shell, you should see that some events are going into Kafka (even if they're serialized in Kryo and you can't understand anything)
+
+	/usr/local/kafka/bin/kafka-console-consumer.sh --from-beginning --topic li-proxy-event --zookeeper sandbox:2181
 
