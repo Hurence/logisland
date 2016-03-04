@@ -341,3 +341,8 @@ $LOGISLAND_HOME/bin/event-indexer \
 
 
 Open up your browser and go to [http://sandbox:5601/](http://sandbox:5601/). Enjoy !
+
+
+
+
+checkout the code of this tutorial here [https://github.com/Hurence/log-island-plugin-template.git](https://github.com/Hurence/log-island-plugin-template.git)
