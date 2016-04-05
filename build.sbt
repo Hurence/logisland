@@ -5,13 +5,19 @@ import sbt.Keys._
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-name := "log-island"
+name := "logisland-core"
 
-version := "0.9.1"
+version := "0.9.3"
 
 scalaVersion := "2.10.6"
 
-organization := "com.hurence"
+organization := "com.hurence.logisland"
+
+publishMavenStyle := true
+
+crossPaths := false
+
+autoScalaLibrary := false
 
 mainClass in Compile := Some("com.hurence.logisland.app.AppLauncher")
 
@@ -54,7 +60,6 @@ libraryDependencies ++= Seq(
     "org.apache.commons" % "commons-math3" % "3.2",
     "junit" % "junit" % "4.12",
     "org.scalanlp" % "breeze-viz_2.10" % "0.11.2",
-    "joda-time" % "joda-time" % "2.8.1",
     "com.typesafe.scala-logging" % "scala-logging-slf4j_2.10" % "2.1.2",
     "com.googlecode.json-simple" % "json-simple" % "1.1.1",
     "com.esotericsoftware" % "kryo" % "3.0.3",
@@ -62,14 +67,14 @@ libraryDependencies ++= Seq(
     "asm" % "asm" % "3.3.1",
     "org.apache.kafka" % "kafka_2.10" % "0.8.2.2" % Test classifier "test",
     "com.novocode" % "junit-interface" % "0.11" % Test,
-    "io.dropwizard.metrics" % "metrics-core" % "3.1.0"
+    "io.dropwizard.metrics" % "metrics-core" % "3.1.0",
+    "com.maxmind.geoip2" % "geoip2" % "2.6.0"
 )
 
 resolvers ++= Seq(
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
     "sbt-plugin-releases" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases",
-    "Maven Repository" at "http://mvnrepository.com/artifact",
-    "restlet" at "http://maven.restlet.org"
+    "Maven Repository" at "http://mvnrepository.com/artifact"
 )
 
 fork in Test := true
@@ -77,5 +82,3 @@ fork in Test := true
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 parallelExecution in Test := false
-
-
