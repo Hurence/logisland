@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+source $(dirname $0)/launcher.sh
+
+
+exec bin/flows
+exec bin/traces

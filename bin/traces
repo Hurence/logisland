@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+source $(dirname $0)/launcher.sh
+
+
+declare -r app_mainclass="com.hurence.logisland.job.BatchTracesIndexer"
+declare java_cmd="$SPARK_HOME/bin/spark-submit --class ${app_mainclass} --master local[4] --jars ${app_classpath} ${lib_dir}/com.hurence.logisland-*.jar -i -p -o es -t log-island"
+
+
+exec $java_cmd
