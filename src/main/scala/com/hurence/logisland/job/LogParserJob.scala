@@ -59,6 +59,10 @@ object LogParserJob extends LazyLogging {
         options.addOption("a1", "first-argument", true, "first argument for constructing the parser")
         options.addOption("a2", "second-argument", true, "second argument for constructing the parser")
         options.addOption("zk", "zk-quorum", true, "quorum zookeper  ex: zkServer1:2181, zkServ2:2181")
+        //kafka options for creating a new topic (in case)
+        options.addOption("kpart", "kafka-partitions", true, "number of partition for the topics")
+        options.addOption("krepl", "kafka-replication", true, "number of replication for the topics")
+
 
         // parse the command line arguments
         val line = parser.parse(options, args)
@@ -73,6 +77,9 @@ object LogParserJob extends LazyLogging {
         val firstParserArgument = line.getOptionValue("a1", null)
         val secondParserArgument = line.getOptionValue("a2", null)
         val zkQuorum = line.getOptionValue("zk", "sandbox:2181")
+        //kafka topics option
+        val kpart = line.getOptionValue("kpart", "1").toInt
+        val krepl = line.getOptionValue("krepl", "1").toInt
 
         // set up context
         val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition)
@@ -84,7 +91,7 @@ object LogParserJob extends LazyLogging {
         val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
         topics.foreach(topic => {
             if(!AdminUtils.topicExists(zkClient,topic)){
-                AdminUtils.createTopic(zkClient,topic,1,1)
+                AdminUtils.createTopic(zkClient,topic,kpart,krepl)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
             }
