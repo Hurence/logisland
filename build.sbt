@@ -47,7 +47,7 @@ unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(b
 
 libraryDependencies ++= Seq(
     "log4j" % "log4j" % "1.2.17",
-    "org.elasticsearch" % "elasticsearch" % "2.1.0",
+    "org.elasticsearch" % "elasticsearch" % "1.7.1",
     "org.scalactic" % "scalactic_2.10" % "2.2.6",
     "org.scalatest" % "scalatest_2.10" % "2.2.6" % Test,
     "org.apache.spark" % "spark-core_2.10" % "1.6.0" % "provided",

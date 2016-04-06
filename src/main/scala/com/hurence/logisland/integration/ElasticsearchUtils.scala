@@ -22,8 +22,9 @@ import java.util.Date
 
 import com.hurence.logisland.event.EventMapper
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.elasticsearch.client.Client
 import org.elasticsearch.client.transport.TransportClient
-import org.elasticsearch.common.settings.Settings
+import org.elasticsearch.common.settings.{ImmutableSettings, Settings}
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.xcontent.XContentFactory._
 
@@ -36,12 +37,17 @@ object ElasticsearchUtils extends LazyLogging with Serializable {
     val INDEX_PREFIX = "log-island"
 
     def createTransportClient(esHosts: String): TransportClient = {
-        val settings = Settings.settingsBuilder()
+       /* val settings = Settings.settingsBuilder()
             .put("cluster.name", CLUSTER_NAME)
-            .build()
+            .build()*/
+        val settings = ImmutableSettings.settingsBuilder()
+           .put("cluster.name", CLUSTER_NAME)
+
+        //Add transport addresses and do something with the client...
 
         val hosts = esHosts.split(",")
-        val client = TransportClient.builder().build()
+       // val client = TransportClient.builder().build()
+        val client =    new TransportClient(settings)
         hosts.foreach(host => client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), 9300)))
         logger.debug(s"creating es client for host $esHosts")
 
@@ -83,7 +89,7 @@ object ElasticsearchUtils extends LazyLogging with Serializable {
 
             // MAPPING DONE
             createIndexRequestBuilder
-                .setSettings(Settings.settingsBuilder().put("number_of_shards", 3).put("number_of_replicas", 0))
+                .setSettings(ImmutableSettings.settingsBuilder().put("number_of_shards", 3).put("number_of_replicas", 0))
                 .execute().actionGet()
         }
 

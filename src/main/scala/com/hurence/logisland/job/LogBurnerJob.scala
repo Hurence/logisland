@@ -18,7 +18,7 @@ package com.hurence.logisland.job
 
 import com.hurence.logisland.integration.SparkUtils
 import kafka.serializer.StringDecoder
-import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.commons.cli.{GnuParser, Options}
 import org.apache.spark.Logging
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -65,7 +65,7 @@ object LogBurnerJob extends Logging {
         /**
           * Commande lien management
           */
-        val parser = new DefaultParser()
+        val parser = new GnuParser()
         val options = new Options()
         options.addOption("out", "output-path", true, "hdfs path")
         options.addOption("w", "time-window", true, "window time for micro batch")
