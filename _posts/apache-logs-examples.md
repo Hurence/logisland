@@ -27,22 +27,24 @@ define LOGISLAND_HOME as you desire, here we'll just do a no permanent export
 Make sure tou have SPARK_HOME well defined, logIsland will use it.
 Then you can lanch the stream job as follow:
 
-    $LOGISLAND_HOME/bin/log-parser \
+    nohup $LOGISLAND_HOME/bin/log-parser \
         --kafka-brokers sd-84196:6667 \
-        --input-topics access_logs \
-        --output-topics access_event \
+        --input-topics hurence_website_logs_access \
+        --output-topics hurence_website_event_access \
         --max-rate-per-partition 10000 \
-        --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser
+        --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser \
+        --zk-quorum zookeeperIp > hurence_website_logs_access_parser.log &
     
 This job will parse logs written into the 'access_logs'
 topic and inject event to the 'access_event' topic en mode 'streaming'.
     
-    $LOGISLAND_HOME/bin/log-parser \
+    nohup $LOGISLAND_HOME/bin/log-parser \
         --kafka-brokers sd-84196:6667 \
-        --input-topics error_logs \
-        --output-topics error_event \
+        --input-topics hurence_website_logs_error \
+        --output-topics hurence_website_event_error \
         --max-rate-per-partition 10000 \
-        --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser
+        --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser \
+        --zk-quorum sd-76387.dedibox.fr > hurence_website_logs_error_parser.log &
     
 This job will parse logs written into the 'error_logs'
 topic and inject event to the 'error_event' topic en mode 'streaming'.
@@ -61,6 +63,7 @@ specify all the topic in an unique jobs (see event-indexer job)
 
     nohup $LOGISLAND_HOME/bin/event-indexer \
         --kafka-brokers sd-84196:6667 \
+        --es-cluster hurence \
         --es-host sd-84186.dedibox.fr \
         --index-name apache-hurence-website-acess-log \
         --input-topics hurence_website_event_access \
@@ -73,6 +76,7 @@ specify all the topic in an unique jobs (see event-indexer job)
     nohup $LOGISLAND_HOME/bin/event-indexer \
         --kafka-brokers sd-84196:6667 \
         --es-host sd-84186.dedibox.fr \
+        --es-cluster hurence \
         --index-name apache-hurence-website-error-log \
         --input-topics hurence_website_event_error \
         --max-rate-per-partition 10000 \
