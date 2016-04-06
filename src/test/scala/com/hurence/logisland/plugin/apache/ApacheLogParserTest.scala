@@ -16,9 +16,9 @@
 package com.hurence.logisland.plugin.apache
 
 
-import org.scalatest._
+import base.BaseUnitTest
 
-class ApacheLogParserTest extends FlatSpec with Matchers {
+class ApacheLogParserTest extends BaseUnitTest {
 
 
     "An apache log" should "be parsed" in {
