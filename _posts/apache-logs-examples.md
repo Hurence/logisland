@@ -28,7 +28,7 @@ Make sure tou have SPARK_HOME well defined, logIsland will use it.
 Then you can lanch the stream job as follow:
 
     nohup $LOGISLAND_HOME/bin/log-parser \
-        --kafka-brokers sd-84196:6667 \
+        --kafka-brokers brokerIp:6667 \
         --input-topics hurence_website_logs_access \
         --output-topics hurence_website_event_access \
         --max-rate-per-partition 10000 \
@@ -39,12 +39,12 @@ This job will parse logs written into the 'access_logs'
 topic and inject event to the 'access_event' topic en mode 'streaming'.
     
     nohup $LOGISLAND_HOME/bin/log-parser \
-        --kafka-brokers sd-84196:6667 \
+        --kafka-brokers brokerIp:6667 \
         --input-topics hurence_website_logs_error \
         --output-topics hurence_website_event_error \
         --max-rate-per-partition 10000 \
         --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser \
-        --zk-quorum sd-76387.dedibox.fr > hurence_website_logs_error_parser.log &
+        --zk-quorum zookeeperIp > hurence_website_logs_error_parser.log &
     
 This job will parse logs written into the 'error_logs'
 topic and inject event to the 'error_event' topic en mode 'streaming'.
@@ -62,26 +62,26 @@ specify all the topic in an unique jobs (see event-indexer job)
 ## access logs
 
     nohup $LOGISLAND_HOME/bin/event-indexer \
-        --kafka-brokers sd-84196:6667 \
+        --kafka-brokers brokerIp:6667 \
         --es-cluster hurence \
         --es-host sd-84186.dedibox.fr \
         --index-name apache-hurence-website-acess-log \
         --input-topics hurence_website_event_access \
         --max-rate-per-partition 10000 \
         --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper \
-        --zk-quorum sd-76387.dedibox.fr > hurence_website_event_access_indexer.log &
+        --zk-quorum zookeeperIp > hurence_website_event_access_indexer.log &
     
 ## error logs
 
     nohup $LOGISLAND_HOME/bin/event-indexer \
-        --kafka-brokers sd-84196:6667 \
+        --kafka-brokers brokerIp:6667 \
         --es-host sd-84186.dedibox.fr \
         --es-cluster hurence \
         --index-name apache-hurence-website-error-log \
         --input-topics hurence_website_event_error \
         --max-rate-per-partition 10000 \
         --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper \
-        --zk-quorum sd-76387.dedibox.fr > hurence_website_event_error_indexer.log &
+        --zk-quorum zookeeperIp > hurence_website_event_error_indexer.log &
 
 
 ### Launch logstash
@@ -120,7 +120,7 @@ our topics ! In my case I used this logstash conf:
     output {
           if [type] == "apache_access" {
     	kafka {
-                    bootstrap_servers => "sd-84196.dedibox.fr:6667"
+                    bootstrap_servers => "brokerIp:6667"
     		topic_id => hurence_website_logs_access
             	codec => plain {
                		format => "%{message}"
@@ -129,7 +129,7 @@ our topics ! In my case I used this logstash conf:
           } 
          if [type] == "apache_error" {
     	kafka {
-                    bootstrap_servers => "sd-84196.dedibox.fr:6667"
+                    bootstrap_servers => "brokerIp:6667"
     		topic_id => hurence_website_logs_error
             	codec => plain {
                		format => "%{message}"
