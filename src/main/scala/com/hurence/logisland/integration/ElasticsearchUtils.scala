@@ -33,18 +33,16 @@ import org.elasticsearch.common.xcontent.XContentFactory._
   */
 object ElasticsearchUtils extends LazyLogging with Serializable {
 
-    val CLUSTER_NAME = "log-island"
     val INDEX_PREFIX = "log-island"
 
-    def createTransportClient(esHosts: String): TransportClient = {
+
+    def createTransportClient(esHosts: String, cluster: String): TransportClient = {
        /* val settings = Settings.settingsBuilder()
             .put("cluster.name", CLUSTER_NAME)
             .build()*/
         val settings = ImmutableSettings.settingsBuilder()
-           .put("cluster.name", CLUSTER_NAME)
-
+           .put("cluster.name", cluster)
         //Add transport addresses and do something with the client...
-
         val hosts = esHosts.split(",")
        // val client = TransportClient.builder().build()
         val client =    new TransportClient(settings)
@@ -61,12 +59,12 @@ object ElasticsearchUtils extends LazyLogging with Serializable {
       * @param esHosts
       * @return the index name
       */
-    def createIndex(esHosts: String, indexPrefix: String, eventMapper: EventMapper): String = {
+    def createIndex(esHosts: String, cluster: String, indexPrefix: String, eventMapper: EventMapper): String = {
 
         val dateSuffix = new SimpleDateFormat("yyyy.MM.dd").format(new Date())
         val esIndexName = s"$indexPrefix-$dateSuffix"
 
-        val client = createTransportClient(esHosts)
+        val client = createTransportClient(esHosts, cluster)
         // create a new index only if not already exists
         val res = client.admin().indices().prepareExists(esIndexName).execute().actionGet()
         if (!res.isExists()) {

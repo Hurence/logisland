@@ -62,6 +62,7 @@ object EventIndexerJob extends LazyLogging {
         options.addOption(new cli.Option("index", "index-name", true, "elasticsearch index") {
             setRequired(true)
         })
+        options.addOption(new cli.Option("escluster", "es-cluster", true, "es clustern name ('log-island' by default"))
         options.addOption("bd", "batch-duration", true, "window time (in milliseconds) for micro batch (default: 2000)")
         options.addOption("bi", "block-interval", true, "window time (in milliseconds) for determining the number of partitions per batch (default: 350)")
         options.addOption("mrp", "max-rate-per-partition", true, "maximum rate (in messages per second) at which each Kafka partition will be read (default: unlimited)")
@@ -75,10 +76,12 @@ object EventIndexerJob extends LazyLogging {
         val maxRatePerPartition = line.getOptionValue("mrp", null)
         val brokerList = line.getOptionValue("b", "sandbox:9092")
         val topicList = line.getOptionValue("in", "log-island")
-        val esHosts = line.getOptionValue("e", "sandbox")
-        val esIndex = line.getOptionValue("index", "log-island")
         val eventMapperClass = line.getOptionValue("mapper", "com.hurence.logisland.plugin.cisco.CiscoEventMapper")
         val zkQuorum = line.getOptionValue("zk", "sandbox:2181")
+        //elasticsearch info
+        val esHosts = line.getOptionValue("e", "sandbox")
+        val esIndex = line.getOptionValue("index", "log-island")
+        val cluster = line.getOptionValue("escluster", "log-island")
 
         // set up context
         val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition)
@@ -136,10 +139,10 @@ object EventIndexerJob extends LazyLogging {
 
                     // a new index should be created each day
                     val eventMapper = Class.forName(eventMapperClass).newInstance.asInstanceOf[EventMapper]
-                    val esIndexFullName = ElasticsearchUtils.createIndex(esHosts, esIndex, eventMapper)
+                    val esIndexFullName = ElasticsearchUtils.createIndex(esHosts, cluster, esIndex, eventMapper)
 
                     // launch indexation to es
-                    val esIndexer = new ElasticsearchEventIndexer(esHosts, esIndexFullName)
+                    val esIndexer = new ElasticsearchEventIndexer(esHosts, esIndexFullName, cluster)
                     esIndexer.bulkLoad(events.toList, bulkSize = 10000 )
                 })
                 rdd.unpersist(true)

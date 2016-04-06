@@ -3,8 +3,6 @@ import com.typesafe.sbt.SbtNativePackager.NativePackagerKeys._
 import com.typesafe.sbt.SbtNativePackager._
 import sbt.Keys._
 
-net.virtualvoid.sbt.graph.Plugin.graphSettings
-
 name := "logisland-core"
 
 version := "0.9.3"

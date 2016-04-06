@@ -35,7 +35,7 @@ import collection.JavaConversions._
   * @see https://databricks.com/blog/2015/03/30/improvements-to-kafka-integration-of-spark-streaming.html
   *
   */
-class ElasticsearchEventIndexer(esHosts: String, esIndex: String) extends EventIndexer with LazyLogging with Serializable {
+class ElasticsearchEventIndexer(esHosts: String, esIndex: String, cluster: String) extends EventIndexer with LazyLogging {
 
     var esClient:TransportClient = null
 
@@ -54,7 +54,7 @@ class ElasticsearchEventIndexer(esHosts: String, esIndex: String) extends EventI
 
         // on startup
         if(esClient == null)
-            esClient = ElasticsearchUtils.createTransportClient(esHosts)
+            esClient = ElasticsearchUtils.createTransportClient(esHosts, cluster)
 
         var numItemProcessed = 0L
 
