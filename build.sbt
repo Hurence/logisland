@@ -43,30 +43,48 @@ unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(b
 
 unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "lib") }
 
+val SPARK_VERSION = "1.4.1"
+
+val KAFKA_VERSION = "0.8.2.2"
+
+val ELASTICSEARCH_VERSION = "1.7.1"
+
 libraryDependencies ++= Seq(
+    // Logging
     "log4j" % "log4j" % "1.2.17",
-    "org.elasticsearch" % "elasticsearch" % "1.7.1",
-    "org.scalactic" % "scalactic_2.10" % "2.2.6",
-    "org.scalatest" % "scalatest_2.10" % "2.2.6" % Test,
-    "org.apache.spark" % "spark-core_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-streaming_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-sql_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-mllib_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-hive_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-streaming-kafka-assembly_2.10" % "1.6.0" % "provided",
+    "com.typesafe.scala-logging" % "scala-logging-slf4j_2.10" % "2.1.2",
+
+    // Elasticsearch
+    "org.elasticsearch" % "elasticsearch" % ELASTICSEARCH_VERSION,
+
+    // Spark dependencies
+    "org.apache.spark" % "spark-core_2.10" % SPARK_VERSION % "provided",
+    "org.apache.spark" % "spark-streaming_2.10" % SPARK_VERSION % "provided",
+    "org.apache.spark" % "spark-sql_2.10" % SPARK_VERSION % "provided",
+    "org.apache.spark" % "spark-mllib_2.10" % SPARK_VERSION % "provided",
+    "org.apache.spark" % "spark-hive_2.10" % SPARK_VERSION % "provided",
+    "org.apache.spark" % "spark-streaming-kafka-assembly_2.10" % SPARK_VERSION,
+
+    // Kafka stuff
+    "org.apache.kafka" % "kafka_2.10" % KAFKA_VERSION,
+    "org.apache.kafka" % "kafka_2.10" %KAFKA_VERSION % Test classifier "test",
+
+    // misc
     "org.apache.commons" % "commons-lang3" % "3.3.2",
     "org.apache.commons" % "commons-math3" % "3.2",
     "junit" % "junit" % "4.12",
     "org.scalanlp" % "breeze-viz_2.10" % "0.11.2",
-    "com.typesafe.scala-logging" % "scala-logging-slf4j_2.10" % "2.1.2",
+    "joda-time" % "joda-time" % "2.8.1",
     "com.googlecode.json-simple" % "json-simple" % "1.1.1",
     "com.esotericsoftware" % "kryo" % "3.0.3",
-    "org.apache.kafka" % "kafka_2.10" % "0.8.2.2",
     "asm" % "asm" % "3.3.1",
-    "org.apache.kafka" % "kafka_2.10" % "0.8.2.2" % Test classifier "test",
-    "com.novocode" % "junit-interface" % "0.11" % Test,
     "io.dropwizard.metrics" % "metrics-core" % "3.1.0",
-    "com.maxmind.geoip2" % "geoip2" % "2.6.0"
+    "com.maxmind.geoip2" % "geoip2" % "2.6.0",
+
+    // test
+    "com.novocode" % "junit-interface" % "0.11" % Test,
+    "org.scalactic" % "scalactic_2.10" % "2.2.6",
+    "org.scalatest" % "scalatest_2.10" % "2.2.6" % Test
 )
 
 resolvers ++= Seq(
