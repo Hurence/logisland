@@ -109,7 +109,7 @@ public class Event implements Serializable {
 
     public void putAll(Map<String, Object> entrySets) {
         Objects.requireNonNull(entrySets, "Argument can not be null");
-        entrySets.forEach((k,v) -> put(k, v));
+        entrySets.forEach(this::put);
     }
 
     public EventField remove(String name) {
