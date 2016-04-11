@@ -37,7 +37,9 @@ mappings in Universal ++= directory("bin")
 
 mappings in Universal ++= directory("docs/_site")
 
-scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-target:jvm-1.7")
+
+javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "conf") }
 
