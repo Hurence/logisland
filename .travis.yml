@@ -1,0 +1,27 @@
+# use Docker-based container (instead of OpenVZ)
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2/repository
+    - $HOME/.sbt
+    - $HOME/.ivy2
+
+language: scala
+
+script: 
+  - sbt ++$TRAVIS_SCALA_VERSION compile test:compile
+
+  # Trick to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+
+scala:
+  - 2.10.4
+
+jdk:
+  - oraclejdk7
+  - openjdk7
+
+notifications:
+  email:
+    - bailet.thomas@gmail.com
