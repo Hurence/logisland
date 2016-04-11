@@ -18,6 +18,7 @@ package com.hurence.logisland.integration
 
 import java.text.SimpleDateFormat
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -25,29 +26,41 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
  * Created by tom on 11/06/15.
  */
-object SparkUtils {
 
-  def initContext(appName: String, blockInterval : String = null, maxRatePerPartition : String = null): SparkContext = {
+object SparkUtils extends LazyLogging {
+
+  def initContext(appName: String,
+                  blockInterval: String = "",
+                  maxRatePerPartition: String = "",
+                  master: String = ""): SparkContext = {
+
     // job configuration
-    val conf = new SparkConf().setAppName(appName)
+    val conf = new SparkConf()
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    if (maxRatePerPartition != null) {
+    if (maxRatePerPartition.nonEmpty) {
       conf.set("spark.streaming.kafka.maxRatePerPartition", maxRatePerPartition)
     }
-    if (blockInterval != null) {
+    if (blockInterval.nonEmpty) {
       conf.set("spark.streaming.blockInterval", blockInterval)
     }
     conf.set("spark.streaming.backpressure.enabled", "true")
     conf.set("spark.streaming.unpersist", "false")
-    //conf.set("spark.executor.memory", "4g")
-    //conf.set("spark.driver.memory", "4g")
-    //conf.set("spark.cleaner.ttl", "900")
     conf.set("spark.ui.port", "4050")
+    conf.setAppName(appName)
+
+    if (master.nonEmpty) {
+      conf.setMaster(master)
+    }
 
     val sc = new SparkContext(conf)
 
+    logger.info(s"spark context initialized with master:$master, appName:$appName, " +
+        s"blockInterval:$blockInterval, maxRatePerPartition:$maxRatePerPartition")
+
     sc
   }
+
+
 
   /**
    * Get a file and a schema and convert this to a dataframe

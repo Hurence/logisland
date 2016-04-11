@@ -62,7 +62,8 @@ object LogParserJob extends LazyLogging {
         //kafka options for creating a new topic (in case)
         options.addOption("kpart", "kafka-partitions", true, "number of partition for the topics")
         options.addOption("krepl", "kafka-replication", true, "number of replication for the topics")
-
+        //spark option
+        options.addOption("master", "spark-master", true, "master URI")
 
         // parse the command line arguments
         val line = parser.parse(options, args)
@@ -80,9 +81,12 @@ object LogParserJob extends LazyLogging {
         //kafka topics option
         val kpart = line.getOptionValue("kpart", "1").toInt
         val krepl = line.getOptionValue("krepl", "1").toInt
+        //spark option
+        val sm = line.getOptionValue("master", "")
+
 
         // set up context
-        val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition)
+        val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition, sm)
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
 
         // Define which topics to read from

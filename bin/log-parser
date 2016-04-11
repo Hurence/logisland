@@ -10,7 +10,6 @@ declare -r app_mainclass="com.hurence.logisland.job.LogParserJob"
 
 declare java_cmd="$SPARK_HOME/bin/spark-submit \
     --class ${app_mainclass} \
-    --master local[2] \
     --jars ${app_classpath} ${lib_dir}/*-island-*.jar \
     ${@}"
 
