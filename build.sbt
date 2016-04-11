@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
     "org.apache.spark" % "spark-sql_2.10" % "1.6.0" % "provided",
     "org.apache.spark" % "spark-mllib_2.10" % "1.6.0" % "provided",
     "org.apache.spark" % "spark-hive_2.10" % "1.6.0" % "provided",
-    "org.apache.spark" % "spark-streaming-kafka-assembly_2.10" % "1.6.0",
+    "org.apache.spark" % "spark-streaming-kafka-assembly_2.10" % "1.6.0" % "provided",
     "org.apache.commons" % "commons-lang3" % "3.3.2",
     "org.apache.commons" % "commons-math3" % "3.2",
     "junit" % "junit" % "4.12",
