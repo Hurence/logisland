@@ -64,7 +64,7 @@ class SyslogParser extends LogParser {
     }
 
     def fillSyslogEvent(event: Event, priority: String, version: String, stamp: String, host: String, body: String) = {
-        if (priority != null) event.put("priority", "string", priority)
+        event.put("priority", "string", priority)
         try {
             if (version != null) event.put("version", "int", version.toInt)
         } catch {
