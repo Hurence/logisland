@@ -48,7 +48,7 @@ public class OutlierProcessor implements EventProcessor {
 
 
     /**
-     * 
+     *
      */
     @Override
     public Collection<Event> process(Collection<Event> events) {

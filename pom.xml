@@ -28,14 +28,24 @@
         <MaxPermGen>512m</MaxPermGen>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-core</artifactId>
-            <version>0.9.2</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/logisland-core-0.9.2.jar</systemPath>
+            <version>0.9.3</version>
+            <!--<scope>system</scope>
+            <systemPath>${project.basedir}/lib/logisland-core-0.9.2.jar</systemPath>-->
         </dependency>
 
         <dependency>
