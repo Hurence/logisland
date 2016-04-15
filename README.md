@@ -1,3 +1,6 @@
+[![Build
+Status](https://travis-ci.org/Hurence/log-island.svg?branch=master)](https://travis-ci.org/Hurence/log-island)
+
 LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
 
 ![log-island architecture](http://hurence.github.io/log-island//public/LogIsland-architecture.png)
