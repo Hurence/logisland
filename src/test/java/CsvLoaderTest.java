@@ -2,6 +2,9 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.processor.TimeSeriesCsvLoader;
 import com.hurence.logisland.processor.exception.UnparsableException;
 import junit.framework.Assert;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Test;
@@ -22,37 +25,39 @@ import java.util.List;
 public class CsvLoaderTest {
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesCsvLoader.class);
     final static Charset ENCODING = StandardCharsets.UTF_8;
-    final String art_daily_flatmiddle = "target/test-classes/benchmark_data/artificialWithAnomaly/art_daily_flatmiddle.csv";
+    final String RESOURCES_DIRECTORY = "target/test-classes/benchmark_data/";
     private static final DateTimeFormatter inputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
     //private static final DateTimeFormatter defaultOutputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
 
     @Test
     public void CsvLoaderTest() throws IOException, UnparsableException {
-        File f = new File(art_daily_flatmiddle);
+        File f = new File(RESOURCES_DIRECTORY);
 
-        BufferedReader reader = Files.newBufferedReader(f.toPath(), ENCODING);
-        List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
-        Assert.assertTrue(!events.isEmpty());
-        Assert.assertTrue("should be 4032, was : " + events.size(), events.size() == 4032);
+        for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
+            BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
+            List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+            Assert.assertTrue(!events.isEmpty());
+            //Assert.assertTrue("should be 4032, was : " + events.size(), events.size() == 4032);
 
-        for(Event event : events) {
-            Assert.assertTrue("should be sensors, was " + event.getType(), event.getType().equals("sensors"));
-            Assert.assertTrue("should be 2, was " + event.entrySet().size(), event.entrySet().size() == 2);
-            Assert.assertTrue(event.keySet().contains("timestamp"));
-            Assert.assertTrue(event.keySet().contains("value"));
-            Assert.assertTrue(event.get("timestamp").getValue() instanceof Long);
-            Assert.assertTrue(event.get("value").getValue() instanceof Double);
+            for (Event event : events) {
+                Assert.assertTrue("should be sensors, was " + event.getType(), event.getType().equals("sensors"));
+                Assert.assertTrue("should be 2, was " + event.entrySet().size(), event.entrySet().size() == 2);
+                Assert.assertTrue(event.keySet().contains("timestamp"));
+                Assert.assertTrue(event.keySet().contains("value"));
+                Assert.assertTrue(event.get("timestamp").getValue() instanceof Long);
+                Assert.assertTrue(event.get("value").getValue() instanceof Double);
 
-            Assert.assertTrue(event.keySet().contains("value"));
+                Assert.assertTrue(event.keySet().contains("value"));
+            }
         }
     }
 
     @Test
     public void CsvLoaderUnparsableExceptionTest() throws IOException, UnparsableException {
-        File f = new File(art_daily_flatmiddle);
+        File f = new File(RESOURCES_DIRECTORY + "artificialWithAnomaly/art_daily_flatmiddle.csv");
 
-        DateTimeFormatter wrongInputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ssss");
+        DateTimeFormatter wrongInputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-ss");
 
         BufferedReader reader = Files.newBufferedReader(f.toPath(), ENCODING);
         try {

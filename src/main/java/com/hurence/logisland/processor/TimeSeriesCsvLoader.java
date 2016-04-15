@@ -4,6 +4,7 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.processor.exception.UnparsableException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +35,13 @@ public class TimeSeriesCsvLoader {
      */
     public static List<Event> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
             throws IOException, UnparsableException {
-        List<Event> events = new ArrayList<Event>();
+
+        List<Event> events = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
             try {
                 if (!hasHeader) {
                     Event event = new Event("sensors");
-                    event.put(TIMESTAMP_KEY, "long", inputDatetimeFormat.parseDateTime(record.get(0)).getMillis());
+                    event.put(TIMESTAMP_KEY, "long", inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
                     event.put(VALUE_KEY, "double", Double.parseDouble(record.get(1)));
 
                     events.add(event);
