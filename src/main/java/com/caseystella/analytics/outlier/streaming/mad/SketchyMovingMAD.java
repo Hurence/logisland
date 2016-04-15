@@ -56,6 +56,8 @@ public class SketchyMovingMAD implements OutlierAlgorithm{
         if(config == null) {
             throw new RuntimeException("Outlier Algorithm is not configured yet.");
         }
+
+
         String groupingKey = Outlier.groupingKey(dp, config.getGroupingKeys());
         Distribution.Context valueDistribution = getContext(groupingKey, valueDistributions, reservoirSize, decay);
         Distribution.Context medianDistribution = getContext(groupingKey, medianDistributions, 0, 0);
@@ -126,7 +128,7 @@ public class SketchyMovingMAD implements OutlierAlgorithm{
                                , (int)valueDistribution.getCurrentDistribution().getAmount()
                                );
         adjustSeverity(o);
-        if(o.getSeverity() == Severity.SEVERE_OUTLIER) {
+        if(o.getSeverity() == Severity.SEVERE_OUTLIER && dp.getMetadata() != null) {
             o.setSample(getSample(valueDistribution.getSample().getReservoir()));
             double pt = scalePoint(dp);
             double minPct= 0;
@@ -139,7 +141,9 @@ public class SketchyMovingMAD implements OutlierAlgorithm{
                 else {
                     update = false;
                 }
-                dp.getMetadata().put("" + (int)(100*percentile) + "th_pctile", "" + percentileValue);
+                if(dp.getMetadata() !=null) {
+                    dp.getMetadata().put("" + (int) (100 * percentile) + "th_pctile", "" + percentileValue);
+                }
             }
             dp.getMetadata().put(OutlierMetadataConstants.VALUE_PCTILE.toString(), "" + (100.0*minPct));
             dp.getMetadata().put(OutlierMetadataConstants.PROSPECTIVE_OUTLIER_SCORE.toString(), "" + zScore);

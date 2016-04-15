@@ -31,7 +31,7 @@ public class SketchyMovingMADTest {
      ,"globalStatistics" : {
                          "min" : -10000
                          }
-     ,"outlierAlgorithm" : "SKETCHY_MOVING_MAD"
+     ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
      ,"config" : {
                  "minAmountToPredict" : 100
                 ,"zscoreCutoffs" : {

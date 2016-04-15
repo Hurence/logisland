@@ -91,7 +91,7 @@ public class SketchyMovingMADIntegrationTest {
                        ,"amount" : 10
                        ,"unit" : "POINTS"
                          }
-     ,"outlierAlgorithm" : "SKETCHY_MOVING_MAD"
+     ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
      ,"globalStatistics": {
                           "min" : -200
                           }
