@@ -18,44 +18,8 @@ import java.util.List;
  */
 public class TimeSeriesCsvLoader {
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesCsvLoader.class);
-    //private static final DateTimeFormatter outputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private static String TIMESTAMP_KEY = "timestamp";
     private static String VALUE_KEY = "value";
-
-//    /**
-//     * CSV reader that waits for a 2 columns csv files with or without a header.
-//     * If less than 2 columns ==> exception, otherwise, the 3rd and following columns are ignored
-//     * @param in
-//     * @param hasHeader
-//     * @return
-//     * @throws IOException
-//     * @throws ArrayIndexOutOfBoundsException
-//     */
-//    public static List<Event> load(Reader in, boolean hasHeader) throws IOException, UnparsableException {
-//        List<Event> events = new ArrayList<Event>();
-//        for(CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
-//            try {
-//                if (!hasHeader) {
-//                    Event event = new Event("sensors");
-//                    event.put(TIMESTAMP_KEY, "long", record.get(0));
-//                    event.put(VALUE_KEY, "double", Double.parseDouble(record.get(1)));
-//
-//                    events.add(event);
-//                } else {
-//                    TIMESTAMP_KEY = record.get(0);
-//                    VALUE_KEY = record.get(1);
-//                }
-//
-//                hasHeader = false;
-//            }
-//            catch (Exception e) {
-//                logger.error("Parsing error " + e.getMessage());
-//                throw new UnparsableException(e);
-//            }
-//        }
-//
-//        return events;
-//    }
 
     /**
      * CSV reader that waits for a 2 columns csv files with or without a header.
