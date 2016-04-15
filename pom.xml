@@ -8,6 +8,18 @@
     <artifactId>querymatcher-plugin</artifactId>
     <version>0.9.0</version>
 
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>Github Issues</system>
+        <url>https://github.com/Hurence/querymatcher-plugin/issues</url>
+    </issueManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
