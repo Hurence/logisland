@@ -23,7 +23,7 @@ public class DomainTagsRepositoryTest {
 		System.out.println("findTagsByDomain");
 		String domain = "";
 		DomainTagsRepository repository = new DomainTagsRepository();
-		repository.load("data/var/url-tags.json");
+		repository.load(this.getClass().getResource("/data/url-tags.json").getFile());
 		
 		
 		List<String> expResult = new ArrayList<>();
