@@ -99,10 +99,6 @@ public class Event implements Serializable {
         fields.put(name, value);
     }
 
-    public void put(String name, Object value) {
-        this.put(name, value.getClass().getTypeName(), value);
-    }
-
     public void put(String name, String type, Object value) {
         put(name, new EventField(name, type, value));
     }
