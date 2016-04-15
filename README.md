@@ -1,3 +1,6 @@
+LogIsland
+==========
+
 [![Build
 Status](https://travis-ci.org/Hurence/log-island.svg?branch=master)](https://travis-ci.org/Hurence/log-island)
 
