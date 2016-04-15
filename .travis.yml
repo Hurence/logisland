@@ -1,0 +1,24 @@
+# use Docker-based container (instead of OpenVZ)
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2/repository
+    - $HOME/.sbt
+    - $HOME/.ivy2
+
+language: scala
+
+script: 
+  - mvn ++$TRAVIS_SCALA_VERSION package test
+
+scala:
+  - 2.10.4
+
+jdk:
+  - oraclejdk7
+  - openjdk7
+
+notifications:
+  email:
+    - bailet.thomas@gmail.com
