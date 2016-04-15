@@ -1,4 +1,4 @@
-LogIsland
+Log Island
 ==========
 
 [![Build
