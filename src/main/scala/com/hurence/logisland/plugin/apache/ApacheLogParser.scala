@@ -36,7 +36,7 @@ class ApacheLogParser extends LogParser {
 
     override def parse(lines: String): Array[Event] = {
         val event = new Event(EVENT_TYPE)
-        event.put("source", lines)
+        event.put("source", "string", lines)
 
 
 

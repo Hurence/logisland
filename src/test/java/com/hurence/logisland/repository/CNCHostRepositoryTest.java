@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
  */
 public class CNCHostRepositoryTest {
 
-	private static final String REPOSITORY_PATH = "./src/test/resources/data/cnc_malware_samples.csv";
+	private static final String REPOSITORY_PATH = "/data/cnc_malware_samples.csv";
 
 	@Test
 	public void testFindByIp() {
@@ -22,7 +22,7 @@ public class CNCHostRepositoryTest {
 		
 		final BlacklistedHostRepository repository = new BlacklistedHostRepository();
 		
-		repository.load(REPOSITORY_PATH, BlacklistType.CNC);
+		repository.load(this.getClass().getResource(REPOSITORY_PATH).getFile(), BlacklistType.CNC);
 		String[] ips = {
 			"212.227.31.159",
 			"188.138.1.9",

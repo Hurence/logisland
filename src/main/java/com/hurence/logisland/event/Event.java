@@ -108,7 +108,7 @@ public class Event implements Serializable {
         for(Map.Entry<String, Object> entry : entrySets.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            this.put(key, value);
+            this.put(key, "object", value);
         }
     }
 
