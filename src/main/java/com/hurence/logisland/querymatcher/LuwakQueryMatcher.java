@@ -70,8 +70,8 @@ public class LuwakQueryMatcher extends QueryMatcherBase {
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(docMatch.getDocId());
-            outEv.setType(QueryMatcherBase.EVENT_MATCH_TYPE_NAME);
+            Event outEv = new Event(QueryMatcherBase.EVENT_MATCH_TYPE_NAME);
+            outEv.setId(docMatch.getDocId());
             // Only get last match for now, we should probably add them all
             for (QueryMatch queryMatch:docMatch.getMatches())
                 outEv.put("match", "string", queryMatch.getQueryId());
