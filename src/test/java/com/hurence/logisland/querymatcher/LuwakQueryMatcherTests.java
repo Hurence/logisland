@@ -3,6 +3,7 @@ package com.hurence.logisland.querymatcher;
 import com.hurence.logisland.event.Event;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class LuwakQueryMatcherTests {
 
     @Test
-    public void testSimpleMatch() {
+    public void testSimpleMatch() throws IOException {
 
         MatchingRule rule1 = new MatchingRule("rule1", "name:luke");
 
@@ -25,6 +26,7 @@ public class LuwakQueryMatcherTests {
         LuwakQueryMatcher matcher = new LuwakQueryMatcher(rules);
 
         Event ev1 = new Event("mytype");
+        ev1.setId("myid");
         ev1.put("name","string", "luke");
 
         Collection<Event> eventsOut = matcher.process(Arrays.asList(ev1));

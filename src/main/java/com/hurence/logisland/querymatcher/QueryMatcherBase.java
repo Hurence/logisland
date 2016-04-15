@@ -10,6 +10,8 @@ import java.util.List;
  */
 public abstract class QueryMatcherBase {
 
+    public static String EVENT_MATCH_TYPE_NAME = "querymatch";
+
     private List<MatchingRule> rules = null;
 
     public QueryMatcherBase(List<MatchingRule> rules) {
@@ -17,4 +19,8 @@ public abstract class QueryMatcherBase {
     }
 
     public abstract Collection<Event> process(Collection<Event> collection);
+
+    protected List<MatchingRule> getRules() {
+        return rules;
+    }
 }
