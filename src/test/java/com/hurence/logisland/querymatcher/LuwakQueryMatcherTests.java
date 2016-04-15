@@ -25,7 +25,7 @@ public class LuwakQueryMatcherTests {
         LuwakQueryMatcher matcher = new LuwakQueryMatcher(rules);
 
         Event ev1 = new Event("mytype");
-        ev1.put("name","luke");
+        ev1.put("name","string", "luke");
 
         Collection<Event> eventsOut = matcher.process(Arrays.asList(ev1));
 
