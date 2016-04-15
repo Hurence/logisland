@@ -39,6 +39,19 @@
         </dependency>
 
         <dependency>
+            <groupId>org.adrianwalker</groupId>
+            <artifactId>multiline-string</artifactId>
+            <version>0.1.1</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>sun.jdk</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
             <version>${global_hadoop_version}</version>
