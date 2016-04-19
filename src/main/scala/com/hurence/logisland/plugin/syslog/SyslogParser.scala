@@ -15,8 +15,6 @@
  */
 package com.hurence.logisland.plugin.syslog
 
-import java.nio.charset.Charset
-
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
 
@@ -53,7 +51,7 @@ class SyslogParser extends LogParser {
 
     override def parse(lines: String): Array[Event] = {
         val event = new Event(EVENT_TYPE)
-        event.put("source", lines)
+        event.put("source", "string", lines)
 
         lines match {
             case SYSLOG_MSG_RFC5424_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
