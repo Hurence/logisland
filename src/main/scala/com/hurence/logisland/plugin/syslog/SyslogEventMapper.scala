@@ -43,11 +43,12 @@ class SyslogEventMapper extends EventMapper{
             .startObject("_ttl").field("enabled", "true").field("default", "30d").endObject()
             .startObject("properties")
 
-            .startObject("priority").field("type", "string").field("store", "yes").endObject()
-            .startObject("version").field("type", "string").field("store", "yes").endObject()
+            .startObject("priority").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
+            .startObject("version").field("type", "integer").field("store", "yes").endObject()
+            .startObject("versionNotAnInt").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
             .startObject("date").field("type", "date").field("format", "dateOptionalTime").endObject()
-            .startObject("host").field("type", "string").field("store", "yes").endObject()
-            .startObject("body").field("type", "string").field("store", "yes").endObject()
+            .startObject("host").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
+            .startObject("body").field("type", "string").field("store", "yes").field("index", "analyzed").endObject()
 
             .endObject()
             .endObject().endObject()
