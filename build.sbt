@@ -17,8 +17,6 @@ crossPaths := false
 
 autoScalaLibrary := false
 
-mainClass in Compile := Some("com.hurence.logisland.app.AppLauncher")
-
 // Native packager
 
 packageArchetype.java_application
@@ -30,8 +28,6 @@ mappings in Universal += file("README.md") -> "README.md"
 mappings in Universal += file("CHANGES.md") -> "CHANGES.md"
 
 mappings in Universal ++= directory("conf")
-
-mappings in Universal ++= directory("data/var")
 
 mappings in Universal ++= directory("bin")
 
@@ -100,3 +96,42 @@ fork in Test := true
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 parallelExecution in Test := false
+
+publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+publishArtifact in Test := false
+
+pomExtra := (
+    <url>http://jsuereth.com/scala-arm</url>
+        <licenses>
+            <license>
+                <name>The Apache License, Version 2.0</name>
+                <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+        </licenses>
+
+        <issueManagement>
+            <system>Github Issues</system>
+            <url>https://github.com/Hurence/log-island/issues</url>
+        </issueManagement>
+
+        <scm>
+            <url>git@github.com:Hurence/log-island.git</url>
+            <connection>scm:git@github.com:Hurence/log-island.git</connection>
+        </scm>
+
+        <developers>
+            <developer>
+                <id>hurence</id>
+                <name>Hurence</name>
+                <url>http://hurence.com</url>
+            </developer>
+        </developers>
+
+    )
