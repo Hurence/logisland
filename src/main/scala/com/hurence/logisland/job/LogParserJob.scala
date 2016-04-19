@@ -65,6 +65,8 @@ object LogParserJob extends LazyLogging {
         //spark option
         options.addOption("master", "spark-master", true, "master URI")
 
+        options.addOption("name", "app-name", true, "spark application name")
+
         // parse the command line arguments
         val line = parser.parse(options, args)
         val inputTopicList = line.getOptionValue("in", "log-island-cisco")
@@ -83,10 +85,10 @@ object LogParserJob extends LazyLogging {
         val krepl = line.getOptionValue("krepl", "1").toInt
         //spark option
         val sm = line.getOptionValue("master", "")
-
+        val appName = line.getOptionValue("name", this.getClass.getName)
 
         // set up context
-        val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition, sm)
+        val sc = SparkUtils.initContext(appName, blockInterval, maxRatePerPartition, sm)
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
 
         // Define which topics to read from
