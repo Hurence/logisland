@@ -92,14 +92,16 @@ object LogParserJob extends LazyLogging {
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
 
         // Define which topics to read from
-        val topics = inputTopicList.split(",").toSet
+        val inputTopics: Set[String] = inputTopicList.split(",").toSet
+        val outputTopic: Set[String] = outputTopicList.split(",").toSet
+        val allTopic: Set[String] = inputTopics ++ outputTopic
         // create kafka topic if needed
         val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
-        topics.foreach(topic => {
+        allTopic.foreach(topic => {
             if(!AdminUtils.topicExists(zkClient,topic)){
                 AdminUtils.createTopic(zkClient,topic,kpart,krepl)
                 Thread.sleep(1000)
-                logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
+                logger.info(s"created topic $topic with replication $krepl and partition $kpart")
             }
         })
 
@@ -120,7 +122,7 @@ object LogParserJob extends LazyLogging {
         logger.debug("==========================================")
 
         // Create the direct stream with the Kafka parameters and topics
-        val kafkaInputStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
+        val kafkaInputStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, inputTopics)
 
         // convert incoming logs to events and push them to Kafka
         kafkaInputStream
@@ -140,9 +142,10 @@ object LogParserJob extends LazyLogging {
                         val events = partition.flatMap(log => {
                             logParser.parse(log._2).toSeq
                         })
-
-                        val kafkaProducer = new KafkaEventProducer(brokerList, outputTopicList)
-                        kafkaProducer.produce(events)
+                        outputTopic foreach(topic =>{
+                            val kafkaProducer = new KafkaEventProducer(brokerList, topic)
+                            kafkaProducer.produce(events)
+                        })
                     }
                 })
                 rdd.unpersist(true)
