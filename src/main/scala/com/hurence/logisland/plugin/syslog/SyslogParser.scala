@@ -67,7 +67,7 @@ class SyslogParser extends LogParser {
             if (version != null) event.put("version", "int", version.toInt)
         } catch {
             case e: NumberFormatException =>
-                event.put("version", "string", version)
+                event.put("versionNotAnInt", "string", version)
             case e: Throwable => throw new Error("an unexpected error occured during parsing of version in syslog", e)
         }
         event.put("date", "string", stamp)
