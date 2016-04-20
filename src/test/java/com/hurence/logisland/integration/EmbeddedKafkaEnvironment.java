@@ -19,7 +19,7 @@ import java.util.Properties;
  * https://github.com/apache/kafka/blob/0.8.2/core/src/main/scala/kafka/admin/TopicCommand.scala
  * https://github.com/apache/kafka/blob/0.8.2/core/src/test/scala/unit/kafka/admin/TopicCommandTest.scala
  */
-public class KafkaContext {
+public class EmbeddedKafkaEnvironment {
 
     private int brokerId = 0;
     private int port;
@@ -34,7 +34,7 @@ public class KafkaContext {
      * Initialises a testing Kafka environment with an EmbeddedZookeeper
      * , a client and a server
      */
-    public KafkaContext() {
+    public EmbeddedKafkaEnvironment() {
 
         // setup Zookeeper
         String zkConnect = TestZKUtils.zookeeperConnect();

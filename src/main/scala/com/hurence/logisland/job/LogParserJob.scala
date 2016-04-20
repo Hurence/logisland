@@ -25,6 +25,7 @@ import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.commons.cli
 import org.apache.commons.cli.{GnuParser, Options}
+import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 
@@ -86,22 +87,19 @@ object LogParserJob extends LazyLogging {
         //spark option
         val sm = line.getOptionValue("master", "")
         val appName = line.getOptionValue("name", this.getClass.getName)
+        // Define topics sets
+        val inputTopics: Set[String] = inputTopicList.split(",").toSet
+        val outputTopic: Set[String] = outputTopicList.split(",").toSet
+        val allTopic: Set[String] = inputTopics ++ outputTopic
 
         // set up context
         val sc = SparkUtils.initContext(appName, blockInterval, maxRatePerPartition, sm)
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
-
-        // Define which topics to read from
-        val topics = inputTopicList.split(",").toSet
-        // create kafka topic if needed
         val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
-        topics.foreach(topic => {
-            if(!AdminUtils.topicExists(zkClient,topic)){
-                AdminUtils.createTopic(zkClient,topic,kpart,krepl)
-                Thread.sleep(1000)
-                logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
-            }
-        })
+
+        // create kafka topics if needed
+        createTopics(allTopic, zkClient, kpart, krepl)
+
 
         // Define the Kafka parameters, broker list must be specified
         val kafkaParams = Map("metadata.broker.list" -> brokerList,
@@ -120,9 +118,37 @@ object LogParserJob extends LazyLogging {
         logger.debug("==========================================")
 
         // Create the direct stream with the Kafka parameters and topics
-        val kafkaInputStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
+        val kafkaInputStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, inputTopics)
 
         // convert incoming logs to events and push them to Kafka
+        defineLogParserJob(
+            kafkaInputStream,
+            firstParserArgument,
+            secondParserArgument,
+            logParserClass,
+            brokerList,
+            outputTopic
+        )
+
+        // Start the computation
+        ssc.start()
+        ssc.awaitTermination()
+    }
+    def createTopics(topics: Set[String], zkClient: ZkClient, kpart: Int, krepl: Int) ={
+        topics.foreach(topic => {
+            if(!AdminUtils.topicExists(zkClient,topic)){
+                AdminUtils.createTopic(zkClient,topic,kpart,krepl)
+                Thread.sleep(1000)
+                logger.info(s"created topic $topic with replication $krepl and partition $kpart")
+            }
+        })
+    }
+    def defineLogParserJob(kafkaInputStream: InputDStream[(String, String)],
+                           firstParserArgument: String,
+                           secondParserArgument: String,
+                           logParserClass: String,
+                           brokerList: String,
+                           outputTopic: Set[String]) ={
         kafkaInputStream
             .foreachRDD(rdd => {
                 rdd.cache
@@ -140,17 +166,13 @@ object LogParserJob extends LazyLogging {
                         val events = partition.flatMap(log => {
                             logParser.parse(log._2).toSeq
                         })
-
-                        val kafkaProducer = new KafkaEventProducer(brokerList, outputTopicList)
-                        kafkaProducer.produce(events)
+                        outputTopic foreach(topic =>{
+                            val kafkaProducer = new KafkaEventProducer(brokerList, topic)
+                            kafkaProducer.produce(events)
+                        })
                     }
                 })
                 rdd.unpersist(true)
             })
-
-        // Start the computation
-        ssc.start()
-        ssc.awaitTermination()
     }
-
 }
