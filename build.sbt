@@ -65,7 +65,7 @@ libraryDependencies ++= Seq(
 
     // Kafka stuff
     "org.apache.kafka" % "kafka_2.10" % KAFKA_VERSION,
-    "org.apache.kafka" % "kafka_2.10" %KAFKA_VERSION % Test classifier "test",
+    "org.apache.kafka" % "kafka_2.10" %KAFKA_VERSION classifier "test",
 
     // misc
     "org.apache.commons" % "commons-lang3" % "3.3.2",

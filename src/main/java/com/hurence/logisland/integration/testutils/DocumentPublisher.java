@@ -1,4 +1,4 @@
-package com.hurence.logisland.integration;
+package com.hurence.logisland.integration.testutils;
 
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.event.serializer.EventKryoSerializer;
