@@ -16,6 +16,8 @@ import java.util.Properties;
 
 /**
  * Created by lhubert on 15/04/16.
+ *
+ * Used for plugin tests
  */
 public class DocumentPublisher {
 
@@ -26,7 +28,7 @@ public class DocumentPublisher {
      * @param topic
      * @throws IOException
      */
-    public void publish(KafkaContext context, String path, String topic) throws IOException {
+    public void publish(EmbeddedKafkaEnvironment context, String path, String topic) throws IOException {
 
         List<KeyedMessage> messages = new ArrayList<>();
 
