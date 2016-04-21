@@ -68,6 +68,8 @@ object EventIndexerJob extends LazyLogging {
         options.addOption("mrp", "max-rate-per-partition", true, "maximum rate (in messages per second) at which each Kafka partition will be read (default: unlimited)")
         options.addOption("h", "help", false, "print usage")
         options.addOption("zk", "zk-quorum", true, "quorum zookeper  zkServer1:2181,zkServ2:2181")
+        options.addOption("name", "app-name", true, "spark application name")
+
 
         // parse the command line arguments
         val line = parser.parse(options, args)
@@ -82,9 +84,10 @@ object EventIndexerJob extends LazyLogging {
         val esHosts = line.getOptionValue("e", "sandbox")
         val esIndex = line.getOptionValue("index", "log-island")
         val cluster = line.getOptionValue("escluster", "log-island")
+        val appName = line.getOptionValue("name", this.getClass.getName)
 
         // set up context
-        val sc = SparkUtils.initContext(this.getClass.getName, blockInterval, maxRatePerPartition)
+        val sc = SparkUtils.initContext(appName, blockInterval, maxRatePerPartition)
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
 
         // Define which topics to read from

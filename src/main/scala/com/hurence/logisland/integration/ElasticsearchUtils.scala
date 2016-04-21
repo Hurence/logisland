@@ -61,7 +61,7 @@ object ElasticsearchUtils extends LazyLogging with Serializable {
       */
     def createIndex(esHosts: String, cluster: String, indexPrefix: String, eventMapper: EventMapper): String = {
 
-        val dateSuffix = new SimpleDateFormat("yyyy.MM.dd").format(new Date())
+        val dateSuffix = new SimpleDateFormat("yyyy.MM").format(new Date())
         val esIndexName = s"$indexPrefix-$dateSuffix"
 
         val client = createTransportClient(esHosts, cluster)
@@ -87,7 +87,7 @@ object ElasticsearchUtils extends LazyLogging with Serializable {
 
             // MAPPING DONE
             createIndexRequestBuilder
-                .setSettings(ImmutableSettings.settingsBuilder().put("number_of_shards", 3).put("number_of_replicas", 0))
+                .setSettings(ImmutableSettings.settingsBuilder().put("number_of_shards", 5).put("number_of_replicas", 1))
                 .execute().actionGet()
         }
 

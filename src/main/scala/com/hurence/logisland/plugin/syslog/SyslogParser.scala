@@ -15,8 +15,12 @@
  */
 package com.hurence.logisland.plugin.syslog
 
+import java.util.{Calendar, Date}
+
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
+import org.joda.time.DateTimeZone
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
 /**
   * Created by gregoire on 13/04/16.
@@ -49,6 +53,12 @@ class SyslogParser extends LogParser {
             "([\\w][\\w\\d\\.@-]*)" + // host
             "\\s(.*)$").r // body
 
+    final val DTF1_SYSLOG_MSG_RFC5424_0 = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SZ").withZone(DateTimeZone.UTC)
+    final val DTF2_SYSLOG_MSG_RFC5424_0 = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.S+hh:mm").withZone(DateTimeZone.UTC)
+    final val DTF3_SYSLOG_MSG_RFC3164_0 = DateTimeFormat.forPattern("MMM d HH:mm:ss").withZone(DateTimeZone.UTC)
+        .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
+
+
     override def parse(lines: String): Array[Event] = {
         val event = new Event(EVENT_TYPE)
         event.put("source", "string", lines)
@@ -69,6 +79,30 @@ class SyslogParser extends LogParser {
             case e: NumberFormatException =>
                 event.put("versionNotAnInt", "string", version)
             case e: Throwable => throw new Error("an unexpected error occured during parsing of version in syslog", e)
+        }
+
+
+        try{
+            // stamp MMM d HH:mm:ss, single digit date has two spaces
+            val timestamp = DTF1_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
+            event.put("@timestamp", "long", timestamp)
+        }catch {
+            case e: Throwable =>
+                try{
+                    // stamp MMM d HH:mm:ss, single digit date has two spaces
+                    val timestamp = DTF2_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
+                    event.put("@timestamp", "long", timestamp)
+                }catch {
+                    case e: Throwable =>
+                        try{
+                            // stamp MMM d HH:mm:ss, single digit date has two spaces
+                            val timestamp = DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime(stamp).getMillis
+                            event.put("@timestamp", "long", timestamp)
+                        }catch {
+                            case e: Throwable =>
+                                event.put("@timestamp", "long", new Date().getTime)
+                        }
+                }
         }
         event.put("date", "string", stamp)
         event.put("host", "string", host)
