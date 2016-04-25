@@ -1,4 +1,4 @@
-package com.hurence.logisland.integration;
+package com.hurence.logisland.integration.testutils;
 
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;

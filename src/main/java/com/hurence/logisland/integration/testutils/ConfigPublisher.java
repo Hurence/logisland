@@ -1,4 +1,4 @@
-package com.hurence.logisland.integration;
+package com.hurence.logisland.integration.testutils;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

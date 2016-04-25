@@ -1,4 +1,4 @@
-package com.hurence.logisland.integration;
+package com.hurence.logisland.integration.testutils;
 
 import java.io.IOException;
 
