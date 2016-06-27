@@ -79,6 +79,8 @@ public class QueryMatcherProcessorTest {
         KafkaRulesConsumer rconsumer = new KafkaRulesConsumer();
         List<MatchingRule> rules = rconsumer.consume(context, "rules", "rules", "consumer0");
 
+        System.out.println("Rules to apply : " + rules.size());
+
         LuwakQueryMatcher matcher = new LuwakQueryMatcher(rules);
         QueryMatcherProcessor processor = new QueryMatcherProcessor(matcher);
 
@@ -88,6 +90,8 @@ public class QueryMatcherProcessorTest {
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
         KafkaStream<byte[], byte[]> stream = consumerMap.get("docs").get(0);
         ConsumerIterator<byte[], byte[]> iterator = stream.iterator();
+
+        System.out.println("Documents to process:" + iterator.size());
 
         while (iterator.hasNext()) {
 
