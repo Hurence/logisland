@@ -75,9 +75,10 @@ libraryDependencies ++= Seq(
     "joda-time" % "joda-time" % "2.8.1",
     "com.googlecode.json-simple" % "json-simple" % "1.1.1",
     "com.esotericsoftware" % "kryo" % "3.0.3",
-    "asm" % "asm" % "3.3.1",
+     "org.ow2.asm" % "asm" % "5.1",
     "io.dropwizard.metrics" % "metrics-core" % "3.1.0",
     "com.maxmind.geoip2" % "geoip2" % "2.6.0",
+    "org.apache.avro" % "avro" % "1.8.1",
 
     // test
     "com.novocode" % "junit-interface" % "0.11" % Test,
@@ -108,7 +109,7 @@ publishTo := {
 publishArtifact in Test := false
 
 pomExtra := (
-    <url>http://jsuereth.com/scala-arm</url>
+    <url>http://hurence.github.io/log-island/</url>
         <licenses>
             <license>
                 <name>The Apache License, Version 2.0</name>

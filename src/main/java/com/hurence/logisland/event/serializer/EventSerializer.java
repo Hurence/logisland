@@ -26,6 +26,6 @@ import java.io.Serializable;
  * Created by tom on 13/01/16.
  */
 public interface EventSerializer extends Serializable {
-    void serialize(OutputStream objectDataOutput, Event event);
-    Event deserialize(InputStream objectDataInput);
+    void serialize(OutputStream objectDataOutput, Event event) throws EventSerdeException;
+    Event deserialize(InputStream objectDataInput) throws EventSerdeException;
 }

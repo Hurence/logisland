@@ -56,7 +56,7 @@ public class Event implements Serializable {
         Event event = (Event) o;
 
         if (fields != null ? !fields.equals(event.fields) : event.fields != null) return false;
-        if (creationDate != null ? !creationDate.equals(event.creationDate) : event.creationDate != null) return false;
+      //  if (creationDate != null ? !creationDate.equals(event.creationDate) : event.creationDate != null) return false;
         if (type != null ? !type.equals(event.type) : event.type != null) return false;
         return id != null ? id.equals(event.id) : event.id == null;
 
