@@ -86,4 +86,14 @@ public class EmbeddedKafkaEnvironment {
     public int getPort() {
         return port;
     }
+
+    /**
+     * Method to close all elements of EmbeddedKafkaEnvironment
+     */
+    public void close() {
+        for (KafkaServer server : getServers()) server.shutdown();
+        getZkClient().close();
+        getZkServer().shutdown();
+    }
+
 }
