@@ -127,6 +127,14 @@ language governing permissions and limitations under the License. --><project xm
                 <enabled>true</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -209,20 +217,9 @@ language governing permissions and limitations under the License. --><project xm
                 <version>3.2</version>
             </dependency>
             <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr-runtime</artifactId>
-                <version>3.5.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.wordnik</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>1.5.3-M1</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.10</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>1.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
@@ -234,8 +231,21 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>commons-io</artifactId>
                 <version>2.4</version>
             </dependency>
- 
-            
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr-runtime</artifactId>
+                <version>3.5.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wordnik</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>1.5.3-M1</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -245,11 +255,6 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.10</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -271,7 +276,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>metrics-core</artifactId>
                 <version>${yammer.metrics.version}</version>
             </dependency>
-           
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
@@ -318,7 +322,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>hadoop-client</artifactId>
                 <version>${hadoop.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_2.10</artifactId>
@@ -330,7 +333,6 @@ language governing permissions and limitations under the License. --><project xm
                 <version>${kafka.version}</version>
                 <classifier>test</classifier>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
@@ -341,7 +343,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>kryo</artifactId>
                 <version>3.0.3</version>
             </dependency>
-
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
@@ -357,7 +358,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>h2</artifactId>
                 <version>1.3.176</version>
             </dependency>
-            
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
@@ -368,7 +368,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>jackson-databind</artifactId>
                 <version>2.6.1</version>
             </dependency>
-
             <dependency>
                 <groupId>com.googlecode.json-simple</groupId>
                 <artifactId>json-simple</artifactId>
@@ -398,7 +397,28 @@ language governing permissions and limitations under the License. --><project xm
                 <version>6.8.8</version>
                 <scope>test</scope>
             </dependency>
-           
+
+
+
+            <dependency>
+                <groupId>org.adrianwalker</groupId>
+                <artifactId>multiline-string</artifactId>
+                <version>0.1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.adrianwalker</groupId>
+                <artifactId>multiline-string</artifactId>
+                <version>0.1.2</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>sun.jdk</groupId>
+                        <artifactId>tools</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
 
 
             <!-- Logisland modules -->
