@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Outlier Analysis: A Hybrid Approach
@@ -36,6 +38,7 @@ public class OutlierProcessor implements EventProcessor {
 
     public static String EVENT_TYPE = "sensor_outlier";
     public static String EVENT_PARSING_EXCEPTION_TYPE = "event_parsing_exception";
+    public static String OUTLIER_PROCESSING_EXCEPTION_TYPE = "outlier_processing_exception";
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesCsvLoader.class);
     OutlierConfig outlierConfig;
@@ -44,22 +47,22 @@ public class OutlierProcessor implements EventProcessor {
 
 
     /**
-     {
-        "rotationPolicy" : {
+      {
+      "rotationPolicy" : {
             "type" : "BY_AMOUNT"
             ,"amount" : 100
             ,"unit" : "POINTS"
-        }
-        ,"chunkingPolicy" : {
+      }
+      ,"chunkingPolicy" : {
             "type" : "BY_AMOUNT"
             ,"amount" : 10
             ,"unit" : "POINTS"
-        }
-        ,"globalStatistics" : {
-        }
-        ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
-        ,"batchOutlierAlgorithm" : "RAD"
-        ,"config" : {
+      }
+      ,"globalStatistics" : {
+      }
+      ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
+      ,"batchOutlierAlgorithm" : "RAD"
+      ,"config" : {
             "minAmountToPredict" : 100
             ,"reservoirSize" : 100
             ,"zscoreCutoffs" : {
@@ -67,8 +70,8 @@ public class OutlierProcessor implements EventProcessor {
                 ,"MODERATE_OUTLIER" : 1.5
             }
             ,"minZscorePercentile" : 95
-        }
-     }
+      }
+      }
      */
     @Multiline
     public static String streamingOutlierConfigStr;
@@ -93,20 +96,25 @@ public class OutlierProcessor implements EventProcessor {
     public Collection<Event> process(Collection<Event> events) {
 
         Collection list = new ArrayList();
+
+
         // loop over all events in collection
         for (Event event : events) {
 
             try {
+
                 // convert an event to a dataPoint.
                 long timestamp = (long) event.get("timestamp").getValue();
                 double value = (double) event.get("value").getValue();
 
-                DataPoint dp = new DataPoint(timestamp, value, null, "kafka_topic");
+                DataPoint dp = new DataPoint(timestamp, value, new HashMap<String, String>(), "kafka_topic");
+
 
                 // now let's look for outliers
                 Outlier outlier = sketchyOutlierAlgorithm.analyze(dp);
                 if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
-                  //  outlier = batchOutlierAlgorithm.analyze(outlier, outlier.getSample(), dp);
+
+                    outlier = batchOutlierAlgorithm.analyze(outlier, outlier.getSample(), dp);
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
                         Event evt = new Event(EVENT_TYPE);
@@ -119,14 +127,14 @@ public class OutlierProcessor implements EventProcessor {
                         list.add(evt);
 
 
+                    }else{
+                        logger.info("outlier not so severe");
                     }
                 }
 
             } catch (RuntimeException e) {
 
-                Event evt = new Event(EVENT_PARSING_EXCEPTION_TYPE);
-                evt.put("rootEventId", "string", event.getId());
-                evt.put("rootEventType", "string", event.getType());
+                Event evt = new Event(OUTLIER_PROCESSING_EXCEPTION_TYPE);
                 evt.put("message", "string", e);
                 list.add(evt);
                 logger.info(e.getMessage(), e);
