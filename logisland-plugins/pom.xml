@@ -26,5 +26,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>logisland-outlier-detection-plugin</module>
+        <module>logisland-querymatcher-plugin</module>
     </modules>
 </project>

@@ -1,6 +1,6 @@
 package com.hurence.logisland.integration;
 
-import com.hurence.logisland.testutils.EmbeddedKafkaEnvironment;
+import com.hurence.logisland.integration.testutils.EmbeddedKafkaEnvironment;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

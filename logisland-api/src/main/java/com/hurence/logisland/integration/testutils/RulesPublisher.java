@@ -1,4 +1,4 @@
-package com.hurence.logisland.testutils;
+package com.hurence.logisland.integration.testutils;
 
 
 /**
