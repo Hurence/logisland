@@ -11,9 +11,9 @@ language: scala
 
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION compile test:compile
-
   # Trick to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
+  - mvn ++$TRAVIS_SCALA_VERSION package test
 
 scala:
   - 2.10.4
