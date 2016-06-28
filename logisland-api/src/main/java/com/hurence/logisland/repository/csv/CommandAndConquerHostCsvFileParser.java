@@ -22,8 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 public class CommandAndConquerHostCsvFileParser extends CsvFileParser<MalwareHost> {
 
 	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_hh:mm");
-	private static final Log log = LogFactory.getLog(CommandAndConquerHostCsvFileParser.class);
+	private static final Logger log = LoggerFactory.getLogger(CommandAndConquerHostCsvFileParser.class);
 
 	private String cleanup(String str) {
 		if (str != null) {

@@ -17,10 +17,10 @@
 
 package com.hurence.logisland.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class JsonUtil {
 
-	protected static final Log logger = LogFactory.getLog(JsonUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 
 	private final static ObjectMapper mapper = new ObjectMapper();
 

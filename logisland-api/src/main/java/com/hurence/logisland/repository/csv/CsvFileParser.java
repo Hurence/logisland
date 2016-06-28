@@ -25,8 +25,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class CsvFileParser<T> {
 
-	private static final Log logger = LogFactory.getLog(CsvFileParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(CsvFileParser.class);
 
 	protected String separator = ",";
 

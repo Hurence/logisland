@@ -23,12 +23,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -36,7 +37,7 @@ import org.json.simple.parser.ParseException;
  */
 public class JsonTagsFileParser {
 
-	private static final Log logger = LogFactory.getLog(JsonTagsFileParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(JsonTagsFileParser.class);
 
 	/**
 	 * parses the file and returns a dictionnary of domain / tags

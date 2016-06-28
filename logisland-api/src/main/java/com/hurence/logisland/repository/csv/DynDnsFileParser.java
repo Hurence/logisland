@@ -19,8 +19,8 @@ package com.hurence.logisland.repository.csv;
 
 import com.hurence.logisland.repository.MalwareHost;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Take a file containing dyn dns domain and build a list of malware host
@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DynDnsFileParser extends CsvFileParser<MalwareHost> {
 
-	private static final Log log = LogFactory.getLog(DynDnsFileParser.class);
+	private static final Logger log = LoggerFactory.getLogger(DynDnsFileParser.class);
 
 	@Override
 	public MalwareHost createEntity(StrTokenizer tokenizer) {

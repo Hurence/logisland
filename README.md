@@ -16,6 +16,20 @@ Once you know how to run and build your own parsers and processors, you'll want 
 
 
 
+
+## Create a new plugin
+
+    mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.4 -DlogislandVersion=0.9.4
+    
+    
+    Define value for property 'groupId': : com.hurence.logisland
+    Define value for property 'artifactId': : logisland-sample-plugin
+    Define value for property 'version':  1.0-SNAPSHOT: : 0.1
+    Define value for property 'artifactBaseName': : sample
+    Define value for property 'package':  com.hurence.logisland.sample: :
+    [INFO] Using property: logislandVersion = 0.9.4
+
+
 ## Basic Workflow
 
 1. Raw log files are sent to Kafka topics by a NIFI / Logstash / Flume / Collectd (or whatever) agent 

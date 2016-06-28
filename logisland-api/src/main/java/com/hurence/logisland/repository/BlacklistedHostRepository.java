@@ -24,8 +24,8 @@ import com.hurence.logisland.repository.csv.MalwareHostCsvFileParser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A csv repository to find blacklisted Host from various sources TODO manage db
@@ -45,7 +45,7 @@ public class BlacklistedHostRepository {
 	private String filePath;
 	private final Map<String, MalwareHost> ipMap = new HashMap<>();
 	private final Map<String, MalwareHost> hostMap = new HashMap<>();
-	private static final Log log = LogFactory.getLog(BlacklistedHostRepository.class);
+	private static final Logger log = LoggerFactory.getLogger(BlacklistedHostRepository.class);
 
 	private static final String BLACKLIST_REPOSITORY_FILE_NAME = "domain_blacklist.txt";
 	private static final String DYNDNS_REPOSITORY_FILE_NAME = "dyndns_blacklist.txt";

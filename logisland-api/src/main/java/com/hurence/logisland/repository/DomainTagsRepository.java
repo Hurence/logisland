@@ -20,8 +20,8 @@ package com.hurence.logisland.repository;
 import com.hurence.logisland.repository.json.JsonTagsFileParser;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,8 +31,8 @@ public class DomainTagsRepository {
 
 	private Map<String, List<String>> repository;
 	private static final String DOMAIN_TAGS_FILE_NAME = "url-tags.json";
-	
-	private static final Log logger = LogFactory.getLog(DomainTagsRepository.class);
+
+	private static final Logger logger = LoggerFactory.getLogger(DomainTagsRepository.class);
 
 	public DomainTagsRepository(String dbFolderPath) {
 		if (dbFolderPath.isEmpty()) {

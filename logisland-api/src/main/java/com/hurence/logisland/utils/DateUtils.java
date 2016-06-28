@@ -24,8 +24,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.joda.time.DateTime;
 
 public class DateUtils {
@@ -34,7 +34,7 @@ public class DateUtils {
 	 * Formats dates to sortable UTC strings in compliance with ISO-8601.
 	 *
 	 * @author Adam Matan <adam@matan.name>
-	 * @see http://stackoverflow.com/questions/11294307/convert-java-date-to-utc-string/11294308
+	 * @see "http://stackoverflow.com/questions/11294307/convert-java-date-to-utc-string/11294308"
 	 */
 	public static final String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS zzz";
 	public static final String LEGACY_FORMAT = "EEE MMM dd hh:mm:ss zzz yyyy";
@@ -46,7 +46,7 @@ public class DateUtils {
 		legacyFormatter.setTimeZone(tz);
 		isoFormatter.setTimeZone(tz);
 	}
-	private static final Log log = LogFactory.getLog(DateUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
 
 	public static String getDateNow() {
 		Date date = new Date();
