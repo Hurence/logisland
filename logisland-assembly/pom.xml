@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+license agreements. See the NOTICE file distributed with this work for additional
+information regarding copyright ownership. The ASF licenses this file to
+You under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of
+the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+by applicable law or agreed to in writing, software distributed under the
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+OF ANY KIND, either express or implied. See the License for the specific
+language governing permissions and limitations under the License. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland</artifactId>
+        <version>0.9.4</version>
+    </parent>
+    <artifactId>logisland-assembly</artifactId>
+    <packaging>pom</packaging>
+    <description>This is the assembly logisland</description>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>logisland-${project.version}</finalName>
+                    <attach>false</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make shared resource</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <archiverConfig>
+                                <defaultDirectoryMode>0775</defaultDirectoryMode>
+                                <directoryMode>0775</directoryMode>
+                                <fileMode>0664</fileMode>
+                            </archiverConfig>
+                            <descriptors>
+                                <descriptor>src/main/assembly/dependencies.xml</descriptor>
+                            </descriptors>
+                            <tarLongFileMode>posix</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-resources</artifactId>
+            <version>0.9.4</version>
+            <classifier>resources</classifier>
+            <scope>runtime</scope>
+            <type>zip</type>
+        </dependency>
+        <!-- <dependency>
+             <groupId>org.apache.logisland</groupId>
+             <artifactId>logisland-docs</artifactId>
+             <classifier>resources</classifier>
+             <scope>runtime</scope>
+             <type>zip</type>
+         </dependency>-->
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-outlier-detection-plugin</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-querymatcher-plugin</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-botsearch-plugin</artifactId>
+            <type>jar</type>
+        </dependency>
+
+
+    </dependencies>
+
+    <properties>
+        <!--Wrapper Properties -->
+        <logisland.jvm.heap.mb>512</logisland.jvm.heap.mb>
+        <logisland.jvm.permgen.mb>128</logisland.jvm.permgen.mb>
+        <logisland.run.as/>
+        <!-- logisland.properties: core properties -->
+        <logisland.version>${project.version}</logisland.version>
+
+    </properties>
+    <profiles>
+        <profile>
+            <id>rpm</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <logisland.run.as>logisland</logisland.run.as>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-shared-resources</id>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                                    <includeArtifactIds>logisland-resources</includeArtifactIds>
+                                    <includeGroupIds>org.apache.logisland</includeGroupIds>
+                                    <excludeTransitive>false</excludeTransitive>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>unpack-docs</id>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
+                                    <includeArtifactIds>logisland-docs</includeArtifactIds>
+                                    <includeGroupIds>org.apache.logisland</includeGroupIds>
+                                    <excludeTransitive>false</excludeTransitive>
+                                    <excludes>LICENSE,NOTICE</excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>rpm-maven-plugin</artifactId>
+                        <configuration>
+                            <name>logisland</name>
+                            <summary>logisland</summary>
+                            <description>Logisland is an event mining platform based on Spark and Kafka
+                                to handle a huge amount of log files.
+                            </description>
+                            <license>Apache License, Version 2.0 and others (see included LICENSE file)</license>
+                            <url>https://github.com/Hurence/log-island</url>
+                            <group>Utilities</group>
+                            <prefix>/opt/logisland</prefix>
+                            <defineStatements>
+                                <defineStatement>_use_internal_dependency_generator 0</defineStatement>
+                            </defineStatements>
+                            <defaultDirmode>750</defaultDirmode>
+                            <defaultFilemode>640</defaultFilemode>
+                            <defaultUsername>logisland</defaultUsername>
+                            <defaultGroupname>logisland</defaultGroupname>
+                            <preinstallScriptlet>
+                                <script>
+                                    /usr/bin/getent group logisland &gt;/dev/null || /usr/sbin/groupadd -r logisland;
+                                    /usr/bin/getent passwd logisland &gt;/dev/null || /usr/sbin/useradd -r -g logisland
+                                    -d /opt/logisland -s /sbin/nologin -c "logisland System User" logisland
+                                </script>
+                            </preinstallScriptlet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-bin-rpm</id>
+                                <goals>
+                                    <goal>attached-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <classifier>bin</classifier>
+                                    <provides>
+                                        <provide>logisland</provide>
+                                    </provides>
+                                    <mappings>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}</directory>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}</directory>
+                                            <sources>
+                                                <source>
+                                                    <location>./LICENSE</location>
+                                                </source>
+                                                <source>
+                                                    <location>./NOTICE</location>
+                                                </source>
+                                                <source>
+                                                    <location>./README.md</location>
+                                                    <destination>README</destination>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland</directory>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}/bin</directory>
+                                            <filemode>750</filemode>
+                                            <sources>
+                                                <source>
+                                                    <location>
+                                                        ${project.build.directory}/generated-resources/bin/logisland.sh
+                                                    </location>
+                                                    <destination>logisland.sh</destination>
+                                                    <filter>true</filter>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}/conf</directory>
+                                            <configuration>true</configuration>
+                                            <sources>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-resources/conf
+                                                    </location>
+                                                    <filter>true</filter>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}/lib</directory>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}/lib</directory>
+                                            <dependency>
+                                                <excludes>
+                                                    <exclude>org.apache.logisland:logisland-resources</exclude>
+                                                    <exclude>commons-io:commons-io</exclude>
+                                                    <exclude>org.apache.commons:commons-lang3</exclude>
+                                                    <exclude>org.antlr:antlr-runtime</exclude>
+                                                    <exclude>javax.activation:activation</exclude>
+                                                    <exclude>javax.mail:mail</exclude>
+                                                </excludes>
+                                            </dependency>
+                                        </mapping>
+
+                                        <mapping>
+                                            <directory>/opt/logisland/logisland-${project.version}/docs</directory>
+                                            <sources>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-docs</location>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                    </mappings>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -24,7 +24,7 @@ import kafka.serializer.StringDecoder
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.commons.cli
-import org.apache.commons.cli.{GnuParser, Options}
+import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
@@ -39,7 +39,7 @@ object LogParserJob extends LazyLogging {
 
         //////////////////////////////////////////
         // Command line management
-        val parser = new GnuParser()
+        val parser = new DefaultParser()
         val options = new Options()
         options.addOption(new cli.Option("b", "kafka-brokers", true, "kafka broker list :localhost:9092, anotherhost:9092") {
             setRequired(true)
@@ -134,21 +134,23 @@ object LogParserJob extends LazyLogging {
         ssc.start()
         ssc.awaitTermination()
     }
-    def createTopics(topics: Set[String], zkClient: ZkClient, kpart: Int, krepl: Int) ={
+
+    def createTopics(topics: Set[String], zkClient: ZkClient, kpart: Int, krepl: Int) = {
         topics.foreach(topic => {
-            if(!AdminUtils.topicExists(zkClient,topic)){
-                AdminUtils.createTopic(zkClient,topic,kpart,krepl)
+            if (!AdminUtils.topicExists(zkClient, topic)) {
+                AdminUtils.createTopic(zkClient, topic, kpart, krepl)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with replication $krepl and partition $kpart")
             }
         })
     }
+
     def defineLogParserJob(kafkaInputStream: InputDStream[(String, String)],
                            firstParserArgument: String,
                            secondParserArgument: String,
                            logParserClass: String,
                            brokerList: String,
-                           outputTopic: Set[String]) ={
+                           outputTopic: Set[String]) = {
         kafkaInputStream
             .foreachRDD(rdd => {
                 rdd.cache
@@ -166,7 +168,7 @@ object LogParserJob extends LazyLogging {
                         val events = partition.flatMap(log => {
                             logParser.parse(log._2).toSeq
                         })
-                        outputTopic foreach(topic =>{
+                        outputTopic foreach (topic => {
                             val kafkaProducer = new KafkaEventProducer(brokerList, topic)
                             kafkaProducer.produce(events)
                         })

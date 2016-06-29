@@ -20,8 +20,31 @@
         <artifactId>logisland</artifactId>
         <version>0.9.4</version>
     </parent>
-
-    <artifactId>logisland-engines</artifactId>
+    <artifactId>logisland-resources</artifactId>
     <packaging>pom</packaging>
-
+    <description>holds common resources used to build installers</description>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make shared resource</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/dependencies.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

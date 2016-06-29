@@ -19,17 +19,18 @@ import java.io.ByteArrayInputStream
 
 import com.hurence.logisland.event.EventMapper
 import com.hurence.logisland.event.serializer.EventKryoSerializer
-import com.hurence.logisland.integration.{ElasticsearchUtils, ElasticsearchEventIndexer, SparkUtils}
+import com.hurence.logisland.integration.{ElasticsearchEventIndexer, ElasticsearchUtils, SparkUtils}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.admin.AdminUtils
 import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.commons.cli
-import org.apache.commons.cli.{GnuParser, Options}
+import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import collection.JavaConversions._
+
+import scala.collection.JavaConversions._
 
 /**
   * This jobs takes kafka topics full of logs and index them into an ES index
@@ -43,7 +44,7 @@ object EventIndexerJob extends LazyLogging {
 
         //////////////////////////////////////////
         // Commande lien management
-        val parser = new GnuParser()
+        val parser = new DefaultParser()
         val options = new Options()
 
 
