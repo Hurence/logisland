@@ -1,7 +1,7 @@
 package com.hurence.botsearch.analytics
 
 import com.hurence.botsearch.trace.NetworkTraceLogParser
-import com.hurence.logisland.integration.SparkUtils
+import com.hurence.logisland.utils.spark.SparkUtils
 import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SQLContext

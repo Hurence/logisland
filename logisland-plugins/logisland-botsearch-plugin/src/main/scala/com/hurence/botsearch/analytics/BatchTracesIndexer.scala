@@ -4,9 +4,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.hurence.logisland.botsearch.{HttpFlow, Trace}
-import com.hurence.logisland.integration
-import com.hurence.logisland.integration.SparkUtils
+import com.hurence.logisland.utils.kafka.KafkaOffsetUtils
+import com.hurence.logisland.utils.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import kafka.serializer.StringDecoder
 import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.spark.mllib.clustering.KMeans
@@ -70,7 +71,7 @@ object BatchTracesIndexer extends LazyLogging {
         val topics = topicList.split(",").toSet
 
         // get first 100000 messages
-        val lastOffest = integration.KafkaUtils.getLastOffset(
+        val lastOffest = KafkaOffsetUtils.getLastOffset(
             brokerList,
             "log-island",
             0,

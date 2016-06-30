@@ -25,5 +25,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>logisland-resources</module>
+        <module>logisland-utils</module>
     </modules>
 </project>

@@ -2,7 +2,7 @@ package com.hurence.logisland.rules;
 
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.event.serializer.EventKryoSerializer;
-import com.hurence.logisland.integration.testutils.EmbeddedKafkaEnvironment;
+import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.querymatcher.MatchingRule;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
@@ -32,7 +32,7 @@ public class KafkaRulesConsumer {
         List<MatchingRule> rules = new ArrayList<MatchingRule>();
 
         // setup simple consumer for rules stored in the topic
-        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkServer().connectString(), groupid, consumerid, -1);
+        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkConnect(), groupid, consumerid, -1);
         ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
