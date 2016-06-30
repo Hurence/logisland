@@ -33,15 +33,15 @@ public class EmbeddedKafkaEnvironment {
      */
     public EmbeddedKafkaEnvironment() {
 
-        int brokerPort = 5001;
-        int zkPort = 5000;
+        int brokerPort = 9001;
+        int zkPort = 9000;
         kafkaUnitServer = new KafkaUnit(zkPort, brokerPort);
         kafkaUnitServer.setKafkaBrokerConfig("log.segment.bytes", "1024");
         kafkaUnitServer.startup();
 
 
         // setup Zookeeper
-        zkClient = new ZkClient("localhost:" + kafkaUnitServer.getKafkaConnect(), 30000, 30000, ZKStringSerializer$.MODULE$);
+        zkClient = new ZkClient(kafkaUnitServer.getZkConnect(), 30000, 30000, ZKStringSerializer$.MODULE$);
 
 
     }
@@ -76,7 +76,6 @@ public class EmbeddedKafkaEnvironment {
         Field f = kafkaUnitServer.getClass().getDeclaredField("broker");
         f.setAccessible(true);
         KafkaServerStartable broker = (KafkaServerStartable) f.get(kafkaUnitServer);
-        broker.awaitShutdown();
 
         kafkaUnitServer.shutdown();
     }

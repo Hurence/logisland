@@ -131,6 +131,10 @@ public class KafkaUnit {
         return brokerString;
     }
 
+    public String getZkConnect() {
+        return zookeeperString;
+    }
+
     public int getZkPort() {
         return zkPort;
     }
