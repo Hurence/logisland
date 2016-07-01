@@ -4,11 +4,14 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.event.serializer.EventKryoSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.querymatcher.MatchingRule;
+import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.utils.TestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +22,7 @@ import java.util.*;
  */
 public class KafkaRulesConsumer {
 
+    private static Logger logger = LoggerFactory.getLogger(KafkaRulesConsumer.class);
     /**
      * This method will consume the events stored in the topic and transform them to
      * rules to be matched
@@ -32,7 +36,7 @@ public class KafkaRulesConsumer {
         List<MatchingRule> rules = new ArrayList<MatchingRule>();
 
         // setup simple consumer for rules stored in the topic
-        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkConnect(), groupid, consumerid, -1);
+        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkConnect(), groupid, consumerid, 500);
         ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
@@ -57,12 +61,19 @@ public class KafkaRulesConsumer {
             Event deserializedEvent = deserializer.deserialize(bais);
             MatchingRule rule = new MatchingRule((String) deserializedEvent.get("name").getValue(), (String) deserializedEvent.get("query").getValue());
             rules.add(rule);
-            System.out.println(deserializedEvent.toString());
+            logger.info(deserializedEvent.toString());
             bais.close();
 
         }
 
         // cleanup
+        consumer.shutdown();
+
+
+
+        /**
+         * final cleanup
+         */
         consumer.shutdown();
 
         return rules;

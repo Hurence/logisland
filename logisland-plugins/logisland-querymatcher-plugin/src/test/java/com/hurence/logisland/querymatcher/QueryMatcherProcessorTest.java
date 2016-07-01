@@ -15,6 +15,8 @@ import kafka.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,6 +27,8 @@ import java.util.*;
  */
 public class QueryMatcherProcessorTest {
 
+
+    private static Logger logger = LoggerFactory.getLogger(QueryMatcherProcessorTest.class);
     static EmbeddedKafkaEnvironment context ;
 
     static String docspath = "./data/documents/frenchpress";
@@ -38,35 +42,32 @@ public class QueryMatcherProcessorTest {
     @BeforeClass
     public static void initEventsAndQueries() throws IOException {
 
-        // create an embedded Kafka Context
-        context = new EmbeddedKafkaEnvironment();
+
 
         // create docs input topic
-        TopicCommand.createTopic(context.getZkClient(), new TopicCommand.TopicCommandOptions(arg1));
-        TopicCommand.createTopic(context.getZkClient(), new TopicCommand.TopicCommandOptions(arg2));
-        TopicCommand.createTopic(context.getZkClient(), new TopicCommand.TopicCommandOptions(arg3));
+        context.getKafkaUnitServer().createTopic("docs");
+        context.getKafkaUnitServer().createTopic("rules");
+        context.getKafkaUnitServer().createTopic("matches");
 
-        // wait till all topics are created on all servers
-      /*  TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(context.getServers()), "docs", 0, 5000);
-        TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(context.getServers()), "rules", 0, 5000);
-        TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(context.getServers()), "matches", 0, 5000);
-*/
         try {
             // send documents in path dir to topic
+            logger.info("start publishing documents to topics");
             DocumentPublisher publisher = new DocumentPublisher();
             publisher.publish(context, docspath, "docs");
 
             // send the rules to rule topic
+            logger.info("start publishing rules to topics");
             RulesPublisher rpublisher = new RulesPublisher();
             rpublisher.publish(context, rulespath, "rules");
         }
 
         catch (Exception e) {
-            // log error
+            logger.error("Unexpected exception while publishing docs {}", e.getMessage());
         }
 
+        logger.info("done");
     }
-    @Test
+   // @Test
     public void testProcess() throws Exception {
 
         // setup simple consumer for docs
@@ -113,8 +114,15 @@ public class QueryMatcherProcessorTest {
     }
 
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        // create an embedded Kafka Context
+        context = new EmbeddedKafkaEnvironment();
+    }
+
     @AfterClass
-    public static void closeAll() throws Exception {
-        context.close();
+    public static void teardown() throws Exception {
+        if(context != null)
+            context.close();
     }
 }

@@ -25,8 +25,8 @@
     <artifactId>logisland-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>logisland-outlier-detection-plugin</module>
         <module>logisland-querymatcher-plugin</module>
         <module>logisland-botsearch-plugin</module>
+        <module>logisland-outlier-detection-plugin</module>
     </modules>
 </project>
