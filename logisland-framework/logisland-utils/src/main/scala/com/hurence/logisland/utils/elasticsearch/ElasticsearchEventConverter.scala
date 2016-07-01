@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.integration
+package com.hurence.logisland.utils.elasticsearch
 
 import java.text.SimpleDateFormat
 import java.util.{Date, TimeZone}

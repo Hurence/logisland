@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.hurence.botsearch.trace.NetworkFlowEventMapper
-import com.hurence.logisland.integration.ElasticsearchUtils
 import com.hurence.logisland.utils.kafka.KafkaOffsetUtils
 import com.hurence.logisland.utils.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -20,6 +19,7 @@ import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
   *
   *
   */
+@deprecated("should use generic event indexer job", "0.9.4")
 object BatchFlowsIndexer extends LazyLogging {
 
 
@@ -34,7 +34,7 @@ object BatchFlowsIndexer extends LazyLogging {
         options.addOption("w", "time-window", true, "window time for micro batch")
         options.addOption("b", "broker-list", true, "kafka broker list :localhost:9092,anotherhost:9092")
         options.addOption("t", "topic-list", true, "kafka topic list log-island1,log-island2")
-        options.addOption("e", "es-host", true, "elasticsearch host : sandbox")
+        options.addOption("e", "es-config", true, "elasticsearch config : localhost")
         options.addOption("h", "help", false, "print usage")
         options.addOption("f", "folder-path", true, "parquet folder path")
         options.addOption("p", "parquet", false, "store to parquet ?")
@@ -46,7 +46,7 @@ object BatchFlowsIndexer extends LazyLogging {
         val windowTime = line.getOptionValue("w", "2").toLong
         val brokerList = line.getOptionValue("b", "sandbox:9092")
         val topicList = line.getOptionValue("t", "log-island")
-        val esHosts = line.getOptionValue("e", "sandbox")
+        val esConfig = line.getOptionValue("e", "localhost")
         val doSaveAsParquet = line.hasOption("p")
         val doIndexation = line.hasOption("i")
         val source = "file://" + line.getOptionValue("f", "/usr/local/log-island/data/out")
@@ -95,7 +95,7 @@ object BatchFlowsIndexer extends LazyLogging {
             if (doIndexation) {
                 logger.info("create es index")
                 val mapper = new NetworkFlowEventMapper()
-                val esIndexName = ElasticsearchUtils.createIndex(esHosts, "elasticsearch", "log-island", mapper)
+             //   val esIndexName = ElasticsearchUtils.createIndex(esHosts, "elasticsearch", "log-island", mapper)
 
                 logger.info("launch flows indexation to es")
                 //    EventIndexer.indexEvents(flows, esHosts, esIndexName, "flow")

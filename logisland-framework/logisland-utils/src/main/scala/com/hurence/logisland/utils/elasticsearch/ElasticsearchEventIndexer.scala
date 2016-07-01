@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.integration
+package com.hurence.logisland.utils.elasticsearch
 
 import java.util
 import java.util.UUID
@@ -25,7 +25,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.elasticsearch.action.bulk.{BulkProcessor, BulkRequest, BulkResponse}
 import org.elasticsearch.action.index.IndexRequest.OpType
 import org.elasticsearch.action.index.IndexRequestBuilder
-import org.elasticsearch.client.transport.TransportClient
+import org.elasticsearch.client.Client
 import org.elasticsearch.common.unit.{ByteSizeUnit, ByteSizeValue, TimeValue}
 import collection.JavaConversions._
 
@@ -35,9 +35,9 @@ import collection.JavaConversions._
   * @see https://databricks.com/blog/2015/03/30/improvements-to-kafka-integration-of-spark-streaming.html
   *
   */
-class ElasticsearchEventIndexer(esHosts: String, esIndex: String, cluster: String) extends EventIndexer with LazyLogging {
+class ElasticsearchEventIndexer(config: String, index: String) extends EventIndexer with LazyLogging {
 
-    var esClient:TransportClient = null
+    var esClient:Client = null
 
 
 
@@ -54,7 +54,7 @@ class ElasticsearchEventIndexer(esHosts: String, esIndex: String, cluster: Strin
 
         // on startup
         if(esClient == null)
-            esClient = ElasticsearchUtils.createTransportClient(esHosts, cluster)
+            esClient = ElasticsearchUtils.getClientInstance(index = index, esConfigName = config)
 
         var numItemProcessed = 0L
 
@@ -89,7 +89,7 @@ class ElasticsearchEventIndexer(esHosts: String, esIndex: String, cluster: Strin
             }
 
             val document = ElasticsearchEventConverter.convert(event)
-            val result: IndexRequestBuilder = esClient.prepareIndex(esIndex, event.getType, idString).setSource(document).setOpType(OpType.CREATE)
+            val result: IndexRequestBuilder = esClient.prepareIndex(index, event.getType, idString).setSource(document).setOpType(OpType.CREATE)
             bulkProcessor.add(result.request())
         })
 

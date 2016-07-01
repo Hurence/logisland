@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "default": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "asciifolding"
+          ]
+        }
+      }
+    },
+    "index.refresh_interval": "1s",
+    "number_of_shards": 5,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "_default_": {
+      "dynamic_templates": [
+        {
+          "date_fields": {
+            "match_mapping_type": "date",
+            "mapping": {
+              "type": "date",
+              "format": "yyyy-MM-dd"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+
+

@@ -1,0 +1,28 @@
+{
+  "_all": {
+    "enabled": true
+  },
+  "_source": {
+    "enabled": true
+  },
+  "properties": {
+
+    "file": {
+      "type": "attachment",
+      "fields" : {
+        "content" : {"index" : "no"},
+        "title" : {"store" : "yes"},
+        "date" : {"store" : "yes"},
+        "keywords" : {"store" : "yes"},
+        "content_type" : {"store" : "yes"},
+        "content_length" : {"store" : "yes"}
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "bathymetrie": {
+      "type": "string"
+    }
+  }
+}
