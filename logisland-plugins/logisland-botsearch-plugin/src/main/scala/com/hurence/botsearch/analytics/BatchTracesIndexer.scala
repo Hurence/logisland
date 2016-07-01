@@ -14,7 +14,7 @@ import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.feature.StandardScaler
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
+//import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -77,7 +77,7 @@ object BatchTracesIndexer extends LazyLogging {
             0,
             kafka.api.OffsetRequest.LatestTime)
 
-        val offsetRanges = Array(
+     /*   val offsetRanges = Array(
             OffsetRange("log-island", 0, 0, lastOffest)
         )
         logger.info(s"last offset for kafka topic is $lastOffest")
@@ -230,7 +230,7 @@ object BatchTracesIndexer extends LazyLogging {
                 logger.info("save traces to parquet")
                 tmp.write.save(s"$source/$dateSuffix/traces.parquet")
             }
-        }
+        }*/
 
         sc.stop()
     }

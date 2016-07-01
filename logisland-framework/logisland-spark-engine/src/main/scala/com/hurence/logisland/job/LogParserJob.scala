@@ -26,6 +26,7 @@ import kafka.utils.{ZKStringSerializer, ZkUtils}
 import org.I0Itec.zkclient.{ZkClient, ZkConnection}
 import org.apache.commons.cli
 import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
@@ -97,10 +98,7 @@ object LogParserJob extends LazyLogging {
         val sc = SparkUtils.initContext(appName, blockInterval, maxRatePerPartition, sm)
         val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
 
-        val zkUtils = new ZkUtils(
-            zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer),
-            zkConnection = new ZkConnection(zkQuorum),
-            isSecure = false)
+        val zkUtils: ZkUtils = ZkUtils.apply(zkQuorum, 30000, 30000, JaasUtils.isZkSecurityEnabled)
 
 
 
@@ -162,7 +160,7 @@ object LogParserJob extends LazyLogging {
             .foreachRDD(rdd => {
                 rdd.cache
                 rdd.foreachPartition(partition => {
-                    if (!partition.isEmpty) {
+                    if (partition.nonEmpty) {
                         // Dynamic loading of parser class on constructor with or without parameters
                         val logParser = if (firstParserArgument == null && secondParserArgument == null) {
                             Class.forName(logParserClass).newInstance.asInstanceOf[LogParser]

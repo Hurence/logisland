@@ -19,17 +19,18 @@ import java.io.ByteArrayInputStream
 
 import com.hurence.logisland.event.EventMapper
 import com.hurence.logisland.event.serializer.EventKryoSerializer
-import com.hurence.logisland.integration.{ElasticsearchEventIndexer, ElasticsearchUtils}
+import com.hurence.logisland.utils.elasticsearch.{ElasticsearchEventIndexer, ElasticsearchUtils}
+import com.hurence.logisland.utils.kafka.ZKStringSerializer
 import com.hurence.logisland.utils.spark.SparkUtils
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.admin.AdminUtils
 import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZkUtils
-import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.{ZkClient, ZkConnection}
 import org.apache.commons.cli
 import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.kafka.common.security.JaasUtils
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 
@@ -60,7 +61,7 @@ object EventIndexerJob extends LazyLogging {
         options.addOption(new cli.Option("mapper", "event-mapper", true, "the full class name of the event mapper") {
             setRequired(true)
         })
-        options.addOption(new cli.Option("e", "es-host", true, "elasticsearch host : sandbox") {
+        options.addOption(new cli.Option("es", "es-config", true, "elasticsearch config name : sandbox") {
             setRequired(true)
         })
         options.addOption(new cli.Option("index", "index-name", true, "elasticsearch index") {
@@ -82,12 +83,10 @@ object EventIndexerJob extends LazyLogging {
         val maxRatePerPartition = line.getOptionValue("mrp", null)
         val brokerList = line.getOptionValue("b", "sandbox:9092")
         val topicList = line.getOptionValue("in", "log-island")
-        val eventMapperClass = line.getOptionValue("mapper", "com.hurence.logisland.plugin.cisco.CiscoEventMapper")
         val zkQuorum = line.getOptionValue("zk", "sandbox:2181")
         //elasticsearch info
-        val esHosts = line.getOptionValue("e", "sandbox")
-        val esIndex = line.getOptionValue("index", "log-island")
-        val cluster = line.getOptionValue("escluster", "log-island")
+        val esConfig = line.getOptionValue("es", "sandbox")
+        val esIndex = line.getOptionValue("index", "logisland")
         val appName = line.getOptionValue("name", this.getClass.getName)
 
         // set up context
@@ -97,11 +96,7 @@ object EventIndexerJob extends LazyLogging {
         // Define which topics to read from
         val topics = topicList.split(",").toSet
         // create kafka topic if needed
-        val zkUtils = new ZkUtils(
-            zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer),
-            zkConnection = new ZkConnection(zkQuorum),
-            isSecure = false)
-
+        val zkUtils: ZkUtils = ZkUtils.apply(zkQuorum, 30000, 30000, JaasUtils.isZkSecurityEnabled)
 
         topics.foreach(topic => {
             if(!AdminUtils.topicExists(zkUtils,topic)){
@@ -120,9 +115,8 @@ object EventIndexerJob extends LazyLogging {
         logger.debug("maxRatePerPartition: " + maxRatePerPartition)
         logger.debug("brokerList: " + brokerList)
         logger.debug("topicList: " + topicList)
-        logger.debug("esHosts: " + esHosts)
+        logger.debug("esConfig: " + esConfig)
         logger.debug("esIndex: " + esIndex)
-        logger.debug("eventMapperClass: " + eventMapperClass)
 
         // Create the direct stream with the Kafka parameters and topics
         val kafkaStream = KafkaUtils.createDirectStream[String, Array[Byte], StringDecoder, DefaultDecoder](ssc, kafkaParams, topics)
@@ -148,12 +142,9 @@ object EventIndexerJob extends LazyLogging {
                         deserialized
                     })
 
-                    // a new index should be created each day
-                    val eventMapper = Class.forName(eventMapperClass).newInstance.asInstanceOf[EventMapper]
-                    val esIndexFullName = ElasticsearchUtils.createIndex(esHosts, cluster, esIndex, eventMapper)
 
                     // launch indexation to es
-                    val esIndexer = new ElasticsearchEventIndexer(esHosts, esIndexFullName, cluster)
+                    val esIndexer = new ElasticsearchEventIndexer(esConfig, esIndex)
                     esIndexer.bulkLoad(events.toList, bulkSize = 10000 )
                 })
                 rdd.unpersist(true)

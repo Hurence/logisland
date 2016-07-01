@@ -61,11 +61,7 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.10</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.10</artifactId>
-            <classifier>test</classifier>
-        </dependency>
+
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
@@ -107,7 +103,6 @@
         </dependency>
 
 
-
         <!-- Scala dependencies -->
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -120,6 +115,12 @@
             <scope>compile</scope>
         </dependency>
 
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -180,7 +181,7 @@
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <recompileMode>incremental</recompileMode>
-                    <useZincServer>true</useZincServer>
+                    <useZincServer>false</useZincServer>
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>

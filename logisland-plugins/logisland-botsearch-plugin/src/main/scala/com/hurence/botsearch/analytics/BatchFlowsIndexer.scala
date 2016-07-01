@@ -10,7 +10,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.serializer.StringDecoder
 import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
+//import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 
 /**
   * A demo program that index a few items
@@ -69,7 +69,7 @@ object BatchFlowsIndexer extends LazyLogging {
             0,
             kafka.api.OffsetRequest.LatestTime)
 
-        val offsetRanges = Array(
+    /*    val offsetRanges = Array(
             OffsetRange("log-island", 0, 0, lastOffest)
         )
         logger.info(s"last offset for kafka topic is $lastOffest")
@@ -106,7 +106,7 @@ object BatchFlowsIndexer extends LazyLogging {
                 flows.toDF().write.save(s"$source/$dateSuffix/flows.parquet")
             }
 
-        }
+        }*/
 
         sc.stop()
     }
