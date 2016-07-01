@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +30,7 @@ public class LuwakQueryMatcherTests {
         ev1.setId("myid");
         ev1.put("name","string", "luke");
 
-        Collection<Event> eventsOut = matcher.process(Arrays.asList(ev1));
+        Collection<Event> eventsOut = matcher.process(Collections.singletonList(ev1));
 
         assertTrue(eventsOut.size() == 1);
     }

@@ -3,11 +3,10 @@ LogIsland docker files
 
 Small standalone Hadoop distribution for development and testing purpose :
 
-- Spark 1.6.0
-- Elasticsearch 2.1.1
-- Kibana 4.3.1
-- Logstash 2.1.1
-- Flume 1.6.0
+- Spark 1.6.1
+- Elasticsearch 2.3.3
+- Kibana 4.5.1
+- Kafka 0.9.0.1
 
 
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
@@ -15,19 +14,14 @@ This Docker image depends on [centos 6.7](https://github.com/CentOS/CentOS-Docke
 
 ## Pull the image from Docker Repository
 ```
-docker pull hurence/log-island:0.9.1
+docker pull hurence/log-island:0.9.4
 ```
 
 ## Building the image
 
 ```sh
 # build log-island
-git clone https://github.com/Hurence/log-island.git
-cd log-island
-# jekyll build; sbt doc;  mv target/scala-2.10/api/ docs/_site/
-sbt universal:packageZipTarball 
-cp target/universal/log-island-*.tgz docker/
-
+maven install
 
 # build kafka-manager
 git clone https://github.com/yahoo/kafka-manager.git
@@ -39,7 +33,7 @@ The archive is generated under dist directory,
 you have to copy this file into your Dockerfile directory you can now issue
 
 ```
-docker build --rm -t hurence/log-island:0.9.1 .
+docker build --rm -t hurence/log-island:0.9.4 .
 ```
 
 ## Running the image
@@ -59,11 +53,11 @@ docker run \
     -p 4050-4060:4050-4060 \
     --name log-island \
     -h sandbox \
-    hurence/log-island:0.9.1 bash
+    hurence/log-island:0.9.4 bash
 ```
 or
 ```
-docker run -d -h sandbox hurence/log-island:0.9.1 -d
+docker run -d -h sandbox hurence/log-island:0.9.4 -d
 ```
 
 if you want to mount a directory from your host :        

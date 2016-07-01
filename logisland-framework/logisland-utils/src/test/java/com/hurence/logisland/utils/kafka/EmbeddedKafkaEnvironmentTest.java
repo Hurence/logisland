@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.serializer.EventKryoSerializer;
+import com.hurence.logisland.serializer.EventKryoSerializer;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
@@ -10,11 +10,8 @@ import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
-import kafka.server.KafkaServerStartable;
 import kafka.utils.TestUtils;
 import org.I0Itec.zkclient.ZkClient;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.Assert.*;

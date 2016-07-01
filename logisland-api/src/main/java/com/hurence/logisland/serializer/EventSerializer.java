@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.event.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.event.Event;
 

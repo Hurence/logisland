@@ -21,7 +21,7 @@ import java.util.Properties
 
 import _root_.kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import com.hurence.logisland.event.Event
-import com.hurence.logisland.event.serializer.EventKryoSerializer
+import com.hurence.logisland.serializer.EventKryoSerializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 

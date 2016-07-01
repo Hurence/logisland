@@ -15,7 +15,9 @@
  *
  */
 
-package com.hurence.logisland.event;
+package com.hurence.logisland.processor;
+
+import com.hurence.logisland.event.Event;
 
 import java.util.Collection;
 
@@ -25,5 +27,6 @@ import java.util.Collection;
 public interface EventProcessor {
 
     Collection<Event> process(Collection<Event> events);
+    void validateConfig();
 
 }

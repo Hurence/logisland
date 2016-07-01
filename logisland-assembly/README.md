@@ -27,7 +27,7 @@ Apache NiFi is an easy to use, powerful, and reliable system to process and dist
 
 ## Features
 
-Logisland was made for
+Logisland was made for providing event mining tools on logs streams at scale.
 
 ## Getting Started
 

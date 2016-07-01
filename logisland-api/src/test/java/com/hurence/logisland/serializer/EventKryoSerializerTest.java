@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.hurence.logisland.event.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.event.Event;
 import org.junit.Test;

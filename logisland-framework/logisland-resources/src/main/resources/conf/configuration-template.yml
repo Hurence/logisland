@@ -1,0 +1,33 @@
+---
+plugin: ../plugins/outlier-detection-plugin
+version: 1.0
+input: kafka_log
+output: kafka_event
+configuration:
+  rotationPolicy:
+    type: BY_AMOUNT
+    amount : 100
+    unit: POINTS
+
+  chunkingPolicy:
+    type: BY_AMOUNT
+    amount: 10
+    unit: POINTS
+  globalStatistics :
+
+  sketchyOutlierAlgorithm: SKETCHY_MOVING_MAD
+  batchOutlierAlgorithm: RAD
+    config:
+      minAmountToPredict: 100
+      reservoirSize: 100
+      minZscorePercentile: 95
+      zscoreCutoffs:
+        NORMAL: 0.000000000000001
+        MODERATE_OUTLIER: 1.5
+---
+plugin: ../plugins/commons
+type: parser
+version: 1.0
+input: kafka_log
+output: kafka_event
+configuration:

@@ -1,12 +1,11 @@
 package com.hurence.logisland.querymatcher;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.serializer.EventKryoSerializer;
+import com.hurence.logisland.serializer.EventKryoSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.utils.kafka.DocumentPublisher;
 import com.hurence.logisland.utils.kafka.RulesPublisher;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
-import kafka.admin.TopicCommand;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
@@ -14,7 +13,6 @@ import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

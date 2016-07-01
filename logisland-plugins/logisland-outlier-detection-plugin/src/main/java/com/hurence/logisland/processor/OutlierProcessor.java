@@ -7,7 +7,6 @@ import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventProcessor;
 import org.adrianwalker.multilinestring.Multiline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Outlier Analysis: A Hybrid Approach

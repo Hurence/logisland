@@ -1,8 +1,7 @@
 *.iml
 .idea/*
-*/target/*
+**/target/*
 */project/project/*
 */project/target/*
-log/*
-target/*
+**/log/*
 

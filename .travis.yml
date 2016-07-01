@@ -10,9 +10,10 @@ cache:
 language: java
 
 script: 
-  - mvn package
+  - mvn package -DskipTests
 
 jdk:
+  - oraclejdk7
   - openjdk7
 
 notifications:

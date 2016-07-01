@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.serializer.EventKryoSerializer;
+import com.hurence.logisland.serializer.EventKryoSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;

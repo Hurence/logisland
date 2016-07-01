@@ -1,17 +1,17 @@
 package com.hurence.logisland.querymatcher;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventProcessor;
+import com.hurence.logisland.processor.AbstractEventProcessor;
+import com.hurence.logisland.processor.EventProcessor;
 
 import org.apache.log4j.Logger;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.Collection;
 
 /**
  * Created by fprunier on 15/04/16.
  */
-public class QueryMatcherProcessor implements EventProcessor {
+public class QueryMatcherProcessor extends AbstractEventProcessor {
 
     private static final Logger LOG = Logger.getLogger(QueryMatcherProcessor.class);
     private QueryMatcherBase matcher;
@@ -32,5 +32,15 @@ public class QueryMatcherProcessor implements EventProcessor {
     public Collection<Event> process(Collection<Event> events) {
 
         return matcher.process(events);
+    }
+
+    @Override
+    public void validateConfig() {
+
+    }
+
+    @Override
+    public String getIdentifier() {
+        return null;
     }
 }

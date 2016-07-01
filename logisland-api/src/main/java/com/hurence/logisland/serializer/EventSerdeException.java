@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.event.serializer;
+package com.hurence.logisland.serializer;
 
 /**
  * Exception indicating that a failure or early completion condition was

@@ -17,7 +17,7 @@ package com.hurence.logisland.job
 
 import java.io.ByteArrayInputStream
 
-import com.hurence.logisland.event.serializer.EventKryoSerializer
+import com.hurence.logisland.serializer.EventKryoSerializer
 import com.hurence.logisland.utils.elasticsearch.ElasticsearchEventIndexer
 import com.hurence.logisland.utils.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
