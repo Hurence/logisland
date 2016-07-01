@@ -17,17 +17,13 @@ package com.hurence.logisland.job
 
 import java.io.ByteArrayInputStream
 
-import com.hurence.logisland.event.EventMapper
 import com.hurence.logisland.event.serializer.EventKryoSerializer
-import com.hurence.logisland.utils.elasticsearch.{ElasticsearchEventIndexer, ElasticsearchUtils}
-import com.hurence.logisland.utils.kafka.ZKStringSerializer
+import com.hurence.logisland.utils.elasticsearch.ElasticsearchEventIndexer
 import com.hurence.logisland.utils.spark.SparkUtils
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.admin.AdminUtils
 import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZkUtils
-import org.I0Itec.zkclient.{ZkClient, ZkConnection}
 import org.apache.commons.cli
 import org.apache.commons.cli.{DefaultParser, Options}
 import org.apache.kafka.common.security.JaasUtils
@@ -99,8 +95,8 @@ object EventIndexerJob extends LazyLogging {
         val zkUtils: ZkUtils = ZkUtils.apply(zkQuorum, 30000, 30000, JaasUtils.isZkSecurityEnabled)
 
         topics.foreach(topic => {
-            if(!AdminUtils.topicExists(zkUtils,topic)){
-                AdminUtils.createTopic(zkUtils,topic,1,1)
+            if (!AdminUtils.topicExists(zkUtils, topic)) {
+                AdminUtils.createTopic(zkUtils, topic, 1, 1)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
             }
@@ -145,7 +141,7 @@ object EventIndexerJob extends LazyLogging {
 
                     // launch indexation to es
                     val esIndexer = new ElasticsearchEventIndexer(esConfig, esIndex)
-                    esIndexer.bulkLoad(events.toList, bulkSize = 10000 )
+                    esIndexer.bulkLoad(events.toList, bulkSize = 10000)
                 })
                 rdd.unpersist(true)
             })
