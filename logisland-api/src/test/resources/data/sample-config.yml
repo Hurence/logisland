@@ -29,11 +29,8 @@ processors:
     configuration:
       inputTopic: kafka_log
       outputTopic: kafka_event
-      rules:
-        - name: rule 1
-          query: incident*
-        - name: rule 2
-          query: vehicule*
+      rule1: incident*
+      rule2: vehicule*
 
   # Detect outliers
   - processor: com.hurence.logisland.processor.OutlierProcessor
@@ -43,22 +40,3 @@ processors:
     configuration:
       inputTopic: kafka_log
       outputTopic: kafka_event
-      rotationPolicy:
-        type: BY_AMOUNT
-        amount : 100
-        unit: POINTS
-      chunkingPolicy:
-        type: BY_AMOUNT
-        amount: 10
-        unit: POINTS
-      globalStatistics :
-      sketchyOutlierAlgorithm: SKETCHY_MOVING_MAD
-      batchOutlierAlgorithm:
-        type: RAD
-        config:
-          minAmountToPredict: 100
-          reservoirSize: 100
-          minZscorePercentile: 95
-          zscoreCutoffs:
-            NORMAL: 0.000000000000001
-            MODERATE_OUTLIER: 1.5

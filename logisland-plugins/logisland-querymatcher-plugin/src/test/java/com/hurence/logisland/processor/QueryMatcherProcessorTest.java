@@ -1,4 +1,4 @@
-package com.hurence.logisland.querymatcher;
+package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.serializer.EventKryoSerializer;

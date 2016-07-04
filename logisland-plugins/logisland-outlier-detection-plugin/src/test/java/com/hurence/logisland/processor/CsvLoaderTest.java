@@ -1,8 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.processor.TimeSeriesCsvLoader;
-import com.hurence.logisland.processor.exception.UnparsableException;
+import com.hurence.logisland.log.LogParserException;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -33,7 +32,7 @@ public class CsvLoaderTest {
 
 
     @Test
-    public void CsvLoaderTest() throws IOException, UnparsableException {
+    public void CsvLoaderTest() throws IOException, LogParserException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
@@ -56,7 +55,7 @@ public class CsvLoaderTest {
     }
 
     @Test
-    public void CsvLoaderUnparsableExceptionTest() throws IOException, UnparsableException {
+    public void CsvLoaderUnparsableExceptionTest() throws IOException, LogParserException {
         File f = new File(RESOURCES_DIRECTORY + "artificialWithAnomaly/art_daily_flatmiddle.csv");
 
         DateTimeFormatter wrongInputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-ss");
@@ -65,7 +64,7 @@ public class CsvLoaderTest {
         try {
             TimeSeriesCsvLoader.load(reader, true, wrongInputDateFormat);
         }
-        catch (UnparsableException e) {
+        catch (LogParserException e) {
             return;
         }
 

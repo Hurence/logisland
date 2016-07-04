@@ -1,0 +1,14 @@
+version: 0.1
+documentation: LogIsland analytics main config file. Put here every engine or processor config
+
+processors:
+  # Match Lucene queries
+  - processor: com.hurence.logisland.processor.LuwakQueryMatcher
+    type: processor
+    version: 1.0
+    documentation:
+    configuration:
+      inputTopic: kafka_log
+      outputTopic: kafka_event
+      rules: "incident*", "vehicule*"
+

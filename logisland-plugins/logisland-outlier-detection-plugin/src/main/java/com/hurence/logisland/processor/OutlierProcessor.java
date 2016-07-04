@@ -6,15 +6,15 @@ import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
+import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
+import com.hurence.logisland.validators.StandardValidators;
 import org.adrianwalker.multilinestring.Multiline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Outlier Analysis: A Hybrid Approach
@@ -32,7 +32,7 @@ import java.util.HashMap;
  * <p/>
  * This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
  */
-public class OutlierProcessor implements EventProcessor {
+public class OutlierProcessor extends AbstractEventProcessor {
 
     public static String EVENT_TYPE = "sensor_outlier";
     public static String EVENT_PARSING_EXCEPTION_TYPE = "event_parsing_exception";
@@ -43,6 +43,95 @@ public class OutlierProcessor implements EventProcessor {
     OutlierAlgorithm sketchyOutlierAlgorithm;
     com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
 
+
+
+    public static final PropertyDescriptor ROTATION_POLICY_TYPE = new PropertyDescriptor.Builder()
+            .name("Rotation Policy Type")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("BY_AMOUNT")
+            .build();
+
+    public static final PropertyDescriptor ROTATION_POLICY_AMOUNT = new PropertyDescriptor.Builder()
+            .name("Rotation Policy Amount")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .defaultValue("100")
+            .build();
+
+    public static final PropertyDescriptor ROTATION_POLICY_UNIT = new PropertyDescriptor.Builder()
+            .name("Rotation Policy Amount")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .defaultValue("100")
+            .build();
+
+    public static final PropertyDescriptor CHUNKING_POLICY_TYPE = new PropertyDescriptor.Builder()
+            .name("Chunking Policy Type")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("BY_AMOUNT")
+            .build();
+
+    public static final PropertyDescriptor CHUNKING_POLICY_AMOUNT = new PropertyDescriptor.Builder()
+            .name("Chunking Policy Amount")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .defaultValue("100")
+            .build();
+
+    public static final PropertyDescriptor CHUNKING_POLICY_UNIT = new PropertyDescriptor.Builder()
+            .name("Chunking Policy Amount")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .defaultValue("100")
+            .build();
+
+
+    public static final PropertyDescriptor SKETCHY_OUTLIER_ALGORITHM  = new PropertyDescriptor.Builder()
+            .name("Sketchy outlier algorithm")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues("SKETCHY_MOVING_MAD")
+            .defaultValue("SKETCHY_MOVING_MAD")
+            .build();
+
+    public static final PropertyDescriptor BATCH_OUTLIER_ALGORITHM  = new PropertyDescriptor.Builder()
+            .name("Batch outlier algorithm")
+            .description("...")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues("RAD")
+            .defaultValue("RAD")
+            .build();
+
+    @Override
+    public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(INPUT_TOPIC);
+        descriptors.add(OUTPUT_TOPIC);
+        descriptors.add(ROTATION_POLICY_TYPE);
+        descriptors.add(ROTATION_POLICY_AMOUNT);
+        descriptors.add(ROTATION_POLICY_UNIT);
+        descriptors.add(CHUNKING_POLICY_TYPE);
+        descriptors.add(CHUNKING_POLICY_AMOUNT);
+        descriptors.add(CHUNKING_POLICY_UNIT);
+        descriptors.add(SKETCHY_OUTLIER_ALGORITHM);
+        descriptors.add(BATCH_OUTLIER_ALGORITHM);
+
+        return Collections.unmodifiableList(descriptors);
+    }
 
     /**
       {
@@ -140,5 +229,10 @@ public class OutlierProcessor implements EventProcessor {
         }
 
         return list;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return null;
     }
 }

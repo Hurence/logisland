@@ -17,16 +17,16 @@
 
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.components.ConfigurableComponent;
 import com.hurence.logisland.event.Event;
 
 import java.util.Collection;
 
 /**
- * Carry the business rules, to be applied to a RDD of events
+ * Carry the business rules, to be applied to a bunch of events
  */
-public interface EventProcessor {
+public interface EventProcessor extends ConfigurableComponent {
 
-    Collection<Event> process(Collection<Event> events);
-    void validateConfig();
+    Collection<Event> process(ProcessContext context, Collection<Event> events);
 
 }

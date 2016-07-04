@@ -1,4 +1,4 @@
-package com.hurence.logisland.querymatcher;
+package com.hurence.logisland.processor;
 
 /**
  * Created by fprunier on 15/04/16.

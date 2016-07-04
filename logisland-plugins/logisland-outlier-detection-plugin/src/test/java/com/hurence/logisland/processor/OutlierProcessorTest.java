@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.processor.exception.UnparsableException;
+import com.hurence.logisland.log.LogParserException;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -33,7 +33,7 @@ public class OutlierProcessorTest {
 
 
     @Test
-    public void OutlierProcessorTest() throws IOException, UnparsableException {
+    public void OutlierProcessorTest() throws IOException, LogParserException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {

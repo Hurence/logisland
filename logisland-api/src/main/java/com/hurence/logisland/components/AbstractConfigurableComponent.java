@@ -16,6 +16,8 @@
  */
 package com.hurence.logisland.components;
 
+import com.hurence.logisland.processor.ProcessContext;
+
 import java.util.*;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
@@ -124,6 +126,16 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return Collections.EMPTY_LIST;
     }
+
+
+    /**
+     * Provides subclasses the ability to perform initialization logic
+     *
+     */
+    protected void init(final ProcessContext context) {
+        // Provided for subclasses to override
+    }
+
 
     @Override
     public final List<PropertyDescriptor> getPropertyDescriptors() {

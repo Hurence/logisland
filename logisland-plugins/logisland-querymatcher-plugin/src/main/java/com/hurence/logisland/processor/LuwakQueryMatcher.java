@@ -1,6 +1,8 @@
-package com.hurence.logisland.querymatcher;
+package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
+import com.sun.xml.internal.stream.buffer.AbstractProcessor;
+import org.apache.hadoop.yarn.event.AbstractEvent;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -18,7 +20,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class LuwakQueryMatcher extends QueryMatcherBase {
+public class LuwakQueryMatcher extends AbstractEventProcessor {
 
     Logger logger = LoggerFactory.getLogger(LuwakQueryMatcher.class);
 
@@ -27,13 +29,11 @@ public class LuwakQueryMatcher extends QueryMatcherBase {
     private KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
     private StandardAnalyzer standardAnalyzer = new StandardAnalyzer();
 
-    public LuwakQueryMatcher(List<MatchingRule> rules) throws IOException {
-        super(rules);
 
-        setupLuwak();
-    }
 
-    private void setupLuwak() throws IOException {
+     void init(List<MatchingRule> rules) throws IOException {
+
+        setRules(rules);
 
         monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
 
@@ -43,7 +43,8 @@ public class LuwakQueryMatcher extends QueryMatcherBase {
         }
     }
 
-    public Collection<Event> process(Collection<Event> collection) {
+    @Override
+    public Collection<Event> process(ProcessContext context, Collection<Event> collection) {
 
         ArrayList<Event> outEvents = new ArrayList<>();
 
@@ -70,7 +71,7 @@ public class LuwakQueryMatcher extends QueryMatcherBase {
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(QueryMatcherBase.EVENT_MATCH_TYPE_NAME);
+            Event outEv = new Event(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
             // Only get last match for now, we should probably add them all
             for (QueryMatch queryMatch:docMatch.getMatches())

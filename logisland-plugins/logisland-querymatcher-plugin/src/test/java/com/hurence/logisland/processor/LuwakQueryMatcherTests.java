@@ -1,11 +1,10 @@
-package com.hurence.logisland.querymatcher;
+package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 

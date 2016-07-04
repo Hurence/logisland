@@ -3,7 +3,7 @@ package com.hurence.logisland.rules;
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.serializer.EventKryoSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
-import com.hurence.logisland.querymatcher.MatchingRule;
+import com.hurence.logisland.processor.MatchingRule;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;

@@ -14,7 +14,8 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd
+http://www.w3.org/2001/XMLSchema-instance ">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hurence.logisland</groupId>
@@ -80,6 +81,7 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
+
         <!-- scala dependencies -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
@@ -136,7 +138,7 @@
                     <tagsToInclude>ATag</tagsToInclude>
                     <systemProperties>
                         <java.awt.headless>true</java.awt.headless>
-                     <!--   <spark.test.home>${session.executionRootDirectory}</spark.test.home>-->
+                        <!--   <spark.test.home>${session.executionRootDirectory}</spark.test.home>-->
                         <spark.testing>1</spark.testing>
                     </systemProperties>
                 </configuration>

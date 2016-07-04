@@ -1,7 +1,8 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.processor.exception.UnparsableException;
+import com.hurence.logisland.log.LogParserException;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.joda.time.DateTimeZone;
@@ -34,7 +35,7 @@ public class TimeSeriesCsvLoader {
      * @throws ArrayIndexOutOfBoundsException
      */
     public static List<Event> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
-            throws IOException, UnparsableException {
+            throws IOException, LogParserException {
 
         List<Event> events = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
@@ -53,7 +54,7 @@ public class TimeSeriesCsvLoader {
                 hasHeader = false;
             } catch (Exception e) {
                 logger.error("Parsing error " + e.getMessage());
-                throw new UnparsableException(e);
+                throw new LogParserException("parsing error", e);
             }
         }
 
