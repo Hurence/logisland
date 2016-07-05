@@ -218,6 +218,7 @@
                         <javacArg>${maven.compiler.source}</javacArg>
                         <javacArg>-target</javacArg>
                         <javacArg>${maven.compiler.source}</javacArg>
+                        <javacArg>-proc:none</javacArg>
                     </javacArgs>
                 </configuration>
             </plugin>
