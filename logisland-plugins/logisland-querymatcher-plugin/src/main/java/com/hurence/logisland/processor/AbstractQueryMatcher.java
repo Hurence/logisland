@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public abstract class AbstractQueryMatcher implements EventProcessor {
+public abstract class AbstractQueryMatcher {
 
     public static String EVENT_MATCH_TYPE_NAME = "querymatch";
 

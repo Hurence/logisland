@@ -17,7 +17,7 @@
 package com.hurence.logisland.components;
 
 
-import com.hurence.logisland.utils.time.FormatUtils;
+//import com.hurence.logisland.utils.time.FormatUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -65,10 +65,10 @@ public class StandardPropertyValue implements PropertyValue {
         return (rawValue == null) ? null : Double.parseDouble(rawValue.trim());
     }
 
-    @Override
+  /*  @Override
     public Long asTimePeriod(final TimeUnit timeUnit) {
         return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.trim(), timeUnit);
-    }
+    }*/
 
 
     @Override

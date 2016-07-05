@@ -74,7 +74,7 @@ public interface PropertyValue {
      * in terms of the specified TimeUnit; if the property is not set, returns
      * <code>null</code>
      */
-    public Long asTimePeriod(TimeUnit timeUnit);
+   // public Long asTimePeriod(TimeUnit timeUnit);
 
 
 

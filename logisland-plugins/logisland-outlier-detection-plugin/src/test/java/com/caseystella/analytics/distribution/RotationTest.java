@@ -3,7 +3,7 @@ package com.caseystella.analytics.distribution;
 import com.caseystella.analytics.DataPoint;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
-import org.adrianwalker.multilinestring.Multiline;
+import com.hurence.logisland.utils.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 public class RotationTest {
+
     /**
      {
      "rotationPolicy" : {
@@ -31,6 +32,7 @@ public class RotationTest {
      */
     @Multiline
     public static String amountConfig;
+
     public static DataPoint nextDataPoint(Random r, LongWritable ts, long delta, List<DataPoint> points) {
         double val = r.nextDouble() * 1000;
         DataPoint dp = (new DataPoint(ts.get(), val, null, "foo"));
@@ -40,6 +42,7 @@ public class RotationTest {
         ts.set(ts.get() + delta);
         return dp;
     }
+
     @Test
     public void rotationTest() throws Exception {
         OutlierConfig config = JSONUtil.INSTANCE.load(amountConfig, OutlierConfig.class);

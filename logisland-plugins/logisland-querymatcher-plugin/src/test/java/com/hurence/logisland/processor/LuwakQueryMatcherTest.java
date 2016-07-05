@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class LuwakQueryMatcherTests {
+public class LuwakQueryMatcherTest {
 
     @Test
     public void testSimpleMatch() throws IOException {
@@ -23,7 +23,8 @@ public class LuwakQueryMatcherTests {
         ArrayList<MatchingRule> rules = new ArrayList<>();
         rules.add(rule1);
 
-        LuwakQueryMatcher matcher = new LuwakQueryMatcher(rules);
+        LuwakQueryMatcher matcher = new LuwakQueryMatcher();
+        matcher.init(rules);
 
         Event ev1 = new Event("mytype");
         ev1.setId("myid");

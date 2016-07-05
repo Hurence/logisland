@@ -123,7 +123,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * @return PropertyDescriptor objects this processor currently supports
      */
     @SuppressWarnings("unchecked")
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return Collections.EMPTY_LIST;
     }
 
@@ -132,7 +132,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * Provides subclasses the ability to perform initialization logic
      *
      */
-    protected void init(final ProcessContext context) {
+    public void init(final ProcessContext context) {
         // Provided for subclasses to override
     }
 

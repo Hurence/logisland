@@ -9,7 +9,7 @@ import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.validators.StandardValidators;
-import org.adrianwalker.multilinestring.Multiline;
+import com.hurence.logisland.utils.string.Multiline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,7 +180,7 @@ public class OutlierProcessor extends AbstractEventProcessor {
      *
      */
     @Override
-    public Collection<Event> process(Collection<Event> events) {
+    public Collection<Event> process(final ProcessContext context, final Collection<Event> events) {
 
         Collection list = new ArrayList();
 

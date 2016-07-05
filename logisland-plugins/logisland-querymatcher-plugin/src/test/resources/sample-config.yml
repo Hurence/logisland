@@ -3,12 +3,12 @@ documentation: LogIsland analytics main config file. Put here every engine or pr
 
 processors:
   # Match Lucene queries
-  - processor: com.hurence.logisland.processor.LuwakQueryMatcher
+  - processor: com.hurence.logisland.processor.QueryMatcherProcessor
     type: processor
     version: 1.0
     documentation:
     configuration:
       inputTopic: kafka_log
       outputTopic: kafka_event
-      rules: "incident*", "vehicule*"
+      rules: incident*, vehicule*
 

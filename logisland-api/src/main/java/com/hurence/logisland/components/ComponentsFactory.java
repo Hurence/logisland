@@ -2,13 +2,10 @@ package com.hurence.logisland.components;
 
 import com.hurence.logisland.config.ComponentConfiguration;
 import com.hurence.logisland.processor.EventProcessor;
+import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -21,26 +18,27 @@ public final class ComponentsFactory {
     private static final AtomicLong currentId = new AtomicLong(0);
 
 
-    public static  AbstractConfiguredComponent getComponent(ComponentConfiguration configuration){
+    public static StandardProcessorInstance getProcessorInstance(ComponentConfiguration configuration) {
 
-        AbstractConfiguredComponent compo = null;
-        switch (configuration.getType().toLowerCase()){
+        switch (configuration.getType().toLowerCase()) {
             case "processor":
-                logger.info("creating processor {}", configuration.getProcessor());
+
                 try {
-
-                    File f = new File("/Users/tom/Documents/workspace/hurence/projects/log-island-hurence/logisland-assembly/target/logisland-0.9.4-bin/logisland-0.9.4/lib");
-                    URL[] cp = {f.toURI().toURL()};
-                    URLClassLoader urlcl = new URLClassLoader(cp);
-                    Class clazz = urlcl.loadClass(configuration.getProcessor());
+                    final EventProcessor processor = (EventProcessor) Class.forName(configuration.getProcessor()).newInstance();
+                    final StandardProcessorInstance instance = new StandardProcessorInstance(processor, Long.toString(currentId.incrementAndGet()));
 
 
+                    configuration.getConfiguration()
+                            .entrySet()
+                            .stream()
+                            .forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
 
-                    EventProcessor processor = (EventProcessor) clazz.newInstance();
+                    logger.info("created processor {}", configuration.getProcessor());
+
+                    return instance;
+
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                     logger.error("unable to instanciate processor {} : {}", configuration.getProcessor(), e.toString());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
                 }
 
                 break;
@@ -50,6 +48,6 @@ public final class ComponentsFactory {
             default:
                 logger.error("unknown component type {}", configuration.getType());
         }
-        return compo;
+        return null;
     }
 }

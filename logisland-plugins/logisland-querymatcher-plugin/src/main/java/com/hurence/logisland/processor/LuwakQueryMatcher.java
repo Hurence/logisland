@@ -1,8 +1,6 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
-import com.sun.xml.internal.stream.buffer.AbstractProcessor;
-import org.apache.hadoop.yarn.event.AbstractEvent;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -20,7 +18,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class LuwakQueryMatcher extends AbstractEventProcessor {
+public class LuwakQueryMatcher extends AbstractQueryMatcher {
 
     Logger logger = LoggerFactory.getLogger(LuwakQueryMatcher.class);
 
@@ -31,7 +29,7 @@ public class LuwakQueryMatcher extends AbstractEventProcessor {
 
 
 
-     void init(List<MatchingRule> rules) throws IOException {
+    public LuwakQueryMatcher init(List<MatchingRule> rules) throws IOException {
 
         setRules(rules);
 
@@ -41,10 +39,11 @@ public class LuwakQueryMatcher extends AbstractEventProcessor {
             MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
             monitor.update(mq);
         }
+
+        return this;
     }
 
-    @Override
-    public Collection<Event> process(ProcessContext context, Collection<Event> collection) {
+    public Collection<Event> process(Collection<Event> collection) {
 
         ArrayList<Event> outEvents = new ArrayList<>();
 

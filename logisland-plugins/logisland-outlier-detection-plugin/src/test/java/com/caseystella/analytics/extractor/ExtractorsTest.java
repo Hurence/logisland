@@ -2,8 +2,8 @@ package com.caseystella.analytics.extractor;
 
 import com.caseystella.analytics.DataPoint;
 import com.google.common.collect.Iterables;
-import junit.framework.Assert;
-import org.adrianwalker.multilinestring.Multiline;
+import com.hurence.logisland.utils.string.Multiline;
+import org.junit.Assert;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 
@@ -60,7 +60,7 @@ public class ExtractorsTest {
                 Assert.assertNotNull(dp);
                 Assert.assertEquals(dp.getSource(), "sensor_1");
                 Assert.assertEquals(dp.getTimestamp(), 0L);
-                Assert.assertEquals(dp.getValue(), 100d);
+                Assert.assertEquals(dp.getValue(), 100d, 0.000001d);
                 Assert.assertEquals(dp.getMetadata().size(), 1);
                 Assert.assertEquals(dp.getMetadata().get("plant_id"), "plant_1");
             }
@@ -69,12 +69,13 @@ public class ExtractorsTest {
                 Assert.assertNotNull(dp);
                 Assert.assertEquals(dp.getSource(), "sensor_2");
                 Assert.assertEquals(dp.getTimestamp(), 50L);
-                Assert.assertEquals(dp.getValue(), 7d);
+                Assert.assertEquals(dp.getValue(), 7d, 0.000001d);
                 Assert.assertEquals(dp.getMetadata().size(), 1);
                 Assert.assertEquals(dp.getMetadata().get("plant_id"), "plant_1");
             }
         }
     }
+
     /**
      {
          "valueConverter" : "CSVConverter"
@@ -101,6 +102,7 @@ public class ExtractorsTest {
      */
     @Multiline
     public static String fraudExtractorConfig;
+
     @Test
     public void testFraudExtractor() throws Exception {
         Assert.assertNotNull(extractorConfig);

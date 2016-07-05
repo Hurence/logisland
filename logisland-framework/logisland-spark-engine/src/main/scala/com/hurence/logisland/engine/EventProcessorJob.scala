@@ -60,7 +60,8 @@ object EventProcessorJob extends LazyLogging {
         val line = parser.parse(options, args)
         val configFile = line.getOptionValue("conf")
 
-        val sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
+        val sessionConf = new LogislandSessionConfigReader().loadConfig(configFile)
+
 
 
 /*

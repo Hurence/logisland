@@ -1,11 +1,11 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
-import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
-import com.hurence.logisland.utils.kafka.DocumentPublisher;
-import com.hurence.logisland.utils.kafka.RulesPublisher;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
+import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.utils.kafka.DocumentPublisher;
+import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
+import com.hurence.logisland.utils.kafka.RulesPublisher;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by lhubert on 20/04/16.
@@ -27,19 +28,18 @@ public class QueryMatcherProcessorTest {
 
 
     private static Logger logger = LoggerFactory.getLogger(QueryMatcherProcessorTest.class);
-    static EmbeddedKafkaEnvironment context ;
+    static EmbeddedKafkaEnvironment context;
 
     static String docspath = "./data/documents/frenchpress";
     static String rulespath = "./data/rules";
 
-    static String[] arg1 = new String[] {"--topic", "docs", "--partitions", "1", "--replication-factor", "1"};
-    static String[] arg2 = new String[] {"--topic", "rules", "--partitions", "1","--replication-factor", "1" };
-    static String[] arg3 = new String[] {"--topic", "matches", "--partitions", "1","--replication-factor", "1" };
+    static String[] arg1 = new String[]{"--topic", "docs", "--partitions", "1", "--replication-factor", "1"};
+    static String[] arg2 = new String[]{"--topic", "rules", "--partitions", "1", "--replication-factor", "1"};
+    static String[] arg3 = new String[]{"--topic", "matches", "--partitions", "1", "--replication-factor", "1"};
 
 
     @BeforeClass
     public static void initEventsAndQueries() throws IOException {
-
 
 
         // create docs input topic
@@ -57,32 +57,43 @@ public class QueryMatcherProcessorTest {
             logger.info("start publishing rules to topics");
             RulesPublisher rpublisher = new RulesPublisher();
             rpublisher.publish(context, rulespath, "rules");
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Unexpected exception while publishing docs {}", e.getMessage());
         }
 
         logger.info("done");
     }
-   // @Test
+
+    // @Test
     public void testProcess() throws Exception {
 
         // setup simple consumer for docs
-        Properties consumerProperties = TestUtils.createConsumerProperties( context.getZkConnect(), "group0", "consumer0", -1);
+        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkConnect(), "group0", "consumer0", -1);
         ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
 
         // reading rules
         KafkaRulesConsumer rconsumer = new KafkaRulesConsumer();
         List<MatchingRule> rules = rconsumer.consume(context, "rules", "rules", "consumer0");
+        String rulesAsString = rules.stream()
+                .map(MatchingRule::getQuery)
+                .collect(Collectors.joining(", "));
+
 
         System.out.println("Rules to apply : " + rules.size());
 
-        LuwakQueryMatcher matcher = new LuwakQueryMatcher(rules);
-        QueryMatcherProcessor processor = new QueryMatcherProcessor(matcher);
+        /**
+         * init a processor instance and its context
+         */
+        QueryMatcherProcessor processor = new QueryMatcherProcessor();
+        StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
+        instance.setProperty("rules",rulesAsString);
+        ProcessContext context = new StandardProcessContext(instance);
+        processor.init(context);
+
+
 
         // starting consumer for docs...
-        Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
+        Map<String, Integer> topicCountMap = new HashMap<>();
         topicCountMap.put("docs", 1);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
         KafkaStream<byte[], byte[]> stream = consumerMap.get("docs").get(0);
@@ -95,11 +106,11 @@ public class QueryMatcherProcessorTest {
             final EventKryoSerializer deserializer = new EventKryoSerializer(true);
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
             Event deserializedEvent = deserializer.deserialize(bais);
-            ArrayList<Event> list = new ArrayList<Event>();
+            ArrayList<Event> list = new ArrayList<>();
             list.add(deserializedEvent);
-            Collection<Event> result = processor.process(list);
+            Collection<Event> result = processor.process(context, list);
             for (Event e : result) {
-                System.out.println((String)e.get("name").getValue() + " : " + (String) e.get("matchingrules").getValue());
+                System.out.println(e.get("name").getValue() + " : " + e.get("matchingrules").getValue());
             }
 
             bais.close();
@@ -120,7 +131,7 @@ public class QueryMatcherProcessorTest {
 
     @AfterClass
     public static void teardown() throws Exception {
-        if(context != null)
+        if (context != null)
             context.close();
     }
 }

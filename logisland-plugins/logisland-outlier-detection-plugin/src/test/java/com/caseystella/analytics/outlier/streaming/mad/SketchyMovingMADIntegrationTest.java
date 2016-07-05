@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import org.adrianwalker.multilinestring.Multiline;
+import com.hurence.logisland.utils.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
@@ -79,6 +79,7 @@ public class SketchyMovingMADIntegrationTest {
      */
     //@Multiline
     //public static String outlierConfig;
+
  /**
     {
      "rotationPolicy" : {

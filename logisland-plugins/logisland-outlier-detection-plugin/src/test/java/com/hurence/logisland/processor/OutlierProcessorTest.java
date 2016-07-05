@@ -2,7 +2,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.log.LogParserException;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -41,8 +41,13 @@ public class OutlierProcessorTest {
             List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
             Assert.assertTrue(!events.isEmpty());
 
-            OutlierProcessor processor = new OutlierProcessor();
-            Collection<Event> outliersEvents = processor.process(events);
+
+            AbstractEventProcessor processor = new OutlierProcessor();
+            StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
+          //  instance.setProperty("rules",rulesAsString);
+            ProcessContext context = new StandardProcessContext(instance);
+            processor.init(context);
+            Collection<Event> outliersEvents = processor.process(context, events);
 
             logger.info(outliersEvents.toString());
         }
