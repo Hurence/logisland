@@ -77,42 +77,6 @@ language governing permissions and limitations under the License. -->
             <artifactId>slf4j-api</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-resources</artifactId>
-            <version>0.9.4</version>
-            <classifier>resources</classifier>
-            <scope>runtime</scope>
-            <type>zip</type>
-        </dependency>
-        <!-- <dependency>
-             <groupId>org.apache.logisland</groupId>
-             <artifactId>logisland-docs</artifactId>
-             <classifier>resources</classifier>
-             <scope>runtime</scope>
-             <type>zip</type>
-         </dependency>-->
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-outlier-detection-plugin</artifactId>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-querymatcher-plugin</artifactId>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-botsearch-plugin</artifactId>
-            <type>jar</type>
-        </dependency>
 
 
     </dependencies>
