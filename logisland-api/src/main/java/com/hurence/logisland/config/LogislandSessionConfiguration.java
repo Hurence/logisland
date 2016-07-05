@@ -11,7 +11,7 @@ public class LogislandSessionConfiguration {
     private String documentation = "";
     private String version = "";
 
-    private List<ComponentConfiguration> processors = new ArrayList<>();
+    private List<ComponentConfiguration> components = new ArrayList<>();
 
     public String getDocumentation() {
         return documentation;
@@ -29,12 +29,12 @@ public class LogislandSessionConfiguration {
         this.version = version;
     }
 
-    public List<ComponentConfiguration> getProcessors() {
-        return processors;
+    public List<ComponentConfiguration> getComponents() {
+        return components;
     }
 
-    public void setProcessors(List<ComponentConfiguration> processors) {
-        this.processors = processors;
+    public void setComponents(List<ComponentConfiguration> components) {
+        this.components = components;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class LogislandSessionConfiguration {
         return "LogislandSessionConfiguration{" +
                 "documentation='" + documentation + '\'' +
                 ", version='" + version + '\'' +
-                ", processors=" + processors +
+                ", components=" + components +
                 '}';
     }
 }

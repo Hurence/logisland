@@ -36,7 +36,7 @@ Once you know how to run and build your own parsers and processors, you'll want 
 3. Logs in Kafka topic are translated into Events and pushed back to another Kafka topic by a Spark streaming job
 3. Events in Kafka topic are sent to Elasticsearch (or Solr or whatever backend) for online analytics (Kibana or Banana) by a Spark streaming job
 4. Log topics can also dumped to HDFS (master dataset) for offline analytics
-5. Event processor do some time window based analytics on events to build new events
+5. Event component do some time window based analytics on events to build new events
 
 
 
@@ -74,6 +74,6 @@ Each event will be sent to Elasticsearch by bulk.
         --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper
 
 
-## Start an event processor
+## Start an event component
 
 //TODO 

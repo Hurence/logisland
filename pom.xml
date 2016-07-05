@@ -62,7 +62,7 @@ language governing permissions and limitations under the License. --><project xm
         <lucene.version>5.4.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
         <spark.version>1.6.1</spark.version>
-        <kafka.version>0.9.0.1</kafka.version>
+        <kafka.version>0.8.2.1</kafka.version>
         <hadoop.guava.version>12.0.1</hadoop.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>

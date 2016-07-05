@@ -1,9 +1,9 @@
 version: 0.1
-documentation: LogIsland analytics main config file. Put here every engine or processor config
+documentation: LogIsland analytics main config file. Put here every engine or component config
 
-processors:
+components:
   # Main event streaming engine
-  - processor: com.hurence.logisland.engine.EventProcessorJob
+  - component: com.hurence.logisland.engine.EventProcessorJob
     type: engine
     version: 0.1.0
     documentation: Main Logisland job entry point
@@ -11,7 +11,7 @@ processors:
       spark.master: local[8]
       spark.executorMemory: 4g
       spark.checkpointingDirectory: file:///tmp
-      spark.appName: My first stream processor
+      spark.appName: My first stream component
       spark.streaming.batchDuration: 2000
       spark.serializer: org.apache.spark.serializer.KryoSerializer
       spark.streaming.backpressure.enabled: true
@@ -22,8 +22,8 @@ processors:
       kafka.metadata.broker.list: sandbox:2181
 
   # Match Lucene queries
-  - processor: com.hurence.logisland.processor.QueryMatcherProcessor
-    type: processor
+  - component: com.hurence.logisland.component.QueryMatcherProcessor
+    type: component
     version: 1.0
     documentation:
     configuration:
@@ -36,8 +36,8 @@ processors:
           query: vehicule*
 
   # Detect outliers
-  - processor: com.hurence.logisland.processor.OutlierProcessor
-    type: processor
+  - component: com.hurence.logisland.component.OutlierProcessor
+    type: component
     version: 1.0
     documentation:
     configuration:

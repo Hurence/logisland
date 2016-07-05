@@ -23,7 +23,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongSerializer;
+//import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.After;
 import org.junit.Before;
@@ -97,11 +99,11 @@ public class KafkaIntegrationTest {
     public void canUseKafkaConnectToProduce() throws Exception {
         final String topic = "KafkakConnectTestTopic";
         Properties props = new Properties();
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getCanonicalName());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUnitServer.getKafkaConnect());
-        Producer<Long, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<Long, String> record = new ProducerRecord<>(topic, 1L, "test");
+        Producer<String, String> producer = new KafkaProducer<>(props);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, "1", "test");
         producer.send(record);      // would be good to have KafkaUnit.sendMessages() support the new producer
         assertEquals("test", kafkaUnitServer.readMessages(topic, 1).get(0));
     }

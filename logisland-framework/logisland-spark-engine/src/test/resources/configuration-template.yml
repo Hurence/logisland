@@ -3,7 +3,7 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 
 components:
   # Main event streaming engine
-  - component: com.hurence.logisland.engine.EventProcessorJob
+  - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
     type: engine
     version: 0.1.0
     documentation: Main Logisland job entry point
@@ -17,26 +17,7 @@ components:
       spark.streaming.backpressure.enabled: true
       spark.streaming.unpersist: false
       spark.streaming.blockInterval: 350
-      spark.streaming.kafka.maxRatePerPartition:
+      spark.streaming.kafka.maxRatePerPartition: 1
       spark.ui.port: 4050
-      kafka.metadata.broker.list: sandbox:2181
-
-  # Match Lucene queries
-  - component: com.hurence.logisland.component.QueryMatcherProcessor
-    type: component
-    version: 1.0
-    documentation:
-    configuration:
-      inputTopic: kafka_log
-      outputTopic: kafka_event
-      rule1: incident*
-      rule2: vehicule*
-
-  # Detect outliers
-  - component: com.hurence.logisland.component.OutlierProcessor
-    type: component
-    version: 1.0
-    documentation:
-    configuration:
-      inputTopic: kafka_log
-      outputTopic: kafka_event
+      kafka.metadata.broker.list: sandbox:9092
+      kafka.zookeeper.quorum: sandbox:2181

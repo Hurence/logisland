@@ -27,7 +27,7 @@ public class ConfigLoaderTest {
         logger.info(config.toString());
 
 
-        for (ComponentConfiguration compoConfig : config.getProcessors()) {
+        for (ComponentConfiguration compoConfig : config.getComponents()) {
             ComponentsFactory.getProcessorInstance(compoConfig);
         }
 

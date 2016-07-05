@@ -28,9 +28,7 @@ public class LogislandSessionConfigReaderTest {
         logger.info(config.toString());
 
 
-        for (ComponentConfiguration compoConfig : config.getProcessors()) {
-            ComponentsFactory.getProcessorInstance(compoConfig);
-        }
+        config.getComponents().forEach(ComponentsFactory::getProcessorInstance);
 
     }
 }

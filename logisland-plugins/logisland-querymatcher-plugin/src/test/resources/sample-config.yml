@@ -1,10 +1,10 @@
 version: 0.1
-documentation: LogIsland analytics main config file. Put here every engine or processor config
+documentation: LogIsland analytics main config file. Put here every engine or component config
 
-processors:
+components:
   # Match Lucene queries
-  - processor: com.hurence.logisland.processor.QueryMatcherProcessor
-    type: processor
+  - component: com.hurence.logisland.component.QueryMatcherProcessor
+    type: component
     version: 1.0
     documentation:
     configuration:

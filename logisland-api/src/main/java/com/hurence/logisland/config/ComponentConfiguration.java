@@ -8,19 +8,19 @@ import java.util.Map;
  */
 public class ComponentConfiguration {
 
-    private String processor = "";
+    private String component = "";
     private String version = "";
     private String documentation = "";
     private String type = "";
 
     private Map<String, String> configuration = new HashMap<>();
 
-    public String getProcessor() {
-        return processor;
+    public String getComponent() {
+        return component;
     }
 
-    public void setProcessor(String processor) {
-        this.processor = processor;
+    public void setComponent(String component) {
+        this.component = component;
     }
 
     public String getVersion() {
@@ -58,7 +58,7 @@ public class ComponentConfiguration {
     @Override
     public String toString() {
         return "ComponentConfiguration{" +
-                "processor='" + processor + '\'' +
+                "component='" + component + '\'' +
                 ", version='" + version + '\'' +
                 ", documentation='" + documentation + '\'' +
                 ", type='" + type + '\'' +

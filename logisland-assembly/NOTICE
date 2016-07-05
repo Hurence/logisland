@@ -158,9 +158,9 @@ The following binary components are provided under the Apache Software License v
       IRClib -- A Java Internet Relay Chat library --
       Copyright (C) 2002 - 2006 Christoph Schwering <schwering@gmail.com>
 
-  (ASLv2) Jackson JSON processor
+  (ASLv2) Jackson JSON component
     The following NOTICE information applies:
-      # Jackson JSON processor
+      # Jackson JSON component
 
       Jackson is a high-performance, Free/Open Source JSON processing library.
       It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has

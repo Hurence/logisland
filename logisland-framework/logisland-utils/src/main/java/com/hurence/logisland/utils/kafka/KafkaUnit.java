@@ -33,8 +33,9 @@ import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 import kafka.utils.VerifiableProperties;
 //import kafka.utils.ZkUtils;
-import kafka.utils.ZkUtils;
-import org.apache.kafka.common.security.JaasUtils;
+import kafka.utils.ZKStringSerializer$;
+import org.I0Itec.zkclient.ZkClient;
+//import org.apache.kafka.common.security.JaasUtils;
 import org.junit.ComparisonFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,13 +162,20 @@ public class KafkaUnit {
         arguments[8] = topicName;
         TopicCommand.TopicCommandOptions opts = new TopicCommand.TopicCommandOptions(arguments);
 
+        /*
+        // v0.9.0.1
         ZkUtils zkUtils = ZkUtils.apply(opts.options().valueOf(opts.zkConnectOpt()),
                 30000, 30000, JaasUtils.isZkSecurityEnabled());
+        TopicCommand.createTopic(zkUtils, opts);
+        */
 
+        // v0.8.2.1
+        ZkClient zkClient = new ZkClient(zookeeperString, 3000, 3000, ZKStringSerializer$.MODULE$);
+        TopicCommand.createTopic(zkClient,opts);
         // run
         LOGGER.info("Executing: CreateTopic " + Arrays.toString(arguments));
 
-        TopicCommand.createTopic(zkUtils, opts);
+
     }
 
 

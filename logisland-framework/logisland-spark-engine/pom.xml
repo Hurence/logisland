@@ -39,6 +39,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
         </dependency>
@@ -203,7 +207,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </javacArgs>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
 
         </plugins>
     </build>
