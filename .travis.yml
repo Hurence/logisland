@@ -10,7 +10,7 @@ cache:
 language: java
 
 script: 
-  - mvn package -DskipTests
+  - mvn install
 
 jdk:
   - oraclejdk8
