@@ -65,7 +65,7 @@ if you want to mount a directory from your host :
     -v /Users/tom/Documents/workspace/hurence/projects/log-island/docker/mount/:/usr/local/log-island 
 
 
-## LogParser: launching a parser job
+## LogParser: launching a com.hurence.logisland.logisland.parser job
 
 Run the following command to launch a parsing job that converts the logs into events and inject them into kafka:
 ```
@@ -75,7 +75,7 @@ $SPARK_HOME/bin/spark-submit \
     --jars $CLASSPATH ${lib_dir}/com.hurence.logisland-*.jar \
     --input-topics $YOUR_INPUT_TOPIC_NAME \
     --output-topics $YOUR_OUTPUT_TOPIC_NAME \
-    --parser $YOUR_PARSER_CLASS \
+    --com.hurence.logisland.logisland.parser $YOUR_PARSER_CLASS \
     --batch-duration 1000 \
     --block-interval 200 \
     --max-rate-per-partition 5000 \
@@ -85,7 +85,7 @@ $SPARK_HOME/bin/spark-submit \
 with :
  - input-topics = the kafka input topic list
  - output-topics = the kafka output topic list
- - parser = the full class name of your log parser (ex: com.hurence.fdj.log.MyParser)
+ - com.hurence.logisland.logisland.parser = the full class name of your log com.hurence.logisland.logisland.parser (ex: com.hurence.fdj.log.MyParser)
  - batch-duration = window time (in milliseconds) for micro batch (default: 2000)
  - block-interval = window time (in milliseconds) for determining the number of partitions per batch (default: 350)
  - max-rate-per-partition = maximum rate (in messages per second) at which each Kafka partition will be read (default: unlimited)
@@ -112,7 +112,7 @@ $SPARK_HOME/bin/spark-submit \
 with :
  - input-topics = the kafka input topic list
  - output-topics = the kafka output topic list
- - parser = the full class name of your log parser (ex: com.hurence.fdj.log.MyParser)
+ - com.hurence.logisland.logisland.parser = the full class name of your log com.hurence.logisland.logisland.parser (ex: com.hurence.fdj.log.MyParser)
  - batch-duration = window time (in milliseconds) for micro batch (default: 2000)
  - block-interval = window time (in milliseconds) for determining the number of partitions per batch (default: 350)
  - max-rate-per-partition = maximum rate (in messages per second) at which each Kafka partition will be read (default: unlimited)

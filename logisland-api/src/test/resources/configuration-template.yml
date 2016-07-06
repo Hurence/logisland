@@ -1,0 +1,20 @@
+version: 0.1
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+components:
+  # Main event streaming engine
+  - component: com.hurence.logisland.engine.MockStreamProcessingEngine
+    type: engine
+    version: 0.1.0
+    documentation: Main Logisland job entry point
+    configuration:
+      fake.settings: oullala
+
+  - component: com.hurence.logisland.processor.MockProcessor
+    type: processor
+    version: 0.1.0
+    documentation: a processor that does nothing really useful
+    configuration:
+      kafka.input.topics: logisland-mock-in
+      kafka.output.topics: logisland-mock-out
+      fake.message: I'm a creep

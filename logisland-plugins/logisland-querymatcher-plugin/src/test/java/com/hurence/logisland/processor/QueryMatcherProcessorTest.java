@@ -30,8 +30,8 @@ public class QueryMatcherProcessorTest {
     private static Logger logger = LoggerFactory.getLogger(QueryMatcherProcessorTest.class);
     static EmbeddedKafkaEnvironment context;
 
-    static String docspath = "./data/documents/frenchpress";
-    static String rulespath = "./data/rules";
+    static String docspath = "logisland-common-parsers-plugin/src/main/resources/data/documents/frenchpress";
+    static String rulespath = "logisland-common-parsers-plugin/src/main/resources/data/rules";
 
     static String[] arg1 = new String[]{"--topic", "docs", "--partitions", "1", "--replication-factor", "1"};
     static String[] arg2 = new String[]{"--topic", "rules", "--partitions", "1", "--replication-factor", "1"};

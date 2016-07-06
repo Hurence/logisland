@@ -11,7 +11,7 @@ public class StandardProcessorInstance extends AbstractConfiguredComponent {
     private final EventProcessor processor;
 
     public StandardProcessorInstance(EventProcessor processor, String id) {
-        super((ConfigurableComponent)processor, id);
+        super(processor, id);
         this.processor = processor;
 
 

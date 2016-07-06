@@ -159,7 +159,7 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${org.slf4j.version}</version>
-                <scope>provided</scope>
+
             </dependency>
 
             <dependency>

@@ -105,6 +105,15 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("4050")
         .build
 
+
+    val SPARK_STREAMING_TIMEOUT = new PropertyDescriptor.Builder()
+        .name("spark.streaming.timeout")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("-1")
+        .build
+
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(SPARK_MASTER)
@@ -117,6 +126,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_STREAMING_BACKPRESSURE_ENABLED)
         descriptors.add(SPARK_STREAMING_UNPERSIST)
         descriptors.add(SPARK_UI_PORT)
+        descriptors.add(SPARK_STREAMING_TIMEOUT)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -136,6 +146,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
         val backPressureEnabled = engineContext.getProperty(SPARK_STREAMING_BACKPRESSURE_ENABLED).getValue
         val streamingUnpersist = engineContext.getProperty(SPARK_STREAMING_UNPERSIST).getValue
+        val timeout = engineContext.getProperty(SPARK_STREAMING_TIMEOUT).asInteger().intValue()
 
         /**
           * job configuration
@@ -214,7 +225,11 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
         // Start the computation
         ssc.start()
-        ssc.awaitTermination()
+
+        if (timeout != -1)
+            ssc.awaitTerminationOrTimeout(timeout)
+        else
+            ssc.awaitTermination()
     }
 
     def createTopicsIfNeeded(zkClient: ZkClient, inputTopics: Set[String]): Unit = {
@@ -227,11 +242,11 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         })
     }
 
-    def deserializeEvents(partition: Iterator[( Array[Byte], Array[Byte])]): Iterator[Event] = {
+    def deserializeEvents(partition: Iterator[(Array[Byte], Array[Byte])]): Iterator[Event] = {
         partition.map(rawEvent => {
             // create a deserializer once per partition
             val deserializer = new EventKryoSerializer(true)
-            val bais: ByteArrayInputStream = new ByteArrayInputStream(rawEvent._2)
+            val bais = new ByteArrayInputStream(rawEvent._2)
             val deserialized = deserializer.deserialize(bais)
             bais.close()
 

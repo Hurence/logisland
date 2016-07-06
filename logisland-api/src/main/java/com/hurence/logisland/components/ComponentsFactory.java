@@ -27,18 +27,20 @@ public final class ComponentsFactory {
     public static Optional<StandardEngineInstance> getEngineInstance(LogislandSessionConfiguration sessionConf) {
         return sessionConf.getComponents().stream()
                 .filter(config -> config.getType().equalsIgnoreCase("engine"))
-                .map(config -> getEngineInstance(config).get())
+                .map(ComponentsFactory::getEngineInstance)
+                .filter(component -> component != null)
                 .findFirst();
     }
 
     public static List<StandardProcessorInstance> getAllProcessorInstances(LogislandSessionConfiguration sessionConf) {
         return sessionConf.getComponents().stream()
                 .filter(config -> config.getType().equalsIgnoreCase("processor"))
-                .map(config -> getProcessorInstance(config).get())
+                .map(ComponentsFactory::getProcessorInstance)
+                .filter(component -> component != null)
                 .collect(Collectors.toList());
     }
 
-    public static Optional<StandardProcessorInstance> getProcessorInstance(ComponentConfiguration configuration) {
+    public static StandardProcessorInstance getProcessorInstance(ComponentConfiguration configuration) {
 
 
 
@@ -57,7 +59,7 @@ public final class ComponentsFactory {
 
                     logger.info("created processor {}", configuration.getComponent());
 
-                    return Optional.of(instance);
+                    return instance;
 
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                     logger.error("unable to instanciate processor {} : {}", configuration.getComponent(), e.toString());
@@ -68,10 +70,10 @@ public final class ComponentsFactory {
             default:
                 logger.error("unsupported component type {}", configuration.getType());
         }
-        return Optional.empty();
+        return null;
     }
 
-    public static Optional<StandardEngineInstance> getEngineInstance(ComponentConfiguration configuration) {
+    public static StandardEngineInstance getEngineInstance(ComponentConfiguration configuration) {
 
         switch (configuration.getType().toLowerCase()) {
             case "engine":
@@ -88,7 +90,7 @@ public final class ComponentsFactory {
 
                     logger.info("created engine {}", configuration.getComponent());
 
-                    return Optional.of(engineInstance);
+                    return engineInstance;
 
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                     logger.error("unable to instanciate engine {} : {}", configuration.getComponent(), e.toString());
@@ -99,6 +101,6 @@ public final class ComponentsFactory {
             default:
                 logger.error("unsupported component type {}", configuration.getType());
         }
-        return Optional.empty();
+        return null;
     }
 }

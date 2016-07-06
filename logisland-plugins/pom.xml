@@ -28,5 +28,6 @@
         <module>logisland-querymatcher-plugin</module>
         <module>logisland-botsearch-plugin</module>
         <module>logisland-outlier-detection-plugin</module>
+        <module>logisland-common-parsers-plugin</module>
     </modules>
 </project>

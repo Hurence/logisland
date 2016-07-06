@@ -42,19 +42,19 @@ Once you know how to run and build your own parsers and processors, you'll want 
 
     
 
-## Start a log parser 
+## Start a log com.hurence.logisland.logisland.parser 
 
-A *Log parser* takes a log line as a String and computes an Event as a sequence of fields. 
+A *Log com.hurence.logisland.logisland.parser* takes a log line as a String and computes an Event as a sequence of fields. 
 Let's start a `LogParser` streaming job with a custom `ApacheLogParser`. 
 This stream will process log entries as soon as they will be queued into `li-apache-logs` Kafka topics, each log will be parsed as an event which will be pushed back to Kafka in the `li-apache-event` topic.
 
 
-    $LOGISLAND_HOME/bin/log-parser \
+    $LOGISLAND_HOME/bin/log-com.hurence.logisland.logisland.parser \
         --kafka-brokers sandbox:9092 \
         --input-topics li-apache-logs \
         --output-topics li-apache-event \
         --max-rate-per-partition 10000 \
-        --log-parser com.hurence.logisland.plugin.apache.ApacheLogParser
+        --log-com.hurence.logisland.logisland.parser com.hurence.logisland.plugin.apache.ApacheLogParser
 
 
 ## Start an event mapper 

@@ -9,6 +9,18 @@
 
     <logger name="com.hurence" level="TRACE"/>
 
+    <logger name="org.apache.spark" level="WARN" />
+    <logger name="org.apache.spark.scheduler" level="WARN" />
+    <logger name="org.apache.spark.history" level="WARN" />
+    <logger name="org.spark-project.jetty" level="WARN" />
+    <logger name="io.netty" level="WARN" />
+    <logger name="ch.qos.logback" level="WARN" />
+    <logger name="org.apache.zookeeper" level="WARN" />
+    <logger name="org.apache.hadoop.ipc.Client" level="WARN" />
+    <logger name="org.apache.hadoop" level="WARN" />
+    <logger name="org.apache.hadoop.ipc.ProtobufRpcEngine" level="WARN" />
+    <logger name="parquet.hadoop" level="WARN" />
+
 
     <root level="debug">
         <appender-ref ref="STDOUT" />

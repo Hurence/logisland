@@ -18,6 +18,7 @@ components:
       spark.streaming.unpersist: false
       spark.streaming.blockInterval: 350
       spark.streaming.kafka.maxRatePerPartition: 1
+      spark.streaming.timeout: 10000
       spark.ui.port: 4050
       kafka.metadata.broker.list: localhost:9092
       kafka.zookeeper.quorum: localhost:2181

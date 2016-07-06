@@ -18,7 +18,7 @@ public class ConfigLoaderTest {
     private static Logger logger = LoggerFactory.getLogger(ConfigLoaderTest.class);
 
     @Test
-    public void testLoadConfig() {
+    public void testLoadConfig() throws Exception {
 
 
         LogislandSessionConfigReader read = new LogislandSessionConfigReader();
