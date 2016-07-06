@@ -78,6 +78,49 @@ language governing permissions and limitations under the License. -->
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-bootstrap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-common-parsers-plugin</artifactId>
+            <version>0.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-spark-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-querymatcher-plugin</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-outlier-detection-plugin</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-botsearch-plugin</artifactId>
+            <version>0.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-resources</artifactId>
+            <classifier>resources</classifier>
+            <scope>runtime</scope>
+            <type>zip</type>
+        </dependency>
 
     </dependencies>
 
@@ -162,7 +205,7 @@ language governing permissions and limitations under the License. -->
                             </preinstallScriptlet>
                         </configuration>
                         <executions>
-                            <execution>
+                         <!--   <execution>
                                 <id>build-bin-rpm</id>
                                 <goals>
                                     <goal>attached-rpm</goal>
@@ -245,7 +288,7 @@ language governing permissions and limitations under the License. -->
                                         </mapping>
                                     </mappings>
                                 </configuration>
-                            </execution>
+                            </execution>-->
                         </executions>
                     </plugin>
                 </plugins>

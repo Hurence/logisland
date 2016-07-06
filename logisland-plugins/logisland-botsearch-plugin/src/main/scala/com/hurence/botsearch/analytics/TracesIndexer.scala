@@ -2,7 +2,7 @@ package com.hurence.botsearch.analytics
 
 import com.hurence.botsearch.trace.NetworkTraceLogParser
 import com.hurence.logisland.utils.spark.SparkUtils
-import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.commons.cli.{GnuParser, Options}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SQLContext
 
@@ -25,7 +25,7 @@ object TracesIndexer {
 
         //////////////////////////////////////////
         // Commande lien management
-        val parser = new DefaultParser()
+        val parser = new GnuParser()
         val options = new Options()
         options.addOption("o", "output", true, "es, solr, debug")
         options.addOption("t", "time-window", true, "window time for micro batch")

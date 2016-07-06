@@ -8,7 +8,7 @@ import com.hurence.logisland.utils.kafka.KafkaOffsetUtils
 import com.hurence.logisland.utils.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.serializer.StringDecoder
-import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.commons.cli.{GnuParser, Options}
 import org.apache.spark.sql.SQLContext
 //import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 
@@ -28,7 +28,7 @@ object BatchFlowsIndexer extends LazyLogging {
 
         //////////////////////////////////////////
         // Commande lien management
-        val parser = new DefaultParser()
+        val parser = new GnuParser()
         val options = new Options()
         options.addOption("o", "output", true, "es, solr, debug")
         options.addOption("w", "time-window", true, "window time for micro batch")

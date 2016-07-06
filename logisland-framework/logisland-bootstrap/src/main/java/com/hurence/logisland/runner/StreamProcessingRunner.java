@@ -5,7 +5,6 @@ import com.hurence.logisland.config.LogislandSessionConfigReader;
 import com.hurence.logisland.config.LogislandSessionConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.processor.EventProcessor;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -27,14 +26,23 @@ public class StreamProcessingRunner {
         args = new String[]{"-conf", "/Users/tom/Documents/workspace/hurence/projects/log-island-hurence/logisland-framework/logisland-spark-engine/src/test/resources/configuration-template.yml"};
         //////////////////////////////////////////
         // Commande lien management
-        DefaultParser parser = new DefaultParser();
+        Parser parser = new GnuParser();
         Options options = new Options();
-        options.addOption(Option.builder("conf")
-                .longOpt("config-file")
-                .hasArg()
-                .required()
-                .desc("config file path")
-                .build());
+
+
+
+        String helpMsg = "Print this message.";
+        Option help = new Option("help", helpMsg);
+        options.addOption(help);
+
+        OptionBuilder.withArgName("conf");
+        OptionBuilder.withLongOpt("config-file");
+        OptionBuilder.isRequired();
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("config file path");
+        Option conf = OptionBuilder.create("conf");
+        options.addOption(conf);
+
 
         try {
             // parse the command line arguments

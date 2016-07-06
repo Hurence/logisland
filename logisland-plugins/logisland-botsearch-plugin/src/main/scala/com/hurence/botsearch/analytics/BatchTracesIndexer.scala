@@ -9,7 +9,7 @@ import com.hurence.logisland.utils.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import kafka.serializer.StringDecoder
-import org.apache.commons.cli.{DefaultParser, Options}
+import org.apache.commons.cli.{GnuParser, Options}
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.feature.StandardScaler
 import org.apache.spark.mllib.linalg.Vectors
@@ -34,7 +34,7 @@ object BatchTracesIndexer extends LazyLogging {
 
         //////////////////////////////////////////
         // Commande lien management
-        val parser = new DefaultParser()
+        val parser = new GnuParser()
         val options = new Options()
         options.addOption("o", "output", true, "es, solr, debug")
         options.addOption("w", "time-window", true, "window time for micro batch")
