@@ -23,7 +23,10 @@ public class StreamProcessingRunner {
 
     public static void main(String[] args) {
 
-        args = new String[]{"-conf", "/Users/tom/Documents/workspace/hurence/projects/log-island-hurence/logisland-framework/logisland-spark-engine/src/test/resources/configuration-template.yml"};
+
+        System.out.println("go");
+        logger.info("go2");
+
         //////////////////////////////////////////
         // Commande lien management
         Parser parser = new GnuParser();
