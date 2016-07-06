@@ -1,18 +1,24 @@
 package com.hurence.logisland.engine
 
+import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
 import com.hurence.logisland.components.PropertyDescriptor
+import com.hurence.logisland.event.Event
+import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
+import com.hurence.logisland.serializer.EventKryoSerializer
 import com.hurence.logisland.validators.StandardValidators
 import kafka.admin.AdminUtils
-import kafka.serializer.{DefaultDecoder, StringDecoder}
-import kafka.utils.{ZKStringSerializer}
+import kafka.serializer.DefaultDecoder
+import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConversions._
 
 /**
   * Created by tom on 05/07/16.
@@ -75,9 +81,29 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("sandbox:2181")
         .build
 
+    val SPARK_STREAMING_BACKPRESSURE_ENABLED = new PropertyDescriptor.Builder()
+        .name("spark.streaming.backpressure.enabled")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("true")
+        .build
 
-    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
+    val SPARK_STREAMING_UNPERSIST = new PropertyDescriptor.Builder()
+        .name("spark.streaming.unpersist")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("false")
+        .build
 
+    val SPARK_UI_PORT = new PropertyDescriptor.Builder()
+        .name("spark.ui.port")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("4050")
+        .build
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -88,57 +114,57 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_STREAMING_BATCH_DURATION)
         descriptors.add(KAFKA_METADATA_BROKER_LIST)
         descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
+        descriptors.add(SPARK_STREAMING_BACKPRESSURE_ENABLED)
+        descriptors.add(SPARK_STREAMING_UNPERSIST)
+        descriptors.add(SPARK_UI_PORT)
 
         Collections.unmodifiableList(descriptors)
     }
 
-    var sc: SparkContext = null
-    var ssc: StreamingContext = null
 
-    override def start(context: EngineContext): Unit = {
+    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
+
+    override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance]) = {
 
         logger.info("starting Spark Engine")
-        val sparkMaster = context.getProperty(SPARK_MASTER).getValue
-        val maxRatePerPartition = context.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
-        val appName = context.getProperty(SPARK_APP_NAME).getValue
-        val blockInterval = context.getProperty(SPARK_STREAMING_BLOCK_INTERVAL).getValue
-        val batchDuration = context.getProperty(SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-        val brokerList = context.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
-        val zkQuorum = context.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
-        val topicList = "test"
+        val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
+        val maxRatePerPartition = engineContext.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
+        val appName = engineContext.getProperty(SPARK_APP_NAME).getValue
+        val blockInterval = engineContext.getProperty(SPARK_STREAMING_BLOCK_INTERVAL).getValue
+        val batchDuration = engineContext.getProperty(SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+        val brokerList = engineContext.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
+        val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
+        val backPressureEnabled = engineContext.getProperty(SPARK_STREAMING_BACKPRESSURE_ENABLED).getValue
+        val streamingUnpersist = engineContext.getProperty(SPARK_STREAMING_UNPERSIST).getValue
 
-        // job configuration
+        /**
+          * job configuration
+          */
         val conf = new SparkConf()
         conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         conf.set("spark.streaming.kafka.maxRatePerPartition", maxRatePerPartition)
         conf.set("spark.streaming.blockInterval", blockInterval)
-        conf.set("spark.streaming.backpressure.enabled", "true")
-        conf.set("spark.streaming.unpersist", "false")
+        conf.set("spark.streaming.backpressure.enabled", backPressureEnabled)
+        conf.set("spark.streaming.unpersist", streamingUnpersist)
         conf.set("spark.ui.port", "4050")
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
 
-        sc = new SparkContext(conf)
-
-        logger.info(s"spark context initialized with master:$sparkMaster, appName:$appName, " +
-            s"blockInterval:$blockInterval, maxRatePerPartition:$maxRatePerPartition")
-        ssc = new StreamingContext(sc, Milliseconds(batchDuration))
-
+        @transient val sc = new SparkContext(conf)
+        @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
+        logger.info(s"spark context initialized with master:$sparkMaster, " +
+            s"appName:$appName, " +
+            s"blockInterval:$blockInterval, " +
+            s"maxRatePerPartition:$maxRatePerPartition")
 
 
         // Define the Kafka parameters, broker list must be specified
         val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> "LogIndexer")
-
+        val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
         logger.debug("batchDuration: " + batchDuration)
         logger.debug("blockInterval: " + blockInterval)
         logger.debug("maxRatePerPartition: " + maxRatePerPartition)
         logger.debug("brokerList: " + brokerList)
-        logger.debug("topicList: " + topicList)
-
-        // Define which topics to read from
-        val topics = topicList.split(",").toSet
-
-
 
         /*
        // v0.9.0.1
@@ -146,40 +172,74 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                30000, 30000, JaasUtils.isZkSecurityEnabled());
        TopicCommand.createTopic(zkUtils, opts);
        */
-        // v0.8.2.1
-        val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
 
-        topics.foreach(topic => {
+
+        /**
+          * loop over processContext
+          */
+        processorInstances.toList.foreach(processorInstance => {
+
+            val processorContext = new StandardProcessContext(processorInstance)
+
+            // create topics if needed
+            val inputTopics = processorContext.getProperty(AbstractEventProcessor.INPUT_TOPICS).getValue.split(",").toSet
+            val outputTopics = processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
+            val errorTopics = processorContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
+
+            createTopicsIfNeeded(zkClient, inputTopics)
+            createTopicsIfNeeded(zkClient, outputTopics)
+            createTopicsIfNeeded(zkClient, errorTopics)
+
+            // Create the direct stream with the Kafka parameters and topics
+            val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
+                ssc,
+                kafkaParams,
+                inputTopics
+            )
+
+            // setup the stream processing
+            kafkaStream.foreachRDD(rdd => {
+
+                rdd.foreachPartition(partition => {
+                    // convert partition to events
+                    val events = deserializeEvents(partition)
+                    processorInstance.getProcessor.process(processorContext, events.toList)
+                    logger.debug("bim")
+                })
+
+            })
+
+        })
+
+
+        // Start the computation
+        ssc.start()
+        ssc.awaitTermination()
+    }
+
+    def createTopicsIfNeeded(zkClient: ZkClient, inputTopics: Set[String]): Unit = {
+        inputTopics.foreach(topic => {
             if (!AdminUtils.topicExists(zkClient, topic)) {
                 AdminUtils.createTopic(zkClient, topic, 1, 1)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
             }
         })
+    }
 
-        // Create the direct stream with the Kafka parameters and topics
-        val kafkaStream = KafkaUtils.createDirectStream[String, Array[Byte], StringDecoder, DefaultDecoder](
-            ssc,
-            kafkaParams,
-            topics
-        )
+    def deserializeEvents(partition: Iterator[( Array[Byte], Array[Byte])]): Iterator[Event] = {
+        partition.map(rawEvent => {
+            // create a deserializer once per partition
+            val deserializer = new EventKryoSerializer(true)
+            val bais: ByteArrayInputStream = new ByteArrayInputStream(rawEvent._2)
+            val deserialized = deserializer.deserialize(bais)
+            bais.close()
 
-        kafkaStream
-            .foreachRDD(rdd => {
-
-                rdd.foreachPartition(partition => {
-
-                    logger.debug("bim")
-                })
-
-            })
-        // Start the computation
-        ssc.start()
-        ssc.awaitTermination()
+            deserialized
+        })
     }
 
     override def shutdown(context: EngineContext) = {
-        ssc.stop(true)
     }
 
     override def onPropertyModified(descriptor: PropertyDescriptor, oldValue: String, newValue: String) = {

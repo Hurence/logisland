@@ -5,11 +5,13 @@ import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.components.PropertyValue;
 import com.hurence.logisland.config.LogislandSessionConfigReader;
 import com.hurence.logisland.config.LogislandSessionConfiguration;
+import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,7 +43,7 @@ public class ConfigLoaderTest {
         Assert.assertEquals(context.getProperty("spark.streaming.blockInterval").asInteger().intValue(), 350);
 
 
-        engineInstance.get().getEngine().start(context);
-        engineInstance.get().getEngine().shutdown(context);
+        List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(config);
+       // engineInstance.get().getEngine().start(context, processors);
     }
 }

@@ -58,7 +58,7 @@ object EventProcessorJob extends LazyLogging {
             val engineContext = new StandardEngineContext(engineInstance.get)
 
 
-            engineInstance.get.getEngine.start(engineContext)
+            engineInstance.get.getEngine.start(engineContext, processors)
         }
 
 

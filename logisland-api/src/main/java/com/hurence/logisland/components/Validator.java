@@ -16,10 +16,12 @@
  */
 package com.hurence.logisland.components;
 
+import java.io.Serializable;
+
 /**
  *
  */
-public interface Validator {
+public interface Validator extends Serializable {
 
     /**
      * Validator object providing validation behavior in which validation always

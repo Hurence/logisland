@@ -16,10 +16,11 @@
  */
 package com.hurence.logisland.components;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
-public interface ConfiguredComponent {
+public interface ConfiguredComponent extends Serializable {
 
     public String getIdentifier();
 

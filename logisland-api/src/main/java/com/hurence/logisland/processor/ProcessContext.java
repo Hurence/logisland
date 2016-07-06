@@ -21,6 +21,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.components.PropertyValue;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ import java.util.Set;
  * thread-safe.
  * </p>
  */
-public interface ProcessContext {
+public interface ProcessContext extends Serializable{
 
     /**
      * Retrieves the current value set for the given descriptor, if a value is

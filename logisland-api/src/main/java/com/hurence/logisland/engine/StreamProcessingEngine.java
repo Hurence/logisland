@@ -19,14 +19,17 @@ package com.hurence.logisland.engine;
 
 import com.hurence.logisland.components.ConfigurableComponent;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.StandardProcessorInstance;
+
+import java.util.List;
 
 /**
  * Carry the business rules, to be applied to a bunch of events
  */
 public interface StreamProcessingEngine extends ConfigurableComponent {
 
-    void start(EngineContext context);
+    void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances);
 
-    void shutdown(EngineContext context);
+    void shutdown(EngineContext engineContext);
 
 }

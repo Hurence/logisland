@@ -17,10 +17,11 @@
 package com.hurence.logisland.components;
 
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-public interface ConfigurableComponent {
+public interface ConfigurableComponent extends Serializable{
 
 
     /**

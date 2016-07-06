@@ -17,13 +17,6 @@
 
 package com.hurence.logisland.repository.json;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,57 +24,60 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author tom
  */
 public class JsonTagsFileParser {
 
-	private static final Logger logger = LoggerFactory.getLogger(JsonTagsFileParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonTagsFileParser.class);
 
-	/**
-	 * parses the file and returns a dictionnary of domain / tags
-	 *
-	 * @param filename
-	 * @return
-	 */
-	public Map<String, List<String>> parse(String filename) {
+    /**
+     * parses the file and returns a dictionnary of domain / tags
+     *
+     * @param filename
+     * @return
+     */
+    public Map<String, List<String>> parse(String filename) {
 
-		Map<String, List<String>> repository = new HashMap<>();
-		JSONParser parser = new JSONParser();
-		int domainCount = 0;
+        Map<String, List<String>> repository = new HashMap<>();
+        JSONParser parser = new JSONParser();
+        int domainCount = 0;
 
-		try {
+        try {
 
-			logger.debug("parsing json file : " + filename);
-			Object obj = parser.parse(new FileReader(filename));
+            logger.debug("parsing json file : " + filename);
+            Object obj = parser.parse(new FileReader(filename));
 
-			JSONArray domains = (JSONArray) obj;
+            JSONArray domains = (JSONArray) obj;
 
-			for (Object object : domains) {
-				domainCount++;
-				JSONObject jsonObject = (JSONObject) object;
-				String domain = (String) jsonObject.get("term");
+            for (Object object : domains) {
+                domainCount++;
+                JSONObject jsonObject = (JSONObject) object;
+                String domain = (String) jsonObject.get("term");
 
-				List<String> tags = (JSONArray) jsonObject.get("tags");
+                JSONArray tags = (JSONArray) jsonObject.get("tags");
 
-				String company = (String) jsonObject.get("company");
-				if (company != null) {
-					tags.add(company);
-				}
+                String company = (String) jsonObject.get("company");
+                if (company != null) {
+                    tags.add(company);
+                }
 
-				repository.put(domain, tags);
-			}
+                repository.put(domain, tags);
+            }
 
-			logger.debug("succesfully parsed " + domainCount + "domains");
+            logger.debug("succesfully parsed " + domainCount + "domains");
 
-		} catch (FileNotFoundException | ParseException ex) {
-			logger.error(ex.getMessage());
-		} catch (IOException ex) {
-			logger.error(ex.getMessage());
-		}
+        } catch (ParseException | IOException ex) {
+            logger.error(ex.getMessage());
+        }
 
-		return repository;
+        return repository;
 
-	}
+    }
 }

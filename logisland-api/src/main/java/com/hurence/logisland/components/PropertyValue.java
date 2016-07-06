@@ -18,6 +18,7 @@ package com.hurence.logisland.components;
 
 
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * of a processor property can be obtained in different forms.
  * </p>
  */
-public interface PropertyValue {
+public interface PropertyValue extends Serializable {
 
     /**
      * @return the raw property value as a string

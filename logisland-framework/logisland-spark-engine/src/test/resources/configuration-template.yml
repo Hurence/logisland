@@ -19,5 +19,14 @@ components:
       spark.streaming.blockInterval: 350
       spark.streaming.kafka.maxRatePerPartition: 1
       spark.ui.port: 4050
-      kafka.metadata.broker.list: sandbox:9092
-      kafka.zookeeper.quorum: sandbox:2181
+      kafka.metadata.broker.list: localhost:9092
+      kafka.zookeeper.quorum: localhost:2181
+
+  - component: com.hurence.logisland.processor.MockProcessor
+    type: processor
+    version: 0.1.0
+    documentation: a processor that does nothing really useful
+    configuration:
+      kafka.input.topics: logisland-mock-in
+      kafka.output.topics: logisland-mock-out
+      fake.message: I'm a creep

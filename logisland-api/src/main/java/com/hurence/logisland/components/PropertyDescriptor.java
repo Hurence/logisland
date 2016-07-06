@@ -17,6 +17,7 @@
 package com.hurence.logisland.components;
 
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -24,7 +25,7 @@ import java.util.*;
  * property.
  *
  */
-public final class PropertyDescriptor implements Comparable<PropertyDescriptor> {
+public final class PropertyDescriptor implements Comparable<PropertyDescriptor>, Serializable {
 
     public static final PropertyDescriptor NULL_DESCRIPTOR = new PropertyDescriptor.Builder().name("").build();
 
