@@ -39,11 +39,14 @@ public class MockProcessor extends AbstractEventProcessor {
     @Override
     public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
 
+
         collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
 
         Event mockEvent = new Event(EVENT_TYPE_NAME);
         mockEvent.put("eventCount", "int", collection.size());
-        mockEvent.put("message", "string", context.getProperty(FAKE_MESSAGE));
+        mockEvent.put("message", "string", context.getProperty(FAKE_MESSAGE).getValue());
+
+        logger.info("mock event : {}", mockEvent);
 
         List<Event> mockResults = new ArrayList<>();
         mockResults.add(mockEvent);

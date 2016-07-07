@@ -1,9 +1,8 @@
 package com.hurence.logisland.parser.syslog
 
 import java.util.Calendar
-
-import com.hurence.logisland.logisland.parser.base.BaseLogParserTest
 import com.hurence.logisland.event.Event
+import com.hurence.logisland.parser.base.BaseLogParserTest
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 

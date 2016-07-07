@@ -92,7 +92,7 @@ language governing permissions and limitations under the License. -->
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-common-parsers-plugin</artifactId>
+            <artifactId>logisland-common-processors-plugin</artifactId>
             <version>0.3.0</version>
         </dependency>
         <dependency>

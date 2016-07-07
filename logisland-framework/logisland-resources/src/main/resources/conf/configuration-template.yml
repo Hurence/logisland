@@ -3,7 +3,7 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 
 components:
   # Main event streaming engine
-  - component: com.hurence.logisland.engine.EventProcessorJob
+  - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
     type: engine
     version: 0.1.0
     documentation: Main Logisland job entry point
@@ -17,48 +17,17 @@ components:
       spark.streaming.backpressure.enabled: true
       spark.streaming.unpersist: false
       spark.streaming.blockInterval: 350
-      spark.streaming.kafka.maxRatePerPartition:
+      spark.streaming.kafka.maxRatePerPartition: 1
+      spark.streaming.timeout: 10000
       spark.ui.port: 4050
-      kafka.metadata.broker.list: sandbox:2181
+      kafka.metadata.broker.list: localhost:9092
+      kafka.zookeeper.quorum: localhost:2181
 
-  # Match Lucene queries
-  - component: com.hurence.logisland.component.QueryMatcherProcessor
-    type: component
-    version: 1.0
-    documentation:
+  - component: com.hurence.logisland.processor.MockProcessor
+    type: processor
+    version: 0.1.0
+    documentation: a processor that does nothing really useful
     configuration:
-      inputTopic: kafka_log
-      outputTopic: kafka_event
-      rules:
-        - name: rule 1
-          query: incident*
-        - name: rule 2
-          query: vehicule*
-
-  # Detect outliers
-  - component: com.hurence.logisland.component.OutlierProcessor
-    type: component
-    version: 1.0
-    documentation:
-    configuration:
-      inputTopic: kafka_log
-      outputTopic: kafka_event
-      rotationPolicy:
-        type: BY_AMOUNT
-        amount : 100
-        unit: POINTS
-      chunkingPolicy:
-        type: BY_AMOUNT
-        amount: 10
-        unit: POINTS
-      globalStatistics :
-      sketchyOutlierAlgorithm: SKETCHY_MOVING_MAD
-      batchOutlierAlgorithm:
-        type: RAD
-        config:
-          minAmountToPredict: 100
-          reservoirSize: 100
-          minZscorePercentile: 95
-          zscoreCutoffs:
-            NORMAL: 0.000000000000001
-            MODERATE_OUTLIER: 1.5
+      kafka.input.topics: logisland-mock-in
+      kafka.output.topics: logisland-mock-out
+      fake.message: I'm a creep

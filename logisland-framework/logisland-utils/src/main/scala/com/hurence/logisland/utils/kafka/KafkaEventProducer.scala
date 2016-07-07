@@ -51,7 +51,7 @@ class KafkaEventProducer(brokerList: String, topic: String) extends LazyLogging 
       *
       * @param events
       */
-    def produce(events: Iterator[Event]) = {
+    def produce(events: List[Event]) = {
         logger.debug(s"start producing serialized events on topic $topic")
 
         // process all the event queue
@@ -75,31 +75,5 @@ class KafkaEventProducer(brokerList: String, topic: String) extends LazyLogging 
 
     }
 
-    /**
-      * Send events to Kafka topics
-      *
-      * @param events
-      */
-    def produce(events: Array[Event]) = {
-        logger.debug(s"start producing serialized events on topic $topic")
 
-        // process all the event queue
-        val kryoSerializer = new EventKryoSerializer(true)
-
-        val messages = events.map(event => {
-            val baos: ByteArrayOutputStream = new ByteArrayOutputStream
-            kryoSerializer.serialize(baos, event)
-
-            // and then converted to KeyedMessage
-            val message = new KeyedMessage[String, Array[Byte]](topic, "key-event", baos.toByteArray)
-            baos.close()
-
-            message
-        })
-
-        producer.send(messages: _*)
-        producer.close()
-        logger.debug(s"sent ${messages.size} serialized events on topic $topic")
-
-    }
 }

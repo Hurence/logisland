@@ -1,4 +1,4 @@
-package com.hurence.logisland.logisland.parser.base
+package com.hurence.logisland.parser.base
 
 import com.hurence.logisland.event.EventField
 

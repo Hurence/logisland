@@ -10,7 +10,7 @@ declare -r app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
 
 declare java_cmd="$SPARK_HOME/bin/spark-submit \
     --class ${app_mainclass} \
-    --jars ${app_classpath} ${lib_dir}/*-island-*.jar \
+    --jars ${app_classpath} ${lib_dir}/logisland*.jar \
     ${@}"
 
 

@@ -23,9 +23,7 @@ public class StreamProcessingRunner {
 
     public static void main(String[] args) {
 
-
-        System.out.println("go");
-        logger.info("go2");
+        logger.info("starting StreamProcessingRunner");
 
         //////////////////////////////////////////
         // Commande lien management

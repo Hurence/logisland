@@ -22,7 +22,7 @@
         <version>0.9.4</version>
     </parent>
 
-    <artifactId>logisland-common-parsers-plugin</artifactId>
+    <artifactId>logisland-common-processors-plugin</artifactId>
     <packaging>jar</packaging>
     <version>0.3.0</version>
 

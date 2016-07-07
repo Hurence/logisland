@@ -8,6 +8,7 @@ import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
 import com.hurence.logisland.serializer.EventKryoSerializer
+import com.hurence.logisland.utils.kafka.KafkaEventProducer
 import com.hurence.logisland.validators.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder
@@ -213,13 +214,14 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                 rdd.foreachPartition(partition => {
                     // convert partition to events
-                    val events = deserializeEvents(partition)
-                    processorInstance.getProcessor.process(processorContext, events.toList)
+                    val incomingEvents = deserializeEvents(partition)
+                    val outgoingEvents = processorInstance.getProcessor.process(processorContext, incomingEvents.toList)
+
+                    val kafkaProducer = new KafkaEventProducer(brokerList,processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue)
+                    kafkaProducer.produce(outgoingEvents.toList)
                     logger.debug("bim")
                 })
-
             })
-
         })
 
 

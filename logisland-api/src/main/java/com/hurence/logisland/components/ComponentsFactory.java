@@ -4,6 +4,7 @@ import com.hurence.logisland.config.ComponentConfiguration;
 import com.hurence.logisland.config.LogislandSessionConfiguration;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
+import com.hurence.logisland.processor.AbstractEventProcessor;
 import com.hurence.logisland.processor.EventProcessor;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public final class ComponentsFactory {
             case "processor":
 
                 try {
-                    final EventProcessor processor = (EventProcessor) Class.forName(configuration.getComponent()).newInstance();
+                    final AbstractEventProcessor processor = (AbstractEventProcessor) Class.forName(configuration.getComponent()).newInstance();
                     final StandardProcessorInstance instance = new StandardProcessorInstance(processor, Long.toString(currentId.incrementAndGet()));
 
 

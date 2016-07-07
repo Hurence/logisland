@@ -8,16 +8,16 @@ import com.hurence.logisland.components.ConfigurableComponent;
  */
 public class StandardProcessorInstance extends AbstractConfiguredComponent {
 
-    private final EventProcessor processor;
+    private final AbstractEventProcessor processor;
 
-    public StandardProcessorInstance(EventProcessor processor, String id) {
+    public StandardProcessorInstance(AbstractEventProcessor processor, String id) {
         super(processor, id);
         this.processor = processor;
 
 
     }
 
-    public EventProcessor getProcessor() {
+    public AbstractEventProcessor getProcessor() {
         return processor;
     }
 

@@ -13,11 +13,10 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package com.hurence.logisland.logisland.parser.apache
+package com.hurence.logisland.parser.apache
 
-import com.hurence.logisland.logisland.parser.base.{BaseLogParserTest, BaseUnitTest}
-import com.hurence.logisland.event.{EventField, Event}
-import com.hurence.logisland.parser.apache.ApacheLogParser
+import com.hurence.logisland.event.Event
+import com.hurence.logisland.parser.base.BaseLogParserTest
 
 class ApacheLogParserTest extends BaseLogParserTest {
 

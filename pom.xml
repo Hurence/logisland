@@ -334,7 +334,7 @@ language governing permissions and limitations under the License. --><project xm
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.8.1</version>
+                <version>1.7.7</version>
             </dependency>
             <dependency>
                 <groupId>com.esotericsoftware</groupId>
@@ -375,6 +375,12 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>com.googlecode.json-simple</groupId>
                 <artifactId>json-simple</artifactId>
                 <version>1.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20090211</version>
             </dependency>
             <dependency>
                 <groupId>com.github.flaxsearch</groupId>
@@ -459,7 +465,7 @@ language governing permissions and limitations under the License. --><project xm
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-common-parsers-plugin</artifactId>
+                <artifactId>logisland-common-processors-plugin</artifactId>
                 <version>0.3.0</version>
             </dependency>
             <dependency>

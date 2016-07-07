@@ -33,7 +33,7 @@ public class OutlierProcessorTest {
 
 
     @Test
-    public void OutlierProcessorTest() throws IOException, LogParserException {
+    public void testDetection() throws IOException, LogParserException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
