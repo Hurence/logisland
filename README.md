@@ -31,8 +31,8 @@ Once you know how to run and build your own parsers and processors, you'll want 
 
 ## Setup a stream processing workflog
 
-A LogIsland stream processing flow is made of a bunch of components. At least one streaming engine and 1 or more stream processors. You set them up by a YAML configuration file. Please note that events are serialized against an Avro schema while transiting through any Kafka topic. Every `spark.streaming.batchDuration` each processor will processor it bunch of Events to eventually generate some new events.
-The following `conf/configuration-template.yml` contains all processor definitions.
+A LogIsland stream processing flow is made of a bunch of components. At least one streaming engine and 1 or more stream processors. You set them up by a YAML configuration file. Please note that events are serialized against an Avro schema while transiting through any Kafka topic. Every `spark.streaming.batchDuration` (time window), each processor will handle its bunch of Events to eventually generate some new events to the output topic.
+The following `conf/configuration-template.yml` contains a sample of processor definitions.
 
 ```YAML
 
