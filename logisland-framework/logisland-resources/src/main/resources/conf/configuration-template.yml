@@ -17,17 +17,37 @@ components:
       spark.streaming.backpressure.enabled: true
       spark.streaming.unpersist: false
       spark.streaming.blockInterval: 350
-      spark.streaming.kafka.maxRatePerPartition: 1
-      spark.streaming.timeout: 10000
+      spark.streaming.kafka.maxRatePerPartition: 500
+      spark.streaming.timeout: 20000
       spark.ui.port: 4050
       kafka.metadata.broker.list: localhost:9092
       kafka.zookeeper.quorum: localhost:2181
 
-  - component: com.hurence.logisland.processor.MockProcessor
+  # A Debug component that only logs what it reads
+  - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
     type: processor
     version: 0.1.0
-    documentation: a processor that does nothing really useful
+    documentation: a processor that trace the processed events
     configuration:
       kafka.input.topics: logisland-mock-in
-      kafka.output.topics: logisland-mock-out
-      fake.message: I'm a creep
+      kafka.output.topics: none
+      kafka.error.topics: none
+      avro.schema: |
+              {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+
+  # Generate random events based on an avro schema
+  - component: com.hurence.logisland.processor.randomgenerator.RandomEventGeneratorProcessor
+    type: processor
+    version: 0.1.0
+    documentation: a processor that produces random events
+    configuration:
+      kafka.input.topics: none
+      kafka.output.topics: logisland-mock-in
+      kafka.error.topics: logisland-error
+      min.events.count: 5
+      max.events.count: 100
+      avro.schema: |
+        {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+
+
+

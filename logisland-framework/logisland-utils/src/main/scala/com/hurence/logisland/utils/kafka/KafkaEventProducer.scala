@@ -21,19 +21,19 @@ import java.util.Properties
 
 import _root_.kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import com.hurence.logisland.event.Event
-import com.hurence.logisland.serializer.EventKryoSerializer
+import com.hurence.logisland.serializer.{EventSerializer, EventKryoSerializer}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 /**
   * Created by tom on 13/01/16.
   */
-class KafkaEventProducer(brokerList: String, topic: String) extends LazyLogging with Serializable {
+class KafkaEventProducer(brokerList: String, topic: String, serializer: EventSerializer) extends LazyLogging with Serializable {
 
     // Zookeper connection properties
     val props = new Properties()
     props.setProperty("metadata.broker.list", brokerList)
-    props.setProperty("key.serializer.class", "kafka.serializer.StringEncoder")
+    props.setProperty("key.serializer.class", "kafka.serializer.DefaultEncoder")
     props.setProperty("serializer.class", "kafka.serializer.DefaultEncoder")
     //  props.setProperty("partitioner.class", "example.producer.SimplePartitioner")
     props.setProperty("request.required.acks", "1")
@@ -44,7 +44,7 @@ class KafkaEventProducer(brokerList: String, topic: String) extends LazyLogging 
 
     val config = new ProducerConfig(props)
 
-    val producer = new Producer[String, Array[Byte]](config)
+    val producer = new Producer[Array[Byte], Array[Byte]](config)
 
     /**
       * Send events to Kafka topics
@@ -55,15 +55,15 @@ class KafkaEventProducer(brokerList: String, topic: String) extends LazyLogging 
         logger.debug(s"start producing serialized events on topic $topic")
 
         // process all the event queue
-        val kryoSerializer = new EventKryoSerializer(true)
+        //val kryoSerializer = new EventKryoSerializer(true)
 
         val messages = events.map(event => {
             // messages are serialized with kryo first
             val baos: ByteArrayOutputStream = new ByteArrayOutputStream
-            kryoSerializer.serialize(baos, event)
+            serializer.serialize(baos, event)
 
             // and then converted to KeyedMessage
-            val message = new KeyedMessage[String, Array[Byte]](topic, "key-event", baos.toByteArray)
+            val message = new KeyedMessage[Array[Byte], Array[Byte]](topic, "key-event".getBytes(), baos.toByteArray)
             baos.close()
 
             message

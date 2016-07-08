@@ -3,6 +3,8 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.components.AbstractConfigurableComponent;
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.validators.StandardValidators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by tom on 01/07/16.
@@ -10,7 +12,7 @@ import com.hurence.logisland.validators.StandardValidators;
 public abstract class AbstractEventProcessor extends AbstractConfigurableComponent implements EventProcessor {
 
     public static final String DEAD_LETTER_TOPIC = "logisland-dead-letter-queue";
-
+    private static Logger logger = LoggerFactory.getLogger(AbstractEventProcessor.class);
     //private final EventStreamConfig config;
 
     public static final PropertyDescriptor OUTPUT_TOPICS = new PropertyDescriptor.Builder()
@@ -34,4 +36,23 @@ public abstract class AbstractEventProcessor extends AbstractConfigurableCompone
             .required(true)
             .defaultValue(DEAD_LETTER_TOPIC)
             .build();
+
+    public static final PropertyDescriptor INPUT_SCHEMA = new PropertyDescriptor.Builder()
+            .name("avro.input.schema")
+            .description("the avro schema definition")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor OUTPUT_SCHEMA = new PropertyDescriptor.Builder()
+            .name("avro.output.schema")
+            .description("the avro schema definition for the output serialization")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    @Override
+    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
+        logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+    }
 }

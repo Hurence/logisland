@@ -102,7 +102,7 @@ public class RandomEventGeneratorProcessorTest {
 
 
         Map<String, String> conf = new HashMap<>();
-        conf.put("avro.schema", avroSchema);
+        conf.put("avro.input.schema", avroSchema);
         conf.put("min.events.count", "5");
         conf.put("max.events.count", "20");
 

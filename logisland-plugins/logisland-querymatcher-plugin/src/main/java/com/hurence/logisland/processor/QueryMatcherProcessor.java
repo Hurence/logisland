@@ -109,8 +109,11 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(ERROR_TOPICS);
         descriptors.add(INPUT_TOPICS);
         descriptors.add(OUTPUT_TOPICS);
+        descriptors.add(INPUT_SCHEMA);
+        descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(RULES);
 
         return Collections.unmodifiableList(descriptors);

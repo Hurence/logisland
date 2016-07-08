@@ -2,38 +2,22 @@ package com.hurence.logisland.processor.randomgenerator;
 
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventField;
 import com.hurence.logisland.processor.AbstractEventProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.serializer.EventAvroSerializer;
 import com.hurence.logisland.utils.avro.eventgenerator.DataGenerator;
-import com.hurence.logisland.utils.avro.eventgenerator.UnknownTypeException;
 import com.hurence.logisland.validators.StandardValidators;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.hadoop.io.AvroSerializer;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.util.*;
 
 
 public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
-
-
-    public static final PropertyDescriptor AVRO_SCHEMA = new PropertyDescriptor.Builder()
-            .name("avro.schema")
-            .description("the avro schema definition")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
 
     public static final PropertyDescriptor MIN_EVENTS_COUNT = new PropertyDescriptor.Builder()
             .name("min.events.count")
@@ -56,33 +40,30 @@ public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
 
     private static String EVENT_TYPE_NAME = "avro-generated-event";
 
-    private DataGenerator dataGenerator;
-    private RandomDataGenerator randomData = new RandomDataGenerator();
-    private EventAvroSerializer avroSerializer;
-    private int eventsCount;
-    private Schema schema;
+
+
 
     @Override
     public void init(final ProcessContext context) {
 
 
-        String schemaContent = context.getProperty(AVRO_SCHEMA).getValue();
-        int minEventsCount = context.getProperty(MIN_EVENTS_COUNT).asInteger();
-        int maxEventsCount = context.getProperty(MAX_EVENTS_COUNT).asInteger();
-
-
-        final Schema.Parser parser = new Schema.Parser();
-        schema = parser.parse(schemaContent);
-
-
-        avroSerializer = new EventAvroSerializer(schema);
-        eventsCount = randomData.nextInt(minEventsCount, maxEventsCount);
-        dataGenerator = new DataGenerator(schemaContent);
-
     }
 
     @Override
     public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
+
+        final String schemaContent = context.getProperty(INPUT_SCHEMA).getValue();
+        final Schema.Parser parser = new Schema.Parser();
+        final Schema schema = parser.parse(schemaContent);
+
+        final DataGenerator dataGenerator = new DataGenerator(schemaContent);
+        final RandomDataGenerator randomData = new RandomDataGenerator();
+        final EventAvroSerializer avroSerializer = new EventAvroSerializer(schema);
+
+        final int minEventsCount = context.getProperty(MIN_EVENTS_COUNT).asInteger();
+        final int maxEventsCount = context.getProperty(MAX_EVENTS_COUNT).asInteger();
+        final int eventsCount = randomData.nextInt(minEventsCount, maxEventsCount);
+        logger.debug("generating {} events in [{},{}]", eventsCount, minEventsCount, maxEventsCount);
 
         List<Event> outEvents = new ArrayList<>();
 
@@ -91,7 +72,6 @@ public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
                 GenericRecord eventRecord = dataGenerator.generateRandomRecord();
 
                 Event event = new Event(EVENT_TYPE_NAME);
-
 
 
                 for (final Schema.Field schemaField : schema.getFields()) {
@@ -117,9 +97,6 @@ public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
                     }
                 }
 
-
-                logger.info(event.toString());
-
                 outEvents.add(event);
             } catch (Exception e) {
                 logger.error("problem while generating random event from avro schema {}");
@@ -136,13 +113,13 @@ public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(INPUT_TOPICS);
         descriptors.add(OUTPUT_TOPICS);
-        descriptors.add(AVRO_SCHEMA);
+        descriptors.add(INPUT_SCHEMA);
+        descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(MIN_EVENTS_COUNT);
         descriptors.add(MAX_EVENTS_COUNT);
 
         return Collections.unmodifiableList(descriptors);
     }
-
 
     @Override
     public String getIdentifier() {

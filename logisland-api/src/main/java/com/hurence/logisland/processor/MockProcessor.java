@@ -18,7 +18,7 @@ public class MockProcessor extends AbstractEventProcessor {
 
 
     public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
-            .name("fake.messages")
+            .name("fake.message")
             .description("a fake message")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -40,17 +40,16 @@ public class MockProcessor extends AbstractEventProcessor {
     public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
 
 
-        collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
+      //  collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
 
         Event mockEvent = new Event(EVENT_TYPE_NAME);
-        mockEvent.put("eventCount", "int", collection.size());
+        mockEvent.put("incomingEventsCount", "int", collection.size());
         mockEvent.put("message", "string", context.getProperty(FAKE_MESSAGE).getValue());
 
-        logger.info("mock event : {}", mockEvent);
 
         List<Event> mockResults = new ArrayList<>();
         mockResults.add(mockEvent);
-
+        logger.info("mock processing event : {}", mockEvent);
         return mockResults;
     }
 
@@ -58,14 +57,15 @@ public class MockProcessor extends AbstractEventProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(ERROR_TOPICS);
         descriptors.add(INPUT_TOPICS);
         descriptors.add(OUTPUT_TOPICS);
-        descriptors.add(ERROR_TOPICS);
+        descriptors.add(INPUT_SCHEMA);
+        descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(FAKE_MESSAGE);
 
         return Collections.unmodifiableList(descriptors);
     }
-
 
     @Override
     public String getIdentifier() {
