@@ -17,19 +17,6 @@ Once you know how to run and build your own parsers and processors, you'll want 
 
 
 
-## Create a new plugin
-
-    mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.4 -DlogislandVersion=0.9.4
-    
-    
-    Define value for property 'groupId': : com.hurence.logisland
-    Define value for property 'artifactId': : logisland-sample-plugin
-    Define value for property 'version':  1.0-SNAPSHOT: : 0.1
-    Define value for property 'artifactBaseName': : sample
-    Define value for property 'package':  com.hurence.logisland.sample: :
-    [INFO] Using property: logislandVersion = 0.9.4
-
-
 ## Basic Workflow
 
 1. Raw log files are sent to Kafka topics by a NIFI / Logstash / Flume / Collectd (or whatever) agent 
@@ -42,38 +29,93 @@ Once you know how to run and build your own parsers and processors, you'll want 
 
     
 
-## Start a log com.hurence.logisland.logisland.parser 
+## Setup a stream processing workflog
 
-A *Log com.hurence.logisland.logisland.parser* takes a log line as a String and computes an Event as a sequence of fields. 
-Let's start a `LogParser` streaming job with a custom `ApacheLogParser`. 
-This stream will process log entries as soon as they will be queued into `li-apache-logs` Kafka topics, each log will be parsed as an event which will be pushed back to Kafka in the `li-apache-event` topic.
+A LogIsland stream processing flow is made of a bunch of components. At least one streaming engine and 1 or more stream processors. You set them up by a YAML configuration file. Please note that events are serialized against an Avro schema while transiting through any Kafka topic. Every `spark.streaming.batchDuration` each processor will processor it bunch of Events to eventually generate some new events.
+The following `conf/configuration-template.yml` contains all processor definitions.
+
+```YAML
+
+    version: 0.1
+    documentation: LogIsland analytics main config file. Put here every engine or component config
+    
+    components:
+      # Main event streaming engine
+      - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
+        type: engine
+        version: 0.1.0
+        documentation: Main Logisland job entry point
+        configuration:
+          spark.master: local[8]
+          spark.executorMemory: 4g
+          spark.checkpointingDirectory: file:///tmp
+          spark.appName: My first stream component
+          spark.streaming.batchDuration: 2000
+          spark.serializer: org.apache.spark.serializer.KryoSerializer
+          spark.streaming.backpressure.enabled: true
+          spark.streaming.unpersist: false
+          spark.streaming.blockInterval: 350
+          spark.streaming.kafka.maxRatePerPartition: 500
+          spark.streaming.timeout: 20000
+          spark.ui.port: 4050
+          kafka.metadata.broker.list: localhost:9092
+          kafka.zookeeper.quorum: localhost:2181
+    
+      # A Debug component that only logs what it reads
+      - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
+        type: processor
+        version: 0.1.0
+        documentation: a processor that trace the processed events
+        configuration:
+          kafka.input.topics: logisland-mock-in
+          kafka.output.topics: none
+          kafka.error.topics: none
+          avro.input.schema: |
+                  {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+          avro.output.schema: |
+                        {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+    
+      # Generate random events based on an avro schema
+      - component: com.hurence.logisland.processor.randomgenerator.RandomEventGeneratorProcessor
+        type: processor
+        version: 0.1.0
+        documentation: a processor that produces random events
+        configuration:
+          kafka.input.topics: none
+          kafka.output.topics: logisland-mock-in
+          kafka.error.topics: logisland-error
+          min.events.count: 5
+          max.events.count: 100
+          avro.input.schema: |
+                        {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+          
+          avro.output.schema: |
+                              {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+```    
 
 
-    $LOGISLAND_HOME/bin/log-com.hurence.logisland.logisland.parser \
-        --kafka-brokers sandbox:9092 \
-        --input-topics li-apache-logs \
-        --output-topics li-apache-event \
-        --max-rate-per-partition 10000 \
-        --log-com.hurence.logisland.logisland.parser com.hurence.logisland.plugin.apache.ApacheLogParser
+
+## Start an the stream workflow
+
+One you've edited your configuration file, you can submit it to execution engine with the following cmd :
 
 
-## Start an event mapper 
-
-An *event mapper* takes an event and serialize it as an Elasticsearch document.
-Let's start an `EventIndexer` with a custom mapper.
-This stream will process event entries as soon as they will be queued into `li-apache-event` Kafka topics. 
-Each event will be sent to Elasticsearch by bulk. 
+    bin/process-stream.sh -conf conf/configuration-template.yml
 
 
-    $LOGISLAND_HOME/bin/event-indexer \
-        --kafka-brokers sandbox:9092 \
-        --es-host sandbox \
-        --index-name li-apache \
-        --input-topics li-apache-event \
-        --max-rate-per-partition 10000 \
-        --event-mapper com.hurence.logisland.plugin.apache.ApacheEventMapper
+## Create a new plugin
+Logisland processors are hosted in some plugins, you can create your own with a maven archetype.
 
 
-## Start an event component
+    git clone git@github.com:Hurence/log-island.git
+    cd logisland-0.9.4/logisland-plugins
+    mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.4 -DlogislandVersion=0.9.4
+    
+    
+    Define value for property 'groupId': : com.hurence.logisland
+    Define value for property 'artifactId': : logisland-sample-plugin
+    Define value for property 'version':  1.0-SNAPSHOT: : 0.1
+    Define value for property 'artifactBaseName': : sample
+    Define value for property 'package':  com.hurence.logisland.sample: :
+    [INFO] Using property: logislandVersion = 0.9.4
 
-//TODO 
