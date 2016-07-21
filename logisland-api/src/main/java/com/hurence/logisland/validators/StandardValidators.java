@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 public class StandardValidators {
 
-    
+
 
 
     public static final Validator POSITIVE_INTEGER_VALIDATOR = new Validator() {
@@ -285,6 +285,32 @@ public class StandardValidators {
             }
         }
     }
+
+
+    public static final Validator FILE_EXISTS_VALIDATOR = new FileExistsValidator(true);
+
+    public static class FileExistsValidator implements Validator {
+
+        private final boolean allowEL;
+
+        public FileExistsValidator(final boolean allowExpressionLanguage) {
+            this.allowEL = allowExpressionLanguage;
+        }
+
+        @Override
+        public ValidationResult validate(final String subject, final String value ) {
+
+
+            final String substituted = value;
+
+
+            final File file = new File(substituted);
+            final boolean valid = file.exists();
+            final String explanation = valid ? null : "File " + file + " does not exist";
+            return new ValidationResult.Builder().subject(subject).input(value).valid(valid).explanation(explanation).build();
+        }
+    }
+
 
     public static class DirectoryExistsValidator implements Validator {
 

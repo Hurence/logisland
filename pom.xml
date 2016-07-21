@@ -490,6 +490,11 @@ language governing permissions and limitations under the License. --><project xm
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-elasticsearch-plugin</artifactId>
+                <version>0.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-resources</artifactId>
                 <classifier>resources</classifier>
                 <scope>runtime</scope>

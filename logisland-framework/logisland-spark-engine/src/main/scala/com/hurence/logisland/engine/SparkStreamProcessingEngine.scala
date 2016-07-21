@@ -17,7 +17,7 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{TaskContext, SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -206,9 +206,12 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             kafkaStream.foreachRDD(rdd => {
 
                 rdd.foreachPartition(partition => {
+                    val partitionId = TaskContext.get.partitionId()
+                    // use this uniqueId to transactionally commit the data in partitionIterator
+
                     logger.debug("---------------------------------")
                     logger.debug(s"processor ${processorContext.getName}")
-                    logger.debug(s"processing topic $inputTopics => $outputTopics")
+                    logger.debug(s"processing topic $inputTopics => $outputTopics for spark partition $partitionId")
 
                     // convert partition to events
                     val parser = new Schema.Parser
