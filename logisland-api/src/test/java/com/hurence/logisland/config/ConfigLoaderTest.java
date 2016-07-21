@@ -3,6 +3,8 @@ package com.hurence.logisland.config;
 import com.hurence.logisland.components.ComponentsFactory;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
+import com.hurence.logisland.log.StandardParserContext;
+import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +43,7 @@ public class ConfigLoaderTest {
 
 
         List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(config);
-        engineInstance.get().getEngine().start(context, processors);
+        List<StandardParserInstance> parserInstances = ComponentsFactory.getAllParserInstances(config);
+        engineInstance.get().getEngine().start(context, processors, parserInstances);
     }
 }

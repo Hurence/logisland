@@ -5,6 +5,7 @@ import com.hurence.logisland.config.LogislandSessionConfigReader;
 import com.hurence.logisland.config.LogislandSessionConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
+import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -54,13 +55,14 @@ public class StreamProcessingRunner {
             LogislandSessionConfiguration sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
+            List<StandardParserInstance> parsers = ComponentsFactory.getAllParserInstances(sessionConf);
             List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(sessionConf);
             Optional<StandardEngineInstance> engineInstance = ComponentsFactory.getEngineInstance(sessionConf);
 
             // start the engine
             if (engineInstance.isPresent()) {
                 StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
-                engineInstance.get().getEngine().start(engineContext, processors);
+                engineInstance.get().getEngine().start(engineContext, processors, parsers);
             }
 
         } catch (Exception e) {

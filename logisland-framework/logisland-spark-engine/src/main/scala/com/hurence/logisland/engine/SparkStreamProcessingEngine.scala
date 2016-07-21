@@ -6,6 +6,7 @@ import java.util.Collections
 
 import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.Event
+import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
 import com.hurence.logisland.serializer.{EventAvroSerializer, EventSerializer}
 import com.hurence.logisland.utils.kafka.KafkaEventProducer
@@ -136,7 +137,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
 
-    override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance]) = {
+    override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance], parserInstances: util.List[StandardParserInstance]) = {
 
         logger.info("starting Spark Engine")
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
@@ -169,6 +170,22 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             s"appName:$appName, " +
             s"blockInterval:$blockInterval, " +
             s"maxRatePerPartition:$maxRatePerPartition")
+
+
+
+
+        /**
+          * loop over processContext
+          */
+        parserInstances.toList.foreach(parserInstance => {
+            val parserContext = new StandardParserContext(parserInstance)
+            parserInstance.getParser.init(parserContext)
+
+
+            //TODO
+        })
+
+
 
 
         /**

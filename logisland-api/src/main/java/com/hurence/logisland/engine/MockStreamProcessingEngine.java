@@ -1,6 +1,7 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.components.PropertyDescriptor;
+import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class MockStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
     @Override
-    public void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances) {
+    public void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances, List<StandardParserInstance> parserInstances) {
 
         logger.info("engine start");
     }
