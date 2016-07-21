@@ -71,7 +71,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
     };
 
     protected static final PropertyDescriptor CLUSTER_NAME = new PropertyDescriptor.Builder()
-            .name("Cluster Name")
+            .name("cluster.name")
             .description("Name of the ES cluster (for example, elasticsearch_brew). Defaults to 'elasticsearch'")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -79,7 +79,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     protected static final PropertyDescriptor HOSTS = new PropertyDescriptor.Builder()
-            .name("ElasticSearch Hosts")
+            .name("hosts")
             .description("ElasticSearch Hosts, which should be comma separated and colon for hostname/port "
                     + "host1:port,host2:port,....  For example testcluster:9300.")
             .required(true)
@@ -88,14 +88,14 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     public static final PropertyDescriptor PROP_SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
-            .name("SSL Context Service")
+            .name("ssl.context.service")
             .description("The SSL Context Service used to provide client certificate information for TLS/SSL "
                     + "connections. This service only applies if the Shield plugin is available.")
             .required(false)
             .build();
 
     public static final PropertyDescriptor PROP_SHIELD_LOCATION = new PropertyDescriptor.Builder()
-            .name("Shield Plugin Filename")
+            .name("shield.location")
             .description("Specifies the path to the JAR for the Elasticsearch Shield plugin. "
                     + "If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin "
                     + "JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's "
@@ -105,14 +105,14 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     public static final PropertyDescriptor USERNAME = new PropertyDescriptor.Builder()
-            .name("Username")
+            .name("username")
             .description("Username to access the Elasticsearch cluster")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor PASSWORD = new PropertyDescriptor.Builder()
-            .name("Password")
+            .name("password")
             .description("Password to access the Elasticsearch cluster")
             .required(false)
             .sensitive(true)
@@ -120,7 +120,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     protected static final PropertyDescriptor PING_TIMEOUT = new PropertyDescriptor.Builder()
-            .name("ElasticSearch Ping Timeout")
+            .name("ping.timeout")
             .description("The ping timeout used to determine when a node is unreachable. " +
                     "For example, 5s (5 seconds). If non-local recommended is 30s")
             .required(true)
@@ -129,7 +129,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     protected static final PropertyDescriptor SAMPLER_INTERVAL = new PropertyDescriptor.Builder()
-            .name("Sampler Interval")
+            .name("sampler.interval")
             .description("How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). "
                     + "If non-local recommended is 30s.")
             .required(true)
@@ -138,7 +138,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             .build();
 
     protected static final PropertyDescriptor CHARSET = new PropertyDescriptor.Builder()
-            .name("Character Set")
+            .name("charset")
             .description("Specifies the character set of the document data.")
             .required(true)
             .defaultValue("UTF-8")

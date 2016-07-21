@@ -45,33 +45,27 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
 
-    public static final PropertyDescriptor ID_ATTRIBUTE = new PropertyDescriptor.Builder()
-            .name("Identifier Attribute")
-            .description("The name of the attribute containing the identifier for each FlowFile")
-            .required(true)
-            .expressionLanguageSupported(false)
-            .build();
 
     public static final PropertyDescriptor INDEX = new PropertyDescriptor.Builder()
-            .name("Index")
+            .name("index")
             .description("The name of the index to insert into")
             .required(true)
             .expressionLanguageSupported(true)
             .build();
 
     public static final PropertyDescriptor TYPE = new PropertyDescriptor.Builder()
-            .name("Type")
+            .name("type")
             .description("The type of this document (used by Elasticsearch for indexing and searching)")
             .required(true)
             .expressionLanguageSupported(true)
             .build();
 
     public static final PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
-            .name("Batch Size")
+            .name("batch.size")
             .description("The preferred number of FlowFiles to put to the database in a single transaction")
             .required(true)
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("100")
+            .defaultValue("1000")
             .build();
 
 
@@ -87,7 +81,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         descriptors.add(PASSWORD);
         descriptors.add(PING_TIMEOUT);
         descriptors.add(SAMPLER_INTERVAL);
-        descriptors.add(ID_ATTRIBUTE);
         descriptors.add(INDEX);
         descriptors.add(TYPE);
         descriptors.add(CHARSET);
@@ -96,8 +89,8 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
-
-    public void setup(ProcessContext context) {
+    @Override
+    public void init(ProcessContext context) {
         super.setup(context);
     }
 
@@ -173,7 +166,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
    // @Override
     public Collection<Event> process2(ProcessContext context, Collection<Event> events) throws ProcessException {
         final int batchSize = context.getProperty(BATCH_SIZE).asInteger();
-        final String id_attribute = context.getProperty(ID_ATTRIBUTE).getValue();
         final Charset charset = Charset.forName(context.getProperty(CHARSET).getValue());
 
 
@@ -199,7 +191,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
                 final String id = file.getId();
                 if (id == null) {
-                    logger.error("No value in identifier attribute {} for {}, transferring to failure", new Object[]{id_attribute, file});
+                    logger.error("No value in identifier attribute {} for {}, transferring to failure", new Object[]{id, file});
                 } else {
 
                     String json = ElasticsearchEventConverter.convert(file);
