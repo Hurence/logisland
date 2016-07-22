@@ -73,17 +73,24 @@ public class SplitText extends AbstractLogParser {
 
         try {
 
-            Event event = new Event(eventType);
+
             Matcher matcher = regex.matcher(lines);
 
-            if (matcher.groupCount() != fields.length)
-                logger.warn("something went wrong in matching groups");
+            if(matcher.matches()){
+                Event event = new Event(eventType);
+                if (matcher.groupCount() != fields.length)
+                    logger.warn("something went wrong in matching groups");
 
-            for (int i = 0; i < matcher.groupCount() && i < fields.length; i++) {
-                event.put(fields[i], "string", matcher.group(i));
+                for (int i = 0; i < matcher.groupCount() && i < fields.length; i++) {
+                    event.put(fields[i], "string", matcher.group(i));
+                }
+
+                events.add(event);
+            }else {
+                logger.warn("no match");
             }
 
-            events.add(event);
+
 
 
         } catch (Exception e) {
