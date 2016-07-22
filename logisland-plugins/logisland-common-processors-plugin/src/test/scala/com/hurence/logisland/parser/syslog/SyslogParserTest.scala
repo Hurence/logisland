@@ -5,6 +5,7 @@ import com.hurence.logisland.event.Event
 import com.hurence.logisland.parser.base.BaseLogParserTest
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
+import collection.JavaConversions._
 
 /**
   * Created by gregoire on 13/04/16.
@@ -17,7 +18,7 @@ class SyslogParserTest extends BaseLogParserTest {
         )
 
         val parser = new SyslogParser
-        val events = logEntryLines flatMap (log => parser.parse(log))
+        val events = logEntryLines flatMap (log => parser.parse(null,log))
 
         events.length should be(1)
         testASyslogEvent(
@@ -41,7 +42,7 @@ class SyslogParserTest extends BaseLogParserTest {
         val timestamp = println(DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime("Apr 20 13:53:02").toDate)
 
         val parser = new SyslogParser
-        val events = logEntryLines flatMap (log => parser.parse(log))
+        val events = logEntryLines flatMap (log => parser.parse(null,log))
 
         events.length should be(1)
         testASyslogEvent(

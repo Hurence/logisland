@@ -1,7 +1,10 @@
 package com.hurence.botsearch.trace
 
+import java.util
+
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.{LogParser, LogParserException}
+import com.hurence.logisland.processor.ProcessContext
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
@@ -17,7 +20,7 @@ class NetworkTraceLogParser extends LogParser with LazyLogging {
       * @param trace
       * @return
       */
-    override def parse(trace: String): Array[Event] = {
+    override def parse(context: ProcessContext, trace: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         try {
 
@@ -33,7 +36,7 @@ class NetworkTraceLogParser extends LogParser with LazyLogging {
               event.put("centroid", "Integer", trace.centroid)
   */
 
-            Array(event)
+            util.Collections.singletonList(event)
         } catch {
             case t: Exception => {
                 val errorMessage = s"exception parsing row : ${t.getMessage}"

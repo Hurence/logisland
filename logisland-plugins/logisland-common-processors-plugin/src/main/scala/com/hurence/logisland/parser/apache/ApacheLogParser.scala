@@ -16,10 +16,13 @@
 package com.hurence.logisland.parser.apache
 
 import java.text.SimpleDateFormat
+import java.util
+import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
+import com.hurence.logisland.processor.ProcessContext
 
 
 /**
@@ -34,7 +37,7 @@ class ApacheLogParser extends LogParser {
 
     val sdf = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
-    override def parse(lines: String): Array[Event] = {
+    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         event.put("source", "string", lines)
 
@@ -67,7 +70,7 @@ class ApacheLogParser extends LogParser {
                 event.put("error", "string", "bad log entry (or problem with RE?)")
             }
         }
-        Array(event)
+        Collections.singletonList(event)
     }
 
 }

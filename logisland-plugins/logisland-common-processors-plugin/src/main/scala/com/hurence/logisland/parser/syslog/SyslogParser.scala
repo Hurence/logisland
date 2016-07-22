@@ -15,10 +15,12 @@
  */
 package com.hurence.logisland.parser.syslog
 
-import java.util.{Calendar, Date}
+import java.util
+import java.util.{Collections, Calendar, Date}
 
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
+import com.hurence.logisland.processor.ProcessContext
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
@@ -59,7 +61,7 @@ class SyslogParser extends LogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    override def parse(lines: String): Array[Event] = {
+    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         event.put("source", "string", lines)
 
@@ -68,7 +70,7 @@ class SyslogParser extends LogParser {
             case SYSLOG_MSG_RFC3164_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
             case x => event.put("error", "string", "bad log entry (or problem with RE?)")
         }
-        Array(event)
+        Collections.singletonList(event)
     }
 
     def fillSyslogEvent(event: Event, priority: String, version: String, stamp: String, host: String, body: String) = {

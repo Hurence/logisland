@@ -17,9 +17,12 @@
 package com.hurence.logisland.parser.cisco
 
 import java.text.SimpleDateFormat
+import java.util
+import java.util.Collections
 
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.{LogParserException, LogParser}
+import com.hurence.logisland.processor.ProcessContext
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
@@ -35,7 +38,7 @@ class CiscoLogParser extends LogParser with LazyLogging {
       * @param line
       * @return
       */
-    override def parse(line: String): Array[Event] = {
+    override def parse(context:ProcessContext,line: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         try {
 
@@ -68,7 +71,7 @@ class CiscoLogParser extends LogParser with LazyLogging {
             event.put("isHostBlacklisted", "Boolean", records(11).toBoolean)
             event.put("tags", "String", tags)
 
-            Array(event)
+            Collections.singletonList(event)
         } catch {
             case t: Exception => {
                 val errorMessage = s"exception parsing row : ${t.getMessage}"

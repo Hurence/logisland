@@ -16,8 +16,12 @@
 
 package com.hurence.logisland.parser.generic
 
+import java.util
+import java.util.Collections
+
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
+import com.hurence.logisland.processor.ProcessContext
 
 /**
   * Created by tom on 12/01/16.
@@ -26,8 +30,8 @@ class GenericLogParser extends LogParser {
 
     val EVENT_TYPE = "generic"
     // TODO implement something clever here
-    override def parse(lines: String): Array[Event] = {
-        Array(new Event(EVENT_TYPE))
+    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
+        Collections.singletonList(new Event(EVENT_TYPE))
     }
 
 }
