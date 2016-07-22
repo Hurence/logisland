@@ -22,6 +22,8 @@ components:
       spark.ui.port: 4050
       kafka.metadata.broker.list: localhost:9092
       kafka.zookeeper.quorum: localhost:2181
+      output.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
+      input.event.serializer: com.hurence.logisland.serializer.EventAvroSerializer
 
   # A Debug component that only logs what it reads
   - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor

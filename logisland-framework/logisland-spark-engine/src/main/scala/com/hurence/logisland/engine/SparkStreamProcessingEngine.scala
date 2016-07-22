@@ -8,8 +8,8 @@ import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
-import com.hurence.logisland.serializer.{EventAvroSerializer, EventSerializer}
-import com.hurence.logisland.utils.kafka.KafkaEventProducer
+import com.hurence.logisland.serializer.{EventKryoSerializer, EventAvroSerializer, EventSerializer}
+import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.validators.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder
@@ -117,6 +117,23 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("-1")
         .build
 
+
+    val INPUT_EVENT_SERIALIZER = new PropertyDescriptor.Builder()
+        .name("input.event.serializer")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("com.hurence.logisland.serializer.EventAvroSerializer")
+        .build
+
+    val OUTPUT_EVENT_SERIALIZER = new PropertyDescriptor.Builder()
+        .name("output.event.serializer")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("com.hurence.logisland.serializer.EventAvroSerializer")
+        .build
+
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(SPARK_MASTER)
@@ -130,6 +147,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_STREAMING_UNPERSIST)
         descriptors.add(SPARK_UI_PORT)
         descriptors.add(SPARK_STREAMING_TIMEOUT)
+        descriptors.add(INPUT_EVENT_SERIALIZER)
+        descriptors.add(OUTPUT_EVENT_SERIALIZER)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -150,6 +169,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         val backPressureEnabled = engineContext.getProperty(SPARK_STREAMING_BACKPRESSURE_ENABLED).getValue
         val streamingUnpersist = engineContext.getProperty(SPARK_STREAMING_UNPERSIST).getValue
         val timeout = engineContext.getProperty(SPARK_STREAMING_TIMEOUT).asInteger().intValue()
+
+        val inSerializerClass = engineContext.getProperty(INPUT_EVENT_SERIALIZER).getValue
+        val outSerializerClass = engineContext.getProperty(OUTPUT_EVENT_SERIALIZER).getValue
 
         /**
           * job configuration
@@ -178,8 +200,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
           * loop over processContext
           */
         parserInstances.toList.foreach(parserInstance => {
-            val parserContext = new StandardParserContext(parserInstance)
-            parserInstance.getParser.init(parserContext)
+            val parseContext = new StandardParserContext(parserInstance)
+            parserInstance.getParser.init(parseContext)
 
 
             //TODO
@@ -232,9 +254,16 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                     // convert partition to events
                     val parser = new Schema.Parser
-                    val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
-                    val inSchema = parser.parse(inSchemaContent)
-                    val deserializer = new EventAvroSerializer(inSchema)
+
+                    val deserializer = inSerializerClass match {
+                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                            val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
+                            val inSchema = parser.parse(inSchemaContent)
+                            new EventAvroSerializer(inSchema)
+                        case _ =>
+                            new EventKryoSerializer(true)
+                    }
+
 
                     val incomingEvents = deserializeEvents(partition, deserializer)
                     logger.debug(s" ${incomingEvents.size} incomming events")
@@ -242,10 +271,18 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     logger.debug(s" ${outgoingEvents.size} outgoing events")
 
 
-                    val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
-                    val outSchema = parser.parse(outSchemaContent)
-                    val serializer = new EventAvroSerializer(outSchema)
-                    val kafkaProducer = new KafkaEventProducer(
+
+                    val serializer = outSerializerClass match {
+                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                            val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                            val outSchema = parser.parse(outSchemaContent)
+                            new EventAvroSerializer(outSchema)
+                        case _ =>
+                            new EventKryoSerializer(true)
+                    }
+
+
+                    val kafkaProducer = new KafkaSerializedEventProducer(
                         brokerList,
                         processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
                         serializer)

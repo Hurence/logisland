@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by tom on 21/07/16.
@@ -29,7 +31,12 @@ public class SplitText extends AbstractLogParser {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-
+    public static final PropertyDescriptor FIELDS = new PropertyDescriptor.Builder()
+            .name("fields")
+            .description("the list of fields corresponding to groups")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
 
     @Override
@@ -40,6 +47,7 @@ public class SplitText extends AbstractLogParser {
         descriptors.add(OUTPUT_TOPICS);
         descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(REGEX);
+        descriptors.add(FIELDS);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -47,7 +55,7 @@ public class SplitText extends AbstractLogParser {
     @Override
     public Collection<Event> parse(ProcessContext context, String lines) throws LogParserException {
 
-/*
+
 
         final String regexString = context.getProperty(REGEX).getValue();
         final Pattern regex = Pattern.compile(regexString);
@@ -56,12 +64,11 @@ public class SplitText extends AbstractLogParser {
         try {
 
 
-            for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
-                Assert.assertTrue(String.format("line number '%s' did not match", lineNumber), usrBackendRegex.matcher(lines.get(lineNumber)).matches());
-            }
+            Matcher matcher = regex.matcher(lines);
 
-            String line = lines.get(0);
-            Matcher matcher = regex.matcher(line);
+
+
+/*
             Assert.assertTrue(String.format("'%s' did not match the regex '%s'", line, usrBackendRegex.toString()), matcher.matches());
             Assert.assertEquals(7, matcher.groupCount());
             Assert.assertEquals("2016-07-12 02:00:00.000  INFO   [schedule-tasks-9              ] --- c.l.m.b.s.i.SchedulingTaskConfiguration  - SESSION[NONE] - USERID[NONE] - Starting internal job 'class com.lotsys.motors.backend.manager.jobs.OLTPGameModelCleanCacheManager'", matcher.group(0));
@@ -71,13 +78,13 @@ public class SplitText extends AbstractLogParser {
             Assert.assertEquals("c.l.m.b.s.i.SchedulingTaskConfiguration", matcher.group(4));
             Assert.assertEquals("NONE", matcher.group(5));
             Assert.assertEquals("NONE", matcher.group(6));
-            Assert.assertEquals("Starting internal job 'class com.lotsys.motors.backend.manager.jobs.OLTPGameModelCleanCacheManager'", matcher.group(7));
+            Assert.assertEquals("Starting internal job 'class com.lotsys.motors.backend.manager.jobs.OLTPGameModelCleanCacheManager'", matcher.group(7));*/
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("issue while matching regex {} on string {}", regexString, lines);
         }
 
-    }*/
+
 
         return Collections.emptyList();
     }

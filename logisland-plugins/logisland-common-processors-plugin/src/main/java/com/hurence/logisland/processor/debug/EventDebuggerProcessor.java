@@ -22,7 +22,7 @@ public class EventDebuggerProcessor extends AbstractEventProcessor {
     @Override
     public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
         logger.debug("processing {} events", collection.size());
-      //  collection.stream().forEach(event -> logger.debug("processing : {}", event));
+        collection.stream().forEach(event -> logger.debug("processing : {}", event));
         return Collections.emptyList();
     }
 

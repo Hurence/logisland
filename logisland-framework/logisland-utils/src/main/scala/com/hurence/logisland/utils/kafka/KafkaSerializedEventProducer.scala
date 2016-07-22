@@ -28,7 +28,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 /**
   * Created by tom on 13/01/16.
   */
-class KafkaEventProducer(brokerList: String, topic: String, serializer: EventSerializer) extends LazyLogging with Serializable {
+class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer: EventSerializer) extends LazyLogging with Serializable {
 
     // Zookeper connection properties
     val props = new Properties()
