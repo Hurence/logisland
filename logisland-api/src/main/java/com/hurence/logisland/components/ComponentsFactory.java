@@ -112,7 +112,7 @@ public final class ComponentsFactory {
 
     public static List<StandardParserInstance> getAllParserInstances(LogislandSessionConfiguration sessionConf) {
         return sessionConf.getComponents().stream()
-                .filter(config -> config.getType().equalsIgnoreCase("processor"))
+                .filter(config -> config.getType().equalsIgnoreCase("parser"))
                 .map(ComponentsFactory::getParserInstance)
                 .filter(component -> component != null)
                 .collect(Collectors.toList());

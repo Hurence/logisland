@@ -8,17 +8,17 @@ import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
-import com.hurence.logisland.serializer.{EventKryoSerializer, EventAvroSerializer, EventSerializer}
+import com.hurence.logisland.serializer.{EventAvroSerializer, EventKryoSerializer, EventSerializer}
 import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.validators.StandardValidators
 import kafka.admin.AdminUtils
-import kafka.serializer.DefaultDecoder
+import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.{TaskContext, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, TaskContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -194,8 +194,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             s"maxRatePerPartition:$maxRatePerPartition")
 
 
-
-
         /**
           * loop over processContext
           */
@@ -204,10 +202,79 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             parserInstance.getParser.init(parseContext)
 
 
-            //TODO
+            // Define the Kafka parameters, broker list must be specified
+            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> parseContext.getName)
+            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+            logger.debug("batchDuration: " + batchDuration)
+            logger.debug("blockInterval: " + blockInterval)
+            logger.debug("maxRatePerPartition: " + maxRatePerPartition)
+            logger.debug("brokerList: " + brokerList)
+
+            // create topics if needed
+            val inputTopics = parseContext.getProperty(AbstractEventProcessor.INPUT_TOPICS).getValue.split(",").toSet
+            val outputTopics = parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
+            val errorTopics = parseContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
+
+            createTopicsIfNeeded(zkClient, inputTopics)
+            createTopicsIfNeeded(zkClient, outputTopics)
+            createTopicsIfNeeded(zkClient, errorTopics)
+
+            // Create the direct stream with the Kafka parameters and topics
+            val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+                ssc,
+                kafkaParams,
+                inputTopics
+            )
+
+            // setup the stream processing
+            kafkaStream.foreachRDD(rdd => {
+
+                rdd.foreachPartition(partition => {
+                    val partitionId = TaskContext.get.partitionId()
+                    // use this uniqueId to transactionally commit the data in partitionIterator
+
+                    logger.debug("---------------------------------")
+                    logger.debug(s"parseContext ${parseContext.getName}")
+                    logger.debug(s"parsing topic $inputTopics => $outputTopics for spark partition $partitionId")
+
+                    // convert partition to events
+                    val parser = new Schema.Parser
+
+
+
+                    val outgoingEvents = partition.map(rawEvent => {
+                        val line = rawEvent._2
+                        val events = parserInstance.getParser.parse(parseContext, line)
+                        if (events.nonEmpty)
+                            events.head
+                        else
+                            new Event("void")
+                    }).toList
+                    //  logger.debug(s" ${incomingEvents.size} incomming log lines")
+
+                    logger.debug(s" ${outgoingEvents.size} outgoing events")
+
+
+
+                    val serializer = outSerializerClass match {
+                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                            val parser = new Schema.Parser
+                            val outSchemaContent = parseContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                            val outSchema = parser.parse(outSchemaContent)
+                            new EventAvroSerializer(outSchema)
+                        case _ =>
+                            new EventKryoSerializer(true)
+                    }
+
+
+                    val kafkaProducer = new KafkaSerializedEventProducer(
+                        brokerList,
+                        parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
+                        serializer)
+                    kafkaProducer.produce(outgoingEvents.toList)
+                })
+            })
         })
-
-
 
 
         /**

@@ -33,7 +33,14 @@ public class SplitText extends AbstractLogParser {
 
     public static final PropertyDescriptor FIELDS = new PropertyDescriptor.Builder()
             .name("fields")
-            .description("the list of fields corresponding to groups")
+            .description("a comma separated list of fields corresponding to matching groups")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
+            .name("event.type")
+            .description("the type of event")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -48,6 +55,7 @@ public class SplitText extends AbstractLogParser {
         descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(REGEX);
         descriptors.add(FIELDS);
+        descriptors.add(EVENT_TYPE);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -56,44 +64,40 @@ public class SplitText extends AbstractLogParser {
     public Collection<Event> parse(ProcessContext context, String lines) throws LogParserException {
 
 
-
+        final String[] fields = context.getProperty(FIELDS).getValue().split(",");
         final String regexString = context.getProperty(REGEX).getValue();
+        final String eventType = context.getProperty(EVENT_TYPE).getValue();
         final Pattern regex = Pattern.compile(regexString);
 
+        List<Event> events = new ArrayList<>();
 
         try {
 
-
+            Event event = new Event(eventType);
             Matcher matcher = regex.matcher(lines);
 
+            if (matcher.groupCount() != fields.length)
+                logger.warn("something went wrong in matching groups");
 
+            for (int i = 0; i < matcher.groupCount() && i < fields.length; i++) {
+                event.put(fields[i], "string", matcher.group(i));
+            }
 
-/*
-            Assert.assertTrue(String.format("'%s' did not match the regex '%s'", line, usrBackendRegex.toString()), matcher.matches());
-            Assert.assertEquals(7, matcher.groupCount());
-            Assert.assertEquals("2016-07-12 02:00:00.000  INFO   [schedule-tasks-9              ] --- c.l.m.b.s.i.SchedulingTaskConfiguration  - SESSION[NONE] - USERID[NONE] - Starting internal job 'class com.lotsys.motors.backend.manager.jobs.OLTPGameModelCleanCacheManager'", matcher.group(0));
-            Assert.assertEquals("2016-07-12 02:00:00.000", matcher.group(1));
-            Assert.assertEquals("INFO", matcher.group(2));
-            Assert.assertEquals("schedule-tasks-9              ", matcher.group(3));
-            Assert.assertEquals("c.l.m.b.s.i.SchedulingTaskConfiguration", matcher.group(4));
-            Assert.assertEquals("NONE", matcher.group(5));
-            Assert.assertEquals("NONE", matcher.group(6));
-            Assert.assertEquals("Starting internal job 'class com.lotsys.motors.backend.manager.jobs.OLTPGameModelCleanCacheManager'", matcher.group(7));*/
+            events.add(event);
+
 
         } catch (Exception e) {
-            logger.warn("issue while matching regex {} on string {}", regexString, lines);
+            logger.warn("issue while matching regex {} on string {} exception {}", regexString, lines, e.getMessage());
         }
 
 
-
-        return Collections.emptyList();
+        return events;
     }
 
     @Override
     public String getIdentifier() {
         return null;
     }
-
 
 
 }
