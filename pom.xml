@@ -61,12 +61,16 @@ language governing permissions and limitations under the License. --><project xm
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
+        <hbase.version>1.1.1</hbase.version>
         <spark.version>1.6.1</spark.version>
         <kafka.version>0.8.2.1</kafka.version>
         <hadoop.guava.version>12.0.1</hadoop.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <scala.version>2.10.6</scala.version>
+        <algebird.version>0.12.0</algebird.version>
+        <opencsv.version>3.7</opencsv.version>
+
         <scala.binary.version>2.10</scala.binary.version>
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
@@ -161,6 +165,20 @@ language governing permissions and limitations under the License. --><project xm
                 <version>${org.slf4j.version}</version>
 
             </dependency>
+
+
+
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>algebird-core_2.10</artifactId>
+                <version>${algebird.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
@@ -288,6 +306,9 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>lucene-codecs</artifactId>
                 <version>${lucene.version}</version>
             </dependency>
+
+
+            <!-- Hadoop dependencies -->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
@@ -298,7 +319,6 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>hadoop-hdfs</artifactId>
                 <version>${hadoop.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-yarn-api</artifactId>
@@ -319,6 +339,24 @@ language governing permissions and limitations under the License. --><project xm
                 <artifactId>hadoop-client</artifactId>
                 <version>${hadoop.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_2.10</artifactId>
@@ -345,11 +383,6 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
                 <version>2.3.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>18.0</version>
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>
@@ -391,21 +424,25 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_2.10</artifactId>
                 <version>${spark.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming_2.10</artifactId>
                 <version>${spark.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_2.10</artifactId>
                 <version>${spark.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-mllib_2.10</artifactId>
                 <version>${spark.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>

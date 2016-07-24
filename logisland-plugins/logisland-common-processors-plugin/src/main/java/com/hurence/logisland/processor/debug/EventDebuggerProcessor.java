@@ -4,7 +4,6 @@ import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.processor.AbstractEventProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
