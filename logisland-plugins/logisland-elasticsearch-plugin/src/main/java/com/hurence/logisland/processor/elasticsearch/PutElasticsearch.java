@@ -89,14 +89,15 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
-    @Override
+   /* @Override
     public void init(ProcessContext context) {
         super.setup(context);
     }
-
+*/
 
     @Override
     public Collection<Event> process(ProcessContext context, Collection<Event> events) {
+        super.setup(context);
         long start = System.currentTimeMillis();
         logger.info("start indexing events");
         final int batchSize = context.getProperty(BATCH_SIZE).asInteger();
@@ -144,7 +145,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             }
 
             String document = ElasticsearchEventConverter.convert(event);
-            IndexRequestBuilder result = esClient.get().prepareIndex(index, event.getType(), idString).setSource(document).setOpType(IndexRequest.OpType.CREATE);
+            IndexRequestBuilder result = esClient.get().prepareIndex(index, docType, idString).setSource(document).setOpType(IndexRequest.OpType.CREATE);
             bulkProcessor.add(result.request());
         }
 

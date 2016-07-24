@@ -76,13 +76,16 @@ public class SplitText extends AbstractLogParser {
 
             Matcher matcher = regex.matcher(lines);
 
-            if(matcher.matches()){
+            if(matcher.lookingAt()){
                 Event event = new Event(eventType);
-                if (matcher.groupCount() != fields.length)
-                    logger.warn("something went wrong in matching groups");
 
-                for (int i = 0; i < matcher.groupCount() && i < fields.length; i++) {
-                    event.put(fields[i], "string", matcher.group(i));
+
+                for (int i = 0; i < matcher.groupCount() +1  && i < fields.length; i++) {
+                    String content = matcher.group(i);
+                    if(content != null){
+                        event.put(fields[i], "string", matcher.group(i).replaceAll("\"",""));
+                    }
+
                 }
 
                 events.add(event);
