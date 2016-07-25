@@ -226,6 +226,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                 inputTopics
             )
 
+
+
             // setup the stream processing
             kafkaStream.foreachRDD(rdd => {
 
@@ -243,8 +245,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
 
                     val outgoingEvents = partition.map(rawEvent => {
-                        val line = rawEvent._2
-                        val events = parserInstance.getParser.parse(parseContext, line)
+                        val events = parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2)
                         if (events.nonEmpty)
                             events.head
                         else

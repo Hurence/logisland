@@ -61,11 +61,11 @@ class SyslogParser extends LogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
+    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
-        event.put("source", "string", lines)
+        event.put("source", "string", value)
 
-        lines match {
+        value match {
             case SYSLOG_MSG_RFC5424_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
             case SYSLOG_MSG_RFC3164_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
             case x => event.put("error", "string", "bad log entry (or problem with RE?)")

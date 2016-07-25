@@ -30,7 +30,7 @@ class GenericLogParser extends LogParser {
 
     val EVENT_TYPE = "generic"
     // TODO implement something clever here
-    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
+    override def parse(context:ProcessContext, key:String, lines: String): util.Collection[Event] = {
         Collections.singletonList(new Event(EVENT_TYPE))
     }
 

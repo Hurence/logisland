@@ -1,11 +1,13 @@
 package com.hurence.logisland.parser.syslog
 
 import java.util.Calendar
+
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.parser.base.BaseLogParserTest
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
-import collection.JavaConversions._
+
+import scala.collection.JavaConversions._
 
 /**
   * Created by gregoire on 13/04/16.
@@ -18,7 +20,7 @@ class SyslogParserTest extends BaseLogParserTest {
         )
 
         val parser = new SyslogParser
-        val events = logEntryLines flatMap (log => parser.parse(null,log))
+        val events = logEntryLines flatMap (log => parser.parse(null, "", log))
 
         events.length should be(1)
         testASyslogEvent(
@@ -35,14 +37,14 @@ class SyslogParserTest extends BaseLogParserTest {
 
     it should "handle dates as well" in {
         val logEntryLines = List(
-       "<30>Apr 20 13:53:02 sd-84186 chef-client: [2016-04-20T13:53:02+02:00] INFO: Processing template[/etc/security/limits.d/root_limits.conf] action create (ulimit::default line 16)")
+            "<30>Apr 20 13:53:02 sd-84186 chef-client: [2016-04-20T13:53:02+02:00] INFO: Processing template[/etc/security/limits.d/root_limits.conf] action create (ulimit::default line 16)")
 
 
         val DTF3_SYSLOG_MSG_RFC3164_0 = DateTimeFormat.forPattern("MMM d HH:mm:ss").withZone(DateTimeZone.UTC).withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
         val timestamp = println(DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime("Apr 20 13:53:02").toDate)
 
         val parser = new SyslogParser
-        val events = logEntryLines flatMap (log => parser.parse(null,log))
+        val events = logEntryLines flatMap (log => parser.parse(null, "", log))
 
         events.length should be(1)
         testASyslogEvent(
@@ -54,7 +56,6 @@ class SyslogParserTest extends BaseLogParserTest {
             body = "chef-client: [2016-04-20T13:53:02+02:00] INFO: Processing template[/etc/security/limits.d/root_limits.conf] action create (ulimit::default line 16)"
         )
         println(events.head)
-
 
 
     }

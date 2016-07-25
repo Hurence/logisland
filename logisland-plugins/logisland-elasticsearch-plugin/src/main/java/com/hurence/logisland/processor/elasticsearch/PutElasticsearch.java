@@ -19,6 +19,7 @@ package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
+import com.hurence.logisland.event.EventField;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.utils.elasticsearch.ElasticsearchEventConverter;
@@ -33,10 +34,12 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.node.NodeClosedException;
 import org.elasticsearch.transport.ReceiveTimeoutTransportException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -68,6 +71,13 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .defaultValue("1000")
             .build();
 
+    public static final PropertyDescriptor TIMEBASED_INDEX = new PropertyDescriptor.Builder()
+            .name("timebased.index")
+            .description("can be none, today or yesterday")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("yesterday")
+            .build();
 
 
     @Override
@@ -85,25 +95,29 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         descriptors.add(TYPE);
         descriptors.add(CHARSET);
         descriptors.add(BATCH_SIZE);
+        descriptors.add(TIMEBASED_INDEX);
 
         return Collections.unmodifiableList(descriptors);
     }
 
-   /* @Override
-    public void init(ProcessContext context) {
-        super.setup(context);
-    }
-*/
+
 
     @Override
     public Collection<Event> process(ProcessContext context, Collection<Event> events) {
         super.setup(context);
         long start = System.currentTimeMillis();
-        logger.info("start indexing events");
+
         final int batchSize = context.getProperty(BATCH_SIZE).asInteger();
+        logger.info("start indexing {} events by bulk of {}", events.size(), batchSize);
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
+
 
         long numItemProcessed = 0L;
 
+
+        /**
+         * create the bulk processor
+         */
         BulkProcessor bulkProcessor = BulkProcessor.builder(
                 esClient.get(),
                 new BulkProcessor.Listener() {
@@ -127,118 +141,93 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                 .setBulkActions(batchSize)
                 .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
                 .setFlushInterval(TimeValue.timeValueSeconds(5))
-                .setConcurrentRequests(4)
+                .setConcurrentRequests(10)
                 .build();
 
-        final String index = context.getProperty(INDEX).getValue();
-        final String docType = context.getProperty(TYPE).getValue();
+        /**
+         * compute global index from Processor settings
+         */
+        String globalIndex = context.getProperty(INDEX).getValue();
+        final String globalType = context.getProperty(TYPE).getValue();
+        final String timebased = context.getProperty(TIMEBASED_INDEX).getValue().toLowerCase();
 
+        String dateSuffix = "";
+        switch (timebased){
+            case "today" :
+                dateSuffix = "." + sdf.format(new Date());
+                globalIndex += dateSuffix;
+                break;
+            case "yesterday" :
+                DateTime dt = new DateTime(new Date()).minusDays(1);
+                dateSuffix =  "." + sdf.format(dt.toDate());
+                globalIndex += dateSuffix;
+                break;
+            default:
+                break;
+        }
+
+
+        /**
+         * loop over events to add them to bulk
+         */
         for (Event event : events) {
-
-
             numItemProcessed += 1;
 
             // Setting ES document id to document's id itself if any (to prevent duplications in ES)
-            String idString = UUID.randomUUID().toString();
+            String docId = UUID.randomUUID().toString();
             if (!Objects.equals(event.getId(), "none")) {
-                idString = event.getId();
+                docId = event.getId();
             }
 
+
+            // compute es index from event if any
+            String docIndex = globalIndex;
+            final EventField eventIndex = event.get("es_index");
+            if(eventIndex != null){
+                docIndex = eventIndex.getValue().toString();
+            }
+
+            // compute es type from event if any
+            String docType = globalType;
+            if (!Objects.equals(event.getType(), "none")) {
+                docType = event.getType();
+            }
+
+            // dump event to a JSON format
             String document = ElasticsearchEventConverter.convert(event);
-            IndexRequestBuilder result = esClient.get().prepareIndex(index, docType, idString).setSource(document).setOpType(IndexRequest.OpType.CREATE);
+
+            // add it to the bulk
+            IndexRequestBuilder result = esClient.get()
+                    .prepareIndex(docIndex, docType, docId)
+                    .setSource(document)
+                    .setOpType(IndexRequest.OpType.CREATE);
             bulkProcessor.add(result.request());
         }
+        logger.info("sent {} events to elasticsearch", numItemProcessed);
+        bulkProcessor.flush();
 
-        logger.debug("waiting for remaining items to be flushed");
+
+        /**
+         * fluch remaining items
+         */
+        logger.info("waiting for remaining items to be flushed");
         try {
-            bulkProcessor.awaitClose(10, TimeUnit.MINUTES);
+            bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
            logger.error(e.getMessage());
         }
-        logger.debug("idexed $numItemProcessed records on this partition to es in ${System.currentTimeMillis() - start}");
+        logger.info("done in {}", System.currentTimeMillis() - start);
 
+
+        /**
+         * closing
+         */
         logger.info("shutting down es client");
-        // on shutdown
         esClient.get().close();
         return Collections.emptyList();
     }
 
 
-   // @Override
-    public Collection<Event> process2(ProcessContext context, Collection<Event> events) throws ProcessException {
-        final int batchSize = context.getProperty(BATCH_SIZE).asInteger();
-        final Charset charset = Charset.forName(context.getProperty(CHARSET).getValue());
-
-
-        if (events.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-
-        // Keep track of the list of flow files that need to be transferred. As they are transferred, remove them from the list.
-        List<Event> eventsToTransfer = new LinkedList<>(events);
-        try {
-            final BulkRequestBuilder bulk = esClient.get().prepareBulk();
-            if (authToken != null) {
-                bulk.putHeader("Authorization", authToken);
-            }
-            final String index = context.getProperty(INDEX).getValue();
-            final String docType = context.getProperty(TYPE).getValue();
-
-            for (Event file : events) {
-
-                int sentEvents = 0;
-
-
-                final String id = file.getId();
-                if (id == null) {
-                    logger.error("No value in identifier attribute {} for {}, transferring to failure", new Object[]{id, file});
-                } else {
-
-                    String json = ElasticsearchEventConverter.convert(file);
-                    bulk.add(esClient.get().prepareIndex(index, docType, id)
-                            .setSource(json.getBytes(charset)));
-
-
-                }
-            }
-
-            final BulkResponse response = bulk.execute().actionGet();
-            if (response.hasFailures()) {
-                for (final BulkItemResponse item : response.getItems()) {
-                    if (item.isFailed()) {
-                        logger.error("Failed to insert {} into Elasticsearch due to {}, transferring to failure",
-                                item.getFailure().getMessage());
-
-                    }
-
-                }
-            }
-
-
-        } catch (NoNodeAvailableException
-                | ElasticsearchTimeoutException
-                | ReceiveTimeoutTransportException
-                | NodeClosedException exceptionToRetry) {
-
-            // Authorization errors and other problems are often returned as NoNodeAvailableExceptions without a
-            // traceable cause. However the cause seems to be logged, just not available to this caught exception.
-            // Since the error message will show up as a bulletin, we make specific mention to check the logs for
-            // more details.
-            logger.error("Failed to insert into Elasticsearch due to {}. More detailed information may be available in " +
-                            "the NiFi logs.",
-                    new Object[]{exceptionToRetry.getLocalizedMessage()}, exceptionToRetry);
-            ;
-
-        } catch (Exception exceptionToFail) {
-            logger.error("Failed to insert into Elasticsearch due to {}, transferring to failure",
-                    new Object[]{exceptionToFail.getLocalizedMessage()}, exceptionToFail);
-
-
-        } finally {
-            return Collections.emptyList();
-        }
-    }
 
     /**
      * Dispose of ElasticSearch client

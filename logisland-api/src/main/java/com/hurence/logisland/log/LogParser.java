@@ -39,7 +39,7 @@ import java.util.Collection;
  */
 public interface LogParser extends Serializable{
 
-    Collection<Event> parse(ProcessContext context, String lines) throws LogParserException;
+    Collection<Event> parse(ProcessContext context, String key, String value) throws LogParserException;
 
 }
 

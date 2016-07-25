@@ -20,7 +20,7 @@ class NetworkTraceLogParser extends LogParser with LazyLogging {
       * @param trace
       * @return
       */
-    override def parse(context: ProcessContext, trace: String): util.Collection[Event] = {
+    override def parse(context: ProcessContext, key:String, trace: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         try {
 

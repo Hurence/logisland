@@ -37,13 +37,13 @@ class ApacheLogParser extends LogParser {
 
     val sdf = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
-    override def parse(context:ProcessContext, lines: String): util.Collection[Event] = {
+    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
-        event.put("source", "string", lines)
+        event.put("source", "string", value)
 
 
 
-        val matcher = combinedPattern.matcher(lines)
+        val matcher = combinedPattern.matcher(value)
         if (matcher.matches()) {
             event.put("host", "string", matcher.group(1))
             event.put("user", "string", matcher.group(3))
@@ -56,7 +56,7 @@ class ApacheLogParser extends LogParser {
             event.put("userAgent", "string", matcher.group(9))
         }else {
 
-            val simpleMatcher = simplePattern.matcher(lines)
+            val simpleMatcher = simplePattern.matcher(value)
             if (simpleMatcher.matches()) {
                 event.put("host", "string", simpleMatcher.group(1))
                 event.put("user", "string", simpleMatcher.group(3))

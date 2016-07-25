@@ -38,7 +38,7 @@ class CiscoLogParser extends LogParser with LazyLogging {
       * @param line
       * @return
       */
-    override def parse(context:ProcessContext,line: String): util.Collection[Event] = {
+    override def parse(context:ProcessContext, key:String, line: String): util.Collection[Event] = {
         val event = new Event(EVENT_TYPE)
         try {
 

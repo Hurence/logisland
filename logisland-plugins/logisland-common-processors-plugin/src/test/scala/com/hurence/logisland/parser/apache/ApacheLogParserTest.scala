@@ -17,7 +17,8 @@ package com.hurence.logisland.parser.apache
 
 import com.hurence.logisland.event.Event
 import com.hurence.logisland.parser.base.BaseLogParserTest
-import collection.JavaConversions._
+
+import scala.collection.JavaConversions._
 
 class ApacheLogParserTest extends BaseLogParserTest {
 
@@ -28,7 +29,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
         )
 
         val parser = new ApacheLogParser()
-        val events = logEntryLines flatMap (log => parser.parse(null,log))
+        val events = logEntryLines flatMap (log => parser.parse(null, "", log))
 
         events.length should be(1)
 
@@ -55,7 +56,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
             "unicomp6.unicomp.net - - [01/Jul/1995:00:00:06 -0400] \"GET /shuttle/countdown/ HTTP/1.0\" 200 3985")
 
         val parser = new ApacheLogParser()
-        val events = logs flatMap (log => parser.parse(null,log))
+        val events = logs flatMap (log => parser.parse(null, "", log))
 
         events.length should be(2)
 
