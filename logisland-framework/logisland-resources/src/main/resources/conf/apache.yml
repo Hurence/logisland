@@ -43,7 +43,7 @@ components:
       es.index.field: es_index
 
   # Generate random events based on an avro schema
-  - component: com.hurence.logisland.processor.parser.SplitText
+  - component: com.hurence.logisland.parser.apache.ApacheLogParser
     type: parser
     version: 0.1.0
     documentation: a parser that produce events from a REGEX
@@ -52,7 +52,5 @@ components:
       kafka.output.topics: logisland-mock-out
       kafka.error.topics: logisland-error
       event.type: log_traker
-      value.regex: (\D{3}\s+\d{1,2} \d{2}:\d{2}:\d{2})\s+(\S*)\s+(?:date=(\S*)\s+)?(?:time=(\S*)\s+)?(?:devname=(\S*)\s+)?(?:devid=(\S*)\s+)?(?:logid=(\S*)\s+)?(?:type=(\S*)\s+)?(?:subtype=(\S*)\s+)?(?:level=(\S*)\s+)?(?:vd=(\S*)\s+)?(?:srcip=(\S*)\s+)?(?:srcport=(\S*)\s+)?(?:srcintf=(\S*)\s+)?(?:dstip=(\S*)\s+)?(?:dstport=(\S*)\s+)?(?:dstintf=(\S*)\s+)?(?:poluuid=(\S*)\s+)?(?:sessionid=(\S*)\s+)?(?:proto=(\S*)\s+)?(?:action=(\S*)\s+)?(?:policyid=(\S*)\s+)?(?:dstcountry=(\S*)\s+)?(?:srccountry=(\S* \S*)\s+)?(?:tran*disp=(\S*)\s+)?(?:trans*ip=(\S*)\s+)?(?:trans*port=(\S*)\s+)?(?:service=(\S*)\s+)?(?:duration=(\S*)\s+)?(?:sentbyte=(\S*)\s+)?(?:rcvdbyte=(\S*)\s+)?(?:sentpkt=(\S*)\s+)?(?:rcvdpkt=(\S*)\s+)?(?:appcat=(\S*)\s+)?(?:crscore=(\S*)\s+)?(?:craction=(\S*)\s+)?(?:crlevel=(\S*)\s+)?
-      value.fields: raw_content,line_date,host,date,time,devname,devid,logid,type,subtype,level,vd,src_ip,src_port,src_inf,dest_ip,dest_port,dest_inf,pol_uuid,session_id,proto,action,policy_id,dest_country,src_country,tran_isp,tran_ip,tran_port,service,duration,bytes_out,bytes_in,packets_out,packets_in,app_cat,cr_score,cr_action,cr_level
       key.regex: (\S*):(\S*)
       key.fields: es_index,host_name

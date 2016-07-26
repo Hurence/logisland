@@ -9,6 +9,7 @@ import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class SplitText extends AbstractLogParser {
             .description("the type of event")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("event")
             .build();
 
     @Override
@@ -87,6 +89,7 @@ public class SplitText extends AbstractLogParser {
         final String valueRegexString = context.getProperty(VALUE_REGEX).getValue();
         final String eventType = context.getProperty(EVENT_TYPE).getValue();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         List<Event> events = new ArrayList<>();
 
@@ -97,29 +100,51 @@ public class SplitText extends AbstractLogParser {
             Event event = new Event(eventType);
 
             // match the key
-            Matcher keyMatcher = keyRegex.matcher(key);
-            if (keyMatcher.matches()) {
-                for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
-                    String content = keyMatcher.group(i);
-                    if (content != null) {
-                        event.put(keyFields[i], "string", keyMatcher.group(i+1).replaceAll("\"", ""));
+            if(key!= null){
+                Matcher keyMatcher = keyRegex.matcher(key);
+                if (keyMatcher.matches()) {
+                    for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
+                        String content = keyMatcher.group(i);
+                        if (content != null) {
+                            event.put(keyFields[i], "string", keyMatcher.group(i+1).replaceAll("\"", ""));
 
+                        }
                     }
                 }
             }
 
+
             // match the value
-            Matcher valueMatcher = valueRegex.matcher(value);
-            if (valueMatcher.lookingAt()) {
-                for (int i = 0; i < valueMatcher.groupCount() + 1 && i < valueFields.length; i++) {
-                    String content = valueMatcher.group(i);
-                    if (content != null) {
-                        event.put(valueFields[i], "string", valueMatcher.group(i).replaceAll("\"", ""));
+            if(value!= null) {
+                Matcher valueMatcher = valueRegex.matcher(value);
+                if (valueMatcher.lookingAt()) {
+                    for (int i = 0; i < valueMatcher.groupCount() + 1 && i < valueFields.length; i++) {
+                        String content = valueMatcher.group(i);
+                        if (content != null) {
+                            event.put(valueFields[i], "string", valueMatcher.group(i).replaceAll("\"", ""));
+                        }
                     }
+
+
+                    // TODO remove this ugly stuff with EL
+                    if (event.get("date") != null && event.get("time") != null) {
+                        String eventTimeString = event.get("date").getValue().toString() +
+                                " " +
+                                event.get("time").getValue().toString();
+
+                        try {
+                            event.put("event_time", "long", sdf.parse(eventTimeString).getTime());
+                        } catch (Exception e) {
+                            logger.warn("unable to parse date {}", eventTimeString);
+                        }
+
+                    }
+
+
+                    events.add(event);
+                } else {
+                    logger.warn("no match");
                 }
-                events.add(event);
-            } else {
-                logger.warn("no match");
             }
 
         } catch (Exception e) {

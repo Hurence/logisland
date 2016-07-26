@@ -80,6 +80,15 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .build();
 
 
+    public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
+            .name("es.index.field")
+            .description("can be none, today or yesterday")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("es_index")
+            .build();
+
+
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -96,6 +105,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         descriptors.add(CHARSET);
         descriptors.add(BATCH_SIZE);
         descriptors.add(TIMEBASED_INDEX);
+        descriptors.add(ES_INDEX_FIELD);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -165,6 +175,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             default:
                 break;
         }
+        final String esIndexField = context.getProperty(ES_INDEX_FIELD).getValue();
 
 
         /**
@@ -182,9 +193,9 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
             // compute es index from event if any
             String docIndex = globalIndex;
-            final EventField eventIndex = event.get("es_index");
+            final EventField eventIndex = event.get(esIndexField);
             if(eventIndex != null){
-                docIndex = eventIndex.getValue().toString();
+                docIndex = eventIndex.getValue().toString() + dateSuffix;
             }
 
             // compute es type from event if any

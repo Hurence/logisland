@@ -20,59 +20,144 @@ import java.util
 import java.util.Collections
 import java.util.regex.Pattern
 
+import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.Event
-import com.hurence.logisland.log.LogParser
+import com.hurence.logisland.log.AbstractLogParser
 import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.validators.StandardValidators
+import org.slf4j.LoggerFactory
 
 
 /**
   * Parse an Apache log file with Regular Expressions
   */
-class ApacheLogParser extends LogParser {
-
-    val EVENT_TYPE = "apache"
+class ApacheLogParser extends AbstractLogParser {
 
     val simplePattern = Pattern.compile("^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(.+?)\" (\\d{3}) (\\d+)")
     val combinedPattern = Pattern.compile("^([\\d.]+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(.+?)\" (\\d{3}) (\\d+) \"([^\"]+)\" \"([^\"]+)\"")
 
-    val sdf = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
+    val requestPattern = Pattern.compile("(\\S*) (\\S*) (\\S*)")
+    private val sdf = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
+    private val logger = LoggerFactory.getLogger(classOf[ApacheLogParser])
 
-    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Event] = {
-        val event = new Event(EVENT_TYPE)
-        event.put("source", "string", value)
+
+    val EVENT_TYPE = new PropertyDescriptor.Builder()
+        .name("event.type")
+        .description("the type of event")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("apache_log").build
+
+    val KEY_REGEX = new PropertyDescriptor.Builder()
+        .name("key.regex")
+        .description("the regex to match for the message key")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("").build
+
+    val KEY_FIELDS = new PropertyDescriptor.Builder()
+        .name("key.fields")
+        .description("a comma separated list of fields corresponding to matching groups for the message key")
+        .required(true).addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("").build
+
+    override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
+        val descriptors = new util.ArrayList[PropertyDescriptor]
+        descriptors.add(AbstractLogParser.ERROR_TOPICS)
+        descriptors.add(AbstractLogParser.INPUT_TOPICS)
+        descriptors.add(AbstractLogParser.OUTPUT_TOPICS)
+        descriptors.add(AbstractLogParser.OUTPUT_SCHEMA)
+
+        descriptors.add(EVENT_TYPE)
+        descriptors.add(KEY_REGEX)
+        descriptors.add(KEY_FIELDS)
+        Collections.unmodifiableList(descriptors)
+    }
+
+    override def parse(context: ProcessContext, key: String, value: String): util.Collection[Event] = {
+        val keyFields = context.getProperty(KEY_FIELDS).getValue.split(",")
+        val keyRegexString = context.getProperty(KEY_REGEX).getValue
+        val keyRegex = Pattern.compile(keyRegexString)
+
+
+        val event = new Event(context.getProperty(EVENT_TYPE).getValue)
+        event.put("raw_content", "string", value)
+
+
+        // match the key
+        if (key != null) {
+            val keyMatcher = keyRegex.matcher(key)
+            if (keyMatcher.matches) {
+
+                var i: Int = 0
+                while (i < keyMatcher.groupCount + 1 && i < keyFields.length) {
+
+                    try {
+                        val content = keyMatcher.group(i)
+                        if (content != null) {
+                            event.put(keyFields(i), "string", keyMatcher.group(i + 1).replaceAll("\"", ""))
+                        }
+
+
+                    } catch {
+                        case t: Throwable => logger.info("no match for key regex {}", keyRegexString)
+                    } finally {
+                        i += 1
+                    }
+
+                }
+
+            }
+        }
+
 
 
 
         val matcher = combinedPattern.matcher(value)
         if (matcher.matches()) {
-            event.put("host", "string", matcher.group(1))
+            event.put("dest_ip", "string", matcher.group(1))
             event.put("user", "string", matcher.group(3))
-            event.put("date", "string", matcher.group(4))
-            event.put("@timestamp", "long", sdf.parse(matcher.group(4)).getTime)
+            //   event.put("date", "string", matcher.group(4))
+            event.put("event_timestamp", "long", sdf.parse(matcher.group(4)).getTime)
             event.put("request", "string", matcher.group(5))
             event.put("status", "string", matcher.group(6))
-            event.put("bytesSent", "int", matcher.group(7).toInt)
+            event.put("bytes_out", "int", matcher.group(7).toInt)
             event.put("referer", "string", matcher.group(8))
-            event.put("userAgent", "string", matcher.group(9))
-        }else {
+            event.put("user_agent", "string", matcher.group(9))
+
+
+        } else {
 
             val simpleMatcher = simplePattern.matcher(value)
             if (simpleMatcher.matches()) {
-                event.put("host", "string", simpleMatcher.group(1))
+                event.put("dest_ip", "string", simpleMatcher.group(1))
                 event.put("user", "string", simpleMatcher.group(3))
-                event.put("date", "string", simpleMatcher.group(4))
-                event.put("@timestamp", "long", sdf.parse(simpleMatcher.group(4)).getTime)
+                //    event.put("date", "string", simpleMatcher.group(4))
+                event.put("event_timestamp", "long", sdf.parse(simpleMatcher.group(4)).getTime)
                 event.put("request", "string", simpleMatcher.group(5))
                 event.put("status", "string", simpleMatcher.group(6))
-                event.put("bytesSent", "int", simpleMatcher.group(7).toInt)
-            }else {
+                event.put("bytes_out", "int", simpleMatcher.group(7).toInt)
+            } else {
 
                 event.put("error", "string", "bad log entry (or problem with RE?)")
             }
         }
+
+        try {
+            val requestMatcher = requestPattern.matcher(event.get("request").getValue.toString)
+            if (requestMatcher.matches()) {
+                event.put("http_method", "string", requestMatcher.group(1))
+                event.put("url", "string", requestMatcher.group(2))
+                event.put("http_protocol", "string", requestMatcher.group(3))
+            }
+        }catch{
+            case t:Throwable => logger.info("could not match request pattern {}", t.getMessage)
+        }
+
         Collections.singletonList(event)
     }
 
+    override def getIdentifier: String = null
 }
 
 

@@ -15,8 +15,13 @@
  */
 package com.hurence.logisland.parser.apache
 
+import com.hurence.logisland.components.ComponentsFactory
+import com.hurence.logisland.config.ComponentConfiguration
 import com.hurence.logisland.event.Event
+import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.parser.base.BaseLogParserTest
+import com.hurence.logisland.processor.{StandardProcessContext, StandardProcessorInstance, ProcessContext}
+import org.junit.Assert
 
 import scala.collection.JavaConversions._
 
@@ -24,12 +29,29 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
 
     "An apache log" should "be parsed" in {
+        val conf = new java.util.HashMap[String, String]
+
+        conf.put("key.regex", "(\\S*):(\\S*)")
+        conf.put("key.fields", "es_index,host_name")
+
+        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+
+        componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
+        componentConfiguration.setType("parser")
+        componentConfiguration.setConfiguration(conf)
+
+        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val context = new StandardParserContext(instance)
+        Assert.assertTrue(instance != null)
+
+
+
         val logEntryLines = List(
             "123.45.67.89 - - [27/Oct/2000:09:27:09 -0400] \"GET /java/javaResources.html HTTP/1.0\" 200 10450 \"-\" \"Mozilla/4.6 [en] (X11; U; OpenBSD 2.8 i386; Nav)\""
         )
 
-        val parser = new ApacheLogParser()
-        val events = logEntryLines flatMap (log => parser.parse(null, "", log))
+        val parser = instance.getParser
+        val events = logEntryLines flatMap (log => parser.parse(context, "", log))
 
         events.length should be(1)
 
@@ -49,18 +71,68 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
 
 
+    it should "resist to a bad config" in {
+
+
+        val conf = new java.util.HashMap[String, String]
+
+      /*  conf.put("key.regex", "(\\S*):(\\S*)")
+        conf.put("key.fields", "es_index,host_name")*/
+
+        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+
+        componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
+        componentConfiguration.setType("parser")
+        componentConfiguration.setConfiguration(conf)
+
+        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val context = new StandardParserContext(instance)
+        Assert.assertTrue(instance != null)
+
+
+        val logs = List(
+        "10.3.10.134 - - [24/Jul/2016:08:49:40 +0200] \"POST /usr/rest/session HTTP/1.1\" 200 1082",
+        "10.3.10.134 - - [24/Jul/2016:08:49:40 +0200] \"DELETE /usr/rest/session HTTP/1.1\" 204 -",
+        "10.3.10.133 - - [24/Jul/2016:08:49:40 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 240",
+        "10.3.10.133 - - [24/Jul/2016:08:49:40 +0200] \"GET /usr/rest/limits/moderato?siteCode=FDJ_WEB HTTP/1.1\" 200 53"
+        )
+
+        val parser = instance.getParser
+        val events = logs flatMap (log => parser.parse(context, "", log))
+
+        events.length should be(4)
+
+    }
+
     it should "parse simple log as well" in {
+
+
+        val conf = new java.util.HashMap[String, String]
+
+        conf.put("key.regex", "(\\S*):(\\S*)")
+        conf.put("key.fields", "es_index,host_name")
+
+        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+
+        componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
+        componentConfiguration.setType("parser")
+        componentConfiguration.setConfiguration(conf)
+
+        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val context = new StandardParserContext(instance)
+        Assert.assertTrue(instance != null)
+
 
         val logs = List(
             "199.72.81.55 - - [01/Jul/1995:00:00:01 -0400] \"GET /history/apollo/ HTTP/1.0\" 200 6245",
             "unicomp6.unicomp.net - - [01/Jul/1995:00:00:06 -0400] \"GET /shuttle/countdown/ HTTP/1.0\" 200 3985")
 
-        val parser = new ApacheLogParser()
-        val events = logs flatMap (log => parser.parse(null, "", log))
+        val parser = instance.getParser
+        val events = logs flatMap (log => parser.parse(context, "", log))
 
         events.length should be(2)
 
-        events.head.getType should be("apache")
+        events.head.getType should be("apache_log")
         testAnApacheSimpleLogEvent(events.head,
             host = "199.72.81.55",
             user = "-",
@@ -95,16 +167,16 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                              byteSent: Int,
                                              refere: String,
                                              userAgent: String) = {
-        apacheEvent.getType should be("apache")
+        apacheEvent.getType should be("apache_log")
         testAnEventField(apacheEvent.get("host"), "host", "string", host)
         testAnEventField(apacheEvent.get("user"), "user", "string", user)
         testAnEventField(apacheEvent.get("date"), "date", "string", date)
-        testAnEventField(apacheEvent.get("@timestamp"), "@timestamp", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("event_timestamp"), "event_timestamp", "long", stamp.asInstanceOf[Object])
         testAnEventField(apacheEvent.get("request"), "request", "string", request)
         testAnEventField(apacheEvent.get("status"), "status", "string", status)
-        testAnEventField(apacheEvent.get("bytesSent"), "bytesSent", "int", byteSent.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
         testAnEventField(apacheEvent.get("referer"), "referer", "string", refere)
-        testAnEventField(apacheEvent.get("userAgent"), "userAgent", "string", userAgent)
+        testAnEventField(apacheEvent.get("user_agent"), "user_agent", "string", userAgent)
     }
 
     private def testAnApacheSimpleLogEvent(apacheEvent: Event,
@@ -115,13 +187,13 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                            request: String,
                                            status: String,
                                            byteSent: Int) = {
-        apacheEvent.getType should be("apache")
+        apacheEvent.getType should be("apache_log")
         testAnEventField(apacheEvent.get("host"), "host", "string", host)
         testAnEventField(apacheEvent.get("user"), "user", "string", user)
         testAnEventField(apacheEvent.get("date"), "date", "string", date)
-        testAnEventField(apacheEvent.get("@timestamp"), "@timestamp", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("event_timestamp"), "event_timestamp", "long", stamp.asInstanceOf[Object])
         testAnEventField(apacheEvent.get("request"), "request", "string", request)
         testAnEventField(apacheEvent.get("status"), "status", "string", status)
-        testAnEventField(apacheEvent.get("bytesSent"), "bytesSent", "int", byteSent.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
     }
 }

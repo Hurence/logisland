@@ -71,7 +71,7 @@ object ElasticsearchEventConverter extends LazyLogging {
                     }
                 }
 
-                if (fieldName.contains("stamp")) {
+              /*  if (fieldName.contains("stamp")) {
                     if (fieldName.contains("timestamp") || fieldName.equals("datestamp")) {
                         document.field("@timestamp", sdf.format(new Date(fieldValue.asInstanceOf[Long])))
                         document.field("date", sdf.format(new Date(fieldValue.asInstanceOf[Long])))
@@ -81,7 +81,8 @@ object ElasticsearchEventConverter extends LazyLogging {
                     }
                 } else {
                     document.field(fieldName, fieldValue)
-                }
+                }*/
+                document.field(fieldName, fieldValue)
 
             } catch {
                 case ex: Throwable => logger.error(s"unable to process a field in row : $event, ${ex.getMessage}")
