@@ -43,9 +43,9 @@ object ElasticsearchEventConverter extends LazyLogging {
         val document = jsonBuilder().startObject()
 
         event.values.foreach(field => {
-
-            try {
-                val fieldName = field.getName.toLowerCase()
+            var fieldName =""
+                try {
+                 fieldName = field.getName.toLowerCase()
 
                 val fieldValue = field.getType match {
                     case s if s.contains("string") => {
@@ -85,7 +85,7 @@ object ElasticsearchEventConverter extends LazyLogging {
                 document.field(fieldName, fieldValue)
 
             } catch {
-                case ex: Throwable => logger.error(s"unable to process a field in row : $event, ${ex.getMessage}")
+                case ex: Throwable => logger.error(s"unable to process a $fieldName in event : $event, ${ex.getMessage}")
             }
 
         })

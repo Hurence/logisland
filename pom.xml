@@ -70,6 +70,7 @@ language governing permissions and limitations under the License. --><project xm
         <scala.version>2.10.6</scala.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
+        <grok.version>0.1.1</grok.version>
 
         <scala.binary.version>2.10</scala.binary.version>
         <PermGen>64m</PermGen>
@@ -408,6 +409,13 @@ language governing permissions and limitations under the License. --><project xm
                 <groupId>com.googlecode.json-simple</groupId>
                 <artifactId>json-simple</artifactId>
                 <version>1.1</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>io.thekraken</groupId>
+                <artifactId>grok</artifactId>
+                <version>${grok.version}</version>
             </dependency>
 
             <dependency>

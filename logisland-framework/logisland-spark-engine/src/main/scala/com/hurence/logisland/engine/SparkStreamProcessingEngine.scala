@@ -244,12 +244,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
 
 
-                    val outgoingEvents = partition.map(rawEvent => {
-                        val events = parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2)
-                        if (events.nonEmpty)
-                            events.head
-                        else
-                            new Event("void")
+                    val outgoingEvents = partition.flatMap(rawEvent => {
+                      parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
+
                     }).toList
                     //  logger.debug(s" ${incomingEvents.size} incomming log lines")
 
@@ -272,7 +269,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                         brokerList,
                         parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
                         serializer)
-                    kafkaProducer.produce(outgoingEvents.toList)
+                    kafkaProducer.produce(outgoingEvents)
                 })
             })
         })

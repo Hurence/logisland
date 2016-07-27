@@ -37,11 +37,7 @@ public class EventField implements Serializable{
 
     @Override
     public String toString() {
-        return "Field{" +
-                "type='" + type + '\'' +
-                ", name='" + name + '\'' +
-                ", value=" + value +
-                '}';
+        return value.toString();
     }
 
     @Override

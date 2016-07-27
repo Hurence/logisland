@@ -21,24 +21,20 @@ import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.event.Event;
 import com.hurence.logisland.event.EventField;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.utils.elasticsearch.ElasticsearchEventConverter;
 import com.hurence.logisland.validators.StandardValidators;
-import org.elasticsearch.ElasticsearchTimeoutException;
-import org.elasticsearch.action.bulk.*;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.node.NodeClosedException;
-import org.elasticsearch.transport.ReceiveTimeoutTransportException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +107,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
     }
 
 
-
     @Override
     public Collection<Event> process(ProcessContext context, Collection<Event> events) {
         super.setup(context);
@@ -160,17 +155,13 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         String globalIndex = context.getProperty(INDEX).getValue();
         final String globalType = context.getProperty(TYPE).getValue();
         final String timebased = context.getProperty(TIMEBASED_INDEX).getValue().toLowerCase();
-
-        String dateSuffix = "";
-        switch (timebased){
-            case "today" :
-                dateSuffix = "." + sdf.format(new Date());
-                globalIndex += dateSuffix;
+        switch (timebased) {
+            case "today":
+                globalIndex += "." + sdf.format(new Date());
                 break;
-            case "yesterday" :
+            case "yesterday":
                 DateTime dt = new DateTime(new Date()).minusDays(1);
-                dateSuffix =  "." + sdf.format(dt.toDate());
-                globalIndex += dateSuffix;
+                globalIndex += "." + sdf.format(dt.toDate());
                 break;
             default:
                 break;
@@ -194,8 +185,32 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             // compute es index from event if any
             String docIndex = globalIndex;
             final EventField eventIndex = event.get(esIndexField);
-            if(eventIndex != null){
-                docIndex = eventIndex.getValue().toString() + dateSuffix;
+            if (eventIndex != null) {
+
+                EventField eventTime = event.get("event_time");
+                if (eventTime != null) {
+
+                    docIndex = eventIndex.getValue().toString();
+                    try{
+                        long eventTimestamp = (long) eventTime.getValue();
+                        switch (timebased) {
+                            case "today":
+                                docIndex += "." + sdf.format(new Date(eventTimestamp));
+                                break;
+                            case "yesterday":
+                                DateTime dt = new DateTime(eventTimestamp).minusDays(1);
+                                docIndex += "." + sdf.format(dt.toDate());
+                                break;
+                            default:
+                                break;
+                        }
+                    }catch (Exception e){
+                        logger.info("unable to convert event_time {}", e.getMessage());
+                    }
+
+
+                } else
+                    docIndex = eventIndex.getValue().toString();
             }
 
             // compute es type from event if any
@@ -225,7 +240,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         try {
             bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-           logger.error(e.getMessage());
+            logger.error(e.getMessage());
         }
         logger.info("done in {}", System.currentTimeMillis() - start);
 
@@ -237,7 +252,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         esClient.get().close();
         return Collections.emptyList();
     }
-
 
 
     /**

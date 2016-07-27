@@ -141,9 +141,32 @@ public class SplitText extends AbstractLogParser {
                     }
 
 
+                    // TODO remove this ugly stuff with EL
+                    if (event.get("event_time") != null) {
+
+                        try{
+                            long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
+
+
+                        }catch (NumberFormatException e){
+                            final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+
+                            try{
+                                long eventTime = sdf2.parse(event.get("event_time").getValue().toString()).getTime();
+                                event.put("event_time", "long", eventTime);
+
+                            }catch (Exception ex){
+                                logger.error("unable to parse date {}, {}",event.get("event_time").getValue().toString(), ex.getMessage() );
+                            }
+
+                        }
+
+
+                    }
+
+
+
                     events.add(event);
-                } else {
-                    logger.warn("no match");
                 }
             }
 
