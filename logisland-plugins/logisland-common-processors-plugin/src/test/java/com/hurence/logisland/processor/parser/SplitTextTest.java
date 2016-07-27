@@ -21,6 +21,7 @@ import java.util.Map;
 public class SplitTextTest {
 
     public static final String DATA_USR_BACKEND_LOG = "/data/usr_backend_application.log";
+    public static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
     public static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
     public static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
     private static Logger logger = LoggerFactory.getLogger(SplitTextTest.class);
@@ -32,7 +33,7 @@ public class SplitTextTest {
 
         Map<String, String> conf = new HashMap<>();
         conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
-        conf.put("value.fields", "raw_content,component,event_timestamp,player_type,session,user_id,srv,log_level,logger,none,trace");
+        conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
 
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
@@ -87,7 +88,7 @@ public class SplitTextTest {
 
         Map<String, String> conf = new HashMap<>();
         conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
-        conf.put("value.fields", "raw_content,component,event_timestamp,player_type,session,user_id,srv,log_level,logger,none,trace");
+        conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
 
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
@@ -133,6 +134,64 @@ public class SplitTextTest {
 
 
     }
+
+    @Test
+    public void testUsrGateway() throws IOException {
+
+
+        Map<String, String> conf = new HashMap<>();
+        conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:(\\S*)\\]\\s+(\\S*)\\s+(\\S*) - (.*)");
+        conf.put("value.fields", "raw_content,component,event_time,session,log_level,logger,trace");
+
+        conf.put("key.regex", "(\\S*):(\\S*)");
+        conf.put("key.fields", "es_index,host_name");
+
+        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+
+        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setType("parser");
+        componentConfiguration.setConfiguration(conf);
+
+        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
+        ProcessContext context = new StandardParserContext(instance);
+        Assert.assertTrue(instance != null);
+
+
+        InputStreamReader isr;
+        BufferedReader bsr = null;
+
+        final FileInputStream fis = new FileInputStream(SplitTextTest.class.getResource(DATA_USR_GATEWAY_LOG).getFile());
+        isr = new InputStreamReader(fis, "UTF-8");
+        bsr = new BufferedReader(isr);
+
+        int nblines = 0;
+        String line;
+        List<Event> totalEvents = new ArrayList<>();
+        while ((line = bsr.readLine()) != null) {
+
+
+            // String[] kvLine = line.split("@");
+            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+
+            if (events.isEmpty())
+                System.out.println(line);
+            else totalEvents.addAll(events);
+
+            nblines++;
+            //   Assert.assertTrue(events.size() == 1);
+            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+        }
+        System.out.println("events count :" + totalEvents.size());
+
+        Assert.assertTrue(totalEvents.size() == 73);
+
+
+    }
+
+
+
+
+
 
     @Test
     public void testLoadConfig() throws Exception {
