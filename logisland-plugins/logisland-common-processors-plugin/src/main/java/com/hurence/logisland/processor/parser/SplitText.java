@@ -10,10 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,7 +86,7 @@ public class SplitText extends AbstractLogParser {
         final String valueRegexString = context.getProperty(VALUE_REGEX).getValue();
         final String eventType = context.getProperty(EVENT_TYPE).getValue();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         List<Event> events = new ArrayList<>();
 
@@ -101,6 +98,7 @@ public class SplitText extends AbstractLogParser {
 
             // match the key
             if(key!= null){
+                try{
                 Matcher keyMatcher = keyRegex.matcher(key);
                 if (keyMatcher.matches()) {
                     for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
@@ -110,6 +108,8 @@ public class SplitText extends AbstractLogParser {
 
                         }
                     }
+                }}catch (Exception e) {
+                    logger.info("error while matching key {} with regex {}", key, keyRegexString);
                 }
             }
 
@@ -133,7 +133,11 @@ public class SplitText extends AbstractLogParser {
                                 event.get("time").getValue().toString();
 
                         try {
-                            event.put("event_time", "long", sdf.parse(eventTimeString).getTime());
+                            Date eventDate = parseDate(eventTimeString);
+
+                            if(eventDate != null){
+                                event.put("event_time", "long", eventDate.getTime());
+                            }
                         } catch (Exception e) {
                             logger.warn("unable to parse date {}", eventTimeString);
                         }
@@ -143,6 +147,20 @@ public class SplitText extends AbstractLogParser {
 
                     // TODO remove this ugly stuff with EL
                     if (event.get("event_time") != null) {
+
+                        try {
+                            long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
+                        } catch (Exception ex) {
+
+                            Date eventDate = parseDate(event.get("event_time").getValue().toString());
+                            if(eventDate != null){
+                                event.put("event_time", "long", eventDate.getTime());
+                            }
+                        }
+                    }
+
+
+                 /*   if (event.get("event_time") != null) {
 
                         try{
                             long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
@@ -156,13 +174,25 @@ public class SplitText extends AbstractLogParser {
                                 event.put("event_time", "long", eventTime);
 
                             }catch (Exception ex){
-                                logger.error("unable to parse date {}, {}",event.get("event_time").getValue().toString(), ex.getMessage() );
+
+
+
+                                try{
+                                    final  SimpleDateFormat sdf3 = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
+                                    long eventTime = sdf3.parse(event.get("event_time").getValue().toString()).getTime();
+                                    event.put("event_time", "long", eventTime);
+
+                                }catch (Exception ex2){
+                                    logger.error("unable to parse date {}, {}",event.get("event_time").getValue().toString(), ex2.getMessage() );
+                                }
+
+
                             }
 
                         }
 
 
-                    }
+                    }*/
 
 
 
@@ -176,6 +206,25 @@ public class SplitText extends AbstractLogParser {
 
 
         return events;
+    }
+
+    private final static Date parseDate(String value) {
+        String[] dateFormats = new String[] {
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd HH:mm:ss",
+                "dd/MM/yyyy-MM-dd:HH:mm:ss.SSSZ"
+        };
+        for (String dateFormat: dateFormats) {
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+            try {
+                return sdf.parse(value);
+            }
+            catch (Throwable t) {
+
+            }
+        }
+        return null;
     }
 
     @Override
