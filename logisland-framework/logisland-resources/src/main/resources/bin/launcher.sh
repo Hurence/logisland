@@ -348,5 +348,10 @@ declare -r conf_dir="$(realpath "${app_home}/../conf")"
 declare  app_classpath=""
 for entry in "$lib_dir"/*
 do
-  app_classpath="$lib$entry,$app_classpath"
+  if [[ -z "$app_classpath" ]]
+  then
+    app_classpath="$lib$entry"
+  else
+    app_classpath="$lib$entry,$app_classpath"
+  fi
 done

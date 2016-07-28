@@ -206,7 +206,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
             // dump event to a JSON format
             String document = ElasticsearchEventConverter.convert(event);
-
+            logger.debug("document: {}", document);
             // add it to the bulk
             IndexRequestBuilder result = esClient.get()
                     .prepareIndex(docIndex, docType, docId)
