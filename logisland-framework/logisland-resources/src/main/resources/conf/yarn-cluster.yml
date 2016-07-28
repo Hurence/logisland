@@ -1,0 +1,67 @@
+version: 0.1
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+components:
+  # Main event streaming engine
+  - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
+    type: engine
+    version: 0.1.0
+    documentation: Main Logisland job entry point
+    configuration:
+      spark.executorMemory: 512M
+      spark.checkpointingDirectory: file:///tmp
+      spark.appName: My first stream component
+      spark.streaming.batchDuration: 2000
+      spark.serializer: org.apache.spark.serializer.KryoSerializer
+      spark.streaming.backpressure.enabled: true
+      spark.streaming.unpersist: false
+      spark.streaming.blockInterval: 350
+      spark.streaming.kafka.maxRatePerPartition: 500
+      spark.streaming.timeout: 50000
+      spark.ui.port: 4050
+      kafka.metadata.broker.list: sandbox.hortonworks.com:6667 
+      kafka.zookeeper.quorum: localhost:2181
+      output.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
+      input.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
+
+  # A Debug component that only logs what it reads
+  - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
+    type: processor
+    version: 0.1.0
+    documentation: a processor that trace the processed events
+    configuration:
+      kafka.input.topics: t2 
+      kafka.output.topics: none
+      kafka.error.topics: none
+
+  # reads input of the form xxx:yyyy  
+  - component: com.hurence.logisland.processor.parser.SplitText
+    type: parser
+    version: 0.1.0
+    documentation: a parser that produce events from a REGEX
+    configuration:
+      kafka.input.topics: t1
+      kafka.output.topics: t2
+      kafka.error.topics: logisland-error
+      event.type: log_traker
+      value.regex: (\S*):(\S*)
+      value.fields: a,b
+      key.regex: (\S*):(\S*)
+      key.fields: c,d
+
+  # An elasticsearc compo
+  - component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+    type: processor
+    version: 0.1.0
+    documentation: a processor that trace the processed events
+    configuration:
+      kafka.input.topics: t2 
+      kafka.output.topics: none
+      kafka.error.topics: none
+      index: centralisation
+      type: traker1
+      hosts: localhost:9300
+      batch.size: 200
+      timebased.index: yesterday
+      es.index.field: es_index
+      cluster.name: elasticsearch
