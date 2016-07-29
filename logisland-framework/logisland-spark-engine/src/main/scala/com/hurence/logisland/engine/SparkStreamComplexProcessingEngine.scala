@@ -28,6 +28,7 @@ import scala.collection.JavaConversions._
   */
 class SparkStreamComplexProcessingEngine extends AbstractStreamProcessingEngine {
 
+
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("the url to Spark Master")
@@ -153,12 +154,14 @@ class SparkStreamComplexProcessingEngine extends AbstractStreamProcessingEngine 
         Collections.unmodifiableList(descriptors)
     }
 
-
+    private var status = "STOPPED"
     private val logger = LoggerFactory.getLogger(classOf[SparkStreamComplexProcessingEngine])
+    def getStatus: String = status
 
     override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance], parserInstances: util.List[StandardParserInstance]) = {
 
         logger.info("starting Spark Engine")
+        status = "STARTED"
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
         val maxRatePerPartition = engineContext.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
         val appName = engineContext.getProperty(SPARK_APP_NAME).getValue
@@ -204,7 +207,7 @@ class SparkStreamComplexProcessingEngine extends AbstractStreamProcessingEngine 
 
             // Define the Kafka parameters, broker list must be specified
             val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> parseContext.getName)
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+            val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
             logger.debug("batchDuration: " + batchDuration)
             logger.debug("blockInterval: " + blockInterval)
             logger.debug("maxRatePerPartition: " + maxRatePerPartition)
