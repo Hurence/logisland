@@ -17,7 +17,7 @@
 
 package com.hurence.logisland.utils.string;
 
-import com.hurence.logisland.utils.time.DateUtils;
+import com.hurence.logisland.utils.time.DateUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class JsonUtil {
 
-	private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
 	private final static ObjectMapper mapper = new ObjectMapper();
 

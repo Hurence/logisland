@@ -25,7 +25,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hurence.logisland.utils.time.DateUtils;
+import com.hurence.logisland.utils.time.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author tom
  */
-public class HttpUtils {
+public class HttpUtil {
 
-	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(DateUtil.class);
 
 	private static class QueryParam {
 

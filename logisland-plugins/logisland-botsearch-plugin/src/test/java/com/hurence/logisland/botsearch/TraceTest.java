@@ -4,7 +4,7 @@
  */
 package com.hurence.logisland.botsearch;
 
-import com.hurence.logisland.utils.time.DateUtils;
+import com.hurence.logisland.utils.time.DateUtil;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +33,7 @@ public class TraceTest {
             String[] split = flowString.split("\t");
             HttpFlow flow = new HttpFlow();
             try {
-                flow.setDate(DateUtils.fromLegacyStringToDate(split[0]));
+                flow.setDate(DateUtil.fromLegacyStringToDate(split[0]));
                 flow.setipSource(split[2]);
                 flow.setRequestSize(Long.parseLong(split[8]));
                 flow.setResponseSize(Long.parseLong(split[9]));

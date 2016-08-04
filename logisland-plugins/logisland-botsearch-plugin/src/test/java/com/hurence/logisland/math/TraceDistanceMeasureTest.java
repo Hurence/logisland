@@ -6,7 +6,7 @@ package com.hurence.logisland.math;
 
 import com.hurence.logisland.botsearch.HttpFlow;
 import com.hurence.logisland.botsearch.Trace;
-import com.hurence.logisland.utils.string.HttpUtils;
+import com.hurence.logisland.utils.string.HttpUtil;
 
 import java.util.List;
 import static org.junit.Assert.*;
@@ -21,8 +21,8 @@ public class TraceDistanceMeasureTest {
 	private HttpFlow createFlow(String scheme, String path, String params) {
 		HttpFlow f = new HttpFlow();
 
-		List<String> queryKeys = HttpUtils.getQueryKeys(params);
-		List<String> queryValues = HttpUtils.getQueryValues(params);
+		List<String> queryKeys = HttpUtil.getQueryKeys(params);
+		List<String> queryValues = HttpUtil.getQueryValues(params);
 		f.setUrlQueryKeys(queryKeys);
 		f.setUrlQueryValues(queryValues);
 		f.setUrlScheme(scheme);

@@ -5,6 +5,7 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.log.AbstractLogParser;
 import com.hurence.logisland.log.LogParserException;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.utils.time.DateUtil;
 import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +134,7 @@ public class SplitText extends AbstractLogParser {
                                 event.get("time").getValue().toString();
 
                         try {
-                            Date eventDate = parseDate(eventTimeString);
+                            Date eventDate = DateUtil.parse(eventTimeString);
 
                             if(eventDate != null){
                                 event.put("event_time", "long", eventDate.getTime());
@@ -152,47 +153,12 @@ public class SplitText extends AbstractLogParser {
                             long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
                         } catch (Exception ex) {
 
-                            Date eventDate = parseDate(event.get("event_time").getValue().toString());
+                            Date eventDate = DateUtil.parse(event.get("event_time").getValue().toString());
                             if(eventDate != null){
                                 event.put("event_time", "long", eventDate.getTime());
                             }
                         }
                     }
-
-
-                 /*   if (event.get("event_time") != null) {
-
-                        try{
-                            long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
-
-
-                        }catch (NumberFormatException e){
-                            final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
-
-                            try{
-                                long eventTime = sdf2.parse(event.get("event_time").getValue().toString()).getTime();
-                                event.put("event_time", "long", eventTime);
-
-                            }catch (Exception ex){
-
-
-
-                                try{
-                                    final  SimpleDateFormat sdf3 = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
-                                    long eventTime = sdf3.parse(event.get("event_time").getValue().toString()).getTime();
-                                    event.put("event_time", "long", eventTime);
-
-                                }catch (Exception ex2){
-                                    logger.error("unable to parse date {}, {}",event.get("event_time").getValue().toString(), ex2.getMessage() );
-                                }
-
-
-                            }
-
-                        }
-
-
-                    }*/
 
 
 
@@ -206,25 +172,6 @@ public class SplitText extends AbstractLogParser {
 
 
         return events;
-    }
-
-    private final static Date parseDate(String value) {
-        String[] dateFormats = new String[] {
-                "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-                "yyyy-MM-dd HH:mm:ss",
-                "dd/MM/yyyy-MM-dd:HH:mm:ss.SSSZ"
-        };
-        for (String dateFormat: dateFormats) {
-            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-            try {
-                return sdf.parse(value);
-            }
-            catch (Throwable t) {
-
-            }
-        }
-        return null;
     }
 
     @Override
