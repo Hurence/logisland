@@ -128,6 +128,7 @@ public class DateUtilTest {
 
 
         for (String strDate : strDates) {
+            System.out.println("parsing " + strDate);
             Date date = DateUtil.parse(strDate);
             assertTrue(1388648629000L == date.getTime());
 
