@@ -28,12 +28,14 @@ import scala.collection.JavaConversions._
   */
 class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
+    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
+
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("the url to Spark Master")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("local[2]")
+        .defaultValue("local[8]")
         .build
 
     val SPARK_APP_NAME = new PropertyDescriptor.Builder()
@@ -84,6 +86,30 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("sandbox:2181")
         .build
 
+    val KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
+        .name("kafka.topic.autoCreate")
+        .description("define wether a topic should be created automatically if not already exists")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("true")
+        .build
+
+    val KAFKA_TOPIC_DEFAULT_PARTITIONS = new PropertyDescriptor.Builder()
+        .name("kafka.topic.default.partitions")
+        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("8")
+        .build
+
+    val KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR = new PropertyDescriptor.Builder()
+        .name("kafka.topic.default.replicationFactor")
+        .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("1")
+        .build
+
     val SPARK_STREAMING_BACKPRESSURE_ENABLED = new PropertyDescriptor.Builder()
         .name("spark.streaming.backpressure.enabled")
         .description("")
@@ -108,7 +134,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("4050")
         .build
 
-
     val SPARK_STREAMING_TIMEOUT = new PropertyDescriptor.Builder()
         .name("spark.streaming.timeout")
         .description("")
@@ -116,7 +141,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .defaultValue("-1")
         .build
-
 
     val INPUT_EVENT_SERIALIZER = new PropertyDescriptor.Builder()
         .name("input.event.serializer")
@@ -149,29 +173,45 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_STREAMING_TIMEOUT)
         descriptors.add(INPUT_EVENT_SERIALIZER)
         descriptors.add(OUTPUT_EVENT_SERIALIZER)
+        descriptors.add(KAFKA_TOPIC_AUTOCREATE)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
 
         Collections.unmodifiableList(descriptors)
     }
 
-
-    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
-
-    override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance], parserInstances: util.List[StandardParserInstance]) = {
+    /**
+      * start the engine
+      *
+      * @param engineContext
+      * @param processorInstances
+      * @param parserInstances
+      */
+    override def start(engineContext: EngineContext,
+                       processorInstances: util.List[StandardProcessorInstance],
+                       parserInstances: util.List[StandardParserInstance]) = {
 
         logger.info("starting Spark Engine")
+        //
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
         val maxRatePerPartition = engineContext.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
         val appName = engineContext.getProperty(SPARK_APP_NAME).getValue
         val blockInterval = engineContext.getProperty(SPARK_STREAMING_BLOCK_INTERVAL).getValue
         val batchDuration = engineContext.getProperty(SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-        val brokerList = engineContext.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
-        val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
         val backPressureEnabled = engineContext.getProperty(SPARK_STREAMING_BACKPRESSURE_ENABLED).getValue
         val streamingUnpersist = engineContext.getProperty(SPARK_STREAMING_UNPERSIST).getValue
         val timeout = engineContext.getProperty(SPARK_STREAMING_TIMEOUT).asInteger().intValue()
 
+        // log-island stuff
         val inSerializerClass = engineContext.getProperty(INPUT_EVENT_SERIALIZER).getValue
         val outSerializerClass = engineContext.getProperty(OUTPUT_EVENT_SERIALIZER).getValue
+
+        // Kafka stuff
+        val brokerList = engineContext.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
+        val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
+        val topicAutocreate = engineContext.getProperty(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
+        val topicDefaultPartitions = engineContext.getProperty(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
+        val topicDefaultReplicationFactor = engineContext.getProperty(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
 
         /**
           * job configuration
@@ -215,9 +255,11 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             val outputTopics = parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
             val errorTopics = parseContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
 
-            createTopicsIfNeeded(zkClient, inputTopics)
-            createTopicsIfNeeded(zkClient, outputTopics)
-            createTopicsIfNeeded(zkClient, errorTopics)
+            if (topicAutocreate) {
+                createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+            }
 
             // Create the direct stream with the Kafka parameters and topics
             val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
@@ -225,8 +267,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                 kafkaParams,
                 inputTopics
             )
-
-
 
             // setup the stream processing
             kafkaStream.foreachRDD(rdd => {
@@ -242,10 +282,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     // convert partition to events
                     val parser = new Schema.Parser
 
-
-
                     val outgoingEvents = partition.flatMap(rawEvent => {
-                      parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
+                        parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
 
                     }).toList
                     //  logger.debug(s" ${incomingEvents.size} incomming log lines")
@@ -295,9 +333,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             val outputTopics = processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
             val errorTopics = processorContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
 
-            createTopicsIfNeeded(zkClient, inputTopics)
-            createTopicsIfNeeded(zkClient, outputTopics)
-            createTopicsIfNeeded(zkClient, errorTopics)
+            createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+            createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+            createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
 
             // Create the direct stream with the Kafka parameters and topics
             val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
@@ -366,12 +404,24 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             ssc.awaitTermination()
     }
 
-    def createTopicsIfNeeded(zkClient: ZkClient, inputTopics: Set[String]): Unit = {
+    /**
+      * Topic creation
+      *
+      * @param zkClient
+      * @param inputTopics
+      * @param topicDefaultPartitions
+      * @param topicDefaultReplicationFactor
+      */
+    def createTopicsIfNeeded(zkClient: ZkClient,
+                             inputTopics: Set[String],
+                             topicDefaultPartitions: Int,
+                             topicDefaultReplicationFactor: Int): Unit = {
+
         inputTopics.foreach(topic => {
             if (!AdminUtils.topicExists(zkClient, topic)) {
-                AdminUtils.createTopic(zkClient, topic, 1, 1)
+                AdminUtils.createTopic(zkClient, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)
-                logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
+                logger.info(s"created topic $topic with replication $topicDefaultPartitions and partition $topicDefaultReplicationFactor")
             }
         })
     }
@@ -394,7 +444,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
     override def getIdentifier: String = {
-        "none"
+        "SparkStreamProcessingEngine"
     }
 
 }

@@ -1,6 +1,5 @@
 version: 0.1
 documentation: LogIsland analytics main config file. Put here every engine or component config
-
 components:
   # Main event streaming engine
   - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
@@ -17,11 +16,14 @@ components:
       spark.streaming.backpressure.enabled: true
       spark.streaming.unpersist: false
       spark.streaming.blockInterval: 350
-      spark.streaming.kafka.maxRatePerPartition: 500
+      spark.streaming.kafka.maxRatePerPartition: 2000
       spark.streaming.timeout: 20000
       spark.ui.port: 4050
       kafka.metadata.broker.list: localhost:9092
       kafka.zookeeper.quorum: localhost:2181
+      kafka.topic.autoCreate: true
+      kafka.topic.default.partitions: 8
+      kafka.topic.default.replicationFactor: 1
       output.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
       input.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
 
@@ -50,4 +52,3 @@ components:
       value.fields: a,b
       key.regex: (\S*):(\S*)
       key.fields: c,d
-
