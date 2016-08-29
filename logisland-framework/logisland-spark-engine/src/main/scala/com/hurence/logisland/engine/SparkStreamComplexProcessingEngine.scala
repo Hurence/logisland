@@ -246,8 +246,9 @@ class SparkStreamComplexProcessingEngine extends AbstractStreamProcessingEngine 
 
 
                     val outgoingEvents = partition.map(rawEvent => {
+                        val key = rawEvent._1
                         val line = rawEvent._2
-                        val events = parserInstance.getParser.parse(parseContext, line)
+                        val events = parserInstance.getParser.parse(parseContext, key, line)
                         if (events.nonEmpty)
                             events.head
                         else

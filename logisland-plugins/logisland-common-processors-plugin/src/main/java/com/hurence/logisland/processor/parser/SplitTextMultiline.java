@@ -63,9 +63,8 @@ public class SplitTextMultiline extends AbstractLogParser {
         return Collections.unmodifiableList(descriptors);
     }
 
-
     @Override
-    public Collection<Event> parse(ProcessContext context, String lines) throws LogParserException {
+    public Collection<Event> parse(ProcessContext context, String key, String lines) throws LogParserException {
 
         final String[] fields = context.getProperty(FIELDS).getValue().split(",");
         final String regexString = context.getProperty(REGEX).getValue();
