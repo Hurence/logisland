@@ -18,7 +18,7 @@ language governing permissions and limitations under the License. --><project xm
     </parent>-->
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.9.5</version>
+    <version>${logisland.version}</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of log files.</description>
     <modules>
@@ -60,6 +60,7 @@ language governing permissions and limitations under the License. --><project xm
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2014</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
+        <logisland.version>0.9.5</logisland.version>
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.1</hbase.version>
@@ -496,47 +497,52 @@ language governing permissions and limitations under the License. --><project xm
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-api</artifactId>
-                <version>0.9.5</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-utils</artifactId>
-                <version>0.9.5</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-bootstrap</artifactId>
-                <version>0.9.5</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-common-processors-plugin</artifactId>
-                <version>0.9.5</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-spark-engine</artifactId>
-                <version>0.9.5</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-querymatcher-plugin</artifactId>
-                <version>0.1.0</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-outlier-detection-plugin</artifactId>
-                <version>0.1.0</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-botsearch-plugin</artifactId>
-                <version>0.3.0</version>
+                <version>${logisland.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch-plugin</artifactId>
-                <version>0.1.0</version>
+                <version>${logisland.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-elasticsearch-shaded</artifactId>
+                <version>${elasticsearch.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
