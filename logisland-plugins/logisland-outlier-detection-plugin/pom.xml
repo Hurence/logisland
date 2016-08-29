@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <global_kafka_version>0.8.2.2</global_kafka_version>
         <global_hadoop_version>2.5.1</global_hadoop_version>
-        <global_guava_version>18.0</global_guava_version>
+        <!--global_guava_version>18.0</global_guava_version-->
 
         <scala.binary.version>2.10</scala.binary.version>
         <global_junit_version>4.4</global_junit_version>
@@ -26,7 +26,7 @@
         <global_storm_version>0.10.0</global_storm_version>
         <global_flux_version>0.10.0</global_flux_version>
          <global_commons_math_version>3.6</global_commons_math_version>
-        <global_elasticsearch_version>2.2.0</global_elasticsearch_version>
+        <!--global_elasticsearch_version>2.2.0</global_elasticsearch_version-->
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
     </properties>

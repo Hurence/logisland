@@ -62,6 +62,29 @@
             <artifactId>elasticsearch</artifactId>
         </dependency>
 
+
+        <!-- spark dep -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.10</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.10</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.10</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- scala deps -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
@@ -71,11 +94,15 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.10</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-spark-engine</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
