@@ -10,15 +10,9 @@ License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
 OF ANY KIND, either express or implied. See the License for the specific 
 language governing permissions and limitations under the License. --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-   <!-- <parent>
-        <groupId>com.hurence</groupId>
-        <artifactId>logisland</artifactId>
-        <version>17</version>
-        <relativePath />
-    </parent>-->
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>${logisland.version}</version>
+    <version>0.9.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of log files.</description>
     <modules>
@@ -46,7 +40,7 @@ language governing permissions and limitations under the License. --><project xm
     <scm>
         <connection>scm:git:git@github.com:Hurence/log-island.git</connection>
         <url>https://github.com/Hurence/log-island</url>
-        <tag>logisland-0.9.5</tag>
+        <tag>logisland-${project.version}</tag>
     </scm>
     <issueManagement>
         <system>GIT</system>
@@ -60,7 +54,7 @@ language governing permissions and limitations under the License. --><project xm
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2014</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
-        <logisland.version>0.9.5</logisland.version>
+        <logisland.version>${project.version}</logisland.version>
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.1</hbase.version>
@@ -497,47 +491,47 @@ language governing permissions and limitations under the License. --><project xm
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-api</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-utils</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-bootstrap</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-common-processors-plugin</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-spark-engine</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-querymatcher-plugin</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-outlier-detection-plugin</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-botsearch-plugin</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch-plugin</artifactId>
-                <version>${logisland.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
@@ -550,7 +544,7 @@ language governing permissions and limitations under the License. --><project xm
                 <classifier>resources</classifier>
                 <scope>runtime</scope>
                 <type>zip</type>
-                <version>0.9.5</version>
+                <version>${project.version}</version>
             </dependency>
 
         </dependencies>
@@ -668,13 +662,10 @@ language governing permissions and limitations under the License. --><project xm
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.1</version>
                     <configuration>
-                        <useReleaseProfile>true</useReleaseProfile>
-                        <releaseProfiles>apache-release</releaseProfiles>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <releaseProfiles>release</releaseProfiles>
                         <goals>deploy</goals>
-                       <!-- <tagNameFormat>@{project.artifactId}-@{project.version}</tagNameFormat>-->
-                        <pushChanges>false</pushChanges>
-                        <localCheckout>true</localCheckout>
                     </configuration>
                     <executions>
                         <execution>
@@ -746,20 +737,14 @@ language governing permissions and limitations under the License. --><project xm
                 </dependencies>
             </plugin>
             <plugin>
-                <groupId>org.apache.nifi</groupId>
-                <artifactId>nifi-nar-maven-plugin</artifactId>
-                <version>1.1.0</version>
-                <extensions>true</extensions>
-            </plugin>
-            <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.5</version>
+                <version>1.6.7</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
-                    <serverId>repository.apache.org</serverId>
-                    <nexusUrl>https://repository.apache.org/</nexusUrl>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
             <plugin>

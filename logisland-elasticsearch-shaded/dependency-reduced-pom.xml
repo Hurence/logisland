@@ -3,7 +3,7 @@
   <parent>
     <artifactId>logisland</artifactId>
     <groupId>com.hurence.logisland</groupId>
-    <version>${logisland.version}</version>
+    <version>0.9.5-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>logisland-elasticsearch-shaded</artifactId>
