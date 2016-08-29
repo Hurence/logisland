@@ -18,7 +18,7 @@ language governing permissions and limitations under the License. --><project xm
     </parent>-->
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of log files.</description>
     <modules>
@@ -45,7 +45,7 @@ language governing permissions and limitations under the License. --><project xm
     <scm>
         <connection>scm:git:git@github.com:Hurence/log-island.git</connection>
         <url>https://github.com/Hurence/log-island</url>
-        <tag>logisland-0.9.4-RC1</tag>
+        <tag>logisland-0.9.5</tag>
     </scm>
     <issueManagement>
         <system>GIT</system>
@@ -496,32 +496,32 @@ language governing permissions and limitations under the License. --><project xm
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-api</artifactId>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-utils</artifactId>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-bootstrap</artifactId>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-common-processors-plugin</artifactId>
-                <version>0.3.0</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-spark-engine</artifactId>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-querymatcher-plugin</artifactId>
-                <version>0.9.4</version>
+                <version>0.1.0</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
@@ -544,7 +544,7 @@ language governing permissions and limitations under the License. --><project xm
                 <classifier>resources</classifier>
                 <scope>runtime</scope>
                 <type>zip</type>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
 
         </dependencies>

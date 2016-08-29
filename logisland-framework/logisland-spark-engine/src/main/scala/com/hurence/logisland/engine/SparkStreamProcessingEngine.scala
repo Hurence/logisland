@@ -243,7 +243,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
 
             // Define the Kafka parameters, broker list must be specified
-            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> parseContext.getName)
+            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> appName)
             val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
             logger.debug("batchDuration: " + batchDuration)
             logger.debug("blockInterval: " + blockInterval)
