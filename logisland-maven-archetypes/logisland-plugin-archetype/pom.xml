@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-maven-archetypes</artifactId>
-        <version>0.9.4</version>
+        <version>${logisland.version}</version>
     </parent>
 
     <artifactId>logisland-plugin-archetype</artifactId>
