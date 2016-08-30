@@ -46,7 +46,7 @@ public class KafkaIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        kafkaUnitServer = new KafkaUnit(8000, 8001);
+        kafkaUnitServer = new KafkaUnit(8009, 8010);
         kafkaUnitServer.setKafkaBrokerConfig("log.segment.bytes", "1024");
         kafkaUnitServer.startup();
     }
