@@ -131,7 +131,7 @@ public class DateUtilTest {
             logger.info("parsing " + strDate);
             try {
                 Date date = DateUtil.parse(strDate);
-                assertTrue(strDate + " should be equal to 1388648629000L", 1388648629000L == date.getTime());
+                assertTrue(strDate + " should be equal to " + date.toString(), 1388648629000L == date.getTime());
             } catch (ParseException e) {
                 e.printStackTrace();
             }
