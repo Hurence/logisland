@@ -25,7 +25,8 @@ to deploy artifacts (if you're allowed to), follow this guide [release to OSS So
 
     
     mvn versions:set -DnewVersion=0.9.5-SNAPSHOT
-    mvn clean deploy -Psonatype
+    mvn clean deploy
+    mvn versions:commit
     
 follow the staging procedure in [https://oss.sonatype.org/#stagingRepositories](https://oss.sonatype.org/#stagingRepositories) or read [Sonatype book](http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven)
     
