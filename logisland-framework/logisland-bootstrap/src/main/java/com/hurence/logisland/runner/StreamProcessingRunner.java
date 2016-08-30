@@ -22,6 +22,11 @@ public class StreamProcessingRunner {
     private static Logger logger = LoggerFactory.getLogger(StreamProcessingRunner.class);
 
 
+    /**
+     * main entry point
+     *
+     * @param args
+     */
     public static void main(String[] args) {
 
         logger.info("starting StreamProcessingRunner");

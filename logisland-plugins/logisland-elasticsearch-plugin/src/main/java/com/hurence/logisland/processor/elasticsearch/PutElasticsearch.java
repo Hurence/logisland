@@ -39,7 +39,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * a processor class that puts events to ES
+ */
 public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
@@ -106,7 +108,13 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
-
+    /**
+     * process events
+     *
+     * @param context
+     * @param events
+     * @return
+     */
     @Override
     public Collection<Event> process(ProcessContext context, Collection<Event> events) {
         super.setup(context);

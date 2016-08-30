@@ -128,10 +128,10 @@ public class DateUtilTest {
 
 
         for (String strDate : strDates) {
-            System.out.println("parsing " + strDate);
+            logger.info("parsing " + strDate);
             try {
                 Date date = DateUtil.parse(strDate);
-                assertTrue(1388648629000L == date.getTime());
+                assertTrue(strDate + " should be equal to 1388648629000L", 1388648629000L == date.getTime());
             } catch (ParseException e) {
                 e.printStackTrace();
             }

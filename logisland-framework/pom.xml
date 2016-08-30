@@ -18,7 +18,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.4</version>
     </parent>
 
     <artifactId>logisland-framework</artifactId>

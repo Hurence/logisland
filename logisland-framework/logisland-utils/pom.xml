@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.4</version>
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
@@ -27,6 +27,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

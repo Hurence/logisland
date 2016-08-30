@@ -48,14 +48,16 @@ public class DataGenerator {
      * Takes a schema file as input
      */
     public DataGenerator(File schemaFile) throws IOException {
-        schema = Schema.parse(schemaFile);
+        Schema.Parser parser = new Schema.Parser();
+        schema = parser.parse(schemaFile);
     }
 
     /*
      * Takes a schema string as an input
      */
     public DataGenerator(String schema) {
-        this.schema = Schema.parse(schema);
+        Schema.Parser parser = new Schema.Parser();
+        this.schema = parser.parse(schema);
     }
 
 

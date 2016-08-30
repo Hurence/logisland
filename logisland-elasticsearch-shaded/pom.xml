@@ -14,13 +14,13 @@ language governing permissions and limitations under the License. -->
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.4</version>
     </parent>
     <artifactId>logisland-elasticsearch-shaded</artifactId>
     <version>${elasticsearch.version}</version>
     <packaging>jar</packaging>
     <description>This module produces an elasticsearch jarfile with guava shaded into it</description>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
@@ -28,8 +28,8 @@ language governing permissions and limitations under the License. -->
             <version>${elasticsearch.version}</version>
         </dependency>
     </dependencies>
-    
-    
+
+
     <build>
         <plugins>
             <plugin>
@@ -49,8 +49,8 @@ language governing permissions and limitations under the License. -->
                                     <include>org.elasticsearch:elasticsearch</include>
                                 </includes>
                             </artifactSet>
-                            
-                            
+
+
                             <relocations>
                                 <relocation>
                                     <pattern>com.google</pattern>
@@ -58,7 +58,8 @@ language governing permissions and limitations under the License. -->
                                 </relocation>
                             </relocations>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
