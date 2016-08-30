@@ -186,6 +186,8 @@ public class KafkaUnit {
     public void shutdown() {
         if (broker != null) broker.shutdown();
         if (zookeeper != null) zookeeper.shutdown();
+
+
     }
 
     public List<KeyedMessage<String, String>> readKeyedMessages(final String topicName, final int expectedMessages) throws TimeoutException {

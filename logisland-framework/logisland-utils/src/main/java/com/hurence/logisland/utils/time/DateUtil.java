@@ -423,7 +423,8 @@ public final class DateUtil {
 	 * @see SimpleDateFormat
 	 */
 	public static Date parse(String dateString, String dateFormat) throws ParseException {
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat, Locale.ENGLISH);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		simpleDateFormat.setLenient(false); // Don't automatically convert invalid date.
 		return simpleDateFormat.parse(dateString);
 	}
