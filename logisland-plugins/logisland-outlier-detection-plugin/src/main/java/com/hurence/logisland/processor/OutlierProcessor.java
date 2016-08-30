@@ -215,9 +215,9 @@ public class OutlierProcessor extends AbstractEventProcessor {
                         list.add(evt);
 
 
-                    }else{
+                    }/*else{
                         logger.info("outlier not so severe");
-                    }
+                    }*/
                 }
 
             } catch (RuntimeException e) {
@@ -225,7 +225,7 @@ public class OutlierProcessor extends AbstractEventProcessor {
                 Event evt = new Event(OUTLIER_PROCESSING_EXCEPTION_TYPE);
                 evt.put("message", "string", e);
                 list.add(evt);
-                logger.info(e.getMessage(), e);
+              //  logger.info(e.getMessage(), e);
             }
         }
 

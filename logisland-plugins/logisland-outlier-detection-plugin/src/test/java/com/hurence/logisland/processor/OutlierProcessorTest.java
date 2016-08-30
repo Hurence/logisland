@@ -49,7 +49,8 @@ public class OutlierProcessorTest {
             processor.init(context);
             Collection<Event> outliersEvents = processor.process(context, events);
 
-            logger.info(outliersEvents.toString());
+            // @todo make a real test of outliers heres
+          //  logger.info(outliersEvents.toString());
         }
     }
 
