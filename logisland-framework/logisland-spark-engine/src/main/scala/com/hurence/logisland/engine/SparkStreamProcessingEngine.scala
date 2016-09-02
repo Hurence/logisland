@@ -262,6 +262,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             }
 
             // Create the direct stream with the Kafka parameters and topics
+
             val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
                 ssc,
                 kafkaParams,
@@ -421,7 +422,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             if (!AdminUtils.topicExists(zkClient, topic)) {
                 AdminUtils.createTopic(zkClient, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)
-                logger.info(s"created topic $topic with replication $topicDefaultPartitions and partition $topicDefaultReplicationFactor")
+                logger.info(s"created topic $topic with" +
+                    s" $topicDefaultPartitions partitions and" +
+                    s" $topicDefaultReplicationFactor replicas")
             }
         })
     }
