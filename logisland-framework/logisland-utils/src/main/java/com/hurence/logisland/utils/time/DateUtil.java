@@ -74,6 +74,9 @@ public final class DateUtil {
         put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy HH:mm:ss");
         put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
 
+
+        put("^\\d{1,2}/\\w{3}/\\d{4}:\\d{2}:\\d{2}:\\d{2}\\s\\+\\d{4}$","dd/MMM/yyyy:HH:mm:ss Z"); //"02/JAN/2014:09:43:49 +0200"
+
     }};
 
     private DateUtil() {
