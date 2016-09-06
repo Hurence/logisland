@@ -109,13 +109,13 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                  <!--  <execution>
                         <id>attach-scaladocs</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
