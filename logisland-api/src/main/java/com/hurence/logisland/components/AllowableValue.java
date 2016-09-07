@@ -16,6 +16,7 @@
  */
 package com.hurence.logisland.components;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -23,7 +24,7 @@ import java.util.Objects;
  * Represents a valid value for a {@link PropertyDescriptor}
  * </p>
  */
-public class AllowableValue {
+public class AllowableValue implements Serializable{
 
     private final String value;
     private final String displayName;
