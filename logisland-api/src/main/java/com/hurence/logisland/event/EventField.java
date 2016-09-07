@@ -22,7 +22,7 @@ import java.io.Serializable;
 /**
  * Encapulstaion of a field
  */
-public class EventField implements Serializable{
+public class EventField implements Serializable {
 
     public EventField() {
 
@@ -37,7 +37,10 @@ public class EventField implements Serializable{
 
     @Override
     public String toString() {
-        return value.toString();
+        if (value != null)
+            return value.toString();
+        else
+            return "null";
     }
 
     @Override
