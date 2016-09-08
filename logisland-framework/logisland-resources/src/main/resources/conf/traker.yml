@@ -12,7 +12,7 @@ components:
 
       spark.executorMemory: 4g
       spark.checkpointingDirectory: file:///tmp
-      spark.appName: My first stream component
+      spark.appName: Apache
       spark.streaming.batchDuration: 2000
       spark.serializer: org.apache.spark.serializer.KryoSerializer
       spark.streaming.backpressure.enabled: true

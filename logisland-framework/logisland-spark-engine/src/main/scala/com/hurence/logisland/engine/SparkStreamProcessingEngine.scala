@@ -199,7 +199,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
-        Logger.getLogger("org.apache.kafka").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.kafka").setLevel(Level.ERROR)
+        Logger.getLogger("org.elasticsearch").setLevel(Level.WARN)
         Logger.getLogger("kafka").setLevel(Level.WARN)
 
         Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
