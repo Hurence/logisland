@@ -288,42 +288,45 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             kafkaStream.foreachRDD(rdd => {
 
                 rdd.foreachPartition(partition => {
-                    val partitionId = TaskContext.get.partitionId()
-                    // use this uniqueId to transactionally commit the data in partitionIterator
 
-                    logger.debug("---------------------------------")
-                    logger.debug(s"parseContext ${parseContext.getName}")
-                    logger.debug(s"parsing topic $inputTopics => $outputTopics for spark partition $partitionId")
-
-                    // convert partition to events
-                    val parser = new Schema.Parser
-
-                    val outgoingEvents = partition.flatMap(rawEvent => {
-                        parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
-
-                    }).toList
-                    //  logger.debug(s" ${incomingEvents.size} incomming log lines")
-
-                    logger.debug(s" ${outgoingEvents.size} outgoing events")
+                    if (partition.nonEmpty) {
+                        val partitionId = TaskContext.get.partitionId()
+                        // use this uniqueId to transactionally commit the data in partitionIterator
 
 
+                        val outgoingEvents = partition.flatMap(rawEvent => {
+                            parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
 
-                    val serializer = outSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val parser = new Schema.Parser
-                            val outSchemaContent = parseContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
-                            val outSchema = parser.parse(outSchemaContent)
-                            new EventAvroSerializer(outSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
+                        }).toList
+
+
+                        // convert partition to events
+                        val parser = new Schema.Parser
+                        val serializer = outSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val parser = new Schema.Parser
+                                val outSchemaContent = parseContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                                val outSchema = parser.parse(outSchemaContent)
+                                new EventAvroSerializer(outSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
+
+
+                        val kafkaProducer = new KafkaSerializedEventProducer(
+                            brokerList,
+                            parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
+                            serializer)
+                        kafkaProducer.produce(outgoingEvents)
+
+
+
+                        logger.debug(s"${parseContext.getName} has processed " +
+                            s"${partition.size} Kafka messages from input topics " +
+                            s"$inputTopics and sent " +
+                            s"${outgoingEvents.size} events to " +
+                            s"$outputTopics in Spark partition $partitionId")
                     }
-
-
-                    val kafkaProducer = new KafkaSerializedEventProducer(
-                        brokerList,
-                        parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
-                        serializer)
-                    kafkaProducer.produce(outgoingEvents)
                 })
             })
         })
@@ -364,48 +367,52 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             kafkaStream.foreachRDD(rdd => {
 
                 rdd.foreachPartition(partition => {
-                    val partitionId = TaskContext.get.partitionId()
-                    // use this uniqueId to transactionally commit the data in partitionIterator
+                    if (partition.nonEmpty) {
+                        val partitionId = TaskContext.get.partitionId()
+                        // use this uniqueId to transactionally commit the data in partitionIterator
 
-                    logger.debug("---------------------------------")
-                    logger.debug(s"processor ${processorContext.getName}")
-                    logger.debug(s"processing topic $inputTopics => $outputTopics for spark partition $partitionId")
+                        // convert partition to events
+                        val parser = new Schema.Parser
 
-                    // convert partition to events
-                    val parser = new Schema.Parser
+                        val deserializer = inSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
+                                val inSchema = parser.parse(inSchemaContent)
+                                new EventAvroSerializer(inSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
 
-                    val deserializer = inSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
-                            val inSchema = parser.parse(inSchemaContent)
-                            new EventAvroSerializer(inSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
+
+                        val incomingEvents = deserializeEvents(partition, deserializer)
+
+                        val outgoingEvents = processorInstance.getProcessor.process(processorContext, incomingEvents)
+
+
+                        val serializer = outSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                                val outSchema = parser.parse(outSchemaContent)
+                                new EventAvroSerializer(outSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
+
+
+                        val kafkaProducer = new KafkaSerializedEventProducer(
+                            brokerList,
+                            processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
+                            serializer)
+                        kafkaProducer.produce(outgoingEvents.toList)
+
+                        logger.debug(s"${processorContext.getName} has processed " +
+                            s"${incomingEvents.size} Kafka events from input topics " +
+                            s"$inputTopics and sent " +
+                            s"${outgoingEvents.size} events to " +
+                            s"$outputTopics in Spark partition $partitionId")
                     }
 
 
-                    val incomingEvents = deserializeEvents(partition, deserializer)
-                    logger.debug(s" ${incomingEvents.size} incomming events")
-                    val outgoingEvents = processorInstance.getProcessor.process(processorContext, incomingEvents)
-                    logger.debug(s" ${outgoingEvents.size} outgoing events")
-
-
-
-                    val serializer = outSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
-                            val outSchema = parser.parse(outSchemaContent)
-                            new EventAvroSerializer(outSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
-                    }
-
-
-                    val kafkaProducer = new KafkaSerializedEventProducer(
-                        brokerList,
-                        processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
-                        serializer)
-                    kafkaProducer.produce(outgoingEvents.toList)
                 })
             })
         })

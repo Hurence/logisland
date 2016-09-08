@@ -183,7 +183,6 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
             return;
         }
 
-        logger.debug("Creating ElasticSearch Client");
         try {
             final String clusterName = context.getProperty(CLUSTER_NAME).getValue();
             final String pingTimeout = context.getProperty(PING_TIMEOUT).getValue();
@@ -283,7 +282,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
                 logger.debug("Did not detect Elasticsearch Shield plugin, secure connections and/or authorization will not be available");
             }
         } else {
-            logger.debug("No Shield plugin location specified, secure connections and/or authorization will not be available");
+            //logger.debug("No Shield plugin location specified, secure connections and/or authorization will not be available");
         }
         TransportClient transportClient = builder.settings(settingsBuilder.build()).build();
         Thread.currentThread().setContextClassLoader(originalClassLoader);

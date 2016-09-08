@@ -45,7 +45,7 @@ object ElasticsearchEventConverter extends LazyLogging {
         event.values.foreach(field => {
             var fieldName =""
                 try {
-                 fieldName = field.getName.toLowerCase()
+                 fieldName = field.getName.toLowerCase().replaceAll("\\.","_")
 
                 val fieldValue = field.getType match {
                     case s if s.contains("string") => {
@@ -71,17 +71,6 @@ object ElasticsearchEventConverter extends LazyLogging {
                     }
                 }
 
-              /*  if (fieldName.contains("stamp")) {
-                    if (fieldName.contains("timestamp") || fieldName.equals("datestamp")) {
-                        document.field("@timestamp", sdf.format(new Date(fieldValue.asInstanceOf[Long])))
-                        document.field("date", sdf.format(new Date(fieldValue.asInstanceOf[Long])))
-                    }
-                    else {
-                        document.field(fieldName, sdf.format(new Date(fieldValue.asInstanceOf[Long])))
-                    }
-                } else {
-                    document.field(fieldName, fieldValue)
-                }*/
                 document.field(fieldName, fieldValue)
 
             } catch {

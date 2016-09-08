@@ -121,143 +121,142 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         long start = System.currentTimeMillis();
 
         final int batchSize = context.getProperty(BATCH_SIZE).asInteger();
-        logger.info("start indexing {} events by bulk of {}", events.size(), batchSize);
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
+        if (events.size() != 0) {
+         //   logger.info("start indexing {} events by bulk of {}", events.size(), batchSize);
+            final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
 
 
-        long numItemProcessed = 0L;
+            long numItemProcessed = 0L;
 
 
-        /**
-         * create the bulk processor
-         */
-        BulkProcessor bulkProcessor = BulkProcessor.builder(
-                esClient.get(),
-                new BulkProcessor.Listener() {
-                    @Override
-                    public void beforeBulk(long l, BulkRequest bulkRequest) {
+            /**
+             * create the bulk processor
+             */
+            BulkProcessor bulkProcessor = BulkProcessor.builder(
+                    esClient.get(),
+                    new BulkProcessor.Listener() {
+                        @Override
+                        public void beforeBulk(long l, BulkRequest bulkRequest) {
 
-                    }
-
-                    @Override
-                    public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                        logger.info(bulkResponse.buildFailureMessage());
-                        logger.info("done bulk request in {} ms with failure = {}", bulkResponse.getTookInMillis(), bulkResponse.hasFailures());
-                    }
-
-                    @Override
-                    public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-                        logger.error("something went wrong while bulk loading events to es : {}", throwable.getMessage());
-                    }
-
-                })
-                .setBulkActions(batchSize)
-                .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
-                .setFlushInterval(TimeValue.timeValueSeconds(5))
-                .setConcurrentRequests(10)
-                .build();
-
-        /**
-         * compute global index from Processor settings
-         */
-        String globalIndex = context.getProperty(INDEX).getValue();
-        final String globalType = context.getProperty(TYPE).getValue();
-        final String timebased = context.getProperty(TIMEBASED_INDEX).getValue().toLowerCase();
-        switch (timebased) {
-            case "today":
-                globalIndex += "." + sdf.format(new Date());
-                break;
-            case "yesterday":
-                DateTime dt = new DateTime(new Date()).minusDays(1);
-                globalIndex += "." + sdf.format(dt.toDate());
-                break;
-            default:
-                break;
-        }
-        final String esIndexField = context.getProperty(ES_INDEX_FIELD).getValue();
-
-
-        /**
-         * loop over events to add them to bulk
-         */
-        for (Event event : events) {
-            numItemProcessed += 1;
-
-            // Setting ES document id to document's id itself if any (to prevent duplications in ES)
-            String docId = UUID.randomUUID().toString();
-            if (!Objects.equals(event.getId(), "none")) {
-                docId = event.getId();
-            }
-
-
-            // compute es index from event if any
-            String docIndex = globalIndex;
-            final EventField eventIndex = event.get(esIndexField);
-            if (eventIndex != null) {
-
-                EventField eventTime = event.get("event_time");
-                if (eventTime != null) {
-
-                    docIndex = eventIndex.getValue().toString();
-                    try{
-                        long eventTimestamp = (long) eventTime.getValue();
-                        switch (timebased) {
-                            case "today":
-                                docIndex += "." + sdf.format(new Date(eventTimestamp));
-                                break;
-                            case "yesterday":
-                                DateTime dt = new DateTime(eventTimestamp).minusDays(1);
-                                docIndex += "." + sdf.format(dt.toDate());
-                                break;
-                            default:
-                                break;
                         }
-                    }catch (Exception e){
-                        logger.info("unable to convert event_time {}", e.getMessage());
-                    }
 
+                        @Override
+                        public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
+                            logger.info(bulkResponse.buildFailureMessage());
+                            logger.info("done bulk request in {} ms with failure = {}", bulkResponse.getTookInMillis(), bulkResponse.hasFailures());
+                        }
 
-                } else
-                    docIndex = eventIndex.getValue().toString();
+                        @Override
+                        public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
+                            logger.error("something went wrong while bulk loading events to es : {}", throwable.getMessage());
+                        }
+
+                    })
+                    .setBulkActions(batchSize)
+                    .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
+                    .setFlushInterval(TimeValue.timeValueSeconds(5))
+                    .setConcurrentRequests(10)
+                    .build();
+
+            /**
+             * compute global index from Processor settings
+             */
+            String globalIndex = context.getProperty(INDEX).getValue();
+            final String globalType = context.getProperty(TYPE).getValue();
+            final String timebased = context.getProperty(TIMEBASED_INDEX).getValue().toLowerCase();
+            switch (timebased) {
+                case "today":
+                    globalIndex += "." + sdf.format(new Date());
+                    break;
+                case "yesterday":
+                    DateTime dt = new DateTime(new Date()).minusDays(1);
+                    globalIndex += "." + sdf.format(dt.toDate());
+                    break;
+                default:
+                    break;
             }
+            final String esIndexField = context.getProperty(ES_INDEX_FIELD).getValue();
 
-            // compute es type from event if any
-            String docType = globalType;
-            if (!Objects.equals(event.getType(), "none")) {
-                docType = event.getType();
+
+            /**
+             * loop over events to add them to bulk
+             */
+            for (Event event : events) {
+                numItemProcessed += 1;
+
+                // Setting ES document id to document's id itself if any (to prevent duplications in ES)
+                String docId = UUID.randomUUID().toString();
+                if (!Objects.equals(event.getId(), "none")) {
+                    docId = event.getId();
+                }
+
+
+                // compute es index from event if any
+                String docIndex = globalIndex;
+                final EventField eventIndex = event.get(esIndexField);
+                if (eventIndex != null) {
+
+                    EventField eventTime = event.get("event_time");
+                    if (eventTime != null) {
+
+                        docIndex = eventIndex.getValue().toString();
+                        try {
+                            long eventTimestamp = (long) eventTime.getValue();
+                            switch (timebased) {
+                                case "today":
+                                    docIndex += "." + sdf.format(new Date(eventTimestamp));
+                                    break;
+                                case "yesterday":
+                                    DateTime dt = new DateTime(eventTimestamp).minusDays(1);
+                                    docIndex += "." + sdf.format(dt.toDate());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            logger.info("unable to convert event_time {}", e.getMessage());
+                        }
+
+
+                    } else
+                        docIndex = eventIndex.getValue().toString();
+                }
+
+                // compute es type from event if any
+                String docType = globalType;
+                if (!Objects.equals(event.getType(), "none")) {
+                    docType = event.getType();
+                }
+
+                // dump event to a JSON format
+                String document = ElasticsearchEventConverter.convert(event);
+
+                // add it to the bulk
+                IndexRequestBuilder result = esClient.get()
+                        .prepareIndex(docIndex, docType, docId)
+                        .setSource(document)
+                        .setOpType(IndexRequest.OpType.CREATE);
+                bulkProcessor.add(result.request());
             }
+            bulkProcessor.flush();
 
-            // dump event to a JSON format
-            String document = ElasticsearchEventConverter.convert(event);
 
-            // add it to the bulk
-            IndexRequestBuilder result = esClient.get()
-                    .prepareIndex(docIndex, docType, docId)
-                    .setSource(document)
-                    .setOpType(IndexRequest.OpType.CREATE);
-            bulkProcessor.add(result.request());
+            /**
+             * fluch remaining items
+             */
+
+            try {
+                bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+            logger.info("sent {} events to elasticsearch in {} ms", numItemProcessed, System.currentTimeMillis() - start);
+
+
+
+            esClient.get().close();
         }
-        logger.info("sent {} events to elasticsearch", numItemProcessed);
-        bulkProcessor.flush();
 
-
-        /**
-         * fluch remaining items
-         */
-        logger.info("waiting for remaining items to be flushed");
-        try {
-            bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
-        logger.info("done in {}", System.currentTimeMillis() - start);
-
-
-        /**
-         * closing
-         */
-        logger.info("shutting down es client");
-        esClient.get().close();
         return Collections.emptyList();
     }
 
