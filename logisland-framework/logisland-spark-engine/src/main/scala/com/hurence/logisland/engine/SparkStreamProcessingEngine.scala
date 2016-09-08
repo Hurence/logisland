@@ -16,6 +16,7 @@ import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext, TaskContext}
@@ -190,6 +191,20 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     override def start(engineContext: EngineContext,
                        processorInstances: util.List[StandardProcessorInstance],
                        parserInstances: util.List[StandardParserInstance]) = {
+
+
+        // Logging verbosity lowered
+        Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+        Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
+        Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.kafka").setLevel(Level.WARN)
+        Logger.getLogger("kafka").setLevel(Level.WARN)
+
+        Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
+        Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
+        Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
 
         logger.info("starting Spark Engine")
         //
