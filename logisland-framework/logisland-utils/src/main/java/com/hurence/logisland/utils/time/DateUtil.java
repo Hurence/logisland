@@ -47,6 +47,7 @@ public final class DateUtil {
         put("^[A-Z,a-z]{3},\\s\\d{1,2}\\s[A-Z,a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{1,2}:\\d{1,2}\\s[A-Z,a-z]{3}$", "EEE, dd MMM yyyy HH:mm:ss z");
         put("^\\d{4}-\\d{2}-\\d{2}[T,t]\\d{2}:\\d{2}:\\d{2}\\.\\d{3}[A-Z,a-z]{3}$","yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         put("^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2},\\d{3}$","yyyy-MM-dd HH:mm:ss,SSS");
+		put("^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$","yyyy-MM-dd HH:mm:ss.SSS");
         put("^\\d{4}-\\d{2}-\\d{2}[T,t]\\d{2}:\\d{2}:\\d{2}[A-Z,a-z]{3}$","yyyy-MM-dd'T'HH:mm:ssz");
         put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy-MM-dd HH:mm:ss");
         put("^\\d{4}-\\d{2}-\\d{2}[T,t]\\d{2}:\\d{2}:\\d{2}\\.\\d{4}\\+\\d{2}:\\d{2}$", "yyyy-MM-dd'T'HH:mm:ss.SSSSX");
