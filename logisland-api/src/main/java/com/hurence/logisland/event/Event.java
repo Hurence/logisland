@@ -75,6 +75,14 @@ public class Event implements Serializable {
         return creationDate;
     }
 
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setFields(Map<String, EventField> fields) {
+        this.fields = fields;
+    }
+
     public void setType(String type) {
         this.type = type;
     }
