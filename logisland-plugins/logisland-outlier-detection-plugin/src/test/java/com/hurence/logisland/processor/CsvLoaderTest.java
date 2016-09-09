@@ -43,7 +43,7 @@ public class CsvLoaderTest {
 
             for (Event event : events) {
                 Assert.assertTrue("should be sensors, was " + event.getType(), event.getType().equals("sensors"));
-                Assert.assertTrue("should be 2, was " + event.entrySet().size(), event.entrySet().size() == 2);
+                Assert.assertTrue("should be 2, was " + event.entrySet().size(), event.entrySet().size() == 3);
                 Assert.assertTrue(event.keySet().contains("timestamp"));
                 Assert.assertTrue(event.keySet().contains("value"));
                 Assert.assertTrue(event.get("timestamp").getValue() instanceof Long);
