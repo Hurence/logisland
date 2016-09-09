@@ -114,7 +114,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
      * @return the result of validating the input
      */
     public ValidationResult validate(final String input) {
-        ValidationResult lastResult = Validator.INVALID.validate(this.name, input);
+        ValidationResult lastResult = Validator.VALID.validate(this.name, input);
         if (allowableValues != null && !allowableValues.isEmpty()) {
             final ConstrainedSetValidator csValidator = new ConstrainedSetValidator(allowableValues);
             final ValidationResult csResult = csValidator.validate(this.name, input);

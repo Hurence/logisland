@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public abstract class AbstractConfiguredComponent implements ConfigurableComponent, ConfiguredComponent {
 
@@ -33,6 +36,8 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     private final Lock lock = new ReentrantLock();
     private final ConcurrentMap<PropertyDescriptor, String> properties = new ConcurrentHashMap<>();
+
+    private static Logger logger = LoggerFactory.getLogger(AbstractConfiguredComponent.class);
 
     public AbstractConfiguredComponent(final ConfigurableComponent component, final String id) {
         this.id = id;
@@ -75,8 +80,12 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         try {
             verifyModifiable();
 
-
             final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
+            ValidationResult result = descriptor.validate(value);
+            if (!result.isValid()) {
+                //throw new IllegalArgumentException(result.toString());
+                logger.warn(result.toString());
+            }
 
             final String oldValue = properties.put(descriptor, value);
             if (!value.equals(oldValue)) {
@@ -88,8 +97,10 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
                     // nothing really to do here...
                 }
             }
-        }catch (final Exception e) {
+        } catch (final Exception e) {
             // nothing really to do here...
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -113,23 +124,24 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         try {
             verifyModifiable();
 
-
-                final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
-                String value = null;
-                if (!descriptor.isRequired() && (value = properties.remove(descriptor)) != null) {
-
+            final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
+            String value = null;
+            if (!descriptor.isRequired() && (value = properties.remove(descriptor)) != null) {
 
 
-                    try {
-                        component.onPropertyModified(descriptor, value, null);
-                    } catch (final Exception e) {
-                        // nothing really to do here...
-                    }
 
-                    return true;
+                try {
+                    component.onPropertyModified(descriptor, value, null);
+                } catch (final Exception e) {
+                    // nothing really to do here...
                 }
-            }catch (final Exception e) {
+
+                return true;
+            }
+        } catch (final Exception e) {
             // nothing really to do here...
+        } finally {
+            lock.unlock();
         }
 
         return false;
