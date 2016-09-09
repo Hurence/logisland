@@ -26,16 +26,21 @@ import java.util.*;
  */
 public class Event implements Serializable {
 
+    public static String DEFAULT_EVENT_TYPE = "logisland_event";
+
     private Map<String, EventField> fields = new HashMap<>();
-    private Date creationDate = new Date();
-    private String type = "none";
-    private String id = "none";
+    private Date creationDate;
+    private String type;
+    private String id;
 
     public Event() {
+        this(DEFAULT_EVENT_TYPE);
     }
 
     public Event(String type) {
-        this.type = type;
+        this.setType(type);
+        this.setCreationDate(new Date());
+        this.setId(UUID.randomUUID().toString());
     }
 
     @Override
@@ -56,7 +61,7 @@ public class Event implements Serializable {
         Event event = (Event) o;
 
         if (fields != null ? !fields.equals(event.fields) : event.fields != null) return false;
-      //  if (creationDate != null ? !creationDate.equals(event.creationDate) : event.creationDate != null) return false;
+        //  if (creationDate != null ? !creationDate.equals(event.creationDate) : event.creationDate != null) return false;
         if (type != null ? !type.equals(event.type) : event.type != null) return false;
         return id != null ? id.equals(event.id) : event.id == null;
 
@@ -85,6 +90,8 @@ public class Event implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+        this.put("event_type", "string", type);
+
     }
 
     public String getType() {
@@ -113,7 +120,7 @@ public class Event implements Serializable {
 
     public void putAll(Map<String, Object> entrySets) {
         Objects.requireNonNull(entrySets, "Argument can not be null");
-        for(Map.Entry<String, Object> entry : entrySets.entrySet()) {
+        for (Map.Entry<String, Object> entry : entrySets.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             this.put(key, "object", value);

@@ -67,10 +67,6 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
 
         producer.send(messages: _*)
         producer.close()
-        if (messages.length != 0) {
-            logger.debug(s"sent ${messages.size} serialized events on topic $topic")
-
-        }
     }
 
 

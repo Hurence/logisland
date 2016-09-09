@@ -24,9 +24,10 @@ import com.hurence.logisland.processor.EventProcessor;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.elasticsearch.index.engine.Engine;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class StandardEngineContext implements EngineContext {
+public class StandardEngineContext implements EngineContext, Serializable {
 
     private final StandardEngineInstance engineInstance;
 
