@@ -65,6 +65,10 @@
             <artifactId>json-simple</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
@@ -132,13 +136,13 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                   <!-- <execution>
                         <id>attach-scaladocs</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>

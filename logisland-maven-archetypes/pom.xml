@@ -20,7 +20,6 @@
         <artifactId>logisland</artifactId>
         <version>0.9.4</version>
     </parent>
-    <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland-maven-archetypes</artifactId>
     <packaging>pom</packaging>
     <modules>

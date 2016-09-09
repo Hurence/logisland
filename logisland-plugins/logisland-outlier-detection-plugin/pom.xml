@@ -13,7 +13,6 @@
 
     <packaging>jar</packaging>
     <artifactId>logisland-outlier-detection-plugin</artifactId>
-    <version>0.1.0</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <global_kafka_version>0.8.2.2</global_kafka_version>
@@ -163,13 +162,13 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                  <!--  <execution>
                         <id>attach-scaladocs</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>

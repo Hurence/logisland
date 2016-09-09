@@ -15,6 +15,21 @@ The [documentation](http://hurence.github.io/log-island/) also explains how to [
 Once you know how to run and build your own parsers and processors, you'll want to [deploy](http://hurence.github.io/log-island/deploy/) and scale them.
 
 
+## Build and deploy
+to build from the source just clone and package
+
+    git clone
+    mvn package
+    
+to deploy artifacts (if you're allowed to), follow this guide [release to OSS Sonatype with maven](http://central.sonatype.org/pages/apache-maven.html)
+
+    
+    mvn versions:set -DnewVersion=0.9.5-SNAPSHOT
+    mvn clean deploy
+    mvn versions:commit
+    
+follow the staging procedure in [https://oss.sonatype.org/#stagingRepositories](https://oss.sonatype.org/#stagingRepositories) or read [Sonatype book](http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven)
+    
 
 
 ## Basic Workflow

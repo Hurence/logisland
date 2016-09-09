@@ -5,15 +5,13 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.log.AbstractLogParser;
 import com.hurence.logisland.log.LogParserException;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.utils.time.DateUtil;
 import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,7 +87,7 @@ public class SplitText extends AbstractLogParser {
         final String valueRegexString = context.getProperty(VALUE_REGEX).getValue();
         final String eventType = context.getProperty(EVENT_TYPE).getValue();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         List<Event> events = new ArrayList<>();
 
@@ -101,6 +99,7 @@ public class SplitText extends AbstractLogParser {
 
             // match the key
             if(key!= null){
+                try{
                 Matcher keyMatcher = keyRegex.matcher(key);
                 if (keyMatcher.matches()) {
                     for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
@@ -110,6 +109,8 @@ public class SplitText extends AbstractLogParser {
 
                         }
                     }
+                }}catch (Exception e) {
+                    logger.info("error while matching key {} with regex {}", key, keyRegexString);
                 }
             }
 
@@ -133,7 +134,11 @@ public class SplitText extends AbstractLogParser {
                                 event.get("time").getValue().toString();
 
                         try {
-                            event.put("event_time", "long", sdf.parse(eventTimeString).getTime());
+                            Date eventDate = DateUtil.parse(eventTimeString);
+
+                            if(eventDate != null){
+                                event.put("event_time", "long", eventDate.getTime());
+                            }
                         } catch (Exception e) {
                             logger.warn("unable to parse date {}", eventTimeString);
                         }
@@ -141,9 +146,23 @@ public class SplitText extends AbstractLogParser {
                     }
 
 
+                    // TODO remove this ugly stuff with EL
+                    if (event.get("event_time") != null) {
+
+                        try {
+                            long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
+                        } catch (Exception ex) {
+
+                            Date eventDate = DateUtil.parse(event.get("event_time").getValue().toString());
+                            if(eventDate != null){
+                                event.put("event_time", "long", eventDate.getTime());
+                            }
+                        }
+                    }
+
+
+
                     events.add(event);
-                } else {
-                    logger.warn("no match");
                 }
             }
 

@@ -29,6 +29,10 @@
             <artifactId>logisland-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -109,6 +113,15 @@
             <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
         </dependency>
 -->
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.thekraken</groupId>
+            <artifactId>grok</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -199,13 +212,13 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+               <!--     <execution>
                         <id>attach-scaladocs</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>

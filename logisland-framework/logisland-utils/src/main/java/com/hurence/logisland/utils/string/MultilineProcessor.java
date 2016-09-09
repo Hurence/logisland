@@ -12,7 +12,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
-
 /**
  * credits to http://www.adrianwalker.org
  */

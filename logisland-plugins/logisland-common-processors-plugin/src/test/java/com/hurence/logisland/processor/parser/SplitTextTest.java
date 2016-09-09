@@ -6,24 +6,191 @@ import com.hurence.logisland.event.Event;
 import com.hurence.logisland.log.StandardParserContext;
 import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.StandardProcessContext;
-import com.hurence.logisland.processor.StandardProcessorInstance;
-import com.hurence.logisland.utils.string.Multiline;
-import org.apache.avro.Schema;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class SplitTextTest {
 
+    public static final String DATA_USR_BACKEND_LOG = "/data/usr_backend_application.log";
+    public static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
+    public static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
     public static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
     private static Logger logger = LoggerFactory.getLogger(SplitTextTest.class);
+
+
+    @Test
+    public void testUsrBackend() throws IOException {
+
+
+        Map<String, String> conf = new HashMap<>();
+        conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
+        conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
+
+        conf.put("key.regex", "(\\S*):(\\S*)");
+        conf.put("key.fields", "es_index,host_name");
+
+        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+
+        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setType("parser");
+        componentConfiguration.setConfiguration(conf);
+
+        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
+        ProcessContext context = new StandardParserContext(instance);
+        Assert.assertTrue(instance != null);
+
+
+        InputStreamReader isr;
+        BufferedReader bsr = null;
+
+        final FileInputStream fis = new FileInputStream(SplitTextTest.class.getResource(DATA_USR_BACKEND_LOG).getFile());
+        isr = new InputStreamReader(fis, "UTF-8");
+        bsr = new BufferedReader(isr);
+
+        logger.debug("start parsing traker log file : " + DATA_USR_BACKEND_LOG);
+        int nblines = 0;
+        int numEvents = 0;
+        String line;
+        while ((line = bsr.readLine()) != null) {
+
+
+            // String[] kvLine = line.split("@");
+            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+
+            if (events.isEmpty())
+                System.out.println(line);
+            else numEvents++;
+
+            nblines++;
+            //   Assert.assertTrue(events.size() == 1);
+            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+        }
+        System.out.println("events count :" + numEvents);
+
+        Assert.assertTrue(numEvents == 1);
+
+
+    }
+
+
+    @Test
+    public void testUsrBackend2() throws IOException {
+
+
+        Map<String, String> conf = new HashMap<>();
+        conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
+        conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
+
+        conf.put("key.regex", "(\\S*):(\\S*)");
+        conf.put("key.fields", "es_index,host_name");
+
+        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+
+        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setType("parser");
+        componentConfiguration.setConfiguration(conf);
+
+        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
+        ProcessContext context = new StandardParserContext(instance);
+        Assert.assertTrue(instance != null);
+
+
+        InputStreamReader isr;
+        BufferedReader bsr = null;
+
+        final FileInputStream fis = new FileInputStream(SplitTextTest.class.getResource(DATA_USR_BACKEND_LOG2).getFile());
+        isr = new InputStreamReader(fis, "UTF-8");
+        bsr = new BufferedReader(isr);
+
+        int nblines = 0;
+        String line;
+        List<Event> totalEvents = new ArrayList<>();
+        while ((line = bsr.readLine()) != null) {
+
+
+            // String[] kvLine = line.split("@");
+            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+
+            if (events.isEmpty())
+                System.out.println(line);
+            else totalEvents.addAll(events);
+
+            nblines++;
+            //   Assert.assertTrue(events.size() == 1);
+            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+        }
+        System.out.println("events count :" + totalEvents.size());
+
+        Assert.assertTrue(totalEvents.size() == 8);
+
+
+    }
+
+    @Test
+    public void testUsrGateway() throws IOException {
+
+
+        Map<String, String> conf = new HashMap<>();
+        conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:(\\S*)\\]\\s+(\\S*)\\s+(\\S*) - (.*)");
+        conf.put("value.fields", "raw_content,component,event_time,session,log_level,logger,trace");
+
+        conf.put("key.regex", "(\\S*):(\\S*)");
+        conf.put("key.fields", "es_index,host_name");
+
+        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+
+        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setType("parser");
+        componentConfiguration.setConfiguration(conf);
+
+        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
+        ProcessContext context = new StandardParserContext(instance);
+        Assert.assertTrue(instance != null);
+
+
+        InputStreamReader isr;
+        BufferedReader bsr = null;
+
+        final FileInputStream fis = new FileInputStream(SplitTextTest.class.getResource(DATA_USR_GATEWAY_LOG).getFile());
+        isr = new InputStreamReader(fis, "UTF-8");
+        bsr = new BufferedReader(isr);
+
+        int nblines = 0;
+        String line;
+        List<Event> totalEvents = new ArrayList<>();
+        while ((line = bsr.readLine()) != null) {
+
+
+            // String[] kvLine = line.split("@");
+            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+
+            if (events.isEmpty())
+                System.out.println(line);
+            else totalEvents.addAll(events);
+
+            nblines++;
+            //   Assert.assertTrue(events.size() == 1);
+            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+        }
+        System.out.println("events count :" + totalEvents.size());
+
+        Assert.assertTrue(totalEvents.size() == 73);
+
+
+    }
+
+
+
+
 
 
     @Test
@@ -48,10 +215,6 @@ public class SplitTextTest {
         Assert.assertTrue(instance != null);
 
 
-
-
-
-
         InputStreamReader isr;
         BufferedReader bsr = null;
         try {
@@ -67,19 +230,19 @@ public class SplitTextTest {
 
 
                 String[] kvLine = line.split("@");
-                final List<Event> events = new ArrayList<>(instance.getParser().parse(context,kvLine[0], kvLine[1]));
+                final List<Event> events = new ArrayList<>(instance.getParser().parse(context, kvLine[0], kvLine[1]));
 
-                if(events.isEmpty())
+                if (events.isEmpty())
                     System.out.println(line);
-                else numEvents ++;
+                else numEvents++;
 
-                nblines ++;
+                nblines++;
                 //   Assert.assertTrue(events.size() == 1);
-             //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+                //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
             }
             System.out.println("events count :" + numEvents);
 
-            Assert.assertTrue(numEvents ==nblines );
+            Assert.assertTrue(numEvents == nblines);
 
         } catch (FileNotFoundException ex) {
             logger.error("file not found : " + DATA_TRAKER1_LOG);
@@ -95,9 +258,6 @@ public class SplitTextTest {
             }
 
         }
-
-
-
 
 
     }

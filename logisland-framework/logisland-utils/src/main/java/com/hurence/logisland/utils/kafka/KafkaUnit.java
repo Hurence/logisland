@@ -17,6 +17,9 @@ package com.hurence.logisland.utils.kafka;
  */
 
 
+import com.hurence.logisland.event.Event;
+import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.serializer.EventSerializer;
 import kafka.admin.TopicCommand;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
@@ -40,6 +43,7 @@ import org.junit.ComparisonFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -182,6 +186,8 @@ public class KafkaUnit {
     public void shutdown() {
         if (broker != null) broker.shutdown();
         if (zookeeper != null) zookeeper.shutdown();
+
+
     }
 
     public List<KeyedMessage<String, String>> readKeyedMessages(final String topicName, final int expectedMessages) throws TimeoutException {
@@ -193,7 +199,14 @@ public class KafkaUnit {
             }
         });
     }
-
+    public List<String> readMessages(String topicName) throws TimeoutException {
+        return readMessages(topicName, new MessageExtractor<String>() {
+            @Override
+            public String extract(MessageAndMetadata<String, String> messageAndMetadata) {
+                return messageAndMetadata.message();
+            }
+        });
+    }
     public List<String> readMessages(String topicName, final int expectedMessages) throws TimeoutException {
         return readMessages(topicName, expectedMessages, new MessageExtractor<String>() {
             @Override
@@ -202,7 +215,117 @@ public class KafkaUnit {
             }
         });
     }
+    public List<Event> readEvent(String topicName, EventSerializer serializer) throws TimeoutException {
+        return readMessages(topicName, new EventExtractor<Event>() {
+            @Override
+            public Event extract(MessageAndMetadata<byte[], byte[]> messageAndMetadata) {
+                Event deserialized = null;
+                ByteArrayInputStream bais = new ByteArrayInputStream(messageAndMetadata.message());
+                try {
+                    deserialized = serializer.deserialize(bais);
+                    bais.close();
+                } catch (IOException ex) {
+                    LOGGER.error("error desiarilizing event", ex);
+                }
+                catch (Exception ex) {
+                    LOGGER.error("error desiarilizing event", ex);
+                }
+                return deserialized;
+            }
+        });
+    }
+    private <T> List<T> readMessages(String topicName, final EventExtractor<T> messageExtractor) throws TimeoutException {
+        ExecutorService singleThread = Executors.newSingleThreadExecutor();
+        Properties consumerProperties = new Properties();
+        consumerProperties.put("zookeeper.connect", zookeeperString);
+        consumerProperties.put("group.id", "10");
+        consumerProperties.put("socket.timeout.ms", "500");
+        consumerProperties.put("consumer.id", "test");
+        consumerProperties.put("auto.offset.reset", "smallest");
+        consumerProperties.put("consumer.timeout.ms", "500");
+        ConsumerConnector javaConsumerConnector = Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
+        StringDecoder stringDecoder = new StringDecoder(new VerifiableProperties(new Properties()));
+        Map<String, Integer> topicMap = new HashMap<>();
+        topicMap.put(topicName, 1);
+        Map<String, List<KafkaStream<byte[], byte[]>>> events = javaConsumerConnector.createMessageStreams(topicMap);
+        List<KafkaStream<byte[], byte[]>> events1 = events.get(topicName);
+        final KafkaStream<byte[], byte[]> kafkaStreams = events1.get(0);
 
+
+        Future<List<T>> submit = singleThread.submit(new Callable<List<T>>() {
+            public List<T> call() throws Exception {
+                List<T> messages = new ArrayList<>();
+                try {
+                    for (MessageAndMetadata<byte[], byte[]> kafkaStream : kafkaStreams) {
+                        T message = messageExtractor.extract(kafkaStream);
+                        LOGGER.info("Received message: {}", kafkaStream.message());
+                        messages.add(message);
+                    }
+                } catch (ConsumerTimeoutException e) {
+                    // always gets throws reaching the end of the stream
+                }
+                return messages;
+            }
+        });
+
+        try {
+            return submit.get(3, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            if (e.getCause() instanceof ComparisonFailure) {
+                throw (ComparisonFailure) e.getCause();
+            }
+            throw new TimeoutException("Timed out waiting for messages");
+        } finally {
+            singleThread.shutdown();
+            javaConsumerConnector.shutdown();
+        }
+    }
+    private <T> List<T> readMessages(String topicName, final MessageExtractor<T> messageExtractor) throws TimeoutException {
+        ExecutorService singleThread = Executors.newSingleThreadExecutor();
+        Properties consumerProperties = new Properties();
+        consumerProperties.put("zookeeper.connect", zookeeperString);
+        consumerProperties.put("group.id", "10");
+        consumerProperties.put("socket.timeout.ms", "500");
+        consumerProperties.put("consumer.id", "test");
+        consumerProperties.put("auto.offset.reset", "smallest");
+        consumerProperties.put("consumer.timeout.ms", "500");
+        ConsumerConnector javaConsumerConnector = Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
+        StringDecoder stringDecoder = new StringDecoder(new VerifiableProperties(new Properties()));
+        Map<String, Integer> topicMap = new HashMap<>();
+        topicMap.put(topicName, 1);
+        Map<String, List<KafkaStream<String, String>>> events = javaConsumerConnector.createMessageStreams(topicMap, stringDecoder, stringDecoder);
+        List<KafkaStream<String, String>> events1 = events.get(topicName);
+        final KafkaStream<String, String> kafkaStreams = events1.get(0);
+
+
+        Future<List<T>> submit = singleThread.submit(new Callable<List<T>>() {
+            public List<T> call() throws Exception {
+                List<T> messages = new ArrayList<>();
+                try {
+                    for (MessageAndMetadata<String, String> kafkaStream : kafkaStreams) {
+                        T message = messageExtractor.extract(kafkaStream);
+                        LOGGER.info("Received message: {}", kafkaStream.message());
+                        messages.add(message);
+                    }
+                } catch (ConsumerTimeoutException e) {
+                    // always gets throws reaching the end of the stream
+                }
+                return messages;
+            }
+        });
+
+        try {
+            return submit.get(3, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            if (e.getCause() instanceof ComparisonFailure) {
+                throw (ComparisonFailure) e.getCause();
+            }
+            throw new TimeoutException("Timed out waiting for messages");
+        } finally {
+            singleThread.shutdown();
+            javaConsumerConnector.shutdown();
+        }
+    }
     private <T> List<T> readMessages(String topicName, final int expectedMessages, final MessageExtractor<T> messageExtractor) throws TimeoutException {
         ExecutorService singleThread = Executors.newSingleThreadExecutor();
         Properties consumerProperties = new Properties();
@@ -277,5 +400,8 @@ public class KafkaUnit {
 
     private interface MessageExtractor<T> {
         T extract(MessageAndMetadata<String, String> messageAndMetadata);
+    }
+    private interface EventExtractor<T> {
+        T extract(MessageAndMetadata<byte[], byte[]> messageAndMetadata);
     }
 }

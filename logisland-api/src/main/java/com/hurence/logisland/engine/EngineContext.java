@@ -17,7 +17,6 @@
 package com.hurence.logisland.engine;
 
 
-
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.components.PropertyValue;
 
@@ -27,7 +26,7 @@ import java.util.Map;
  * <p>
  * Provides a bridge between a Processor and the Framework
  * </p>
- *
+ * <p/>
  * <p>
  * <b>Note: </b>Implementations of this interface are NOT necessarily
  * thread-safe.
@@ -64,14 +63,12 @@ public interface EngineContext {
     PropertyValue newPropertyValue(String rawValue);
 
 
-
     /**
      * @return a Map of all PropertyDescriptors to their configured values. This
      * Map may or may not be modifiable, but modifying its values will not
      * change the values of the processor's properties
      */
     Map<PropertyDescriptor, String> getProperties();
-
 
 
     /**

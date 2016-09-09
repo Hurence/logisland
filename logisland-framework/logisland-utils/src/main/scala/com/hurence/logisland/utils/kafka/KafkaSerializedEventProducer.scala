@@ -21,7 +21,7 @@ import java.util.Properties
 
 import _root_.kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import com.hurence.logisland.event.Event
-import com.hurence.logisland.serializer.{EventSerializer, EventKryoSerializer}
+import com.hurence.logisland.serializer.EventSerializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
@@ -52,10 +52,6 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
       * @param events
       */
     def produce(events: List[Event]) = {
-        logger.debug(s"start producing serialized events on topic $topic")
-
-        // process all the event queue
-        //val kryoSerializer = new EventKryoSerializer(true)
 
         val messages = events.map(event => {
             // messages are serialized with kryo first
@@ -71,8 +67,6 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
 
         producer.send(messages: _*)
         producer.close()
-        logger.debug(s"sent ${messages.size} serialized events on topic $topic")
-
     }
 
 

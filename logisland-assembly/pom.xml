@@ -93,7 +93,6 @@ language governing permissions and limitations under the License. -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
-            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -102,22 +101,23 @@ language governing permissions and limitations under the License. -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-querymatcher-plugin</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-outlier-detection-plugin</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-botsearch-plugin</artifactId>
-            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
-            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-shaded</artifactId>
+            <version>${elasticsearch.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -134,8 +134,6 @@ language governing permissions and limitations under the License. -->
         <logisland.jvm.heap.mb>512</logisland.jvm.heap.mb>
         <logisland.jvm.permgen.mb>128</logisland.jvm.permgen.mb>
         <logisland.run.as/>
-        <!-- logisland.properties: core properties -->
-        <logisland.version>${project.version}</logisland.version>
 
     </properties>
     <profiles>

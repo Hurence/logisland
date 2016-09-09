@@ -1,0 +1,201 @@
+[USR-REST] 2016-07-06 10:29:04,798 [SES:PLAYER-WEB-FDJ:452896484:1FC3CD997BE39B4A870F2972794D5C75:oadi5] ERROR c.l.f.r.s.r.ReplayTokenServerReadInboundInterceptor - Cannot find ipIndex for remote address : [{}]
+[USR-REST] 2016-07-24 22:19:48,607 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:19:48,607 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:19:59,116 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:19:59,116 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:20:40,761 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:20:40,761 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:20:43,613 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:20:43,613 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:25:08,573 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:25:08,573 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:25:51,886 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:25:51,886 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:31:29,626 [SES:PLAYER-WEB-FDJ:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.lotsys.xs.cluster.security.api.exception.InvalidTokenException: Invalid Token PLAYER-WEB-FDJ:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp with PLAYER-WEB-FDJ:457366947:FA9256BF22BED1DED4F45093ACAFD6B3:oadp
+	at sun.reflect.GeneratedConstructorAccessor245.newInstance(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_60]
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_60]
+	at com.lotsys.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.checkResponse(ClientProxyImpl.java:304) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.handleResponse(ClientProxyImpl.java:750) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.doChainedInvocation(ClientProxyImpl.java:708) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.invoke(ClientProxyImpl.java:226) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at com.sun.proxy.$Proxy117.getUserInfos(Unknown Source) ~[na:na]
+	at sun.reflect.GeneratedMethodAccessor149.invoke(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:302) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
+	at com.sun.proxy.$Proxy58.getUserInfos(Unknown Source) ~[na:na]
+	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.userInfos(SessionServicesImpl.java:137) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at sun.reflect.GeneratedMethodAccessor148.invoke(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at org.apache.cxf.service.invoker.AbstractInvoker.performInvocation(AbstractInvoker.java:181) ~[cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.service.invoker.AbstractInvoker.invoke(AbstractInvoker.java:97) ~[cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.JAXRSInvoker.invoke(JAXRSInvoker.java:200) [cxf-rt-frontend-jaxrs-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.JAXRSInvoker.invoke(JAXRSInvoker.java:99) [cxf-rt-frontend-jaxrs-3.0.6.jar:3.0.6]
+	at org.apache.cxf.interceptor.ServiceInvokerInterceptor$1.run(ServiceInvokerInterceptor.java:59) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.interceptor.ServiceInvokerInterceptor.handleMessage(ServiceInvokerInterceptor.java:96) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.phase.PhaseInterceptorChain.doIntercept(PhaseInterceptorChain.java:307) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.ChainInitiationObserver.onMessage(ChainInitiationObserver.java:121) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.http.AbstractHTTPDestination.invoke(AbstractHTTPDestination.java:251) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invokeDestination(ServletController.java:234) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:208) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:160) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.CXFNonSpringServlet.invoke(CXFNonSpringServlet.java:171) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.handleRequest(AbstractHTTPServlet.java:293) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.doGet(AbstractHTTPServlet.java:217) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:622) [servlet-api.jar:na]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.service(AbstractHTTPServlet.java:268) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:291) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) [tomcat-websocket.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:160) [javamelody-core-1.56.0.jar:1.56.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:217) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106) [catalina.jar:8.0.28]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:142) [catalina.jar:8.0.28]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79) [catalina.jar:8.0.28]
+	at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:616) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88) [catalina.jar:8.0.28]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:518) [catalina.jar:8.0.28]
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1091) [tomcat-coyote.jar:8.0.28]
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:673) [tomcat-coyote.jar:8.0.28]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1500) [tomcat-coyote.jar:8.0.28]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1456) [tomcat-coyote.jar:8.0.28]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [na:1.8.0_60]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
+	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
+[USR-REST] 2016-07-24 22:41:55,009 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:41:55,009 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:41:55,407 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:41:55,407 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:42:26,602 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 22:42:26,602 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 22:56:44,219 [SES:PLAYER-MOB-FDJ:457369675:1B0C2A2AC4A78A68307F0E3B3168AD4B:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+java.lang.NullPointerException:
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:1.8.0_60]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[na:1.8.0_60]
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_60]
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_60]
+	at com.lotsys.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.checkResponse(ClientProxyImpl.java:304) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.handleResponse(ClientProxyImpl.java:750) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.doChainedInvocation(ClientProxyImpl.java:708) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.client.ClientProxyImpl.invoke(ClientProxyImpl.java:226) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
+	at com.sun.proxy.$Proxy117.login(Unknown Source) ~[na:na]
+	at sun.reflect.GeneratedMethodAccessor147.invoke(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:302) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
+	at com.sun.proxy.$Proxy58.login(Unknown Source) ~[na:na]
+	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.authenticateUser(SessionServicesImpl.java:125) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.authenticate(SessionServicesImpl.java:107) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at sun.reflect.GeneratedMethodAccessor146.invoke(Unknown Source) ~[na:na]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at org.apache.cxf.service.invoker.AbstractInvoker.performInvocation(AbstractInvoker.java:181) ~[cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.service.invoker.AbstractInvoker.invoke(AbstractInvoker.java:97) ~[cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.JAXRSInvoker.invoke(JAXRSInvoker.java:200) [cxf-rt-frontend-jaxrs-3.0.6.jar:3.0.6]
+	at org.apache.cxf.jaxrs.JAXRSInvoker.invoke(JAXRSInvoker.java:99) [cxf-rt-frontend-jaxrs-3.0.6.jar:3.0.6]
+	at org.apache.cxf.interceptor.ServiceInvokerInterceptor$1.run(ServiceInvokerInterceptor.java:59) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.interceptor.ServiceInvokerInterceptor.handleMessage(ServiceInvokerInterceptor.java:96) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.phase.PhaseInterceptorChain.doIntercept(PhaseInterceptorChain.java:307) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.ChainInitiationObserver.onMessage(ChainInitiationObserver.java:121) [cxf-core-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.http.AbstractHTTPDestination.invoke(AbstractHTTPDestination.java:251) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invokeDestination(ServletController.java:234) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:208) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:160) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.CXFNonSpringServlet.invoke(CXFNonSpringServlet.java:171) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.handleRequest(AbstractHTTPServlet.java:293) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.doPost(AbstractHTTPServlet.java:212) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:648) [servlet-api.jar:na]
+	at org.apache.cxf.transport.servlet.AbstractHTTPServlet.service(AbstractHTTPServlet.java:268) [cxf-rt-transports-http-3.0.6.jar:3.0.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:291) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) [tomcat-websocket.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:160) [javamelody-core-1.56.0.jar:1.56.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:217) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106) [catalina.jar:8.0.28]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:142) [catalina.jar:8.0.28]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79) [catalina.jar:8.0.28]
+	at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:616) [catalina.jar:8.0.28]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88) [catalina.jar:8.0.28]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:518) [catalina.jar:8.0.28]
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1091) [tomcat-coyote.jar:8.0.28]
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:673) [tomcat-coyote.jar:8.0.28]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1500) [tomcat-coyote.jar:8.0.28]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1456) [tomcat-coyote.jar:8.0.28]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [na:1.8.0_60]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
+	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
+[USR-REST] 2016-07-24 23:01:08,978 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:01:08,978 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:01:13,078 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:01:13,078 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:17:51,567 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:17:51,567 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:21:01,953 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:21:01,953 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:05,927 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:05,927 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:33,015 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:33,015 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:33,442 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:33,442 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:44,384 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:44,384 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:50,941 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:50,941 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:54,897 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:54,897 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:55,302 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:55,302 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:24:55,791 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:24:55,791 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:25:02,808 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:25:02,808 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:27:50,171 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:27:50,171 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:27:56,434 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:27:56,434 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:28:01,548 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:28:01,548 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:29:02,888 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:29:02,888 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:29:04,203 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:29:04,203 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:29:09,128 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:29:09,128 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:29:09,734 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:29:09,734 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:29:11,841 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:29:11,841 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:35:49,772 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:35:49,772 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:36:09,975 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:36:09,975 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:44:41,639 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:44:41,639 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:45:35,299 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:45:35,299 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
+[USR-REST] 2016-07-24 23:45:57,002 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
+[USR-REST] 2016-07-24 23:45:57,002 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30

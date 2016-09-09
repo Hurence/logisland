@@ -14,8 +14,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <packaging>jar</packaging>
     <artifactId>logisland-querymatcher-plugin</artifactId>
-    <version>0.1.0</version>
-
 
     <dependencies>
         <dependency>

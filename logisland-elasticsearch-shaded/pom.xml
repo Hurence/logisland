@@ -21,7 +21,7 @@ language governing permissions and limitations under the License. -->
     <version>${elasticsearch.version}</version>
     <packaging>jar</packaging>
     <description>This module produces an elasticsearch jarfile with guava shaded into it</description>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
@@ -29,7 +29,6 @@ language governing permissions and limitations under the License. -->
             <version>${elasticsearch.version}</version>
         </dependency>
     </dependencies>
-    
     
     <build>
         <plugins>
@@ -50,7 +49,6 @@ language governing permissions and limitations under the License. -->
                                     <include>org.elasticsearch:elasticsearch</include>
                                 </includes>
                             </artifactSet>
-                            
                             
                             <relocations>
                                 <relocation>

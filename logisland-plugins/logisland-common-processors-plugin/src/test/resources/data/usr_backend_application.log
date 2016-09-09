@@ -1,0 +1,1 @@
+[USR-BACK] 2016-07-11 10:53:53,458 [SES:PLAYER-WEB-FDJ:453557035:474EC1FCC04C481A0C9325D0A01CE5D2:oadi5][ACC:none][SRV:RemoteAuthenticationService.login] ERROR c.l.u.a.step.ReadPrincipalStep - Functional error occured in step com.lotsys.users.authentication.step.ReadPrincipalStep

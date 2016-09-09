@@ -6,10 +6,11 @@ import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.components.PropertyDescriptor
-import com.hurence.logisland.event.Event
+import com.hurence.logisland.event.{Event, EventField}
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.processor.{AbstractEventProcessor, StandardProcessContext, StandardProcessorInstance}
 import com.hurence.logisland.serializer.{EventAvroSerializer, EventKryoSerializer, EventSerializer}
+import com.hurence.logisland.utils.event.ProcessorMetrics
 import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.validators.StandardValidators
 import kafka.admin.AdminUtils
@@ -17,6 +18,7 @@ import kafka.serializer.{DefaultDecoder, StringDecoder}
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext, TaskContext}
@@ -28,6 +30,8 @@ import scala.collection.JavaConversions._
   * Created by tom on 05/07/16.
   */
 class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
+
+    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
 
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
@@ -138,6 +142,30 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("sandbox:2181")
         .build
 
+    val KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
+        .name("kafka.topic.autoCreate")
+        .description("define wether a topic should be created automatically if not already exists")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("true")
+        .build
+
+    val KAFKA_TOPIC_DEFAULT_PARTITIONS = new PropertyDescriptor.Builder()
+        .name("kafka.topic.default.partitions")
+        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("8")
+        .build
+
+    val KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR = new PropertyDescriptor.Builder()
+        .name("kafka.topic.default.replicationFactor")
+        .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("1")
+        .build
+
     val SPARK_STREAMING_BACKPRESSURE_ENABLED = new PropertyDescriptor.Builder()
         .name("spark.streaming.backpressure.enabled")
         .description("")
@@ -162,7 +190,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .defaultValue("4050")
         .build
 
-
     val SPARK_STREAMING_TIMEOUT = new PropertyDescriptor.Builder()
         .name("spark.streaming.timeout")
         .description("")
@@ -170,7 +197,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .defaultValue("-1")
         .build
-
 
     val INPUT_EVENT_SERIALIZER = new PropertyDescriptor.Builder()
         .name("input.event.serializer")
@@ -186,6 +212,13 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue("com.hurence.logisland.serializer.EventAvroSerializer")
+        .build
+
+    val METRICS_TOPIC = new PropertyDescriptor.Builder()
+        .name("kafka.metrics.topic")
+        .description("")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
@@ -210,16 +243,42 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_STREAMING_TIMEOUT)
         descriptors.add(INPUT_EVENT_SERIALIZER)
         descriptors.add(OUTPUT_EVENT_SERIALIZER)
+        descriptors.add(KAFKA_TOPIC_AUTOCREATE)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
+        descriptors.add(METRICS_TOPIC)
 
         Collections.unmodifiableList(descriptors)
     }
 
+    /**
+      * start the engine
+      *
+      * @param engineContext
+      * @param processorInstances
+      * @param parserInstances
+      */
+    override def start(engineContext: EngineContext,
+                       processorInstances: util.List[StandardProcessorInstance],
+                       parserInstances: util.List[StandardParserInstance]) = {
 
-    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
 
-    override def start(engineContext: EngineContext, processorInstances: util.List[StandardProcessorInstance], parserInstances: util.List[StandardParserInstance]) = {
+        // Logging verbosity lowered
+        Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+        Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
+        Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.kafka").setLevel(Level.ERROR)
+        Logger.getLogger("org.elasticsearch").setLevel(Level.WARN)
+        Logger.getLogger("kafka").setLevel(Level.WARN)
+
+        Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
+        Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
+        Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
 
         logger.info("starting Spark Engine")
+        //
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
         //val sparkYarnDeploymode = engineContext.getProperty(SPARK_YARN_DEPLOYMODE).getValue
         val sparkDriverMemory = engineContext.getProperty(SPARK_DRIVER_MEMORY).getValue
@@ -232,14 +291,20 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         val appName = engineContext.getProperty(SPARK_APP_NAME).getValue
         val blockInterval = engineContext.getProperty(SPARK_STREAMING_BLOCK_INTERVAL).getValue
         val batchDuration = engineContext.getProperty(SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-        val brokerList = engineContext.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
-        val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
         val backPressureEnabled = engineContext.getProperty(SPARK_STREAMING_BACKPRESSURE_ENABLED).getValue
         val streamingUnpersist = engineContext.getProperty(SPARK_STREAMING_UNPERSIST).getValue
         val timeout = engineContext.getProperty(SPARK_STREAMING_TIMEOUT).asInteger().intValue()
 
+        // log-island stuff
         val inSerializerClass = engineContext.getProperty(INPUT_EVENT_SERIALIZER).getValue
         val outSerializerClass = engineContext.getProperty(OUTPUT_EVENT_SERIALIZER).getValue
+
+        // Kafka stuff
+        val brokerList = engineContext.getProperty(KAFKA_METADATA_BROKER_LIST).getValue
+        val zkQuorum = engineContext.getProperty(KAFKA_ZOOKEEPER_QUORUM).getValue
+        val topicAutocreate = engineContext.getProperty(KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
+        val topicDefaultPartitions = engineContext.getProperty(KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
+        val topicDefaultReplicationFactor = engineContext.getProperty(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
 
         /**
           * job configuration
@@ -283,8 +348,23 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
+            s"batchDuration:$batchDuration " +
             s"blockInterval:$blockInterval, " +
             s"maxRatePerPartition:$maxRatePerPartition")
+
+
+        // Define the Kafka parameters, broker list must be specified
+        val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> appName)
+        val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+
+        if (topicAutocreate && engineContext.getProperty(METRICS_TOPIC).isSet) {
+
+            createTopicsIfNeeded(
+                zkClient,
+                Set(engineContext.getProperty(METRICS_TOPIC).getValue),
+                topicDefaultPartitions,
+                topicDefaultReplicationFactor)
+        }
 
 
         /**
@@ -294,78 +374,92 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             val parseContext = new StandardParserContext(parserInstance)
             parserInstance.getParser.init(parseContext)
 
-
-            // Define the Kafka parameters, broker list must be specified
-            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> parseContext.getName)
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
-            logger.debug("batchDuration: " + batchDuration)
-            logger.debug("blockInterval: " + blockInterval)
-            logger.debug("maxRatePerPartition: " + maxRatePerPartition)
-            logger.debug("brokerList: " + brokerList)
-
             // create topics if needed
             val inputTopics = parseContext.getProperty(AbstractEventProcessor.INPUT_TOPICS).getValue.split(",").toSet
             val outputTopics = parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
             val errorTopics = parseContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
 
-            createTopicsIfNeeded(zkClient, inputTopics)
-            createTopicsIfNeeded(zkClient, outputTopics)
-            createTopicsIfNeeded(zkClient, errorTopics)
+            if (topicAutocreate) {
+                createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+            }
 
             // Create the direct stream with the Kafka parameters and topics
+
             val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
                 ssc,
                 kafkaParams,
                 inputTopics
             )
 
-
-
             // setup the stream processing
             kafkaStream.foreachRDD(rdd => {
 
                 rdd.foreachPartition(partition => {
-                    val partitionId = TaskContext.get.partitionId()
-                    // use this uniqueId to transactionally commit the data in partitionIterator
 
-                    logger.debug("---------------------------------")
-                    logger.debug(s"parseContext ${parseContext.getName}")
-                    logger.debug(s"parsing topic $inputTopics => $outputTopics for spark partition $partitionId")
-
-                    // convert partition to events
-                    val parser = new Schema.Parser
+                    if (partition.nonEmpty) {
+                        val startTime = System.currentTimeMillis()
+                        val partitionId = TaskContext.get.partitionId()
+                        // use this uniqueId to transactionally commit the data in partitionIterator
 
 
+                        val outgoingEvents = partition.flatMap(rawEvent => {
+                            parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2).toList
 
-                    val outgoingEvents = partition.map(rawEvent => {
-                        val events = parserInstance.getParser.parse(parseContext, rawEvent._1, rawEvent._2)
-                        if (events.nonEmpty)
-                            events.head
-                        else
-                            new Event("void")
-                    }).toList
-                    //  logger.debug(s" ${incomingEvents.size} incomming log lines")
-
-                    logger.debug(s" ${outgoingEvents.size} outgoing events")
+                        }).toList
 
 
+                        // convert partition to events
+                        val parser = new Schema.Parser
+                        val serializer = outSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val parser = new Schema.Parser
+                                val outSchemaContent = parseContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                                val outSchema = parser.parse(outSchemaContent)
+                                new EventAvroSerializer(outSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
 
-                    val serializer = outSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val parser = new Schema.Parser
-                            val outSchemaContent = parseContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
-                            val outSchema = parser.parse(outSchemaContent)
-                            new EventAvroSerializer(outSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
+
+                        val kafkaProducer = new KafkaSerializedEventProducer(
+                            brokerList,
+                            parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
+                            serializer)
+                        kafkaProducer.produce(outgoingEvents)
+
+
+                        /**
+                          * send metrics to topic if needed
+                          */
+                        if (engineContext.getProperty(METRICS_TOPIC).isSet) {
+                            val processorFields = new util.HashMap[String, EventField]()
+                            processorFields.put("spark_app_name", new EventField("spark_app_name", "string", appName))
+                            processorFields.put("input_topics", new EventField("input_topics", "string", inputTopics.toString()))
+                            processorFields.put("output_topics", new EventField("output_topics", "string", outputTopics.toString()))
+                            processorFields.put("component_name", new EventField("component_name", "string", parseContext.getName))
+                            processorFields.put("component_type", new EventField("component_type", "string", "parser"))
+                            try {
+                                processorFields.put("batch_duration", new EventField("batch_duration", "int", batchDuration.toInt))
+                                processorFields.put("block_interval", new EventField("block_interval", "int", blockInterval.toInt))
+                                processorFields.put("max_rate_per_partition", new EventField("max_rate_per_partition", "int", maxRatePerPartition.toInt))
+                            }
+
+                            processorFields.put("spark_partition_id", new EventField("spark_partition_id", "int", partitionId))
+                            processorFields.put("num_incoming_messages", new EventField("num_incoming_messages", "int", partition.size))
+                            processorFields.put("num_outgoing_events", new EventField("num_outgoing_events", "int", outgoingEvents.size))
+
+                            val processorMetrics = ProcessorMetrics.computeMetrics(outgoingEvents, processorFields, System.currentTimeMillis() - startTime).toList
+
+                            val kafkaProducer4Metrics = new KafkaSerializedEventProducer(
+                                brokerList,
+                                engineContext.getProperty(METRICS_TOPIC).getValue,
+                                serializer)
+
+                            kafkaProducer4Metrics.produce(processorMetrics)
+                        }
                     }
-
-
-                    val kafkaProducer = new KafkaSerializedEventProducer(
-                        brokerList,
-                        parseContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
-                        serializer)
-                    kafkaProducer.produce(outgoingEvents.toList)
                 })
             })
         })
@@ -378,22 +472,16 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             val processorContext = new StandardProcessContext(processorInstance)
             processorInstance.getProcessor.init(processorContext)
 
-            // Define the Kafka parameters, broker list must be specified
-            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> processorContext.getName)
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
-            logger.debug("batchDuration: " + batchDuration)
-            logger.debug("blockInterval: " + blockInterval)
-            logger.debug("maxRatePerPartition: " + maxRatePerPartition)
-            logger.debug("brokerList: " + brokerList)
-
             // create topics if needed
             val inputTopics = processorContext.getProperty(AbstractEventProcessor.INPUT_TOPICS).getValue.split(",").toSet
             val outputTopics = processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue.split(",").toSet
-            val errorTopics = processorContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
+            //  val errorTopics = processorContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getValue.split(",").toSet
 
-            createTopicsIfNeeded(zkClient, inputTopics)
-            createTopicsIfNeeded(zkClient, outputTopics)
-            createTopicsIfNeeded(zkClient, errorTopics)
+            if (topicAutocreate) {
+                createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                //      createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+            }
 
             // Create the direct stream with the Kafka parameters and topics
             val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
@@ -406,48 +494,80 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             kafkaStream.foreachRDD(rdd => {
 
                 rdd.foreachPartition(partition => {
-                    val partitionId = TaskContext.get.partitionId()
-                    // use this uniqueId to transactionally commit the data in partitionIterator
+                    if (partition.nonEmpty) {
+                        val startTime = System.currentTimeMillis()
+                        val partitionId = TaskContext.get.partitionId()
+                        // use this uniqueId to transactionally commit the data in partitionIterator
 
-                    logger.debug("---------------------------------")
-                    logger.debug(s"processor ${processorContext.getName}")
-                    logger.debug(s"processing topic $inputTopics => $outputTopics for spark partition $partitionId")
+                        // convert partition to events
+                        val parser = new Schema.Parser
 
-                    // convert partition to events
-                    val parser = new Schema.Parser
+                        val deserializer = inSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
+                                val inSchema = parser.parse(inSchemaContent)
+                                new EventAvroSerializer(inSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
 
-                    val deserializer = inSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val inSchemaContent = processorContext.getProperty(AbstractEventProcessor.INPUT_SCHEMA).getValue
-                            val inSchema = parser.parse(inSchemaContent)
-                            new EventAvroSerializer(inSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
+
+                        val incomingEvents = deserializeEvents(partition, deserializer)
+
+                        val outgoingEvents = processorInstance.getProcessor.process(processorContext, incomingEvents)
+
+
+                        val serializer = outSerializerClass match {
+                            case "com.hurence.logisland.serializer.EventAvroSerializer" =>
+                                val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
+                                val outSchema = parser.parse(outSchemaContent)
+                                new EventAvroSerializer(outSchema)
+                            case _ =>
+                                new EventKryoSerializer(true)
+                        }
+
+
+                        val kafkaProducer = new KafkaSerializedEventProducer(
+                            brokerList,
+                            processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
+                            serializer)
+                        kafkaProducer.produce(outgoingEvents.toList)
+
+                        /**
+                          * send metrics to topic if needed
+                          */
+                        if (engineContext.getProperty(METRICS_TOPIC).isSet) {
+                            val processorFields = new util.HashMap[String, EventField]()
+                            processorFields.put("spark_app_name", new EventField("spark_app_name", "string", appName))
+                            processorFields.put("input_topics", new EventField("input_topics", "string", inputTopics.toString()))
+                            processorFields.put("output_topics", new EventField("output_topics", "string", outputTopics.toString()))
+                            processorFields.put("component_name", new EventField("component_name", "string", processorContext.getName))
+                            processorFields.put("component_type", new EventField("component_type", "string", "parser"))
+
+                            try {
+                                processorFields.put("batch_duration", new EventField("batch_duration", "int", batchDuration.toInt))
+                                processorFields.put("block_interval", new EventField("block_interval", "int", blockInterval.toInt))
+                                processorFields.put("max_rate_per_partition", new EventField("max_rate_per_partition", "int", maxRatePerPartition.toInt))
+                            }
+                            processorFields.put("spark_partition_id", new EventField("spark_partition_id", "int", partitionId))
+                            processorFields.put("num_incoming_messages", new EventField("num_incoming_messages", "int", partition.size))
+                            processorFields.put("num_incoming_events", new EventField("num_incoming_events", "int", incomingEvents.size))
+                            processorFields.put("num_outgoing_events", new EventField("num_outgoing_events", "int", outgoingEvents.size))
+
+
+
+                            val processorMetrics = ProcessorMetrics.computeMetrics(incomingEvents, processorFields, System.currentTimeMillis() - startTime).toList
+
+                            val kafkaProducer4Metrics = new KafkaSerializedEventProducer(
+                                brokerList,
+                                engineContext.getProperty(METRICS_TOPIC).getValue,
+                                serializer)
+
+                            kafkaProducer4Metrics.produce(processorMetrics)
+                        }
                     }
 
 
-                    val incomingEvents = deserializeEvents(partition, deserializer)
-                    logger.debug(s" ${incomingEvents.size} incomming events")
-                    val outgoingEvents = processorInstance.getProcessor.process(processorContext, incomingEvents)
-                    logger.debug(s" ${outgoingEvents.size} outgoing events")
-
-
-
-                    val serializer = outSerializerClass match {
-                        case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                            val outSchemaContent = processorContext.getProperty(AbstractEventProcessor.OUTPUT_SCHEMA).getValue
-                            val outSchema = parser.parse(outSchemaContent)
-                            new EventAvroSerializer(outSchema)
-                        case _ =>
-                            new EventKryoSerializer(true)
-                    }
-
-
-                    val kafkaProducer = new KafkaSerializedEventProducer(
-                        brokerList,
-                        processorContext.getProperty(AbstractEventProcessor.OUTPUT_TOPICS).getValue,
-                        serializer)
-                    kafkaProducer.produce(outgoingEvents.toList)
                 })
             })
         })
@@ -462,12 +582,26 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             ssc.awaitTermination()
     }
 
-    def createTopicsIfNeeded(zkClient: ZkClient, inputTopics: Set[String]): Unit = {
+    /**
+      * Topic creation
+      *
+      * @param zkClient
+      * @param inputTopics
+      * @param topicDefaultPartitions
+      * @param topicDefaultReplicationFactor
+      */
+    def createTopicsIfNeeded(zkClient: ZkClient,
+                             inputTopics: Set[String],
+                             topicDefaultPartitions: Int,
+                             topicDefaultReplicationFactor: Int): Unit = {
+
         inputTopics.foreach(topic => {
             if (!AdminUtils.topicExists(zkClient, topic)) {
-                AdminUtils.createTopic(zkClient, topic, 1, 1)
+                AdminUtils.createTopic(zkClient, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)
-                logger.info(s"created topic $topic with replication 1 and partition 1 => should be changed in production")
+                logger.info(s"created topic $topic with" +
+                    s" $topicDefaultPartitions partitions and" +
+                    s" $topicDefaultReplicationFactor replicas")
             }
         })
     }
@@ -490,7 +624,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
     override def getIdentifier: String = {
-        "none"
+        "SparkStreamProcessingEngine"
     }
 
 }

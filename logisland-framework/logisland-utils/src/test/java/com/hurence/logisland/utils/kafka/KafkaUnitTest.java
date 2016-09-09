@@ -4,6 +4,7 @@ import org.junit.Test;
 
 public class KafkaUnitTest {
 
+
     @Test
     public void successfullyConstructKafkaUnitFromConnectionStrings() {
         new KafkaUnit("localhost:2181", "localhost:9092");
