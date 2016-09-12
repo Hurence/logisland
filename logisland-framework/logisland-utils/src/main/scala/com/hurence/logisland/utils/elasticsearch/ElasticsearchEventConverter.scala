@@ -17,11 +17,12 @@
 package com.hurence.logisland.utils.elasticsearch
 
 import java.text.SimpleDateFormat
-import java.util.{Date, TimeZone}
+import java.util.TimeZone
 
 import com.hurence.logisland.event.Event
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.elasticsearch.common.xcontent.XContentFactory._
+import org.joda.time.format.ISODateTimeFormat
 
 import scala.collection.JavaConversions._
 
@@ -43,9 +44,9 @@ object ElasticsearchEventConverter extends LazyLogging {
         val document = jsonBuilder().startObject()
 
         event.values.foreach(field => {
-            var fieldName =""
-                try {
-                 fieldName = field.getName.toLowerCase().replaceAll("\\.","_")
+            var fieldName = ""
+            try {
+                fieldName = field.getName.toLowerCase().replaceAll("\\.", "_")
 
                 val fieldValue = field.getType match {
                     case s if s.contains("string") => {
@@ -55,7 +56,17 @@ object ElasticsearchEventConverter extends LazyLogging {
                         field.getValue.asInstanceOf[Int]
                     }
                     case s if s.contains("long") => {
-                        field.getValue.asInstanceOf[Long]
+                        // convert event_time as ISO for ES
+                        if (fieldName.equals("event_time")) {
+                            try {
+                                val dateParser = ISODateTimeFormat.dateTimeNoMillis()
+                                dateParser.print(field.getValue.asInstanceOf[Long])
+                            } catch {
+                                case ex: Throwable => field.getValue.asInstanceOf[Long]
+                            }
+                        } else {
+                            field.getValue.asInstanceOf[Long]
+                        }
                     }
                     case s if s.contains("float") => {
                         field.getValue.asInstanceOf[Float]
@@ -71,6 +82,8 @@ object ElasticsearchEventConverter extends LazyLogging {
                     }
                 }
 
+
+
                 document.field(fieldName, fieldValue)
 
             } catch {
@@ -83,7 +96,6 @@ object ElasticsearchEventConverter extends LazyLogging {
         document.flush()
         result
     }
-
 
 
 }

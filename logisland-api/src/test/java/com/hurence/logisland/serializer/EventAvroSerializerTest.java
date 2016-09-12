@@ -38,7 +38,7 @@ public class EventAvroSerializerTest {
 
 		List<String> tags = new ArrayList<>(Arrays.asList("spam","filter","mail"));
 		Event event = new Event("cisco");
-		event.put("timestamp", "long", new Date().getTime());
+		event.put("event_time", "long", new Date().getTime());
 		event.put("method", "string", "GET");
 		event.put("ipSource", "string", "123.34.45.123");
 		event.put("ipTarget", "string", "255.255.255.255");

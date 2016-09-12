@@ -11,9 +11,12 @@
     {
       "name": "_id",
       "type": "string"
+    }, {
+      "name": "event_type",
+      "type": "string"
     },
     {
-      "name": "timestamp",
+      "name": "event_time",
       "type": "long"
     },
     {
