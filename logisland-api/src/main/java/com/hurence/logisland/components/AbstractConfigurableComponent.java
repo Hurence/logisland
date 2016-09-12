@@ -118,14 +118,12 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
 
     /**
      * Allows subclasses to register which property descriptor objects are
-     * supported. Default return is an empty set.
+     * supported.
      *
      * @return PropertyDescriptor objects this processor currently supports
      */
-    @SuppressWarnings("unchecked")
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Collections.EMPTY_LIST;
-    }
+    public abstract List<PropertyDescriptor> getSupportedPropertyDescriptors();
+    // {        return Collections.EMPTY_LIST;    }
 
 
     /**

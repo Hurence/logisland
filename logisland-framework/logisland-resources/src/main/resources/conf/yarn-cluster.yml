@@ -8,9 +8,12 @@ components:
     version: 0.1.0
     documentation: Main Logisland job entry point
     configuration:
-      spark.executorMemory: 512M
-      spark.checkpointingDirectory: file:///tmp
-      spark.appName: My first stream component
+      #spark.master: local[8]
+      spark.master: yarn-cluster 
+      spark.yarn.deploy-mode: cluster
+      spark.executor.memory: 512M
+      #spark.checkpointingDirectory: file:///tmp
+      spark.appName: AppStream
       spark.streaming.batchDuration: 2000
       spark.serializer: org.apache.spark.serializer.KryoSerializer
       spark.streaming.backpressure.enabled: true
@@ -27,17 +30,13 @@ components:
   # A Debug component that only logs what it reads
   - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
     type: processor
-    version: 0.1.0
+    version: 0.9.4
     documentation: a processor that trace the processed events
-    configuration:
-      kafka.input.topics: t2 
-      kafka.output.topics: none
-      kafka.error.topics: none
 
   # reads input of the form xxx:yyyy  
   - component: com.hurence.logisland.processor.parser.SplitText
     type: parser
-    version: 0.1.0
+    version: 0.9.4
     documentation: a parser that produce events from a REGEX
     configuration:
       kafka.input.topics: t1
@@ -52,7 +51,7 @@ components:
   # An elasticsearc compo
   - component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
     type: processor
-    version: 0.1.0
+    version: 0.9.4
     documentation: a processor that trace the processed events
     configuration:
       kafka.input.topics: t2 

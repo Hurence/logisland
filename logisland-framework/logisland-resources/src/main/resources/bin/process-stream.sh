@@ -29,16 +29,16 @@ fi
 
 while [ $# -gt 0 ]
 do
-  key="$1"
+  KEY="$1"
 
-  case $key in
+  case $KEY in
     --conf)
       CONF_FILE="$2"
       shift 
       ;;
     --yarn-cluster)
       MODE="yarn-cluster"
-      YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster"
+      YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml"
       ;;
     --verbose)
       VERBOSE_OPTIONS="--verbose"
@@ -52,7 +52,7 @@ do
       exit 0
       ;;
     *)
-      echo "Unsupported option : $key"
+      echo "Unsupported option : $KEY"
       usage
       exit 1
       ;;
@@ -89,15 +89,19 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+    CONF_FILE="logisland-configuration.yml"
     ;;
 esac
 
 declare java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
-    --files ${CONF_FILE}#logisland-configuration.yml \
     ${lib_dir}/logisland-spark-engine*.jar \
-    -conf logisland-configuration.yml"
+    -conf ${CONF_FILE}" 
 
-echo $java_cmd
+if [ ! -z "${VERBOSE_OPTIONS}" ]
+then
+  echo $java_cmd
+fi
+
 exec $java_cmd
