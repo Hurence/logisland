@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
-    static final long serialVersionUID = -1L;
+    static final long serialVersionUID = -5661820708591436282L;
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
 
