@@ -23,6 +23,7 @@ import java.util.List;
  */
 public class QueryMatcherProcessor extends AbstractEventProcessor {
 
+    static final long serialVersionUID = -1L;
 
     public static final PropertyDescriptor RULES = new PropertyDescriptor.Builder()
             .name("Luwak rules")

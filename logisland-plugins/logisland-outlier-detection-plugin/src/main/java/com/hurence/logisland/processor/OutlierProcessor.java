@@ -34,6 +34,8 @@ import java.util.*;
  */
 public class OutlierProcessor extends AbstractEventProcessor {
 
+    static final long serialVersionUID = -1L;
+
     public static String EVENT_TYPE = "sensor_outlier";
     public static String EVENT_PARSING_EXCEPTION_TYPE = "event_parsing_exception";
     public static String OUTLIER_PROCESSING_EXCEPTION_TYPE = "outlier_processing_exception";

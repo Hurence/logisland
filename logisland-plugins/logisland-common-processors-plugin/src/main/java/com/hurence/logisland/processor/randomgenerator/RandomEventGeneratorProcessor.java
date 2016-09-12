@@ -19,6 +19,9 @@ import java.util.*;
 
 public class RandomEventGeneratorProcessor extends AbstractEventProcessor {
 
+
+    static final long serialVersionUID = -1L;
+
     public static final PropertyDescriptor MIN_EVENTS_COUNT = new PropertyDescriptor.Builder()
             .name("min.events.count")
             .description("the minimum number of generated events each run")

@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
  */
 public class SplitTextMultiline extends AbstractLogParser {
 
+    static final long serialVersionUID = -1L;
+
     private static Logger logger = LoggerFactory.getLogger(SplitTextMultiline.class);
 
 

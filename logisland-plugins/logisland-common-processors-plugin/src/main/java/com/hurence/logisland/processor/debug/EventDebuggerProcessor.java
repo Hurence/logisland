@@ -20,6 +20,9 @@ import java.util.*;
 
 public class EventDebuggerProcessor extends AbstractEventProcessor {
 
+
+    static final long serialVersionUID = -1L;
+
     private static Logger logger = LoggerFactory.getLogger(EventDebuggerProcessor.class);
 
 

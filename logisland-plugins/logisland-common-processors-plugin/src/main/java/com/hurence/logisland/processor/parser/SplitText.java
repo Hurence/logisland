@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
  */
 public class SplitText extends AbstractLogParser {
 
+    static final long serialVersionUID = -1L;
+
     private static Logger logger = LoggerFactory.getLogger(SplitText.class);
 
 
