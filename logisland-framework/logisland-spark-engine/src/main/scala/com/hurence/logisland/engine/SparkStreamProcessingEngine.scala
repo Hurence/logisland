@@ -3,6 +3,7 @@ package com.hurence.logisland.engine
 import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
+import java.util.regex.Pattern
 
 import com.hurence.logisland.components.PropertyDescriptor
 import com.hurence.logisland.event.{Event, EventField}
@@ -34,25 +35,78 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
-        .description("the url to Spark Master")
+        .description("The url to Spark Master")
         .required(true)
+         // The regex allows "local[K]" with K as an integer,  "local[*]", "yarn", "yarn-client", "yarn-cluster" and "spark://HOST[:PORT]"
+         // there is NO support for "mesos://HOST:PORT"
+        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^(yarn(-(client|cluster))?|local\\[[0-9\\*]+\\]|spark:\\/\\/([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?)$")))
+        .defaultValue("local[2]")
+        .build
+
+
+    val SPARK_YARN_DEPLOYMODE = new PropertyDescriptor.Builder()
+        .name("spark.yarn.deploy-mode")
+        .description("The yarn deploy mode")
+        .required(false)
+        .allowableValues("client", "cluster")
+        .build
+
+    val SPARK_YARN_QUEUE = new PropertyDescriptor.Builder()
+        .name("spark.yarn.queue")
+        .description("The name of the YARN queue")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("local[8]")
         .build
 
     val SPARK_APP_NAME = new PropertyDescriptor.Builder()
         .name("spark.appName")
-        .description("application name")
+        .description("Tha application name")
         .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("local[2]")
+        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
+        .defaultValue("log-island")
         .build
+
+    val memorySizePattern = Pattern.compile("^[0-9]+[mMgG]$");
+    val SPARK_DRIVER_MEMORY = new PropertyDescriptor.Builder()
+        .name("spark.driver.memory")
+        .description("The memory size for Spark driver")
+        .required(false)
+        .addValidator(StandardValidators.createRegexMatchingValidator(memorySizePattern))
+        .build
+
+    val SPARK_EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
+        .name("spark.executor.memory")
+        .description("The memory size for Spark executors")
+        .required(false)
+        .addValidator(StandardValidators.createRegexMatchingValidator(memorySizePattern))
+        .build
+
+     val SPARK_DRIVER_CORES = new PropertyDescriptor.Builder()
+        .name("spark.driver.cores")
+        .description("The number of cores for Spark driver")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .build
+
+     val SPARK_EXECUTOR_CORES = new PropertyDescriptor.Builder()
+        .name("spark.executor.cores")
+        .description("The number of cores for Spark driver")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .build
+
+    val SPARK_SERIALIZER = new PropertyDescriptor.Builder()
+      .name("spark.serializer")
+      .description("Class to use for serializing objects that will be sent over the network or need to be cached in serialized form")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .defaultValue("org.apache.spark.serializer.KryoSerializer")
+      .build
 
     val SPARK_STREAMING_BLOCK_INTERVAL = new PropertyDescriptor.Builder()
         .name("spark.streaming.blockInterval")
-        .description("the block interval")
+        .description("The block interval")
         .required(true)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("350")
         .build
 
@@ -60,7 +114,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.kafka.maxRatePerPartition")
         .description("")
         .required(true)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("1")
         .build
 
@@ -68,7 +122,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.batchDuration")
         .description("")
         .required(true)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("200")
         .build
 
@@ -132,7 +186,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.ui.port")
         .description("")
         .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.PORT_VALIDATOR)
         .defaultValue("4050")
         .build
 
@@ -170,6 +224,13 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(SPARK_MASTER)
+        descriptors.add(SPARK_YARN_DEPLOYMODE)
+        descriptors.add(SPARK_YARN_QUEUE)
+        descriptors.add(SPARK_DRIVER_MEMORY)
+        descriptors.add(SPARK_EXECUTOR_MEMORY)
+        descriptors.add(SPARK_DRIVER_CORES)
+        descriptors.add(SPARK_EXECUTOR_CORES)
+        descriptors.add(SPARK_SERIALIZER)
         descriptors.add(SPARK_STREAMING_BLOCK_INTERVAL)
         descriptors.add(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
         descriptors.add(SPARK_APP_NAME)
@@ -219,6 +280,13 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         logger.info("starting Spark Engine")
         //
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
+        //val sparkYarnDeploymode = engineContext.getProperty(SPARK_YARN_DEPLOYMODE).getValue
+        val sparkDriverMemory = engineContext.getProperty(SPARK_DRIVER_MEMORY).getValue
+        val sparkExecutorMemory = engineContext.getProperty(SPARK_EXECUTOR_MEMORY).getValue
+        val sparkDriverCores = engineContext.getProperty(SPARK_DRIVER_CORES).getValue
+        val sparkExecutorCores = engineContext.getProperty(SPARK_EXECUTOR_CORES).getValue
+        val sparkSerializer = engineContext.getProperty(SPARK_SERIALIZER).getValue
+
         val maxRatePerPartition = engineContext.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
         val appName = engineContext.getProperty(SPARK_APP_NAME).getValue
         val blockInterval = engineContext.getProperty(SPARK_STREAMING_BLOCK_INTERVAL).getValue
@@ -242,7 +310,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
           * job configuration
           */
         val conf = new SparkConf()
-        conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        conf.set("spark.serializer", sparkSerializer)
         conf.set("spark.streaming.kafka.maxRatePerPartition", maxRatePerPartition)
         conf.set("spark.streaming.blockInterval", blockInterval)
         conf.set("spark.streaming.backpressure.enabled", backPressureEnabled)
@@ -250,6 +318,31 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         conf.set("spark.ui.port", "4050")
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
+
+
+
+        if (sparkMaster startsWith "yarn") {
+            // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
+            // That's why we do not need to propagate it here
+            if (engineContext.getProperty(SPARK_YARN_QUEUE).isSet) {
+                conf.set("spark.yarn.queue", engineContext.getProperty(SPARK_YARN_QUEUE).getValue)
+            }
+        }
+
+        // Need to check if the properties are set because those properties are not "requires"
+        if (engineContext.getProperty(SPARK_DRIVER_MEMORY).isSet) {
+            conf.set("spark.driver.memory", engineContext.getProperty(SPARK_DRIVER_MEMORY).getValue)
+        }
+        if (engineContext.getProperty(SPARK_EXECUTOR_MEMORY).isSet) {
+            conf.set("spark.executor.memory", engineContext.getProperty(SPARK_EXECUTOR_MEMORY).getValue)
+        }
+        if (engineContext.getProperty(SPARK_DRIVER_CORES).isSet) {
+            conf.set("spark.driver.cores", engineContext.getProperty(SPARK_DRIVER_CORES).getValue)
+        }
+        if (engineContext.getProperty(SPARK_EXECUTOR_CORES).isSet) {
+            conf.set("spark.executor.cores", engineContext.getProperty(SPARK_EXECUTOR_CORES).getValue)
+        }
+
 
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
