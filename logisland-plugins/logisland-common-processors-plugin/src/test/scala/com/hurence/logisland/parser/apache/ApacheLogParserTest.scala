@@ -27,6 +27,8 @@ import scala.collection.JavaConversions._
 
 class ApacheLogParserTest extends BaseLogParserTest {
 
+    val APACHE_LOG_SAMPLE = "/data/localhost_access.log"
+
 
     "An apache log" should "be parsed" in {
         val conf = new java.util.HashMap[String, String]
@@ -56,7 +58,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
         events.length should be(1)
 
         testAnApacheCombinedLogEvent(events.head,
-            host = "123.45.67.89",
+            dest_ip = "123.45.67.89",
             user = "-",
             date = "27/Oct/2000:09:27:09 -0400",
             stamp = 972653229000L,
@@ -104,6 +106,36 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
     }
 
+
+    it should "parse real log file" in {
+
+        val logs = scala.io.Source.fromFile(classOf[ApacheLogParserTest].getResource(APACHE_LOG_SAMPLE).getFile).getLines()
+
+        val conf = new java.util.HashMap[String, String]
+
+        conf.put("key.regex", "(\\S*):(\\S*)")
+        conf.put("key.fields", "es_index,host_name")
+
+        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+
+        componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
+        componentConfiguration.setType("parser")
+        componentConfiguration.setConfiguration(conf)
+
+        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val context = new StandardParserContext(instance)
+        Assert.assertTrue(instance != null)
+
+
+        val parser = instance.getParser
+        val events = logs flatMap (log => parser.parse(context, "", log))
+
+
+        events.length should be(4993)
+
+    }
+
+
     it should "parse simple log as well" in {
 
 
@@ -134,7 +166,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
         events.head.getType should be("apache_log")
         testAnApacheSimpleLogEvent(events.head,
-            host = "199.72.81.55",
+            dest_ip = "199.72.81.55",
             user = "-",
             date = "01/Jul/1995:00:00:01 -0400",
             stamp = 804571201000L,
@@ -143,7 +175,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
             byteSent = 6245
         )
         testAnApacheSimpleLogEvent(events(1),
-            host = "unicomp6.unicomp.net",
+            dest_ip = "unicomp6.unicomp.net",
             user = "-",
             date = "01/Jul/1995:00:00:06 -0400",
             stamp = 804571206000L,
@@ -158,7 +190,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
     }
 
     private def testAnApacheCombinedLogEvent(apacheEvent: Event,
-                                             host: String,
+                                             dest_ip: String,
                                              user: String,
                                              date: String,
                                              stamp: Long,
@@ -168,11 +200,10 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                              refere: String,
                                              userAgent: String) = {
         apacheEvent.getType should be("apache_log")
-        testAnEventField(apacheEvent.get("host"), "host", "string", host)
+        testAnEventField(apacheEvent.get("dest_ip"), "dest_ip", "string", dest_ip)
         testAnEventField(apacheEvent.get("user"), "user", "string", user)
-        testAnEventField(apacheEvent.get("date"), "date", "string", date)
-        testAnEventField(apacheEvent.get("event_timestamp"), "event_timestamp", "long", stamp.asInstanceOf[Object])
-        testAnEventField(apacheEvent.get("request"), "request", "string", request)
+        testAnEventField(apacheEvent.get("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("http_request"), "http_request", "string", request)
         testAnEventField(apacheEvent.get("status"), "status", "string", status)
         testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
         testAnEventField(apacheEvent.get("referer"), "referer", "string", refere)
@@ -180,7 +211,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
     }
 
     private def testAnApacheSimpleLogEvent(apacheEvent: Event,
-                                           host: String,
+                                           dest_ip: String,
                                            user: String,
                                            date: String,
                                            stamp: Long,
@@ -188,11 +219,10 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                            status: String,
                                            byteSent: Int) = {
         apacheEvent.getType should be("apache_log")
-        testAnEventField(apacheEvent.get("host"), "host", "string", host)
+        testAnEventField(apacheEvent.get("dest_ip"), "dest_ip", "string", dest_ip)
         testAnEventField(apacheEvent.get("user"), "user", "string", user)
-        testAnEventField(apacheEvent.get("date"), "date", "string", date)
-        testAnEventField(apacheEvent.get("event_timestamp"), "event_timestamp", "long", stamp.asInstanceOf[Object])
-        testAnEventField(apacheEvent.get("request"), "request", "string", request)
+        testAnEventField(apacheEvent.get("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.get("http_request"), "http_request", "string", request)
         testAnEventField(apacheEvent.get("status"), "status", "string", status)
         testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
     }

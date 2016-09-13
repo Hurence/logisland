@@ -79,81 +79,65 @@ class ApacheLogParser extends AbstractLogParser {
         val keyRegexString = context.getProperty(KEY_REGEX).getValue
         val keyRegex = Pattern.compile(keyRegexString)
 
-
         val event = new Event(context.getProperty(EVENT_TYPE).getValue)
         event.put("raw_content", "string", value)
-
 
         // match the key
         if (key != null) {
             val keyMatcher = keyRegex.matcher(key)
             if (keyMatcher.matches) {
-
-                var i: Int = 0
+                var i = 0
                 while (i < keyMatcher.groupCount + 1 && i < keyFields.length) {
-
                     try {
                         val content = keyMatcher.group(i)
                         if (content != null) {
                             event.put(keyFields(i), "string", keyMatcher.group(i + 1).replaceAll("\"", ""))
                         }
 
-
                     } catch {
                         case t: Throwable => logger.info("no match for key regex {}", keyRegexString)
                     } finally {
                         i += 1
                     }
-
                 }
-
             }
         }
 
 
-
-
+        // match the value
         val matcher = combinedPattern.matcher(value)
+        val simpleMatcher = simplePattern.matcher(value)
         if (matcher.matches()) {
             event.put("dest_ip", "string", matcher.group(1))
             event.put("user", "string", matcher.group(3))
-            //   event.put("date", "string", matcher.group(4))
             event.put("event_time", "long", sdf.parse(matcher.group(4)).getTime)
-            event.put("request", "string", matcher.group(5))
+            event.put("http_request", "string", matcher.group(5))
             event.put("status", "string", matcher.group(6))
             event.put("bytes_out", "int", matcher.group(7).toInt)
             event.put("referer", "string", matcher.group(8))
             event.put("user_agent", "string", matcher.group(9))
-
-
+        } else if (simpleMatcher.matches()) {
+            event.put("dest_ip", "string", simpleMatcher.group(1))
+            event.put("user", "string", simpleMatcher.group(3))
+            event.put("event_time", "long", sdf.parse(simpleMatcher.group(4)).getTime)
+            event.put("http_request", "string", simpleMatcher.group(5))
+            event.put("status", "string", simpleMatcher.group(6))
+            event.put("bytes_out", "int", simpleMatcher.group(7).toInt)
         } else {
-
-            val simpleMatcher = simplePattern.matcher(value)
-            if (simpleMatcher.matches()) {
-                event.put("dest_ip", "string", simpleMatcher.group(1))
-                event.put("user", "string", simpleMatcher.group(3))
-                //    event.put("date", "string", simpleMatcher.group(4))
-                event.put("event_time", "long", sdf.parse(simpleMatcher.group(4)).getTime)
-                event.put("request", "string", simpleMatcher.group(5))
-                event.put("status", "string", simpleMatcher.group(6))
-                event.put("bytes_out", "int", simpleMatcher.group(7).toInt)
-            } else {
-
-                event.put("error", "string", "bad log entry (or problem with RE?)")
-            }
+            event.put("error", "string", "bad log entry (or problem with RE?)")
         }
 
+        // add some further processing
         try {
-            val requestMatcher = requestPattern.matcher(event.get("request").getValue.toString)
-            if (requestMatcher.matches()) {
-                event.put("http_method", "string", requestMatcher.group(1))
-                event.put("url", "string", requestMatcher.group(2))
-                event.put("http_protocol", "string", requestMatcher.group(3))
+            if (event.get("http_request") != null) {
+                val requestMatcher = requestPattern.matcher(event.get("http_request").getValue.toString)
+                if (requestMatcher.matches()) {
+                    event.put("http_method", "string", requestMatcher.group(1))
+                    event.put("http_url", "string", requestMatcher.group(2))
+                    event.put("http_protocol", "string", requestMatcher.group(3))
+                }
             }
-        }catch{
-            case t:Throwable => logger.info("could not match request pattern {}", t.getMessage)
         }
-
         Collections.singletonList(event)
     }
 
