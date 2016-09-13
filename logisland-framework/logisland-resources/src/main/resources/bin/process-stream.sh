@@ -40,6 +40,10 @@ do
       MODE="yarn-cluster"
       YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml"
       ;;
+    --yarn-client)
+      MODE="yarn-client"
+      YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client --files ${CONF_FILE}#logisland-configuration.yml"
+      ;;
     --verbose)
       VERBOSE_OPTIONS="--verbose"
       ;;
@@ -86,6 +90,12 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-shaded-[^,]*.jar,#,#'`
     ;;
   yarn-cluster)
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+    CONF_FILE="logisland-configuration.yml"
+    ;;
+  yarn-client)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
