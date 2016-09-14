@@ -17,6 +17,8 @@ usage() {
   echo
   echo "  --conf <yml-configuguration-file> : provides the configuration file"
   echo "  --yarn-cluster : flag to inform that the yarn-cluster mode must be used"
+  echo "  --yarn-client : flag to inform that the yarn-client mode must be used"
+  echo "  --app-name : to set Spark app name in yarn cluster mode"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
@@ -35,6 +37,9 @@ do
     --conf)
       CONF_FILE="$2"
       shift 
+      ;;
+    --app-name)
+      YARN_APP_NAME_OPTIONS="--name $2"
       ;;
     --yarn-cluster)
       MODE="yarn-cluster"
@@ -102,7 +107,7 @@ case $MODE in
     ;;
 esac
 
-declare java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+declare java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${YARN_APP_NAME_OPTIONS} \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark-engine*.jar \
