@@ -109,7 +109,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
     it should "parse real log file" in {
 
-        val logs = scala.io.Source.fromFile(classOf[ApacheLogParserTest].getResource(APACHE_LOG_SAMPLE).getFile).getLines()
+        val logs = scala.io.Source.fromFile(classOf[ApacheLogParserTest].getResource(APACHE_LOG_SAMPLE).getFile).getLines().toList
 
         val conf = new java.util.HashMap[String, String]
 
@@ -128,10 +128,12 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
 
         val parser = instance.getParser
-        val events = logs flatMap (log => parser.parse(context, "", log))
+        val events = logs flatMap (log => parser.parse(context, "", log + "\n"))
 
 
         events.length should be(4993)
+        val errors = events.filter(event => event.get("error") != null)
+        errors.length should be(66)
 
     }
 

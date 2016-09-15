@@ -79,6 +79,7 @@ class ApacheLogParser extends AbstractLogParser {
         val keyRegexString = context.getProperty(KEY_REGEX).getValue
         val keyRegex = Pattern.compile(keyRegexString)
 
+        val valueCleaned = if(value.endsWith("\n")) value.dropRight(1) else value
         val event = new Event(context.getProperty(EVENT_TYPE).getValue)
         event.put("raw_content", "string", value)
 
@@ -105,8 +106,8 @@ class ApacheLogParser extends AbstractLogParser {
 
 
         // match the value
-        val matcher = combinedPattern.matcher(value)
-        val simpleMatcher = simplePattern.matcher(value)
+        val matcher = combinedPattern.matcher(valueCleaned)
+        val simpleMatcher = simplePattern.matcher(valueCleaned)
         if (matcher.matches()) {
             event.put("dest_ip", "string", matcher.group(1))
             event.put("user", "string", matcher.group(3))
