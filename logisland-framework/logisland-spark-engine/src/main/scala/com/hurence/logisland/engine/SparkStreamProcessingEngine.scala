@@ -94,6 +94,13 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build
 
+    val SPARK_EXECUTOR_INSTANCES = new PropertyDescriptor.Builder()
+        .name("spark.executor.instances")
+        .description("The number of instances for Spark app")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .build
+
     val SPARK_SERIALIZER = new PropertyDescriptor.Builder()
       .name("spark.serializer")
       .description("Class to use for serializing objects that will be sent over the network or need to be cached in serialized form")
@@ -230,6 +237,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         descriptors.add(SPARK_EXECUTOR_MEMORY)
         descriptors.add(SPARK_DRIVER_CORES)
         descriptors.add(SPARK_EXECUTOR_CORES)
+        descriptors.add(SPARK_EXECUTOR_INSTANCES)
         descriptors.add(SPARK_SERIALIZER)
         descriptors.add(SPARK_STREAMING_BLOCK_INTERVAL)
         descriptors.add(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
@@ -280,11 +288,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         logger.info("starting Spark Engine")
         //
         val sparkMaster = engineContext.getProperty(SPARK_MASTER).getValue
-        //val sparkYarnDeploymode = engineContext.getProperty(SPARK_YARN_DEPLOYMODE).getValue
-        val sparkDriverMemory = engineContext.getProperty(SPARK_DRIVER_MEMORY).getValue
-        val sparkExecutorMemory = engineContext.getProperty(SPARK_EXECUTOR_MEMORY).getValue
-        val sparkDriverCores = engineContext.getProperty(SPARK_DRIVER_CORES).getValue
-        val sparkExecutorCores = engineContext.getProperty(SPARK_EXECUTOR_CORES).getValue
         val sparkSerializer = engineContext.getProperty(SPARK_SERIALIZER).getValue
 
         val maxRatePerPartition = engineContext.getProperty(SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).getValue
@@ -342,7 +345,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         if (engineContext.getProperty(SPARK_EXECUTOR_CORES).isSet) {
             conf.set("spark.executor.cores", engineContext.getProperty(SPARK_EXECUTOR_CORES).getValue)
         }
-
+        if (engineContext.getProperty(SPARK_EXECUTOR_INSTANCES).isSet) {
+            conf.set("spark.executor.instances", engineContext.getProperty(SPARK_EXECUTOR_INSTANCES).getValue)
+        }
 
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
