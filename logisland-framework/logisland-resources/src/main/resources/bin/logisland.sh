@@ -1,246 +1,159 @@
 #!/bin/sh
-#
-#    Licensed to the Apache Software Foundation (ASF) under one or more
-#    contributor license agreements.  See the NOTICE file distributed with
-#    this work for additional information regarding copyright ownership.
-#    The ASF licenses this file to You under the Apache License, Version 2.0
-#    (the "License"); you may not use this file except in compliance with
-#    the License.  You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
-#
-# chkconfig: 2345 20 80
-#
 
-# Script structure inspired from Apache Karaf and other Apache projects with similar startup approaches
+#. $(dirname $0)/launcher.sh
+lib_dir="$(realpath "$(dirname $0)/../lib")"
 
-SCRIPT_DIR=$(dirname "$0")
-SCRIPT_NAME=$(basename "$0")
-LOGISLAND_HOME=$(cd "${SCRIPT_DIR}" && cd .. && pwd)
-PROGNAME=$(basename "$0")
+app_classpath=""
+for entry in "$lib_dir"/*
+do
+  if [ -z "$app_classpath" ]
+  then
+    app_classpath="$lib$entry"
+  else
+    app_classpath="$lib$entry,$app_classpath"
+  fi
+done
 
 
-warn() {
-    echo "${PROGNAME}: $*"
+
+app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
+
+
+MODE="default"
+VERBOSE_OPTIONS=""
+YARN_CLUSTER_OPTIONS=""
+
+usage() {
+  echo "Usage:"
+  echo
+  echo " `basename $0` --conf <yml-configuguration-file> [--yarn-cluster] [--spark-home <spark-home-directory>]"
+  echo
+  echo "Options:"
+  echo
+  echo "  --conf <yml-configuguration-file> : provides the configuration file"
+  echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
+  echo "  --help : displays help"
 }
 
-die() {
-    warn "$*"
-    exit 1
-}
+if [ $# -eq 0 ]
+then
+  usage
+  exit 1
+fi
 
-detectOS() {
-    # OS specific support (must be 'true' or 'false').
-    cygwin=false;
-    aix=false;
-    os400=false;
-    darwin=false;
-    case "$(uname)" in
-        CYGWIN*)
-            cygwin=true
-            ;;
-        AIX*)
-            aix=true
-            ;;
-        OS400*)
-            os400=true
-            ;;
-        Darwin)
-            darwin=true
-            ;;
-    esac
-    # For AIX, set an environment variable
-    if ${aix}; then
-         export LDR_CNTRL=MAXDATA=0xB0000000@DSA
-         echo ${LDR_CNTRL}
-    fi
-}
+while [ $# -gt 0 ]
+do
+  KEY="$1"
 
-unlimitFD() {
-    # Use the maximum available, or set MAX_FD != -1 to use that
-    if [ "x${MAX_FD}" = "x" ]; then
-        MAX_FD="maximum"
-    fi
-
-    # Increase the maximum file descriptors if we can
-    if [ "${os400}" = "false" ] && [ "${cygwin}" = "false" ]; then
-        MAX_FD_LIMIT=$(ulimit -H -n)
-        if [ "${MAX_FD_LIMIT}" != 'unlimited' ]; then
-            if [ $? -eq 0 ]; then
-                if [ "${MAX_FD}" = "maximum" -o "${MAX_FD}" = "max" ]; then
-                    # use the system max
-                    MAX_FD="${MAX_FD_LIMIT}"
-                fi
-
-                ulimit -n ${MAX_FD} > /dev/null
-                # echo "ulimit -n" `ulimit -n`
-                if [ $? -ne 0 ]; then
-                    warn "Could not set maximum file descriptor limit: ${MAX_FD}"
-                fi
-            else
-                warn "Could not query system maximum file descriptor limit: ${MAX_FD_LIMIT}"
-            fi
-        fi
-    fi
-}
-
-
-
-locateJava() {
-    # Setup the Java Virtual Machine
-    if $cygwin ; then
-        [ -n "${JAVA}" ] && JAVA=$(cygpath --unix "${JAVA}")
-        [ -n "${JAVA_HOME}" ] && JAVA_HOME=$(cygpath --unix "${JAVA_HOME}")
-    fi
-
-    if [ "x${JAVA}" = "x" ] && [ -r /etc/gentoo-release ] ; then
-        JAVA_HOME=$(java-config --jre-home)
-    fi
-    if [ "x${JAVA}" = "x" ]; then
-        if [ "x${JAVA_HOME}" != "x" ]; then
-            if [ ! -d "${JAVA_HOME}" ]; then
-                die "JAVA_HOME is not valid: ${JAVA_HOME}"
-            fi
-            JAVA="${JAVA_HOME}/bin/java"
-        else
-            warn "JAVA_HOME not set; results may vary"
-            JAVA=$(type java)
-            JAVA=$(expr "${JAVA}" : '.* \(/.*\)$')
-            if [ "x${JAVA}" = "x" ]; then
-                die "java command not found"
-            fi
-        fi
-    fi
-    # if command is env, attempt to add more to the classpath
-    if [ "$1" = "env" ]; then
-        [ "x${TOOLS_JAR}" =  "x" ] && [ -n "${JAVA_HOME}" ] && TOOLS_JAR=$(find -H "${JAVA_HOME}" -name "tools.jar")
-        [ "x${TOOLS_JAR}" =  "x" ] && [ -n "${JAVA_HOME}" ] && TOOLS_JAR=$(find -H "${JAVA_HOME}" -name "classes.jar")
-        if [ "x${TOOLS_JAR}" =  "x" ]; then
-             warn "Could not locate tools.jar or classes.jar. Please set manually to avail all command features."
-        fi
-    fi
-
-}
-
-init() {
-    # Determine if there is special OS handling we must perform
-    detectOS
-
-    # Unlimit the number of file descriptors if possible
-    unlimitFD
-
-    # Locate the Java VM to execute
-    locateJava "$1"
-}
-
-
-install() {
-        SVC_NAME=logisland
-        if [ "x$2" != "x" ] ; then
-                SVC_NAME=$2
-        fi
-
-        SVC_FILE="/etc/init.d/${SVC_NAME}"
-        cp "$0" "${SVC_FILE}"
-        sed -i s:LOGISLAND_HOME=.*:LOGISLAND_HOME="${LOGISLAND_HOME}": "${SVC_FILE}"
-        sed -i s:PROGNAME=.*:PROGNAME="${SCRIPT_NAME}": "${SVC_FILE}"
-        rm -f "/etc/rc2.d/S65${SVC_NAME}"
-        ln -s "/etc/init.d/${SVC_NAME}" "/etc/rc2.d/S65${SVC_NAME}"
-        rm -f "/etc/rc2.d/K65${SVC_NAME}"
-        ln -s "/etc/init.d/${SVC_NAME}" "/etc/rc2.d/K65${SVC_NAME}"
-        echo "Service ${SVC_NAME} installed"
-}
-
-
-run() {
-    BOOTSTRAP_CONF_DIR="${LOGISLAND_HOME}/conf"
-    BOOTSTRAP_CONF="${BOOTSTRAP_CONF_DIR}/bootstrap.conf";
-    BOOTSTRAP_LIBS="${LOGISLAND_HOME}/lib/bootstrap/*"
-
-    run_as=$(grep run.as "${BOOTSTRAP_CONF}" | cut -d'=' -f2)
-    # If the run as user is the same as that starting the process, ignore this configuration
-    if [ "$run_as" = "$(whoami)" ]; then
-        unset run_as
-    fi
-
-    sudo_cmd_prefix=""
-    if $cygwin; then
-        if [ -n "${run_as}" ]; then
-            echo "The run.as option is not supported in a Cygwin environment. Exiting."
-            exit 1
-        fi;
-
-        LOGISLAND_HOME=$(cygpath --path --windows "${LOGISLAND_HOME}")
-        BOOTSTRAP_CONF=$(cygpath --path --windows "${BOOTSTRAP_CONF}")
-        BOOTSTRAP_CONF_DIR=$(cygpath --path --windows "${BOOTSTRAP_CONF_DIR}")
-        BOOTSTRAP_LIBS=$(cygpath --path --windows "${BOOTSTRAP_LIBS}")
-        BOOTSTRAP_CLASSPATH="${BOOTSTRAP_CONF_DIR};${BOOTSTRAP_LIBS}"
-        if [ -n "${TOOLS_JAR}" ]; then
-            TOOLS_JAR=$(cygpath --path --windows "${TOOLS_JAR}")
-            BOOTSTRAP_CLASSPATH="${TOOLS_JAR};${BOOTSTRAP_CLASSPATH}"
-        fi
-    else
-        if [ -n "${run_as}" ]; then
-            if id -u "${run_as}" >/dev/null 2>&1; then
-                sudo_cmd_prefix="sudo -u ${run_as}"
-            else
-                echo "The specified run.as user ${run_as} does not exist. Exiting."
-                exit 1
-            fi
-        fi;
-        BOOTSTRAP_CLASSPATH="${BOOTSTRAP_CONF_DIR}:${BOOTSTRAP_LIBS}"
-        if [ -n "${TOOLS_JAR}" ]; then
-            BOOTSTRAP_CLASSPATH="${TOOLS_JAR}:${BOOTSTRAP_CLASSPATH}"
-        fi
-    fi
-
-    echo
-    echo "Java home: ${JAVA_HOME}"
-    echo "Logisland home: ${LOGISLAND_HOME}"
-    echo
-    echo "Bootstrap Config File: ${BOOTSTRAP_CONF}"
-    echo
-
-    # run 'start' in the background because the process will continue to run, monitoring Logisland.
-    # all other commands will terminate quickly so want to just wait for them
-    if [ "$1" = "start" ]; then
-        (cd "${LOGISLAND_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.logisland.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.logisland.bootstrap.RunLogisland $@ &)
-    else
-        (cd "${LOGISLAND_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.logisland.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.logisland.bootstrap.RunLogisland $@)
-    fi
-
-    # Wait just a bit (3 secs) to wait for the logging to finish and then echo a new-line.
-    # We do this to avoid having logs spewed on the console after running the command and then not giving
-    # control back to the user
-    sleep 3
-    echo
-}
-
-main() {
-    init "$1"
-    run "$@"
-}
-
-
-case "$1" in
-    install)
-        install "$@"
-        ;;
-    start|stop|run|status|dump|env)
-        main "$@"
-        ;;
-    restart)
-        init
-    run "stop"
-    run "start"
-    ;;
+  case $KEY in
+    --conf)
+      CONF_FILE="$2"
+      shift
+      ;;
+    --verbose)
+      VERBOSE_OPTIONS="--verbose"
+      ;;
+    --spark-home)
+      SPARK_HOME="$2"
+      shift
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
     *)
-        echo "Usage logisland {start|stop|run|restart|status|dump|install}"
-        ;;
+      echo "Unsupported option : $KEY"
+      usage
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [ -z "${SPARK_HOME}" ]
+then
+  echo "Please provide the --spark-home option or set the SPARK_HOME environment variable"
+  usage
+  exit 1
+fi
+
+if [ ! -f ${SPARK_HOME}/bin/spark-submit ]
+then
+  echo "Invalid SPARK_HOME provided"
+  exit 1
+fi
+
+if [ -z "${CONF_FILE}" ]
+then
+    echo "The configuration file is missing"
+    usage
+    exit 1
+fi
+
+if [ ! -f "${CONF_FILE}" ]
+then
+  echo "The configuration file ${CONF_FILE} does not exist"
+  usage
+  exit 1
+fi
+
+
+MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
+case ${MODE} in
+  "yarn")
+    EXTRA_MODE=`awk '{ if( $1 == "spark.yarn.deploy-mode:" ){ print $2 } }' ${CONF_FILE}`
+    if [ -z "${EXTRA_MODE}" ]
+    then
+     echo "The property \"spark.yarn.deploy-mode\" is missing in config file \"${CONF_FILE}\""
+     exit 1
+    fi
+
+    if [ ! ${EXTRA_MODE} = "cluster" -a ! ${EXTRA_MODE} = "client" ]
+    then
+      echo "The property \"spark.yarn.deploy-mode\" value \"${EXTRA_MODE}\" is not supported"
+      exit 1
+    else
+      MODE=${MODE}-${EXTRA_MODE}
+    fi
+    ;;
 esac
+
+if [ ! -z "${VERBOSE_OPTIONS}" ]
+then
+  echo "Starting with mode \"${MODE}\""
+fi
+
+case $MODE in
+  default)
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-shaded-[^,]*.jar,#,#'`
+    ;;
+  app-name)
+    YARN_APP_NAME_OPTIONS="--name $2"
+    ;;
+  yarn-cluster)
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml"
+    CONF_FILE="logisland-configuration.yml"
+    ;;
+  yarn-client)
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client"
+    ;;
+esac
+
+java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${YARN_APP_NAME_OPTIONS} \
+    --class ${app_mainclass} \
+    --jars ${app_classpath} \
+    ${lib_dir}/logisland-spark-engine*.jar \
+    -conf ${CONF_FILE}"
+
+if [ ! -z "${VERBOSE_OPTIONS}" ]
+then
+  echo $java_cmd
+fi
+
+exec $java_cmd
