@@ -50,6 +50,9 @@ do
       CONF_FILE="$2"
       shift
       ;;
+    --app-name)
+      YARN_APP_NAME="$2"
+      ;;
     --verbose)
       VERBOSE_OPTIONS="--verbose"
       ;;
@@ -128,7 +131,7 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-shaded-[^,]*.jar,#,#'`
     ;;
   app-name)
-    YARN_APP_NAME_OPTIONS="--name $2"
+    YARN_APP_NAME_OPTIONS="--name ${YARN_APP_NAME}"
     ;;
   yarn-cluster)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
