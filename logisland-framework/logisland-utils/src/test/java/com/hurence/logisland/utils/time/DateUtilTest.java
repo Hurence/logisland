@@ -119,29 +119,29 @@ public class DateUtilTest {
 
     @Test
     public void testParsing() {
-       // Date expectedDate = new Date(1388648629000L);
+        // Date expectedDate = new Date(1388648629000L);
         DateTime today = new DateTime(DateTimeZone.UTC);
         String currentYear = today.year().getAsString();
 
 
-        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss" ).withZone(DateTimeZone.UTC);
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
         DateTime expectedDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
 
         String currentDay = expectedDate.dayOfWeek().getAsShortText(Locale.ENGLISH);
 
         String[] strDates = {
-                currentDay +" Jan 02 08:43:49 CET " +currentYear,
-                currentDay + ", 02 Jan "+currentYear+" 08:43:49 CET",
+                currentDay + " Jan 02 08:43:49 CET " + currentYear,
+                currentDay + ", 02 Jan " + currentYear + " 08:43:49 CET",
                 currentYear + "-01-02T08:43:49CET",
                 currentYear + "-01-02T08:43:49.000CET",
                 currentYear + "-01-02T08:43:49.0000+01:00",
                 currentYear + "-01-02 07:43:49",
                 currentYear + "-01-02 07:43:49,000",
                 currentYear + "-01-02 07:43:49.000",
-                "02/JAN/"+currentYear+":09:43:49 +0200",
-                "Jan 02 07:43:49"
+                "02/JAN/" + currentYear + ":09:43:49 +0200",
+                "Jan 02 07:43:49",
+                "02/01/" + currentYear + "-07:43:49,000"
         };
-
 
 
         for (String strDate : strDates) {
