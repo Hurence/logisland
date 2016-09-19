@@ -52,6 +52,7 @@ do
       ;;
     --app-name)
       YARN_APP_NAME="$2"
+      shift
       ;;
     --verbose)
       VERBOSE_OPTIONS="--verbose"
