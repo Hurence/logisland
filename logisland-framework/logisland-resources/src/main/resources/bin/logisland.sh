@@ -31,6 +31,7 @@ usage() {
   echo "Options:"
   echo
   echo "  --conf <yml-configuguration-file> : provides the configuration file"
+  echo "  --app-name <yarn-app-name> : provides the yarn application name in yarn-cluster mode"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
@@ -137,7 +138,7 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
     YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml"
     CONF_FILE="logisland-configuration.yml"
-    if [[ -z "$YARN_APP_NAME" ]]
+    if [ ! -z "$YARN_APP_NAME" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
     fi
