@@ -77,7 +77,7 @@ public final class DateUtil {
 
 
         put("^\\d{1,2}/\\w{3}/\\d{4}:\\d{2}:\\d{2}:\\d{2}\\s\\+\\d{4}$","dd/MMM/yyyy:HH:mm:ss Z"); //"02/JAN/2014:09:43:49 +0200"
-
+		put("^\\w{3}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "MMM dd HH:mm:ss"); // "Jan 02 07:43:49"
     }};
 
     private DateUtil() {
@@ -430,7 +430,17 @@ public final class DateUtil {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
 		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		simpleDateFormat.setLenient(false); // Don't automatically convert invalid date.
-		return simpleDateFormat.parse(dateString);
+		if(dateFormat.equals("MMM dd HH:mm:ss")){
+
+            DateTime today = new DateTime();
+            DateTime parsedDate = new DateTime(simpleDateFormat.parse(dateString));
+
+            DateTime parsedDateWithTodaysYear = parsedDate.withYear(today.getYear());
+
+			return parsedDateWithTodaysYear.toDate();
+		}else{
+			return simpleDateFormat.parse(dateString);
+		}
 	}
 
 	// Validators ---------------------------------------------------------------------------------

@@ -4,6 +4,10 @@
  */
 package com.hurence.logisland.utils.time;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,16 +119,27 @@ public class DateUtilTest {
 
     @Test
     public void testParsing() {
+       // Date expectedDate = new Date(1388648629000L);
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss" ).withZone(DateTimeZone.UTC);
+        DateTime expectedDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
+
+        String currentDay = expectedDate.dayOfWeek().getAsShortText(Locale.ENGLISH);
+
         String[] strDates = {
-                "Thu Jan 02 08:43:49 CET 2014",
-                "Thu, 02 Jan 2014 08:43:49 CET",
-                "2014-01-02T08:43:49CET",
-                "2014-01-02T08:43:49.000CET",
-                "2014-01-02T08:43:49.0000+01:00",
-                "2014-01-02 07:43:49",
-                "2014-01-02 07:43:49,000",
-                "2014-01-02 07:43:49.000",
-                "02/JAN/2014:09:43:49 +0200"
+                currentDay +" Jan 02 08:43:49 CET " +currentYear,
+                currentDay + ", 02 Jan "+currentYear+" 08:43:49 CET",
+                currentYear + "-01-02T08:43:49CET",
+                currentYear + "-01-02T08:43:49.000CET",
+                currentYear + "-01-02T08:43:49.0000+01:00",
+                currentYear + "-01-02 07:43:49",
+                currentYear + "-01-02 07:43:49,000",
+                currentYear + "-01-02 07:43:49.000",
+                "02/JAN/"+currentYear+":09:43:49 +0200",
+                "Jan 02 07:43:49"
         };
 
 
@@ -133,12 +148,11 @@ public class DateUtilTest {
             logger.info("parsing " + strDate);
             try {
                 Date date = DateUtil.parse(strDate);
-                assertTrue(strDate + " should be equal to " + date.toString(), 1388648629000L == date.getTime());
+                assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
-
 
     }
 
