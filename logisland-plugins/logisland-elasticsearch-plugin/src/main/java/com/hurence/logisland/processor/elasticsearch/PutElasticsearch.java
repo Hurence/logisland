@@ -227,12 +227,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             for (Event event : events) {
                 numItemProcessed += 1;
 
-                // Setting ES document id to document's id itself if any (to prevent duplications in ES)
-                String docId = UUID.randomUUID().toString();
-                if (!Objects.equals(event.getId(), "none")) {
-                    docId = event.getId();
-                }
-
                 // compute es index from event if any
                 String docIndex = defaultIndex;
                 if (context.getProperty(ES_INDEX_FIELD).isSet()) {
@@ -256,7 +250,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
                 // add it to the bulk
                 IndexRequestBuilder result = esClient.get()
-                        .prepareIndex(docIndex, docType, docId)
+                        .prepareIndex(docIndex, docType)
                         .setSource(document)
                         .setOpType(IndexRequest.OpType.CREATE);
                 bulkProcessor.add(result.request());
