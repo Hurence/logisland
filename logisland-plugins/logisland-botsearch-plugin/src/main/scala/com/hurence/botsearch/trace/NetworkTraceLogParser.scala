@@ -2,7 +2,6 @@ package com.hurence.botsearch.trace
 
 import java.util
 
-import com.hurence.logisland.log.{LogParser, LogParserException}
 import com.hurence.logisland.processor.ProcessContext
 import com.hurence.logisland.record.Record
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -10,17 +9,17 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 /**
   * Created by tom on 12/01/16.
   */
-class NetworkTraceLogParser extends LogParser with LazyLogging {
+class NetworkTraceLogParser extends LazyLogging {
 
     val EVENT_TYPE = "log-island-trace"
 
     /**
       * take a line of csv and convert it to a NetworkFlow
       *
-      * @param trace
+      * @param records
       * @return
       */
-    override def parse(context: ProcessContext, key:String, trace: String): util.Collection[Record] = {
+    def process(context: ProcessContext, records: util.Collection[Record]): util.Collection[Record] = {
         val event = new Record(EVENT_TYPE)
         try {
 
@@ -41,7 +40,7 @@ class NetworkTraceLogParser extends LogParser with LazyLogging {
             case t: Exception => {
                 val errorMessage = s"exception parsing row : ${t.getMessage}"
                 logger.error(errorMessage)
-                throw new LogParserException(s"error parsing trace : $trace", t)
+                //  throw new LogParserException(s"error parsing trace : $trace", t)
             }
         }
     }

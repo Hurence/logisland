@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.KryoRecordSerializer;
+import com.hurence.logisland.record.serializer.KryoRecordSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;

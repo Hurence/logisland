@@ -17,9 +17,9 @@
 package com.hurence.logisland.engine;
 
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.PropertyValue;
-import com.hurence.logisland.components.StandardPropertyValue;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
 
 import java.io.Serializable;
 import java.util.Map;

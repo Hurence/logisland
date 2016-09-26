@@ -1,54 +1,113 @@
-version: 0.1
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.9.5
 documentation: LogIsland analytics main config file. Put here every engine or component config
 components:
-  # Main event streaming engine
+
+#########################################################################################################
+# engine
+#########################################################################################################
+
   - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
     type: engine
-    version: 0.1.0
     documentation: Main Logisland job entry point
     configuration:
-      spark.master: local[8]
-      spark.executorMemory: 4g
-      spark.checkpointingDirectory: file:///tmp
-      spark.appName: MyApp
-      spark.streaming.batchDuration: 2000
+      spark.master: yarn-cluster
+      spark.driver.memory: 512m
+      spark.driver.cores: 1
+      spark.executor.memory: 1500m
+      spark.executor.cores: 2
+      spark.executor.instances: 10
+      spark.appName: FdjIndexing
+      spark.streaming.batchDuration: 10000
       spark.serializer: org.apache.spark.serializer.KryoSerializer
       spark.streaming.backpressure.enabled: true
       spark.streaming.unpersist: false
-      spark.streaming.blockInterval: 350
-      spark.streaming.kafka.maxRatePerPartition: 2000
-      spark.streaming.timeout: 20000
+      spark.streaming.blockInterval: 500
+      spark.streaming.kafka.maxRatePerPartition: 6000
+      spark.streaming.timeout: -1
       spark.ui.port: 4050
-      kafka.metadata.broker.list: localhost:9092
-      kafka.zookeeper.quorum: localhost:2181
-      kafka.topic.autoCreate: true
-      kafka.topic.default.partitions: 8
-      kafka.topic.default.replicationFactor: 1
-      output.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
-      input.event.serializer: com.hurence.logisland.serializer.EventKryoSerializer
 
-  # A Debug component that only logs what it reads
+
+#########################################################################################################
+# streams
+#########################################################################################################
+
+  # parsing
+  - component: com.hurence.logisland.stream.KafkaRecordStream
+    type: stream
+    id: parsing_stream
+    documentation: a stream that links
+    configuration:
+      kafka.input.topics: logisland_raw
+      kafka.output.topics: logisland_events
+      kafka.error.topics: logisland_errors
+      kafka.input.topics.serializer: com.hurence.logisland.record.serializer.EventKryoSerializer
+      kafka.output.topics.serializer: com.hurence.logisland.record.serializer.EventKryoSerializer
+      kafka.error.topics.serializer: com.hurence.logisland.record.serializer.EventJsonSerializer
+      kafka.metadata.broker.list: sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667
+      kafka.zookeeper.quorum: sd-76387:2181,sd-84186:2181,sd-84189:2181
+      kafka.topic.autoCreate: true
+      kafka.topic.default.partitions: 10
+      kafka.topic.default.replicationFactor: 1
+      logisland.processors: sample_regex_parser
+
+  # indexing
+  - component: com.hurence.logisland.stream.KafkaRecordStream
+    type: stream
+    id: indexing_stream
+    documentation: a stream that links
+    configuration:
+      kafka.input.topics: logisland_events
+      kafka.output.topics: logisland_trash
+      kafka.error.topics: logisland_errors
+      kafka.input.topics.serializer: com.hurence.logisland.record.serializer.EventKryoSerializer
+      kafka.output.topics.serializer: com.hurence.logisland.record.serializer.EventKryoSerializer
+      kafka.error.topics.serializer: com.hurence.logisland.record.serializer.EventJsonSerializer
+      kafka.metadata.broker.list: sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667
+      kafka.zookeeper.quorum: sd-76387:2181,sd-84186:2181,sd-84189:2181
+      kafka.topic.autoCreate: true
+      kafka.topic.default.partitions: 10
+      kafka.topic.default.replicationFactor: 1
+      logisland.processors: es_publisher,debugger
+
+#########################################################################################################
+# Processors
+#########################################################################################################
+
+  # Debug
   - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
     type: processor
-    version: 0.1.0
+    id: debugger
     documentation: a processor that trace the processed events
     configuration:
-      kafka.input.topics: logisland-mock-out
-      kafka.output.topics: none
-      kafka.error.topics: none
-
+      event.serializer: json
 
   # Generate random events based on an avro schema
-  - component: com.hurence.logisland.processor.parser.SplitText
+  - component: com.hurence.logisland.processor.SplitText
     type: parser
+    id: sample_regex_parser
     version: 0.1.0
     documentation: a parser that produce events from a REGEX
     configuration:
-      kafka.input.topics: logisland-mock-in
-      kafka.output.topics: logisland-mock-out
-      kafka.error.topics: logisland-error
-      event.type: log_traker
-      value.regex: (\S*):(\S*)
-      value.fields: a,b
       key.regex: (\S*):(\S*)
       key.fields: c,d
+      value.regex: (\S*):(\S*)
+      value.fields: a,b
+
+  # Send to elasticsearch
+  - component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+    type: processor
+    id: es_publisher
+    documentation: a processor that trace the processed events
+    configuration:
+      default.index: loterie
+      default.type: event
+      hosts: sd-84186:9300,sd-84192:9300,sd-84196:9300,sd-84191:9300,sd-84190:
+      cluster.name: elastic-hurence
+      batch.size: 8000
+      timebased.index: yesterday
+      es.index.field: search_index
+      es.type.field: event_type

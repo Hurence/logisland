@@ -6,7 +6,7 @@ import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
-import com.hurence.logisland.components.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validators.StandardValidators;
 import com.hurence.logisland.utils.string.Multiline;
@@ -32,7 +32,7 @@ import java.util.*;
  * <p/>
  * This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
  */
-public class OutlierProcessor extends AbstractRecordProcessor {
+public class OutlierProcessor extends KafkaStreamProcessor {
 
     static final long serialVersionUID = -1L;
 

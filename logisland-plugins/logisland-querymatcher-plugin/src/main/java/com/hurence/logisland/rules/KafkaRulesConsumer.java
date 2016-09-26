@@ -1,7 +1,7 @@
 package com.hurence.logisland.rules;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.KryoRecordSerializer;
+import com.hurence.logisland.record.serializer.KryoRecordSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.processor.MatchingRule;
 import kafka.consumer.ConsumerConfig;

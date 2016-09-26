@@ -4,7 +4,7 @@
  */
 package com.hurence.logisland.config;
 
-import com.hurence.logisland.components.ComponentsFactory;
+import com.hurence.logisland.component.ComponentsFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

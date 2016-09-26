@@ -1,6 +1,6 @@
 package com.hurence.logisland.config;
 
-import com.hurence.logisland.components.ComponentsFactory;
+import com.hurence.logisland.component.ComponentsFactory;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.log.StandardParserInstance;

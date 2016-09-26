@@ -19,17 +19,13 @@ package com.hurence.logisland.validators;
 
 
 
-import com.hurence.logisland.components.ValidationResult;
-import com.hurence.logisland.components.Validator;
-import org.joda.time.format.FormatUtils;
+import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.component.Validator;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class StandardValidators {

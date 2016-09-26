@@ -17,7 +17,7 @@
 
 package com.hurence.logisland.record;
 
-import com.hurence.logisland.components.PropertyValue;
+import com.hurence.logisland.component.PropertyValue;
 
 import java.io.Serializable;
 

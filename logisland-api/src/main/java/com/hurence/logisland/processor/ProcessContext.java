@@ -18,12 +18,11 @@ package com.hurence.logisland.processor;
 
 
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.PropertyValue;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * <p>

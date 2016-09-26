@@ -1,6 +1,6 @@
 package com.hurence.logisland.runner;
 
-import com.hurence.logisland.components.ComponentsFactory;
+import com.hurence.logisland.component.ComponentsFactory;
 import com.hurence.logisland.config.LogislandSessionConfigReader;
 import com.hurence.logisland.config.LogislandSessionConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
@@ -60,7 +60,6 @@ public class StreamProcessingRunner {
             LogislandSessionConfiguration sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardParserInstance> parsers = ComponentsFactory.getAllParserInstances(sessionConf);
             List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(sessionConf);
             Optional<StandardEngineInstance> engineInstance = ComponentsFactory.getEngineInstance(sessionConf);
 

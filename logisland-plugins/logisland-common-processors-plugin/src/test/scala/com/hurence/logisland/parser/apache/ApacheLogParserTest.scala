@@ -15,7 +15,7 @@
  */
 package com.hurence.logisland.parser.apache
 
-import com.hurence.logisland.components.ComponentsFactory
+import com.hurence.logisland.component.ComponentsFactory
 import com.hurence.logisland.config.ComponentConfiguration
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.parser.base.BaseLogParserTest

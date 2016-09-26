@@ -32,7 +32,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
   *
   * The Syslog regular expressions below were copied from the Apache Nifi project.
   */
-class SyslogParser extends LogParser {
+class SyslogParser {
     val EVENT_TYPE = "syslog"
     final val SYSLOG_MSG_RFC5424_0 =
         ("(?:\\<(\\d{1,3})\\>)" + // priority
@@ -61,7 +61,7 @@ class SyslogParser extends LogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Record] = {
+    def parse(context:ProcessContext, key:String, value: String): util.Collection[Record] = {
         val event = new Record(EVENT_TYPE)
         event.setField("source", "string", value)
 

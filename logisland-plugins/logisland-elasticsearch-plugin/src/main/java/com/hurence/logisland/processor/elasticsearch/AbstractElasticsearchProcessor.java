@@ -18,10 +18,11 @@
 
 package com.hurence.logisland.processor.elasticsearch;
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.ValidationResult;
-import com.hurence.logisland.components.Validator;
-import com.hurence.logisland.processor.AbstractRecordProcessor;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.component.Validator;
+import com.hurence.logisland.processor.AbstractProcessor;
+import com.hurence.logisland.processor.KafkaStreamProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.validators.StandardValidators;
@@ -47,7 +48,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class AbstractElasticsearchProcessor extends AbstractRecordProcessor {
+public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractElasticsearchProcessor.class);
     /**

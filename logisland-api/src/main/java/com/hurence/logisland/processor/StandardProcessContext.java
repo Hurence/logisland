@@ -17,9 +17,9 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.PropertyValue;
-import com.hurence.logisland.components.StandardPropertyValue;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
 
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public class StandardProcessContext implements ProcessContext {
      */
     @Override
     public PropertyValue getProperty(final String propertyName) {
-        final RecordProcessor processor = processorInstance.getProcessor();
+        final Processor processor = processorInstance.getProcessor();
         final PropertyDescriptor descriptor = processor.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;

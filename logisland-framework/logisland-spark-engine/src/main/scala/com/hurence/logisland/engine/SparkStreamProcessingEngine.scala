@@ -5,11 +5,11 @@ import java.util
 import java.util.Collections
 import java.util.regex.Pattern
 
-import com.hurence.logisland.components.PropertyDescriptor
+import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{Record, Field}
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
-import com.hurence.logisland.processor.{AbstractRecordProcessor, StandardProcessContext, StandardProcessorInstance}
-import com.hurence.logisland.serializer.{AvroRecordSerializer, KryoRecordSerializer, RecordSerializer}
+import com.hurence.logisland.processor.{KafkaStreamProcessor, StandardProcessContext, StandardProcessorInstance}
+import com.hurence.logisland.record.serializer.{AvroRecordSerializer, KryoRecordSerializer, RecordSerializer}
 import com.hurence.logisland.utils.event.ProcessorMetrics
 import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.validators.StandardValidators
@@ -380,9 +380,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             parserInstance.getParser.init(parseContext)
 
             // create topics if needed
-            val inputTopics = parseContext.getProperty(AbstractRecordProcessor.INPUT_TOPICS).asString.split(",").toSet
-            val outputTopics = parseContext.getProperty(AbstractRecordProcessor.OUTPUT_TOPICS).asString.split(",").toSet
-            val errorTopics = parseContext.getProperty(AbstractRecordProcessor.ERROR_TOPICS).asString.split(",").toSet
+            val inputTopics = parseContext.getProperty(KafkaStreamProcessor.INPUT_TOPICS).asString.split(",").toSet
+            val outputTopics = parseContext.getProperty(KafkaStreamProcessor.OUTPUT_TOPICS).asString.split(",").toSet
+            val errorTopics = parseContext.getProperty(KafkaStreamProcessor.ERROR_TOPICS).asString.split(",").toSet
 
             if (topicAutocreate) {
                 createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
@@ -420,7 +420,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                         val serializer = outSerializerClass match {
                             case "com.hurence.logisland.serializer.EventAvroSerializer" =>
                                 val parser = new Schema.Parser
-                                val outSchemaContent = parseContext.getProperty(AbstractRecordProcessor.OUTPUT_SCHEMA).asString
+                                val outSchemaContent = parseContext.getProperty(KafkaStreamProcessor.OUTPUT_SCHEMA).asString
                                 val outSchema = parser.parse(outSchemaContent)
                                 new AvroRecordSerializer(outSchema)
                             case _ =>
@@ -430,7 +430,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                         val kafkaProducer = new KafkaSerializedEventProducer(
                             brokerList,
-                            parseContext.getProperty(AbstractRecordProcessor.OUTPUT_TOPICS).asString,
+                            parseContext.getProperty(KafkaStreamProcessor.OUTPUT_TOPICS).asString,
                             serializer)
                         kafkaProducer.produce(outgoingEvents)
 
@@ -478,8 +478,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             processorInstance.getProcessor.init(processorContext)
 
             // create topics if needed
-            val inputTopics = processorContext.getProperty(AbstractRecordProcessor.INPUT_TOPICS).asString.split(",").toSet
-            val outputTopics = processorContext.getProperty(AbstractRecordProcessor.OUTPUT_TOPICS).asString.split(",").toSet
+            val inputTopics = processorContext.getProperty(KafkaStreamProcessor.INPUT_TOPICS).asString.split(",").toSet
+            val outputTopics = processorContext.getProperty(KafkaStreamProcessor.OUTPUT_TOPICS).asString.split(",").toSet
             //  val errorTopics = processorContext.getProperty(AbstractEventProcessor.ERROR_TOPICS).getRawValue.split(",").toSet
 
             if (topicAutocreate) {
@@ -509,7 +509,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                         val deserializer = inSerializerClass match {
                             case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                                val inSchemaContent = processorContext.getProperty(AbstractRecordProcessor.INPUT_SCHEMA).asString
+                                val inSchemaContent = processorContext.getProperty(KafkaStreamProcessor.INPUT_SCHEMA).asString
                                 val inSchema = parser.parse(inSchemaContent)
                                 new AvroRecordSerializer(inSchema)
                             case _ =>
@@ -524,7 +524,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                         val serializer = outSerializerClass match {
                             case "com.hurence.logisland.serializer.EventAvroSerializer" =>
-                                val outSchemaContent = processorContext.getProperty(AbstractRecordProcessor.OUTPUT_SCHEMA).asString
+                                val outSchemaContent = processorContext.getProperty(KafkaStreamProcessor.OUTPUT_SCHEMA).asString
                                 val outSchema = parser.parse(outSchemaContent)
                                 new AvroRecordSerializer(outSchema)
                             case _ =>
@@ -534,7 +534,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                         val kafkaProducer = new KafkaSerializedEventProducer(
                             brokerList,
-                            processorContext.getProperty(AbstractRecordProcessor.OUTPUT_TOPICS).asString,
+                            processorContext.getProperty(KafkaStreamProcessor.OUTPUT_TOPICS).asString,
                             serializer)
                         kafkaProducer.produce(outgoingEvents.toList)
 

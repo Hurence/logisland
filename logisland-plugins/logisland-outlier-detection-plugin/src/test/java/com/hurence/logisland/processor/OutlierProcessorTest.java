@@ -42,7 +42,7 @@ public class OutlierProcessorTest {
             Assert.assertTrue(!records.isEmpty());
 
 
-            AbstractRecordProcessor processor = new OutlierProcessor();
+            KafkaStreamProcessor processor = new OutlierProcessor();
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
           //  instance.setProperty("rules",rulesAsString);
             ProcessContext context = new StandardProcessContext(instance);

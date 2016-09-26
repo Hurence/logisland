@@ -17,8 +17,8 @@
 package com.hurence.logisland.processor.elasticsearch;
 
 
-import com.hurence.logisland.components.AllowableValue;
-import com.hurence.logisland.components.PropertyDescriptor;
+import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.processor.ProcessContext;
@@ -283,8 +283,4 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
     }
 
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
 }

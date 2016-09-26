@@ -2,7 +2,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
-import com.hurence.logisland.serializer.KryoRecordSerializer;
+import com.hurence.logisland.record.serializer.KryoRecordSerializer;
 import com.hurence.logisland.utils.kafka.DocumentPublisher;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.utils.kafka.RulesPublisher;

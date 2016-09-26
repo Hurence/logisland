@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.components.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validators.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class QueryMatcherProcessor extends AbstractRecordProcessor {
+public class QueryMatcherProcessor extends KafkaStreamProcessor {
 
     static final long serialVersionUID = -1L;
 

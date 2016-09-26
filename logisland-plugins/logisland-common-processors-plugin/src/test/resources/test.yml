@@ -23,7 +23,7 @@ components:
       kafka.metadata.broker.list: localhost:9001
       kafka.zookeeper.quorum: localhost:9000
 
-  - component: com.hurence.logisland.processor.parser.SplitTextMultiline
+  - component: com.hurence.logisland.processor.SplitTextMultiline
     type: parser
     version: 0.1.0
     documentation: a processor that parse multiLine events
