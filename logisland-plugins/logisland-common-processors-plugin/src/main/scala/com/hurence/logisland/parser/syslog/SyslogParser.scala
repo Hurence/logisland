@@ -16,11 +16,11 @@
 package com.hurence.logisland.parser.syslog
 
 import java.util
-import java.util.{Collections, Calendar, Date}
+import java.util.{Calendar, Collections, Date}
 
-import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.LogParser
 import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.record.Record
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
@@ -61,25 +61,25 @@ class SyslogParser extends LogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Event] = {
-        val event = new Event(EVENT_TYPE)
-        event.put("source", "string", value)
+    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Record] = {
+        val event = new Record(EVENT_TYPE)
+        event.setField("source", "string", value)
 
         value match {
             case SYSLOG_MSG_RFC5424_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
             case SYSLOG_MSG_RFC3164_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
-            case x => event.put("error", "string", "bad log entry (or problem with RE?)")
+            case x => event.setField("error", "string", "bad log entry (or problem with RE?)")
         }
         Collections.singletonList(event)
     }
 
-    def fillSyslogEvent(event: Event, priority: String, version: String, stamp: String, host: String, body: String) = {
-        event.put("priority", "string", priority)
+    def fillSyslogEvent(event: Record, priority: String, version: String, stamp: String, host: String, body: String) = {
+        event.setField("priority", "string", priority)
         try {
-            if (version != null) event.put("version", "int", version.toInt)
+            if (version != null) event.setField("version", "int", version.toInt)
         } catch {
             case e: NumberFormatException =>
-                event.put("versionNotAnInt", "string", version)
+                event.setField("versionNotAnInt", "string", version)
             case e: Throwable => throw new Error("an unexpected error occured during parsing of version in syslog", e)
         }
 
@@ -87,27 +87,27 @@ class SyslogParser extends LogParser {
         try{
             // stamp MMM d HH:mm:ss, single digit date has two spaces
             val timestamp = DTF1_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-            event.put("@timestamp", "long", timestamp)
+            event.setField("@timestamp", "long", timestamp)
         }catch {
             case e: Throwable =>
                 try{
                     // stamp MMM d HH:mm:ss, single digit date has two spaces
                     val timestamp = DTF2_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-                    event.put("@timestamp", "long", timestamp)
+                    event.setField("@timestamp", "long", timestamp)
                 }catch {
                     case e: Throwable =>
                         try{
                             // stamp MMM d HH:mm:ss, single digit date has two spaces
                             val timestamp = DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime(stamp).getMillis
-                            event.put("@timestamp", "long", timestamp)
+                            event.setField("@timestamp", "long", timestamp)
                         }catch {
                             case e: Throwable =>
-                                event.put("@timestamp", "long", new Date().getTime)
+                                event.setField("@timestamp", "long", new Date().getTime)
                         }
                 }
         }
-        event.put("date", "string", stamp)
-        event.put("host", "string", host)
-        event.put("body", "string", body)
+        event.setField("date", "string", stamp)
+        event.setField("host", "string", host)
+        event.setField("body", "string", body)
     }
 }

@@ -2,13 +2,12 @@ package com.hurence.logisland.processor.debug;
 
 import com.hurence.logisland.components.AllowableValue;
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventField;
-import com.hurence.logisland.processor.AbstractEventProcessor;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.processor.AbstractRecordProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.serializer.EventJsonSerializer;
-import com.hurence.logisland.serializer.EventSerializer;
-import com.hurence.logisland.serializer.EventStringSerializer;
+import com.hurence.logisland.serializer.JsonRecordSerializer;
+import com.hurence.logisland.serializer.RecordSerializer;
+import com.hurence.logisland.serializer.StringRecordSerializer;
 import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +17,12 @@ import java.io.IOException;
 import java.util.*;
 
 
-public class EventDebuggerProcessor extends AbstractEventProcessor {
+public class RecordDebuggerProcessor extends AbstractRecordProcessor {
 
 
     static final long serialVersionUID = 3097445175348597100L;
 
-    private static Logger logger = LoggerFactory.getLogger(EventDebuggerProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(RecordDebuggerProcessor.class);
 
 
     public static final AllowableValue JSON = new AllowableValue("json", "Json serialization",
@@ -45,28 +44,27 @@ public class EventDebuggerProcessor extends AbstractEventProcessor {
 
 
     @Override
-    public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
         if (collection.size() != 0) {
-            EventSerializer serializer = null;
-            if(context.getProperty(SERIALIZER).getValue().equals(JSON.getValue())){
-                serializer = new EventJsonSerializer();
+            RecordSerializer serializer = null;
+            if(context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())){
+                serializer = new JsonRecordSerializer();
             }else{
-                serializer = new EventStringSerializer();
+                serializer = new StringRecordSerializer();
             }
 
 
-            final EventSerializer finalSerializer = serializer;
-            collection.stream().forEach(event -> {
+            final RecordSerializer finalSerializer = serializer;
+            collection.forEach(event -> {
 
 
-
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    finalSerializer.serialize(baos, event);
-                    try {
-                        baos.close();
-                    } catch (IOException e) {
-                        logger.debug("error {} ", e.getCause());
-                    }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                finalSerializer.serialize(baos, event);
+                try {
+                    baos.close();
+                } catch (IOException e) {
+                    logger.debug("error {} ", e.getCause());
+                }
 
                 logger.info(new String(baos.toByteArray()));
 

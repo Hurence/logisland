@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor.parser;
 
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.AbstractLogParser;
 import com.hurence.logisland.log.LogParserException;
 import com.hurence.logisland.processor.ProcessContext;
@@ -10,7 +10,6 @@ import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,24 +79,24 @@ public class SplitText extends AbstractLogParser {
     }
 
     @Override
-    public Collection<Event> parse(ProcessContext context, String key, String value) throws LogParserException {
+    public Collection<Record> parse(ProcessContext context, String key, String value) throws LogParserException {
 
-        final String[] keyFields = context.getProperty(KEY_FIELDS).getValue().split(",");
-        final String keyRegexString = context.getProperty(KEY_REGEX).getValue();
+        final String[] keyFields = context.getProperty(KEY_FIELDS).asString().split(",");
+        final String keyRegexString = context.getProperty(KEY_REGEX).asString();
         final Pattern keyRegex = Pattern.compile(keyRegexString);
-        final String[] valueFields = context.getProperty(VALUE_FIELDS).getValue().split(",");
-        final String valueRegexString = context.getProperty(VALUE_REGEX).getValue();
-        final String eventType = context.getProperty(EVENT_TYPE).getValue();
+        final String[] valueFields = context.getProperty(VALUE_FIELDS).asString().split(",");
+        final String valueRegexString = context.getProperty(VALUE_REGEX).asString();
+        final String eventType = context.getProperty(EVENT_TYPE).asString();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 //        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        List<Event> events = new ArrayList<>();
+        List<Record> records = new ArrayList<>();
 
         /**
          * try to match the regexp to create an event
          */
         try {
-            Event event = new Event(eventType);
+            Record record = new Record(eventType);
 
             // match the key
             if(key!= null){
@@ -107,7 +106,7 @@ public class SplitText extends AbstractLogParser {
                     for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
                         String content = keyMatcher.group(i);
                         if (content != null) {
-                            event.put(keyFields[i], "string", keyMatcher.group(i+1).replaceAll("\"", ""));
+                            record.setField(keyFields[i], "string", keyMatcher.group(i+1).replaceAll("\"", ""));
 
                         }
                     }
@@ -124,22 +123,22 @@ public class SplitText extends AbstractLogParser {
                     for (int i = 0; i < valueMatcher.groupCount() + 1 && i < valueFields.length; i++) {
                         String content = valueMatcher.group(i);
                         if (content != null) {
-                            event.put(valueFields[i], "string", valueMatcher.group(i).replaceAll("\"", ""));
+                            record.setField(valueFields[i], "string", valueMatcher.group(i).replaceAll("\"", ""));
                         }
                     }
 
 
-                    // TODO remove this ugly stuff with EL
-                    if (event.get("date") != null && event.get("time") != null) {
-                        String eventTimeString = event.get("date").getValue().toString() +
+                    // TODO removeField this ugly stuff with EL
+                    if (record.getField("date") != null && record.getField("time") != null) {
+                        String eventTimeString = record.getField("date").getRawValue().toString() +
                                 " " +
-                                event.get("time").getValue().toString();
+                                record.getField("time").getRawValue().toString();
 
                         try {
                             Date eventDate = DateUtil.parse(eventTimeString);
 
                             if(eventDate != null){
-                                event.put("event_time", "long", eventDate.getTime());
+                                record.setField("event_time", "long", eventDate.getTime());
                             }
                         } catch (Exception e) {
                             logger.warn("unable to parse date {}", eventTimeString);
@@ -148,23 +147,23 @@ public class SplitText extends AbstractLogParser {
                     }
 
 
-                    // TODO remove this ugly stuff with EL
-                    if (event.get("event_time") != null) {
+                    // TODO removeField this ugly stuff with EL
+                    if (record.getField("event_time") != null) {
 
                         try {
-                            long eventTime = Long.parseLong(event.get("event_time").getValue().toString());
+                            long eventTime = Long.parseLong(record.getField("event_time").getRawValue().toString());
                         } catch (Exception ex) {
 
-                            Date eventDate = DateUtil.parse(event.get("event_time").getValue().toString());
+                            Date eventDate = DateUtil.parse(record.getField("event_time").getRawValue().toString());
                             if(eventDate != null){
-                                event.put("event_time", "long", eventDate.getTime());
+                                record.setField("event_time", "long", eventDate.getTime());
                             }
                         }
                     }
 
 
 
-                    events.add(event);
+                    records.add(record);
                 }
             }
 
@@ -173,7 +172,7 @@ public class SplitText extends AbstractLogParser {
         }
 
 
-        return events;
+        return records;
     }
 
     @Override

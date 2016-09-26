@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor.parser;
 
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.AbstractLogParser;
 import com.hurence.logisland.log.LogParserException;
 import com.hurence.logisland.processor.ProcessContext;
@@ -66,29 +66,29 @@ public class SplitTextMultiline extends AbstractLogParser {
     }
 
     @Override
-    public Collection<Event> parse(ProcessContext context, String key, String lines) throws LogParserException {
+    public Collection<Record> parse(ProcessContext context, String key, String lines) throws LogParserException {
 
-        final String[] fields = context.getProperty(FIELDS).getValue().split(",");
-        final String regexString = context.getProperty(REGEX).getValue();
-        final String eventType = context.getProperty(EVENT_TYPE).getValue();
+        final String[] fields = context.getProperty(FIELDS).asString().split(",");
+        final String regexString = context.getProperty(REGEX).asString();
+        final String eventType = context.getProperty(EVENT_TYPE).asString();
         final Pattern regex = Pattern.compile(regexString, Pattern.DOTALL);
 
-        List<Event> events = new ArrayList<>();
+        List<Record> records = new ArrayList<>();
 
         buffer += lines;
 
         try {
             Matcher matcher = regex.matcher(buffer);
             if(matcher.find()){
-                Event event = new Event(eventType);
+                Record record = new Record(eventType);
                 for (int i = 0; i < matcher.groupCount() +1  && i < fields.length; i++) {
                     String content = matcher.group(i);
                     if(content != null){
-                        event.put(fields[i], "string", matcher.group(i).replaceAll("\"",""));
+                        record.setField(fields[i], "string", matcher.group(i).replaceAll("\"",""));
                     }
 
                 }
-                events.add(event);
+                records.add(record);
                 buffer = "";
             }else {
                 logger.warn("no match");
@@ -98,7 +98,7 @@ public class SplitTextMultiline extends AbstractLogParser {
         }
 
 
-        return events;
+        return records;
     }
 
     @Override

@@ -17,10 +17,10 @@ package com.hurence.logisland.parser.apache
 
 import com.hurence.logisland.components.ComponentsFactory
 import com.hurence.logisland.config.ComponentConfiguration
-import com.hurence.logisland.event.Event
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.parser.base.BaseLogParserTest
-import com.hurence.logisland.processor.{StandardProcessContext, StandardProcessorInstance, ProcessContext}
+import com.hurence.logisland.processor.{ProcessContext, StandardProcessContext, StandardProcessorInstance}
+import com.hurence.logisland.record.Record
 import org.junit.Assert
 
 import scala.collection.JavaConversions._
@@ -78,8 +78,8 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
         val conf = new java.util.HashMap[String, String]
 
-      /*  conf.put("key.regex", "(\\S*):(\\S*)")
-        conf.put("key.fields", "es_index,host_name")*/
+      /*  conf.setField("key.regex", "(\\S*):(\\S*)")
+        conf.setField("key.fields", "es_index,host_name")*/
 
         val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
 
@@ -132,7 +132,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
 
         events.length should be(4993)
-        val errors = events.filter(event => event.get("error") != null)
+        val errors = events.filter(event => event.getField("error") != null)
         errors.length should be(66)
 
     }
@@ -191,7 +191,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
 
     }
 
-    private def testAnApacheCombinedLogEvent(apacheEvent: Event,
+    private def testAnApacheCombinedLogEvent(apacheEvent: Record,
                                              dest_ip: String,
                                              user: String,
                                              date: String,
@@ -202,17 +202,17 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                              refere: String,
                                              userAgent: String) = {
         apacheEvent.getType should be("apache_log")
-        testAnEventField(apacheEvent.get("dest_ip"), "dest_ip", "string", dest_ip)
-        testAnEventField(apacheEvent.get("user"), "user", "string", user)
-        testAnEventField(apacheEvent.get("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
-        testAnEventField(apacheEvent.get("http_request"), "http_request", "string", request)
-        testAnEventField(apacheEvent.get("status"), "status", "string", status)
-        testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
-        testAnEventField(apacheEvent.get("referer"), "referer", "string", refere)
-        testAnEventField(apacheEvent.get("user_agent"), "user_agent", "string", userAgent)
+        testAnEventField(apacheEvent.getField("dest_ip"), "dest_ip", "string", dest_ip)
+        testAnEventField(apacheEvent.getField("user"), "user", "string", user)
+        testAnEventField(apacheEvent.getField("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.getField("http_request"), "http_request", "string", request)
+        testAnEventField(apacheEvent.getField("status"), "status", "string", status)
+        testAnEventField(apacheEvent.getField("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
+        testAnEventField(apacheEvent.getField("referer"), "referer", "string", refere)
+        testAnEventField(apacheEvent.getField("user_agent"), "user_agent", "string", userAgent)
     }
 
-    private def testAnApacheSimpleLogEvent(apacheEvent: Event,
+    private def testAnApacheSimpleLogEvent(apacheEvent: Record,
                                            dest_ip: String,
                                            user: String,
                                            date: String,
@@ -221,11 +221,11 @@ class ApacheLogParserTest extends BaseLogParserTest {
                                            status: String,
                                            byteSent: Int) = {
         apacheEvent.getType should be("apache_log")
-        testAnEventField(apacheEvent.get("dest_ip"), "dest_ip", "string", dest_ip)
-        testAnEventField(apacheEvent.get("user"), "user", "string", user)
-        testAnEventField(apacheEvent.get("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
-        testAnEventField(apacheEvent.get("http_request"), "http_request", "string", request)
-        testAnEventField(apacheEvent.get("status"), "status", "string", status)
-        testAnEventField(apacheEvent.get("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
+        testAnEventField(apacheEvent.getField("dest_ip"), "dest_ip", "string", dest_ip)
+        testAnEventField(apacheEvent.getField("user"), "user", "string", user)
+        testAnEventField(apacheEvent.getField("event_time"), "event_time", "long", stamp.asInstanceOf[Object])
+        testAnEventField(apacheEvent.getField("http_request"), "http_request", "string", request)
+        testAnEventField(apacheEvent.getField("status"), "status", "string", status)
+        testAnEventField(apacheEvent.getField("bytes_out"), "bytes_out", "int", byteSent.asInstanceOf[Object])
     }
 }

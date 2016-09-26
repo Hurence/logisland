@@ -2,8 +2,8 @@ package com.hurence.logisland.parser.syslog
 
 import java.util.Calendar
 
-import com.hurence.logisland.event.Event
 import com.hurence.logisland.parser.base.BaseLogParserTest
+import com.hurence.logisland.record.Record
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 
@@ -60,19 +60,19 @@ class SyslogParserTest extends BaseLogParserTest {
 
     }
 
-    private def testASyslogEvent(syslogEvent: Event,
+    private def testASyslogEvent(syslogEvent: Record,
                                  priority: String,
                                  version: Option[Int],
                                  date: String,
                                  host: String,
                                  body: String) = {
         syslogEvent.getType should be("syslog")
-        testAnEventField(syslogEvent.get("priority"), "priority", "string", priority)
+        testAnEventField(syslogEvent.getField("priority"), "priority", "string", priority)
         if (version.isDefined) {
-            testAnEventField(syslogEvent.get("version"), "version", "int", version.get.asInstanceOf[Object])
+            testAnEventField(syslogEvent.getField("version"), "version", "int", version.get.asInstanceOf[Object])
         }
-        testAnEventField(syslogEvent.get("date"), "date", "string", date)
-        testAnEventField(syslogEvent.get("host"), "host", "string", host)
-        testAnEventField(syslogEvent.get("body"), "body", "string", body)
+        testAnEventField(syslogEvent.getField("date"), "date", "string", date)
+        testAnEventField(syslogEvent.getField("host"), "host", "string", host)
+        testAnEventField(syslogEvent.getField("body"), "body", "string", body)
     }
 }

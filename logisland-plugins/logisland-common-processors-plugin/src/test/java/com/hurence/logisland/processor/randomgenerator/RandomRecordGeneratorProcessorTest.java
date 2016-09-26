@@ -2,7 +2,7 @@ package com.hurence.logisland.processor.randomgenerator;
 
 import com.hurence.logisland.components.ComponentsFactory;
 import com.hurence.logisland.config.ComponentConfiguration;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.processor.StandardProcessorInstance;
@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
-public class RandomEventGeneratorProcessorTest {
+public class RandomRecordGeneratorProcessorTest {
 
-    private static Logger logger = LoggerFactory.getLogger(RandomEventGeneratorProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(RandomRecordGeneratorProcessorTest.class);
 
 
     /**
@@ -108,7 +108,7 @@ public class RandomEventGeneratorProcessorTest {
 
         ComponentConfiguration componentConfiguration = new ComponentConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.randomgenerator.RandomEventGeneratorProcessor");
+        componentConfiguration.setComponent("com.hurence.logisland.processor.randomgenerator.RandomRecordGeneratorProcessor");
         componentConfiguration.setType("processor");
         componentConfiguration.setConfiguration(conf);
 
@@ -116,9 +116,9 @@ public class RandomEventGeneratorProcessorTest {
         ProcessContext context = new StandardProcessContext(instance);
         assert instance != null;
         instance.getProcessor().init(context);
-        Collection<Event> events = instance.getProcessor().process(context, Collections.emptyList());
+        Collection<Record> records = instance.getProcessor().process(context, Collections.emptyList());
 
-        Assert.assertTrue(events.size() <= 20);
-        Assert.assertTrue(events.size() >= 5);
+        Assert.assertTrue(records.size() <= 20);
+        Assert.assertTrue(records.size() >= 5);
     }
 }

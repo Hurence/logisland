@@ -2,7 +2,7 @@ package com.hurence.logisland.processor.parser;
 
 import com.hurence.logisland.components.ComponentsFactory;
 import com.hurence.logisland.config.ComponentConfiguration;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.StandardParserContext;
 import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.ProcessContext;
@@ -64,15 +64,15 @@ public class SplitTextTest {
 
 
             // String[] kvLine = line.split("@");
-            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
 
-            if (events.isEmpty())
+            if (records.isEmpty())
                 System.out.println(line);
             else numEvents++;
 
             nblines++;
             //   Assert.assertTrue(events.size() == 1);
-            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+            //   Assert.assertTrue(events.getField(0).entrySet().size() == 35);
         }
         System.out.println("events count :" + numEvents);
 
@@ -113,24 +113,24 @@ public class SplitTextTest {
 
         int nblines = 0;
         String line;
-        List<Event> totalEvents = new ArrayList<>();
+        List<Record> totalRecords = new ArrayList<>();
         while ((line = bsr.readLine()) != null) {
 
 
             // String[] kvLine = line.split("@");
-            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
 
-            if (events.isEmpty())
+            if (records.isEmpty())
                 System.out.println(line);
-            else totalEvents.addAll(events);
+            else totalRecords.addAll(records);
 
             nblines++;
             //   Assert.assertTrue(events.size() == 1);
-            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+            //   Assert.assertTrue(events.getField(0).entrySet().size() == 35);
         }
-        System.out.println("events count :" + totalEvents.size());
+        System.out.println("events count :" + totalRecords.size());
 
-        Assert.assertTrue(totalEvents.size() == 8);
+        Assert.assertTrue(totalRecords.size() == 8);
 
 
     }
@@ -166,24 +166,24 @@ public class SplitTextTest {
 
         int nblines = 0;
         String line;
-        List<Event> totalEvents = new ArrayList<>();
+        List<Record> totalRecords = new ArrayList<>();
         while ((line = bsr.readLine()) != null) {
 
 
             // String[] kvLine = line.split("@");
-            final List<Event> events = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
 
-            if (events.isEmpty())
+            if (records.isEmpty())
                 System.out.println(line);
-            else totalEvents.addAll(events);
+            else totalRecords.addAll(records);
 
             nblines++;
             //   Assert.assertTrue(events.size() == 1);
-            //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+            //   Assert.assertTrue(events.getField(0).entrySet().size() == 35);
         }
-        System.out.println("events count :" + totalEvents.size());
+        System.out.println("events count :" + totalRecords.size());
 
-        Assert.assertTrue(totalEvents.size() == 73);
+        Assert.assertTrue(totalRecords.size() == 73);
 
 
     }
@@ -230,15 +230,15 @@ public class SplitTextTest {
 
 
                 String[] kvLine = line.split("@");
-                final List<Event> events = new ArrayList<>(instance.getParser().parse(context, kvLine[0], kvLine[1]));
+                final List<Record> records = new ArrayList<>(instance.getParser().parse(context, kvLine[0], kvLine[1]));
 
-                if (events.isEmpty())
+                if (records.isEmpty())
                     System.out.println(line);
                 else numEvents++;
 
                 nblines++;
                 //   Assert.assertTrue(events.size() == 1);
-                //   Assert.assertTrue(events.get(0).entrySet().size() == 35);
+                //   Assert.assertTrue(events.getField(0).entrySet().size() == 35);
             }
             System.out.println("events count :" + numEvents);
 
