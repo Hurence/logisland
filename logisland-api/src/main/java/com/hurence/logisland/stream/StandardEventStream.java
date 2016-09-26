@@ -1,6 +1,6 @@
 package com.hurence.logisland.stream;
 
-import com.hurence.logisland.processor.EventProcessor;
+import com.hurence.logisland.processor.RecordProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class StandardEventStream implements EventStream {
 
-    private List<EventProcessor> processors = new ArrayList<>();
+    private List<RecordProcessor> processors = new ArrayList<>();
 
     public StandardEventStream() {
     }
 
     @Override
-    public List<EventProcessor> getProcessors() {
+    public List<RecordProcessor> getProcessors() {
         return processors;
     }
 

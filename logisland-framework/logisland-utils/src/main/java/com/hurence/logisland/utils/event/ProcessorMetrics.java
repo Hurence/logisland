@@ -1,7 +1,8 @@
 package com.hurence.logisland.utils.event;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventField;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,17 +21,17 @@ public class ProcessorMetrics {
      * compute roughly the size in bytes for an event
      * id, type and creationDate are ignored
      *
-     * @param event
+     * @param record
      * @return
      */
-    public synchronized static int getEventSizeInBytes(final Event event) {
+    public synchronized static int getEventSizeInBytes(final Record record) {
 
         int size = 0;
 
-        for (Map.Entry<String, EventField> entry : event.entrySet()) {
+        for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
 
-            EventField field = entry.getValue();
-            Object fieldValue = field.getValue();
+            Field field = entry.getValue();
+            Object fieldValue = field.getRawValue();
             String fieldType = field.getType();
 
             // dump event field as record attribute
@@ -70,48 +71,48 @@ public class ProcessorMetrics {
         return size;
     }
 
-    public synchronized static Collection<Event> computeMetrics(final Collection<Event> events,
-                            final Map<String, EventField> processorFields,
-                            final long processingDurationInMillis) {
+    public synchronized static Collection<Record> computeMetrics(final Collection<Record> records,
+                                                                 final Map<String, Field> processorFields,
+                                                                 final long processingDurationInMillis) {
 
 
-        if (events.size() != 0) {
-            Event metrics = new Event(METRICS_EVENT_TYPE);
+        if (records.size() != 0) {
+            Record metrics = new Record(METRICS_EVENT_TYPE);
 
             metrics.setFields(processorFields);
-            metrics.put("search_index", "string", METRICS_EVENT_TYPE);
+            metrics.setField("search_index", "string", METRICS_EVENT_TYPE);
 
             final List<Integer> eventSizesInBytes = new ArrayList<>();
             final List<Integer> eventNumberOfFields = new ArrayList<>();
 
-            events.stream().forEach(event -> {
+            records.stream().forEach(event -> {
                 eventSizesInBytes.add(getEventSizeInBytes(event));
-                eventNumberOfFields.add(event.entrySet().size());
+                eventNumberOfFields.add(event.getFieldsEntrySet().size());
             });
 
             final int numberOfProcessedBytes = eventSizesInBytes.stream().mapToInt(Integer::intValue).sum();
             final int numberOfProcessedFields = eventNumberOfFields.stream().mapToInt(Integer::intValue).sum();
 
-            metrics.put("total_bytes", "int", numberOfProcessedBytes);
-            metrics.put("total_fields", "int", numberOfProcessedFields);
-            metrics.put("average_fields_per_event", "int", numberOfProcessedFields / events.size());
-            metrics.put("average_bytes_per_event", "int", numberOfProcessedBytes / events.size());
-            metrics.put("average_time_per_event", "int", (int) ( processingDurationInMillis /events.size() ));
-            metrics.put("total_time", "long", processingDurationInMillis);
+            metrics.setField("total_bytes", FieldType.INT, numberOfProcessedBytes);
+            metrics.setField("total_fields", FieldType.INT, numberOfProcessedFields);
+            metrics.setField("average_fields_per_event", FieldType.INT, numberOfProcessedFields / records.size());
+            metrics.setField("average_bytes_per_event", FieldType.INT, numberOfProcessedBytes / records.size());
+            metrics.setField("average_time_per_event", FieldType.INT, (int) ( processingDurationInMillis / records.size() ));
+            metrics.setField("total_time", FieldType.LONG, processingDurationInMillis);
 
             if (numberOfProcessedFields != 0) {
-                metrics.put("average_bytes_per_field", "int", numberOfProcessedBytes / numberOfProcessedFields);
+                metrics.setField("average_bytes_per_field", FieldType.INT, numberOfProcessedBytes / numberOfProcessedFields);
             }
             if (numberOfProcessedFields != 0) {
-                metrics.put("average_time_per_field", "int", (int) (processingDurationInMillis / numberOfProcessedFields));
+                metrics.setField("average_time_per_field", FieldType.INT, (int) (processingDurationInMillis / numberOfProcessedFields));
             }
             if (processingDurationInMillis != 0) {
-                metrics.put("average_bytes_per_second", "int", (int) (numberOfProcessedBytes * 1000 / processingDurationInMillis));
-                metrics.put("average_events_per_second", "int", (int) (events.size() * 1000 / processingDurationInMillis));
+                metrics.setField("average_bytes_per_second", FieldType.INT, (int) (numberOfProcessedBytes * 1000 / processingDurationInMillis));
+                metrics.setField("average_events_per_second", FieldType.INT, (int) (records.size() * 1000 / processingDurationInMillis));
 
             }
 
-            metrics.put("event_time", "long", new Date().getTime());
+            metrics.setField("event_time", FieldType.LONG, new Date().getTime());
             return Collections.singleton(metrics);
         }
 

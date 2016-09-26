@@ -68,9 +68,9 @@ public interface ProcessContext extends Serializable{
 
 
     /**
-     * @return a Map of all PropertyDescriptors to their configured values. This
-     * Map may or may not be modifiable, but modifying its values will not
-     * change the values of the processor's properties
+     * @return a Map of all PropertyDescriptors to their configured getAllFields. This
+     * Map may or may not be modifiable, but modifying its getAllFields will not
+     * change the getAllFields of the processor's properties
      */
     Map<PropertyDescriptor, String> getProperties();
 

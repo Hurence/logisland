@@ -29,7 +29,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * set.
      *
      * This method will be called only when it has been determined that all
-     * property values are valid according to their corresponding
+     * property getAllFields are valid according to their corresponding
      * PropertyDescriptor's validators.
      *
      *
@@ -78,7 +78,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     /**
      * Hook method allowing subclasses to eagerly react to a configuration
      * change for the given property descriptor. As an alternative to using this
-     * method a processor may simply get the latest value whenever it needs it
+     * method a processor may simply getField the latest value whenever it needs it
      * and if necessary lazily evaluate it.
      *
      * @param descriptor of the modified property

@@ -17,7 +17,7 @@
 
 package com.hurence.logisland.log;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.processor.ProcessContext;
 
 import java.io.Serializable;
@@ -39,7 +39,7 @@ import java.util.Collection;
  */
 public interface LogParser extends Serializable{
 
-    Collection<Event> parse(ProcessContext context, String key, String value) throws LogParserException;
+    Collection<Record> parse(ProcessContext context, String key, String value) throws LogParserException;
 
 }
 

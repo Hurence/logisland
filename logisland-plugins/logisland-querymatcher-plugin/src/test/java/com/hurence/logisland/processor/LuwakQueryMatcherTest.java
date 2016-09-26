@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,11 +26,11 @@ public class LuwakQueryMatcherTest {
         LuwakQueryMatcher matcher = new LuwakQueryMatcher();
         matcher.init(rules);
 
-        Event ev1 = new Event("mytype");
+        Record ev1 = new Record("mytype");
         ev1.setId("myid");
-        ev1.put("name","string", "luke");
+        ev1.setField("name","string", "luke");
 
-        Collection<Event> eventsOut = matcher.process(Collections.singletonList(ev1));
+        Collection<Record> eventsOut = matcher.process(Collections.singletonList(ev1));
 
         assertTrue(eventsOut.size() == 1);
     }

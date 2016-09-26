@@ -7,7 +7,7 @@ import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validators.StandardValidators;
 import com.hurence.logisland.utils.string.Multiline;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import java.util.*;
  * <p/>
  * This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
  */
-public class OutlierProcessor extends AbstractEventProcessor {
+public class OutlierProcessor extends AbstractRecordProcessor {
 
     static final long serialVersionUID = -1L;
 
@@ -183,19 +183,19 @@ public class OutlierProcessor extends AbstractEventProcessor {
      *
      */
     @Override
-    public Collection<Event> process(final ProcessContext context, final Collection<Event> events) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         Collection list = new ArrayList();
 
 
         // loop over all events in collection
-        for (Event event : events) {
+        for (Record record : records) {
 
             try {
 
                 // convert an event to a dataPoint.
-                long timestamp = (long) event.get("timestamp").getValue();
-                double value = (double) event.get("value").getValue();
+                long timestamp = (long) record.getField("timestamp").getRawValue();
+                double value = (double) record.getField("value").getRawValue();
 
                 DataPoint dp = new DataPoint(timestamp, value, new HashMap<String, String>(), "kafka_topic");
 
@@ -207,13 +207,13 @@ public class OutlierProcessor extends AbstractEventProcessor {
                     outlier = batchOutlierAlgorithm.analyze(outlier, outlier.getSample(), dp);
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
-                        Event evt = new Event(EVENT_TYPE);
-                        evt.put("root_event_value", "double", event.get("value").getValue());
-                        evt.put("root_event_id", "string", event.getId());
-                        evt.put("root_event_type", "string", event.getType());
-                        evt.put("severity", "string", outlier.getSeverity());
-                        evt.put("score", "string", outlier.getScore());
-                        evt.put("num_points", "string", outlier.getNumPts());
+                        Record evt = new Record(EVENT_TYPE);
+                        evt.setField("root_event_value", "double", record.getField("value").getRawValue());
+                        evt.setField("root_event_id", "string", record.getId());
+                        evt.setField("root_event_type", "string", record.getType());
+                        evt.setField("severity", "string", outlier.getSeverity());
+                        evt.setField("score", "string", outlier.getScore());
+                        evt.setField("num_points", "string", outlier.getNumPts());
                         list.add(evt);
 
 
@@ -224,8 +224,8 @@ public class OutlierProcessor extends AbstractEventProcessor {
 
             } catch (RuntimeException e) {
 
-                Event evt = new Event(OUTLIER_PROCESSING_EXCEPTION_TYPE);
-                evt.put("message", "string", e);
+                Record evt = new Record(OUTLIER_PROCESSING_EXCEPTION_TYPE);
+                evt.setField("message", "string", e);
                 list.add(evt);
               //  logger.info(e.getMessage(), e);
             }

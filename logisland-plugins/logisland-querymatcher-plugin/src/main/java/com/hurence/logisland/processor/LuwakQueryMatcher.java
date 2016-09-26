@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -43,18 +43,18 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
         return this;
     }
 
-    public Collection<Event> process(Collection<Event> collection) {
+    public Collection<Record> process(Collection<Record> collection) {
 
-        ArrayList<Event> outEvents = new ArrayList<>();
+        ArrayList<Record> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Event ev : collection) {
+        for (Record ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
-            for (String fieldName : ev.keySet()) {
-                if (ev.get(fieldName).getType().equalsIgnoreCase("string"))
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), standardAnalyzer);
+            for (String fieldName : ev.getAllFieldNames()) {
+                if (ev.getField(fieldName).getType().equalsIgnoreCase("string"))
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), keywordAnalyzer);
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
             }
 
             docs.add(docbuilder.build());
@@ -66,19 +66,19 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
             matches = monitor.match(DocumentBatch.of(docs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
             logger.error("Could not match documents", e);
-            return outEvents;
+            return outRecords;
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(EVENT_MATCH_TYPE_NAME);
+            Record outEv = new Record(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
-            // Only get last match for now, we should probably add them all
+            // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch:docMatch.getMatches())
-                outEv.put("match", "string", queryMatch.getQueryId());
-            outEvents.add(outEv);
+                outEv.setField("match", "string", queryMatch.getQueryId());
+            outRecords.add(outEv);
         }
 
-        return outEvents;
+        return outRecords;
     }
 
 }

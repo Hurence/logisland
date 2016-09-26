@@ -16,8 +16,8 @@
 
 package com.hurence.logisland.serializer;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventField;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.Field;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -33,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class EventAvroSerializer implements EventSerializer {
+public class AvroRecordSerializer implements RecordSerializer {
 
     private Schema schema;
 
-    public EventAvroSerializer(Schema schema) {
+    public AvroRecordSerializer(Schema schema) {
         this.schema = schema;
     }
 
@@ -45,24 +45,22 @@ public class EventAvroSerializer implements EventSerializer {
     protected static final int idSize = 4;
 
 
-    public void serialize(OutputStream out, Event event) throws EventSerdeException {
+    public void serialize(OutputStream out, Record record) throws RecordSerializationException {
 
         try {
             /**
              * convert the logIsland Event to an Avro GenericRecord
              */
             GenericRecord eventRecord = new GenericData.Record(schema);
-            for (Map.Entry<String, EventField> entry : event.entrySet()) {
+            for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
                 // retrieve event field
                 String key = entry.getKey();
-                EventField field = entry.getValue();
-                Object value = field.getValue();
+                Field field = entry.getValue();
+                Object value = field.getRawValue();
 
                 // dump event field as record attribute
                 eventRecord.put(key, value);
             }
-            eventRecord.put("_type", event.getType());
-            eventRecord.put("_id", event.getId());
 
             /**
              *
@@ -76,7 +74,7 @@ public class EventAvroSerializer implements EventSerializer {
         } catch (IOException | RuntimeException e) {
             // avro serialization can throw AvroRuntimeException, NullPointerException,
             // ClassCastException, etc
-            throw new EventSerdeException("Error serializing Avro message", e);
+            throw new RecordSerializationException("Error serializing Avro message", e);
         }
     }
 
@@ -85,7 +83,7 @@ public class EventAvroSerializer implements EventSerializer {
         for (Object avroRecord : avroArray) {
 
 
-          //  Object fieldValue = avroRecord.get(0);
+          //  Object fieldValue = avroRecord.getField(0);
 
 
             if (avroRecord instanceof org.apache.avro.util.Utf8) {
@@ -99,7 +97,7 @@ public class EventAvroSerializer implements EventSerializer {
         return list;
     }
 
-    public Event deserialize(InputStream in) throws EventSerdeException {
+    public Record deserialize(InputStream in) throws RecordSerializationException {
         try {
 
             Decoder decoder = DecoderFactory.get().binaryDecoder(in, null);
@@ -107,7 +105,7 @@ public class EventAvroSerializer implements EventSerializer {
             GenericRecord genericRecord = datumReader.read(null, decoder);
 
 
-            Event event = new Event(genericRecord.get("_type").toString());
+            Record record = new Record(genericRecord.get(Record.RECORD_TYPE).toString());
 
 
             for (final Schema.Field schemaField : schema.getFields()) {
@@ -116,18 +114,18 @@ public class EventAvroSerializer implements EventSerializer {
                 Object fieldValue = genericRecord.get(fieldName);
                 String fieldType = schemaField.schema().getType().getName();
 
-                if (Objects.equals(fieldName, "_id")) {
-                    event.setId(fieldValue.toString());
-                } else if (!Objects.equals(fieldName, "_type")) {
+                if (Objects.equals(fieldName, Record.RECORD_ID)) {
+                    record.setId(fieldValue.toString());
+                } else if (!Objects.equals(fieldName, Record.RECORD_TYPE)) {
                     if (fieldValue instanceof org.apache.avro.util.Utf8) {
-                        event.put(fieldName, fieldType, fieldValue.toString());
+                        record.setField(fieldName, fieldType, fieldValue.toString());
                     } else if (fieldValue instanceof GenericData.Array) {
                         GenericData.Array avroArray = (GenericData.Array) fieldValue;
                         List<Object> list = new ArrayList<>();
-                        event.put(fieldName, fieldType, list);
+                        record.setField(fieldName, fieldType, list);
                         copyArray(avroArray, list);
                     } else {
-                        event.put(fieldName, fieldType, fieldValue);
+                        record.setField(fieldName, fieldType, fieldValue);
                     }
 
                 }
@@ -137,31 +135,31 @@ public class EventAvroSerializer implements EventSerializer {
 
             /*
             * for (  String fieldName : avroRecord.keySet()) {
-    Object value=avroRecord.get(fieldName);
+    Object value=avroRecord.getField(fieldName);
     if (value == null) {
       continue;
     }
     if (value instanceof GenericRecord) {
-      record.put(fieldName,copyRecord((GenericRecord)value,new HashMap<String,Object>()));
+      record.setField(fieldName,copyRecord((GenericRecord)value,new HashMap<String,Object>()));
     }
  else     if (value instanceof GenericArray) {
       GenericArray avroArray=(GenericArray)value;
       List<Map<String,Object>> list=new ArrayList<Map<String,Object>>((int)avroArray.size());
-      record.put(fieldName,list);
+      record.setField(fieldName,list);
       copyArray(avroArray,list);
     }
  else     if (value instanceof Utf8) {
-      record.put(fieldName,((Utf8)value).toString());
+      record.setField(fieldName,((Utf8)value).toString());
     }
  else {
-      record.put(fieldName,value);
+      record.setField(fieldName,value);
     }
   }*/
 
-            return event;
+            return record;
         } catch (Throwable t) {
             t.printStackTrace();
-            throw new EventSerdeException(t.getMessage(), t.getCause());
+            throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }
 }

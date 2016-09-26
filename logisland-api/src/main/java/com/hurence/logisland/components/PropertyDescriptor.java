@@ -51,8 +51,8 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
      */
     private final String defaultValue;
     /**
-     * The allowable values for this property. If empty then the allowable
-     * values are not constrained
+     * The allowable getAllFields for this property. If empty then the allowable
+     * getAllFields are not constrained
      */
     private final List<AllowableValue> allowableValues;
     /**
@@ -79,7 +79,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
 
     /**
      * The validators that should be used whenever an attempt is made to set
-     * this property value. Any allowable values specified will be checked first
+     * this property value. Any allowable getAllFields specified will be checked first
      * and any validators specified will be ignored.
      */
     private final List<Validator> validators;
@@ -107,8 +107,8 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
 
     /**
      * Validates the given input against this property descriptor's validator.
-     * If this descriptor has a set of allowable values then the given value is
-     * only checked against the allowable values.
+     * If this descriptor has a set of allowable getAllFields then the given value is
+     * only checked against the allowable getAllFields.
      *
      * @param input the value to validate
      * @return the result of validating the input
@@ -245,7 +245,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         }
 
         /**
-         * @param values contrained set of values
+         * @param values contrained set of getAllFields
          * @return the builder
          */
         public Builder allowableValues(final Set<String> values) {
@@ -270,7 +270,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         }
 
         /**
-         * @param values constrained set of values
+         * @param values constrained set of getAllFields
          * @return the builder
          */
         public Builder allowableValues(final String... values) {
@@ -286,7 +286,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         /**
          * Sets the Allowable Values for this Property
          *
-         * @param values contrained set of values
+         * @param values contrained set of getAllFields
          * @return the builder
          */
         public Builder allowableValues(final AllowableValue... values) {
@@ -342,16 +342,16 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         /**
          * @return a PropertyDescriptor as configured
          *
-         * @throws IllegalStateException if allowable values are configured but
+         * @throws IllegalStateException if allowable getAllFields are configured but
          * no default value is set, or the default value is not contained within
-         * the allowable values.
+         * the allowable getAllFields.
          */
         public PropertyDescriptor build() {
             if (name == null) {
                 throw new IllegalStateException("Must specify a name");
             }
             if (!isValueAllowed(defaultValue)) {
-                throw new IllegalStateException("Default value [" + defaultValue + "] is not in the set of allowable values");
+                throw new IllegalStateException("Default value [" + defaultValue + "] is not in the set of allowable getAllFields");
             }
 
             return new PropertyDescriptor(this);
@@ -437,7 +437,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
          * Constructs a validator that will check if the given value is in the
          * given set.
          *
-         * @param validValues values which are acceptible
+         * @param validValues getAllFields which are acceptible
          * @throws NullPointerException if the given validValues is null
          */
         private ConstrainedSetValidator(final Collection<AllowableValue> validValues) {

@@ -19,7 +19,7 @@ package com.hurence.logisland.utils.elasticsearch
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-import com.hurence.logisland.event.Event
+import com.hurence.logisland.record.Record
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.elasticsearch.common.xcontent.XContentFactory._
 import org.joda.time.format.ISODateTimeFormat
@@ -37,48 +37,48 @@ object ElasticsearchEventConverter extends LazyLogging {
       * @param event
       * @return
       */
-    def convert(event: Event): String = {
+    def convert(event: Record): String = {
 
         val sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
         val document = jsonBuilder().startObject()
 
-        event.values.foreach(field => {
+        event.getAllFields.foreach(field => {
             var fieldName = ""
             try {
                 fieldName = field.getName.toLowerCase().replaceAll("\\.", "_")
 
                 val fieldValue = field.getType match {
                     case s if s.contains("string") => {
-                        field.getValue.asInstanceOf[String]
+                        field.getRawValue.asInstanceOf[String]
                     }
                     case s if s.contains("integer") => {
-                        field.getValue.asInstanceOf[Int]
+                        field.getRawValue.asInstanceOf[Int]
                     }
                     case s if s.contains("long") => {
                         // convert event_time as ISO for ES
                         if (fieldName.equals("event_time")) {
                             try {
                                 val dateParser = ISODateTimeFormat.dateTimeNoMillis()
-                                dateParser.print(field.getValue.asInstanceOf[Long])
+                                dateParser.print(field.getRawValue.asInstanceOf[Long])
                             } catch {
-                                case ex: Throwable => field.getValue.asInstanceOf[Long]
+                                case ex: Throwable => field.getRawValue.asInstanceOf[Long]
                             }
                         } else {
-                            field.getValue.asInstanceOf[Long]
+                            field.getRawValue.asInstanceOf[Long]
                         }
                     }
                     case s if s.contains("float") => {
-                        field.getValue.asInstanceOf[Float]
+                        field.getRawValue.asInstanceOf[Float]
                     }
                     case s if s.contains("double") => {
-                        field.getValue.asInstanceOf[Double]
+                        field.getRawValue.asInstanceOf[Double]
                     }
                     case s if s.contains("boolean") => {
-                        field.getValue.asInstanceOf[Boolean]
+                        field.getRawValue.asInstanceOf[Boolean]
                     }
                     case _ => {
-                        field.getValue
+                        field.getRawValue
                     }
                 }
 

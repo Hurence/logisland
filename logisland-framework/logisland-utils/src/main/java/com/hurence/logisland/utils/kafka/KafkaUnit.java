@@ -17,9 +17,8 @@ package com.hurence.logisland.utils.kafka;
  */
 
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
-import com.hurence.logisland.serializer.EventSerializer;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.RecordSerializer;
 import kafka.admin.TopicCommand;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
@@ -215,11 +214,11 @@ public class KafkaUnit {
             }
         });
     }
-    public List<Event> readEvent(String topicName, EventSerializer serializer) throws TimeoutException {
-        return readMessages(topicName, new EventExtractor<Event>() {
+    public List<Record> readEvent(String topicName, RecordSerializer serializer) throws TimeoutException {
+        return readMessages(topicName, new EventExtractor<Record>() {
             @Override
-            public Event extract(MessageAndMetadata<byte[], byte[]> messageAndMetadata) {
-                Event deserialized = null;
+            public Record extract(MessageAndMetadata<byte[], byte[]> messageAndMetadata) {
+                Record deserialized = null;
                 ByteArrayInputStream bais = new ByteArrayInputStream(messageAndMetadata.message());
                 try {
                     deserialized = serializer.deserialize(bais);

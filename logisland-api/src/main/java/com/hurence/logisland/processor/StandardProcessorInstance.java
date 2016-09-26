@@ -1,23 +1,22 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.components.AbstractConfiguredComponent;
-import com.hurence.logisland.components.ConfigurableComponent;
 
 /**
  * Created by tom on 01/07/16.
  */
 public class StandardProcessorInstance extends AbstractConfiguredComponent {
 
-    private final AbstractEventProcessor processor;
+    private final AbstractRecordProcessor processor;
 
-    public StandardProcessorInstance(AbstractEventProcessor processor, String id) {
+    public StandardProcessorInstance(AbstractRecordProcessor processor, String id) {
         super(processor, id);
         this.processor = processor;
 
 
     }
 
-    public AbstractEventProcessor getProcessor() {
+    public AbstractRecordProcessor getProcessor() {
         return processor;
     }
 

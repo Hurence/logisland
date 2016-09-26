@@ -45,7 +45,7 @@ public class StandardProcessContext implements ProcessContext {
      */
     @Override
     public PropertyValue getProperty(final String propertyName) {
-        final EventProcessor processor = processorInstance.getProcessor();
+        final RecordProcessor processor = processorInstance.getProcessor();
         final PropertyDescriptor descriptor = processor.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;

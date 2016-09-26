@@ -55,7 +55,7 @@ public class KafkaIntegrationTest {
     public void shutdown() throws Exception {
         Field f = kafkaUnitServer.getClass().getDeclaredField("broker");
         f.setAccessible(true);
-        KafkaServerStartable broker = (KafkaServerStartable) f.get(kafkaUnitServer);
+        KafkaServerStartable broker = (KafkaServerStartable) f.getField(kafkaUnitServer);
         assertEquals(1024, (int) broker.serverConfig().logSegmentBytes());
 
         kafkaUnitServer.shutdown();
@@ -85,13 +85,13 @@ public class KafkaIntegrationTest {
     public void canUseKafkaConnectToProduce() throws Exception {
         final String topic = "KafkakConnectTestTopic";
         Properties props = new Properties();
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUnitServer.getKafkaConnect());
+        props.setField(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
+        props.setField(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
+        props.setField(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUnitServer.getKafkaConnect());
         Producer<String, String> producer = new KafkaProducer<>(props);
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, "1", "test");
         producer.send(record);      // would be good to have KafkaUnit.sendMessages() support the new producer
-        assertEquals("test", kafkaUnitServer.readMessages(topic, 1).get(0));
+        assertEquals("test", kafkaUnitServer.readMessages(topic, 1).getField(0));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class KafkaIntegrationTest {
         //when
         kafkaUnitServer.sendMessages(keyedMessage);
 
-        KeyedMessage<String, String> receivedMessage = kafkaUnitServer.readKeyedMessages(testTopic, 1).get(0);
+        KeyedMessage<String, String> receivedMessage = kafkaUnitServer.readKeyedMessages(testTopic, 1).getField(0);
 
         assertEquals("Received message value is incorrect", "value", receivedMessage.message());
         assertEquals("Received message key is incorrect", "key", receivedMessage.key());

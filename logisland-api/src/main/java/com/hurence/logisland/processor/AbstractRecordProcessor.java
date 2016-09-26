@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by tom on 01/07/16.
  */
-public abstract class AbstractEventProcessor extends AbstractConfigurableComponent implements EventProcessor {
+public abstract class AbstractRecordProcessor extends AbstractConfigurableComponent implements RecordProcessor {
 
     public static final String DEAD_LETTER_TOPIC = "logisland-dead-letter-queue";
-    private static Logger logger = LoggerFactory.getLogger(AbstractEventProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractRecordProcessor.class);
     //private final EventStreamConfig config;
 
     public static final PropertyDescriptor OUTPUT_TOPICS = new PropertyDescriptor.Builder()

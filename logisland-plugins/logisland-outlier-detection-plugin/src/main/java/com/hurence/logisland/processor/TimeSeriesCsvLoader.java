@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.LogParserException;
 
 import org.apache.commons.csv.CSVFormat;
@@ -34,18 +35,18 @@ public class TimeSeriesCsvLoader {
      * @throws IllegalArgumentException
      * @throws ArrayIndexOutOfBoundsException
      */
-    public static List<Event> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
+    public static List<Record> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
             throws IOException, LogParserException {
 
-        List<Event> events = new ArrayList<>();
+        List<Record> records = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
             try {
                 if (!hasHeader) {
-                    Event event = new Event("sensors");
-                    event.put(TIMESTAMP_KEY, "long", inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
-                    event.put(VALUE_KEY, "double", Double.parseDouble(record.get(1)));
+                    Record event = new Record("sensors");
+                    event.setField(TIMESTAMP_KEY, FieldType.LONG, inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
+                    event.setField(VALUE_KEY, FieldType.DOUBLE, Double.parseDouble(record.get(1)));
 
-                    events.add(event);
+                    records.add(event);
                 } else {
                     TIMESTAMP_KEY = record.get(0);
                     VALUE_KEY = record.get(1);
@@ -58,6 +59,6 @@ public class TimeSeriesCsvLoader {
             }
         }
 
-        return events;
+        return records;
     }
 }

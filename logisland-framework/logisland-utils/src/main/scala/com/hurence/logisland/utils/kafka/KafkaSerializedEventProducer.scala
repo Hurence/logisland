@@ -20,15 +20,15 @@ import java.io.ByteArrayOutputStream
 import java.util.Properties
 
 import _root_.kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import com.hurence.logisland.event.Event
-import com.hurence.logisland.serializer.EventSerializer
+import com.hurence.logisland.record.Record
+import com.hurence.logisland.serializer.RecordSerializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 /**
   * Created by tom on 13/01/16.
   */
-class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer: EventSerializer) extends LazyLogging with Serializable {
+class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer: RecordSerializer) extends LazyLogging with Serializable {
 
     // Zookeper connection properties
     val props = new Properties()
@@ -51,7 +51,7 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
       *
       * @param events
       */
-    def produce(events: List[Event]) = {
+    def produce(events: List[Record]) = {
 
         val messages = events.map(event => {
             // messages are serialized with kryo first

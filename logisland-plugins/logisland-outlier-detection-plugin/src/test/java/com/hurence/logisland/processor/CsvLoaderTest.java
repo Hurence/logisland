@@ -1,13 +1,13 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.LogParserException;
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +37,23 @@ public class CsvLoaderTest {
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
-            List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
-            Assert.assertTrue(!events.isEmpty());
+            List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+
+
+
+            Assert.assertTrue(!records.isEmpty());
             //Assert.assertTrue("should be 4032, was : " + events.size(), events.size() == 4032);
 
-            for (Event event : events) {
-                Assert.assertTrue("should be sensors, was " + event.getType(), event.getType().equals("sensors"));
-                Assert.assertTrue("should be 2, was " + event.entrySet().size(), event.entrySet().size() == 3);
-                Assert.assertTrue(event.keySet().contains("timestamp"));
-                Assert.assertTrue(event.keySet().contains("value"));
-                Assert.assertTrue(event.get("timestamp").getValue() instanceof Long);
-                Assert.assertTrue(event.get("value").getValue() instanceof Double);
+            for (Record record : records) {
+                Assert.assertTrue("should be sensors, was " + record.getType(), record.getType().equals("sensors"));
+                Assert.assertTrue("should be 5, was " + record.getFieldsEntrySet().size(), record.getFieldsEntrySet().size() == 5);
+                Assert.assertTrue(record.getAllFieldNames().contains("timestamp"));
+                if(!record.getAllFieldNames().contains("value"))
+                    System.out.println("stop");
+                Assert.assertTrue(record.getAllFieldNames().contains("value"));
 
-                Assert.assertTrue(event.keySet().contains("value"));
+                Assert.assertTrue(record.getField("timestamp").getRawValue() instanceof Long);
+                Assert.assertTrue(record.getField("value").getRawValue() instanceof Double);
             }
         }
     }

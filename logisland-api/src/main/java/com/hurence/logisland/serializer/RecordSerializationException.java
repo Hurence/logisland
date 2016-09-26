@@ -23,11 +23,11 @@ package com.hurence.logisland.serializer;
  * @author Tom Bailet
  *
  */
-public class EventSerdeException extends java.lang.RuntimeException {
+public class RecordSerializationException extends java.lang.RuntimeException {
 
 
     /**
-     * Create a new {@link EventSerdeException} based on a message and
+     * Create a new {@link RecordSerializationException} based on a message and
      * another exception.
      *
      * @param message
@@ -35,17 +35,17 @@ public class EventSerdeException extends java.lang.RuntimeException {
      * @param cause
      *            the other exception
      */
-    public EventSerdeException(String message, Throwable cause) {
+    public RecordSerializationException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * Create a new {@link EventSerdeException} based on a message.
+     * Create a new {@link RecordSerializationException} based on a message.
      *
      * @param message
      *            the message for this exception
      */
-    public EventSerdeException(String message) {
+    public RecordSerializationException(String message) {
         super(message);
     }
 }

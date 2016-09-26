@@ -2,8 +2,8 @@ package com.hurence.logisland.utils.kafka;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.KryoRecordSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
@@ -43,7 +43,7 @@ public class ConfigPublisher implements Publisher {
         ProducerConfig producerConfig = new ProducerConfig(properties);
         Producer producer = new Producer(producerConfig);
 
-        final EventKryoSerializer kryoSerializer = new EventKryoSerializer(true);
+        final KryoRecordSerializer kryoSerializer = new KryoRecordSerializer(true);
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
 
@@ -51,19 +51,19 @@ public class ConfigPublisher implements Publisher {
 
             if (file.isFile()) {
 
-                // parse JSON file and get Array of config elements
+                // parse JSON file and getField Array of config elements
                 ObjectMapper mapper = new ObjectMapper();
                 List<Map<String,String>> rules = mapper.readValue(file, List.class);
 
                 for (Map<String, String> rule : rules) {
 
                     // for all in array create the rule as an event..
-                    Event event = new Event(CONFIG_TYPE);
+                    Record record = new Record(CONFIG_TYPE);
 
-                    for (String k : rule.keySet()) event.put(k, "String", rule.get(k));
+                    for (String k : rule.keySet()) record.setField(k, "String", rule.get(k));
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    kryoSerializer.serialize(baos, event);
+                    kryoSerializer.serialize(baos, record);
                     KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
                     baos.close();
                     messages.add(data);

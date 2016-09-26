@@ -33,7 +33,14 @@ public interface PropertyValue extends Serializable {
     /**
      * @return the raw property value as a string
      */
-    public String getValue();
+    public Object getRawValue();
+
+
+    /**
+     * @return an String representation of the property value, or
+     * <code>null</code> if not set
+     */
+    public String asString();
 
     /**
      * @return an integer representation of the property value, or

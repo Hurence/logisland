@@ -1,7 +1,7 @@
 package com.hurence.logisland.rules;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.KryoRecordSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.processor.MatchingRule;
 import kafka.consumer.ConsumerConfig;
@@ -55,12 +55,12 @@ public class KafkaRulesConsumer {
 
         while (iterator.hasNext()) {
 
-            final EventKryoSerializer deserializer = new EventKryoSerializer(true);
+            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
-            Event deserializedEvent = deserializer.deserialize(bais);
-            MatchingRule rule = new MatchingRule((String) deserializedEvent.get("name").getValue(), (String) deserializedEvent.get("query").getValue());
+            Record deserializedRecord = deserializer.deserialize(bais);
+            MatchingRule rule = new MatchingRule((String) deserializedRecord.getField("name").getRawValue(), (String) deserializedRecord.getField("query").getRawValue());
             rules.add(rule);
-            logger.info(deserializedEvent.toString());
+            logger.info(deserializedRecord.toString());
             bais.close();
 
         }

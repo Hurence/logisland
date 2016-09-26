@@ -1,7 +1,6 @@
 package com.hurence.logisland.log;
 
 import com.hurence.logisland.components.AbstractConfiguredComponent;
-import com.hurence.logisland.processor.AbstractEventProcessor;
 
 /**
  * Created by tom on 01/07/16.

@@ -20,9 +20,6 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.components.PropertyValue;
 import com.hurence.logisland.components.StandardPropertyValue;
-import com.hurence.logisland.processor.EventProcessor;
-import com.hurence.logisland.processor.StandardProcessorInstance;
-import org.elasticsearch.index.engine.Engine;
 
 import java.io.Serializable;
 import java.util.Map;

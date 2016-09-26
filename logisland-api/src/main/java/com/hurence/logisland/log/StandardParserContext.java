@@ -20,9 +20,7 @@ package com.hurence.logisland.log;
 import com.hurence.logisland.components.PropertyDescriptor;
 import com.hurence.logisland.components.PropertyValue;
 import com.hurence.logisland.components.StandardPropertyValue;
-import com.hurence.logisland.processor.EventProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.Map;
 

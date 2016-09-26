@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validators.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class MockProcessor extends AbstractEventProcessor {
+public class MockProcessor extends AbstractRecordProcessor {
 
 
     public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
@@ -37,19 +37,19 @@ public class MockProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
 
       //  collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
 
-        Event mockEvent = new Event(EVENT_TYPE_NAME);
-        mockEvent.put("incomingEventsCount", "int", collection.size());
-        mockEvent.put("message", "string", context.getProperty(FAKE_MESSAGE).getValue());
+        Record mockRecord = new Record(EVENT_TYPE_NAME);
+        mockRecord.setField("incomingEventsCount", "int", collection.size());
+        mockRecord.setField("message", "string", context.getProperty(FAKE_MESSAGE).getRawValue());
 
 
-        List<Event> mockResults = new ArrayList<>();
-        mockResults.add(mockEvent);
-        logger.info("mock processing event : {}", mockEvent);
+        List<Record> mockResults = new ArrayList<>();
+        mockResults.add(mockRecord);
+        logger.info("mock processing event : {}", mockRecord);
         return mockResults;
     }
 

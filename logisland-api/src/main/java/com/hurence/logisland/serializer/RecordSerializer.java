@@ -16,7 +16,7 @@
 
 package com.hurence.logisland.serializer;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,7 +25,7 @@ import java.io.Serializable;
 /**
  * Created by tom on 13/01/16.
  */
-public interface EventSerializer extends Serializable {
-    void serialize(OutputStream objectDataOutput, Event event) throws EventSerdeException;
-    Event deserialize(InputStream objectDataInput) throws EventSerdeException;
+public interface RecordSerializer extends Serializable {
+    void serialize(OutputStream objectDataOutput, Record record) throws RecordSerializationException;
+    Record deserialize(InputStream objectDataInput) throws RecordSerializationException;
 }

@@ -2,7 +2,6 @@ package com.hurence.logisland.engine;
 
 import com.hurence.logisland.components.AbstractConfiguredComponent;
 import com.hurence.logisland.components.ConfigurableComponent;
-import com.hurence.logisland.processor.EventProcessor;
 
 /**
  * Created by tom on 01/07/16.

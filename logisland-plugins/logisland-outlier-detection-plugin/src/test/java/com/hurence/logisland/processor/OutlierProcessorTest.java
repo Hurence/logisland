@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.log.LogParserException;
 import org.junit.Assert;
 import org.apache.commons.io.FileUtils;
@@ -38,16 +38,16 @@ public class OutlierProcessorTest {
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
-            List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
-            Assert.assertTrue(!events.isEmpty());
+            List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+            Assert.assertTrue(!records.isEmpty());
 
 
-            AbstractEventProcessor processor = new OutlierProcessor();
+            AbstractRecordProcessor processor = new OutlierProcessor();
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
           //  instance.setProperty("rules",rulesAsString);
             ProcessContext context = new StandardProcessContext(instance);
             processor.init(context);
-            Collection<Event> outliersEvents = processor.process(context, events);
+            Collection<Record> outliersRecords = processor.process(context, records);
 
             // @todo make a real test of outliers heres
           //  logger.info(outliersEvents.toString());

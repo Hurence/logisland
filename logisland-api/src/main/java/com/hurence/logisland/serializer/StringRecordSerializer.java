@@ -16,7 +16,7 @@
 
 package com.hurence.logisland.serializer;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,16 +24,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class EventStringSerializer implements EventSerializer {
+public class StringRecordSerializer implements RecordSerializer {
 
-    private static Logger logger = LoggerFactory.getLogger(EventStringSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(StringRecordSerializer.class);
 
 
     @Override
-    public void serialize(OutputStream out, Event event) throws EventSerdeException {
+    public void serialize(OutputStream out, Record record) throws RecordSerializationException {
 
         try {
-            out.write(event.toString().getBytes());
+            out.write(record.toString().getBytes());
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -43,7 +43,7 @@ public class EventStringSerializer implements EventSerializer {
 
 
     @Override
-    public Event deserialize(InputStream in) throws EventSerdeException {
+    public Record deserialize(InputStream in) throws RecordSerializationException {
 
         throw new RuntimeException("not implemented yet");
 

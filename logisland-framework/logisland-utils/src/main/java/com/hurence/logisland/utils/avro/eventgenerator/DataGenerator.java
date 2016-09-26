@@ -136,7 +136,7 @@ public class DataGenerator {
             printHelp(opts);
         }
 
-        //get string length and check if min is greater than 0
+        //getField string length and check if min is greater than 0
 
         // Generate the record
         File schemaFile = new File(fileLoc);

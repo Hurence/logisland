@@ -96,7 +96,7 @@ public class AllowableValue implements Serializable{
      * same object as <code>this</code> or if <code>obj</code> is an instance of
      * <code>AllowableValue</code> and both have the same value, or if
      * <code>obj</code> is a String and is equal to
-     * {@link #getValue() this.getValue()}.
+     * {@link #getValue() this.getRawValue()}.
      */
     @Override
     public boolean equals(final Object obj) {

@@ -1,6 +1,6 @@
 package com.hurence.logisland.stream;
 
-import com.hurence.logisland.processor.EventProcessor;
+import com.hurence.logisland.processor.RecordProcessor;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public interface EventStream {
 
 
-    List<EventProcessor> getProcessors();
+    List<RecordProcessor> getProcessors();
     String getDescription();
     String getVersion();
 }

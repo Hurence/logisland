@@ -3,7 +3,6 @@ package com.hurence.logisland.config;
 import com.hurence.logisland.components.ComponentsFactory;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.log.StandardParserContext;
 import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.junit.Assert;
@@ -39,7 +38,7 @@ public class ConfigLoaderTest {
 
         StandardEngineContext context = new StandardEngineContext(engineInstance.get());
 
-        Assert.assertEquals(context.getProperty("fake.settings").getValue(), "oullala");
+        Assert.assertEquals(context.getProperty("fake.settings").getRawValue(), "oullala");
 
 
         List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(config);

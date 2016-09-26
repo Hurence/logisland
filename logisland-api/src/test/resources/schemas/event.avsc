@@ -2,21 +2,17 @@
   "version": 1,
   "type": "record",
   "namespace": "com.hurence.logisland",
-  "name": "Event",
+  "name": "Record",
   "fields": [
     {
-      "name": "_type",
-      "type": "string"
-    },
-    {
-      "name": "_id",
+      "name": "record_id",
       "type": "string"
     }, {
-      "name": "event_type",
+      "name": "record_type",
       "type": "string"
     },
     {
-      "name": "event_time",
+      "name": "record_time",
       "type": "long"
     },
     {
@@ -24,43 +20,43 @@
       "type": "string"
     },
     {
-      "name": "ipSource",
+      "name": "ip_source",
       "type": "string"
     },
     {
-      "name": "ipTarget",
+      "name": "ip_target",
       "type": "string"
     },
     {
-      "name": "urlScheme",
+      "name": "url_scheme",
       "type": "string"
     },
     {
-      "name": "urlHost",
+      "name": "url_host",
       "type": "string"
     },
     {
-      "name": "urlPort",
+      "name": "url_port",
       "type": "string"
     },
     {
-      "name": "urlPath",
+      "name": "url_path",
       "type": "string"
     },
     {
-      "name": "requestSize",
+      "name": "request_size",
       "type": "int"
     },
     {
-      "name": "responseSize",
+      "name": "response_size",
       "type": "int"
     },
     {
-      "name": "isOutsideOfficeHours",
+      "name": "is_outside_office_hours",
       "type": "boolean"
     },
     {
-      "name": "isHostBlacklisted",
+      "name": "is_host_blacklisted",
       "type": "boolean"
     },
     {

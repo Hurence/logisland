@@ -35,7 +35,7 @@ public interface ConfigurableComponent extends Serializable{
      * Hook method allowing subclasses to eagerly react to a configuration
      * change for the given property descriptor. This method will be invoked
      * regardless of property validity. As an alternative to using this method,
-     * a component may simply get the latest value whenever it needs it and if
+     * a component may simply getField the latest value whenever it needs it and if
      * necessary lazily evaluate it. Any throwable that escapes this method will
      * simply be ignored.
      *

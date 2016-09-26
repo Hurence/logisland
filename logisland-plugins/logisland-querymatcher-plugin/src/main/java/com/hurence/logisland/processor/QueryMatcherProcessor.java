@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validators.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class QueryMatcherProcessor extends AbstractEventProcessor {
+public class QueryMatcherProcessor extends AbstractRecordProcessor {
 
     static final long serialVersionUID = -1L;
 
@@ -48,7 +48,7 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
     public void init(final ProcessContext context) {
 
 
-        final String rules = context.getProperty(RULES).getValue();
+        final String rules = context.getProperty(RULES).asString();
         final String[] split = rules.split(",");
         for (int i = 0; i<split.length; i++) {
             matchingRules.add(new MatchingRule("rule"+i, split[i]));
@@ -68,18 +68,18 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        ArrayList<Event> outEvents = new ArrayList<>();
+        ArrayList<Record> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Event ev : collection) {
+        for (Record ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
-            for (String fieldName : ev.keySet()) {
-                if (ev.get(fieldName).getType().equalsIgnoreCase("string"))
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), standardAnalyzer);
+            for (String fieldName : ev.getAllFieldNames()) {
+                if (ev.getField(fieldName).getType().equalsIgnoreCase("string"))
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), keywordAnalyzer);
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
             }
 
             docs.add(docbuilder.build());
@@ -91,19 +91,19 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
             matches = monitor.match(DocumentBatch.of(docs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
             logger.error("Could not match documents", e);
-            return outEvents;
+            return outRecords;
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(EVENT_MATCH_TYPE_NAME);
+            Record outEv = new Record(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
-            // Only get last match for now, we should probably add them all
+            // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch : docMatch.getMatches())
-                outEv.put("match", "string", queryMatch.getQueryId());
-            outEvents.add(outEv);
+                outEv.setField("match", "string", queryMatch.getQueryId());
+            outRecords.add(outEv);
         }
 
-        return outEvents;
+        return outRecords;
     }
 
 

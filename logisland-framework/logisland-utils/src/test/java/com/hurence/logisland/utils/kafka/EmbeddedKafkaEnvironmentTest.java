@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.KryoRecordSerializer;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
@@ -58,25 +58,25 @@ public class EmbeddedKafkaEnvironmentTest {
         Producer producer = new Producer(producerConfig);
 
         // create an event
-        Event event = new Event("cisco");
-        event.put("timestamp", "Long", new Date().getTime());
-        event.put("method", "String", "GET");
-        event.put("ipSource", "String", "123.34.45.123");
-        event.put("ipTarget", "String", "178.23.45.234");
-        event.put("urlScheme", "String", "http");
-        event.put("urlHost", "String", "hurence.com");
-        event.put("urlPort", "String", "80");
-        event.put("urlPath", "String", "idea/help/create-test.html");
-        event.put("requestSize", "Int", 4578);
-        event.put("responseSize", "Int", 452);
-        event.put("isOutsideOfficeHours", "Boolean", true);
-        event.put("isHostBlacklisted", "Boolean", false);
-        event.put("tags", "String", "spam,filter,mail");
+        Record record = new Record("cisco");
+        record.setField("timestamp", "Long", new Date().getTime());
+        record.setField("method", "String", "GET");
+        record.setField("ipSource", "String", "123.34.45.123");
+        record.setField("ipTarget", "String", "178.23.45.234");
+        record.setField("urlScheme", "String", "http");
+        record.setField("urlHost", "String", "hurence.com");
+        record.setField("urlPort", "String", "80");
+        record.setField("urlPath", "String", "idea/help/create-test.html");
+        record.setField("requestSize", "Int", 4578);
+        record.setField("responseSize", "Int", 452);
+        record.setField("isOutsideOfficeHours", "Boolean", true);
+        record.setField("isHostBlacklisted", "Boolean", false);
+        record.setField("tags", "String", "spam,filter,mail");
 
         // serialize event
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final EventKryoSerializer kryoSerializer = new EventKryoSerializer(true);
-        kryoSerializer.serialize(baos, event);
+        final KryoRecordSerializer kryoSerializer = new KryoRecordSerializer(true);
+        kryoSerializer.serialize(baos, record);
         KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
         baos.close();
         List<KeyedMessage> messages = new ArrayList<>();
@@ -107,13 +107,13 @@ public class EmbeddedKafkaEnvironmentTest {
 
         // verify the integrity of the retrieved event
         if (iterator.hasNext()) {
-            final EventKryoSerializer deserializer = new EventKryoSerializer(true);
+            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
 
 
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
-            Event deserializedEvent = deserializer.deserialize(bais);
-            logger.info(deserializedEvent.toString());
-            assertEquals(event, deserializedEvent);
+            Record deserializedRecord = deserializer.deserialize(bais);
+            logger.info(deserializedRecord.toString());
+            assertEquals(record, deserializedRecord);
             bais.close();
         } else {
             fail();

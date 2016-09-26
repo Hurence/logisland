@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.event.EventField;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,34 +36,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class EventJsonSerializer implements EventSerializer {
+public class JsonRecordSerializer implements RecordSerializer {
 
-    private static Logger logger = LoggerFactory.getLogger(EventJsonSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(JsonRecordSerializer.class);
 
-    class EventSerializer extends StdSerializer<Event> {
+    class EventSerializer extends StdSerializer<Record> {
 
         public EventSerializer() {
             this(null);
         }
 
-        public EventSerializer(Class<Event> t) {
+        public EventSerializer(Class<Record> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Event event, JsonGenerator jgen, SerializerProvider provider)
+        public void serialize(Record record, JsonGenerator jgen, SerializerProvider provider)
                 throws IOException, JsonProcessingException {
             jgen.writeStartObject();
-            jgen.writeStringField("id", event.getId());
-            jgen.writeStringField("type", event.getType());
-            jgen.writeStringField("creationDate", event.getCreationDate().toString());
+            jgen.writeStringField("id", record.getId());
+            jgen.writeStringField("type", record.getType());
+            jgen.writeStringField("creationDate", record.getTime().toString());
 
             jgen.writeObjectFieldStart("fields");
-            for (Map.Entry<String, EventField> entry : event.entrySet()) {
+            for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
                 // retrieve event field
                 String fieldName = entry.getKey();
-                EventField field = entry.getValue();
-                Object fieldValue = field.getValue();
+                Field field = entry.getValue();
+                Object fieldValue = field.getRawValue();
                 String fieldType = field.getType();
 
                 // dump event field as record attribute
@@ -105,11 +105,11 @@ public class EventJsonSerializer implements EventSerializer {
     }
 
     @Override
-    public void serialize(OutputStream out, Event event) throws EventSerdeException {
+    public void serialize(OutputStream out, Record record) throws RecordSerializationException {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(Event.class, new EventSerializer());
+        module.addSerializer(Record.class, new EventSerializer());
         mapper.registerModule(module);
 
         //map json to student
@@ -117,7 +117,7 @@ public class EventJsonSerializer implements EventSerializer {
         try {
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
             mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-            String jsonString = mapper.writeValueAsString(event);
+            String jsonString = mapper.writeValueAsString(record);
 
             out.write(jsonString.getBytes());
             out.flush();
@@ -128,18 +128,18 @@ public class EventJsonSerializer implements EventSerializer {
     }
 
     // @TODO implements ARray deserialization
-    class EventDeserializer extends StdDeserializer<Event> {
+    class EventDeserializer extends StdDeserializer<Record> {
 
         protected EventDeserializer() {
             this(null);
         }
 
-        protected EventDeserializer(Class<Event> t) {
+        protected EventDeserializer(Class<Record> t) {
             super(t);
         }
 
         @Override
-        public Event deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        public Record deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             JsonToken t = jp.getCurrentToken();
 
             SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
@@ -148,7 +148,7 @@ public class EventJsonSerializer implements EventSerializer {
             String type = null;
             Date creationDate = null;
             JsonToken currentToken = null;
-            Map<String, EventField> fields = new HashMap<>();
+            Map<String, Field> fields = new HashMap<>();
 
             boolean processingFields = false;
             while ((currentToken = jp.nextValue()) != null) {
@@ -163,22 +163,22 @@ public class EventJsonSerializer implements EventSerializer {
                         break;
                     case VALUE_NUMBER_INT:
                         try {
-                            fields.put(jp.getCurrentName(), new EventField(jp.getCurrentName(), "int", jp.getIntValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "int", jp.getIntValue()));
                         }catch(JsonParseException ex){
-                            fields.put(jp.getCurrentName(), new EventField(jp.getCurrentName(), "long", jp.getLongValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "long", jp.getLongValue()));
                         }
                         break;
 
                     case VALUE_NUMBER_FLOAT:
                         try{
-                        fields.put(jp.getCurrentName(),new EventField(jp.getCurrentName(), "float", jp.getFloatValue()));
+                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "float", jp.getFloatValue()));
                         }catch(JsonParseException ex){
-                            fields.put(jp.getCurrentName(), new EventField(jp.getCurrentName(), "double", jp.getDoubleValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "double", jp.getDoubleValue()));
                         }
                         break;
                     case VALUE_FALSE:
                     case VALUE_TRUE:
-                        fields.put(jp.getCurrentName(),new EventField(jp.getCurrentName(), "boolean", jp.getBooleanValue()));
+                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "boolean", jp.getBooleanValue()));
                         break;
                     case START_ARRAY:
                         logger.info(jp.getCurrentName());
@@ -204,7 +204,7 @@ public class EventJsonSerializer implements EventSerializer {
                                     }
                                     break;
                                 default:
-                                    fields.put(jp.getCurrentName(),new EventField(jp.getCurrentName(), "string", jp.getValueAsString()));
+                                    fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "string", jp.getValueAsString()));
 
                                     break;
                             }
@@ -216,13 +216,13 @@ public class EventJsonSerializer implements EventSerializer {
                 }
             }
 
-            Event event = new Event(type);
-            event.setId(id);
-            event.setType(type);
-            event.setCreationDate(creationDate);
-            event.setFields(fields);
+            Record record = new Record(type);
+            record.setId(id);
+            record.setType(type);
+            record.setTime(creationDate);
+            record.setFields(fields);
 
-            return event;
+            return record;
 
         }
 
@@ -230,20 +230,20 @@ public class EventJsonSerializer implements EventSerializer {
 
 
     @Override
-    public Event deserialize(InputStream in) throws EventSerdeException {
+    public Record deserialize(InputStream in) throws RecordSerializationException {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(Event.class, new EventDeserializer());
+        module.addDeserializer(Record.class, new EventDeserializer());
         mapper.registerModule(module);
 
-        Event event = null;
+        Record record = null;
         try {
-            event = mapper.readValue(in, Event.class);
+            record = mapper.readValue(in, Record.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return event;
+        return record;
     }
 }

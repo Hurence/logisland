@@ -110,7 +110,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
      * optional its value might be reset to default or will be removed entirely
      * if was a dynamic property.
      *
-     * @param name the property to remove
+     * @param name the property to removeField
      * @return true if removed; false otherwise
      * @throws IllegalArgumentException if the name is null
      */

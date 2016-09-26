@@ -1,8 +1,8 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
-import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.serializer.KryoRecordSerializer;
 import com.hurence.logisland.utils.kafka.DocumentPublisher;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.utils.kafka.RulesPublisher;
@@ -103,14 +103,14 @@ public class QueryMatcherProcessorTest {
 
         while (iterator.hasNext()) {
 
-            final EventKryoSerializer deserializer = new EventKryoSerializer(true);
+            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
-            Event deserializedEvent = deserializer.deserialize(bais);
-            ArrayList<Event> list = new ArrayList<>();
-            list.add(deserializedEvent);
-            Collection<Event> result = processor.process(context, list);
-            for (Event e : result) {
-                System.out.println(e.get("name").getValue() + " : " + e.get("matchingrules").getValue());
+            Record deserializedRecord = deserializer.deserialize(bais);
+            ArrayList<Record> list = new ArrayList<>();
+            list.add(deserializedRecord);
+            Collection<Record> result = processor.process(context, list);
+            for (Record e : result) {
+                System.out.println(e.getField("name").getRawValue() + " : " + e.getField("matchingrules").getRawValue());
             }
 
             bais.close();

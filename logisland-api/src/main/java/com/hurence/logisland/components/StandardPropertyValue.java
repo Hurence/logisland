@@ -35,8 +35,12 @@ public class StandardPropertyValue implements PropertyValue {
         this.rawValue = rawValue;
     }
 
+    public String getRawValue() {
+        return rawValue;
+    }
+
     @Override
-    public String getValue() {
+    public String asString() {
         return rawValue;
     }
 

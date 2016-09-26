@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.serializer.EventKryoSerializer;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.KryoRecordSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
@@ -22,7 +22,7 @@ import java.util.Properties;
 public class DocumentPublisher {
 
     /**
-     * Published all files found in path into topic (content is put in content field)
+     * Published all files found in path into topic (content is setField in content field)
      * @param context
      * @param path
      * @param topic
@@ -39,7 +39,7 @@ public class DocumentPublisher {
         ProducerConfig producerConfig = new ProducerConfig(properties);
         Producer producer = new Producer(producerConfig);
 
-        final EventKryoSerializer kryoSerializer = new EventKryoSerializer(true);
+        final KryoRecordSerializer kryoSerializer = new KryoRecordSerializer(true);
 
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
@@ -47,11 +47,11 @@ public class DocumentPublisher {
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 String content = SmallFileUtil.getContent(file);
-                Event event = new Event(file.getName());
-                event.put("name", "String", file.getName());
-                event.put("content", "String", content);
+                Record record = new Record(file.getName());
+                record.setField("name", "String", file.getName());
+                record.setField("content", "String", content);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                kryoSerializer.serialize(baos, event);
+                kryoSerializer.serialize(baos, record);
                 KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
                 baos.close();
                 messages.add(data);

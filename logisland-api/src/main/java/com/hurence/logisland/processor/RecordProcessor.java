@@ -15,16 +15,18 @@
  *
  */
 
-package com.hurence.logisland.event;
+package com.hurence.logisland.processor;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import com.hurence.logisland.components.ConfigurableComponent;
+import com.hurence.logisland.record.Record;
+
+import java.util.Collection;
 
 /**
- * Created by tom on 12/01/16.
+ * Carry the business rules, to be applied to a bunch of events
  */
-public interface EventMapper {
+public interface RecordProcessor extends ConfigurableComponent {
 
-     XContentBuilder getMapping();
-     String getDocumentType();
+    Collection<Record> process(ProcessContext context, Collection<Record> records);
 
 }
