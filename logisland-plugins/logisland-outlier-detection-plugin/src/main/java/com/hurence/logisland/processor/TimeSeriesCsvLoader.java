@@ -2,8 +2,6 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.log.LogParserException;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.joda.time.DateTimeZone;
@@ -27,6 +25,7 @@ public class TimeSeriesCsvLoader {
     /**
      * CSV reader that waits for a 2 columns csv files with or without a header.
      * If less than 2 columns ==> exception, otherwise, the 3rd and following columns are ignored
+     *
      * @param in
      * @param hasHeader
      * @param inputDatetimeFormat input date format
@@ -36,7 +35,7 @@ public class TimeSeriesCsvLoader {
      * @throws ArrayIndexOutOfBoundsException
      */
     public static List<Record> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
-            throws IOException, LogParserException {
+            throws IOException {
 
         List<Record> records = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
@@ -55,7 +54,7 @@ public class TimeSeriesCsvLoader {
                 hasHeader = false;
             } catch (Exception e) {
                 logger.error("Parsing error " + e.getMessage());
-                throw new LogParserException("parsing error", e);
+                throw new RuntimeException("parsing error", e);
             }
         }
 

@@ -1,8 +1,8 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.config.LogislandSessionConfigReader;
-import com.hurence.logisland.config.LogislandSessionConfiguration;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.ConfigReader;
+import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
@@ -50,12 +50,12 @@ public class SplitTextMultiLine2Test {
             String configFile = SplitTextMultiLine2Test.class.getResource("/traker.yml").getFile();
 
             // load the YAML config
-            LogislandSessionConfiguration sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
+            LogislandConfiguration sessionConf = new ConfigReader().loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardParserInstance> parsers = ComponentsFactory.getAllParserInstances(sessionConf);
-            List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstance = ComponentsFactory.getEngineInstance(sessionConf);
+            List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
+            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
+            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf);
 
             // start the engine
             if (engineInstance.isPresent()) {
@@ -139,12 +139,12 @@ public class SplitTextMultiLine2Test {
             String configFile = SplitTextMultiLine2Test.class.getResource("/traker.yml").getFile();
 
             // load the YAML config
-            LogislandSessionConfiguration sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
+            LogislandConfiguration sessionConf = new ConfigReader().loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardParserInstance> parsers = ComponentsFactory.getAllParserInstances(sessionConf);
-            List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstanceO = ComponentsFactory.getEngineInstance(sessionConf);
+            List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
+            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
+            Optional<StandardEngineInstance> engineInstanceO = ComponentFactory.getEngineInstance(sessionConf);
 
             // start the engine
             if (engineInstanceO.isPresent()) {

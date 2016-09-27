@@ -37,16 +37,16 @@ import java.io.Serializable;
 public class Field implements PropertyValue, Serializable {
 
     private final String name;
-    private final String type;
+    private final FieldType type;
     private final Object rawValue;
 
     public Field() {
         this("", FieldType.STRING, null);
     }
 
-    public Field(String name, String type, Object rawValue) {
+    public Field(String name, FieldType type, Object rawValue) {
         this.name = name;
-        this.type = type.toLowerCase();
+        this.type = type;
         this.rawValue = rawValue;
     }
 
@@ -80,7 +80,7 @@ public class Field implements PropertyValue, Serializable {
     }
 
 
-    public String getType() {
+    public FieldType getType() {
         return type;
     }
 

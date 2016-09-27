@@ -17,16 +17,24 @@
 
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.record.Record;
 
 import java.util.Collection;
 
-/**
- * Carry the business rules, to be applied to a bunch of events
- */
+
 public interface Processor extends ConfigurableComponent{
 
-    Collection<Record> process(ProcessContext context, Collection<Record> records);
+    /**
+     * Process the incoming collection of records to
+     * generate a new collection of records
+     *
+     * @param context the current process context
+     * @param records the collection of records to handle
+     * @return a collection of computed records
+     * @throws ProcessException if something went wrong
+     */
+    Collection<Record> process(ComponentContext context, Collection<Record> records);
 
 }

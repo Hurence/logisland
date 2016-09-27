@@ -2,7 +2,7 @@ package com.hurence.botsearch.trace
 
 import java.util
 
-import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.component.ComponentContext
 import com.hurence.logisland.record.Record
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
@@ -19,9 +19,9 @@ class NetworkTraceLogParser extends LazyLogging {
       * @param records
       * @return
       */
-    def process(context: ProcessContext, records: util.Collection[Record]): util.Collection[Record] = {
+    def process(context: ComponentContext, records: util.Collection[Record]): util.Collection[Record] = {
         val event = new Record(EVENT_TYPE)
-        try {
+
 
             // build the event
             /*  event.setField("ipSource", "String", trace.ipSource)
@@ -36,13 +36,7 @@ class NetworkTraceLogParser extends LazyLogging {
   */
 
             util.Collections.singletonList(event)
-        } catch {
-            case t: Exception => {
-                val errorMessage = s"exception parsing row : ${t.getMessage}"
-                logger.error(errorMessage)
-                //  throw new LogParserException(s"error parsing trace : $trace", t)
-            }
-        }
+
     }
 
 }

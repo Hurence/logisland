@@ -20,12 +20,11 @@ package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.ValidationResult;
-import com.hurence.logisland.component.Validator;
+import com.hurence.logisland.validator.Validator;
 import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.processor.KafkaStreamProcessor;
-import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -75,7 +74,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
             .name("cluster.name")
             .description("Name of the ES cluster (for example, elasticsearch_brew). Defaults to 'elasticsearch'")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("elasticsearch")
             .build();
 
@@ -102,14 +101,14 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
                     + "JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's "
                     + "lib/ directory, doing so will prevent the Shield plugin from being loaded.")
             .required(false)
-            .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+            .addValidator(StandardPropertyValidators.FILE_EXISTS_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor USERNAME = new PropertyDescriptor.Builder()
             .name("username")
             .description("Username to access the Elasticsearch cluster")
             .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor PASSWORD = new PropertyDescriptor.Builder()
@@ -117,7 +116,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
             .description("Password to access the Elasticsearch cluster")
             .required(false)
             .sensitive(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor PING_TIMEOUT = new PropertyDescriptor.Builder()
@@ -126,7 +125,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
                     "For example, 5s (5 seconds). If non-local recommended is 30s")
             .required(true)
             .defaultValue("5s")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor SAMPLER_INTERVAL = new PropertyDescriptor.Builder()
@@ -135,7 +134,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
                     + "If non-local recommended is 30s.")
             .required(true)
             .defaultValue("5s")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor CHARSET = new PropertyDescriptor.Builder()
@@ -143,7 +142,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
             .description("Specifies the character set of the document data.")
             .required(true)
             .defaultValue("UTF-8")
-            .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
+            .addValidator(StandardPropertyValidators.CHARACTER_SET_VALIDATOR)
             .build();
 
     protected AtomicReference<Client> esClient = new AtomicReference<>();
@@ -165,7 +164,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
         return results;
     }*/
 
-    public void setup(ProcessContext context) {
+    public void setup(ComponentContext context) {
         // Create the client if one does not already exist
         createElasticsearchClient(context);
     }
@@ -178,7 +177,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
      * @param context The context for this processor
      * @throws ProcessException if an error occurs while creating an Elasticsearch client
      */
-    protected void createElasticsearchClient(ProcessContext context) throws ProcessException {
+    protected void createElasticsearchClient(ComponentContext context) throws ProcessException {
 
         if (esClient.get() != null) {
             return;

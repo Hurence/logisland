@@ -1,9 +1,9 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.config.ComponentConfiguration;
-import com.hurence.logisland.config.LogislandSessionConfigReader;
-import com.hurence.logisland.config.LogislandSessionConfiguration;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.AbstractComponentConfiguration;
+import com.hurence.logisland.config.ConfigReader;
+import com.hurence.logisland.config.LogislandConfiguration;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +21,12 @@ public class ConfigLoaderTest {
     public void testLoadConfig() throws Exception {
 
 
-        LogislandSessionConfigReader read = new LogislandSessionConfigReader();
+        ConfigReader read = new ConfigReader();
 
-        LogislandSessionConfiguration config = read.loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
+        LogislandConfiguration config = read.loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
         logger.info(config.toString());
 
 
-        for (ComponentConfiguration compoConfig : config.getComponents()) {
-            ComponentsFactory.getProcessorInstance(compoConfig);
-        }
 
     }
 }

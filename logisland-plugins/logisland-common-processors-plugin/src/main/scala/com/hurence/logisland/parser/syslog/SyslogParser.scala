@@ -18,8 +18,8 @@ package com.hurence.logisland.parser.syslog
 import java.util
 import java.util.{Calendar, Collections, Date}
 
+import com.hurence.logisland.component.ComponentContext
 import com.hurence.logisland.log.LogParser
-import com.hurence.logisland.processor.ProcessContext
 import com.hurence.logisland.record.Record
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
@@ -61,7 +61,7 @@ class SyslogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    def parse(context:ProcessContext, key:String, value: String): util.Collection[Record] = {
+    def parse(context:ComponentContext, key:String, value: String): util.Collection[Record] = {
         val event = new Record(EVENT_TYPE)
         event.setField("source", "string", value)
 

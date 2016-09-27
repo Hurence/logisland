@@ -16,7 +16,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.AbstractConfigurableComponent;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.record.Record;
 
 import java.util.Collection;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Stack;
 
 
-public abstract class AbstractProcessorChain extends AbstractConfigurableComponent implements ProcessorChain {
+public abstract class AbstractProcessorChain extends AbstractProcessor implements ProcessorChain {
 
     private List<Processor> processors = new Stack<>();
 
@@ -47,7 +47,7 @@ public abstract class AbstractProcessorChain extends AbstractConfigurableCompone
      * @return
      */
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
         Collection<Record> processedRecords = records;
         for (Processor processor : processors) {
             processedRecords = processor.process(context, processedRecords);

@@ -6,9 +6,11 @@ import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import com.hurence.logisland.utils.string.Multiline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,7 @@ import java.util.*;
  * <p/>
  * This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
  */
-public class OutlierProcessor extends KafkaStreamProcessor {
+public class OutlierProcessor extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
 
@@ -51,7 +53,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Rotation Policy Type")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("BY_AMOUNT")
             .build();
 
@@ -59,8 +61,8 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Rotation Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -68,8 +70,8 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Rotation Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -77,7 +79,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Chunking Policy Type")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("BY_AMOUNT")
             .build();
 
@@ -85,8 +87,8 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Chunking Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -94,8 +96,8 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Chunking Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -104,7 +106,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Sketchy outlier algorithm")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .allowableValues("SKETCHY_MOVING_MAD")
             .defaultValue("SKETCHY_MOVING_MAD")
             .build();
@@ -113,7 +115,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             .name("Batch outlier algorithm")
             .description("...")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .allowableValues("RAD")
             .defaultValue("RAD")
             .build();
@@ -121,9 +123,6 @@ public class OutlierProcessor extends KafkaStreamProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(INPUT_TOPICS);
-        descriptors.add(OUTPUT_TOPICS);
-        descriptors.add(ERROR_TOPICS);
         descriptors.add(ROTATION_POLICY_TYPE);
         descriptors.add(ROTATION_POLICY_AMOUNT);
         descriptors.add(ROTATION_POLICY_UNIT);
@@ -183,7 +182,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
      *
      */
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
+    public Collection<Record> process(final ComponentContext context, final Collection<Record> records) {
 
         Collection list = new ArrayList();
 
@@ -208,12 +207,12 @@ public class OutlierProcessor extends KafkaStreamProcessor {
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
                         Record evt = new Record(EVENT_TYPE);
-                        evt.setField("root_event_value", "double", record.getField("value").getRawValue());
-                        evt.setField("root_event_id", "string", record.getId());
-                        evt.setField("root_event_type", "string", record.getType());
-                        evt.setField("severity", "string", outlier.getSeverity());
-                        evt.setField("score", "string", outlier.getScore());
-                        evt.setField("num_points", "string", outlier.getNumPts());
+                        evt.setField("root_event_value", FieldType.DOUBLE, record.getField("value").getRawValue());
+                        evt.setStringField("root_event_id", record.getId());
+                        evt.setStringField("root_event_type", record.getType());
+                        evt.setStringField("severity", outlier.getSeverity().name());
+                        evt.setField("score", FieldType.DOUBLE, outlier.getScore());
+                        evt.setField("num_points", FieldType.INT, outlier.getNumPts());
                         list.add(evt);
 
 
@@ -225,7 +224,7 @@ public class OutlierProcessor extends KafkaStreamProcessor {
             } catch (RuntimeException e) {
 
                 Record evt = new Record(OUTLIER_PROCESSING_EXCEPTION_TYPE);
-                evt.setField("message", "string", e);
+                evt.setStringField("message",  e.getMessage());
                 list.add(evt);
               //  logger.info(e.getMessage(), e);
             }
@@ -234,8 +233,4 @@ public class OutlierProcessor extends KafkaStreamProcessor {
         return list;
     }
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
 }

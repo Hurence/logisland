@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
 import com.hurence.logisland.record.serializer.KryoRecordSerializer;
@@ -87,7 +88,7 @@ public class QueryMatcherProcessorTest {
         QueryMatcherProcessor processor = new QueryMatcherProcessor();
         StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
         instance.setProperty("rules",rulesAsString);
-        ProcessContext context = new StandardProcessContext(instance);
+        ComponentContext context = new StandardComponentContext(instance);
         processor.init(context);
 
 

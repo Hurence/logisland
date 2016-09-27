@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.component;
 
 
 
@@ -34,7 +34,7 @@ import java.util.Map;
  * thread-safe.
  * </p>
  */
-public interface ProcessContext extends Serializable{
+public interface ComponentContext extends Serializable{
 
     /**
      * Retrieves the current value set for the given descriptor, if a value is

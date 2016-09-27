@@ -1,5 +1,6 @@
 package com.hurence.logisland.utils.kafka;
 
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.serializer.KryoRecordSerializer;
 import kafka.consumer.Consumer;
@@ -59,19 +60,19 @@ public class EmbeddedKafkaEnvironmentTest {
 
         // create an event
         Record record = new Record("cisco");
-        record.setField("timestamp", "Long", new Date().getTime());
-        record.setField("method", "String", "GET");
-        record.setField("ipSource", "String", "123.34.45.123");
-        record.setField("ipTarget", "String", "178.23.45.234");
-        record.setField("urlScheme", "String", "http");
-        record.setField("urlHost", "String", "hurence.com");
-        record.setField("urlPort", "String", "80");
-        record.setField("urlPath", "String", "idea/help/create-test.html");
-        record.setField("requestSize", "Int", 4578);
-        record.setField("responseSize", "Int", 452);
-        record.setField("isOutsideOfficeHours", "Boolean", true);
-        record.setField("isHostBlacklisted", "Boolean", false);
-        record.setField("tags", "String", "spam,filter,mail");
+        record.setId("firewall_record1");
+        record.setField("method", FieldType.STRING, "GET");
+        record.setField("ip_source", FieldType.STRING, "123.34.45.123");
+        record.setField("ip_target", FieldType.STRING, "255.255.255.255");
+        record.setField("url_scheme", FieldType.STRING, "http");
+        record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
+        record.setField("url_port", FieldType.STRING, "80");
+        record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
+        record.setField("request_size", FieldType.INT, 1399);
+        record.setField("response_size", FieldType.INT, 452);
+        record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
+        record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
+        record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
         // serialize event
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

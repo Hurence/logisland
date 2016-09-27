@@ -1,10 +1,11 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.serializer.AvroRecordSerializer;
 import com.hurence.logisland.utils.avro.eventgenerator.DataGenerator;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -24,7 +25,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("min.events.count")
             .description("the minimum number of generated events each run")
             .required(true)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("10")
             .build();
 
@@ -32,7 +33,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("max.events.count")
             .description("the maximum number of generated events each run")
             .required(true)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
             .defaultValue("200")
             .build();
 
@@ -40,7 +41,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("avro.output.schema")
             .description("the avro schema definition for the output serialization")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     private static Logger logger = LoggerFactory.getLogger(RandomRecordGenerator.class);
@@ -52,7 +53,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
 
 
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
 
         final String schemaContent = context.getProperty(OUTPUT_SCHEMA).asString();
         final Schema.Parser parser = new Schema.Parser();

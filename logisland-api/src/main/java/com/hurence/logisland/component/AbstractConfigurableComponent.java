@@ -17,7 +17,7 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +136,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * Provides subclasses the ability to perform initialization logic
      *
      */
-    public void init(final ProcessContext context) {
+    public void init(final ComponentContext context) {
         // Provided for subclasses to override
     }
 
@@ -148,29 +148,8 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof ConfigurableComponent)) {
-            return false;
-        }
-
-        final ConfigurableComponent other = (ConfigurableComponent) obj;
-        return getIdentifier().equals(other.getIdentifier());
-    }
-
-    @Override
-    public int hashCode() {
-        return 235 + getIdentifier().hashCode();
-    }
-
-    @Override
     public String toString() {
-        return getClass().getSimpleName() + "[id=" + getIdentifier() + "]";
+        return "AbstractConfigurableComponent{}";
     }
 
 }

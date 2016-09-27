@@ -4,6 +4,7 @@
  */
 package com.hurence.logisland.record.serializer;
 
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import org.junit.Test;
 
@@ -30,21 +31,22 @@ public class JsonRecordSerializerTest {
 		final JsonRecordSerializer serializer = new JsonRecordSerializer();
 
 
-		List<String> tags = new ArrayList<>(Arrays.asList("spam","filter","mail"));
 		Record record = new Record("cisco");
-		record.setField("timestamp", "long", new Date().getTime());
-		record.setField("method", "string", "GET");
-		record.setField("ip_source", "string", "123.34.45.123");
-		record.setField("ip_target", "string", "255.255.255.255");
-		record.setField("url_scheme", "string", "http");
-		record.setField("url_host", "string", "origin-www.20minutes.fr");
-		record.setField("url_port", "string", "80");
-		record.setField("url_path", "string", "/r15lgc-100KB.js");
-		record.setField("request_size", "int", 1399);
-		record.setField("response_size", "int", 452);
-		record.setField("is_outside_office_hours", "boolean", false);
-		record.setField("is_host_blacklisted", "boolean", false);
-		//event.setField("tags", "array", tags);
+		record.setId("firewall_record1");
+		record.setField("timestamp", FieldType.LONG, new Date().getTime());
+		record.setField("method", FieldType.STRING, "GET");
+		record.setField("ip_source", FieldType.STRING, "123.34.45.123");
+		record.setField("ip_target", FieldType.STRING, "255.255.255.255");
+		record.setField("url_scheme", FieldType.STRING, "http");
+		record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
+		record.setField("url_port", FieldType.STRING, "80");
+		record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
+		record.setField("request_size", FieldType.INT, 1399);
+		record.setField("response_size", FieldType.INT, 452);
+		record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
+		record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
+		//record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		serializer.serialize(baos, record);

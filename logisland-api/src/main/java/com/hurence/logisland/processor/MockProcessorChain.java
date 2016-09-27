@@ -16,7 +16,6 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -30,50 +29,27 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class MockProcessor extends AbstractProcessor {
+public class MockProcessorChain extends AbstractProcessorChain {
 
 
-    public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
-            .name("fake.message")
-            .description("a fake message")
+    public static final PropertyDescriptor MOCK_CHAIN = new PropertyDescriptor.Builder()
+            .name("mock.chain")
+            .description("a fake")
             .required(true)
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("yoyo")
             .build();
 
 
-    private static Logger logger = LoggerFactory.getLogger(MockProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(MockProcessorChain.class);
 
     private static String EVENT_TYPE_NAME = "mock";
 
 
     @Override
-    public void init(final ComponentContext context) {
-        logger.info("init MockProcessor");
-    }
-
-    @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
-
-
-      //  collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
-
-        Record mockRecord = new Record(EVENT_TYPE_NAME);
-        mockRecord.setField("incomingEventsCount", FieldType.INT, collection.size());
-        mockRecord.setField("message", FieldType.STRING, context.getProperty(FAKE_MESSAGE).getRawValue());
-
-
-        List<Record> mockResults = new ArrayList<>();
-        mockResults.add(mockRecord);
-        logger.info("mock processing event : {}", mockRecord);
-        return mockResults;
-    }
-
-
-    @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(FAKE_MESSAGE);
+        descriptors.add(MOCK_CHAIN);
 
         return Collections.unmodifiableList(descriptors);
     }

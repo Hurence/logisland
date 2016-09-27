@@ -1,11 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.runner;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.config.LogislandSessionConfigReader;
-import com.hurence.logisland.config.LogislandSessionConfiguration;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.ConfigReader;
+import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -14,9 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by tom on 06/07/16.
- */
+
 public class StreamProcessingRunner {
 
     private static Logger logger = LoggerFactory.getLogger(StreamProcessingRunner.class);
@@ -35,7 +48,6 @@ public class StreamProcessingRunner {
         // Commande lien management
         Parser parser = new GnuParser();
         Options options = new Options();
-
 
 
         String helpMsg = "Print this message.";
@@ -57,16 +69,16 @@ public class StreamProcessingRunner {
             String configFile = line.getOptionValue("conf");
 
             // load the YAML config
-            LogislandSessionConfiguration sessionConf = new LogislandSessionConfigReader().loadConfig(configFile);
+            LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstance = ComponentsFactory.getEngineInstance(sessionConf);
+            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
+            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf);
 
             // start the engine
             if (engineInstance.isPresent()) {
                 StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
-                engineInstance.get().getEngine().start(engineContext, processors, parsers);
+                engineInstance.get().getEngine().start(engineContext, processors);
             }
 
         } catch (Exception e) {

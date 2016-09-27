@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.component;
+package com.hurence.logisland.validator;
+
+import com.hurence.logisland.component.ValidationResult;
 
 import java.io.Serializable;
 

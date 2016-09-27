@@ -60,7 +60,7 @@ public class ConfigPublisher implements Publisher {
                     // for all in array create the rule as an event..
                     Record record = new Record(CONFIG_TYPE);
 
-                    for (String k : rule.keySet()) record.setField(k, "String", rule.get(k));
+                    for (String k : rule.keySet()) record.setStringField(k, rule.get(k));
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     kryoSerializer.serialize(baos, record);

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class JsonRecordSerializer implements RecordSerializer {
                 String fieldName = entry.getKey();
                 Field field = entry.getValue();
                 Object fieldValue = field.getRawValue();
-                String fieldType = field.getType();
+                String fieldType = field.getType().toString();
 
                 // dump event field as record attribute
 
@@ -163,22 +164,22 @@ public class JsonRecordSerializer implements RecordSerializer {
                         break;
                     case VALUE_NUMBER_INT:
                         try {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "int", jp.getIntValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.INT, jp.getIntValue()));
                         }catch(JsonParseException ex){
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "long", jp.getLongValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
                         }
                         break;
 
                     case VALUE_NUMBER_FLOAT:
                         try{
-                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "float", jp.getFloatValue()));
+                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
                         }catch(JsonParseException ex){
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), "double", jp.getDoubleValue()));
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
                         }
                         break;
                     case VALUE_FALSE:
                     case VALUE_TRUE:
-                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "boolean", jp.getBooleanValue()));
+                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
                         break;
                     case START_ARRAY:
                         logger.info(jp.getCurrentName());
@@ -204,7 +205,7 @@ public class JsonRecordSerializer implements RecordSerializer {
                                     }
                                     break;
                                 default:
-                                    fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), "string", jp.getValueAsString()));
+                                    fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
 
                                     break;
                             }

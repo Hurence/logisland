@@ -18,7 +18,6 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.log.StandardParserInstance;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.List;
@@ -28,7 +27,7 @@ import java.util.List;
  */
 public interface StreamProcessingEngine extends ConfigurableComponent {
 
-    void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances, List<StandardParserInstance> parserInstances);
+    void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances);
 
     void shutdown(EngineContext engineContext);
 

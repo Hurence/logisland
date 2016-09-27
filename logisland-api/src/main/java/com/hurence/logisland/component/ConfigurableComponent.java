@@ -54,5 +54,4 @@ public interface ConfigurableComponent extends Serializable{
      * @return PropertyDescriptor objects this component currently supports
      */
     List<PropertyDescriptor> getPropertyDescriptors();
-    
 }

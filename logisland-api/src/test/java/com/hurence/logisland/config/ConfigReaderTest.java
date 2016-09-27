@@ -4,7 +4,6 @@
  */
 package com.hurence.logisland.config;
 
-import com.hurence.logisland.component.ComponentsFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,28 +11,23 @@ import org.slf4j.LoggerFactory;
 /**
  * @author tom
  */
-public class LogislandSessionConfigReaderTest {
+public class ConfigReaderTest {
 
     private static final String SAMPLE_CONFIG_PATH = "/logisland-common-parsers-plugin/src/test/resources/data/sample-config.yml";
 
-    private static Logger logger = LoggerFactory.getLogger(LogislandSessionConfigReaderTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ConfigReaderTest.class);
 
     @Test
     public void testLoadConfig() {
 
 
-
         try {
-            LogislandSessionConfigReader read = new LogislandSessionConfigReader();
-            LogislandSessionConfiguration config =  read.loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
-            config.getComponents().forEach(ComponentsFactory::getProcessorInstance);
+            ConfigReader read = new ConfigReader();
+            LogislandConfiguration config = read.loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
             logger.info(config.toString());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-
-
-
 
 
     }

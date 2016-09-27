@@ -1,28 +1,25 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.config.ComponentConfiguration;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.log.StandardParserContext;
-import com.hurence.logisland.log.StandardParserInstance;
+import com.hurence.logisland.record.RecordUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class SplitTextTest {
 
-    public static final String DATA_USR_BACKEND_LOG = "/data/usr_backend_application.log";
-    public static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
-    public static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
-    public static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
+    private static final String DATA_USR_BACKEND_LOG = "/data/usr_backend_application.log";
+    private static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
+    private static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
+    private static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
+
     private static Logger logger = LoggerFactory.getLogger(SplitTextTest.class);
 
 
@@ -33,18 +30,15 @@ public class SplitTextTest {
         Map<String, String> conf = new HashMap<>();
         conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
         conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
-
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
 
-        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
-
-        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
+        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
-        ProcessContext context = new StandardParserContext(instance);
+        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance != null);
 
 
@@ -63,7 +57,8 @@ public class SplitTextTest {
 
 
             // String[] kvLine = line.split("@");
-            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
+            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -92,14 +87,13 @@ public class SplitTextTest {
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
 
-        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
         componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
-        ProcessContext context = new StandardParserContext(instance);
+        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance != null);
 
 
@@ -117,7 +111,8 @@ public class SplitTextTest {
 
 
             // String[] kvLine = line.split("@");
-            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
+            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -145,14 +140,13 @@ public class SplitTextTest {
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
 
-        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
-        ProcessContext context = new StandardParserContext(instance);
+        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance != null);
 
 
@@ -170,7 +164,8 @@ public class SplitTextTest {
 
 
             // String[] kvLine = line.split("@");
-            final List<Record> records = new ArrayList<>(instance.getParser().parse(context, "", line));
+            final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
+            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -188,10 +183,6 @@ public class SplitTextTest {
     }
 
 
-
-
-
-
     @Test
     public void testLoadConfig() throws Exception {
 
@@ -203,14 +194,13 @@ public class SplitTextTest {
         conf.put("key.regex", "(\\S*):(\\S*)");
         conf.put("key.fields", "es_index,host_name");
 
-        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardParserInstance instance = ComponentsFactory.getParserInstance(componentConfiguration);
-        ProcessContext context = new StandardParserContext(instance);
+        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance != null);
 
 
@@ -229,7 +219,8 @@ public class SplitTextTest {
 
 
                 String[] kvLine = line.split("@");
-                final List<Record> records = new ArrayList<>(instance.getParser().parse(context, kvLine[0], kvLine[1]));
+                final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord(kvLine[0], kvLine[1]));
+                final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
 
                 if (records.isEmpty())
                     System.out.println(line);

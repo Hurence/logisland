@@ -143,8 +143,18 @@ public class Record implements Serializable {
      * @param fieldName
      * @param value
      */
-    public void setField(String fieldName, String fieldType, Object value) {
+    public void setField(String fieldName, FieldType fieldType, Object value) {
         setField(fieldName, new Field(fieldName, fieldType, value));
+    }
+
+    /**
+     * set a field value as a String value
+     *
+     * @param fieldName the name of the string field
+     * @param value the value to be added
+     */
+    public void setStringField(String fieldName, String value) {
+        setField(fieldName, new Field(fieldName, FieldType.STRING, value));
     }
 
     /**
@@ -163,15 +173,6 @@ public class Record implements Serializable {
      */
     public Field getField(String fieldName) {
         return fields.get(fieldName);
-    }
-
-    public void putAll(Map<String, Object> entrySets) {
-        Objects.requireNonNull(entrySets, "Argument can not be null");
-        for (Map.Entry<String, Object> entry : entrySets.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            this.setField(key, "object", value);
-        }
     }
 
     public Collection<Field> getAllFields() {

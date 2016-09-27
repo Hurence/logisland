@@ -48,8 +48,8 @@ public class DocumentPublisher {
             if (file.isFile()) {
                 String content = SmallFileUtil.getContent(file);
                 Record record = new Record(file.getName());
-                record.setField("name", "String", file.getName());
-                record.setField("content", "String", content);
+                record.setStringField("name", file.getName());
+                record.setStringField("content", content);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 kryoSerializer.serialize(baos, record);
                 KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());

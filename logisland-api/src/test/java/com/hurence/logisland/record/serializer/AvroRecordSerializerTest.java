@@ -70,7 +70,7 @@ public class AvroRecordSerializerTest {
 		Record[] records = new Record[100];
 		for (int i=0; i<100; i++) {
 			Record record = new Record("mtr");
-			record.setField("TRACE", "java.lang.string", "Outbound Message" + "\n" +
+			record.setStringField("TRACE", "Outbound Message" + "\n" +
 					"at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695) [tomcat-coyote.jar:7.0.55]" + "\n" +
 					"at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736) [tomcat-coyote.jar:7.0.55]" + "\n" +
 					"at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.j ava:611) [tomcat-coyote.jar:7.0.55]" + "\n" +
@@ -607,14 +607,14 @@ public class AvroRecordSerializerTest {
 					"at org.apache.cxf.interceptor.ServiceInvokerInterceptor$1.run(ServiceInvokerInterceptor.ja va:59) [cxf-core-3.0.3.jar:3.0.3]" + "\n" +
 					"at org.apache.cxf.jaxrs.JAXRSInvoker.invoke(JAXRSInvoker.java:99) [cxf-rt-frontend-jaxrs-3.0.3.jar:3.0.3");
 
-			record.setField("PARSING_DATESTAMP", "java.lang.long", 1453804816376L);
-			record.setField("PLAYER_TYPE", "java.lang.string", "PLAYER-WEB-TOTO");
-			record.setField("SERVER", "java.lang.string", "fl0046");
-			record.setField("DATESTAMP", "java.lang.long", 1447051243255L);
-			record.setField("SESSION", "java.lang.string", "PLAYER-WEB-TOTO:402215355:FF70Fsdf0D3D752sdf15B1ED5CB5:sdfp");
-			record.setField("SESSION_ID", "java.lang.string", "4022sdf5:FF70F2sdf23891715Bsdfoadp");
-			record.setField("FUNCTION", "java.lang.string", "mtr");
-			record.setField("LOG_LEVEL", "java.lang.string", "ERROR");
+			record.setField("PARSING_DATESTAMP", FieldType.LONG, 1453804816376L);
+			record.setStringField("PLAYER_TYPE", "PLAYER-WEB-TOTO");
+			record.setStringField("SERVER", "fl0046");
+			record.setField("DATESTAMP", FieldType.LONG, 1447051243255L);
+			record.setStringField("SESSION", "PLAYER-WEB-TOTO:402215355:FF70Fsdf0D3D752sdf15B1ED5CB5:sdfp");
+			record.setStringField("SESSION_ID", "4022sdf5:FF70F2sdf23891715Bsdfoadp");
+			record.setStringField("FUNCTION", "mtr");
+			record.setStringField("LOG_LEVEL", "ERROR");
 			records[i] = record;
 		}
 
@@ -639,7 +639,7 @@ public class AvroRecordSerializerTest {
 		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
 
 		Record record = new Record("mtr");
-		record.setField("TRACE", "java.lang.string", "Outbound Message" + "\n" +
+		record.setStringField("TRACE", "Outbound Message" + "\n" +
 				"at java.lang.Thread.run(Thread.java:745) [na:1.7.0_80]" + "\n" +
 				"at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-coyote.jar:7.0.55]" + "\n" +
 				"at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7 .0_80]" + "\n" +
@@ -673,14 +673,14 @@ public class AvroRecordSerializerTest {
 				"at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:149) [cxf-rt-transports-http-3.0.3.jar:3.0.3]" + "\n" +
 				"at org.apache.cxf.transport.servlet.ServletController.invoke(ServletController.java:197) [cxf-rt-transports-http-3.0.3.jar:3.0.3]");
 
-		record.setField("PARSING_DATESTAMP", "java.lang.long", 1453804816376L);
-		record.setField("PLAYER_TYPE", "java.lang.string", "PLAYER-WEB-sdf");
-		record.setField("SERVER", "java.lang.string", "flxx46");
-		record.setField("DATESTAMP", "java.lang.long", 1447051243255L);
-		record.setField("SESSION", "java.lang.string", "PLAYER-WEB-HURENCE:40221fghfghfghfghfgh5355:fgfghfghfgjghjkh:jkljkl");
-		record.setField("SESSION_ID", "java.lang.string", "dfgdfgdfgdfgf:jkljkljkljkljhfghdfgdfg:oadp");
-		record.setField("FUNCTION", "java.lang.string", "rrr");
-		record.setField("LOG_LEVEL", "java.lang.string", "ERROR");
+		record.setField("PARSING_DATESTAMP", FieldType.LONG, 1453804816376L);
+		record.setStringField("PLAYER_TYPE", "PLAYER-WEB-sdf");
+		record.setStringField("SERVER",  "flxx46");
+		record.setField("DATESTAMP", FieldType.LONG, 1447051243255L);
+		record.setStringField("SESSION",  "PLAYER-WEB-HURENCE:40221fghfghfghfghfgh5355:fgfghfghfgjghjkh:jkljkl");
+		record.setStringField("SESSION_ID",  "dfgdfgdfgdfgf:jkljkljkljkljhfghdfgdfg:oadp");
+		record.setStringField("FUNCTION",  "rrr");
+		record.setStringField("LOG_LEVEL",  "ERROR");
 
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

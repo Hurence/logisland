@@ -16,14 +16,15 @@
  */
 package com.hurence.logisland.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public abstract class AbstractConfiguredComponent implements ConfigurableComponent, ConfiguredComponent {
@@ -129,7 +130,6 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
             if (!descriptor.isRequired() && (value = properties.remove(descriptor)) != null) {
 
 
-
                 try {
                     component.onPropertyModified(descriptor, value, null);
                 } catch (final Exception e) {
@@ -150,17 +150,17 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     @Override
     public Map<PropertyDescriptor, String> getProperties() {
 
-            final List<PropertyDescriptor> supported = component.getPropertyDescriptors();
-            if (supported == null || supported.isEmpty()) {
-                return Collections.unmodifiableMap(properties);
-            } else {
-                final Map<PropertyDescriptor, String> props = new LinkedHashMap<>();
-                for (final PropertyDescriptor descriptor : supported) {
-                    props.put(descriptor, null);
-                }
-                props.putAll(properties);
-                return props;
+        final List<PropertyDescriptor> supported = component.getPropertyDescriptors();
+        if (supported == null || supported.isEmpty()) {
+            return Collections.unmodifiableMap(properties);
+        } else {
+            final Map<PropertyDescriptor, String> props = new LinkedHashMap<>();
+            for (final PropertyDescriptor descriptor : supported) {
+                props.put(descriptor, null);
             }
+            props.putAll(properties);
+            return props;
+        }
 
     }
 
@@ -193,25 +193,23 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public String toString() {
-
-            return component.toString();
-
+        return component.toString();
     }
 
 
     @Override
     public PropertyDescriptor getPropertyDescriptor(final String name) {
-            return component.getPropertyDescriptor(name);
+        return component.getPropertyDescriptor(name);
     }
 
     @Override
     public void onPropertyModified(final PropertyDescriptor descriptor, final String oldValue, final String newValue) {
-            component.onPropertyModified(descriptor, oldValue, newValue);
+        component.onPropertyModified(descriptor, oldValue, newValue);
     }
 
     @Override
     public List<PropertyDescriptor> getPropertyDescriptors() {
-            return component.getPropertyDescriptors();
+        return component.getPropertyDescriptors();
     }
 
     @Override

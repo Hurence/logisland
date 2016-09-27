@@ -16,6 +16,7 @@
 
 package com.hurence.logisland.record.serializer;
 
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
 import org.apache.avro.Schema;
@@ -81,18 +82,11 @@ public class AvroRecordSerializer implements RecordSerializer {
 
     public static List<Object> copyArray(GenericData.Array<Object> avroArray, List<Object> list) {
         for (Object avroRecord : avroArray) {
-
-
-          //  Object fieldValue = avroRecord.getField(0);
-
-
             if (avroRecord instanceof org.apache.avro.util.Utf8) {
                 list.add( avroRecord.toString());
             }else {
                 list.add(avroRecord);
             }
-
-
         }
         return list;
     }
@@ -112,7 +106,8 @@ public class AvroRecordSerializer implements RecordSerializer {
 
                 String fieldName = schemaField.name();
                 Object fieldValue = genericRecord.get(fieldName);
-                String fieldType = schemaField.schema().getType().getName();
+                String strFieldType = schemaField.schema().getType().getName();
+                FieldType fieldType = FieldType.valueOf(strFieldType.toUpperCase());
 
                 if (Objects.equals(fieldName, Record.RECORD_ID)) {
                     record.setId(fieldValue.toString());
@@ -130,31 +125,6 @@ public class AvroRecordSerializer implements RecordSerializer {
 
                 }
             }
-
-
-
-            /*
-            * for (  String fieldName : avroRecord.keySet()) {
-    Object value=avroRecord.getField(fieldName);
-    if (value == null) {
-      continue;
-    }
-    if (value instanceof GenericRecord) {
-      record.setField(fieldName,copyRecord((GenericRecord)value,new HashMap<String,Object>()));
-    }
- else     if (value instanceof GenericArray) {
-      GenericArray avroArray=(GenericArray)value;
-      List<Map<String,Object>> list=new ArrayList<Map<String,Object>>((int)avroArray.size());
-      record.setField(fieldName,list);
-      copyArray(avroArray,list);
-    }
- else     if (value instanceof Utf8) {
-      record.setField(fieldName,((Utf8)value).toString());
-    }
- else {
-      record.setField(fieldName,value);
-    }
-  }*/
 
             return record;
         } catch (Throwable t) {

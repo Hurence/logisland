@@ -54,7 +54,7 @@ object TracesIndexer {
                 val esIndex = "log-island"
 
                 val parser = new NetworkTraceLogParser()
-                traces.map(trace => parser.parse(null, "", trace.toString()))
+           //     traces.map(trace => parser.parse(null, "", trace.toString()))
                 //EventIndexer.indexEvents(traces, esHosts, esIndex, "traces")
             }
             case "debug" => {

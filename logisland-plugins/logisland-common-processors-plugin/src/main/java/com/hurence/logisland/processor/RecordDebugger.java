@@ -1,12 +1,13 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.serializer.JsonRecordSerializer;
 import com.hurence.logisland.record.serializer.RecordSerializer;
 import com.hurence.logisland.record.serializer.StringRecordSerializer;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class RecordDebugger extends AbstractProcessor {
             .name("event.serializer")
             .description("the way to serialize event")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(JSON.getValue())
             .allowableValues(JSON, STRING)
             .build();
@@ -49,7 +50,7 @@ public class RecordDebugger extends AbstractProcessor {
 
 
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
             if(context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())){

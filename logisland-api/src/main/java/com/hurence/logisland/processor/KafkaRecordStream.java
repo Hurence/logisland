@@ -16,9 +16,8 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,17 +26,17 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class KafkaStreamProcessor extends AbstractProcessorChain {
+public class KafkaRecordStream extends AbstractProcessorChain {
 
     public static final String DEAD_LETTER_TOPIC = "logisland-dead-letter-queue";
-    private static Logger logger = LoggerFactory.getLogger(KafkaStreamProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(KafkaRecordStream.class);
 
 
     public static final PropertyDescriptor OUTPUT_TOPICS = new PropertyDescriptor.Builder()
             .name("kafka.output.topics")
             .description("Sets the output Kafka topic name")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(DEAD_LETTER_TOPIC)
             .build();
 
@@ -67,8 +66,4 @@ public class KafkaStreamProcessor extends AbstractProcessorChain {
         return Collections.unmodifiableList(descriptors);
     }
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
 }

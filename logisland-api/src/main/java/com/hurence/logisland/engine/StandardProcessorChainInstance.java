@@ -16,33 +16,35 @@
  */
 package com.hurence.logisland.engine;
 
-import com.hurence.logisland.component.*;
+import com.hurence.logisland.component.AbstractConfiguredComponent;
+import com.hurence.logisland.component.ConfigurableComponent;
+import com.hurence.logisland.processor.KafkaRecordStream;
+import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.processor.ProcessorChain;
+import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class StandardEngineInstance extends AbstractConfiguredComponent {
+public class StandardProcessorChainInstance extends AbstractConfiguredComponent {
 
-    private final StreamProcessingEngine engine;
+    private final ProcessorChain processor;
 
-    private final List<StandardProcessorChainInstance> processorChainInstances = new ArrayList<>();
+    private List<AbstractConfiguredComponent> processors = new ArrayList<>();
 
-    public StandardEngineInstance(StreamProcessingEngine engine, String id) {
-        super((ConfigurableComponent)engine, id);
-        this.engine = engine;
+    public StandardProcessorChainInstance(ProcessorChain processor, String id) {
+        super((ConfigurableComponent)processor, id);
+        this.processor = processor;
     }
 
-    public void addProcessorChainInstance(StandardProcessorChainInstance processorChainInstance){
-        processorChainInstances.add(processorChainInstance);
+    public void addProcessorInstance(StandardProcessorInstance processorInstance){
+        processor.addProcessor(processorInstance.getProcessor());
+
     }
 
-    public List<StandardProcessorChainInstance> getProcessorChainInstances() {
-        return processorChainInstances;
-    }
-
-    public StreamProcessingEngine getEngine() {
-        return engine;
+    public Processor getProcessor() {
+        return processor;
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -18,10 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by fprunier on 15/04/16.
- */
-public class QueryMatcherProcessor extends KafkaStreamProcessor {
+
+public class QueryMatcherProcessor extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
 
@@ -29,7 +29,7 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
             .name("Luwak rules")
             .description("a comma separated string of rules")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("*")
             .build();
 
@@ -45,13 +45,13 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ComponentContext context) {
 
 
         final String rules = context.getProperty(RULES).asString();
         final String[] split = rules.split(",");
-        for (int i = 0; i<split.length; i++) {
-            matchingRules.add(new MatchingRule("rule"+i, split[i]));
+        for (int i = 0; i < split.length; i++) {
+            matchingRules.add(new MatchingRule("rule" + i, split[i]));
         }
 
         try {
@@ -68,7 +68,7 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
     }
 
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
 
         ArrayList<Record> outRecords = new ArrayList<>();
 
@@ -76,7 +76,7 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
         for (Record ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
             for (String fieldName : ev.getAllFieldNames()) {
-                if (ev.getField(fieldName).getType().equalsIgnoreCase("string"))
+                if (ev.getField(fieldName).getType() == FieldType.STRING)
                     docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
                     docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
@@ -99,7 +99,7 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
             outEv.setId(docMatch.getDocId());
             // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch : docMatch.getMatches())
-                outEv.setField("match", "string", queryMatch.getQueryId());
+                outEv.setStringField("match", queryMatch.getQueryId());
             outRecords.add(outEv);
         }
 
@@ -110,19 +110,10 @@ public class QueryMatcherProcessor extends KafkaStreamProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(ERROR_TOPICS);
-        descriptors.add(INPUT_TOPICS);
-        descriptors.add(OUTPUT_TOPICS);
-        descriptors.add(INPUT_SCHEMA);
-        descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(RULES);
 
         return Collections.unmodifiableList(descriptors);
     }
 
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
 }

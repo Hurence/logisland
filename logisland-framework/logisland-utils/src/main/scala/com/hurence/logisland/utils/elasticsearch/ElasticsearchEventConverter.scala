@@ -19,7 +19,7 @@ package com.hurence.logisland.utils.elasticsearch
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.{FieldType, Record}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.elasticsearch.common.xcontent.XContentFactory._
 import org.joda.time.format.ISODateTimeFormat
@@ -48,54 +48,54 @@ object ElasticsearchEventConverter extends LazyLogging {
             try {
                 fieldName = field.getName.toLowerCase().replaceAll("\\.", "_")
 
-                val fieldValue = field.getType match {
-                    case s if s.contains("string") => {
-                        field.getRawValue.asInstanceOf[String]
-                    }
-                    case s if s.contains("integer") => {
-                        field.getRawValue.asInstanceOf[Int]
-                    }
-                    case s if s.contains("long") => {
-                        // convert event_time as ISO for ES
-                        if (fieldName.equals("event_time")) {
-                            try {
-                                val dateParser = ISODateTimeFormat.dateTimeNoMillis()
-                                dateParser.print(field.getRawValue.asInstanceOf[Long])
-                            } catch {
-                                case ex: Throwable => field.getRawValue.asInstanceOf[Long]
-                            }
-                        } else {
-                            field.getRawValue.asInstanceOf[Long]
+                val fieldValue = if (field.getType == FieldType.STRING) {
+                    field.asString()
+                } else if (field.getType == FieldType.INT ) {
+                    field.asInteger()
+                }
+                else if (field.getType == FieldType.LONG ) {
+                    // convert event_time as ISO for ES
+                    if (fieldName.equals(Record.RECORD_TIME)) {
+                        try {
+                            val dateParser = ISODateTimeFormat.dateTimeNoMillis()
+                            dateParser.print(field.asLong())
+                        } catch {
+                            case ex: Throwable => field.asLong()
                         }
+                    } else {
+                        field.asLong()
                     }
-                    case s if s.contains("float") => {
-                        field.getRawValue.asInstanceOf[Float]
-                    }
-                    case s if s.contains("double") => {
-                        field.getRawValue.asInstanceOf[Double]
-                    }
-                    case s if s.contains("boolean") => {
-                        field.getRawValue.asInstanceOf[Boolean]
-                    }
-                    case _ => {
-                        field.getRawValue
-                    }
+                }else if (field.getType == FieldType.FLOAT ) {
+                    field.asFloat()
+                }
+                else if (field.getType == FieldType.DOUBLE ) {
+                    field.asDouble()
+                }
+                else if (field.getType == FieldType.BOOLEAN ) {
+                    field.asBoolean()
+                }
+                else {
+                    field.getRawValue
                 }
 
 
 
-                document.field(fieldName, fieldValue)
 
-            } catch {
-                case ex: Throwable => logger.error(s"unable to process a $fieldName in event : $event, ${ex.getMessage}")
-            }
+            document.field(fieldName, fieldValue)
 
-        })
+        } catch
+        {
+            case ex: Throwable => logger.error(s"unable to process a $fieldName in event : $event, ${ex.getMessage}")
+        }
 
-        val result = document.endObject().string()
-        document.flush()
-        result
     }
+
+    )
+
+    val result = document.endObject().string()
+    document.flush()
+    result
+}
 
 
 }

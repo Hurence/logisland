@@ -1,8 +1,9 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,21 +26,21 @@ public class SplitTextMultiline extends AbstractProcessor {
             .name("regex")
             .description("the regex to match")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor FIELDS = new PropertyDescriptor.Builder()
             .name("fields")
             .description("a comma separated list of fields corresponding to matching groups")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
             .name("event.type")
             .description("the type of event")
             .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     private String buffer = "";
@@ -56,7 +57,7 @@ public class SplitTextMultiline extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
 
         final String[] fields = context.getProperty(FIELDS).asString().split(",");
         final String regexString = context.getProperty(REGEX).asString();

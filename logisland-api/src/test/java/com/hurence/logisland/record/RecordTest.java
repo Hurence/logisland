@@ -28,7 +28,7 @@ public class RecordTest {
 
         assertTrue(record.isEmpty());
         assertEquals(record.size(), 3);
-        record.setField(FieldType.LONG, FieldType.LONG, new Date().getTime());
+        record.setField("timestamp", FieldType.LONG, new Date().getTime());
         record.setField("method", FieldType.STRING, "GET");
         record.setField("ip_source", FieldType.STRING, "123.34.45.123");
         record.setField("ip_target", FieldType.STRING, "255.255.255.255");

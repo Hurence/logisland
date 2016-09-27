@@ -28,7 +28,7 @@ public class LuwakQueryMatcherTest {
 
         Record ev1 = new Record("mytype");
         ev1.setId("myid");
-        ev1.setField("name","string", "luke");
+        ev1.setStringField("name", "luke");
 
         Collection<Record> eventsOut = matcher.process(Collections.singletonList(ev1));
 

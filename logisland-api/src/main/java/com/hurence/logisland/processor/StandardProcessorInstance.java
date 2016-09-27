@@ -26,8 +26,6 @@ public class StandardProcessorInstance extends AbstractConfiguredComponent {
     public StandardProcessorInstance(Processor processor, String id) {
         super(processor, id);
         this.processor = processor;
-
-
     }
 
     public Processor getProcessor() {

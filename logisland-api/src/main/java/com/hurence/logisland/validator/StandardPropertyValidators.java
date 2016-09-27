@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.validators;
+package com.hurence.logisland.validator;
 
 
 
 
 import com.hurence.logisland.component.ValidationResult;
-import com.hurence.logisland.component.Validator;
 
 import java.io.File;
 import java.net.URI;
@@ -28,7 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.regex.Pattern;
 
-public class StandardValidators {
+public class StandardPropertyValidators {
 
 
 

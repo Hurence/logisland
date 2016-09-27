@@ -1,16 +1,12 @@
 package com.hurence.logisland.config;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.log.StandardParserInstance;
-import com.hurence.logisland.processor.StandardProcessorInstance;
+import com.hurence.logisland.processor.StandardComponentContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,23 +22,22 @@ public class ConfigLoaderTest {
     public void testLoadConfig() throws Exception {
 
 
-        LogislandSessionConfiguration config = new LogislandSessionConfigReader()
-                .loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
+        LogislandConfiguration config =
+                ConfigReader.loadConfig(this.getClass().getResource(SAMPLE_CONFIG_PATH).getFile());
 
 
         logger.info(config.toString());
 
-        Optional<StandardEngineInstance> engineInstance = ComponentsFactory.getEngineInstance(config);
+        Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(config.getEngine());
 
         Assert.assertTrue(engineInstance.isPresent());
 
-        StandardEngineContext context = new StandardEngineContext(engineInstance.get());
+        StandardComponentContext context = new StandardComponentContext(engineInstance.get());
 
-        Assert.assertEquals(context.getProperty("fake.settings").getRawValue(), "oullala");
+        Assert.assertEquals(301, context.getProperty("fake.settings").asInteger().intValue());
 
+        Assert.assertEquals(1, engineInstance.get().getProcessorChainInstances().size());
+        //   engineInstance.get().getProcessorChainInstances().get(0)
 
-        List<StandardProcessorInstance> processors = ComponentsFactory.getAllProcessorInstances(config);
-        List<StandardParserInstance> parserInstances = ComponentsFactory.getAllParserInstances(config);
-        engineInstance.get().getEngine().start(context, processors, parserInstances);
     }
 }

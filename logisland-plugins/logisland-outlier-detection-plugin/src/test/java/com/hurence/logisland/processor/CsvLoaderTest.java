@@ -1,7 +1,6 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.log.LogParserException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -32,13 +31,12 @@ public class CsvLoaderTest {
 
 
     @Test
-    public void CsvLoaderTest() throws IOException, LogParserException {
+    public void CsvLoaderTest() throws IOException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
             List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
-
 
 
             Assert.assertTrue(!records.isEmpty());
@@ -48,7 +46,7 @@ public class CsvLoaderTest {
                 Assert.assertTrue("should be sensors, was " + record.getType(), record.getType().equals("sensors"));
                 Assert.assertTrue("should be 5, was " + record.getFieldsEntrySet().size(), record.getFieldsEntrySet().size() == 5);
                 Assert.assertTrue(record.getAllFieldNames().contains("timestamp"));
-                if(!record.getAllFieldNames().contains("value"))
+                if (!record.getAllFieldNames().contains("value"))
                     System.out.println("stop");
                 Assert.assertTrue(record.getAllFieldNames().contains("value"));
 
@@ -59,7 +57,7 @@ public class CsvLoaderTest {
     }
 
     @Test
-    public void CsvLoaderUnparsableExceptionTest() throws IOException, LogParserException {
+    public void CsvLoaderUnparsableExceptionTest() throws IOException {
         File f = new File(RESOURCES_DIRECTORY + "artificialWithAnomaly/art_daily_flatmiddle.csv");
 
         DateTimeFormatter wrongInputDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-ss");
@@ -67,8 +65,7 @@ public class CsvLoaderTest {
         BufferedReader reader = Files.newBufferedReader(f.toPath(), ENCODING);
         try {
             TimeSeriesCsvLoader.load(reader, true, wrongInputDateFormat);
-        }
-        catch (LogParserException e) {
+        } catch (RuntimeException e) {
             return;
         }
 

@@ -1,12 +1,15 @@
 package com.hurence.logisland.processor.elasticsearch;
 
-import com.hurence.logisland.component.ComponentsFactory;
-import com.hurence.logisland.config.ComponentConfiguration;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.StandardProcessContext;
+import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.config.AbstractComponentConfiguration;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.ProcessorConfiguration;
+import com.hurence.logisland.processor.StandardComponentContext;
 import com.hurence.logisland.processor.StandardProcessorInstance;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.utils.string.Multiline;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +20,6 @@ import java.util.*;
  * Created by tom on 21/07/16.
  */
 public class PutElasticsearchTest {
-
 
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearchTest.class);
@@ -109,36 +111,33 @@ public class PutElasticsearchTest {
         conf.put("index", "test");
         conf.put("type", "logisland");
 
-        ComponentConfiguration componentConfiguration = new ComponentConfiguration();
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
         componentConfiguration.setComponent("com.hurence.logisland.processor.elasticsearch.PutElasticsearch");
         componentConfiguration.setType("processor");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentsFactory.getProcessorInstance(componentConfiguration);
-        ProcessContext context = new StandardProcessContext(instance);
-        assert instance != null;
-        instance.getProcessor().init(context);
-        //Collection<Event> events = instance.getProcessor().process(context, Collections.emptyList());
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        Assert.assertTrue(instance.isPresent());
+        ComponentContext context = new StandardComponentContext(instance.get());
 
-        // create an event
+
         Record record = new Record("cisco");
-        record.setField("timestamp", "Long", new Date().getTime());
-        record.setField("method", "String", "GET");
-        record.setField("ipSource", "String", "123.34.45.123");
-        record.setField("ipTarget", "String", "178.23.45.234");
-        record.setField("urlScheme", "String", "http");
-        record.setField("urlHost", "String", "hurence.com");
-        record.setField("urlPort", "String", "80");
-        record.setField("urlPath", "String", "idea/help/create-test.html");
-        record.setField("requestSize", "Int", 4578);
-        record.setField("responseSize", "Int", 452);
-        record.setField("isOutsideOfficeHours", "Boolean", true);
-        record.setField("isHostBlacklisted", "Boolean", false);
-        record.setField("tags", "String", "spam,filter,mail");
+        record.setId("firewall_record1");
+        record.setField("method", FieldType.STRING, "GET");
+        record.setField("ip_source", FieldType.STRING, "123.34.45.123");
+        record.setField("ip_target", FieldType.STRING, "255.255.255.255");
+        record.setField("url_scheme", FieldType.STRING, "http");
+        record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
+        record.setField("url_port", FieldType.STRING, "80");
+        record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
+        record.setField("request_size", FieldType.INT, 1399);
+        record.setField("response_size", FieldType.INT, 452);
+        record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
+        record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
+        record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
-        instance.getProcessor().init(context);
-        instance.getProcessor().process(context, Collections.singletonList(record));
+        instance.get().getProcessor().process(context, Collections.singletonList(record));
 
         // @TODO embed a local instance here
     }

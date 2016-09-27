@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -28,14 +29,13 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
     private StandardAnalyzer standardAnalyzer = new StandardAnalyzer();
 
 
-
     public LuwakQueryMatcher init(List<MatchingRule> rules) throws IOException {
 
         setRules(rules);
 
         monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
 
-        for (MatchingRule rule :getRules()) {
+        for (MatchingRule rule : getRules()) {
             MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
             monitor.update(mq);
         }
@@ -51,7 +51,7 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
         for (Record ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
             for (String fieldName : ev.getAllFieldNames()) {
-                if (ev.getField(fieldName).getType().equalsIgnoreCase("string"))
+                if (ev.getField(fieldName).getType() == FieldType.STRING)
                     docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
                     docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
@@ -73,8 +73,8 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
             Record outEv = new Record(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
             // Only getField last match for now, we should probably add them all
-            for (QueryMatch queryMatch:docMatch.getMatches())
-                outEv.setField("match", "string", queryMatch.getQueryId());
+            for (QueryMatch queryMatch : docMatch.getMatches())
+                outEv.setStringField("match", queryMatch.getQueryId());
             outRecords.add(outEv);
         }
 

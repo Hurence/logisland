@@ -1,13 +1,13 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.log.LogParserException;
-import org.junit.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class OutlierProcessorTest {
 
 
     @Test
-    public void testDetection() throws IOException, LogParserException {
+    public void testDetection() throws IOException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
@@ -42,15 +42,14 @@ public class OutlierProcessorTest {
             Assert.assertTrue(!records.isEmpty());
 
 
-            KafkaStreamProcessor processor = new OutlierProcessor();
+            Processor processor = new OutlierProcessor();
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
-          //  instance.setProperty("rules",rulesAsString);
-            ProcessContext context = new StandardProcessContext(instance);
-            processor.init(context);
+            //  instance.setProperty("rules",rulesAsString);
+            ComponentContext context = new StandardComponentContext(instance);
             Collection<Record> outliersRecords = processor.process(context, records);
 
             // @todo make a real test of outliers heres
-          //  logger.info(outliersEvents.toString());
+            //  logger.info(outliersEvents.toString());
         }
     }
 

@@ -15,11 +15,10 @@
  */
 package com.hurence.logisland.parser.apache
 
-import com.hurence.logisland.component.ComponentsFactory
-import com.hurence.logisland.config.ComponentConfiguration
+import com.hurence.logisland.config.{AbstractComponentConfiguration, ComponentFactory}
 import com.hurence.logisland.log.{StandardParserContext, StandardParserInstance}
 import com.hurence.logisland.parser.base.BaseLogParserTest
-import com.hurence.logisland.processor.{ProcessContext, StandardProcessContext, StandardProcessorInstance}
+import com.hurence.logisland.processor.{StandardComponentContext, StandardProcessorInstance}
 import com.hurence.logisland.record.Record
 import org.junit.Assert
 
@@ -36,13 +35,13 @@ class ApacheLogParserTest extends BaseLogParserTest {
         conf.put("key.regex", "(\\S*):(\\S*)")
         conf.put("key.fields", "es_index,host_name")
 
-        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+        val componentConfiguration: AbstractComponentConfiguration = new AbstractComponentConfiguration
 
         componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
         componentConfiguration.setType("parser")
         componentConfiguration.setConfiguration(conf)
 
-        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val instance = ComponentFactory.getParserInstance(componentConfiguration)
         val context = new StandardParserContext(instance)
         Assert.assertTrue(instance != null)
 
@@ -81,13 +80,13 @@ class ApacheLogParserTest extends BaseLogParserTest {
       /*  conf.setField("key.regex", "(\\S*):(\\S*)")
         conf.setField("key.fields", "es_index,host_name")*/
 
-        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+        val componentConfiguration: AbstractComponentConfiguration = new AbstractComponentConfiguration
 
         componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
         componentConfiguration.setType("parser")
         componentConfiguration.setConfiguration(conf)
 
-        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val instance = ComponentFactory.getParserInstance(componentConfiguration)
         val context = new StandardParserContext(instance)
         Assert.assertTrue(instance != null)
 
@@ -116,13 +115,13 @@ class ApacheLogParserTest extends BaseLogParserTest {
         conf.put("key.regex", "(\\S*):(\\S*)")
         conf.put("key.fields", "es_index,host_name")
 
-        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+        val componentConfiguration: AbstractComponentConfiguration = new AbstractComponentConfiguration
 
         componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
         componentConfiguration.setType("parser")
         componentConfiguration.setConfiguration(conf)
 
-        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val instance = ComponentFactory.getParserInstance(componentConfiguration)
         val context = new StandardParserContext(instance)
         Assert.assertTrue(instance != null)
 
@@ -146,13 +145,13 @@ class ApacheLogParserTest extends BaseLogParserTest {
         conf.put("key.regex", "(\\S*):(\\S*)")
         conf.put("key.fields", "es_index,host_name")
 
-        val componentConfiguration: ComponentConfiguration = new ComponentConfiguration
+        val componentConfiguration: AbstractComponentConfiguration = new AbstractComponentConfiguration
 
         componentConfiguration.setComponent("com.hurence.logisland.parser.apache.ApacheLogParser")
         componentConfiguration.setType("parser")
         componentConfiguration.setConfiguration(conf)
 
-        val instance = ComponentsFactory.getParserInstance(componentConfiguration)
+        val instance = ComponentFactory.getParserInstance(componentConfiguration)
         val context = new StandardParserContext(instance)
         Assert.assertTrue(instance != null)
 

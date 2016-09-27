@@ -2,21 +2,25 @@ package com.hurence.logisland.record;
 
 /**
  * Set of allowed values for a field type
- *
+ * <p>
  * https://avro.apache.org/docs/1.8.1/spec.html#schema_primitive
  */
-public class FieldType {
+public enum FieldType {
 
-    public static String NULL = "null";
-    public static String STRING = "string";
-    public static String INT = "int";
-    public static String LONG = "long";
-    public static String ARRAY = "array";
-    public static String FLOAT = "float";
-    public static String DOUBLE = "double";
-    public static String BYTES = "bytes";
-    public static String RECORD = "record";
-    public static String MAP = "map";
-    public static String ENUM = "enum";
-    public static String BOOLEAN = "boolean";
+    NULL,
+    STRING,
+    INT,
+    LONG,
+    ARRAY,
+    FLOAT,
+    DOUBLE,
+    BYTES,
+    RECORD,
+    MAP,
+    ENUM,
+    BOOLEAN;
+
+    public String toString() {
+        return name().toLowerCase();
+    }
 }
