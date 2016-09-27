@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.engine;
+package com.hurence.logisland.chain;
 
 import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.processor.KafkaRecordStream;
 import com.hurence.logisland.processor.Processor;
-import com.hurence.logisland.processor.ProcessorChain;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.ArrayList;
@@ -29,22 +27,22 @@ import java.util.List;
 
 public class StandardProcessorChainInstance extends AbstractConfiguredComponent {
 
-    private final ProcessorChain processor;
 
-    private List<AbstractConfiguredComponent> processors = new ArrayList<>();
+    private List<StandardProcessorInstance> processors = new ArrayList<>();
 
-    public StandardProcessorChainInstance(ProcessorChain processor, String id) {
-        super((ConfigurableComponent)processor, id);
-        this.processor = processor;
+    public StandardProcessorChainInstance(ConfigurableComponent processor, String id) {
+        super(processor, id);
+
     }
 
     public void addProcessorInstance(StandardProcessorInstance processorInstance){
-        processor.addProcessor(processorInstance.getProcessor());
+        processors.add(processorInstance);
 
     }
 
-    public Processor getProcessor() {
-        return processor;
+
+    public List<StandardProcessorInstance> getProcessorInstances() {
+        return processors;
     }
 
     @Override

@@ -14,24 +14,18 @@
  * limitations under the License.
  *
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.chain;
 
+import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.processor.AbstractProcessor;
+import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.record.Record;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Stack;
 
 
-public interface ProcessorChain extends Processor {
-
-    /**
-     * Gets the list of the processor's chain
-     */
-    List<Processor> getProcessors();
-
-    /**
-     * Adds a new processor to the chain.
-     *
-     * @param processor the {@link Processor} to add to the chain
-     */
-    void addProcessor(Processor processor);
+public abstract class AbstractProcessorChain extends AbstractProcessor {
 
 }

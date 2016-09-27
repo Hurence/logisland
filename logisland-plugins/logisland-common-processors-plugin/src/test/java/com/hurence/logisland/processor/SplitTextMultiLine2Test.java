@@ -7,9 +7,8 @@ import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.log.StandardParserInstance;
-import com.hurence.logisland.record.serializer.KryoRecordSerializer;
-import com.hurence.logisland.record.serializer.RecordSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
+import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.utils.kafka.KafkaUnit;
 import kafka.producer.KeyedMessage;
 import org.junit.After;
@@ -23,11 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
 
-/**
- * Created by gregoire on 25/07/16.
- */
 public class SplitTextMultiLine2Test {
 
     private static Logger logger = LoggerFactory.getLogger(SplitTextMultiLine2Test.class);
@@ -50,12 +45,12 @@ public class SplitTextMultiLine2Test {
             String configFile = SplitTextMultiLine2Test.class.getResource("/traker.yml").getFile();
 
             // load the YAML config
-            LogislandConfiguration sessionConf = new ConfigReader().loadConfig(configFile);
+            LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
-            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf);
+          /*  List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
+            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);*/
+            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf.getEngine());
 
             // start the engine
             if (engineInstance.isPresent()) {
@@ -64,7 +59,7 @@ public class SplitTextMultiLine2Test {
                 Runnable myRunnable = new Runnable() {
                     @Override
                     public void run() {
-                        engineInstance.get().getEngine().start(engineContext, processors, parsers);
+                        engineInstance.get().getEngine().start(engineContext);
                     }
                 };
                 Thread t = new Thread(myRunnable);
@@ -82,34 +77,6 @@ public class SplitTextMultiLine2Test {
                                 "Headers: {Content-Type=[application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json], Date=[Sun, 08 Nov 2015 23:00:00 GMT]}\n" +
                                 "Payload: {\"resultStatus\":\"ok\",\"data\":{\"games\":[]}}\n" +
                                 "--------------------------------------");
-
-                //when
-
-                //then
-//                assertEquals(Collections.singletonList("2015-11-09 00:00:00.235  INFO   [http-1580-exec-15             ] --- o.a.c.interceptor.LoggingOutInterceptor  - SESSION[PLAYER-WEB-LVS:402206286:3FA833BF4D9BA6AE6389B7357EE897E6:oadp] - USERID[NONE] - Outbound Message\n" +
-//                        "---------------------------\n" +
-//                        "ID: 519739\n" +
-//                        "Response-Code: 200\n" +
-//                        "Content-Type: application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json\n" +
-//                        "Headers: {Content-Type=[application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json], Date=[Sun, 08 Nov 2015 23:00:00 GMT]}\n" +
-//                        "Payload: {\"resultStatus\":\"ok\",\"data\":{\"games\":[]}}\n" +
-//                        "--------------------------------------"), kafkaServer.readMessages("logisland-mock-in"));
-//                assertEquals(Collections.singletonList("2015-11-09 00:00:00.235  INFO   [http-1580-exec-15             ] --- o.a.c.interceptor.LoggingOutInterceptor  - SESSION[PLAYER-WEB-LVS:402206286:3FA833BF4D9BA6AE6389B7357EE897E6:oadp] - USERID[NONE] - Outbound Message\n" +
-//                        "---------------------------\n" +
-//                        "ID: 519739\n" +
-//                        "Response-Code: 200\n" +
-//                        "Content-Type: application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json\n" +
-//                        "Headers: {Content-Type=[application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json], Date=[Sun, 08 Nov 2015 23:00:00 GMT]}\n" +
-//                        "Payload: {\"resultStatus\":\"ok\",\"data\":{\"games\":[]}}\n" +
-//                        "--------------------------------------"), kafkaServer.readMessages("logisland-mock-in"));
-//                assertEquals(Collections.singletonList("2015-11-09 00:00:00.235  INFO   [http-1580-exec-15             ] --- o.a.c.interceptor.LoggingOutInterceptor  - SESSION[PLAYER-WEB-LVS:402206286:3FA833BF4D9BA6AE6389B7357EE897E6:oadp] - USERID[NONE] - Outbound Message\n" +
-//                        "---------------------------\n" +
-//                        "ID: 519739\n" +
-//                        "Response-Code: 200\n" +
-//                        "Content-Type: application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json\n" +
-//                        "Headers: {Content-Type=[application/vnd.lotsys.motors.ongoing.gamesessions.response-1+json], Date=[Sun, 08 Nov 2015 23:00:00 GMT]}\n" +
-//                        "Payload: {\"resultStatus\":\"ok\",\"data\":{\"games\":[]}}\n" +
-//                        "--------------------------------------"), kafkaServer.readMessages("logisland-mock-in"));
 
 
                 kafkaServer.sendMessages(keyedMessage);
@@ -142,9 +109,9 @@ public class SplitTextMultiLine2Test {
             LogislandConfiguration sessionConf = new ConfigReader().loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
-            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstanceO = ComponentFactory.getEngineInstance(sessionConf);
+            /*  List<StandardParserInstance> parsers = ComponentFactory.getAllParserInstances(sessionConf);
+            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);*/
+            Optional<StandardEngineInstance> engineInstanceO = ComponentFactory.getEngineInstance(sessionConf.getEngine());
 
             // start the engine
             if (engineInstanceO.isPresent()) {
@@ -154,7 +121,7 @@ public class SplitTextMultiLine2Test {
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        engineInstanceO.get().getEngine().start(engineContext, processors, parsers);
+                        engineInstanceO.get().getEngine().start(engineContext);
                     }
                 });
                 StreamProcessingEngine engineInstance = engineInstanceO.get().getEngine();
@@ -177,7 +144,7 @@ public class SplitTextMultiLine2Test {
                 int size = 0;
                 List<Record> messagesOut = new LinkedList();
                 List<Record> messagesOutErr = new LinkedList();
-                RecordSerializer serializer = new KryoRecordSerializer(true);
+                RecordSerializer serializer = new KryoSerializer(true);
                 while (size == 0) {
                     kafkaServer.sendMessages(keyedMessage);
                     Thread.sleep(5000);

@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;

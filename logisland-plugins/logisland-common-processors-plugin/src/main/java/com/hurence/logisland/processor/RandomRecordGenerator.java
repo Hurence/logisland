@@ -2,8 +2,9 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.serializer.AvroRecordSerializer;
+import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.utils.avro.eventgenerator.DataGenerator;
 import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.apache.avro.Schema;
@@ -61,7 +62,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
 
         final DataGenerator dataGenerator = new DataGenerator(schemaContent);
         final RandomDataGenerator randomData = new RandomDataGenerator();
-        final AvroRecordSerializer avroSerializer = new AvroRecordSerializer(schema);
+        final AvroSerializer avroSerializer = new AvroSerializer(schema);
 
         final int minEventsCount = context.getProperty(MIN_EVENTS_COUNT).asInteger();
         final int maxEventsCount = context.getProperty(MAX_EVENTS_COUNT).asInteger();
@@ -81,18 +82,18 @@ public class RandomRecordGenerator extends AbstractProcessor {
 
                     String fieldName = schemaField.name();
                     Object fieldValue = eventRecord.get(fieldName);
-                    String fieldType = schemaField.schema().getType().getName();
+                    FieldType fieldType = FieldType.valueOf(schemaField.schema().getType().getName().toUpperCase());
 
-                    if (Objects.equals(fieldName, "_id")) {
+                    if (Objects.equals(fieldName, Record.RECORD_ID)) {
                         record.setId(fieldValue.toString());
-                    } else if (!Objects.equals(fieldName, "_type")) {
+                    } else if (!Objects.equals(fieldName,  Record.RECORD_TYPE)) {
                         if (fieldValue instanceof org.apache.avro.util.Utf8) {
-                            record.setField(fieldName, fieldType, fieldValue.toString());
+                            record.setStringField(fieldName, fieldValue.toString());
                         } else if (fieldValue instanceof GenericData.Array) {
                             GenericData.Array avroArray = (GenericData.Array) fieldValue;
                             List<Object> list = new ArrayList<>();
-                            record.setField(fieldName, fieldType, list);
-                            AvroRecordSerializer.copyArray(avroArray, list);
+                            record.setField(fieldName, FieldType.ARRAY, list);
+                            AvroSerializer.copyArray(avroArray, list);
                         } else {
                             record.setField(fieldName, fieldType, fieldValue);
                         }

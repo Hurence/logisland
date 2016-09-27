@@ -1,9 +1,10 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.rules.KafkaRulesConsumer;
-import com.hurence.logisland.record.serializer.KryoRecordSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.utils.kafka.DocumentPublisher;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.utils.kafka.RulesPublisher;
@@ -104,7 +105,7 @@ public class QueryMatcherProcessorTest {
 
         while (iterator.hasNext()) {
 
-            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
+            final KryoSerializer deserializer = new KryoSerializer(true);
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
             Record deserializedRecord = deserializer.deserialize(bais);
             ArrayList<Record> list = new ArrayList<>();

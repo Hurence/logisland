@@ -10,7 +10,7 @@ engine:
   processorChains:
 
     - processorChain: parsing_stream
-      component: com.hurence.logisland.processor.MockProcessorChain
+      component: com.hurence.logisland.chain.MockProcessorChain
       type: processor_chain
       documentation: a processor that links
       configuration:

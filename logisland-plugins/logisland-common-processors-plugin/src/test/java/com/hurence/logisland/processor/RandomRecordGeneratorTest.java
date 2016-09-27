@@ -1,8 +1,9 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.config.ComponentFactory;
-import com.hurence.logisland.config.AbstractComponentConfiguration;
+import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.utils.string.Multiline;
 import org.junit.Assert;
@@ -104,16 +105,17 @@ public class RandomRecordGeneratorTest {
         conf.put("min.events.count", "5");
         conf.put("max.events.count", "20");
 
-        AbstractComponentConfiguration componentConfiguration = new AbstractComponentConfiguration();
+        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
         componentConfiguration.setComponent("com.hurence.logisland.processor.randomgenerator.RandomRecordGenerator");
         componentConfiguration.setType("processor");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        ComponentContext context = new StandardComponentContext(instance);
-        assert instance != null;
-        Collection<Record> records = instance.getProcessor().process(context, Collections.emptyList());
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        assert instance.isPresent();
+        ComponentContext context = new StandardComponentContext(instance.get());
+
+        Collection<Record> records = instance.get().getProcessor().process(context, Collections.emptyList());
 
         Assert.assertTrue(records.size() <= 20);
         Assert.assertTrue(records.size() >= 5);

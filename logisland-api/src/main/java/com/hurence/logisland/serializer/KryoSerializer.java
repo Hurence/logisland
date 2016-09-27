@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-public class KryoRecordSerializer implements RecordSerializer {
+public class KryoSerializer implements RecordSerializer {
     private final boolean compress;
 
     private static final ThreadLocal<Kryo> kryoThreadLocal
@@ -43,7 +43,7 @@ public class KryoRecordSerializer implements RecordSerializer {
         }
     };
 
-    public KryoRecordSerializer(boolean compress) {
+    public KryoSerializer(boolean compress) {
         this.compress = compress;
     }
 

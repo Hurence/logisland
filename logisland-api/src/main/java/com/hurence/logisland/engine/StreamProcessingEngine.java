@@ -27,7 +27,7 @@ import java.util.List;
  */
 public interface StreamProcessingEngine extends ConfigurableComponent {
 
-    void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances);
+    void start(EngineContext engineContext);
 
     void shutdown(EngineContext engineContext);
 

@@ -1,7 +1,7 @@
 package com.hurence.logisland.rules;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.serializer.KryoRecordSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
 import com.hurence.logisland.processor.MatchingRule;
 import kafka.consumer.ConsumerConfig;
@@ -55,7 +55,7 @@ public class KafkaRulesConsumer {
 
         while (iterator.hasNext()) {
 
-            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
+            final KryoSerializer deserializer = new KryoSerializer(true);
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
             Record deserializedRecord = deserializer.deserialize(bais);
             MatchingRule rule = new MatchingRule((String) deserializedRecord.getField("name").getRawValue(), (String) deserializedRecord.getField("query").getRawValue());

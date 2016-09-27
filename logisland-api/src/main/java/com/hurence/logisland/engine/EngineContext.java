@@ -17,62 +17,12 @@
 package com.hurence.logisland.engine;
 
 
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.chain.StandardProcessorChainInstance;
+import com.hurence.logisland.component.ComponentContext;
 
-import java.util.Map;
+import java.util.Collection;
 
-/**
- * <p>
- * Provides a bridge between a Processor and the Framework
- * </p>
- * <p/>
- * <p>
- * <b>Note: </b>Implementations of this interface are NOT necessarily
- * thread-safe.
- * </p>
- */
-public interface EngineContext {
+public interface EngineContext extends ComponentContext {
 
-    /**
-     * Retrieves the current value set for the given descriptor, if a value is
-     * set - else uses the descriptor to determine the appropriate default value
-     *
-     * @param descriptor to lookup the value of
-     * @return the property value of the given descriptor
-     */
-    PropertyValue getProperty(PropertyDescriptor descriptor);
-
-    /**
-     * Retrieves the current value set for the given descriptor, if a value is
-     * set - else uses the descriptor to determine the appropriate default value
-     *
-     * @param propertyName of the property to lookup the value for
-     * @return property value as retrieved by property name
-     */
-    PropertyValue getProperty(String propertyName);
-
-    /**
-     * Creates and returns a {@link PropertyValue} object that can be used for
-     * evaluating the value of the given String
-     *
-     * @param rawValue the raw input before any property evaluation has occurred
-     * @return a {@link PropertyValue} object that can be used for
-     * evaluating the value of the given String
-     */
-    PropertyValue newPropertyValue(String rawValue);
-
-
-    /**
-     * @return a Map of all PropertyDescriptors to their configured values. This
-     * Map may or may not be modifiable, but modifying its values will not
-     * change the values of the processor's properties
-     */
-    Map<PropertyDescriptor, String> getProperties();
-
-
-    /**
-     * @return the configured name of this processor
-     */
-    String getName();
+    Collection<StandardProcessorChainInstance> getProcessorChainInstances();
 }

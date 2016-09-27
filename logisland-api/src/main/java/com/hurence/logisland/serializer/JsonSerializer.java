@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
@@ -37,9 +37,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class JsonRecordSerializer implements RecordSerializer {
+public class JsonSerializer implements RecordSerializer {
 
-    private static Logger logger = LoggerFactory.getLogger(JsonRecordSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(JsonSerializer.class);
 
     class EventSerializer extends StdSerializer<Record> {
 

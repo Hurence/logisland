@@ -72,13 +72,14 @@ public class StreamProcessingRunner {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            List<StandardProcessorInstance> processors = ComponentFactory.getAllProcessorInstances(sessionConf);
-            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf);
+            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf.getEngine());
+            logger.info("starting Logisland session version {}", sessionConf.getVersion());
+            logger.info(sessionConf.getDocumentation());
 
             // start the engine
             if (engineInstance.isPresent()) {
                 StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
-                engineInstance.get().getEngine().start(engineContext, processors);
+                engineInstance.get().getEngine().start(engineContext);
             }
 
         } catch (Exception e) {

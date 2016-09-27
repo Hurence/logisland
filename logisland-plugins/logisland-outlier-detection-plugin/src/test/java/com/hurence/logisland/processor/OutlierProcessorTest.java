@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.record.Record;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;

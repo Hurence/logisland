@@ -38,8 +38,8 @@ public class SplitTextTest {
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance != null);
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        Assert.assertTrue(instance.isPresent());
 
 
         InputStreamReader isr;
@@ -58,7 +58,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -93,8 +93,8 @@ public class SplitTextTest {
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance != null);
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        Assert.assertTrue(instance.isPresent());
 
 
         InputStreamReader isr;
@@ -112,7 +112,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -146,8 +146,8 @@ public class SplitTextTest {
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance != null);
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        Assert.assertTrue(instance.isPresent());
 
 
         InputStreamReader isr;
@@ -165,7 +165,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -200,8 +200,8 @@ public class SplitTextTest {
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
-        StandardProcessorInstance instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance != null);
+        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
+        Assert.assertTrue(instance.isPresent());
 
 
         InputStreamReader isr;
@@ -220,7 +220,7 @@ public class SplitTextTest {
 
                 String[] kvLine = line.split("@");
                 final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord(kvLine[0], kvLine[1]));
-                final List<Record> records = new ArrayList<>(instance.getProcessor().process(null, inputRecords));
+                final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
 
                 if (records.isEmpty())
                     System.out.println(line);

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -11,10 +11,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,13 +19,13 @@ import static org.junit.Assert.assertTrue;
  *
  * @author tom
  */
-public class JsonRecordSerializerTest {
+public class JsonSerializerTest {
 
 
 	@Test
 	public void validateJsonSerialization() throws IOException {
 
-		final JsonRecordSerializer serializer = new JsonRecordSerializer();
+		final JsonSerializer serializer = new JsonSerializer();
 
 
 		Record record = new Record("cisco");

@@ -236,7 +236,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
         } catch (Exception e) {
             logger.error("Failed to create Elasticsearch client due to {}", new Object[]{e}, e);
-            throw new ProcessException(e);
+            throw new RuntimeException(e);
         }
     }
 

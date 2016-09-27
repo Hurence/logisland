@@ -17,10 +17,10 @@
 package com.hurence.logisland.config;
 
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.engine.StandardProcessorChainInstance;
+import com.hurence.logisland.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
+import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.Processor;
-import com.hurence.logisland.processor.ProcessorChain;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +72,8 @@ public final class ComponentFactory {
      */
     public static Optional<StandardProcessorChainInstance> getProcessorChainInstance(ProcessorChainConfiguration configuration) {
         try {
-            final ProcessorChain processorChain =
-                    (ProcessorChain) Class.forName(configuration.getComponent()).newInstance();
+            final AbstractProcessor processorChain =
+                    (AbstractProcessor) Class.forName(configuration.getComponent()).newInstance();
             final StandardProcessorChainInstance instance =
                     new StandardProcessorChainInstance(processorChain, Long.toString(currentId.incrementAndGet()));
 

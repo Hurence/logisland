@@ -47,7 +47,7 @@ public class MockStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
     @Override
-    public void start(EngineContext engineContext, List<StandardProcessorInstance> processorInstances) {
+    public void start(EngineContext engineContext) {
 
         logger.info("engine start");
     }

@@ -1,7 +1,7 @@
 package com.hurence.logisland.utils.kafka;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.serializer.KryoRecordSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
@@ -39,7 +39,7 @@ public class DocumentPublisher {
         ProducerConfig producerConfig = new ProducerConfig(properties);
         Producer producer = new Producer(producerConfig);
 
-        final KryoRecordSerializer kryoSerializer = new KryoRecordSerializer(true);
+        final KryoSerializer kryoSerializer = new KryoSerializer(true);
 
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();

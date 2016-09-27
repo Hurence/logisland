@@ -31,16 +31,16 @@ engine:
 
     # parsing
     - processorChain: parsing_stream
-      component: com.hurence.logisland.processor.KafkaRecordStream
+      component: com.hurence.logisland.chain.KafkaRecordStream
       type: stream
       documentation: a processor that links
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.record.serializer.KryoRecordSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.record.serializer.KryoRecordSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.record.serializer.JsonRecordSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
         kafka.metadata.broker.list: sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667
         kafka.zookeeper.quorum: sd-76387:2181,sd-84186:2181,sd-84189:2181
         kafka.topic.autoCreate: true
@@ -61,16 +61,16 @@ engine:
 
     # indexing
     - processorChain: indexing_stream
-      component: com.hurence.logisland.processor.KafkaRecordStream
+      component: com.hurence.logisland.chain.KafkaRecordStream
       type: processor
       documentation: a processor that push events to ES
       configuration:
         kafka.input.topics: logisland_events
         kafka.output.topics: logisland_trash
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.record.serializer.KryoRecordSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.record.serializer.KryoRecordSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.record.serializer.JsonRecordSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
         kafka.metadata.broker.list: sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667
         kafka.zookeeper.quorum: sd-76387:2181,sd-84186:2181,sd-84189:2181
         kafka.topic.autoCreate: true

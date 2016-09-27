@@ -1,7 +1,7 @@
 package com.hurence.logisland.config;
 
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.processor.StandardComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

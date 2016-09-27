@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author tom
  */
-public class AvroRecordSerializerTest {
+public class AvroSerializerTest {
 
 
 	@Test
@@ -32,8 +32,8 @@ public class AvroRecordSerializerTest {
 
 		final Schema.Parser parser = new Schema.Parser();
 		final Schema schema = parser.parse(
-				new FileInputStream(AvroRecordSerializerTest.class.getResource("/schemas/event.avsc").getFile()));
-		final AvroRecordSerializer serializer = new AvroRecordSerializer(schema);
+				new FileInputStream(AvroSerializerTest.class.getResource("/schemas/event.avsc").getFile()));
+		final AvroSerializer serializer = new AvroSerializer(schema);
 
 		Record record = new Record("cisco");
 		record.setId("firewall_record1");
@@ -65,7 +65,7 @@ public class AvroRecordSerializerTest {
 	public void kryoSerialisationBigEventTest() throws IOException {
 		System.out.println("kryoSerialisationTest");
 
-		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
+		final KryoSerializer serializer = new KryoSerializer(true);
 
 		Record[] records = new Record[100];
 		for (int i=0; i<100; i++) {
@@ -636,7 +636,7 @@ public class AvroRecordSerializerTest {
 	public void kryoSerialisationSmallEventTest() throws IOException {
 		System.out.println("kryoSerialisationTest");
 
-		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
+		final KryoSerializer serializer = new KryoSerializer(true);
 
 		Record record = new Record("mtr");
 		record.setStringField("TRACE", "Outbound Message" + "\n" +

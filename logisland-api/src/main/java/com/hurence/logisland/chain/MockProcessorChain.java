@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.chain;
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
@@ -54,4 +54,8 @@ public class MockProcessorChain extends AbstractProcessorChain {
         return Collections.unmodifiableList(descriptors);
     }
 
+    @Override
+    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+        return Collections.emptyList();
+    }
 }

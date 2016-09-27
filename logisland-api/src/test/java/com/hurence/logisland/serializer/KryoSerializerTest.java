@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -22,12 +22,12 @@ import static org.junit.Assert.assertTrue;
  *
  * @author tom
  */
-public class KryoRecordSerializerTest {
+public class KryoSerializerTest {
 
 
 	@Test
 	public void kryoSerde() throws IOException {
-		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
+		final KryoSerializer serializer = new KryoSerializer(true);
 
 		Record record = new Record("cisco");
 		record.setId("firewall_record1");
@@ -59,7 +59,7 @@ public class KryoRecordSerializerTest {
 	@Test
 	public void kryoSerialisationBigEventTest() throws IOException {
 
-		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
+		final KryoSerializer serializer = new KryoSerializer(true);
 
 		Record[] records = new Record[100];
 		for (int i=0; i<100; i++) {
@@ -630,7 +630,7 @@ public class KryoRecordSerializerTest {
 	public void kryoSerialisationSmallEventTest() throws IOException {
 		System.out.println("kryoSerialisationTest");
 
-		final KryoRecordSerializer serializer = new KryoRecordSerializer(true);
+		final KryoSerializer serializer = new KryoSerializer(true);
 
 		Record record = new Record("mtr");
 		record.setStringField("TRACE",  "Outbound Message" + "\n" +

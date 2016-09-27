@@ -84,7 +84,7 @@ public class SplitTextMultiline extends AbstractProcessor {
             for (int i = 0; i < matcher.groupCount() + 1 && i < fields.length; i++) {
                 String content = matcher.group(i);
                 if (content != null) {
-                    record.setField(fields[i], "string", matcher.group(i).replaceAll("\"", ""));
+                    record.setStringField(fields[i],  matcher.group(i).replaceAll("\"", ""));
                 }
 
             }

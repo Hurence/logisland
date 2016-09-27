@@ -2,7 +2,7 @@ package com.hurence.logisland.utils.kafka;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.serializer.KryoRecordSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
@@ -76,7 +76,7 @@ public class EmbeddedKafkaEnvironmentTest {
 
         // serialize event
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final KryoRecordSerializer kryoSerializer = new KryoRecordSerializer(true);
+        final KryoSerializer kryoSerializer = new KryoSerializer(true);
         kryoSerializer.serialize(baos, record);
         KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
         baos.close();
@@ -108,7 +108,7 @@ public class EmbeddedKafkaEnvironmentTest {
 
         // verify the integrity of the retrieved event
         if (iterator.hasNext()) {
-            final KryoRecordSerializer deserializer = new KryoRecordSerializer(true);
+            final KryoSerializer deserializer = new KryoSerializer(true);
 
 
             ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());

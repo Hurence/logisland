@@ -4,7 +4,6 @@ import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.RecordType;
 import com.hurence.logisland.utils.time.DateUtil;
 import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
@@ -73,7 +72,7 @@ public class SplitText extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records)  {
+    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
 
         final String[] keyFields = context.getProperty(KEY_FIELDS).asString().split(",");
         final String keyRegexString = context.getProperty(KEY_REGEX).asString();
@@ -90,8 +89,8 @@ public class SplitText extends AbstractProcessor {
          */
         records.forEach(record -> {
             try {
-                final String key = record.getField(RecordType.RECORD_KEY.toString()).asString();
-                final String value = record.getField(RecordType.RECORD_VALUE.toString()).asString();
+                final String key = record.getField(Record.RECORD_KEY).asString();
+                final String value = record.getField(Record.RECORD_VALUE).asString();
 
                 Record outputRecord = new Record(eventType);
 
@@ -131,13 +130,13 @@ public class SplitText extends AbstractProcessor {
                             if (outputRecord.getField("date") != null && outputRecord.getField("time") != null) {
                                 String eventTimeString = outputRecord.getField("date").getRawValue().toString() +
                                         " " +
-                                        outputRecord.getField(RecordType.RECORD_TIME.toString()).asString();
+                                        outputRecord.getField(Record.RECORD_TIME).asString();
 
                                 try {
                                     Date eventDate = DateUtil.parse(eventTimeString);
 
                                     if (eventDate != null) {
-                                        outputRecord.setField(RecordType.RECORD_TIME.toString(), FieldType.LONG, eventDate.getTime());
+                                        outputRecord.setField(Record.RECORD_TIME, FieldType.LONG, eventDate.getTime());
                                     }
                                 } catch (Exception e) {
                                     logger.warn("unable to parse date {}", eventTimeString);
@@ -147,15 +146,15 @@ public class SplitText extends AbstractProcessor {
 
 
                             // TODO removeField this ugly stuff with EL
-                            if (outputRecord.getField(RecordType.RECORD_TIME.toString()) != null) {
+                            if (outputRecord.getField(Record.RECORD_TIME) != null) {
 
                                 try {
-                                    long eventTime = Long.parseLong(outputRecord.getField(RecordType.RECORD_TIME.toString()).getRawValue().toString());
+                                    long eventTime = Long.parseLong(outputRecord.getField(Record.RECORD_TIME).getRawValue().toString());
                                 } catch (Exception ex) {
 
-                                    Date eventDate = DateUtil.parse(outputRecord.getField(RecordType.RECORD_TIME.toString()).getRawValue().toString());
+                                    Date eventDate = DateUtil.parse(outputRecord.getField(Record.RECORD_TIME).getRawValue().toString());
                                     if (eventDate != null) {
-                                        outputRecord.setField(RecordType.RECORD_TIME.toString(), FieldType.LONG, eventDate.getTime());
+                                        outputRecord.setField(Record.RECORD_TIME, FieldType.LONG, eventDate.getTime());
                                     }
                                 }
                             }

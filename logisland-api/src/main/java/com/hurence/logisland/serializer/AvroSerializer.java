@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.record.serializer;
+package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class AvroRecordSerializer implements RecordSerializer {
+public class AvroSerializer implements RecordSerializer {
 
     private Schema schema;
 
-    public AvroRecordSerializer(Schema schema) {
+    public AvroSerializer(Schema schema) {
         this.schema = schema;
     }
 

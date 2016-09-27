@@ -1,10 +1,9 @@
 package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.config.AbstractComponentConfiguration;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.processor.StandardComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;

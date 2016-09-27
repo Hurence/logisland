@@ -17,11 +17,13 @@
 package com.hurence.logisland.engine;
 
 
+import com.hurence.logisland.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 public class StandardEngineContext implements EngineContext, Serializable {
@@ -73,5 +75,10 @@ public class StandardEngineContext implements EngineContext, Serializable {
     @Override
     public String getName() {
         return engineInstance.getName();
+    }
+
+    @Override
+    public Collection<StandardProcessorChainInstance> getProcessorChainInstances() {
+        return null;
     }
 }
