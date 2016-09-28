@@ -101,19 +101,21 @@ public class RandomRecordGeneratorTest {
 
 
         Map<String, String> conf = new HashMap<>();
-        conf.put("avro.input.schema", avroSchema);
+        conf.put("avro.output.schema", avroSchema);
         conf.put("min.events.count", "5");
         conf.put("max.events.count", "20");
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.randomgenerator.RandomRecordGenerator");
+        componentConfiguration.setComponent("com.hurence.logisland.processor.RandomRecordGenerator");
         componentConfiguration.setType("processor");
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         assert instance.isPresent();
         ComponentContext context = new StandardComponentContext(instance.get());
+
+        Assert.assertTrue(instance.get().isValid());
 
         Collection<Record> records = instance.get().getProcessor().process(context, Collections.emptyList());
 

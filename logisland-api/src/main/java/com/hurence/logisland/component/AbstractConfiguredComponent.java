@@ -214,8 +214,17 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public boolean isValid() {
+        final boolean[] isValid = {true};
 
-        return true;
+        Map<PropertyDescriptor,String>  properties = getProperties();
+        properties.forEach( (propertyDescriptor, value) -> {
+            ValidationResult result = propertyDescriptor.validate(value);
+            if (!result.isValid()) {
+                isValid[0] = false;
+            }
+        });
+
+        return isValid[0];
     }
 
     @Override

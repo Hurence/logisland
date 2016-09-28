@@ -1,5 +1,7 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
@@ -40,7 +42,7 @@ public class SplitTextTest {
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance.isPresent());
-
+        ComponentContext context = new StandardComponentContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -58,7 +60,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(context, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -89,13 +91,13 @@ public class SplitTextTest {
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.parser.SplitText");
+        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
         componentConfiguration.setType("parser");
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance.isPresent());
-
+        ComponentContext context = new StandardComponentContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -112,7 +114,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(context, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -148,7 +150,7 @@ public class SplitTextTest {
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance.isPresent());
-
+        ComponentContext context = new StandardComponentContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -165,7 +167,7 @@ public class SplitTextTest {
 
             // String[] kvLine = line.split("@");
             final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord("", line));
-            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
+            final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(context, inputRecords));
 
             if (records.isEmpty())
                 System.out.println(line);
@@ -202,7 +204,7 @@ public class SplitTextTest {
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance.isPresent());
-
+        ComponentContext context = new StandardComponentContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -220,7 +222,7 @@ public class SplitTextTest {
 
                 String[] kvLine = line.split("@");
                 final Collection<Record> inputRecords = Collections.singleton(RecordUtils.getKeyValueRecord(kvLine[0], kvLine[1]));
-                final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(null, inputRecords));
+                final List<Record> records = new ArrayList<>(instance.get().getProcessor().process(context, inputRecords));
 
                 if (records.isEmpty())
                     System.out.println(line);

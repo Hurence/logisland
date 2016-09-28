@@ -26,7 +26,7 @@ import org.apache.avro.generic.GenericRecord;
 public class StringFieldGenerate extends SchemaFiller {
 
   private static int minStringLength = 0;
-  private static int maxStringLength = 1024;
+  private static int maxStringLength = 50;
 
   public static int getMaxStringLength()
   {
