@@ -23,17 +23,36 @@ public class RecordTest {
     @Test
     public void validateRecordApi() throws IOException {
 
-        Record record = new Record("cisco");
-        record.setId("firewall_record1");
+        String id = "firewall_record1";
+        String type = "cisco";
+        Record record = new Record(type);
+        record.setId(id);
 
         assertTrue(record.isEmpty());
         assertEquals(record.size(), 3);
+
+        // shortcut for id
+        assertEquals(record.getId(), id);
+        assertEquals(record.getField(Record.RECORD_ID).asString(), id);
+
+        // shortcut for time
+        assertEquals(record.getTime().getTime(), record.getField(Record.RECORD_TIME).asLong().longValue());
+
+        // shortcut for type
+        assertEquals(record.getType(), type);
+        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).asString());
+        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).getRawValue());
+
+        // shortcut for id
+        assertEquals(record.getId(), id);
+        assertEquals(record.getField(Record.RECORD_ID).asString(), id);
+
         record.setField("timestamp", FieldType.LONG, new Date().getTime());
         record.setField("method", FieldType.STRING, "GET");
         record.setField("ip_source", FieldType.STRING, "123.34.45.123");
         record.setField("ip_target", FieldType.STRING, "255.255.255.255");
         record.setField("url_scheme", FieldType.STRING, "http");
-        record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
+        record.setStringField("url_host", "origin-www.20minutes.fr");
         record.setField("url_port", FieldType.STRING, "80");
         record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
         record.setField("request_size", FieldType.INT, 1399);
