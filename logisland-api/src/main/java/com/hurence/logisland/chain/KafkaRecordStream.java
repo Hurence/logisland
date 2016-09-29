@@ -19,8 +19,10 @@ package com.hurence.logisland.chain;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.StandardProcessorInstance;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.AvroSerializer;
+import com.hurence.logisland.serializer.JsonSerializer;
+import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,24 +79,29 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final AllowableValue AVRO_SERIALIZER = new AllowableValue("com.hurence.logisland.serializer.AvroSerializer",
+    public static final AllowableValue AVRO_SERIALIZER = new AllowableValue(AvroSerializer.class.getName(),
             "avro serialization",
             "serialize events as avro blocs");
 
-    public static final AllowableValue JSON_SERIALIZER = new AllowableValue("com.hurence.logisland.serializer.JsonSerializer",
+    public static final AllowableValue JSON_SERIALIZER = new AllowableValue(JsonSerializer.class.getName(),
             "avro serialization",
             "serialize events as json blocs");
 
-    public static final AllowableValue KRYO_SERIALIZER = new AllowableValue("com.hurence.logisland.serializer.KryoSerializer",
+    public static final AllowableValue KRYO_SERIALIZER = new AllowableValue(KryoSerializer.class.getName(),
             "kryo serialization",
             "serialize events as json blocs");
+
+    public static final AllowableValue NO_SERIALIZER = new AllowableValue("none",
+            "no serialization",
+            "send events as bytes");
 
     public static final PropertyDescriptor INPUT_SERIALIZER = new PropertyDescriptor.Builder()
             .name("kafka.input.topics.serializer")
             .description("")
             .required(false)
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("com.hurence.logisland.serializer.EventAvroSerializer")
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
 
     public static final PropertyDescriptor OUTPUT_SERIALIZER = new PropertyDescriptor.Builder()
@@ -102,8 +109,8 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .description("")
             .required(false)
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
             .defaultValue(KRYO_SERIALIZER.getValue())
-            .allowableValues(KRYO_SERIALIZER,JSON_SERIALIZER,AVRO_SERIALIZER)
             .build();
 
     public static final PropertyDescriptor ERROR_SERIALIZER = new PropertyDescriptor.Builder()
@@ -112,7 +119,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .required(false)
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(JSON_SERIALIZER.getValue())
-            .allowableValues(KRYO_SERIALIZER,JSON_SERIALIZER,AVRO_SERIALIZER)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
             .build();
 
     public static final PropertyDescriptor METRICS_TOPIC = new PropertyDescriptor.Builder()
@@ -120,6 +127,46 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .description("a topic to send metrics of processing. no output if not set")
             .required(false)
             .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
+            .name("kafka.topic.autoCreate")
+            .description("define wether a topic should be created automatically if not already exists")
+            .required(false)
+            .addValidator(StandardPropertyValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
+            .build();
+
+    public static final PropertyDescriptor KAFKA_TOPIC_DEFAULT_PARTITIONS = new PropertyDescriptor.Builder()
+            .name("kafka.topic.default.partitions")
+            .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
+            .required(false)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .defaultValue("8")
+            .build();
+
+    public static final PropertyDescriptor KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR = new PropertyDescriptor.Builder()
+            .name("kafka.topic.default.replicationFactor")
+            .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
+            .required(false)
+            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .defaultValue("2")
+            .build();
+
+    public static final PropertyDescriptor KAFKA_METADATA_BROKER_LIST = new PropertyDescriptor.Builder()
+            .name("kafka.metadata.broker.list")
+            .description("")
+            .required(true)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("sandbox:9092")
+            .build();
+
+    public static final PropertyDescriptor KAFKA_ZOOKEEPER_QUORUM = new PropertyDescriptor.Builder()
+            .name("kafka.zookeeper.quorum")
+            .description("")
+            .required(true)
+            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("sandbox:2181")
             .build();
 
     @Override
@@ -134,6 +181,11 @@ public class KafkaRecordStream extends AbstractProcessorChain {
         descriptors.add(INPUT_SERIALIZER);
         descriptors.add(OUTPUT_SERIALIZER);
         descriptors.add(ERROR_SERIALIZER);
+        descriptors.add(KAFKA_TOPIC_AUTOCREATE);
+        descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS);
+        descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR);
+        descriptors.add(KAFKA_METADATA_BROKER_LIST);
+        descriptors.add(KAFKA_ZOOKEEPER_QUORUM);
 
         return Collections.unmodifiableList(descriptors);
     }

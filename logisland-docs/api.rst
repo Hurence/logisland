@@ -6,7 +6,7 @@ logisland is a framework and an API, you can use it to build your own ``Processo
 
 
 
-Low-level items : Records
+The primary material : Records
 ----
 
 The basic unit of processing is the Record.
@@ -60,7 +60,7 @@ And the others fields have setters, getters and removers
         record.removeField("is_outside_office_hours");
         assertFalse(record.hasField("is_outside_office_hours"));
 
-High level items : Components
+The tools to handle processing : Processor
 ----
 
 logisland is designed as a component centric framework, so there's a layer of abstraction to build configurable components.
@@ -83,7 +83,8 @@ Then we have to define a list of supported ``PropertyDescriptor``. All theses pr
 
 .. code-block:: java
 
-        public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
+        public static final PropertyDescriptor FAKE_MESSAGE
+            = new PropertyDescriptor.Builder()
                 .name("fake.message")
                 .description("a fake message")
                 .required(true)
@@ -114,15 +115,18 @@ And now the real business part with the ``process`` method which handles all the
 .. code-block:: java
 
     @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
-
+    public Collection<Record> process(final ComponentContext context,
+                                      final Collection<Record> collection) {
         // log inputs
-        collection.stream().forEach(record -> logger.info("mock processing record : {}", record));
+        collection.stream().forEach(record -> {
+            logger.info("mock processing record : {}", record)
+        });
 
         // output a useless record
         Record mockRecord = new Record("mock_record");
         mockRecord.setField("incomingEventsCount", FieldType.INT, collection.size());
-        mockRecord.setStringField("message", context.getProperty(FAKE_MESSAGE).getRawValue());
+        mockRecord.setStringField("message",
+                                   context.getProperty(FAKE_MESSAGE).asString());
 
         return Collections.singleton(mockRecord);
     }
@@ -131,12 +135,68 @@ And now the real business part with the ``process`` method which handles all the
 }
 
 
+The runtime context : Instance
+----
+you can use your wonderful processor by setting its configuration and asking the ``ComponentFactory`` to give you one ``ProcessorInstance`` which is a ``ConfiguredComponent``.
 
-The packaging
+.. code-block:: java
+
+    String message = "logisland rocks !";
+    Map<String, String> conf = new HashMap<>();
+    conf.put(MockProcessor.FAKE_MESSAGE.getName(), message );
+
+    ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
+    componentConfiguration.setComponent(MockProcessor.class.getName());
+    componentConfiguration.setType(ComponentType.PROCESSOR.toString());
+    componentConfiguration.setConfiguration(conf);
+
+    Optional<StandardProcessorInstance> instance =
+        ComponentFactory.getProcessorInstance(componentConfiguration);
+    assertTrue(instance.isPresent());
+
+Then you need a ``ComponentContext`` to run your processor.
+
+.. code-block:: java
+
+    ComponentContext context = new StandardComponentContext(instance.get());
+    Processor processor = instance.get().getProcessor();
+
+And finally you can use it to process records
+
+.. code-block:: java
+
+    Record record = new Record("mock_record");
+    record.setId("record1");
+    record.setStringField("name", "tom");
+    List<Record> records =
+        new ArrayList<>(processor.process(context, Collections.singleton(record)));
+
+    assertEquals(1, records.size());
+    assertTrue(records.get(0).hasField("message"));
+    assertEquals(message, records.get(0).getField("message").asString());
+
+
+
+Chaining processors : ProcessorChain
+----
+
+.. warning:: @todo
+
+
+
+Running the processor's flow : Engine
+----
+
+.. warning:: @todo
+
+
+
+
+Packaging and conf
 -----
 
-The end user of logisland is not the developer, but the business analyst which does understand anyline of code.
-That's why we can deploy all our components through yaml conifg files
+The end user of logisland is not the developer, but the business analyst which does understand any line of code.
+That's why we can deploy all our components through yaml config files
 
 .. code-block:: yaml
 

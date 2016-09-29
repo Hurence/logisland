@@ -123,8 +123,8 @@ Logisland processors are hosted in some plugins, you can create your own with a 
 
 
     git clone git@github.com:Hurence/log-island.git
-    cd logisland-0.9.4/logisland-plugins
-    mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.4 -DlogislandVersion=0.9.4
+    cd logisland-0.9.5-SNAPSHOT/logisland-plugins
+    mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.5-SNAPSHOT -DlogislandVersion=0.9.5-SNAPSHOT
     
     
     Define value for property 'groupId': : com.hurence.logisland
@@ -132,5 +132,5 @@ Logisland processors are hosted in some plugins, you can create your own with a 
     Define value for property 'version':  1.0-SNAPSHOT: : 0.1
     Define value for property 'artifactBaseName': : sample
     Define value for property 'package':  com.hurence.logisland.sample: :
-    [INFO] Using property: logislandVersion = 0.9.4
+    [INFO] Using property: logislandVersion = 0.9.5-SNAPSHOT
 
