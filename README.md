@@ -2,17 +2,17 @@ Log Island
 ==========
 
 [![Build
-Status](https://travis-ci.org/Hurence/log-island.svg?branch=master)](https://travis-ci.org/Hurence/log-island)
+Status](https://travis-ci.org/Hurence/logisland.svg?branch=master)](https://travis-ci.org/Hurence/logisland)
 
 LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
 
-![log-island architecture](http://hurence.github.io/log-island//public/LogIsland-architecture.png)
+![log-island architecture](http://hurence.github.io/logisland//public/LogIsland-architecture.png)
 
-You can start right now to play with LogIsland through the Docker image, by following the [getting started guide](http://hurence.github.io/log-island/getting-started/)
+You can start right now to play with LogIsland through the Docker image, by following the [getting started guide](http://hurence.github.io/logisland/getting-started/)
 
-The [documentation](http://hurence.github.io/log-island/) also explains how to [build]((http://hurence.github.io/log-island/build)) the source code in order to implement your own [plugins](http://hurence.github.io/log-island/plugins/).
+The [documentation](http://hurence.github.io/logisland/) also explains how to [build]((http://hurence.github.io/logisland/build)) the source code in order to implement your own [plugins](http://hurence.github.io/logisland/plugins/).
 
-Once you know how to run and build your own parsers and processors, you'll want to [deploy](http://hurence.github.io/log-island/deploy/) and scale them.
+Once you know how to run and build your own parsers and processors, you'll want to [deploy](http://hurence.github.io/logisland/deploy/) and scale them.
 
 
 ## Build and deploy
@@ -122,7 +122,7 @@ One you've edited your configuration file, you can submit it to execution engine
 Logisland processors are hosted in some plugins, you can create your own with a maven archetype.
 
 
-    git clone git@github.com:Hurence/log-island.git
+    git clone git@github.com:Hurence/logisland.git
     cd logisland-0.9.5-SNAPSHOT/logisland-plugins
     mvn archetype:generate -DarchetypeGroupId=com.hurence.logisland -DarchetypeArtifactId=logisland-plugin-archetype -DarchetypeVersion=0.9.5-SNAPSHOT -DlogislandVersion=0.9.5-SNAPSHOT
     
