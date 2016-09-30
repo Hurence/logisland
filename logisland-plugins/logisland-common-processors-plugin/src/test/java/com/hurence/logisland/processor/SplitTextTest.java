@@ -1,12 +1,12 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.component.StandardComponentContext;
+import com.hurence.logisland.component.ComponentType;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
-import org.junit.Assert;
+import com.sun.source.tree.AssertTree;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +41,8 @@ public class SplitTextTest {
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        assertTrue(instance.isPresent());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -72,7 +72,7 @@ public class SplitTextTest {
         }
         System.out.println("events count :" + numEvents);
 
-        Assert.assertTrue(numEvents == 1);
+        assertTrue(numEvents == 1);
 
 
     }
@@ -96,8 +96,8 @@ public class SplitTextTest {
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        assertTrue(instance.isPresent());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -126,7 +126,7 @@ public class SplitTextTest {
         }
         System.out.println("events count :" + totalRecords.size());
 
-        Assert.assertTrue(totalRecords.size() == 8);
+        assertTrue(totalRecords.size() == 8);
 
 
     }
@@ -149,8 +149,8 @@ public class SplitTextTest {
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        assertTrue(instance.isPresent());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -179,7 +179,7 @@ public class SplitTextTest {
         }
         System.out.println("events count :" + totalRecords.size());
 
-        Assert.assertTrue(totalRecords.size() == 73);
+        assertTrue(totalRecords.size() == 73);
 
 
     }
@@ -198,13 +198,14 @@ public class SplitTextTest {
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
-        componentConfiguration.setType("parser");
+        componentConfiguration.setComponent(SplitText.class.getName());
+        componentConfiguration.setType(ComponentType.PARSER.toString());
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        Assert.assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        assertTrue(instance.isPresent());
+        assertTrue(instance.get().isValid());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
         InputStreamReader isr;
         BufferedReader bsr = null;
@@ -234,7 +235,7 @@ public class SplitTextTest {
             }
             System.out.println("events count :" + numEvents);
 
-            Assert.assertTrue(numEvents == nblines);
+            assertTrue(numEvents == nblines);
 
         } catch (FileNotFoundException ex) {
             logger.error("file not found : " + DATA_TRAKER1_LOG);

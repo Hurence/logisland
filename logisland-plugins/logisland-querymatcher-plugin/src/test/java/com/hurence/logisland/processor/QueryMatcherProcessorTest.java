@@ -1,24 +1,5 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.component.StandardComponentContext;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.KryoSerializer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 
 public class QueryMatcherProcessorTest {
 /*

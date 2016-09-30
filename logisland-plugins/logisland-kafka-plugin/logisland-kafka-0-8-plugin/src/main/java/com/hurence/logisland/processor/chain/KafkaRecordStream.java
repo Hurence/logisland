@@ -17,13 +17,13 @@
 package com.hurence.logisland.processor.chain;
 
 import com.hurence.logisland.component.AllowableValue;
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.KryoSerializer;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.output.topics")
             .description("Sets the output Kafka topic name")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(EVENTS_TOPIC)
             .build();
 
@@ -69,14 +69,14 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("avro.input.schema")
             .description("the avro schema definition")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor AVRO_OUTPUT_SCHEMA = new PropertyDescriptor.Builder()
             .name("avro.output.schema")
             .description("the avro schema definition for the output serialization")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final AllowableValue AVRO_SERIALIZER = new AllowableValue(AvroSerializer.class.getName(),
@@ -99,7 +99,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.input.topics.serializer")
             .description("")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
             .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
@@ -108,7 +108,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.output.topics.serializer")
             .description("")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
             .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
@@ -117,7 +117,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.error.topics.serializer")
             .description("")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(JSON_SERIALIZER.getValue())
             .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
             .build();
@@ -126,14 +126,14 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.metrics.topic")
             .description("a topic to send metrics of processing. no output if not set")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
             .name("kafka.topic.autoCreate")
             .description("define wether a topic should be created automatically if not already exists")
             .required(false)
-            .addValidator(StandardPropertyValidators.BOOLEAN_VALIDATOR)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .defaultValue("true")
             .build();
 
@@ -141,7 +141,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.topic.default.partitions")
             .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
             .required(false)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("8")
             .build();
 
@@ -149,7 +149,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.topic.default.replicationFactor")
             .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
             .required(false)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("2")
             .build();
 
@@ -157,7 +157,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.metadata.broker.list")
             .description("")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("sandbox:9092")
             .build();
 
@@ -165,7 +165,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.zookeeper.quorum")
             .description("")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("sandbox:2181")
             .build();
 
@@ -191,7 +191,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
     }
 
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         return Collections.emptyList();
     }
 }

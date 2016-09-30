@@ -19,7 +19,8 @@ package com.hurence.logisland.utils.elasticsearch
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-import com.hurence.logisland.record.{FieldType, Record}
+import com.hurence.logisland.record.FieldDictionary.RECORD_TIME
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.elasticsearch.common.xcontent.XContentFactory._
 import org.joda.time.format.ISODateTimeFormat
@@ -29,7 +30,7 @@ import scala.collection.JavaConversions._
 /**
   * Take an Event and convert it to a String representing an Elasticsearch document
   */
-object ElasticsearchEventConverter extends LazyLogging {
+object ElasticsearchRecordConverter extends LazyLogging {
     /**
       * Converts an Event into an Elasticsearch document
       * to be indexed later
@@ -55,7 +56,7 @@ object ElasticsearchEventConverter extends LazyLogging {
                 }
                 else if (field.getType == FieldType.LONG ) {
                     // convert event_time as ISO for ES
-                    if (fieldName.equals(Record.RECORD_TIME)) {
+                    if (fieldName.equals(FieldDictionary.RECORD_TIME)) {
                         try {
                             val dateParser = ISODateTimeFormat.dateTimeNoMillis()
                             dateParser.print(field.asLong())

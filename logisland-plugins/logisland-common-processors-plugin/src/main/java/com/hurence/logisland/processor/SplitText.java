@@ -1,11 +1,11 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.utils.time.DateUtil;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,21 +25,21 @@ public class SplitText extends AbstractProcessor {
             .name("value.regex")
             .description("the regex to match for the message value")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor VALUE_FIELDS = new PropertyDescriptor.Builder()
             .name("value.fields")
             .description("a comma separated list of fields corresponding to matching groups for the message value")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor KEY_REGEX = new PropertyDescriptor.Builder()
             .name("key.regex")
             .description("the regex to match for the message key")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(".*")
             .build();
 
@@ -47,15 +47,14 @@ public class SplitText extends AbstractProcessor {
             .name("key.fields")
             .description("a comma separated list of fields corresponding to matching groups for the message key")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("")
             .build();
 
     public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
             .name("event.type")
             .description("default type of event")
-            .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .required(false)
             .defaultValue("event")
             .build();
 
@@ -72,7 +71,7 @@ public class SplitText extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         final String[] keyFields = context.getProperty(KEY_FIELDS).asString().split(",");
         final String keyRegexString = context.getProperty(KEY_REGEX).asString();
@@ -89,8 +88,8 @@ public class SplitText extends AbstractProcessor {
          */
         records.forEach(record -> {
             try {
-                final String key = record.getField(Record.RECORD_KEY).asString();
-                final String value = record.getField(Record.RECORD_VALUE).asString();
+                final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
+                final String value = record.getField(FieldDictionary.RECORD_VALUE).asString();
 
                 Record outputRecord = new Record(eventType);
 
@@ -128,15 +127,15 @@ public class SplitText extends AbstractProcessor {
 
                             // TODO removeField this ugly stuff with EL
                             if (outputRecord.getField("date") != null && outputRecord.getField("time") != null) {
-                                String eventTimeString = outputRecord.getField("date").getRawValue().toString() +
+                                String eventTimeString = outputRecord.getField("date").asString() +
                                         " " +
-                                        outputRecord.getField(Record.RECORD_TIME).asString();
+                                        outputRecord.getField("time").asString();
 
                                 try {
                                     Date eventDate = DateUtil.parse(eventTimeString);
 
                                     if (eventDate != null) {
-                                        outputRecord.setField(Record.RECORD_TIME, FieldType.LONG, eventDate.getTime());
+                                        outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
                                     }
                                 } catch (Exception e) {
                                     logger.warn("unable to parse date {}", eventTimeString);
@@ -146,15 +145,15 @@ public class SplitText extends AbstractProcessor {
 
 
                             // TODO removeField this ugly stuff with EL
-                            if (outputRecord.getField(Record.RECORD_TIME) != null) {
+                            if (outputRecord.getField(FieldDictionary.RECORD_TIME) != null) {
 
                                 try {
-                                    long eventTime = Long.parseLong(outputRecord.getField(Record.RECORD_TIME).getRawValue().toString());
+                                    long eventTime = Long.parseLong(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
                                 } catch (Exception ex) {
 
-                                    Date eventDate = DateUtil.parse(outputRecord.getField(Record.RECORD_TIME).getRawValue().toString());
+                                    Date eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
                                     if (eventDate != null) {
-                                        outputRecord.setField(Record.RECORD_TIME, FieldType.LONG, eventDate.getTime());
+                                        outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
                                     }
                                 }
                             }

@@ -16,6 +16,7 @@
 
 package com.hurence.logisland.serializer;
 
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
@@ -99,7 +100,7 @@ public class AvroSerializer implements RecordSerializer {
             GenericRecord genericRecord = datumReader.read(null, decoder);
 
 
-            Record record = new Record(genericRecord.get(Record.RECORD_TYPE).toString());
+            Record record = new Record(genericRecord.get(FieldDictionary.RECORD_TYPE).toString());
 
 
             for (final Schema.Field schemaField : schema.getFields()) {
@@ -109,9 +110,9 @@ public class AvroSerializer implements RecordSerializer {
                 String strFieldType = schemaField.schema().getType().getName();
                 FieldType fieldType = FieldType.valueOf(strFieldType.toUpperCase());
 
-                if (Objects.equals(fieldName, Record.RECORD_ID)) {
+                if (Objects.equals(fieldName, FieldDictionary.RECORD_ID)) {
                     record.setId(fieldValue.toString());
-                } else if (!Objects.equals(fieldName, Record.RECORD_TYPE)) {
+                } else if (!Objects.equals(fieldName, FieldDictionary.RECORD_TYPE)) {
                     if (fieldValue instanceof org.apache.avro.util.Utf8) {
                         record.setField(fieldName, fieldType, fieldValue.toString());
                     } else if (fieldValue instanceof GenericData.Array) {

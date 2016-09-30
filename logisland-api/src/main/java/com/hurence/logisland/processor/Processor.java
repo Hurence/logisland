@@ -17,14 +17,20 @@
 
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.record.Record;
 
 import java.util.Collection;
 
 
-public interface Processor extends ConfigurableComponent{
+public interface Processor extends ConfigurableComponent {
+
+    /**
+     * Setup statefull parameters
+     *
+     * @param context
+     */
+    void init(final ProcessContext context);
 
     /**
      * Process the incoming collection of records to
@@ -35,6 +41,6 @@ public interface Processor extends ConfigurableComponent{
      * @return a collection of computed records
      * @throws ProcessException if something went wrong
      */
-    Collection<Record> process(ComponentContext context, Collection<Record> records);
+    Collection<Record> process(ProcessContext context, Collection<Record> records);
 
 }

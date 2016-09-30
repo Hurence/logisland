@@ -6,12 +6,11 @@ import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardPropertyValidators;
 import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +47,11 @@ public class OutlierProcessor extends AbstractProcessor {
     com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
 
 
-
     public static final PropertyDescriptor ROTATION_POLICY_TYPE = new PropertyDescriptor.Builder()
             .name("Rotation Policy Type")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("BY_AMOUNT")
             .build();
 
@@ -61,8 +59,8 @@ public class OutlierProcessor extends AbstractProcessor {
             .name("Rotation Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -70,8 +68,8 @@ public class OutlierProcessor extends AbstractProcessor {
             .name("Rotation Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -79,7 +77,7 @@ public class OutlierProcessor extends AbstractProcessor {
             .name("Chunking Policy Type")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("BY_AMOUNT")
             .build();
 
@@ -87,8 +85,8 @@ public class OutlierProcessor extends AbstractProcessor {
             .name("Chunking Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
@@ -96,26 +94,26 @@ public class OutlierProcessor extends AbstractProcessor {
             .name("Chunking Policy Amount")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("100")
             .build();
 
 
-    public static final PropertyDescriptor SKETCHY_OUTLIER_ALGORITHM  = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SKETCHY_OUTLIER_ALGORITHM = new PropertyDescriptor.Builder()
             .name("Sketchy outlier algorithm")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .allowableValues("SKETCHY_MOVING_MAD")
             .defaultValue("SKETCHY_MOVING_MAD")
             .build();
 
-    public static final PropertyDescriptor BATCH_OUTLIER_ALGORITHM  = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor BATCH_OUTLIER_ALGORITHM = new PropertyDescriptor.Builder()
             .name("Batch outlier algorithm")
             .description("...")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .allowableValues("RAD")
             .defaultValue("RAD")
             .build();
@@ -136,31 +134,31 @@ public class OutlierProcessor extends AbstractProcessor {
     }
 
     /**
-      {
-      "rotationPolicy" : {
-            "type" : "BY_AMOUNT"
-            ,"amount" : 100
-            ,"unit" : "POINTS"
-      }
-      ,"chunkingPolicy" : {
-            "type" : "BY_AMOUNT"
-            ,"amount" : 10
-            ,"unit" : "POINTS"
-      }
-      ,"globalStatistics" : {
-      }
-      ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
-      ,"batchOutlierAlgorithm" : "RAD"
-      ,"config" : {
-            "minAmountToPredict" : 100
-            ,"reservoirSize" : 100
-            ,"zscoreCutoffs" : {
-                "NORMAL" : 0.000000000000001
-                ,"MODERATE_OUTLIER" : 1.5
-            }
-            ,"minZscorePercentile" : 95
-      }
-      }
+     * {
+     * "rotationPolicy" : {
+     * "type" : "BY_AMOUNT"
+     * ,"amount" : 100
+     * ,"unit" : "POINTS"
+     * }
+     * ,"chunkingPolicy" : {
+     * "type" : "BY_AMOUNT"
+     * ,"amount" : 10
+     * ,"unit" : "POINTS"
+     * }
+     * ,"globalStatistics" : {
+     * }
+     * ,"sketchyOutlierAlgorithm" : "SKETCHY_MOVING_MAD"
+     * ,"batchOutlierAlgorithm" : "RAD"
+     * ,"config" : {
+     * "minAmountToPredict" : 100
+     * ,"reservoirSize" : 100
+     * ,"zscoreCutoffs" : {
+     * "NORMAL" : 0.000000000000001
+     * ,"MODERATE_OUTLIER" : 1.5
+     * }
+     * ,"minZscorePercentile" : 95
+     * }
+     * }
      */
     @Multiline
     public static String streamingOutlierConfigStr;
@@ -182,7 +180,7 @@ public class OutlierProcessor extends AbstractProcessor {
      *
      */
     @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> records) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         Collection list = new ArrayList();
 
@@ -224,9 +222,9 @@ public class OutlierProcessor extends AbstractProcessor {
             } catch (RuntimeException e) {
 
                 Record evt = new Record(OUTLIER_PROCESSING_EXCEPTION_TYPE);
-                evt.setStringField("message",  e.getMessage());
+                evt.setStringField("message", e.getMessage());
                 list.add(evt);
-              //  logger.info(e.getMessage(), e);
+                //  logger.info(e.getMessage(), e);
             }
         }
 

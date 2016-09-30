@@ -1,7 +1,5 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
@@ -113,7 +111,7 @@ public class RandomRecordGeneratorTest {
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         assert instance.isPresent();
-        ComponentContext context = new StandardComponentContext(instance.get());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
         Assert.assertTrue(instance.get().isValid());
 

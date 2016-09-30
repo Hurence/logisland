@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.regex.Pattern;
 
-public class StandardPropertyValidators {
+public class StandardValidators {
 
 
 

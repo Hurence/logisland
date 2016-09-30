@@ -17,8 +17,8 @@
 package com.hurence.logisland.engine;
 
 
-import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 
 import java.util.Collection;
 

@@ -6,13 +6,14 @@ import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.processor.chain.KafkaRecordStream
-import com.hurence.logisland.component.{PropertyDescriptor, StandardComponentContext}
+import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.{AbstractStreamProcessingEngine, EngineContext}
+import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.record.{Field, FieldType, Record, RecordUtils}
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.utils.processor.ProcessorMetrics
-import com.hurence.logisland.validator.StandardPropertyValidators
+import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer
@@ -39,7 +40,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .required(true)
         // The regex allows "local[K]" with K as an integer,  "local[*]", "yarn", "yarn-client", "yarn-cluster" and "spark://HOST[:PORT]"
         // there is NO support for "mesos://HOST:PORT"
-        .addValidator(StandardPropertyValidators.createRegexMatchingValidator(Pattern.compile("^(yarn(-(client|cluster))?|local\\[[0-9\\*]+\\]|spark:\\/\\/([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?)$")))
+        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^(yarn(-(client|cluster))?|local\\[[0-9\\*]+\\]|spark:\\/\\/([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?)$")))
         .defaultValue("local[2]")
         .build
 
@@ -54,14 +55,14 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     val SPARK_YARN_QUEUE = new PropertyDescriptor.Builder()
         .name("spark.yarn.queue")
         .description("The name of the YARN queue")
-        .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
     val SPARK_APP_NAME = new PropertyDescriptor.Builder()
         .name("spark.appName")
         .description("Tha application name")
         .required(true)
-        .addValidator(StandardPropertyValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
+        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
         .defaultValue("log-island")
         .build
 
@@ -70,42 +71,42 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.driver.memory")
         .description("The memory size for Spark driver")
         .required(false)
-        .addValidator(StandardPropertyValidators.createRegexMatchingValidator(memorySizePattern))
+        .addValidator(StandardValidators.createRegexMatchingValidator(memorySizePattern))
         .build
 
     val SPARK_EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
         .name("spark.executor.memory")
         .description("The memory size for Spark executors")
         .required(false)
-        .addValidator(StandardPropertyValidators.createRegexMatchingValidator(memorySizePattern))
+        .addValidator(StandardValidators.createRegexMatchingValidator(memorySizePattern))
         .build
 
     val SPARK_DRIVER_CORES = new PropertyDescriptor.Builder()
         .name("spark.driver.cores")
         .description("The number of cores for Spark driver")
         .required(false)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build
 
     val SPARK_EXECUTOR_CORES = new PropertyDescriptor.Builder()
         .name("spark.executor.cores")
         .description("The number of cores for Spark driver")
         .required(false)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build
 
     val SPARK_EXECUTOR_INSTANCES = new PropertyDescriptor.Builder()
         .name("spark.executor.instances")
         .description("The number of instances for Spark app")
         .required(false)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build
 
     val SPARK_SERIALIZER = new PropertyDescriptor.Builder()
         .name("spark.serializer")
         .description("Class to use for serializing objects that will be sent over the network or need to be cached in serialized form")
         .required(false)
-        .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue("org.apache.spark.serializer.KryoSerializer")
         .build
 
@@ -113,7 +114,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.blockInterval")
         .description("The block interval")
         .required(true)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("350")
         .build
 
@@ -121,7 +122,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.kafka.maxRatePerPartition")
         .description("")
         .required(true)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("1")
         .build
 
@@ -129,7 +130,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.batchDuration")
         .description("")
         .required(true)
-        .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .defaultValue("200")
         .build
 
@@ -137,7 +138,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.backpressure.enabled")
         .description("")
         .required(false)
-        .addValidator(StandardPropertyValidators.BOOLEAN_VALIDATOR)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("true")
         .build
 
@@ -145,7 +146,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.unpersist")
         .description("")
         .required(false)
-        .addValidator(StandardPropertyValidators.BOOLEAN_VALIDATOR)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("false")
         .build
 
@@ -153,7 +154,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.ui.port")
         .description("")
         .required(false)
-        .addValidator(StandardPropertyValidators.PORT_VALIDATOR)
+        .addValidator(StandardValidators.PORT_VALIDATOR)
         .defaultValue("4050")
         .build
 
@@ -161,7 +162,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         .name("spark.streaming.timeout")
         .description("")
         .required(false)
-        .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .defaultValue("-1")
         .build
 
@@ -280,7 +281,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
         engineContext.getProcessorChainInstances.foreach(processorChainInstance => {
             // Define the Kafka parameters, broker list must be specified
-            val processorChainContext = new StandardComponentContext(processorChainInstance)
+            val processorChainContext = new StandardProcessContext(processorChainInstance)
             val inSerializerClass = processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString
             val outSerializerClass = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString
             val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString.split(",").toSet
@@ -354,7 +355,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
                         processorChainInstance.getProcessorInstances.foreach(processorInstance => {
                             val startTime = System.currentTimeMillis()
-                            val processorContext = new StandardComponentContext(processorInstance)
+                            val processorContext = new StandardProcessContext(processorInstance)
                             val processor = processorInstance.getProcessor
 
 
@@ -416,7 +417,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             ssc.awaitTermination()
     }
 
-    def sendMetrics(maxRatePerPartition: String, appName: String, blockInterval: String, batchDuration: Int, brokerList: String, processorChainContext: StandardComponentContext, inputTopics: Set[String], outputTopics: Set[String], partition: Iterator[(Array[Byte], Array[Byte])], startTime: Long, partitionId: Int, serializer: RecordSerializer, incomingEvents: util.Collection[Record], outgoingEvents: util.Collection[Record]): Unit = {
+    def sendMetrics(maxRatePerPartition: String, appName: String, blockInterval: String, batchDuration: Int, brokerList: String, processorChainContext: StandardProcessContext, inputTopics: Set[String], outputTopics: Set[String], partition: Iterator[(Array[Byte], Array[Byte])], startTime: Long, partitionId: Int, serializer: RecordSerializer, incomingEvents: util.Collection[Record], outgoingEvents: util.Collection[Record]): Unit = {
         if (processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).isSet) {
             val processorFields = new util.HashMap[String, Field]()
             processorFields.put("spark_app_name", new Field("spark_app_name", FieldType.STRING, appName))

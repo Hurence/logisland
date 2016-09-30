@@ -31,4 +31,11 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
         logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
     }
+
+    @Override
+    public void init(ProcessContext context) {
+        logger.info("init");
+    }
+
+
 }

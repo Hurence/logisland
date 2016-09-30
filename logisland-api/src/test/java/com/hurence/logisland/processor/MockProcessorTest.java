@@ -1,17 +1,15 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.ComponentType;
-import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class MockProcessorTest {
@@ -22,7 +20,7 @@ public class MockProcessorTest {
 
         String message = "logisland rocks !";
         Map<String, String> conf = new HashMap<>();
-        conf.put(MockProcessor.FAKE_MESSAGE.getName(), message );
+        conf.put(MockProcessor.FAKE_MESSAGE.getName(), message);
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
         componentConfiguration.setComponent(MockProcessor.class.getName());
@@ -31,7 +29,7 @@ public class MockProcessorTest {
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        ProcessContext context = new StandardProcessContext(instance.get());
         Processor processor = instance.get().getProcessor();
 
         Record record = new Record("mock_record");
@@ -44,7 +42,6 @@ public class MockProcessorTest {
         assertEquals(message, records.get(0).getField("message").asString());
 
     }
-
 
 
 }

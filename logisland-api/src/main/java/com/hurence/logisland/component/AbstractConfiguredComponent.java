@@ -220,6 +220,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         properties.forEach( (propertyDescriptor, value) -> {
             ValidationResult result = propertyDescriptor.validate(value);
             if (!result.isValid()) {
+                logger.info("invalid property {}", result.getExplanation());
                 isValid[0] = false;
             }
         });

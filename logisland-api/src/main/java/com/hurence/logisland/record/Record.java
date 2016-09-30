@@ -27,11 +27,6 @@ import java.util.*;
 public class Record implements Serializable {
 
     public static String DEFAULT_RECORD_TYPE = "generic";
-    public static String RECORD_TYPE = "record_type";
-    public static String RECORD_ID = "record_id";
-    public static String RECORD_TIME = "record_time";
-    public static String RECORD_KEY = "record_key";
-    public static String RECORD_VALUE = "record_value";
 
     private Map<String, Field> fields = new HashMap<>();
 
@@ -76,14 +71,14 @@ public class Record implements Serializable {
 
     public Date getTime() {
         try{
-            return new Date((long)getField(RECORD_TIME).getRawValue());
+            return new Date((long)getField(FieldDictionary.RECORD_TIME).getRawValue());
         }catch(Exception ex){
             return null;
         }
     }
 
     public void setTime(Date recordTime) {
-        setField(RECORD_TIME, FieldType.LONG, recordTime.getTime());
+        setField(FieldDictionary.RECORD_TIME, FieldType.LONG, recordTime.getTime());
     }
 
     public void setFields(Map<String, Field> fields) {
@@ -91,7 +86,7 @@ public class Record implements Serializable {
     }
 
     public void setType(String type) {
-        this.setField(RECORD_TYPE, FieldType.STRING, type);
+        this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
     }
 
     /**
@@ -99,7 +94,7 @@ public class Record implements Serializable {
      * @return
      */
     public String getType() {
-        return getField(RECORD_TYPE).asString();
+        return getField(FieldDictionary.RECORD_TYPE).asString();
     }
 
     /**
@@ -108,7 +103,7 @@ public class Record implements Serializable {
      * @return the record id
      */
     public String getId() {
-        return getField(RECORD_ID).asString();
+        return getField(FieldDictionary.RECORD_ID).asString();
     }
 
     /**
@@ -116,7 +111,7 @@ public class Record implements Serializable {
      * @param id
      */
     public void setId(String id) {
-        setField(RECORD_ID, FieldType.STRING, id);
+        setField(FieldDictionary.RECORD_ID, FieldType.STRING, id);
     }
 
     /**
@@ -173,6 +168,15 @@ public class Record implements Serializable {
      */
     public Field getField(String fieldName) {
         return fields.get(fieldName);
+    }
+
+    public void setStringFields(Map<String, String> entrySets) {
+        Objects.requireNonNull(entrySets, "Argument can not be null");
+        for (Map.Entry<String, String> entry : entrySets.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            this.setStringField(key, value);
+        }
     }
 
     public Collection<Field> getAllFields() {

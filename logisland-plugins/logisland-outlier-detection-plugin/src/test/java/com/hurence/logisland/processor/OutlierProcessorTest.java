@@ -1,7 +1,5 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.record.Record;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -46,7 +44,7 @@ public class OutlierProcessorTest {
             Processor processor = new OutlierProcessor();
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
             //  instance.setProperty("rules",rulesAsString);
-            ComponentContext context = new StandardComponentContext(instance);
+            ProcessContext context = new StandardProcessContext(instance);
             Collection<Record> outliersRecords = processor.process(context, records);
 
             // @todo make a real test of outliers heres

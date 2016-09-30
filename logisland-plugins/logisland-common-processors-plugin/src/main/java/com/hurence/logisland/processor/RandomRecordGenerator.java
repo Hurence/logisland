@@ -1,12 +1,12 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.utils.avro.eventgenerator.DataGenerator;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -26,7 +26,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("min.events.count")
             .description("the minimum number of generated events each run")
             .required(true)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("10")
             .build();
 
@@ -34,7 +34,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("max.events.count")
             .description("the maximum number of generated events each run")
             .required(true)
-            .addValidator(StandardPropertyValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .defaultValue("200")
             .build();
 
@@ -42,7 +42,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .name("avro.output.schema")
             .description("the avro schema definition for the output serialization")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     private static Logger logger = LoggerFactory.getLogger(RandomRecordGenerator.class);
@@ -50,11 +50,8 @@ public class RandomRecordGenerator extends AbstractProcessor {
     private static String RECORD_TYPE = "random_record";
 
 
-
-
-
     @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
         final String schemaContent = context.getProperty(OUTPUT_SCHEMA).asString();
         final Schema.Parser parser = new Schema.Parser();
@@ -84,9 +81,9 @@ public class RandomRecordGenerator extends AbstractProcessor {
                     Object fieldValue = eventRecord.get(fieldName);
                     FieldType fieldType = FieldType.valueOf(schemaField.schema().getType().getName().toUpperCase());
 
-                    if (Objects.equals(fieldName, Record.RECORD_ID)) {
+                    if (Objects.equals(fieldName, FieldDictionary.RECORD_ID)) {
                         record.setId(fieldValue.toString());
-                    } else if (!Objects.equals(fieldName,  Record.RECORD_TYPE)) {
+                    } else if (!Objects.equals(fieldName, FieldDictionary.RECORD_TYPE)) {
                         if (fieldValue instanceof org.apache.avro.util.Utf8) {
                             record.setStringField(fieldName, fieldValue.toString());
                         } else if (fieldValue instanceof GenericData.Array) {

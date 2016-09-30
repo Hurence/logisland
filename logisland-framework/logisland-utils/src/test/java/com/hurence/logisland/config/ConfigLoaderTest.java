@@ -1,7 +1,7 @@
 package com.hurence.logisland.config;
 
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.component.StandardComponentContext;
+import com.hurence.logisland.processor.StandardProcessContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class ConfigLoaderTest {
 
         Assert.assertTrue(engineInstance.isPresent());
 
-        StandardComponentContext context = new StandardComponentContext(engineInstance.get());
+        StandardProcessContext context = new StandardProcessContext(engineInstance.get());
 
         Assert.assertEquals(301, context.getProperty("fake.settings").asInteger().intValue());
 

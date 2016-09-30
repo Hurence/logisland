@@ -33,19 +33,19 @@ public class RecordTest {
 
         // shortcut for id
         assertEquals(record.getId(), id);
-        assertEquals(record.getField(Record.RECORD_ID).asString(), id);
+        assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), id);
 
         // shortcut for time
-        assertEquals(record.getTime().getTime(), record.getField(Record.RECORD_TIME).asLong().longValue());
+        assertEquals(record.getTime().getTime(), record.getField(FieldDictionary.RECORD_TIME).asLong().longValue());
 
         // shortcut for type
         assertEquals(record.getType(), type);
-        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).asString());
-        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).getRawValue());
+        assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).asString());
+        assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).getRawValue());
 
         // shortcut for id
         assertEquals(record.getId(), id);
-        assertEquals(record.getField(Record.RECORD_ID).asString(), id);
+        assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), id);
 
         record.setField("timestamp", FieldType.LONG, new Date().getTime());
         record.setField("method", FieldType.STRING, "GET");

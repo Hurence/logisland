@@ -1,9 +1,9 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,21 +26,21 @@ public class SplitTextMultiline extends AbstractProcessor {
             .name("regex")
             .description("the regex to match")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor FIELDS = new PropertyDescriptor.Builder()
             .name("fields")
             .description("a comma separated list of fields corresponding to matching groups")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
             .name("event.type")
             .description("the type of event")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     private String buffer = "";
@@ -57,7 +57,7 @@ public class SplitTextMultiline extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         final String[] fields = context.getProperty(FIELDS).asString().split(",");
         final String regexString = context.getProperty(REGEX).asString();
@@ -69,8 +69,8 @@ public class SplitTextMultiline extends AbstractProcessor {
 
         records.forEach(record -> {
             try {
-                final String key = record.getField(Record.RECORD_KEY).asString();
-                buffer += record.getField(Record.RECORD_VALUE).asString();
+                final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
+                buffer += record.getField(FieldDictionary.RECORD_VALUE).asString();
 
             } catch (Exception ex) {
                 logger.info("probleme getting K/V on record {}exception {}", record, ex.getMessage());
@@ -84,7 +84,7 @@ public class SplitTextMultiline extends AbstractProcessor {
             for (int i = 0; i < matcher.groupCount() + 1 && i < fields.length; i++) {
                 String content = matcher.group(i);
                 if (content != null) {
-                    record.setStringField(fields[i],  matcher.group(i).replaceAll("\"", ""));
+                    record.setStringField(fields[i], matcher.group(i).replaceAll("\"", ""));
                 }
 
             }

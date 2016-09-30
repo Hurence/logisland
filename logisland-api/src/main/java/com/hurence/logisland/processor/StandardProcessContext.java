@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.component;
+package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.component.*;
+import com.hurence.logisland.component.AbstractConfiguredComponent;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.processor.ProcessContext;
 
 import java.util.Map;
 
-public class StandardComponentContext implements ComponentContext {
+public class StandardProcessContext implements ProcessContext {
 
     private final AbstractConfiguredComponent component;
 
 
-    public StandardComponentContext(final AbstractConfiguredComponent component) {
+    public StandardProcessContext(final AbstractConfiguredComponent component) {
         this.component = component;
 
     }

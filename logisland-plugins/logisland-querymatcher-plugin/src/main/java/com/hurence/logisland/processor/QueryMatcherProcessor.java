@@ -1,10 +1,9 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class QueryMatcherProcessor extends AbstractProcessor {
             .name("Luwak rules")
             .description("a comma separated string of rules")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("*")
             .build();
 
@@ -45,7 +44,7 @@ public class QueryMatcherProcessor extends AbstractProcessor {
 
 
     @Override
-    public void init(final ComponentContext context) {
+    public void init(final ProcessContext context) {
 
 
         final String rules = context.getProperty(RULES).asString();
@@ -68,7 +67,7 @@ public class QueryMatcherProcessor extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
         ArrayList<Record> outRecords = new ArrayList<>();
 

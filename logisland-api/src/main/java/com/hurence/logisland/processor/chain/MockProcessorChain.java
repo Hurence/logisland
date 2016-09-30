@@ -16,10 +16,10 @@
  */
 package com.hurence.logisland.processor.chain;
 
-import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class MockProcessorChain extends AbstractProcessorChain {
             .name("mock.chain")
             .description("a fake")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("yoyo")
             .build();
 
@@ -55,7 +55,7 @@ public class MockProcessorChain extends AbstractProcessorChain {
     }
 
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         return Collections.emptyList();
     }
 }

@@ -1,9 +1,10 @@
 package com.hurence.logisland.processor.elasticsearch;
 
-import com.hurence.logisland.component.ComponentContext;
+
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.component.StandardComponentContext;
+import com.hurence.logisland.processor.StandardProcessContext;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -112,13 +113,13 @@ public class PutElasticsearchTest {
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.elasticsearch.PutElasticsearch");
+        componentConfiguration.setComponent(PutElasticsearch.class.getName());
         componentConfiguration.setType("processor");
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
         Assert.assertTrue(instance.isPresent());
-        ComponentContext context = new StandardComponentContext(instance.get());
+        ProcessContext context = new StandardProcessContext(instance.get());
 
 
         Record record = new Record("cisco");

@@ -17,8 +17,7 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.StandardProcessorInstance;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ public class MockStreamProcessingEngine extends AbstractStreamProcessingEngine {
             .name("fake.settings")
             .description("")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("oups")
             .build();
 

@@ -1,19 +1,21 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AllowableValue;
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.StringSerializer;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 public class RecordDebugger extends AbstractProcessor {
@@ -34,7 +36,7 @@ public class RecordDebugger extends AbstractProcessor {
             .name("event.serializer")
             .description("the way to serialize event")
             .required(true)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(JSON.getValue())
             .allowableValues(JSON, STRING)
             .build();
@@ -50,12 +52,12 @@ public class RecordDebugger extends AbstractProcessor {
 
 
     @Override
-    public Collection<Record> process(final ComponentContext context, final Collection<Record> collection) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
-            if(context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())){
+            if (context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())) {
                 serializer = new JsonSerializer();
-            }else{
+            } else {
                 serializer = new StringSerializer();
             }
 
@@ -81,7 +83,6 @@ public class RecordDebugger extends AbstractProcessor {
 
         return Collections.emptyList();
     }
-
 
 
 }

@@ -18,8 +18,8 @@ package com.hurence.logisland.parser.syslog
 import java.util
 import java.util.{Calendar, Collections, Date}
 
-import com.hurence.logisland.component.ComponentContext
-import com.hurence.logisland.record.{FieldType, Record}
+import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record}
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 
@@ -60,7 +60,7 @@ class SyslogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    def parse(context: ComponentContext, key: String, value: String): util.Collection[Record] = {
+    def parse(context: ProcessContext, key: String, value: String): util.Collection[Record] = {
         val event = new Record(EVENT_TYPE)
         event.setStringField("source", value)
 
@@ -86,22 +86,22 @@ class SyslogParser {
         try {
             // stamp MMM d HH:mm:ss, single digit date has two spaces
             val timestamp = DTF1_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-            event.setField(Record.RECORD_TIME, FieldType.LONG, timestamp)
+            event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
         } catch {
             case e: Throwable =>
                 try {
                     // stamp MMM d HH:mm:ss, single digit date has two spaces
                     val timestamp = DTF2_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-                    event.setField(Record.RECORD_TIME, FieldType.LONG, timestamp)
+                    event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
                 } catch {
                     case e: Throwable =>
                         try {
                             // stamp MMM d HH:mm:ss, single digit date has two spaces
                             val timestamp = DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime(stamp).getMillis
-                            event.setField(Record.RECORD_TIME, FieldType.LONG, timestamp)
+                            event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
                         } catch {
                             case e: Throwable =>
-                                event.setField(Record.RECORD_TIME, FieldType.LONG, new Date().getTime)
+                                event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, new Date().getTime)
                         }
                 }
         }

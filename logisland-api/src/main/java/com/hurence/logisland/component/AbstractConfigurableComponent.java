@@ -21,7 +21,10 @@ import com.hurence.logisland.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
@@ -32,11 +35,10 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * properties. Since each property is validated as it is set this allows
      * validation of groups of properties together. Default return is an empty
      * set.
-     *
+     * <p>
      * This method will be called only when it has been determined that all
      * property getAllFields are valid according to their corresponding
      * PropertyDescriptor's validators.
-     *
      *
      * @return Collection of ValidationResult objects that will be added to any
      * other validation findings - may be null
@@ -87,9 +89,9 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * and if necessary lazily evaluate it.
      *
      * @param descriptor of the modified property
-     * @param oldValue non-null property value (previous)
-     * @param newValue the new property value or if null indicates the property
-     * was removed
+     * @param oldValue   non-null property value (previous)
+     * @param newValue   the new property value or if null indicates the property
+     *                   was removed
      */
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
@@ -106,12 +108,12 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * acceptable for a dynamically generated property to indicate it is
      * required so long as it is understood it is only required once set.
      * Dynamic properties by definition cannot be required until used.</p>
-     *
+     * <p>
      * <p>
      * This method should be side effect free in the subclasses in terms of how
      * often it is called for a given property name because there is guarantees
      * how often it will be called for a given property name.</p>
-     *
+     * <p>
      * <p>
      * Default is null.
      *
@@ -134,7 +136,6 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
 
     /**
      * Provides subclasses the ability to perform initialization logic
-     *
      */
     public void init(final ComponentContext context) {
         // Provided for subclasses to override

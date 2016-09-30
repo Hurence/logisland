@@ -19,11 +19,11 @@ package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
-import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.utils.elasticsearch.ElasticsearchEventConverter;
-import com.hurence.logisland.validator.StandardPropertyValidators;
+import com.hurence.logisland.utils.elasticsearch.ElasticsearchRecordConverter;
+import com.hurence.logisland.validator.StandardValidators;
 import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -69,7 +69,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .name("batch.size")
             .description("The preferred number of FlowFiles to setField to the database in a single transaction")
             .required(false)
-            .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("1000")
             .build();
 
@@ -77,7 +77,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .name("bulk.size")
             .description("bulk size in MB")
             .required(false)
-            .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("5")
             .build();
 
@@ -85,7 +85,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .name("flush.interval")
             .description("flush interval in sec")
             .required(false)
-            .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("5")
             .build();
 
@@ -93,7 +93,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .name("concurrent.requests")
             .description("setConcurrentRequests")
             .required(false)
-            .addValidator(StandardPropertyValidators.POSITIVE_INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("2")
             .build();
 
@@ -120,14 +120,14 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .name("es.index.field")
             .description("the name of the event field containing es index type => will override index value if set")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ES_TYPE_FIELD = new PropertyDescriptor.Builder()
             .name("es.type.field")
             .description("the name of the event field containing es doc type => will override type value if set")
             .required(false)
-            .addValidator(StandardPropertyValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     @Override
@@ -163,7 +163,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
      * @return
      */
     @Override
-    public Collection<Record> process(ComponentContext context, Collection<Record> records) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         super.setup(context);
 
         if (records.size() != 0) {
@@ -246,7 +246,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                 }
 
                 // dump event to a JSON format
-                String document = ElasticsearchEventConverter.convert(record);
+                String document = ElasticsearchRecordConverter.convert(record);
 
                 // add it to the bulk
                 IndexRequestBuilder result = esClient.get()
