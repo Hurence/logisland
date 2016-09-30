@@ -2,3 +2,6 @@
 .idea/*
 **/target/*
 **/dependency-reduced-pom.xml
+*.tar.gz
+**/_build/
+
