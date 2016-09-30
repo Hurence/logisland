@@ -17,7 +17,7 @@
 package com.hurence.logisland.config;
 
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.chain.StandardProcessorChainInstance;
+import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.Processor;

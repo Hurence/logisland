@@ -3,11 +3,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.StandardComponentContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.rules.KafkaRulesConsumer;
 import com.hurence.logisland.serializer.KryoSerializer;
-import com.hurence.logisland.utils.kafka.DocumentPublisher;
-import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
-import com.hurence.logisland.utils.kafka.RulesPublisher;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
@@ -23,11 +19,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by lhubert on 20/04/16.
- */
-public class QueryMatcherProcessorTest {
 
+public class QueryMatcherProcessorTest {
+/*
 
     private static Logger logger = LoggerFactory.getLogger(QueryMatcherProcessorTest.class);
     static EmbeddedKafkaEnvironment context;
@@ -83,9 +77,8 @@ public class QueryMatcherProcessorTest {
 
         System.out.println("Rules to apply : " + rules.size());
 
-        /**
-         * init a processor instance and its context
-         */
+        //init a processor instance and its context
+
         QueryMatcherProcessor processor = new QueryMatcherProcessor();
         StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
         instance.setProperty("rules",rulesAsString);
@@ -135,5 +128,5 @@ public class QueryMatcherProcessorTest {
     public static void teardown() throws Exception {
         if (context != null)
             context.close();
-    }
+    }*/
 }

@@ -6,7 +6,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
-import com.hurence.logisland.serializer.StringRecordSerializer;
+import com.hurence.logisland.serializer.StringSerializer;
 import com.hurence.logisland.validator.StandardPropertyValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class RecordDebugger extends AbstractProcessor {
             if(context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())){
                 serializer = new JsonSerializer();
             }else{
-                serializer = new StringRecordSerializer();
+                serializer = new StringSerializer();
             }
 
 

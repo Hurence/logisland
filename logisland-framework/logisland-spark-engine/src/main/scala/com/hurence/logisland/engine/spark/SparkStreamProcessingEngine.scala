@@ -1,16 +1,17 @@
-package com.hurence.logisland.engine
+package com.hurence.logisland.engine.spark
 
 import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 import java.util.regex.Pattern
 
-import com.hurence.logisland.chain.KafkaRecordStream
+import com.hurence.logisland.processor.chain.KafkaRecordStream
 import com.hurence.logisland.component.{PropertyDescriptor, StandardComponentContext}
+import com.hurence.logisland.engine.{AbstractStreamProcessingEngine, EngineContext}
 import com.hurence.logisland.record.{Field, FieldType, Record, RecordUtils}
 import com.hurence.logisland.serializer._
-import com.hurence.logisland.utils.event.ProcessorMetrics
 import com.hurence.logisland.utils.kafka.KafkaSerializedEventProducer
+import com.hurence.logisland.utils.processor.ProcessorMetrics
 import com.hurence.logisland.validator.StandardPropertyValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder

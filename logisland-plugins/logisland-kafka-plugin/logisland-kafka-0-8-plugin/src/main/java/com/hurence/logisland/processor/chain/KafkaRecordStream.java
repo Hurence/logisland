@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package com.hurence.logisland.chain;
+package com.hurence.logisland.processor.chain;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ComponentContext;

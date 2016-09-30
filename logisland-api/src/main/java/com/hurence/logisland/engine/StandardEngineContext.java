@@ -17,7 +17,7 @@
 package com.hurence.logisland.engine;
 
 
-import com.hurence.logisland.chain.StandardProcessorChainInstance;
+import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;

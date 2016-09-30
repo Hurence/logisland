@@ -18,21 +18,25 @@ Once you know how to run and build your own parsers and processors, you'll want 
 ## Build and deploy
 to build from the source just clone and package
 
+.. code-block::
+
     git clone
     mvn package
     
 to deploy artifacts (if you're allowed to), follow this guide [release to OSS Sonatype with maven](http://central.sonatype.org/pages/apache-maven.html)
 
+.. code-block::
     
     mvn versions:set -DnewVersion=0.9.5-SNAPSHOT
     mvn clean deploy
     mvn versions:commit
-    
+
 follow the staging procedure in [https://oss.sonatype.org/#stagingRepositories](https://oss.sonatype.org/#stagingRepositories) or read [Sonatype book](http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven)
     
 
 
-## Basic Workflow
+Basic Workflow
+----
 
 1. Raw log files are sent to Kafka topics by a NIFI / Logstash / Flume / Collectd (or whatever) agent 
 3. Logs in Kafka topic are translated into Events and pushed back to another Kafka topic by a Spark streaming job
@@ -44,19 +48,22 @@ follow the staging procedure in [https://oss.sonatype.org/#stagingRepositories](
 
     
 
-## Setup a stream processing workflog
+Setup a stream processing workflog
+----
 
 A LogIsland stream processing flow is made of a bunch of components. At least one streaming engine and 1 or more stream processors. You set them up by a YAML configuration file. Please note that events are serialized against an Avro schema while transiting through any Kafka topic. Every `spark.streaming.batchDuration` (time window), each processor will handle its bunch of Events to eventually generate some new events to the output topic.
 The following `conf/configuration-template.yml` contains a sample of processor definitions.
 
-```YAML
+.. code-block:: yaml
+
+
 
     version: 0.1
     documentation: LogIsland analytics main config file. Put here every engine or component config
     
     components:
       # Main event streaming engine
-      - component: com.hurence.logisland.engine.SparkStreamProcessingEngine
+      - component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
         type: engine
         version: 0.1.0
         documentation: Main Logisland job entry point
@@ -106,21 +113,27 @@ The following `conf/configuration-template.yml` contains a sample of processor d
           
           avro.output.schema: |
                               {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
-```    
 
 
 
-## Start an the stream workflow
+
+Start an the stream workflow
+----
 
 One you've edited your configuration file, you can submit it to execution engine with the following cmd :
 
+.. code-block:: bash
 
     bin/process-stream.sh -conf conf/configuration-template.yml
 
 
-## Create a new plugin
+Create a new plugin
+----
+
 Logisland processors are hosted in some plugins, you can create your own with a maven archetype.
 
+
+.. code-block:: bash
 
     git clone git@github.com:Hurence/logisland.git
     cd logisland-0.9.5-SNAPSHOT/logisland-plugins
@@ -133,4 +146,3 @@ Logisland processors are hosted in some plugins, you can create your own with a 
     Define value for property 'artifactBaseName': : sample
     Define value for property 'package':  com.hurence.logisland.sample: :
     [INFO] Using property: logislandVersion = 0.9.5-SNAPSHOT
-

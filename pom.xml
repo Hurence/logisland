@@ -559,6 +559,11 @@ language governing permissions and limitations under the License. -->
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-kafka-0-8-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch-shaded</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>

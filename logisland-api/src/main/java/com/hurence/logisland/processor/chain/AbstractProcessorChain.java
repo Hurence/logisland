@@ -14,16 +14,9 @@
  * limitations under the License.
  *
  */
-package com.hurence.logisland.chain;
+package com.hurence.logisland.processor.chain;
 
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.processor.Processor;
-import com.hurence.logisland.record.Record;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Stack;
 
 
 public abstract class AbstractProcessorChain extends AbstractProcessor {

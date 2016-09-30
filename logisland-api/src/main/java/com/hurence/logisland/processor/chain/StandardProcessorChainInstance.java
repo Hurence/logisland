@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.chain;
+package com.hurence.logisland.processor.chain;
 
 import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.ArrayList;
