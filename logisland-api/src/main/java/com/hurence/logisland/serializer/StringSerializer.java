@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class StringRecordSerializer implements RecordSerializer {
+public class StringSerializer implements RecordSerializer {
 
-    private static Logger logger = LoggerFactory.getLogger(StringRecordSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(StringSerializer.class);
 
 
     @Override
