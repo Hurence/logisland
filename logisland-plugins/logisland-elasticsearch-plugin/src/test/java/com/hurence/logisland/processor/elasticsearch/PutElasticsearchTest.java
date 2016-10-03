@@ -4,16 +4,16 @@ package com.hurence.logisland.processor.elasticsearch;
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.processor.StandardProcessorInstance;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.utils.elasticsearch.ElasticsearchRecordConverter;
-import com.hurence.logisland.utils.string.Multiline;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Assert;
@@ -25,27 +25,26 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertFirstHit;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertHitCount;
-import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.hasId;
 
-@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, numDataNodes = 1)
-@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, maxNumDataNodes = 2)
+@ThreadLeakScope(ThreadLeakScope.Scope.SUITE)
 public class PutElasticsearchTest extends ESIntegTestCase {
 
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearchTest.class);
 
-
-
-
+/*
+    @Override
+    protected Settings nodeSettings(int nodeOrdinal) {
+        return Settings.builder().put(super.nodeSettings(nodeOrdinal))
+                .put("node.mode", "network")
+                .build();
+    }
+*/
     @Before
     private void setup() throws IOException {
         Client client = client();
-
-
-
 
 
         createIndex("test");
@@ -55,8 +54,6 @@ public class PutElasticsearchTest extends ESIntegTestCase {
     }
 
 
-
-
     @Test
     public void testLoadConfig() throws Exception {
 
@@ -64,14 +61,11 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         final String indexName = "test";
         final String recordType = "cisco_record";
         Map<String, String> conf = new HashMap<>();
-        String node = clusterService().localNode().address().toString();
-        clusterService().localNode();
-        conf.put("hosts", "localhost:9400" );
-        conf.put("index", indexName);
-        conf.put("type", "logisland");
-        conf.put("cluster", cluster().getClusterName());
 
-;
+        conf.put("hosts", "local[1]:9300");
+        conf.put("default.type", recordType);
+        conf.put("cluster.name", cluster().getClusterName());
+        conf.put("default.index", indexName);
 
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
@@ -87,6 +81,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
         Record record = new Record(recordType);
         record.setId("firewall_record1");
+        record.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, 1475525688668L);
         record.setField("method", FieldType.STRING, "GET");
         record.setField("ip_source", FieldType.STRING, "123.34.45.123");
         record.setField("ip_target", FieldType.STRING, "255.255.255.255");
@@ -100,28 +95,22 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
         record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
- //       instance.get().getProcessor().process(context, Collections.singletonList(record));
+        PutElasticsearch processor = (PutElasticsearch) instance.get().getProcessor();
+        processor.setClient(internalCluster().masterClient());
+        processor.process(context, Collections.singletonList(record));
 
 
-
-
-        // @TODO embed a local instance here
-
-       index(indexName, recordType, "1", ElasticsearchRecordConverter.convert(record));
-      /*   index("test", recordType, "2", jsonBuilder().startObject().field("text",
-                "value2").endObject());*/
-        refresh();
+        flushAndRefresh();
         SearchResponse searchResponse = client().prepareSearch(indexName)
                 .setTypes(recordType)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.termQuery("ip_source", "123.34.45.123"))                 // Query
-                //   .setPostFilter(QueryBuilders.rangeQuery("age").from(12).to(18))     // Filter
+                .setQuery(QueryBuilders.termQuery("ip_source", "123.34.45.123"))
                 .setFrom(0).setSize(60).setExplain(true)
                 .execute()
                 .actionGet();
 
 
         assertHitCount(searchResponse, 1);
-        assertFirstHit(searchResponse, hasId("1"));
+        assertEquals("{\"@timestamp\":\"2016-10-03T22:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record1\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}",searchResponse.getHits().getAt(0).getSourceAsString());
     }
 }

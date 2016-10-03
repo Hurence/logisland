@@ -290,6 +290,15 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
         return transportClient;
     }
 
+
+    /**
+     * Dispose of ElasticSearch client
+     */
+    public void setClient(Client newClient) {
+        closeClient();
+        esClient.set(newClient);
+    }
+
     /**
      * Dispose of ElasticSearch client
      */

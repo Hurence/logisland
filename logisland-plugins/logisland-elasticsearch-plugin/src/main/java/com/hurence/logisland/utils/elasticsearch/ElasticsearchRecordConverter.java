@@ -31,12 +31,21 @@ public class ElasticsearchRecordConverter {
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             XContentBuilder document = jsonBuilder().startObject();
 
-            record.getAllFields().forEach(field -> {
+            // convert event_time as ISO for ES
+            if (record.hasField(FieldDictionary.RECORD_TIME)) {
+                try {
+                    DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
+                    document.field("@timestamp", dateParser.print(record.getField(FieldDictionary.RECORD_TIME).asLong()));
+                } catch (Exception ex) {
+                    logger.error("unable to parse record_time iso date for {}", record);
+                }
+            }
 
+            // add all other records
+            record.getAllFieldsSorted().forEach(field -> {
                 try {
                     // cleanup invalid es fields characters like '.'
                     String fieldName = field.getName().toLowerCase().replaceAll("\\.", "_");
-
 
                     switch (field.getType()) {
 
@@ -47,17 +56,7 @@ public class ElasticsearchRecordConverter {
                             document.field(fieldName, field.asInteger().intValue());
                             break;
                         case LONG:
-                            // convert event_time as ISO for ES
-                            if (fieldName.equals(FieldDictionary.RECORD_TIME)) {
-                                try {
-                                    DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-                                    document.field("@timestamp", dateParser.print(field.asLong()));
-                                } catch (Exception ex) {
-                                    document.field(fieldName, field.asLong().longValue());
-                                }
-                            } else {
-                                document.field(fieldName, field.asLong().longValue());
-                            }
+                            document.field(fieldName, field.asLong().longValue());
                             break;
                         case FLOAT:
                             document.field(fieldName, field.asFloat().floatValue());
@@ -73,11 +72,9 @@ public class ElasticsearchRecordConverter {
                             break;
                     }
 
-
                 } catch (Throwable ex) {
                     logger.error("unable to process a field in record : {}, {}", record, ex.getMessage());
                 }
-
             });
 
             String result = document.endObject().string();
