@@ -17,17 +17,20 @@
  */
 package com.caseystella.analytics;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+
+
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 
 public class UnitTestHelper {
+
+    private static Logger logger = LoggerFactory.getLogger(UnitTestHelper.class);
     public static String findDir(String name) {
         return findDir(new File("."), name);
     }
@@ -69,16 +72,5 @@ public class UnitTestHelper {
         Assert.assertFalse(mismatch);
     }
 
-    public static void verboseLogging() {
-        verboseLogging("%d [%p|%c|%C{1}] %m%n", Level.ALL);
-    }
-    public static void verboseLogging(String pattern, Level level) {
-        ConsoleAppender console = new ConsoleAppender(); //create appender
-        //configure the appender
-        console.setLayout(new PatternLayout(pattern));
-        console.setThreshold(level);
-        console.activateOptions();
-        //add appender to any Logger (here is root)
-        Logger.getRootLogger().addAppender(console);
-    }
+
 }

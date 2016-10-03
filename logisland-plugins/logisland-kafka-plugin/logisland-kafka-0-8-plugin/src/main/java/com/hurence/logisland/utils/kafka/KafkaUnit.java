@@ -38,6 +38,7 @@ import kafka.utils.VerifiableProperties;
 import kafka.utils.ZKStringSerializer$;
 import org.I0Itec.zkclient.ZkClient;
 //import org.apache.kafka.common.security.JaasUtils;
+
 import org.junit.ComparisonFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

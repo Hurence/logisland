@@ -280,131 +280,137 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
           */
 
         engineContext.getProcessorChainInstances.foreach(processorChainInstance => {
-            // Define the Kafka parameters, broker list must be specified
-            val processorChainContext = new StandardProcessContext(processorChainInstance)
-            val inSerializerClass = processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString
-            val outSerializerClass = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString
-            val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString.split(",").toSet
-            val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toSet
-            val errorTopics = processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toSet
-            val topicAutocreate = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
-            val topicDefaultPartitions = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
-            val topicDefaultReplicationFactor = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
-            val brokerList = processorChainContext.getProperty(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
-            val zkQuorum = processorChainContext.getProperty(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
-            val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> appName)
+            try{
+                // Define the Kafka parameters, broker list must be specified
+                val processorChainContext = new StandardProcessContext(processorChainInstance)
+                val inSerializerClass = processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString
+                val outSerializerClass = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString
+                val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString.split(",").toSet
+                val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toSet
+                val errorTopics = processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toSet
+                val topicAutocreate = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
+                val topicDefaultPartitions = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
+                val topicDefaultReplicationFactor = processorChainContext.getProperty(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
+                val brokerList = processorChainContext.getProperty(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
+                val zkQuorum = processorChainContext.getProperty(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
+                val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+                val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> appName)
 
-            if (topicAutocreate) {
-                createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                if (processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).isSet) {
-                    createTopicsIfNeeded(
-                        zkClient,
-                        Set(processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString),
-                        topicDefaultPartitions,
-                        topicDefaultReplicationFactor)
+                if (topicAutocreate) {
+                    createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                    createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                    createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                    if (processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).isSet) {
+                        createTopicsIfNeeded(
+                            zkClient,
+                            Set(processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString),
+                            topicDefaultPartitions,
+                            topicDefaultReplicationFactor)
+                    }
                 }
-            }
 
-            // Create the direct stream with the Kafka parameters and topics
-            val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
-                ssc,
-                kafkaParams,
-                inputTopics
-            )
+                // Create the direct stream with the Kafka parameters and topics
+                val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
+                    ssc,
+                    kafkaParams,
+                    inputTopics
+                )
 
-            // setup the stream processing
-            kafkaStream.foreachRDD(rdd => {
-                rdd.foreachPartition(partition => {
-                    if (partition.nonEmpty) {
+                // setup the stream processing
+                kafkaStream.foreachRDD(rdd => {
+                    rdd.foreachPartition(partition => {
+                        if (partition.nonEmpty) {
 
-                        val partitionId = TaskContext.get.partitionId()
+                            val partitionId = TaskContext.get.partitionId()
 
-                        /**
-                          * create serializers
-                          */
-                        val parser = new Schema.Parser
-                        val deserializer = inSerializerClass match {
-                            case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                                val inSchemaContent =
-                                    processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString
-                                val inSchema = parser.parse(inSchemaContent)
-                                new AvroSerializer(inSchema)
-                            case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-                            case _ => new KryoSerializer(true)
-                        }
-                        val serializer = outSerializerClass match {
-                            case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                                val outSchemaContent =
-                                    processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString
-                                val outSchema = parser.parse(outSchemaContent)
-                                new AvroSerializer(outSchema)
-                            case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-                            case _ => new KryoSerializer(true)
-                        }
-
-
-                        /**
-                          * process events by chaining output records
-                          */
-                        var isFirstProcessor = true
-                        var incomingEvents: util.Collection[Record] = null
-                        var outgoingEvents: util.Collection[Record] = null
-
-                        processorChainInstance.getProcessorInstances.foreach(processorInstance => {
-                            val startTime = System.currentTimeMillis()
-                            val processorContext = new StandardProcessContext(processorInstance)
-                            val processor = processorInstance.getProcessor
-
-
-                            if (isFirstProcessor) {
-                                /**
-                                  * convert incoming Kafka messages into Records
-                                  * if there's no serializer we assume that we need to compute a Record from K/V
-                                  */
-                                incomingEvents = if (inSerializerClass == KafkaRecordStream.NO_SERIALIZER.getValue) {
-                                    // parser
-                                    partition.map(rawMessage => {
-                                        RecordUtils.getKeyValueRecord(new String(rawMessage._1), new String(rawMessage._2))
-                                    }).toList
-                                } else {
-                                    // processor
-                                    deserializeEvents(partition, deserializer)
-                                }
-
-                                isFirstProcessor = false
-                            }else{
-                                incomingEvents = outgoingEvents
+                            /**
+                              * create serializers
+                              */
+                            val parser = new Schema.Parser
+                            val deserializer = inSerializerClass match {
+                                case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
+                                    val inSchemaContent =
+                                        processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString
+                                    val inSchema = parser.parse(inSchemaContent)
+                                    new AvroSerializer(inSchema)
+                                case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
+                                case _ => new KryoSerializer(true)
+                            }
+                            val serializer = outSerializerClass match {
+                                case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
+                                    val outSchemaContent =
+                                        processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString
+                                    val outSchema = parser.parse(outSchemaContent)
+                                    new AvroSerializer(outSchema)
+                                case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
+                                case _ => new KryoSerializer(true)
                             }
 
-                            // do the processing
-                            outgoingEvents = processor.process(processorContext, incomingEvents)
 
-                            sendMetrics(maxRatePerPartition, appName, blockInterval, batchDuration, brokerList,
-                                processorChainContext, inputTopics, outputTopics, partition, startTime, partitionId,
-                                serializer, incomingEvents, outgoingEvents)
-                        })
+                            /**
+                              * process events by chaining output records
+                              */
+                            var isFirstProcessor = true
+                            var incomingEvents: util.Collection[Record] = null
+                            var outgoingEvents: util.Collection[Record] = null
 
-
-
-                        /**
-                          * push outgoing events to Kafka
-                          */
-                        val kafkaProducer = new KafkaSerializedEventProducer(
-                            brokerList,
-                            processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString,
-                            serializer)
-                        kafkaProducer.produce(outgoingEvents.toList)
+                            processorChainInstance.getProcessorInstances.foreach(processorInstance => {
+                                val startTime = System.currentTimeMillis()
+                                val processorContext = new StandardProcessContext(processorInstance)
+                                val processor = processorInstance.getProcessor
 
 
+                                if (isFirstProcessor) {
+                                    /**
+                                      * convert incoming Kafka messages into Records
+                                      * if there's no serializer we assume that we need to compute a Record from K/V
+                                      */
+                                    incomingEvents = if (inSerializerClass == KafkaRecordStream.NO_SERIALIZER.getValue) {
+                                        // parser
+                                        partition.map(rawMessage => {
+                                            RecordUtils.getKeyValueRecord(new String(rawMessage._1), new String(rawMessage._2))
+                                        }).toList
+                                    } else {
+                                        // processor
+                                        deserializeEvents(partition, deserializer)
+                                    }
 
-                    }
+                                    isFirstProcessor = false
+                                }else{
+                                    incomingEvents = outgoingEvents
+                                }
+
+                                // do the processing
+                                outgoingEvents = processor.process(processorContext, incomingEvents)
+
+                                sendMetrics(maxRatePerPartition, appName, blockInterval, batchDuration, brokerList,
+                                    processorChainContext, inputTopics, outputTopics, partition, startTime, partitionId,
+                                    serializer, incomingEvents, outgoingEvents)
+                            })
 
 
+
+                            /**
+                              * push outgoing events to Kafka
+                              */
+                            val kafkaProducer = new KafkaSerializedEventProducer(
+                                brokerList,
+                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString,
+                                serializer)
+                            kafkaProducer.produce(outgoingEvents.toList)
+
+
+
+                        }
+
+
+                    })
                 })
-            })
+            }catch {
+                case ex:Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",
+                    ex.getMessage)
+            }
+
         })
 
 

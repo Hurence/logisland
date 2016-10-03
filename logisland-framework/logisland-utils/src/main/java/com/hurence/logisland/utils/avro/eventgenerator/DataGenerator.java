@@ -27,9 +27,11 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.io.JsonEncoder;
 import org.apache.commons.cli.*;
-import org.apache.log4j.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,7 +42,7 @@ import java.io.OutputStream;
 public class DataGenerator {
 
     public final static String MODULE = DataGenerator.class.getName();
-    public final static Logger LOG = Logger.getLogger(MODULE);
+    private static Logger logger = LoggerFactory.getLogger(DataGenerator.class);
     private final static String PRINT_AVRO_JSON_OPTNAME = "printAvroJson";
     Schema schema;
 
@@ -70,7 +72,7 @@ public class DataGenerator {
     public GenericRecord generateRandomRecord() throws UnknownTypeException {
 
         if (schema.getType() != Schema.Type.RECORD) {
-            LOG.error("The schema first level must be record.");
+            logger.error("The schema first level must be record.");
             return null;
         }
 
@@ -85,9 +87,9 @@ public class DataGenerator {
 
     static public void prettyPrint(GenericRecord record) {
         try {
-            LOG.info(new JSONObject(record.toString()).toString(2));
+            logger.info(new JSONObject(record.toString()).toString(2));
         } catch (JSONException e) {
-            LOG.error("Unable to parser json: The Json created by the generator is not valid!");
+            logger.error("Unable to parser json: The Json created by the generator is not valid!");
             e.printStackTrace();
         }
     }
@@ -124,7 +126,7 @@ public class DataGenerator {
         try {
             cmd = parser.parse(opts, args);
         } catch (org.apache.commons.cli.ParseException parseEx) {
-            LOG.error("Invalid option");
+            logger.error("Invalid option");
             printHelp(opts);
             return;
         }
@@ -132,7 +134,7 @@ public class DataGenerator {
         // check for necessary options
         String fileLoc = cmd.getOptionValue("schemaLocation");
         if (fileLoc == null) {
-            LOG.error("schemaLocation not specified");
+            logger.error("schemaLocation not specified");
             printHelp(opts);
         }
 
