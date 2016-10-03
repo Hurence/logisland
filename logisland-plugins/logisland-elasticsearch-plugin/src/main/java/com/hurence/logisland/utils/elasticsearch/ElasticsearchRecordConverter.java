@@ -51,7 +51,7 @@ public class ElasticsearchRecordConverter {
                             if (fieldName.equals(FieldDictionary.RECORD_TIME)) {
                                 try {
                                     DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-                                    dateParser.print(field.asLong());
+                                    document.field("@timestamp", dateParser.print(field.asLong()));
                                 } catch (Exception ex) {
                                     document.field(fieldName, field.asLong().longValue());
                                 }
@@ -75,7 +75,7 @@ public class ElasticsearchRecordConverter {
 
 
                 } catch (Throwable ex) {
-                    logger.error("unable to process a field in record : {}, {}",record, ex.getMessage());
+                    logger.error("unable to process a field in record : {}, {}", record, ex.getMessage());
                 }
 
             });
