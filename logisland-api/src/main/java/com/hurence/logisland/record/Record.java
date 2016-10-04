@@ -40,6 +40,13 @@ public class Record implements Serializable {
         this.setId(UUID.randomUUID().toString());
     }
 
+    public Record(Record toClone) {
+        this.setType(toClone.getType());
+        this.setTime(toClone.getTime());
+        this.setId(UUID.randomUUID().toString());
+        toClone.getAllFieldsSorted().forEach(this::setField);
+    }
+
     @Override
     public String toString() {
         return "Event{" +
@@ -125,11 +132,10 @@ public class Record implements Serializable {
     /**
      * set a field value
      *
-     * @param fieldName
-     * @param value
+     * @param field
      */
-    public void setField(String fieldName, Field value) {
-        fields.put(fieldName, value);
+    public void setField(Field field) {
+        fields.put(field.getName(), field);
     }
 
     /**
@@ -139,7 +145,7 @@ public class Record implements Serializable {
      * @param value
      */
     public void setField(String fieldName, FieldType fieldType, Object value) {
-        setField(fieldName, new Field(fieldName, fieldType, value));
+        setField(new Field(fieldName, fieldType, value));
     }
 
     /**
@@ -149,7 +155,7 @@ public class Record implements Serializable {
      * @param value the value to be added
      */
     public void setStringField(String fieldName, String value) {
-        setField(fieldName, new Field(fieldName, FieldType.STRING, value));
+        setField(new Field(fieldName, FieldType.STRING, value));
     }
 
     /**
