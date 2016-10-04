@@ -16,6 +16,7 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.processor.StandardValidationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,10 +215,20 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public boolean isValid() {
-        final boolean[] isValid = {true};
+        final Collection<ValidationResult> validationResults = validate(new StandardValidationContext(
+                getProperties(), getAnnotationData(), null, getIdentifier()));
 
-        Map<PropertyDescriptor,String>  properties = getProperties();
-        properties.forEach( (propertyDescriptor, value) -> {
+        for (final ValidationResult result : validationResults) {
+            if (!result.isValid()) {
+                return false;
+            }
+        }
+
+        return true;
+       /* final boolean[] isValid = {true};
+
+        Map<PropertyDescriptor, String> properties = getProperties();
+        properties.forEach((propertyDescriptor, value) -> {
             ValidationResult result = propertyDescriptor.validate(value);
             if (!result.isValid()) {
                 logger.info("invalid property {}", result.getExplanation());
@@ -225,7 +236,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
             }
         });
 
-        return isValid[0];
+        return isValid[0];*/
     }
 
     @Override
@@ -236,5 +247,10 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     public abstract void verifyModifiable() throws IllegalStateException;
 
+    @Override
+    public Collection<ValidationResult> validate(final ValidationContext context) {
+
+        return component.validate(context);
+    }
 
 }

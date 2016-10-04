@@ -21,10 +21,7 @@ import com.hurence.logisland.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
@@ -43,9 +40,66 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * @return Collection of ValidationResult objects that will be added to any
      * other validation findings - may be null
      */
-    protected Collection<ValidationResult> customValidate() {
+    protected Collection<ValidationResult> customValidate(ValidationContext context){
         return Collections.emptySet();
     }
+
+
+
+    @Override
+    public final Collection<ValidationResult> validate(final ValidationContext context) {
+        // goes through supported properties
+        final Collection<ValidationResult> results = new ArrayList<>();
+        final List<PropertyDescriptor> supportedDescriptors = getSupportedPropertyDescriptors();
+        if (null != supportedDescriptors) {
+            for (final PropertyDescriptor descriptor : supportedDescriptors) {
+                String value = context.getProperty(descriptor).asString();
+                if (value == null) {
+                    value = descriptor.getDefaultValue();
+                }
+                if (value == null && descriptor.isRequired()) {
+                    results.add(new ValidationResult.Builder().valid(false).input(null).subject(descriptor.getName()).explanation(descriptor.getName() + " is required").build());
+                    continue;
+                } else if (value == null) {
+                    continue;
+                }
+
+                final ValidationResult result = descriptor.validate(value);
+                if (!result.isValid()) {
+                    results.add(result);
+                }
+            }
+        }
+
+        // validate any dynamic properties
+        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
+            final PropertyDescriptor descriptor = entry.getKey();
+            final String value = entry.getValue();
+
+            if (supportedDescriptors != null && !supportedDescriptors.contains(descriptor)) {
+                final ValidationResult result = descriptor.validate(value);
+                if (!result.isValid()) {
+                    results.add(result);
+                }
+            }
+        }
+
+        // only run customValidate if regular validation is successful. This allows Processor developers to not have to check
+        // if values are null or invalid so that they can focus only on the interaction between the properties, etc.
+        if (results.isEmpty()) {
+            final Collection<ValidationResult> customResults = customValidate(context);
+            if (null != customResults) {
+                for (final ValidationResult result : customResults) {
+                    if (!result.isValid()) {
+                        results.add(result);
+                    }
+                }
+            }
+        }
+
+        return results;
+    }
+
 
     /**
      * @param descriptorName to lookup the descriptor

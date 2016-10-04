@@ -18,10 +18,23 @@ package com.hurence.logisland.component;
 
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 public interface ConfigurableComponent extends Serializable{
 
+    /**
+     * Validates a set of properties, returning ValidationResults for any
+     * invalid properties. All defined properties will be validated. If they are
+     * not included in the in the purposed configuration, the default value will
+     * be used.
+     *
+     * @param context of validation
+     * @return Collection of validation result objects for any invalid findings
+     * only. If the collection is empty then the component is valid. Guaranteed
+     * non-null
+     */
+    Collection<ValidationResult> validate(ValidationContext context);
 
     /**
      * @param name to lookup the descriptor

@@ -17,6 +17,8 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;

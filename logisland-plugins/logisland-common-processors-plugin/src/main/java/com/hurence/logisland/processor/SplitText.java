@@ -1,6 +1,8 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -68,6 +70,34 @@ public class SplitText extends AbstractProcessor {
         descriptors.add(EVENT_TYPE);
 
         return Collections.unmodifiableList(descriptors);
+    }
+
+
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context){
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+      /*  final String methodValue = context.getProperty(ENCRYPTION_ALGORITHM).getValue();
+        final EncryptionMethod encryptionMethod = EncryptionMethod.valueOf(methodValue);
+        final String algorithm = encryptionMethod.getAlgorithm();
+        final String password = context.getProperty(PASSWORD).getValue();
+        final KeyDerivationFunction kdf = KeyDerivationFunction.valueOf(context.getProperty(KEY_DERIVATION_FUNCTION).getValue());
+        final String keyHex = context.getProperty(RAW_KEY_HEX).getValue();
+        if (isPGPAlgorithm(algorithm)) {
+            final boolean encrypt = context.getProperty(MODE).getValue().equalsIgnoreCase(ENCRYPT_MODE);
+            final String publicKeyring = context.getProperty(PUBLIC_KEYRING).getValue();
+            final String publicUserId = context.getProperty(PUBLIC_KEY_USERID).getValue();
+            final String privateKeyring = context.getProperty(PRIVATE_KEYRING).getValue();
+            final String privateKeyringPassphrase = context.getProperty(PRIVATE_KEYRING_PASSPHRASE).getValue();
+            validationResults.addAll(validatePGP(encryptionMethod, password, encrypt, publicKeyring, publicUserId, privateKeyring, privateKeyringPassphrase));
+        } else { // Not PGP
+            if (encryptionMethod.isKeyedCipher()) { // Raw key
+                validationResults.addAll(validateKeyed(encryptionMethod, kdf, keyHex));
+            } else { // PBE
+                boolean allowWeakCrypto = context.getProperty(ALLOW_WEAK_CRYPTO).getValue().equalsIgnoreCase(WEAK_CRYPTO_ALLOWED_NAME);
+                validationResults.addAll(validatePBE(encryptionMethod, kdf, password, allowWeakCrypto));
+            }
+        }*/
+        return validationResults;
     }
 
     @Override
@@ -175,5 +205,6 @@ public class SplitText extends AbstractProcessor {
 
         return outputRecords;
     }
+
 
 }

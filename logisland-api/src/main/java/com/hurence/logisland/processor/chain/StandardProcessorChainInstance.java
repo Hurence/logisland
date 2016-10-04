@@ -18,9 +18,13 @@ package com.hurence.logisland.processor.chain;
 
 import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.ConfigurableComponent;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.processor.StandardProcessorInstance;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 

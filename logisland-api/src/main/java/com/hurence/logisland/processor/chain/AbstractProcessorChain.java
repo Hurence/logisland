@@ -21,4 +21,5 @@ import com.hurence.logisland.processor.AbstractProcessor;
 
 public abstract class AbstractProcessorChain extends AbstractProcessor {
 
+
 }

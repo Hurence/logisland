@@ -19,6 +19,7 @@ package com.hurence.logisland.utils.spark
 import java.text.SimpleDateFormat
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -28,6 +29,23 @@ import org.apache.spark.{SparkConf, SparkContext}
  */
 
 object SparkUtils extends LazyLogging {
+
+
+  def customizeLogLevels: Unit = {
+    // Logging verbosity lowered
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
+    Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.kafka").setLevel(Level.ERROR)
+    Logger.getLogger("org.elasticsearch").setLevel(Level.WARN)
+    Logger.getLogger("kafka").setLevel(Level.WARN)
+
+    Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
+    Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
+    Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
+  }
 
   def initContext(appName: String,
                   blockInterval: String = "",

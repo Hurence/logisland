@@ -16,8 +16,10 @@
  */
 package com.hurence.logisland.processor.chain;
 
-import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
@@ -58,4 +60,5 @@ public class MockProcessorChain extends AbstractProcessorChain {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         return Collections.emptyList();
     }
+
 }

@@ -17,6 +17,11 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AbstractConfiguredComponent;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
+
+import java.util.Collection;
+import java.util.Collections;
 
 
 public class StandardProcessorInstance extends AbstractConfiguredComponent {

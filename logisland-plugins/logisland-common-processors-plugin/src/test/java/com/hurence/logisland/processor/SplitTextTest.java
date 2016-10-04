@@ -36,8 +36,8 @@ public class SplitTextTest {
         conf.put("key.fields", "es_index,host_name");
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
-        componentConfiguration.setComponent("com.hurence.logisland.processor.SplitText");
-        componentConfiguration.setType("parser");
+        componentConfiguration.setComponent(SplitText.class.getName());
+        componentConfiguration.setType(ComponentType.PARSER.toString());
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);

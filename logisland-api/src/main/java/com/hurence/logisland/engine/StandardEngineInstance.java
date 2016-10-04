@@ -20,6 +20,8 @@ import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.component.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
