@@ -22,14 +22,14 @@ import java.util.List;
 
 public class EngineConfiguration extends AbstractComponentConfiguration {
 
-    private List<ProcessorChainConfiguration> processorChains = new ArrayList<>();
+    private List<ProcessorChainConfiguration> processorChainConfigurations = new ArrayList<>();
 
-    public List<ProcessorChainConfiguration> getProcessorChains() {
-        return processorChains;
+    public List<ProcessorChainConfiguration> getProcessorChainConfigurations() {
+        return processorChainConfigurations;
     }
 
-    public void setProcessorChains(List<ProcessorChainConfiguration> processorChains) {
-        this.processorChains = processorChains;
+    public void addProcessorChainConfigurations(ProcessorChainConfiguration processorChains) {
+        this.processorChainConfigurations.add(processorChains);
     }
 
 }

@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author tom
  */
@@ -30,14 +33,15 @@ public class ConfigLoaderTest {
 
         Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(config.getEngine());
 
-        Assert.assertTrue(engineInstance.isPresent());
+        assertTrue(engineInstance.isPresent());
 
         StandardProcessContext context = new StandardProcessContext(engineInstance.get());
 
-        Assert.assertEquals(301, context.getProperty("fake.settings").asInteger().intValue());
+        assertEquals(301, context.getProperty("fake.settings").asInteger().intValue());
 
-        Assert.assertEquals(1, engineInstance.get().getProcessorChainInstances().size());
+        assertEquals(1, engineInstance.get().getProcessorChainInstances().size());
         //   engineInstance.get().getProcessorChainInstances().get(0)
 
+        assertTrue(engineInstance.get().isValid());
     }
 }

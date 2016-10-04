@@ -157,7 +157,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
 
     public static final PropertyDescriptor KAFKA_METADATA_BROKER_LIST = new PropertyDescriptor.Builder()
             .name("kafka.metadata.broker.list")
-            .description("")
+            .description("a comma separated list of host:port brokers")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("sandbox:9092")

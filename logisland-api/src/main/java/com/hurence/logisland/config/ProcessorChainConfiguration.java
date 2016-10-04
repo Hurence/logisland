@@ -21,13 +21,13 @@ import java.util.List;
 
 
 /**
- * A processorChain is a component + a set of  processors
+ * A processorChain is a component + a set of  processorConfigurations
  */
 public class ProcessorChainConfiguration extends AbstractComponentConfiguration {
 
     private String processorChain = "";
 
-    private List<ProcessorConfiguration> processors = new ArrayList<>();
+    private List<ProcessorConfiguration> processorConfigurations = new ArrayList<>();
 
     public String getProcessorChain() {
         return processorChain;
@@ -37,18 +37,18 @@ public class ProcessorChainConfiguration extends AbstractComponentConfiguration 
         this.processorChain = processorChain;
     }
 
-    public List<ProcessorConfiguration> getProcessors() {
-        return processors;
+    public List<ProcessorConfiguration> getProcessorConfigurations() {
+        return processorConfigurations;
     }
 
-    public void setProcessors(List<ProcessorConfiguration> processors) {
-        this.processors = processors;
+    public void addProcessorConfiguration(ProcessorConfiguration processorConfiguration) {
+        this.processorConfigurations.add(processorConfiguration);
     }
 
     @Override
     public String toString() {
         return "StreamConfiguration{" +
-                "processors=" + processors +
+                "processorConfigurations=" + processorConfigurations +
                 '}';
     }
 }

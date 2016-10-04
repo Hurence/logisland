@@ -342,6 +342,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                 // setup the stream processing
                 kafkaStream.foreachRDD(rdd => {
                     rdd.foreachPartition(partition => {
+                        logger.info("tick")
                         if (partition.nonEmpty) {
 
                             val partitionId = TaskContext.get.partitionId()
@@ -439,6 +440,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             ssc.awaitTerminationOrTimeout(timeout)
         else
             ssc.awaitTermination()
+
+        logger.info("stream processing done")
     }
 
 

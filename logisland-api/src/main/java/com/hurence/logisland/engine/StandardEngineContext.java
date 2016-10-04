@@ -79,6 +79,6 @@ public class StandardEngineContext implements EngineContext, Serializable {
 
     @Override
     public Collection<StandardProcessorChainInstance> getProcessorChainInstances() {
-        return null;
+        return engineInstance.getProcessorChainInstances();
     }
 }

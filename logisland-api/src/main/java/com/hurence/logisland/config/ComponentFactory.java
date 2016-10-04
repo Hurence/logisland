@@ -45,7 +45,7 @@ public final class ComponentFactory {
 
 
             // instanciate each related processorChainInstance
-            configuration.getProcessorChains().forEach(processChainConfig -> {
+            configuration.getProcessorChainConfigurations().forEach(processChainConfig -> {
                 Optional<StandardProcessorChainInstance> processorChainInstance = getProcessorChainInstance(processChainConfig);
                 if (processorChainInstance.isPresent())
                     engineInstance.addProcessorChainInstance(processorChainInstance.get());
@@ -78,7 +78,7 @@ public final class ComponentFactory {
                     new StandardProcessorChainInstance(processorChain, Long.toString(currentId.incrementAndGet()));
 
             // instanciate each related processor
-            configuration.getProcessors().forEach(processConfig -> {
+            configuration.getProcessorConfigurations().forEach(processConfig -> {
                 Optional<StandardProcessorInstance> processorInstance = getProcessorInstance(processConfig);
                 if (processorInstance.isPresent())
                     instance.addProcessorInstance(processorInstance.get());

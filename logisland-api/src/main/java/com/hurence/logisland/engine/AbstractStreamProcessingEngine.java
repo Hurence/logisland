@@ -17,7 +17,18 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
+import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.component.ValidationResult;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public abstract class AbstractStreamProcessingEngine extends AbstractConfigurableComponent implements StreamProcessingEngine {
 
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context){
+
+
+        return Collections.emptySet();
+    }
 }
