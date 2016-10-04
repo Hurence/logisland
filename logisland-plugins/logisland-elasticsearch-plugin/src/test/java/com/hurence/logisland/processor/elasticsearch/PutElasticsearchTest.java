@@ -95,9 +95,13 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
         record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
+        Record record2 = new Record(record);
+        record2.setField("ip_source", FieldType.STRING, "123.34.45.12");
+  //      record2.setField("response_size", FieldType.STRING, "-");
+
         PutElasticsearch processor = (PutElasticsearch) instance.get().getProcessor();
         processor.setClient(internalCluster().masterClient());
-        processor.process(context, Collections.singletonList(record));
+        processor.process(context, new ArrayList<>(Arrays.asList(record, record2)));
 
 
         flushAndRefresh();
