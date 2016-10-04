@@ -185,12 +185,6 @@ public class Record implements Serializable {
         }
     }
 
-
-    Comparator<Field> comparator = (f1, f2) -> {
-        return f1.getName().compareTo(f2.getName()); // use your logic
-    };
-
-
     public Collection<Field> getAllFieldsSorted() {
         List<Field> fields = new ArrayList<>(getAllFields());
         Collections.sort(fields, (left, right) -> left.getName().compareTo(right.getName()));

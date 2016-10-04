@@ -686,4 +686,8 @@ public class KryoSerializerTest {
 
 		assertTrue(deserializedRecord.equals(record));
 	}
+
+
+
+
 }
