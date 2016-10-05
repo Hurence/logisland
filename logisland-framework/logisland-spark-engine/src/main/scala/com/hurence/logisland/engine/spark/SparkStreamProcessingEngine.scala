@@ -14,7 +14,7 @@ import com.hurence.logisland.serializer._
 import com.hurence.logisland.util.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.SparkUtils
-import com.hurence.logisland.validator.StandardValidators
+import com.hurence.logisland.util.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer

@@ -24,6 +24,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,17 +35,36 @@ import java.util.Objects;
 
 public class AvroSerializer implements RecordSerializer {
 
-    private Schema schema;
+    private final Schema schema;
 
-    public AvroSerializer(Schema schema) {
+    public AvroSerializer(final Schema schema) {
         this.schema = schema;
+    }
+
+    public AvroSerializer(final String strSchema) {
+        final Schema.Parser parser = new Schema.Parser();
+        try {
+            schema = parser.parse(strSchema);
+        } catch (Exception e) {
+            throw new RecordSerializationException("unable to create serializer", e);
+        }
+    }
+
+    public AvroSerializer(final InputStream inputStream) {
+        assert inputStream != null;
+        final Schema.Parser parser = new Schema.Parser();
+        try {
+             schema = parser.parse(inputStream);
+        } catch (IOException e) {
+            throw new RecordSerializationException("unable to create serializer", e);
+        }
     }
 
     protected static final byte MAGIC_BYTE = 0x0;
     protected static final int idSize = 4;
 
     @Override
-    public void serialize(OutputStream out, Record record) throws RecordSerializationException {
+    public void serialize(final OutputStream out, final Record record) throws RecordSerializationException {
 
         try {
             /**
@@ -81,15 +101,15 @@ public class AvroSerializer implements RecordSerializer {
     public static List<Object> copyArray(GenericData.Array<Object> avroArray, List<Object> list) {
         for (Object avroRecord : avroArray) {
             if (avroRecord instanceof org.apache.avro.util.Utf8) {
-                list.add( avroRecord.toString());
-            }else {
+                list.add(avroRecord.toString());
+            } else {
                 list.add(avroRecord);
             }
         }
         return list;
     }
 
-    public Record deserialize(InputStream in) throws RecordSerializationException {
+    public Record deserialize(final InputStream in) throws RecordSerializationException {
         try {
 
             Decoder decoder = DecoderFactory.get().binaryDecoder(in, null);

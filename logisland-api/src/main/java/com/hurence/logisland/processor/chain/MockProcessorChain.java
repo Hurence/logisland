@@ -19,8 +19,7 @@ package com.hurence.logisland.processor.chain;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.util.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

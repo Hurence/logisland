@@ -16,7 +16,7 @@
  */
 package com.hurence.logisland.util.runner;
 
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.Record;
 
 public interface RecordValidator {
 
@@ -25,6 +25,6 @@ public interface RecordValidator {
      *
      * @param record the record to validate
      */
-    void assertRecord(StandardRecord record);
+    void assertRecord(Record record);
 
 }

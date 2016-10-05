@@ -3,6 +3,8 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import com.hurence.logisland.util.string.Multiline;
+import com.hurence.logisland.util.validator.AvroRecordValidator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,7 @@ public class SplitTextTest {
     private static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
     private static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
     private static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
-
+    private static final String SCHEMA_TRAKER1_LOG = "/schemas/traker.avsc";
 
     private static final String USR_BACKEND_REGEX = "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*";
     private static final String USR_GATEWAY_REGEX = "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:(\\S*)\\]\\s+(\\S*)\\s+(\\S*) - (.*)";
@@ -26,6 +28,82 @@ public class SplitTextTest {
 
     private static Logger logger = LoggerFactory.getLogger(SplitTextTest.class);
 
+
+    /**
+     * {
+     * "version": 1,
+     * "type": "record",
+     * "namespace": "com.hurence.logisland",
+     * "name": "Event",
+     * "fields": [
+     * {
+     * "name": "_type",
+     * "type": "string"
+     * },
+     * {
+     * "name": "_id",
+     * "type": "string"
+     * },
+     * {
+     * "name": "timestamp",
+     * "type": "long"
+     * },
+     * {
+     * "name": "method",
+     * "type": "string"
+     * },
+     * {
+     * "name": "ipSource",
+     * "type": "string"
+     * },
+     * {
+     * "name": "ipTarget",
+     * "type": "string"
+     * },
+     * {
+     * "name": "urlScheme",
+     * "type": "string"
+     * },
+     * {
+     * "name": "urlHost",
+     * "type": "string"
+     * },
+     * {
+     * "name": "urlPort",
+     * "type": "string"
+     * },
+     * {
+     * "name": "urlPath",
+     * "type": "string"
+     * },
+     * {
+     * "name": "requestSize",
+     * "type": "int"
+     * },
+     * {
+     * "name": "responseSize",
+     * "type": "int"
+     * },
+     * {
+     * "name": "isOutsideOfficeHours",
+     * "type": "boolean"
+     * },
+     * {
+     * "name": "isHostBlacklisted",
+     * "type": "boolean"
+     * },
+     * {
+     * "name": "tags",
+     * "type": {
+     * "type": "array",
+     * "items": "string"
+     * }
+     * }
+     * ]
+     * }
+     */
+    @Multiline
+    public String avroSchema;
 
     @Test
     public void testUsrBackend() {
@@ -79,7 +157,9 @@ public class SplitTextTest {
         out.assertFieldEquals("src_ip", "10.3.41.100");
         out.assertRecordSizeEquals(35);
 
-
+      /*  testRunner.assertAllRecords(
+                new AvroRecordValidator(SplitTextTest.class.getResourceAsStream(SCHEMA_TRAKER1_LOG))
+        );*/
 
         testRunner.setProperty("bad_prop", "nasty man");
         testRunner.assertNotValid();

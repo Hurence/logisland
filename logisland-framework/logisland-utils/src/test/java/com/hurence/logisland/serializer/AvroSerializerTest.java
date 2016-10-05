@@ -29,12 +29,8 @@ public class AvroSerializerTest {
 
 	@Test
 	public void avroSerde() throws IOException {
-		System.out.println("avroSerde");
-
-		final Schema.Parser parser = new Schema.Parser();
-		final Schema schema = parser.parse(
-				new FileInputStream(AvroSerializerTest.class.getResource("/schemas/event.avsc").getFile()));
-		final AvroSerializer serializer = new AvroSerializer(schema);
+        final AvroSerializer serializer =
+                new AvroSerializer(AvroSerializerTest.class.getResourceAsStream("/schemas/event.avsc"));
 
 		Record record = new StandardRecord("cisco");
 		record.setId("firewall_record1");

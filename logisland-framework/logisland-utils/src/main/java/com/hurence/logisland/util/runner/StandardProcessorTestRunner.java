@@ -40,7 +40,6 @@ import com.hurence.logisland.processor.MockProcessContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.RecordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +48,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -64,14 +61,14 @@ public class StandardProcessorTestRunner implements TestRunner {
     private final Processor processor;
     private final MockProcessContext context;
     private final RecordQueue inputRecordsQueue;
-    private final RecordQueue outputRecordsQueue;
+    private final List<Record> outputRecordsList;
     private static Logger logger = LoggerFactory.getLogger(StandardProcessorTestRunner.class);
     private static final AtomicLong currentId = new AtomicLong(0);
 
     StandardProcessorTestRunner(final Processor processor) {
         this.processor = processor;
         this.inputRecordsQueue = new RecordQueue();
-        this.outputRecordsQueue = new RecordQueue();
+        this.outputRecordsList = new ArrayList<>();
         this.context = new MockProcessContext(processor);
         this.processor.init(context);
     }
@@ -93,7 +90,7 @@ public class StandardProcessorTestRunner implements TestRunner {
         while (!inputRecordsQueue.isEmpty()) {
             Record inputRecord = inputRecordsQueue.poll();
             Collection<Record> outputRecords = processor.process(context, inputRecord);
-            outputRecordsQueue.addAll(outputRecords);
+            outputRecordsList.addAll(outputRecords);
         }
     }
 
@@ -184,7 +181,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertOutputRecordsCount(int count) {
         assertTrue("expected output record count was " + count + " but is currently " +
-                outputRecordsQueue.size().getObjectCount(), outputRecordsQueue.size().getObjectCount() == count);
+                outputRecordsList.size(), outputRecordsList.size() == count);
     }
 
     @Override
@@ -194,7 +191,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void assertAllRecords(RecordValidator validator) {
-
+        outputRecordsList.forEach(validator::assertRecord);
     }
 
 
@@ -225,18 +222,15 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void clearOutpuRecords() {
-        outputRecordsQueue.clear();
+        outputRecordsList.clear();
     }
 
     @Override
     public List<MockRecord> getOutpuRecords() {
-        List<MockRecord> outputRecords = new ArrayList<>();
-        while (!outputRecordsQueue.isEmpty()) {
-            Record outputRecord = outputRecordsQueue.poll();
-            outputRecords.add(new MockRecord(outputRecord));
-        }
-
-        return outputRecords;
+        return outputRecordsList
+                .stream()
+                .map(MockRecord::new)
+                .collect(Collectors.toList());
     }
 }
 

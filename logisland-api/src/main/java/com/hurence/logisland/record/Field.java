@@ -52,11 +52,21 @@ public class Field implements PropertyValue, Serializable {
 
     @Override
     public String toString() {
+
         if (rawValue != null)
-            return rawValue.toString();
+            return "Field{" +
+                    "name='" + name + '\'' +
+                    ", type=" + type +
+                    ", rawValue=" + rawValue +
+                    '}';
         else
-            return "null";
+            return "Field{" +
+                    "name='" + name + '\'' +
+                    ", type=" + type +
+                    ", rawValue=null" +
+                    '}';
     }
+
 
     @Override
     public boolean equals(Object o) {

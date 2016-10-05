@@ -3,11 +3,10 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.StringSerializer;
-import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.util.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

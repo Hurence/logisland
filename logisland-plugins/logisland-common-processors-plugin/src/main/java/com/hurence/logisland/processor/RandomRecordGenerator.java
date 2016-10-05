@@ -7,7 +7,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
-import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.util.validator.StandardValidators;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;

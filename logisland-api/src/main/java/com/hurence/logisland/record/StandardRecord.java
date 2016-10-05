@@ -16,7 +16,7 @@
 
 package com.hurence.logisland.record;
 
-import java.io.Serializable;
+import org.apache.commons.collections.CollectionUtils;
 import java.util.*;
 
 /**
@@ -62,9 +62,12 @@ public class StandardRecord implements Record {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Record record = (StandardRecord) o;
+        StandardRecord record = (StandardRecord) o;
 
-        if (fields != null ? !fields.equals(record.getAllFields()) : record.getAllFields() != null) return false;
+        if (getAllFields() == null || record.getAllFields() == null ||
+                !CollectionUtils.isEqualCollection(this.getAllFields(), record.getAllFields()))
+
+            return false;
         return getId() != null ? getId().equals(record.getId()) : record.getId() == null;
 
     }
