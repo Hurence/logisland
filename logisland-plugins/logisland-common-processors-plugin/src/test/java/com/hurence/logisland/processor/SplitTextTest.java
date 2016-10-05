@@ -30,10 +30,10 @@ public class SplitTextTest {
 
 
         Map<String, String> conf = new HashMap<>();
-        conf.put("value.regex", "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
-        conf.put("value.fields", "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
-        conf.put("key.regex", "(\\S*):(\\S*)");
-        conf.put("key.fields", "es_index,host_name");
+        conf.put(SplitText.VALUE_REGEX.getName(), "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*");
+        conf.put(SplitText.VALUE_FIELDS.getName(), "raw_content,component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace");
+        conf.put(SplitText.KEY_REGEX.getName(), "(\\S*):(\\S*)");
+        conf.put(SplitText.KEY_FIELDS.getName(), "es_index,host_name");
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
         componentConfiguration.setComponent(SplitText.class.getName());

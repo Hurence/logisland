@@ -3,7 +3,7 @@ package com.caseystella.analytics.distribution;
 import com.caseystella.analytics.DataPoint;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
-import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.util.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;

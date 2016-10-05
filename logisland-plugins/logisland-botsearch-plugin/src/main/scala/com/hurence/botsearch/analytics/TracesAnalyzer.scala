@@ -1,7 +1,7 @@
 package com.hurence.botsearch.analytics
 
 import com.hurence.logisland.botsearch.{HttpFlow, Trace}
-import com.hurence.logisland.utils.spark.SparkUtils
+import com.hurence.logisland.util.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.feature.StandardScaler

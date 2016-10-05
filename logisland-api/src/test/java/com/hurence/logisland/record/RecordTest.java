@@ -29,7 +29,7 @@ public class RecordTest {
         record.setId(id);
 
         assertTrue(record.isEmpty());
-        assertEquals(record.size(), 3);
+        assertEquals(record.size(), 0);
 
         // shortcut for id
         assertEquals(record.getId(), id);
@@ -61,7 +61,7 @@ public class RecordTest {
         record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
         record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
-        assertEquals(record.size(), 16);  // 13 + 3
+        assertEquals(record.size(), 13);  // 13 + 3
 
         assertFalse(record.hasField("unkown_field"));
         assertTrue(record.hasField("method"));
@@ -69,7 +69,7 @@ public class RecordTest {
         assertTrue(record.getField("response_size").asInteger() - 452 == 0);
 
         record.removeField("is_host_blacklisted");
-        assertEquals(record.size(), 15);
+        assertEquals(record.size(), 12);
 
         record.setField("is_outside_office_hours", record.getField("is_outside_office_hours").getType(), !record.getField("is_outside_office_hours").asBoolean());
         assertTrue(record.getField("is_outside_office_hours").asBoolean());

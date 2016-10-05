@@ -9,7 +9,7 @@ import com.hurence.logisland.engine.StreamProcessingEngine;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
-import com.hurence.logisland.utils.kafka.KafkaUnit;
+import com.hurence.logisland.util.kafka.KafkaUnit;
 import kafka.producer.KeyedMessage;
 import org.junit.After;
 import org.junit.Assert;

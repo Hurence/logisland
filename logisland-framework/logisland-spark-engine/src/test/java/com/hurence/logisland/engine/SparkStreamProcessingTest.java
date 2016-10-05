@@ -8,17 +8,15 @@ import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.engine.spark.SparkStreamProcessingEngine;
 import com.hurence.logisland.processor.MockProcessor;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
-import com.hurence.logisland.serializer.KryoSerializer;
-import com.hurence.logisland.utils.kafka.EmbeddedKafkaEnvironment;
+import com.hurence.logisland.util.kafka.EmbeddedKafkaEnvironment;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
 import kafka.utils.TestUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.elasticsearch.index.engine.Engine;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
@@ -28,6 +26,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class SparkStreamProcessingTest {
 
+
+    private static Logger logger = LoggerFactory.getLogger(SparkStreamProcessingTest.class);
 
 
     EngineConfiguration createEngineConfiguration() {
@@ -122,7 +122,7 @@ public class SparkStreamProcessingTest {
             }
         };
         Thread t = new Thread(myRunnable);
-       // logger.info("STARTING THREAD {}", t.getId());
+        logger.info("starting engine thread {}", t.getId());
         t.start();
 
 
@@ -139,7 +139,7 @@ public class SparkStreamProcessingTest {
             }
         };
         Thread t2 = new Thread(myRunnable2);
-        // logger.info("STARTING THREAD {}", t.getId());
+        logger.info("starting publisher thread {}", t2.getId());
         t2.start();
 
 

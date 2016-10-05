@@ -216,7 +216,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     @Override
     public boolean isValid() {
         final Collection<ValidationResult> validationResults = validate(new StandardValidationContext(
-                getProperties(), getAnnotationData(), null, getIdentifier()));
+                getProperties()));
 
         for (final ValidationResult result : validationResults) {
             if (!result.isValid()) {

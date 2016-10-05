@@ -47,11 +47,6 @@ public interface ValidationContext {
      */
     Map<PropertyDescriptor, String> getProperties();
 
-    /**
-     * @return the currently configured Annotation Data
-     */
-    String getAnnotationData();
-
 
     /**
      * @param value to test whether expression language is present
@@ -68,10 +63,4 @@ public interface ValidationContext {
      */
     boolean isExpressionLanguageSupported(String propertyName);
 
-    /**
-     * Returns the identifier of the ProcessGroup that the component being validated lives in
-     *
-     * @return the identifier of the ProcessGroup that the component being validated lives in
-     */
-    String getProcessGroupIdentifier();
 }

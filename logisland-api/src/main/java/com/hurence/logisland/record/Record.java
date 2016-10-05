@@ -77,9 +77,9 @@ public class Record implements Serializable {
     }
 
     public Date getTime() {
-        try{
-            return new Date((long)getField(FieldDictionary.RECORD_TIME).getRawValue());
-        }catch(Exception ex){
+        try {
+            return new Date((long) getField(FieldDictionary.RECORD_TIME).getRawValue());
+        } catch (Exception ex) {
             return null;
         }
     }
@@ -98,6 +98,7 @@ public class Record implements Serializable {
 
     /**
      * get the
+     *
      * @return
      */
     public String getType() {
@@ -115,6 +116,7 @@ public class Record implements Serializable {
 
     /**
      * sets Record id
+     *
      * @param id
      */
     public void setId(String id) {
@@ -127,7 +129,9 @@ public class Record implements Serializable {
      * @param fieldName
      * @return
      */
-    public boolean hasField(String fieldName) { return fields.containsKey(fieldName); }
+    public boolean hasField(String fieldName) {
+        return fields.containsKey(fieldName);
+    }
 
     /**
      * set a field value
@@ -152,7 +156,7 @@ public class Record implements Serializable {
      * set a field value as a String value
      *
      * @param fieldName the name of the string field
-     * @param value the value to be added
+     * @param value     the value to be added
      */
     public void setStringField(String fieldName, String value) {
         setField(new Field(fieldName, FieldType.STRING, value));
@@ -212,7 +216,62 @@ public class Record implements Serializable {
         return fields.size() == 3;
     }
 
-    public int size(){
-        return fields.size();
+    /**
+     * The number of fields (minus the 3 technical ones)
+     *
+     * @return number of real fields
+     */
+    public int size() {
+        return fields.size() - 3;
+    }
+
+    /**
+     * compute roughly the size in bytes for an event
+     * id, type and creationDate are ignored
+     *
+     * @return
+     */
+    public int sizeInBytes() {
+
+        int size = 0;
+
+        for (Map.Entry<String, Field> entry : getFieldsEntrySet()) {
+
+            Field field = entry.getValue();
+            Object fieldValue = field.getRawValue();
+            FieldType fieldType = field.getType();
+
+            // dump event field as record attribute
+
+            try {
+                switch (fieldType) {
+                    case STRING:
+                        size += ((String) fieldValue).getBytes().length;
+                        break;
+                    case INT:
+                        size += 4;
+                        break;
+                    case LONG:
+                        size += 8;
+                        break;
+                    case FLOAT:
+                        size += 4;
+                        break;
+                    case DOUBLE:
+                        size += 8;
+                        break;
+                    case BOOLEAN:
+                        size += 1;
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception ex) {
+                // nothing to do
+            }
+
+        }
+
+        return size;
     }
 }

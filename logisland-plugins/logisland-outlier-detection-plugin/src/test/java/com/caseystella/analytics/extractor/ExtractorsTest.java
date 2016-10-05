@@ -2,7 +2,7 @@ package com.caseystella.analytics.extractor;
 
 import com.caseystella.analytics.DataPoint;
 import com.google.common.collect.Iterables;
-import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.util.string.Multiline;
 import org.junit.Assert;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;

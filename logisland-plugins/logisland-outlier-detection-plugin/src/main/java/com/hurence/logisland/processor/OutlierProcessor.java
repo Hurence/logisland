@@ -9,7 +9,7 @@ import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.util.string.Multiline;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

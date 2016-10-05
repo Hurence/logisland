@@ -4,3 +4,5 @@
 
 - add docker container for demo
 - add topic auto-creation parameters
+- add validators
+- add chaining 

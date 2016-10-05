@@ -34,28 +34,11 @@ public class StandardValidationContext implements ValidationContext {
 
     private final Map<PropertyDescriptor, String> properties;
     private final Map<String, Boolean> expressionLanguageSupported;
-    private final String annotationData;
-    private final Set<String> serviceIdentifiersToNotValidate;
-    private final String groupId;
-    private final String componentId;
 
-    public StandardValidationContext(final Map<PropertyDescriptor, String> properties,
-                                     final String annotationData, final String groupId, final String componentId) {
-        this(Collections.<String> emptySet(), properties, annotationData, groupId, componentId);
-    }
 
-    public StandardValidationContext(
-            final Set<String> serviceIdentifiersToNotValidate,
-            final Map<PropertyDescriptor, String> properties,
-            final String annotationData,
-            final String groupId,
-            final String componentId) {
+
+    public StandardValidationContext(           final Map<PropertyDescriptor, String> properties) {
         this.properties = new HashMap<>(properties);
-        this.annotationData = annotationData;
-        this.serviceIdentifiersToNotValidate = serviceIdentifiersToNotValidate;
-        this.groupId = groupId;
-        this.componentId = componentId;
-
         expressionLanguageSupported = new HashMap<>(properties.size());
         for (final PropertyDescriptor descriptor : properties.keySet()) {
             expressionLanguageSupported.put(descriptor.getName(), descriptor.isExpressionLanguageSupported());
@@ -80,12 +63,6 @@ public class StandardValidationContext implements ValidationContext {
         return Collections.unmodifiableMap(properties);
     }
 
-    @Override
-    public String getAnnotationData() {
-        return annotationData;
-    }
-
-
 
 
     @Override
@@ -105,8 +82,4 @@ public class StandardValidationContext implements ValidationContext {
         return Boolean.TRUE.equals(supported);
     }
 
-    @Override
-    public String getProcessGroupIdentifier() {
-        return groupId;
-    }
 }

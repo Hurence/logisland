@@ -18,8 +18,12 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Collections;
 
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
@@ -38,4 +42,15 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
     }
 
 
+    /**
+     * Call process with a singleton list made with the single record
+     *
+     * @param context the current process context
+     * @param record the record to handle
+     * @return
+     */
+    @Override
+    public Collection<Record> process(ProcessContext context, Record record) {
+        return process(context, Collections.singleton(record));
+    }
 }

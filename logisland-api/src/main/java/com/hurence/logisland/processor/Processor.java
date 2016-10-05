@@ -43,4 +43,14 @@ public interface Processor extends ConfigurableComponent {
      */
     Collection<Record> process(ProcessContext context, Collection<Record> records);
 
+    /**
+     * Process the incoming collection of records to
+     * generate a new collection of records
+     *
+     * @param context the current process context
+     * @param record the record to handle
+     * @return a collection of computed records
+     * @throws ProcessException if something went wrong
+     */
+    Collection<Record> process(ProcessContext context, Record record);
 }

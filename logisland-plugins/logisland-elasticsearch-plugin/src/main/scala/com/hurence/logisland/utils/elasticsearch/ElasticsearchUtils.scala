@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-package com.hurence.logisland.utils.elasticsearch
+package com.hurence.logisland.util.elasticsearch
 
 import java.io.{BufferedReader, IOException, InputStream, InputStreamReader}
 import java.net.InetAddress

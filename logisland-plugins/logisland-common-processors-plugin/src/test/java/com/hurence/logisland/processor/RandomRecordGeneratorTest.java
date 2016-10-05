@@ -1,9 +1,10 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.component.ComponentType;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.util.string.Multiline;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class RandomRecordGeneratorTest {
      * }
      */
     @Multiline
-    public static String avroSchema;
+    public String avroSchema;
 
 
     @Test
@@ -99,14 +100,14 @@ public class RandomRecordGeneratorTest {
 
 
         Map<String, String> conf = new HashMap<>();
-        conf.put("avro.output.schema", avroSchema);
-        conf.put("min.events.count", "5");
-        conf.put("max.events.count", "20");
+        conf.put(RandomRecordGenerator.OUTPUT_SCHEMA.getName(), avroSchema);
+        conf.put(RandomRecordGenerator.MIN_EVENTS_COUNT.getName(), "5");
+        conf.put(RandomRecordGenerator.MAX_EVENTS_COUNT.getName(), "20");
 
         ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
 
-        componentConfiguration.setComponent("com.hurence.logisland.processor.RandomRecordGenerator");
-        componentConfiguration.setType("processor");
+        componentConfiguration.setComponent(RandomRecordGenerator.class.getName());
+        componentConfiguration.setType(ComponentType.PROCESSOR.toString());
         componentConfiguration.setConfiguration(conf);
 
         Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
