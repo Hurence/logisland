@@ -25,6 +25,7 @@ import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface TestRunner {
 
@@ -101,6 +102,13 @@ public interface TestRunner {
      * Remova all records from output queue
      */
     void clearOutpuRecords();
+
+
+    /**
+     * Retrieve output queue
+     */
+    List<MockRecord> getOutpuRecords();
+
 
     /**
      * Asserts that all Records that were transferred contain the given

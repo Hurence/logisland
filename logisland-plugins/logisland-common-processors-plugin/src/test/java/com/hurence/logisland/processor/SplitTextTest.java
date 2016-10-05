@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
@@ -55,16 +56,29 @@ public class SplitTextTest {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(73);
+    }
 
-
+    @Test
+    public void testSyslogTraker() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
         testRunner.setProperty(SplitText.VALUE_REGEX, SYSLOG_TRAKER_REGEX);
         testRunner.setProperty(SplitText.VALUE_FIELDS, SYSLOG_TRAKER_FIELDS);
+        testRunner.setProperty(SplitText.KEY_REGEX, "(\\S*):(\\S*)");
+        testRunner.setProperty(SplitText.KEY_FIELDS, "es_index,host_name");
         testRunner.assertValid();
         testRunner.enqueue("@", SplitTextTest.class.getResourceAsStream(DATA_TRAKER1_LOG));
         testRunner.clearOutpuRecords();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1000);
+
+
+        MockRecord out = testRunner.getOutpuRecords().get(0);
+        out.assertFieldExists("src_ip");
+        out.assertFieldNotExists("src_ip2");
+        out.assertFieldEquals("src_ip", "10.3.41.100");
+        out.assertRecordSizeEquals(35);
+
 
 
         testRunner.setProperty("bad_prop", "nasty man");
