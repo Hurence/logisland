@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 /**
  * @author tom
  */
-public class RecordTest {
+public class StandardRecordTest {
 
 
     @Test
@@ -25,7 +25,7 @@ public class RecordTest {
 
         String id = "firewall_record1";
         String type = "cisco";
-        Record record = new Record(type);
+        Record record = new StandardRecord(type);
         record.setId(id);
 
         assertTrue(record.isEmpty());
@@ -80,7 +80,7 @@ public class RecordTest {
     public void validateRecordTypeConvertion() throws IOException {
 
         List<String> tags = new ArrayList<>(Arrays.asList("spam", "filter", "mail"));
-        Record record = new Record();
+        Record record = new StandardRecord();
         record.setField("request_size", FieldType.INT, 1399);
         Field field = record.getField("request_size");
         field.asFloat();

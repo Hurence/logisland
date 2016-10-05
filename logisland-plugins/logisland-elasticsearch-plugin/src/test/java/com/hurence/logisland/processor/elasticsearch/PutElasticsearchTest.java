@@ -10,10 +10,10 @@ import com.hurence.logisland.processor.StandardProcessorInstance;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Assert;
@@ -79,7 +79,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         ProcessContext context = new StandardProcessContext(instance.get());
 
 
-        Record record = new Record(recordType);
+        Record record = new StandardRecord(recordType);
         record.setId("firewall_record1");
         record.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, 1475525688668L);
         record.setField("method", FieldType.STRING, "GET");
@@ -95,7 +95,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
         record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
-        Record record2 = new Record(record);
+        Record record2 = new StandardRecord(record);
         record2.setField("ip_source", FieldType.STRING, "123.34.45.12");
   //      record2.setField("response_size", FieldType.STRING, "-");
 

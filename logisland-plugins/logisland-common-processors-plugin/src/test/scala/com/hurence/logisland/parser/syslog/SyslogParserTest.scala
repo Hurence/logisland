@@ -3,7 +3,7 @@ package com.hurence.logisland.parser.syslog
 import java.util.Calendar
 
 import com.hurence.logisland.parser.base.BaseLogParserTest
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.StandardRecord
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 
@@ -60,7 +60,7 @@ class SyslogParserTest extends BaseLogParserTest {
 
     }
 
-    private def testASyslogEvent(syslogEvent: Record,
+    private def testASyslogEvent(syslogEvent: StandardRecord,
                                  priority: String,
                                  version: Option[Int],
                                  date: String,

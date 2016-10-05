@@ -6,6 +6,7 @@ import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.time.DateUtil;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class SplitText extends AbstractProcessor {
     public static final PropertyDescriptor KEY_REGEX = new PropertyDescriptor.Builder()
             .name("key.regex")
             .description("the regex to match for the message key")
-            .required(true)
+            .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(".*")
             .build();
@@ -48,7 +49,7 @@ public class SplitText extends AbstractProcessor {
     public static final PropertyDescriptor KEY_FIELDS = new PropertyDescriptor.Builder()
             .name("key.fields")
             .description("a comma separated list of fields corresponding to matching groups for the message key")
-            .required(true)
+            .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("")
             .build();
@@ -74,8 +75,18 @@ public class SplitText extends AbstractProcessor {
 
 
     @Override
-    protected Collection<ValidationResult> customValidate(ValidationContext context){
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+
+        // key regex and fields must be set together
+        if (context.getProperty(KEY_REGEX).isSet() ^ context.getProperty(KEY_FIELDS).isSet()) {
+            validationResults.add(
+                    new ValidationResult.Builder()
+                            .input(KEY_REGEX.getName())
+                            .explanation("key regex and fields must be set together")
+                            .valid(false)
+                            .build());
+        }
       /*  final String methodValue = context.getProperty(ENCRYPTION_ALGORITHM).getValue();
         final EncryptionMethod encryptionMethod = EncryptionMethod.valueOf(methodValue);
         final String algorithm = encryptionMethod.getAlgorithm();
@@ -121,7 +132,7 @@ public class SplitText extends AbstractProcessor {
                 final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
                 final String value = record.getField(FieldDictionary.RECORD_VALUE).asString();
 
-                Record outputRecord = new Record(eventType);
+                StandardRecord outputRecord = new StandardRecord(eventType);
 
                 // match the key
                 if (key != null) {

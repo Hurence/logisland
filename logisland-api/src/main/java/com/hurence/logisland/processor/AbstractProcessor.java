@@ -19,6 +19,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

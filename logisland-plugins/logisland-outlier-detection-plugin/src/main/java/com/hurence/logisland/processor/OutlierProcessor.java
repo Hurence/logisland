@@ -8,7 +8,7 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.string.Multiline;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
@@ -180,13 +180,13 @@ public class OutlierProcessor extends AbstractProcessor {
      *
      */
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
+    public Collection<StandardRecord> process(final ProcessContext context, final Collection<StandardRecord> records) {
 
         Collection list = new ArrayList();
 
 
         // loop over all events in collection
-        for (Record record : records) {
+        for (StandardRecord record : records) {
 
             try {
 
@@ -204,7 +204,7 @@ public class OutlierProcessor extends AbstractProcessor {
                     outlier = batchOutlierAlgorithm.analyze(outlier, outlier.getSample(), dp);
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
-                        Record evt = new Record(EVENT_TYPE);
+                        StandardRecord evt = new StandardRecord(EVENT_TYPE);
                         evt.setField("root_event_value", FieldType.DOUBLE, record.getField("value").getRawValue());
                         evt.setStringField("root_event_id", record.getId());
                         evt.setStringField("root_event_type", record.getType());
@@ -221,7 +221,7 @@ public class OutlierProcessor extends AbstractProcessor {
 
             } catch (RuntimeException e) {
 
-                Record evt = new Record(OUTLIER_PROCESSING_EXCEPTION_TYPE);
+                StandardRecord evt = new StandardRecord(OUTLIER_PROCESSING_EXCEPTION_TYPE);
                 evt.setStringField("message", e.getMessage());
                 list.add(evt);
                 //  logger.info(e.getMessage(), e);

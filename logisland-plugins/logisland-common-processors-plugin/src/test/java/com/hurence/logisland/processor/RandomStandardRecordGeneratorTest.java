@@ -4,6 +4,7 @@ import com.hurence.logisland.component.ComponentType;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.string.Multiline;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
-public class RandomRecordGeneratorTest {
+public class RandomStandardRecordGeneratorTest {
 
-    private static Logger logger = LoggerFactory.getLogger(RandomRecordGeneratorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(RandomStandardRecordGeneratorTest.class);
 
 
     /**

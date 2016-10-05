@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.joda.time.DateTimeZone;
@@ -34,14 +34,14 @@ public class TimeSeriesCsvLoader {
      * @throws IllegalArgumentException
      * @throws ArrayIndexOutOfBoundsException
      */
-    public static List<Record> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
+    public static List<StandardRecord> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
             throws IOException {
 
-        List<Record> records = new ArrayList<>();
+        List<StandardRecord> records = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
             try {
                 if (!hasHeader) {
-                    Record event = new Record("sensors");
+                    StandardRecord event = new StandardRecord("sensors");
                     event.setField(TIMESTAMP_KEY, FieldType.LONG, inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
                     event.setField(VALUE_KEY, FieldType.DOUBLE, Double.parseDouble(record.get(1)));
 

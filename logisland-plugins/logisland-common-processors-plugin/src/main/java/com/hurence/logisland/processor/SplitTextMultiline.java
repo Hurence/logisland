@@ -3,6 +3,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,9 @@ public class SplitTextMultiline extends AbstractProcessor {
 
         Matcher matcher = regex.matcher(buffer);
         if (matcher.find()) {
-            Record record = new Record(eventType);
+
+
+            Record record = new StandardRecord(eventType);
             for (int i = 0; i < matcher.groupCount() + 1 && i < fields.length; i++) {
                 String content = matcher.group(i);
                 if (content != null) {

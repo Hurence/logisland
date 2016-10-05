@@ -21,6 +21,7 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.validator.StandardValidators;

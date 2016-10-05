@@ -17,6 +17,7 @@
 package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
@@ -85,5 +86,14 @@ public class RecordQueue {
 
     public boolean isEmpty() {
         return size().getObjectCount() == 0;
+    }
+
+    public void clear(){
+        writeLock.lock();
+        try {
+            queue.clear();
+        } finally {
+            writeLock.unlock();
+        }
     }
 }

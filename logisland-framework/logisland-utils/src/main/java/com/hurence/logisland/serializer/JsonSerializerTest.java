@@ -6,6 +6,7 @@ package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -28,7 +29,7 @@ public class JsonSerializerTest {
 		final JsonSerializer serializer = new JsonSerializer();
 
 
-		Record record = new Record("cisco");
+		Record record = new StandardRecord("cisco");
 		record.setId("firewall_record1");
 		record.setField("timestamp", FieldType.LONG, new Date().getTime());
 		record.setField("method", FieldType.STRING, "GET");

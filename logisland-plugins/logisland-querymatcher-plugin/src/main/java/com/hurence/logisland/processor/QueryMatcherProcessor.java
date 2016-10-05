@@ -2,7 +2,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -67,12 +67,12 @@ public class QueryMatcherProcessor extends AbstractProcessor {
     }
 
     @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
+    public Collection<StandardRecord> process(final ProcessContext context, final Collection<StandardRecord> collection) {
 
-        ArrayList<Record> outRecords = new ArrayList<>();
+        ArrayList<StandardRecord> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Record ev : collection) {
+        for (StandardRecord ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
             for (String fieldName : ev.getAllFieldNames()) {
                 if (ev.getField(fieldName).getType() == FieldType.STRING)
@@ -94,7 +94,7 @@ public class QueryMatcherProcessor extends AbstractProcessor {
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Record outEv = new Record(EVENT_MATCH_TYPE_NAME);
+            StandardRecord outEv = new StandardRecord(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
             // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch : docMatch.getMatches())

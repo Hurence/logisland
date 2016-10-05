@@ -7,6 +7,7 @@ import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.engine.StreamProcessingEngine;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.util.kafka.KafkaUnit;
@@ -142,8 +143,8 @@ public class SplitTextMultiLine2Test {
 
 //                Thread.sleep(10000);
                 int size = 0;
-                List<Record> messagesOut = new LinkedList();
-                List<Record> messagesOutErr = new LinkedList();
+                List<Record> messagesOut = new LinkedList<>();
+                List<Record> messagesOutErr = new LinkedList<>();
                 RecordSerializer serializer = new KryoSerializer(true);
                 while (size == 0) {
                     kafkaServer.sendMessages(keyedMessage);

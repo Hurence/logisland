@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,11 +26,11 @@ public class LuwakQueryMatcherTest {
         LuwakQueryMatcher matcher = new LuwakQueryMatcher();
         matcher.init(rules);
 
-        Record ev1 = new Record("mytype");
+        StandardRecord ev1 = new StandardRecord("mytype");
         ev1.setId("myid");
         ev1.setStringField("name", "luke");
 
-        Collection<Record> eventsOut = matcher.process(Collections.singletonList(ev1));
+        Collection<StandardRecord> eventsOut = matcher.process(Collections.singletonList(ev1));
 
         assertTrue(eventsOut.size() == 1);
     }

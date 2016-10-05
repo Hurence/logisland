@@ -18,6 +18,7 @@ package com.hurence.logisland.util.kafka;
 
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.RecordSerializer;
 import kafka.admin.TopicCommand;
 import kafka.consumer.Consumer;

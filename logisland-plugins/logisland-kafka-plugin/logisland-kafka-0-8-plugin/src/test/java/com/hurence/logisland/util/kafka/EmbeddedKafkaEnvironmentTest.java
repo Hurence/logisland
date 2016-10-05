@@ -2,6 +2,7 @@ package com.hurence.logisland.util.kafka;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
@@ -36,8 +37,6 @@ public class EmbeddedKafkaEnvironmentTest {
     private static Logger logger = LoggerFactory.getLogger(EmbeddedKafkaEnvironmentTest.class);
 
 
-
-
     @Test
     public void producerTest() throws InterruptedException, IOException, NoSuchFieldException, IllegalAccessException {
 
@@ -59,7 +58,7 @@ public class EmbeddedKafkaEnvironmentTest {
         Producer producer = new Producer(producerConfig);
 
         // create an event
-        Record record = new Record("cisco");
+        Record record = new StandardRecord("cisco");
         record.setId("firewall_record1");
         record.setField("method", FieldType.STRING, "GET");
         record.setField("ip_source", FieldType.STRING, "123.34.45.123");

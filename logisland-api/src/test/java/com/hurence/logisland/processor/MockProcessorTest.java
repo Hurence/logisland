@@ -4,6 +4,7 @@ import com.hurence.logisland.component.ComponentType;
 import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public class MockProcessorTest {
         ProcessContext context = new StandardProcessContext(instance.get());
         Processor processor = instance.get().getProcessor();
 
-        Record record = new Record("mock_record");
+        Record record = new StandardRecord("mock_record");
         record.setId("record1");
         record.setStringField("name", "tom");
         List<Record> records = new ArrayList<>(processor.process(context, Collections.singleton(record)));

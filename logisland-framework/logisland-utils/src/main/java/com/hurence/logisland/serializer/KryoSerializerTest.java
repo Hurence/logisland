@@ -6,6 +6,7 @@ package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +30,7 @@ public class KryoSerializerTest {
 	public void kryoSerde() throws IOException {
 		final KryoSerializer serializer = new KryoSerializer(true);
 
-		Record record = new Record("cisco");
+		Record record = new StandardRecord("cisco");
 		record.setId("firewall_record1");
 		record.setField("timestamp", FieldType.LONG, new Date().getTime());
 		record.setField("method", FieldType.STRING, "GET");
@@ -61,9 +62,9 @@ public class KryoSerializerTest {
 
 		final KryoSerializer serializer = new KryoSerializer(true);
 
-		Record[] records = new Record[100];
+		Record[] records = new StandardRecord[100];
 		for (int i=0; i<100; i++) {
-			Record record = new Record("mtr");
+			Record record = new StandardRecord("mtr");
 			record.setStringField("TRACE",  "Outbound Message" + "\n" +
 					"at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695) [tomcat-coyote.jar:7.0.55]" + "\n" +
 					"at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736) [tomcat-coyote.jar:7.0.55]" + "\n" +
@@ -632,7 +633,7 @@ public class KryoSerializerTest {
 
 		final KryoSerializer serializer = new KryoSerializer(true);
 
-		Record record = new Record("mtr");
+		Record record = new StandardRecord("mtr");
 		record.setStringField("TRACE",  "Outbound Message" + "\n" +
 				"at java.lang.Thread.run(Thread.java:745) [na:1.7.0_80]" + "\n" +
 				"at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-coyote.jar:7.0.55]" + "\n" +

@@ -24,24 +24,20 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
 public interface TestRunner {
 
     /**
      * @return the {@link Processor} for which this <code>TestRunner</code> is
-     *         configured
+     * configured
      */
     Processor getProcessor();
 
 
     /**
      * @return the {@Link ProcessContext} that this <code>TestRunner</code> will
-     *         use
+     * use
      */
     ProcessContext getProcessContext();
 
@@ -57,7 +53,7 @@ public interface TestRunner {
      * descriptor's validator. Otherwise, Assert.fail() is called, causing the
      * unit test to fail
      *
-     * @param propertyName name
+     * @param propertyName  name
      * @param propertyValue value
      * @return result
      */
@@ -70,7 +66,7 @@ public interface TestRunner {
      * unit test to fail
      *
      * @param descriptor descriptor
-     * @param value value
+     * @param value      value
      * @return result
      */
     ValidationResult setProperty(PropertyDescriptor descriptor, String value);
@@ -82,27 +78,29 @@ public interface TestRunner {
      * unit test to fail
      *
      * @param descriptor descriptor
-     * @param value allowable valu
+     * @param value      allowable valu
      * @return result
      */
     ValidationResult setProperty(PropertyDescriptor descriptor, AllowableValue value);
 
-    /**
-     * Sets the annotation data.
-     *
-     * @param annotationData data
-     */
-    void setAnnotationData(String annotationData);
-
 
     /**
-     * Asserts that all Records that were transferred were transferred to the
-     * given relationship and that the number of Records transferred is equal
+     * Asserts that all Records that were processed in the input queue
      * to <code>count</code>
-     *
-     * @param count number of expected transfers
      */
-    void assertAllRecordsProcessed(int count);
+    void assertAllInputRecordsProcessed();
+
+    /**
+     * Asserts that output Records size is equal
+     * to <code>count</code>
+     */
+    void assertOutputRecordsCount(int count);
+
+
+    /**
+     * Remova all records from output queue
+     */
+    void clearOutpuRecords();
 
     /**
      * Asserts that all Records that were transferred contain the given
@@ -140,21 +138,38 @@ public interface TestRunner {
      *
      * @param Records to enqueue
      */
-    void enqueue( Record... Records);
+    void enqueue(Record... Records);
 
 
     /**
      * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,
-     * and adds this Record to the Processor's Input Queue
+     * and adds this Record to the Processor's Input Queue.
+     * <p>
+     * the key will be set as empty string if keyValueSeparator is empty
      *
-     * @param key the key of the message
+     * @param key   the key/value separator of the message
      * @param value the key of the message
      */
-    void enqueue( String key, String value);
+    void enqueue(String key, String value);
 
+    /**
+     * Creates a Record with the content set to the given inputuStrem (in UTF-8 format), with no attributes,
+     * and adds this Record to the Processor's Input Queue
+     * <p>
+     * the key will be set as empty string if keyValueSeparator is empty
+     *
+     * @param keyValueSeparator the key of all messages message
+     * @param inputStream       the inputstream containing all the messages lines
+     */
+    void enqueue(String keyValueSeparator, InputStream inputStream);
 
-
-
+    /**
+     * Creates a Record with the content set to the given inputuStrem (in UTF-8 format), with no attributes,
+     * and adds this Record to the Processor's Input Queue
+     *
+     * @param inputStream the inputstream containing all the messages lines
+     */
+    void enqueue(InputStream inputStream);
 
     /**
      * Removes the {@link PropertyDescriptor} from the {@link ProcessContext},
@@ -170,9 +185,8 @@ public interface TestRunner {
      * Sets the value of the variable with the given name to be the given value. This exposes the variable
      * for use by the Expression Language.
      *
-     * @param name the name of the variable to set
+     * @param name  the name of the variable to set
      * @param value the value of the variable
-     *
      * @throws NullPointerException if either the name or the value is null
      */
     void setVariable(String name, String value);
@@ -182,7 +196,6 @@ public interface TestRunner {
      *
      * @param name the name of the variable whose value should be returned.
      * @return the current value of the variable with the given name or <code>null</code> if no value is currently set
-     *
      * @throws NullPointerException if the name is null
      */
     String getVariableValue(String name);
@@ -192,7 +205,6 @@ public interface TestRunner {
      *
      * @param name the name of the variable to remove
      * @return the value that was set for the variable, or <code>null</code> if the variable was not set
-     *
      * @throws NullPointerException if the name is null
      */
     String removeVariable(String name);

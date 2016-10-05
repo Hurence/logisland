@@ -1,6 +1,7 @@
 package com.hurence.logisland.util.kafka;
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
@@ -47,7 +48,7 @@ public class DocumentPublisher {
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 String content = SmallFileUtil.getContent(file);
-                Record record = new Record(file.getName());
+                Record record = new StandardRecord(file.getName());
                 record.setStringField("name", file.getName());
                 record.setStringField("content", content);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();

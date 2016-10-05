@@ -18,10 +18,9 @@ package com.hurence.logisland.processor.chain;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationContext;
-import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.KryoSerializer;

@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -43,12 +43,12 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
         return this;
     }
 
-    public Collection<Record> process(Collection<Record> collection) {
+    public Collection<StandardRecord> process(Collection<StandardRecord> collection) {
 
-        ArrayList<Record> outRecords = new ArrayList<>();
+        ArrayList<StandardRecord> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Record ev : collection) {
+        for (StandardRecord ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
             for (String fieldName : ev.getAllFieldNames()) {
                 if (ev.getField(fieldName).getType() == FieldType.STRING)
@@ -70,7 +70,7 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Record outEv = new Record(EVENT_MATCH_TYPE_NAME);
+            StandardRecord outEv = new StandardRecord(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
             // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch : docMatch.getMatches())

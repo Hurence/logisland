@@ -19,6 +19,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 
 import java.util.Collection;
 

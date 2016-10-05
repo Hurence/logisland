@@ -4,6 +4,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
 import com.hurence.logisland.validator.StandardValidators;
@@ -72,7 +73,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             try {
                 GenericRecord eventRecord = dataGenerator.generateRandomRecord();
 
-                Record record = new Record(RECORD_TYPE);
+                Record record = new StandardRecord(RECORD_TYPE);
 
 
                 for (final Schema.Field schemaField : schema.getFields()) {

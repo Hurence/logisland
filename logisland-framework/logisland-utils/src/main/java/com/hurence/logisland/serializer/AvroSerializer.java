@@ -16,10 +16,7 @@
 
 package com.hurence.logisland.serializer;
 
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.*;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -46,7 +43,7 @@ public class AvroSerializer implements RecordSerializer {
     protected static final byte MAGIC_BYTE = 0x0;
     protected static final int idSize = 4;
 
-
+    @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {
 
         try {
@@ -100,7 +97,7 @@ public class AvroSerializer implements RecordSerializer {
             GenericRecord genericRecord = datumReader.read(null, decoder);
 
 
-            Record record = new Record(genericRecord.get(FieldDictionary.RECORD_TYPE).toString());
+            Record record = new StandardRecord(genericRecord.get(FieldDictionary.RECORD_TYPE).toString());
 
 
             for (final Schema.Field schemaField : schema.getFields()) {

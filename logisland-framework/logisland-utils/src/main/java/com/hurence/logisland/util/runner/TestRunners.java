@@ -16,15 +16,26 @@
  */
 package com.hurence.logisland.util.runner;
 
-import com.hurence.logisland.record.StandardRecord;
 
-public interface RecordValidator {
+import com.hurence.logisland.processor.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    /**
-     * Define a verification method to validate the given Record
-     *
-     * @param record the record to validate
-     */
-    void assertRecord(StandardRecord record);
+public class TestRunners {
+
+    private static Logger logger = LoggerFactory.getLogger(TestRunners.class);
+
+    public static TestRunner newTestRunner(final Processor processor) {
+        return new StandardProcessorTestRunner(processor);
+    }
+
+    public static TestRunner newTestRunner(final Class<? extends Processor> processorClass) {
+        try {
+            return newTestRunner(processorClass.newInstance());
+        } catch (final Exception e) {
+            logger.error("Could not instantiate instance of class " + processorClass.getName() + " due to: " + e);
+            throw new RuntimeException(e);
+        }
+    }
 
 }

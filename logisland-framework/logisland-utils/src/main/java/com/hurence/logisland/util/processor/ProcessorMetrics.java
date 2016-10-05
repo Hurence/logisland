@@ -1,7 +1,6 @@
 package com.hurence.logisland.util.processor;
 
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class ProcessorMetrics {
 
 
         if (records.size() != 0) {
-            Record metrics = new Record(METRICS_EVENT_TYPE);
+            Record metrics = new StandardRecord(METRICS_EVENT_TYPE);
 
             metrics.setFields(processorFields);
             metrics.setStringField("search_index", METRICS_EVENT_TYPE);
@@ -61,7 +60,7 @@ public class ProcessorMetrics {
 
             }
 
-            metrics.setField("event_time", LONG, new Date().getTime());
+            metrics.setField(FieldDictionary.RECORD_TIME, LONG, new Date().getTime());
             return Collections.singleton(metrics);
         }
 

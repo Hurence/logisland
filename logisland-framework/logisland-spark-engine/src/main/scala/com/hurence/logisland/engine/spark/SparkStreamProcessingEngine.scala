@@ -5,11 +5,11 @@ import java.util
 import java.util.Collections
 import java.util.regex.Pattern
 
-import com.hurence.logisland.component.{ValidationContext, ValidationResult, PropertyDescriptor}
+import com.hurence.logisland.component.{PropertyDescriptor, ValidationContext, ValidationResult}
 import com.hurence.logisland.engine.{AbstractStreamProcessingEngine, EngineContext}
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.KafkaRecordStream
-import com.hurence.logisland.record.{Field, FieldType, Record, RecordUtils}
+import com.hurence.logisland.record._
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.util.kafka.KafkaSerializedEventProducer
 import com.hurence.logisland.util.processor.ProcessorMetrics

@@ -6,6 +6,7 @@ package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.avro.Schema;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class AvroSerializerTest {
 				new FileInputStream(AvroSerializerTest.class.getResource("/schemas/event.avsc").getFile()));
 		final AvroSerializer serializer = new AvroSerializer(schema);
 
-		Record record = new Record("cisco");
+		Record record = new StandardRecord("cisco");
 		record.setId("firewall_record1");
 		record.setField("method", FieldType.STRING, "GET");
 		record.setField("ip_source", FieldType.STRING, "123.34.45.123");

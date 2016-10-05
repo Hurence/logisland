@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +111,7 @@ public class JsonSerializer implements RecordSerializer {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(Record.class, new EventSerializer());
+        module.addSerializer(StandardRecord.class, new EventSerializer());
         mapper.registerModule(module);
 
         //map json to student
@@ -217,7 +218,7 @@ public class JsonSerializer implements RecordSerializer {
                 }
             }
 
-            Record record = new Record(type);
+            Record record = new StandardRecord(type);
             record.setId(id);
             record.setType(type);
             record.setTime(creationDate);

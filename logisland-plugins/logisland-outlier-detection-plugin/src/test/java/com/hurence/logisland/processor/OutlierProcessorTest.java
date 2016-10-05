@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -37,7 +37,7 @@ public class OutlierProcessorTest {
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
-            List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+            List<StandardRecord> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
             Assert.assertTrue(!records.isEmpty());
 
 
@@ -45,7 +45,7 @@ public class OutlierProcessorTest {
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
             //  instance.setProperty("rules",rulesAsString);
             ProcessContext context = new StandardProcessContext(instance);
-            Collection<Record> outliersRecords = processor.process(context, records);
+            Collection<StandardRecord> outliersRecords = processor.process(context, records);
 
             // @todo make a real test of outliers heres
             //  logger.info(outliersEvents.toString());

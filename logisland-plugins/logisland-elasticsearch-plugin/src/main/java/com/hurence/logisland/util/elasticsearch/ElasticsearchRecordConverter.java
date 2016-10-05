@@ -3,6 +3,7 @@ package com.hurence.logisland.util.elasticsearch;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;

@@ -3,7 +3,7 @@ package com.hurence.botsearch.trace
 import java.util
 
 import com.hurence.logisland.component.ProcessContext
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.StandardRecord
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
@@ -19,8 +19,8 @@ class NetworkTraceLogParser extends LazyLogging {
       * @param records
       * @return
       */
-    def process(context: ProcessContext, records: util.Collection[Record]): util.Collection[Record] = {
-        val event = new Record(EVENT_TYPE)
+    def process(context: ProcessContext, records: util.Collection[StandardRecord]): util.Collection[StandardRecord] = {
+        val event = new StandardRecord(EVENT_TYPE)
 
 
             // build the event

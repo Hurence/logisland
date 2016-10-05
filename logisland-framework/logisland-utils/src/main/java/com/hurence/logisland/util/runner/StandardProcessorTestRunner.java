@@ -36,19 +36,21 @@ package com.hurence.logisland.util.runner;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.ValidationResult;
-import com.hurence.logisland.processor.*;
+import com.hurence.logisland.processor.MockProcessContext;
+import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.RecordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertFalse;
@@ -58,7 +60,6 @@ import static org.junit.Assert.assertTrue;
 public class StandardProcessorTestRunner implements TestRunner {
 
     private final Processor processor;
-   // private final StandardProcessorInstance instance;
     private final MockProcessContext context;
     private final RecordQueue inputRecordsQueue;
     private final RecordQueue outputRecordsQueue;
@@ -69,7 +70,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         this.processor = processor;
         this.inputRecordsQueue = new RecordQueue();
         this.outputRecordsQueue = new RecordQueue();
-       // this.instance = new StandardProcessorInstance(processor, Long.toString(currentId.incrementAndGet()));
         this.context = new MockProcessContext(processor);
         this.processor.init(context);
     }
@@ -88,8 +88,10 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void run() {
-        while(!inputRecordsQueue.isEmpty()){
-            processor.process(context, inputRecordsQueue.poll());
+        while (!inputRecordsQueue.isEmpty()) {
+            Record inputRecord = inputRecordsQueue.poll();
+            Collection<Record> outputRecords = processor.process(context, inputRecord);
+            outputRecordsQueue.addAll(outputRecords);
         }
     }
 
@@ -113,13 +115,42 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
 
-
     @Override
-    public void enqueue( final String key, String value) {
-        final Record record = RecordUtils.getKeyValueRecord(key,value);
+    public void enqueue(final String key, String value) {
+
+        final Record record = RecordUtils.getKeyValueRecord(key, value);
         enqueue(record);
+
     }
 
+
+    @Override
+    public void enqueue(String keyValueSeparator, InputStream inputStream) {
+        try {
+            InputStreamReader isr = new InputStreamReader(inputStream, "UTF-8");
+            BufferedReader bsr = new BufferedReader(isr);
+            String line;
+            while ((line = bsr.readLine()) != null) {
+
+                if (keyValueSeparator == null || keyValueSeparator.isEmpty()) {
+                    final Record inputRecord = RecordUtils.getKeyValueRecord("", line);
+                    enqueue(inputRecord);
+                } else {
+                    String[] kvLine = line.split(keyValueSeparator);
+                    final Record inputRecord = RecordUtils.getKeyValueRecord(kvLine[0], kvLine[1]);
+                    enqueue(inputRecord);
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void enqueue(InputStream inputStream) {
+        enqueue(null, inputStream);
+    }
 
 
     @Override
@@ -142,14 +173,16 @@ public class StandardProcessorTestRunner implements TestRunner {
         return context.setProperty(descriptor, value.getValue());
     }
 
-    @Override
-    public void setAnnotationData(String annotationData) {
 
+    @Override
+    public void assertAllInputRecordsProcessed() {
+        assertTrue(inputRecordsQueue.isEmpty());
     }
 
     @Override
-    public void assertAllRecordsProcessed(int count) {
-
+    public void assertOutputRecordsCount(int count) {
+        assertTrue("expected output record count was " + count + " but is currently " +
+                outputRecordsQueue.size().getObjectCount(), outputRecordsQueue.size().getObjectCount() == count);
     }
 
     @Override
@@ -187,5 +220,12 @@ public class StandardProcessorTestRunner implements TestRunner {
         return null;
         // return variableRegistry.removeVariable(new VariableDescriptor.Builder(name).build());
     }
+
+    @Override
+    public void clearOutpuRecords() {
+        outputRecordsQueue.clear();
+    }
 }
+
+
 

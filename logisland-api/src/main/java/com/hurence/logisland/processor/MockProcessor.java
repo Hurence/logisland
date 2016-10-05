@@ -17,10 +17,9 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationContext;
-import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +53,7 @@ public class MockProcessor extends AbstractProcessor {
 
         //  collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
 
-        Record mockRecord = new Record(EVENT_TYPE_NAME);
+        StandardRecord mockRecord = new StandardRecord(EVENT_TYPE_NAME);
         mockRecord.setField("incomingEventsCount", FieldType.INT, collection.size());
         mockRecord.setField("message", FieldType.STRING, context.getProperty(FAKE_MESSAGE).getRawValue());
 

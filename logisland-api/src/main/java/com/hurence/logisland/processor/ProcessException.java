@@ -1,7 +1,7 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 
 import java.util.Collection;
 
@@ -14,9 +14,9 @@ import java.util.Collection;
  */
 public class ProcessException extends java.lang.RuntimeException {
 
-    private final Collection<Record> errorRecords;
+    private final Collection<StandardRecord> errorRecords;
 
-    public Collection<Record> getErrorRecords() {
+    public Collection<StandardRecord> getErrorRecords() {
         return errorRecords;
     }
 
@@ -25,7 +25,7 @@ public class ProcessException extends java.lang.RuntimeException {
      *
      * @param errorRecords the error records for this exception
      */
-    public ProcessException(Collection<Record> errorRecords) {
+    public ProcessException(Collection<StandardRecord> errorRecords) {
         this.errorRecords = errorRecords;
     }
 

@@ -19,7 +19,7 @@ import java.util
 import java.util.{Calendar, Collections, Date}
 
 import com.hurence.logisland.processor.ProcessContext
-import com.hurence.logisland.record.{FieldDictionary, FieldType, Record}
+import com.hurence.logisland.record.{FieldDictionary, FieldType, StandardRecord}
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 
@@ -60,8 +60,8 @@ class SyslogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    def parse(context: ProcessContext, key: String, value: String): util.Collection[Record] = {
-        val event = new Record(EVENT_TYPE)
+    def parse(context: ProcessContext, key: String, value: String): util.Collection[StandardRecord] = {
+        val event = new StandardRecord(EVENT_TYPE)
         event.setStringField("source", value)
 
         value match {
@@ -72,7 +72,7 @@ class SyslogParser {
         Collections.singletonList(event)
     }
 
-    def fillSyslogEvent(event: Record, priority: String, version: String, stamp: String, host: String, body: String) = {
+    def fillSyslogEvent(event: StandardRecord, priority: String, version: String, stamp: String, host: String, body: String) = {
         event.setStringField("priority", priority)
         try {
             if (version != null) event.setField("version", FieldType.INT, version.toInt)

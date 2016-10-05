@@ -17,6 +17,7 @@
 package com.hurence.logisland.serializer;
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

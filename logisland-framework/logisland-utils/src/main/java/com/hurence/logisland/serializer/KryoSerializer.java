@@ -20,6 +20,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.Field;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +38,7 @@ public class KryoSerializer implements RecordSerializer {
         @Override
         protected Kryo initialValue() {
             Kryo kryo = new Kryo();
-            kryo.register(Record.class);
+            kryo.register(StandardRecord.class);
             kryo.register(Field.class);
             return kryo;
         }
@@ -95,7 +96,7 @@ public class KryoSerializer implements RecordSerializer {
             Input input = new Input(in);
             Kryo kryo = kryoThreadLocal.get();
 
-            return kryo.readObject(input, Record.class);
+            return kryo.readObject(input, StandardRecord.class);
         } catch (Throwable t) {
             t.printStackTrace();
             throw new RecordSerializationException(t.getMessage(), t.getCause());

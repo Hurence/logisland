@@ -3,6 +3,7 @@ package com.hurence.logisland.util.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.Producer;
@@ -58,7 +59,7 @@ public class ConfigPublisher implements Publisher {
                 for (Map<String, String> rule : rules) {
 
                     // for all in array create the rule as an event..
-                    Record record = new Record(CONFIG_TYPE);
+                    Record record = new StandardRecord(CONFIG_TYPE);
 
                     for (String k : rule.keySet()) record.setStringField(k, rule.get(k));
 
