@@ -36,6 +36,7 @@ public class SplitText extends AbstractProcessor {
             .description("a comma separated list of fields corresponding to matching groups for the message value")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor KEY_REGEX = new PropertyDescriptor.Builder()
@@ -51,7 +52,8 @@ public class SplitText extends AbstractProcessor {
             .description("a comma separated list of fields corresponding to matching groups for the message key")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("")
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .defaultValue(FieldDictionary.KEY_RAW_CONTENT)
             .build();
 
     public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
@@ -59,6 +61,14 @@ public class SplitText extends AbstractProcessor {
             .description("default type of event")
             .required(false)
             .defaultValue("event")
+            .build();
+
+    public static final PropertyDescriptor KEEP_RAW_CONTENT = new PropertyDescriptor.Builder()
+            .name("keep.raw.content")
+            .description("do we add the initial raw content ?")
+            .required(false)
+            .defaultValue("true")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
     @Override
@@ -69,6 +79,7 @@ public class SplitText extends AbstractProcessor {
         descriptors.add(KEY_REGEX);
         descriptors.add(KEY_FIELDS);
         descriptors.add(EVENT_TYPE);
+        descriptors.add(KEEP_RAW_CONTENT);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -120,6 +131,7 @@ public class SplitText extends AbstractProcessor {
         final String[] valueFields = context.getProperty(VALUE_FIELDS).asString().split(",");
         final String valueRegexString = context.getProperty(VALUE_REGEX).asString();
         final String eventType = context.getProperty(EVENT_TYPE).asString();
+        final boolean keepRawContent = context.getProperty(KEEP_RAW_CONTENT).asBoolean();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 
         List<Record> outputRecords = new ArrayList<>();
@@ -135,15 +147,18 @@ public class SplitText extends AbstractProcessor {
                 StandardRecord outputRecord = new StandardRecord(eventType);
 
                 // match the key
-                if (key != null) {
+                if (key != null && !key.isEmpty()) {
                     try {
                         Matcher keyMatcher = keyRegex.matcher(key);
                         if (keyMatcher.matches()) {
+
+                            if(keepRawContent){
+                                outputRecord.setField(FieldDictionary.KEY_RAW_CONTENT, FieldType.STRING, keyMatcher.group(0).replaceAll("\"", ""));
+                            }
                             for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
                                 String content = keyMatcher.group(i);
                                 if (content != null) {
                                     outputRecord.setField(keyFields[i], FieldType.STRING, keyMatcher.group(i + 1).replaceAll("\"", ""));
-
                                 }
                             }
                         }
@@ -154,14 +169,18 @@ public class SplitText extends AbstractProcessor {
 
 
                 // match the value
-                if (value != null) {
+                if (value != null && !value.isEmpty()) {
                     try {
                         Matcher valueMatcher = valueRegex.matcher(value);
                         if (valueMatcher.lookingAt()) {
-                            for (int i = 0; i < valueMatcher.groupCount() + 1 && i < valueFields.length; i++) {
-                                String content = valueMatcher.group(i);
+                            if(keepRawContent){
+                                outputRecord.setField(FieldDictionary.VALUE_RAW_CONTENT, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
+                            }
+                            for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
+                                String content = valueMatcher.group(i+1);
+                                String fieldName = valueFields[i];
                                 if (content != null) {
-                                    outputRecord.setField(valueFields[i], FieldType.STRING, valueMatcher.group(i).replaceAll("\"", ""));
+                                    outputRecord.setStringField(fieldName, content.replaceAll("\"", ""));
                                 }
                             }
 
