@@ -85,4 +85,31 @@ public class StandardRecordTest {
         Field field = record.getField("request_size");
         field.asFloat();
     }
+
+    @Test
+    public void validateRecordValidity() {
+
+
+        Record record = new StandardRecord();
+        record.setField("request_size", FieldType.INT, 1399);
+        assertTrue(record.isValid());
+        record.setField("request_size", FieldType.INT, "zer");
+        assertFalse(record.isValid());
+        record.setField("request_size", FieldType.INT, 45L);
+        assertFalse(record.isValid());
+        record.setField("request_size", FieldType.LONG, 45L);
+        assertTrue(record.isValid());
+        record.setField("request_size", FieldType.DOUBLE, 45.5d);
+        assertTrue(record.isValid());
+        record.setField("request_size", FieldType.DOUBLE, 45.5);
+        assertTrue(record.isValid());
+        record.setField("request_size", FieldType.DOUBLE, 45L);
+        assertFalse(record.isValid());
+        record.setField("request_size", FieldType.FLOAT, 45.5f);
+        assertTrue(record.isValid());
+        record.setField("request_size", FieldType.STRING, 45L);
+        assertFalse(record.isValid());
+        record.setField("request_size", FieldType.FLOAT, 45.5d);
+        assertFalse(record.isValid());
+    }
 }

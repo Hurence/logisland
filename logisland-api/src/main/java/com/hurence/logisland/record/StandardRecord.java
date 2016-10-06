@@ -17,7 +17,11 @@
 package com.hurence.logisland.record;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
+
 
 /**
  * Encapsulation of an Event a map of Fields
@@ -25,6 +29,8 @@ import java.util.*;
  * @author Tom Bailet
  */
 public class StandardRecord implements Record {
+
+    private static Logger logger = LoggerFactory.getLogger(StandardRecord.class);
 
     public static String DEFAULT_RECORD_TYPE = "generic";
 
@@ -235,6 +241,56 @@ public class StandardRecord implements Record {
     @Override
     public boolean isEmpty() {
         return fields.size() == 3;
+    }
+
+    @Override
+    public boolean isValid() {
+
+
+        for (final Field field : getAllFields()) {
+            boolean isValid = true;
+            try {
+
+
+                if (field.isSet()) {
+                    switch (field.getType()) {
+                        case STRING:
+                            isValid = field.getRawValue() instanceof String;
+
+                            break;
+                        case INT:
+                            isValid = field.getRawValue() instanceof Integer;
+                            break;
+                        case LONG:
+                            isValid = field.getRawValue() instanceof Long;
+                            break;
+                        case FLOAT:
+                            isValid = field.getRawValue() instanceof Float;
+                            break;
+                        case DOUBLE:
+                            isValid = field.getRawValue() instanceof Double;
+                            break;
+                        case BOOLEAN:
+                            isValid = field.getRawValue() instanceof Boolean;
+                            break;
+                        case ARRAY:
+                            isValid = field.getRawValue() instanceof Collection;
+                            break;
+                        default:
+                            isValid = false;
+                            break;
+                    }
+                }
+            } catch (Throwable ex) {
+                return false;
+            }
+            if(!isValid) {
+                logger.info("field {} is not an instance of type {}", field.getName(), field.getType());
+                return false;
+            }
+        }
+        return true;
+
     }
 
     /**

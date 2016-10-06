@@ -61,6 +61,8 @@ public interface Record extends Serializable {
 
     boolean isEmpty();
 
+    boolean isValid();
+
     int size();
 
     int sizeInBytes();
