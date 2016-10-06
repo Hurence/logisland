@@ -9,6 +9,6 @@ public class FieldDictionary {
     public static String RECORD_TIME = "record_time";
     public static String RECORD_KEY = "record_key";
     public static String RECORD_VALUE = "record_value";
-    public static String KEY_RAW_CONTENT = "key_raw_content";
-    public static String VALUE_RAW_CONTENT = "value_raw_content";
+    public static String RECORD_RAW_KEY = "record_raw_key";
+    public static String RECORD_RAW_VALUE = "record_raw_value";
 }

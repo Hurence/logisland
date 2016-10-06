@@ -1,6 +1,6 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.util.record.RecordSchemaUtil;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -141,6 +141,28 @@ public class SplitTextTest {
         out.assertRecordSizeEquals(9);
         testRunner.assertAllRecords(avroValidator);
 
+    }
+
+    @Test
+    public void testApacheLogWithBadRegex() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProperty(SplitText.VALUE_REGEX, "bad_regex.*");
+        testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
+        testRunner.setProperty(SplitText.EVENT_TYPE, "apache_log");
+        testRunner.assertValid();
+        testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
+        testRunner.clearOutpuRecords();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(200);
+
+
+        MockRecord out = testRunner.getOutpuRecords().get(0);
+        out.assertFieldNotExists("src_ip");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
+        out.assertFieldEquals(FieldDictionary.RECORD_ERROR, "regex parsing error");
+        out.assertRecordSizeEquals(2);
     }
 
 

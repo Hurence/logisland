@@ -53,7 +53,7 @@ public class SplitText extends AbstractProcessor {
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .defaultValue(FieldDictionary.KEY_RAW_CONTENT)
+            .defaultValue(FieldDictionary.RECORD_RAW_KEY)
             .build();
 
     public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
@@ -153,7 +153,7 @@ public class SplitText extends AbstractProcessor {
                         if (keyMatcher.matches()) {
 
                             if(keepRawContent){
-                                outputRecord.setField(FieldDictionary.KEY_RAW_CONTENT, FieldType.STRING, keyMatcher.group(0).replaceAll("\"", ""));
+                                outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, keyMatcher.group(0).replaceAll("\"", ""));
                             }
                             for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
                                 String content = keyMatcher.group(i);
@@ -161,6 +161,8 @@ public class SplitText extends AbstractProcessor {
                                     outputRecord.setField(keyFields[i], FieldType.STRING, keyMatcher.group(i + 1).replaceAll("\"", ""));
                                 }
                             }
+                        }else{
+                            outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, key);
                         }
                     } catch (Exception e) {
                         logger.info("error while matching key {} with regex {}", key, keyRegexString);
@@ -174,7 +176,7 @@ public class SplitText extends AbstractProcessor {
                         Matcher valueMatcher = valueRegex.matcher(value);
                         if (valueMatcher.lookingAt()) {
                             if(keepRawContent){
-                                outputRecord.setField(FieldDictionary.VALUE_RAW_CONTENT, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
+                                outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
                             }
                             for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
                                 String content = valueMatcher.group(i+1);
@@ -217,10 +219,11 @@ public class SplitText extends AbstractProcessor {
                                     }
                                 }
                             }
-
-
-                            outputRecords.add(outputRecord);
+                        }else{
+                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, "regex parsing error");
+                            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                         }
+                        outputRecords.add(outputRecord);
                     } catch (Exception e) {
                         logger.warn("issue while matching regex {} on string {} exception {}", valueRegexString, value, e.getMessage());
                     }
