@@ -223,9 +223,11 @@ public class SplitText extends AbstractProcessor {
                             outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, ProcessError.REGEX_PARSING_ERROR);
                             outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                         }
-                        outputRecords.add(outputRecord);
+
                     } catch (Exception e) {
                         logger.warn("issue while matching regex {} on string {} exception {}", valueRegexString, value, e.getMessage());
+                    }finally {
+                        outputRecords.add(outputRecord);
                     }
                 }
             } catch (Exception e) {

@@ -34,6 +34,8 @@ object SparkUtils extends LazyLogging {
   def customizeLogLevels: Unit = {
     // Logging verbosity lowered
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.spark.scheduler").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.spark.streaming").setLevel(Level.WARN)
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
     Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
     Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)

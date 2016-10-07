@@ -357,7 +357,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     "group.id" -> appName,
                     "refresh.leader.backoff.ms" -> "1000")
 
-                val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
+                @transient val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
                 if (topicAutocreate) {
                     createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
@@ -385,7 +385,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
                     rdd.foreachPartition(partition => {
-                        logger.info("tick")
+                        SparkUtils.customizeLogLevels
                         if (partition.nonEmpty) {
 
                             val partitionId = TaskContext.get.partitionId()
@@ -393,25 +393,10 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                             /**
                               * create serializers
                               */
-                            val parser = new Parser
-                            val deserializer = inSerializerClass match {
-                                case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                                    val inSchemaContent =
-                                        processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString
-                                    val inSchema = parser.parse(inSchemaContent)
-                                    new AvroSerializer(inSchema)
-                                case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-                                case _ => new KryoSerializer(true)
-                            }
-                            val serializer = outSerializerClass match {
-                                case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                                    val outSchemaContent =
-                                        processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString
-                                    val outSchema = parser.parse(outSchemaContent)
-                                    new AvroSerializer(outSchema)
-                                case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-                                case _ => new KryoSerializer(true)
-                            }
+                            val deserializer = getSerializer(inSerializerClass,
+                                processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
+                            val serializer = getSerializer(inSerializerClass,
+                                processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 
 
                             /**
@@ -474,7 +459,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 outgoingEvents.toList,
                                 serializer)
 
-                            kafkaSink.value.produce(
+                        /*    kafkaSink.value.produce(
                                 processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString,
                                 outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERROR)).toList,
                                 serializer)
@@ -483,6 +468,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString,
                                 processingMetrics.toList,
                                 serializer)
+*/
 
 
 
@@ -501,6 +487,18 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
         })
         context
+    }
+
+
+    def getSerializer(inSerializerClass:String, schemaContent:String):RecordSerializer = {
+        inSerializerClass match {
+            case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
+                val parser = new Parser
+                val inSchema = parser.parse(schemaContent)
+                new AvroSerializer(inSchema)
+            case c if c == KafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
+            case _ => new KryoSerializer(true)
+        }
     }
 
     def computeMetrics(maxRatePerPartition: Int,
