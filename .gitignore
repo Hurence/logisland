@@ -4,4 +4,5 @@
 **/dependency-reduced-pom.xml
 *.tar.gz
 **/_build/
-**/checkpoints/
+checkpoints/
+logs/
