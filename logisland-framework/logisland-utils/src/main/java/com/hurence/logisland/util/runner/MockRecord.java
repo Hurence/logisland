@@ -18,11 +18,7 @@ package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import javafx.print.Collation;
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
-
-import java.util.Collection;
 
 public class MockRecord extends StandardRecord {
 
