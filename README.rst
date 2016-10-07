@@ -6,12 +6,12 @@ Log Island
 
 **LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.**
 
-.. image:: https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/logisland-architecture.png
+.. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png
     :alt: architecture
 
 You can start right now playing with **logisland** through the Docker image, by following the `getting started <http://logisland.readthedocs.io/en/latest/getting-started.html>`_ guide.
 
-The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  also explains how to [build]((http://hurence.github.io/logisland/build)) the source code in order to implement your own processors and deploy them as custom `plugins <http://logisland.readthedocs.io/en/latest/plugins.html>`_.
+The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  also explains how to implement your own processors and deploy them as custom `plugins <http://logisland.readthedocs.io/en/latest/plugins.html>`_.
 
 
 
@@ -24,7 +24,7 @@ to build from the source just clone and package
     git clone
     mvn package
     
-to deploy artifacts (if you're allowed to), follow this guide [release to OSS Sonatype with maven](http://central.sonatype.org/pages/apache-maven.html)
+to deploy artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
 
 .. code-block::
     
