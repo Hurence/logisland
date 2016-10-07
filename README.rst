@@ -1,12 +1,13 @@
 Log Island
 ==========
 
-[![Build
-Status](https://travis-ci.org/Hurence/logisland.svg?branch=master)](https://travis-ci.org/Hurence/logisland)
+.. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
+    :target: https://travis-ci.org/Hurence/logisland
 
 LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
 
-![log-island architecture](http://hurence.github.io/logisland//public/LogIsland-architecture.png)
+.. image:: https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/logisland-architecture.png)
+    :alt: architecture
 
 You can start right now to play with LogIsland through the Docker image, by following the [getting started guide](http://hurence.github.io/logisland/getting-started/)
 
