@@ -5,7 +5,7 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.util.JSONUtil;
 
-import com.hurence.logisland.utils.string.Multiline;
+import com.hurence.logisland.util.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.junit.Assert;
 import org.junit.Test;

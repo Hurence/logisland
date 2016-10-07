@@ -16,13 +16,12 @@
 package com.hurence.logisland.parser.syslog
 
 import java.util
-import java.util.{Collections, Calendar, Date}
+import java.util.{Calendar, Collections, Date}
 
-import com.hurence.logisland.event.Event
-import com.hurence.logisland.log.LogParser
 import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.record.{FieldDictionary, FieldType, StandardRecord}
 import org.joda.time.DateTimeZone
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import org.joda.time.format.DateTimeFormat
 
 /**
   * Created by gregoire on 13/04/16.
@@ -32,7 +31,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
   *
   * The Syslog regular expressions below were copied from the Apache Nifi project.
   */
-class SyslogParser extends LogParser {
+class SyslogParser {
     val EVENT_TYPE = "syslog"
     final val SYSLOG_MSG_RFC5424_0 =
         ("(?:\\<(\\d{1,3})\\>)" + // priority
@@ -61,53 +60,53 @@ class SyslogParser extends LogParser {
         .withDefaultYear(Calendar.getInstance().get(Calendar.YEAR))
 
 
-    override def parse(context:ProcessContext, key:String, value: String): util.Collection[Event] = {
-        val event = new Event(EVENT_TYPE)
-        event.put("source", "string", value)
+    def parse(context: ProcessContext, key: String, value: String): util.Collection[StandardRecord] = {
+        val event = new StandardRecord(EVENT_TYPE)
+        event.setStringField("source", value)
 
         value match {
             case SYSLOG_MSG_RFC5424_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
             case SYSLOG_MSG_RFC3164_0(priority, version, stamp, host, body) => fillSyslogEvent(event, priority, version, stamp, host, body)
-            case x => event.put("error", "string", "bad log entry (or problem with RE?)")
+            case x => event.setStringField("error", "bad log entry (or problem with RE?)")
         }
         Collections.singletonList(event)
     }
 
-    def fillSyslogEvent(event: Event, priority: String, version: String, stamp: String, host: String, body: String) = {
-        event.put("priority", "string", priority)
+    def fillSyslogEvent(event: StandardRecord, priority: String, version: String, stamp: String, host: String, body: String) = {
+        event.setStringField("priority", priority)
         try {
-            if (version != null) event.put("version", "int", version.toInt)
+            if (version != null) event.setField("version", FieldType.INT, version.toInt)
         } catch {
             case e: NumberFormatException =>
-                event.put("versionNotAnInt", "string", version)
+                event.setStringField("versionNotAnInt", version)
             case e: Throwable => throw new Error("an unexpected error occured during parsing of version in syslog", e)
         }
 
 
-        try{
+        try {
             // stamp MMM d HH:mm:ss, single digit date has two spaces
             val timestamp = DTF1_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-            event.put("@timestamp", "long", timestamp)
-        }catch {
+            event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
+        } catch {
             case e: Throwable =>
-                try{
+                try {
                     // stamp MMM d HH:mm:ss, single digit date has two spaces
                     val timestamp = DTF2_SYSLOG_MSG_RFC5424_0.parseDateTime(stamp).getMillis
-                    event.put("@timestamp", "long", timestamp)
-                }catch {
+                    event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
+                } catch {
                     case e: Throwable =>
-                        try{
+                        try {
                             // stamp MMM d HH:mm:ss, single digit date has two spaces
                             val timestamp = DTF3_SYSLOG_MSG_RFC3164_0.parseDateTime(stamp).getMillis
-                            event.put("@timestamp", "long", timestamp)
-                        }catch {
+                            event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp)
+                        } catch {
                             case e: Throwable =>
-                                event.put("@timestamp", "long", new Date().getTime)
+                                event.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, new Date().getTime)
                         }
                 }
         }
-        event.put("date", "string", stamp)
-        event.put("host", "string", host)
-        event.put("body", "string", body)
+        event.setStringField("date", stamp)
+        event.setStringField("host", host)
+        event.setStringField("body", body)
     }
 }

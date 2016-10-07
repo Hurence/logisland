@@ -1,8 +1,7 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.log.LogParserException;
-
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.joda.time.DateTimeZone;
@@ -26,6 +25,7 @@ public class TimeSeriesCsvLoader {
     /**
      * CSV reader that waits for a 2 columns csv files with or without a header.
      * If less than 2 columns ==> exception, otherwise, the 3rd and following columns are ignored
+     *
      * @param in
      * @param hasHeader
      * @param inputDatetimeFormat input date format
@@ -34,18 +34,18 @@ public class TimeSeriesCsvLoader {
      * @throws IllegalArgumentException
      * @throws ArrayIndexOutOfBoundsException
      */
-    public static List<Event> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
-            throws IOException, LogParserException {
+    public static List<StandardRecord> load(Reader in, boolean hasHeader, DateTimeFormatter inputDatetimeFormat)
+            throws IOException {
 
-        List<Event> events = new ArrayList<>();
+        List<StandardRecord> records = new ArrayList<>();
         for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
             try {
                 if (!hasHeader) {
-                    Event event = new Event("sensors");
-                    event.put(TIMESTAMP_KEY, "long", inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
-                    event.put(VALUE_KEY, "double", Double.parseDouble(record.get(1)));
+                    StandardRecord event = new StandardRecord("sensors");
+                    event.setField(TIMESTAMP_KEY, FieldType.LONG, inputDatetimeFormat.withZone(DateTimeZone.UTC).parseDateTime(record.get(0)).getMillis());
+                    event.setField(VALUE_KEY, FieldType.DOUBLE, Double.parseDouble(record.get(1)));
 
-                    events.add(event);
+                    records.add(event);
                 } else {
                     TIMESTAMP_KEY = record.get(0);
                     VALUE_KEY = record.get(1);
@@ -54,10 +54,10 @@ public class TimeSeriesCsvLoader {
                 hasHeader = false;
             } catch (Exception e) {
                 logger.error("Parsing error " + e.getMessage());
-                throw new LogParserException("parsing error", e);
+                throw new RuntimeException("parsing error", e);
             }
         }
 
-        return events;
+        return records;
     }
 }

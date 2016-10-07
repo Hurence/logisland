@@ -18,13 +18,14 @@
 
 package com.hurence.logisland.processor.elasticsearch;
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.ValidationResult;
-import com.hurence.logisland.components.Validator;
-import com.hurence.logisland.processor.AbstractEventProcessor;
+
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.util.validator.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -47,7 +48,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class AbstractElasticsearchProcessor extends AbstractEventProcessor {
+public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractElasticsearchProcessor.class);
     /**
@@ -156,7 +157,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
 
         // Ensure that if username or password is set, then the other is too
         Map<PropertyDescriptor, String> propertyMap = validationContext.getProperties();
-        if (StringUtils.isEmpty(propertyMap.get(USERNAME)) != StringUtils.isEmpty(propertyMap.get(PASSWORD))) {
+        if (StringUtils.isEmpty(propertyMap.getField(USERNAME)) != StringUtils.isEmpty(propertyMap.getField(PASSWORD))) {
             results.add(new ValidationResult.Builder().valid(false).explanation(
                     "If username or password is specified, then the other must be specified as well").build());
         }
@@ -184,11 +185,11 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
         }
 
         try {
-            final String clusterName = context.getProperty(CLUSTER_NAME).getValue();
-            final String pingTimeout = context.getProperty(PING_TIMEOUT).getValue();
-            final String samplerInterval = context.getProperty(SAMPLER_INTERVAL).getValue();
-            final String username = context.getProperty(USERNAME).getValue();
-            final String password = context.getProperty(PASSWORD).getValue();
+            final String clusterName = context.getProperty(CLUSTER_NAME).asString();
+            final String pingTimeout = context.getProperty(PING_TIMEOUT).asString();
+            final String samplerInterval = context.getProperty(SAMPLER_INTERVAL).asString();
+            final String username = context.getProperty(USERNAME).asString();
+            final String password = context.getProperty(PASSWORD).asString();
 
           /*  final SSLContextService sslService =
                     context.getProperty(PROP_SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
@@ -198,13 +199,13 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
                     .put("client.transport.ping_timeout", pingTimeout)
                     .put("client.transport.nodes_sampler_interval", samplerInterval);
 
-            String shieldUrl = context.getProperty(PROP_SHIELD_LOCATION).getValue();
+            String shieldUrl = context.getProperty(PROP_SHIELD_LOCATION).asString();
           /*  if (sslService != null) {
-                settingsBuilder.put("shield.transport.ssl", "true")
-                        .put("shield.ssl.keystore.path", sslService.getKeyStoreFile())
-                        .put("shield.ssl.keystore.password", sslService.getKeyStorePassword())
-                        .put("shield.ssl.truststore.path", sslService.getTrustStoreFile())
-                        .put("shield.ssl.truststore.password", sslService.getTrustStorePassword());
+                settingsBuilder.setField("shield.transport.ssl", "true")
+                        .setField("shield.ssl.keystore.path", sslService.getKeyStoreFile())
+                        .setField("shield.ssl.keystore.password", sslService.getKeyStorePassword())
+                        .setField("shield.ssl.truststore.path", sslService.getTrustStoreFile())
+                        .setField("shield.ssl.truststore.password", sslService.getTrustStorePassword());
             }*/
 
             // Set username and password for Shield
@@ -220,7 +221,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
 
             TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);
 
-            final String hosts = context.getProperty(HOSTS).getValue();
+            final String hosts = context.getProperty(HOSTS).asString();
             esHosts = getEsHosts(hosts);
 
             if (esHosts != null) {
@@ -236,7 +237,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
 
         } catch (Exception e) {
             logger.error("Failed to create Elasticsearch client due to {}", new Object[]{e}, e);
-            throw new ProcessException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -287,6 +288,15 @@ public abstract class AbstractElasticsearchProcessor extends AbstractEventProces
         TransportClient transportClient = builder.settings(settingsBuilder.build()).build();
         Thread.currentThread().setContextClassLoader(originalClassLoader);
         return transportClient;
+    }
+
+
+    /**
+     * Dispose of ElasticSearch client
+     */
+    public void setClient(Client newClient) {
+        closeClient();
+        esClient.set(newClient);
     }
 
     /**

@@ -17,13 +17,24 @@ cd $KAFKA_HOME
 nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
 JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.log 2>&1 &
 
-echo "starting kafka-manager"
-cd $KAFKA_MGR_HOME
-nohup bin/kafka-manager > kafka-manager.log 2>&1 &
+#echo "starting kafka-manager"
+#cd $KAFKA_MGR_HOME
+#nohup bin/kafka-manager > kafka-manager.log 2>&1 &
 
 echo "starting kibana"
 cd $KIBANA_HOME
 nohup bin/kibana > kibana.log 2>&1 &
+
+
+echo "starting grafana"
+sudo service grafana-server start
+grafana-server --config=/usr/local/etc/grafana/grafana.ini --homepath /usr/local/share/grafana cfg:default.paths.logs=/usr/local/var/log/grafana cfg:default.paths.data=/usr/local/var/lib/grafana cfg:default.paths.plugins=/usr/local/var/lib/grafana/plugins
+
+
+
+echo "starting nifi"
+cd $NIFI_HOME
+sudo bin/nifi.sh start
 
 
 

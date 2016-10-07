@@ -17,19 +17,21 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.components.PropertyValue;
-import com.hurence.logisland.components.StandardPropertyValue;
+import com.hurence.logisland.component.AbstractConfiguredComponent;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.processor.ProcessContext;
 
 import java.util.Map;
 
 public class StandardProcessContext implements ProcessContext {
 
-    private final StandardProcessorInstance processorInstance;
+    private final AbstractConfiguredComponent component;
 
 
-    public StandardProcessContext(final StandardProcessorInstance processorInstance) {
-        this.processorInstance = processorInstance;
+    public StandardProcessContext(final AbstractConfiguredComponent component) {
+        this.component = component;
 
     }
 
@@ -45,13 +47,12 @@ public class StandardProcessContext implements ProcessContext {
      */
     @Override
     public PropertyValue getProperty(final String propertyName) {
-        final EventProcessor processor = processorInstance.getProcessor();
-        final PropertyDescriptor descriptor = processor.getPropertyDescriptor(propertyName);
+        final PropertyDescriptor descriptor = component.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;
         }
 
-        final String setPropertyValue = processorInstance.getProperty(descriptor);
+        final String setPropertyValue = component.getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
         return new StandardPropertyValue(propValue);
@@ -65,12 +66,12 @@ public class StandardProcessContext implements ProcessContext {
 
     @Override
     public Map<PropertyDescriptor, String> getProperties() {
-        return processorInstance.getProperties();
+        return component.getProperties();
     }
 
 
     @Override
     public String getName() {
-        return processorInstance.getName();
+        return component.getName();
     }
 }

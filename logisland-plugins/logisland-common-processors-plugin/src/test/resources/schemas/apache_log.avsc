@@ -1,0 +1,92 @@
+{
+  "version":1,
+  "type": "record",
+  "name": "apache_log",
+  "namespace": "com.hurence.logisland.record",
+  "fields": [
+    {
+      "name": "src_ip",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "record_id",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "http_method",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "bytes_out",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "http_query",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "http_version",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "identd",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "http_status",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "record_time",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "user",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "record_type",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "event_time",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  ]
+}

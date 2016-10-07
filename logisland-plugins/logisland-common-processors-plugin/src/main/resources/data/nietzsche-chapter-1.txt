@@ -161,7 +161,7 @@ question as to the origin of this Will--until at last we came to an
 absolute standstill before a yet more fundamental question. We inquired
 about the VALUE of this Will. Granted that we want the truth: WHY NOT
 RATHER untruth? And uncertainty? Even ignorance? The problem of the
-value of truth presented itself before us--or was it we who presented
+rawValue of truth presented itself before us--or was it we who presented
 ourselves before the problem? Which of us is the Oedipus here? Which
 the Sphinx? It would seem to be a rendezvous of questions and notes of
 interrogation. And could it be believed that it at last seems to us as
@@ -174,7 +174,7 @@ out of error? or the Will to Truth out of the will to deception? or the
 generous deed out of selfishness? or the pure sun-bright vision of the
 wise man out of covetousness? Such genesis is impossible; whoever dreams
 of it is a fool, nay, worse than a fool; things of the highest
-value must have a different origin, an origin of THEIR own--in this
+rawValue must have a different origin, an origin of THEIR own--in this
 transitory, seductive, illusory, paltry world, in this turmoil of
 delusion and cupidity, they cannot have their source. But rather in
 the lap of Being, in the intransitory, in the concealed God, in the
@@ -189,15 +189,15 @@ even to the wariest of them to doubt here on the very threshold (where
 doubt, however, was most necessary); though they had made a solemn
 vow, "DE OMNIBUS DUBITANDUM." For it may be doubted, firstly, whether
 antitheses exist at all; and secondly, whether the popular valuations
-and antitheses of value upon which metaphysicians have set their
+and antitheses of rawValue upon which metaphysicians have set their
 seal, are not perhaps merely superficial estimates, merely provisional
 perspectives, besides being probably made from some corner, perhaps from
 below--"frog perspectives," as it were, to borrow an expression current
-among painters. In spite of all the value which may belong to the true,
+among painters. In spite of all the rawValue which may belong to the true,
 the positive, and the unselfish, it might be possible that a higher
-and more fundamental value for life generally should be assigned to
+and more fundamental rawValue for life generally should be assigned to
 pretence, to the will to delusion, to selfishness, and cupidity. It
-might even be possible that WHAT constitutes the value of those good and
+might even be possible that WHAT constitutes the rawValue of those good and
 respected things, consists precisely in their being insidiously
 related, knotted, and crocheted to these evil and apparently opposed
 things--perhaps even in being essentially identical with them. Perhaps!
@@ -239,7 +239,7 @@ without a constant counterfeiting of the world by means of numbers,
 man could not live--that the renunciation of false opinions would be
 a renunciation of life, a negation of life. TO RECOGNISE UNTRUTH AS A
 CONDITION OF LIFE; that is certainly to impugn the traditional ideas of
-value in a dangerous manner, and a philosophy which ventures to do so,
+rawValue in a dangerous manner, and a philosophy which ventures to do so,
 has thereby alone placed itself beyond good and evil.
 
 5. That which causes philosophers to be regarded half-distrustfully
@@ -404,7 +404,7 @@ not back!
 
 11. It seems to me that there is everywhere an attempt at present to
 divert attention from the actual influence which Kant exercised on
-German philosophy, and especially to ignore prudently the value which
+German philosophy, and especially to ignore prudently the rawValue which
 he set upon himself. Kant was first and foremost proud of his Table of
 Categories; with it in his hand he said: "This is the most difficult
 thing that could ever be undertaken on behalf of metaphysics." Let us

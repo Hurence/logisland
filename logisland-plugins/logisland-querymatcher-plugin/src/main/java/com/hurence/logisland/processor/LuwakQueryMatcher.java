@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -28,14 +29,13 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
     private StandardAnalyzer standardAnalyzer = new StandardAnalyzer();
 
 
-
     public LuwakQueryMatcher init(List<MatchingRule> rules) throws IOException {
 
         setRules(rules);
 
         monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
 
-        for (MatchingRule rule :getRules()) {
+        for (MatchingRule rule : getRules()) {
             MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
             monitor.update(mq);
         }
@@ -43,18 +43,18 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
         return this;
     }
 
-    public Collection<Event> process(Collection<Event> collection) {
+    public Collection<StandardRecord> process(Collection<StandardRecord> collection) {
 
-        ArrayList<Event> outEvents = new ArrayList<>();
+        ArrayList<StandardRecord> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Event ev : collection) {
+        for (StandardRecord ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
-            for (String fieldName : ev.keySet()) {
-                if (ev.get(fieldName).getType().equalsIgnoreCase("string"))
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), standardAnalyzer);
+            for (String fieldName : ev.getAllFieldNames()) {
+                if (ev.getField(fieldName).getType() == FieldType.STRING)
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), keywordAnalyzer);
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
             }
 
             docs.add(docbuilder.build());
@@ -66,19 +66,19 @@ public class LuwakQueryMatcher extends AbstractQueryMatcher {
             matches = monitor.match(DocumentBatch.of(docs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
             logger.error("Could not match documents", e);
-            return outEvents;
+            return outRecords;
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(EVENT_MATCH_TYPE_NAME);
+            StandardRecord outEv = new StandardRecord(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
-            // Only get last match for now, we should probably add them all
-            for (QueryMatch queryMatch:docMatch.getMatches())
-                outEv.put("match", "string", queryMatch.getQueryId());
-            outEvents.add(outEv);
+            // Only getField last match for now, we should probably add them all
+            for (QueryMatch queryMatch : docMatch.getMatches())
+                outEv.setStringField("match", queryMatch.getQueryId());
+            outRecords.add(outEv);
         }
 
-        return outEvents;
+        return outRecords;
     }
 
 }

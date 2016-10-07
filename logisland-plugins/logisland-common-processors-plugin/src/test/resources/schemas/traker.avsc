@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "type": "record",
+  "namespace": "com.hurence.logisland",
+  "name": "Traker",
+  "fields": [
+    {
+      "name": "record_id",
+      "type": "string"
+    }, {
+      "name": "record_type",
+      "type": "string"
+    },
+    {
+      "name": "record_time",
+      "type": "long"
+    },
+    {
+      "name": "method",
+      "type": "string"
+    },
+    {
+      "name": "ip_source",
+      "type": "string"
+    },
+    {
+      "name": "ip_target",
+      "type": "string"
+    },
+    {
+      "name": "url_scheme",
+      "type": "string"
+    },
+    {
+      "name": "url_host",
+      "type": "string"
+    },
+    {
+      "name": "url_port",
+      "type": "string"
+    },
+    {
+      "name": "url_path",
+      "type": "string"
+    },
+    {
+      "name": "request_size",
+      "type": "int"
+    },
+    {
+      "name": "response_size",
+      "type": "int"
+    },
+    {
+      "name": "is_outside_office_hours",
+      "type": "boolean"
+    },
+    {
+      "name": "is_host_blacklisted",
+      "type": "boolean"
+    },
+    {
+      "name": "tags",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    }
+  ]
+}

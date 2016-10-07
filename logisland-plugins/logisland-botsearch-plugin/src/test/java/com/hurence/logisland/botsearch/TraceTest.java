@@ -4,7 +4,7 @@
  */
 package com.hurence.logisland.botsearch;
 
-import com.hurence.logisland.utils.time.DateUtil;
+import com.hurence.logisland.util.time.DateUtil;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

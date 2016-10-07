@@ -1,7 +1,7 @@
 package com.hurence.botsearch.analytics
 
 import com.hurence.botsearch.trace.NetworkTraceLogParser
-import com.hurence.logisland.utils.spark.SparkUtils
+import com.hurence.logisland.util.spark.SparkUtils
 import org.apache.commons.cli.{GnuParser, Options}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SQLContext
@@ -54,7 +54,7 @@ object TracesIndexer {
                 val esIndex = "log-island"
 
                 val parser = new NetworkTraceLogParser()
-                traces.map(trace => parser.parse(null, "", trace.toString()))
+           //     traces.map(trace => parser.parse(null, "", trace.toString()))
                 //EventIndexer.indexEvents(traces, esHosts, esIndex, "traces")
             }
             case "debug" => {

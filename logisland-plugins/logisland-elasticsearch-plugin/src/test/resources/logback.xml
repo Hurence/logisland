@@ -20,6 +20,7 @@
     <logger name="org.apache.hadoop" level="WARN" />
     <logger name="org.apache.hadoop.ipc.ProtobufRpcEngine" level="WARN" />
     <logger name="parquet.hadoop" level="WARN" />
+    <logger name="org.elasticsearch" level="WARN" />
 
 
     <root level="debug">

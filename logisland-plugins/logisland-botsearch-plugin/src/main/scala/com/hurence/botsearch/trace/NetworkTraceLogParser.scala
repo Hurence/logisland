@@ -2,48 +2,41 @@ package com.hurence.botsearch.trace
 
 import java.util
 
-import com.hurence.logisland.event.Event
-import com.hurence.logisland.log.{LogParser, LogParserException}
-import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.component.ProcessContext
+import com.hurence.logisland.record.StandardRecord
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Created by tom on 12/01/16.
   */
-class NetworkTraceLogParser extends LogParser with LazyLogging {
+class NetworkTraceLogParser extends LazyLogging {
 
     val EVENT_TYPE = "log-island-trace"
 
     /**
       * take a line of csv and convert it to a NetworkFlow
       *
-      * @param trace
+      * @param records
       * @return
       */
-    override def parse(context: ProcessContext, key:String, trace: String): util.Collection[Event] = {
-        val event = new Event(EVENT_TYPE)
-        try {
+    def process(context: ProcessContext, records: util.Collection[StandardRecord]): util.Collection[StandardRecord] = {
+        val event = new StandardRecord(EVENT_TYPE)
+
 
             // build the event
-            /*  event.put("ipSource", "String", trace.ipSource)
-              event.put("ipTarget", "String", trace.ipTarget)
-              event.put("avgUploadedBytes", "Float", trace.avgUploadedBytes)
-              event.put("avgDownloadedBytes", "Float", trace.avgDownloadedBytes)
-              event.put("avgTimeBetweenTwoFLows", "Float", trace.avgTimeBetweenTwoFLows)
-              event.put("mostSignificantFrequency", "Float", trace.mostSignificantFrequency)
-              event.put("flowsCount", "Integer", trace.flowsCount)
-              event.put("tags", "String", trace.tags)
-              event.put("centroid", "Integer", trace.centroid)
+            /*  event.setField("ipSource", "String", trace.ipSource)
+              event.setField("ipTarget", "String", trace.ipTarget)
+              event.setField("avgUploadedBytes", "Float", trace.avgUploadedBytes)
+              event.setField("avgDownloadedBytes", "Float", trace.avgDownloadedBytes)
+              event.setField("avgTimeBetweenTwoFLows", "Float", trace.avgTimeBetweenTwoFLows)
+              event.setField("mostSignificantFrequency", "Float", trace.mostSignificantFrequency)
+              event.setField("flowsCount", "Integer", trace.flowsCount)
+              event.setField("tags", "String", trace.tags)
+              event.setField("centroid", "Integer", trace.centroid)
   */
 
             util.Collections.singletonList(event)
-        } catch {
-            case t: Exception => {
-                val errorMessage = s"exception parsing row : ${t.getMessage}"
-                logger.error(errorMessage)
-                throw new LogParserException(s"error parsing trace : $trace", t)
-            }
-        }
+
     }
 
 }

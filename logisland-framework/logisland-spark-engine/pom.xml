@@ -35,6 +35,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-kafka-0-8-plugin</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -42,55 +46,51 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.10</artifactId>
-        </dependency>
+        <!--       <dependency>
+                   <groupId>org.apache.avro</groupId>
+                   <artifactId>avro</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>com.esotericsoftware</groupId>
+                   <artifactId>kryo</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>org.elasticsearch</groupId>
+                   <artifactId>elasticsearch</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>commons-codec</groupId>
+                   <artifactId>commons-codec</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>joda-time</groupId>
+                   <artifactId>joda-time</artifactId>
+               </dependency>
+           <dependency>
+                   <groupId>org.apache.kafka</groupId>
+                   <artifactId>kafka_2.10</artifactId>
+               </dependency>
 
 
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+               <dependency>
+                   <groupId>org.codehaus.jackson</groupId>
+                   <artifactId>jackson-mapper-asl</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>com.fasterxml.jackson.core</groupId>
+                   <artifactId>jackson-databind</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>com.googlecode.json-simple</groupId>
+                   <artifactId>json-simple</artifactId>
+               </dependency>
+               <dependency>
+                   <groupId>org.apache.commons</groupId>
+                   <artifactId>commons-lang3</artifactId>
+               </dependency>
+       -->
 
-
-        <!-- scala dependencies -->
-        <dependency>
-            <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging-slf4j_2.10</artifactId>
-        </dependency>
+        <!-- spark dependencies -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
@@ -107,14 +107,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
         </dependency>
-
-
-        <!-- Scala dependencies -->
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.10</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- Scala dependencies -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
@@ -131,31 +129,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    <junitxml>.</junitxml>
-                    <filereports>${project.build.directory}/SparkTestSuite.txt</filereports>
-                    <tagsToInclude>ATag</tagsToInclude>
-                    <systemProperties>
-                        <java.awt.headless>true</java.awt.headless>
-                        <!--   <spark.test.home>${session.executionRootDirectory}</spark.test.home>-->
-                        <spark.testing>1</spark.testing>
-                    </systemProperties>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>

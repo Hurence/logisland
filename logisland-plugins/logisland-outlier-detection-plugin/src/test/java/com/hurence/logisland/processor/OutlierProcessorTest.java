@@ -1,13 +1,12 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.log.LogParserException;
-import org.junit.Assert;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,24 +32,23 @@ public class OutlierProcessorTest {
 
 
     @Test
-    public void testDetection() throws IOException, LogParserException {
+    public void testDetection() throws IOException {
         File f = new File(RESOURCES_DIRECTORY);
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
-            List<Event> events = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
-            Assert.assertTrue(!events.isEmpty());
+            List<StandardRecord> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+            Assert.assertTrue(!records.isEmpty());
 
 
-            AbstractEventProcessor processor = new OutlierProcessor();
+            Processor processor = new OutlierProcessor();
             StandardProcessorInstance instance = new StandardProcessorInstance(processor, "0");
-          //  instance.setProperty("rules",rulesAsString);
+            //  instance.setProperty("rules",rulesAsString);
             ProcessContext context = new StandardProcessContext(instance);
-            processor.init(context);
-            Collection<Event> outliersEvents = processor.process(context, events);
+            Collection<StandardRecord> outliersRecords = processor.process(context, records);
 
             // @todo make a real test of outliers heres
-          //  logger.info(outliersEvents.toString());
+            //  logger.info(outliersEvents.toString());
         }
     }
 

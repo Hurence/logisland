@@ -1,8 +1,5 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.event.Event;
-
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

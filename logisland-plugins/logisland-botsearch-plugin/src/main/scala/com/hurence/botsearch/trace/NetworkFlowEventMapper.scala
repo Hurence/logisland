@@ -1,16 +1,15 @@
 package com.hurence.botsearch.trace
 
-import com.hurence.logisland.event.EventMapper
 import org.elasticsearch.common.xcontent.XContentBuilder
 import org.elasticsearch.common.xcontent.XContentFactory._
 
 /**
   * Created by tom on 12/01/16.
   */
-class NetworkFlowEventMapper extends EventMapper {
+class NetworkFlowEventMapper  {
     val EVENT_TYPE = "log-island-flow"
 
-    override def getMapping: XContentBuilder = {
+    def getMapping: XContentBuilder = {
         jsonBuilder().startObject().startObject(EVENT_TYPE)
             .startObject("_ttl").field("enabled", "true").field("default", "30d").endObject()
             .startObject("properties")
@@ -33,6 +32,6 @@ class NetworkFlowEventMapper extends EventMapper {
 
     }
 
-    override def getDocumentType: String = EVENT_TYPE
+    def getDocumentType: String = EVENT_TYPE
 
 }

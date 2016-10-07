@@ -6,7 +6,7 @@ package com.hurence.logisland.math;
 
 import com.hurence.logisland.botsearch.HttpFlow;
 import com.hurence.logisland.botsearch.Trace;
-import com.hurence.logisland.utils.string.HttpUtil;
+import com.hurence.logisland.util.string.HttpUtil;
 
 import java.util.List;
 import static org.junit.Assert.*;

@@ -1,8 +1,9 @@
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.components.PropertyDescriptor;
-import com.hurence.logisland.event.Event;
-import com.hurence.logisland.validators.StandardValidators;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.slf4j.Logger;
@@ -18,10 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by fprunier on 15/04/16.
- */
-public class QueryMatcherProcessor extends AbstractEventProcessor {
+
+public class QueryMatcherProcessor extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
 
@@ -48,10 +47,10 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
     public void init(final ProcessContext context) {
 
 
-        final String rules = context.getProperty(RULES).getValue();
+        final String rules = context.getProperty(RULES).asString();
         final String[] split = rules.split(",");
-        for (int i = 0; i<split.length; i++) {
-            matchingRules.add(new MatchingRule("rule"+i, split[i]));
+        for (int i = 0; i < split.length; i++) {
+            matchingRules.add(new MatchingRule("rule" + i, split[i]));
         }
 
         try {
@@ -68,18 +67,18 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public Collection<Event> process(final ProcessContext context, final Collection<Event> collection) {
+    public Collection<StandardRecord> process(final ProcessContext context, final Collection<StandardRecord> collection) {
 
-        ArrayList<Event> outEvents = new ArrayList<>();
+        ArrayList<StandardRecord> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (Event ev : collection) {
+        for (StandardRecord ev : collection) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
-            for (String fieldName : ev.keySet()) {
-                if (ev.get(fieldName).getType().equalsIgnoreCase("string"))
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), standardAnalyzer);
+            for (String fieldName : ev.getAllFieldNames()) {
+                if (ev.getField(fieldName).getType() == FieldType.STRING)
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), standardAnalyzer);
                 else
-                    docbuilder.addField(fieldName, ev.get(fieldName).getValue().toString(), keywordAnalyzer);
+                    docbuilder.addField(fieldName, ev.getField(fieldName).getRawValue().toString(), keywordAnalyzer);
             }
 
             docs.add(docbuilder.build());
@@ -91,38 +90,29 @@ public class QueryMatcherProcessor extends AbstractEventProcessor {
             matches = monitor.match(DocumentBatch.of(docs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
             logger.error("Could not match documents", e);
-            return outEvents;
+            return outRecords;
         }
 
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            Event outEv = new Event(EVENT_MATCH_TYPE_NAME);
+            StandardRecord outEv = new StandardRecord(EVENT_MATCH_TYPE_NAME);
             outEv.setId(docMatch.getDocId());
-            // Only get last match for now, we should probably add them all
+            // Only getField last match for now, we should probably add them all
             for (QueryMatch queryMatch : docMatch.getMatches())
-                outEv.put("match", "string", queryMatch.getQueryId());
-            outEvents.add(outEv);
+                outEv.setStringField("match", queryMatch.getQueryId());
+            outRecords.add(outEv);
         }
 
-        return outEvents;
+        return outRecords;
     }
 
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(ERROR_TOPICS);
-        descriptors.add(INPUT_TOPICS);
-        descriptors.add(OUTPUT_TOPICS);
-        descriptors.add(INPUT_SCHEMA);
-        descriptors.add(OUTPUT_SCHEMA);
         descriptors.add(RULES);
 
         return Collections.unmodifiableList(descriptors);
     }
 
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
 }
