@@ -4,19 +4,19 @@ Log Island
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
     :target: https://travis-ci.org/Hurence/logisland
 
-LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.
+**LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.**
 
-.. image:: https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/logisland-architecture.png)
+.. image:: https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/logisland-architecture.png
     :alt: architecture
 
-You can start right now to play with LogIsland through the Docker image, by following the [getting started guide](http://hurence.github.io/logisland/getting-started/)
+You can start right now playing with **logisland** through the Docker image, by following the `getting started <http://logisland.readthedocs.io/en/latest/getting-started.html>`_ guide.
 
-The [documentation](http://hurence.github.io/logisland/) also explains how to [build]((http://hurence.github.io/logisland/build)) the source code in order to implement your own [plugins](http://hurence.github.io/logisland/plugins/).
-
-Once you know how to run and build your own parsers and processors, you'll want to [deploy](http://hurence.github.io/logisland/deploy/) and scale them.
+The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  also explains how to [build]((http://hurence.github.io/logisland/build)) the source code in order to implement your own processors and deploy them as custom `plugins <http://logisland.readthedocs.io/en/latest/plugins.html>`_.
 
 
-## Build and deploy
+
+Build and deploy
+----
 to build from the source just clone and package
 
 .. code-block::
@@ -32,7 +32,7 @@ to deploy artifacts (if you're allowed to), follow this guide [release to OSS So
     mvn clean deploy
     mvn versions:commit
 
-follow the staging procedure in [https://oss.sonatype.org/#stagingRepositories](https://oss.sonatype.org/#stagingRepositories) or read [Sonatype book](http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven)
+follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
     
 
 
@@ -59,61 +59,97 @@ The following `conf/configuration-template.yml` contains a sample of processor d
 
 
 
-    version: 0.1
+    # Logisland configuration script tempate
+
+    version: 0.9.5
     documentation: LogIsland analytics main config file. Put here every engine or component config
-    
-    components:
-      # Main event streaming engine
-      - component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
-        type: engine
-        version: 0.1.0
-        documentation: Main Logisland job entry point
-        configuration:
-          spark.master: local[8]
-          spark.executorMemory: 4g
-          spark.checkpointingDirectory: file:///tmp
-          spark.appName: My first stream component
-          spark.streaming.batchDuration: 2000
-          spark.serializer: org.apache.spark.serializer.KryoSerializer
-          spark.streaming.backpressure.enabled: true
-          spark.streaming.unpersist: false
-          spark.streaming.blockInterval: 350
-          spark.streaming.kafka.maxRatePerPartition: 500
-          spark.streaming.timeout: 20000
-          spark.ui.port: 4050
-          kafka.metadata.broker.list: localhost:9092
-          kafka.zookeeper.quorum: localhost:2181
-    
-      # A Debug component that only logs what it reads
-      - component: com.hurence.logisland.processor.debug.EventDebuggerProcessor
-        type: processor
-        version: 0.1.0
-        documentation: a processor that trace the processed events
-        configuration:
-          kafka.input.topics: logisland-mock-in
-          kafka.output.topics: none
-          kafka.error.topics: none
-          avro.input.schema: |
-                  {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
-          avro.output.schema: |
-                        {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
-    
-      # Generate random events based on an avro schema
-      - component: com.hurence.logisland.processor.randomgenerator.RandomEventGeneratorProcessor
-        type: processor
-        version: 0.1.0
-        documentation: a processor that produces random events
-        configuration:
-          kafka.input.topics: none
-          kafka.output.topics: logisland-mock-in
-          kafka.error.topics: logisland-error
-          min.events.count: 5
-          max.events.count: 100
-          avro.input.schema: |
-                        {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
-          
-          avro.output.schema: |
-                              {"version":1,"type":"record","namespace":"com.hurence.logisland","name":"Event","fields":[{"name":"_type","type":"string"},{"name":"_id","type":"string"},{"name":"timestamp","type":"long"},{"name":"method","type":"string"},{"name":"ipSource","type":"string"},{"name":"ipTarget","type":"string"},{"name":"urlScheme","type":"string"},{"name":"urlHost","type":"string"},{"name":"urlPort","type":"string"},{"name":"urlPath","type":"string"},{"name":"requestSize","type":"int"},{"name":"responseSize","type":"int"},{"name":"isOutsideOfficeHours","type":"boolean"},{"name":"isHostBlacklisted","type":"boolean"},{"name":"tags","type":{"type":"array","items":"string"}}]}
+
+    # engine
+    engine:
+      component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
+      type: engine
+      documentation: Main Logisland job entry point
+      configuration:
+        spark.master: yarn-cluster
+        spark.driver.memory: 512m
+        spark.driver.cores: 1
+        spark.executor.memory: 1500m
+        spark.executor.cores: 2
+        spark.executor.instances: 10
+        spark.appName: FdjIndexing
+        spark.streaming.batchDuration: 10000
+        spark.serializer: org.apache.spark.serializer.KryoSerializer
+        spark.streaming.backpressure.enabled: true
+        spark.streaming.unpersist: false
+        spark.streaming.blockInterval: 500
+        spark.streaming.kafka.maxRatePerPartition: 6000
+        spark.streaming.timeout: -1
+        spark.ui.port: 4050
+      processorChainConfigurations:
+
+        # parsing
+        - processorChain: parsing_stream
+          component: com.hurence.logisland.processor.chain.KafkaRecordStream
+          type: stream
+          documentation: a processor that links
+          configuration:
+            kafka.input.topics: logisland_raw
+            kafka.output.topics: logisland_events
+            kafka.error.topics: logisland_errors
+            kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
+            kafka.metadata.broker.list: <KAFKA_BROKER_HOST:PORT>
+            kafka.zookeeper.quorum: <ZK_HOST:PORT>
+            kafka.topic.autoCreate: true
+            kafka.topic.default.partitions: 10
+            kafka.topic.default.replicationFactor: 1
+          processorConfigurations:
+
+            # Generate random events based on an avro schema
+            - processor: sample_regex_parser
+              component: com.hurence.logisland.processor.SplitText
+              type: parser
+              documentation: a parser that produce events from a REGEX
+              configuration:
+                key.regex: (\S*):(\S*)
+                key.fields: c,d
+                value.regex: (\S*):(\S*)
+                value.fields: a,b
+
+        # indexing
+        - processorChain: indexing_stream
+          component: com.hurence.logisland.processor.chain.KafkaRecordStream
+          type: processor
+          documentation: a processor that push events to ES
+          configuration:
+            kafka.input.topics: logisland_events
+            kafka.output.topics: logisland_trash
+            kafka.error.topics: logisland_errors
+            kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
+            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
+            kafka.metadata.broker.list: <KAFKA_BROKER_HOST:PORT>
+            kafka.zookeeper.quorum: <ZK_HOST:PORT>
+            kafka.topic.autoCreate: true
+            kafka.topic.default.partitions: 10
+            kafka.topic.default.replicationFactor: 1
+          processorConfigurations:
+
+            # put to elasticsearch
+            - processor: es_publisher
+              component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+              type: processor
+              documentation: a processor that trace the processed events
+              configuration:
+                default.index: loterie
+                default.type: event
+                hosts: <ES_HOST:PORT>
+                cluster.name: elastic-hurence
+                batch.size: 8000
+                timebased.index: yesterday
+                es.index.field: search_index
+                es.type.field: event_type
 
 
 
