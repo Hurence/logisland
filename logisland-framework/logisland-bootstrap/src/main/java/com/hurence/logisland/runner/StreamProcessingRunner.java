@@ -21,12 +21,10 @@ import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.processor.StandardProcessorInstance;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -75,12 +73,13 @@ public class StreamProcessingRunner {
             Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf.getEngine());
             logger.info("starting Logisland session version {}", sessionConf.getVersion());
             logger.info(sessionConf.getDocumentation());
+            assert engineInstance.isPresent();
+            assert engineInstance.get().isValid();
 
             // start the engine
-            if (engineInstance.isPresent()) {
-                StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
-                engineInstance.get().getEngine().start(engineContext);
-            }
+            StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
+            engineInstance.get().getEngine().start(engineContext);
+
 
         } catch (Exception e) {
             logger.error("unable to launch runner : {}", e);
