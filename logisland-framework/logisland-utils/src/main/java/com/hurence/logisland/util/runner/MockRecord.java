@@ -18,7 +18,11 @@ package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import javafx.print.Collation;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
+
+import java.util.Collection;
 
 public class MockRecord extends StandardRecord {
 
@@ -38,6 +42,22 @@ public class MockRecord extends StandardRecord {
 
     public void assertFieldEquals(final String fieldName, final String expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());
+    }
+
+    public void assertFieldEquals(final String fieldName, final int expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).asInteger().intValue());
+    }
+
+    public void assertFieldEquals(final String fieldName, final long expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).asLong().longValue());
+    }
+
+    public void assertFieldEquals(final String fieldName, final float expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), 0.000001);
+    }
+
+    public void assertFieldEquals(final String fieldName, final double expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), 0.000001);
     }
 
     public void assertFieldNotEquals(final String fieldName, final String expectedValue) {

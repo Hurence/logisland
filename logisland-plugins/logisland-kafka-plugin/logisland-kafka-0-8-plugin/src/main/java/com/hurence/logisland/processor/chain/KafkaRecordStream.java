@@ -36,10 +36,18 @@ import java.util.List;
 public class KafkaRecordStream extends AbstractProcessorChain {
 
 
-    public static final String RAW_TOPIC = "logisland_raw";
-    public static final String EVENTS_TOPIC = "logisland_events";
-    public static final String ERROR_TOPIC = "logisland_errors";
 
+    public static final AllowableValue DEFAULT_RAW_TOPIC = new AllowableValue("logisland_raw", "default raw topic",
+            "the incoming non structured topic");
+
+    public static final AllowableValue DEFAULT_EVENTS_TOPIC = new AllowableValue("logisland_events", "default events topic",
+            "the outgoing structured topic");
+
+    public static final AllowableValue DEFAULT_ERRORS_TOPIC = new AllowableValue("logisland_errors", "default raw topic",
+            "the outgoing structured error topic");
+
+    public static final AllowableValue DEFAULT_METRICS_TOPIC = new AllowableValue("logisland_metrics", "default metrics topic",
+            "the topic to place processing metrics");
 
     private static Logger logger = LoggerFactory.getLogger(KafkaRecordStream.class);
 
@@ -47,7 +55,8 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.input.topics")
             .description("Sets the input Kafka topic name")
             .required(true)
-            .defaultValue(RAW_TOPIC)
+            .defaultValue(DEFAULT_RAW_TOPIC.getValue())
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor OUTPUT_TOPICS = new PropertyDescriptor.Builder()
@@ -55,14 +64,16 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .description("Sets the output Kafka topic name")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue(EVENTS_TOPIC)
+            .defaultValue(DEFAULT_EVENTS_TOPIC.getValue())
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ERROR_TOPICS = new PropertyDescriptor.Builder()
             .name("kafka.error.topics")
             .description("Sets the error topics Kafka topic name")
             .required(true)
-            .defaultValue(ERROR_TOPIC)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(DEFAULT_ERRORS_TOPIC.getValue())
             .build();
 
     public static final PropertyDescriptor AVRO_INPUT_SCHEMA = new PropertyDescriptor.Builder()
@@ -126,6 +137,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .name("kafka.metrics.topic")
             .description("a topic to send metrics of processing. no output if not set")
             .required(false)
+            .defaultValue(DEFAULT_METRICS_TOPIC.getValue())
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 

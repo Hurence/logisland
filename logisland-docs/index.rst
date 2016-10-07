@@ -17,6 +17,7 @@ Contents:
    plugins
    deploy
    api
+   faq
 
 Indices and tables
 ==================

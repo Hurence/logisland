@@ -66,7 +66,6 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
         }).toArray
 
         producer.send(messages: _*)
-        producer.close()
     }
 
 

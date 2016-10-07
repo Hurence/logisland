@@ -22,7 +22,7 @@ You can instanciate a ``Record`` like in the following code snipet:
         record.setId(id);
 
         assertTrue(record.isEmpty());
-        assertEquals(record.size(), 3);
+        assertEquals(record.size(), 0);
 
 A record is defined by its type and a collection of fields. there three special fields:
 

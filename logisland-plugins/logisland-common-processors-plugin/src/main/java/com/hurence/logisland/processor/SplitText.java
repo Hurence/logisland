@@ -220,7 +220,7 @@ public class SplitText extends AbstractProcessor {
                                 }
                             }
                         }else{
-                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, "regex parsing error");
+                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, ProcessError.REGEX_PARSING_ERROR);
                             outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                         }
                         outputRecords.add(outputRecord);

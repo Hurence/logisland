@@ -13,7 +13,7 @@ import static com.hurence.logisland.record.FieldType.*;
  */
 public class ProcessorMetrics {
 
-    public static String METRICS_EVENT_TYPE = "logisland_metrics";
+    public static String METRICS_EVENT_TYPE = "process_metric";
 
     private static Logger logger = LoggerFactory.getLogger(ProcessorMetrics.class);
 
@@ -33,7 +33,7 @@ public class ProcessorMetrics {
             final List<Integer> eventSizesInBytes = new ArrayList<>();
             final List<Integer> eventNumberOfFields = new ArrayList<>();
 
-            records.stream().forEach(record -> {
+            records.forEach(record -> {
                 eventSizesInBytes.add(record.sizeInBytes());
                 eventNumberOfFields.add(record.size());
             });

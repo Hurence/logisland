@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -17,17 +18,15 @@ public class SplitTextTest {
     private static final String DATA_USR_BACKEND_LOG = "/data/usr_backend_application.log";
     private static final String DATA_USR_GATEWAY_LOG = "/data/usr_gateway_application.log";
     private static final String DATA_USR_BACKEND_LOG2 = "/data/USR-fail2.log";
-    private static final String DATA_TRAKER1_LOG = "/data/traker1_with_key.log";
-    private static final String SCHEMA_TRAKER1_LOG = "/schemas/traker.avsc";
+
 
     private static final String USR_BACKEND_REGEX = "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:([^:]*):([^\\]]*)\\]\\s*\\[ACC:([^\\]]*)\\]\\[SRV:([^\\]]*)\\]\\s+(\\S*)\\s+(\\S*)\\s+(\\S*)\\s+(.*)\\s*";
     private static final String USR_GATEWAY_REGEX = "\\[(\\S*)\\]\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+\\[SES:(\\S*)\\]\\s+(\\S*)\\s+(\\S*) - (.*)";
-    private static final String SYSLOG_TRAKER_REGEX = "(\\D{3}\\s+\\d{1,2} \\d{2}:\\d{2}:\\d{2})\\s+(\\S*)\\s+(?:date=(\\S*)\\s+)?(?:time=(\\S*)\\s+)?(?:devname=(\\S*)\\s+)?(?:devid=(\\S*)\\s+)?(?:logid=(\\S*)\\s+)?(?:type=(\\S*)\\s+)?(?:subtype=(\\S*)\\s+)?(?:level=(\\S*)\\s+)?(?:vd=(\\S*)\\s+)?(?:srcip=(\\S*)\\s+)?(?:srcport=(\\S*)\\s+)?(?:srcintf=\"(\\S*)\"\\s+)?(?:dstip=(\\S*)\\s+)?(?:dstport=(\\S*)\\s+)?(?:dstintf=\"(\\S*)\"\\s+)?(?:poluuid=(\\S*)\\s+)?(?:sessionid=(\\S*)\\s+)?(?:proto=(\\S*)\\s+)?(?:action=(\\S*)\\s+)?(?:policyid=(\\S*)\\s+)?(?:dstcountry=\"(\\S*)\"\\s+)?(?:srccountry=\"(\\S*\\s*\\S*)\"\\s+)?(?:trans*disp=(\\S*)\\s+)?(?:trans*ip=(\\S*)\\s+)?(?:trans*port=(\\S*)\\s+)?(?:service=\"(\\S*)\"\\s+)?(?:duration=(\\S*)\\s+)?(?:sentbyte=(\\S*)\\s+)?(?:rcvdbyte=(\\S*)\\s+)?(?:sentpkt=(\\S*)\\s+)?(?:rcvdpkt=(\\S*)\\s+)?(?:appcat=\"(\\S*)\"\\s+)?(?:crscore=(\\S*)\\s+)?(?:craction=(\\S*)\\s+)?(?:crlevel=(\\S*)\\s+)?";
 
 
-    private static final String USR_BACKEND_FIELDS = "component,event_time,player_type,session,user_id,srv,log_level,logger,none,trace";
-    private static final String USR_GATEWAY_FIELDS = "component,event_time,session,log_level,logger,trace";
-    private static final String SYSLOG_TRAKER_FIELDS = "line_date,host,date,time,devname,devid,logid,type,subtype,level,vd,src_ip,src_port,src_inf,dest_ip,dest_port,dest_inf,pol_uuid,session_id,proto,action,policy_id,dest_country,src_country,tran_isp,tran_ip,tran_port,service,duration,bytes_out,bytes_in,packets_out,packets_in,app_cat,cr_score,cr_action,cr_level";
+    private static final String USR_BACKEND_FIELDS = "component,record_time,player_type,session,user_id,srv,log_level,logger,none,trace";
+    private static final String USR_GATEWAY_FIELDS = "component,record_time,session,log_level,logger,trace";
+
 
     private static Logger logger = LoggerFactory.getLogger(SplitTextTest.class);
 
@@ -42,59 +41,30 @@ public class SplitTextTest {
         testRunner.assertValid();
 
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(DATA_USR_BACKEND_LOG));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
 
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(DATA_USR_BACKEND_LOG2));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(8);
+        testRunner.assertOutputRecordsCount(244);
 
         testRunner.setProperty(SplitText.VALUE_REGEX, USR_GATEWAY_REGEX);
         testRunner.setProperty(SplitText.VALUE_FIELDS, USR_GATEWAY_FIELDS);
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(DATA_USR_GATEWAY_LOG));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(73);
-    }
-
-    @Test
-    public void testSyslogTraker() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
-        testRunner.setProperty(SplitText.VALUE_REGEX, SYSLOG_TRAKER_REGEX);
-        testRunner.setProperty(SplitText.VALUE_FIELDS, SYSLOG_TRAKER_FIELDS);
-        testRunner.setProperty(SplitText.KEY_REGEX, "(\\S*):(\\S*)");
-        testRunner.setProperty(SplitText.KEY_FIELDS, "es_index,host_name");
-        testRunner.assertValid();
-        testRunner.enqueue("@", SplitTextTest.class.getResourceAsStream(DATA_TRAKER1_LOG));
-        testRunner.clearOutpuRecords();
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1000);
-
-
-        MockRecord out = testRunner.getOutpuRecords().get(0);
-        out.assertFieldExists("src_ip");
-        out.assertFieldNotExists("src_ip2");
-        out.assertFieldEquals("src_ip", "10.3.41.100");
-        out.assertRecordSizeEquals(37);
-
-      /*  testRunner.assertAllRecords(
-                new AvroRecordValidator(SplitTextTest.class.getResourceAsStream(SCHEMA_TRAKER1_LOG))
-        );*/
-
-        testRunner.setProperty("bad_prop", "nasty man");
-        testRunner.assertNotValid();
+        testRunner.assertOutputRecordsCount(201);
     }
 
 
     private static final String APACHE_LOG = "/data/localhost_access.log";
-    private static final String APACHE_LOG_FIELDS = "src_ip,identd,user,event_time,http_method,http_query,http_version,http_status,bytes_out";
+    private static final String APACHE_LOG_FIELDS = "src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out";
     private static final String APACHE_LOG_REGEX = "(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\[([\\w:/]+\\s[+\\-]\\d{4})\\]\\s+\"(\\S+)\\s+(\\S+)\\s+(\\S+)\"\\s+(\\S+)\\s+(\\S+)";
     private static final String APACHE_LOG_SCHEMA = "/schemas/apache_log.avsc";
 
@@ -105,17 +75,17 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(200);
 
 
-        MockRecord out = testRunner.getOutpuRecords().get(0);
+        MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldExists("src_ip");
         out.assertFieldNotExists("src_ip2");
         out.assertFieldEquals("src_ip", "10.3.10.134");
-        out.assertRecordSizeEquals(10);
+        out.assertRecordSizeEquals(9);
     }
 
     @Test
@@ -128,19 +98,31 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.EVENT_TYPE, "apache_log");
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(200);
+        testRunner.assertOutputErrorCount(0);
 
+        MockRecord out = testRunner.getOutputRecords().get(0);
 
-        MockRecord out = testRunner.getOutpuRecords().get(0);
         out.assertFieldExists("src_ip");
         out.assertFieldNotExists("src_ip2");
         out.assertFieldEquals("src_ip", "10.3.10.134");
-        out.assertRecordSizeEquals(9);
-        testRunner.assertAllRecords(avroValidator);
+        out.assertFieldEquals("http_method", "GET");
+        out.assertFieldEquals("bytes_out", "51");
+        out.assertFieldEquals("http_query", "/usr/rest/account/email");
+        out.assertFieldEquals("http_version", "HTTP/1.1");
+        out.assertFieldEquals("identd", "-");
+        out.assertFieldEquals("user", "-");
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "apache_log");
+        out.assertFieldEquals(FieldDictionary.RECORD_TIME, 1469342728000L);
 
+
+        System.out.println(RecordSchemaUtil.generateTestCase(out));
+
+        out.assertRecordSizeEquals(8);
+        testRunner.assertAllRecords(avroValidator);
     }
 
     @Test
@@ -152,16 +134,16 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.EVENT_TYPE, "apache_log");
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
-        testRunner.clearOutpuRecords();
+        testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(200);
+        testRunner.assertOutputErrorCount(200);
 
-
-        MockRecord out = testRunner.getOutpuRecords().get(0);
+        MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldNotExists("src_ip");
         out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
-        out.assertFieldEquals(FieldDictionary.RECORD_ERROR, "regex parsing error");
+        out.assertFieldEquals(FieldDictionary.RECORD_ERROR, ProcessError.REGEX_PARSING_ERROR.toString());
         out.assertRecordSizeEquals(2);
     }
 

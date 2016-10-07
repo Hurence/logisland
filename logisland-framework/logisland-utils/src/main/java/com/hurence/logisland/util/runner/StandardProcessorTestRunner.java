@@ -39,6 +39,7 @@ import com.hurence.logisland.component.ValidationResult;
 import com.hurence.logisland.processor.MockProcessContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
 import org.slf4j.Logger;
@@ -48,7 +49,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -185,6 +189,13 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
+    public void assertOutputErrorCount(int count) {
+        long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERROR)).count();
+        assertTrue("expected output error record count was " + count + " but is currently " +
+                errorCount, errorCount == count);
+    }
+
+    @Override
     public void assertAllRecordsContainAttribute(String attributeName) {
 
     }
@@ -221,15 +232,24 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void clearOutpuRecords() {
+    public void clearQueues() {
         outputRecordsList.clear();
     }
 
     @Override
-    public List<MockRecord> getOutpuRecords() {
+    public List<MockRecord> getOutputRecords() {
         return outputRecordsList
                 .stream()
                 .map(MockRecord::new)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<MockRecord> getErrorRecords() {
+        return getOutputRecords()
+                .stream()
+                .filter(r -> r.hasField(FieldDictionary.RECORD_ERROR))
                 .collect(Collectors.toList());
     }
 }

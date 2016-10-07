@@ -99,15 +99,26 @@ public interface TestRunner {
 
 
     /**
+     * Asserts that the size of output Records in error is equal
+     * to <code>count</code>
+     */
+    void assertOutputErrorCount(int count);
+
+    /**
      * Remova all records from output queue
      */
-    void clearOutpuRecords();
+    void clearQueues();
 
 
     /**
      * Retrieve output queue
      */
-    List<MockRecord> getOutpuRecords();
+    List<MockRecord> getOutputRecords();
+
+    /**
+     * Retrieve output error queue
+     */
+    List<MockRecord> getErrorRecords();
 
 
     /**

@@ -17,6 +17,7 @@
 package com.hurence.logisland.util.record;
 
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
@@ -29,7 +30,7 @@ public class RecordSchemaUtil {
         SchemaBuilder.FieldAssembler<Schema> fields;
         SchemaBuilder.RecordBuilder<Schema> record = SchemaBuilder.record(inputRecord.getType());
         fields = record.namespace("com.hurence.logisland.record").fields();
-        for (final Field field : inputRecord.getAllFields()) {
+        for (final Field field : inputRecord.getAllFieldsSorted()) {
 
             switch (field.getType()) {
                 case STRING:
@@ -61,5 +62,51 @@ public class RecordSchemaUtil {
 
         Schema schema = fields.endRecord();
         return schema;
+    }
+
+    public static String generateTestCase(Record inputRecord) {
+        StringBuilder builder = new StringBuilder();
+        for (final Field field : inputRecord.getAllFieldsSorted()) {
+            if(field.getName().equals(FieldDictionary.RECORD_ID))
+                continue;
+
+            builder.append("out.assertFieldEquals(\"");
+            builder.append(field.getName());
+
+            switch (field.getType()) {
+                case INT:
+                    builder.append("\", ");
+                    builder.append(field.asInteger());
+                    break;
+                case LONG:
+                    builder.append("\", ");
+                    builder.append(field.asLong());
+                    builder.append("L");
+                    break;
+                case FLOAT:
+                    builder.append("\", ");
+                    builder.append(field.asFloat());
+                    builder.append("f");
+                    break;
+                case DOUBLE:
+                    builder.append("\", ");
+                    builder.append(field.asDouble());
+                    builder.append("d");
+                    break;
+                case BOOLEAN:
+                    builder.append("\", ");
+                    builder.append(field.asBoolean());
+                    break;
+                default:
+                    builder.append("\", \"");
+                    builder.append(field.asString());
+                    builder.append("\"");
+                    break;
+            }
+            builder.append(");\n");
+        }
+        builder.append("out.assertRecordSizeEquals(").append(inputRecord.size()).append(");\n");
+
+        return builder.toString();
     }
 }
