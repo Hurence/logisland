@@ -14,7 +14,7 @@ import com.hurence.logisland.record._
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.util.kafka.{KafkaSerializedEventProducer, KafkaSink}
 import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
 import com.hurence.logisland.util.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.serializer.DefaultDecoder
@@ -377,6 +377,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     "refresh.leader.backoff.ms" -> "1000")
 
                 @transient val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
+                @transient val zkSink = context.sparkContext.broadcast(ZookeeperSink(zkQuorum))
 
                 if (topicAutocreate) {
                     createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
@@ -483,10 +484,15 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                               * push outgoing events and errors to Kafka
                               */
                             val kafkaProducer = new KafkaSerializedEventProducer(brokerList)
-                            kafkaProducer.produce(
+                            kafkaSink.value.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString,
+                                outgoingEvents.toList,
+                                serializer
+                            )
+                       /*     kafkaProducer.produce(
                                 processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toList,
                                 outgoingEvents.toList,
-                                serializer)
+                                serializer)*/
 
                             kafkaProducer.produce(
                                 processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toList,
@@ -503,7 +509,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                         }
                     })
 
-                    storeOffsetRangeToZookeeper(zkQuorum, appName, offsetRanges)
+                    zkSink.value.storeOffsetRangeToZookeeper(zkQuorum, appName, offsetRanges)
                 })
             } catch {
                 case ex: Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",

@@ -63,10 +63,10 @@ object KafkaSink {
         val f = () => {
             val producer = new KafkaProducer[Array[Byte], Array[Byte]](config)
 
-            sys.addShutdownHook {
+        /*    sys.addShutdownHook {
                 producer.close()
             }
-
+*/
             producer
         }
         new KafkaSink(f)
