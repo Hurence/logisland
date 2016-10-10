@@ -29,6 +29,8 @@ public interface Record extends Serializable {
 
     void setFields(Map<String, Field> fields);
 
+    void addFields(Map<String, Field> fields);
+
     void setType(String type);
 
     String getType();

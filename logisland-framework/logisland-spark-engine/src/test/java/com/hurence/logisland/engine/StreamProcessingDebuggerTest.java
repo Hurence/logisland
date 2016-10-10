@@ -56,10 +56,14 @@ public class StreamProcessingDebuggerTest {
         
 
         Map<String, String> chainProperties = new HashMap<>();
-        chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(), "sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
-        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(), "sd-76387:2181,sd-84186:2181,sd-84189:2181");
-        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "appl_prod_oad_falcon_usr-backend.localhost_access,appl_prod_oad_falcon_usr-gateway.localhost_access");
-        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "logisland_events");
+        chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
+                "sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
+        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
+                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
+        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(),
+                "appl_prod_oad_falcon_usr-backend.localhost_access,appl_prod_oad_falcon_usr-gateway.localhost_access");
+        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(),
+                "logisland_events");
         chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
         chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
 
@@ -74,9 +78,10 @@ public class StreamProcessingDebuggerTest {
         
         Map<String, String> engineProperties = new HashMap<>();
         engineProperties.put(SparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "500");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[4]");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "10000");
+        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "2");
+        engineProperties.put(SparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[8]");
+        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "50000");
+        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_CHECKPOINT_DIRECTORY().getName(), "checkpoints");
 
 
         EngineConfiguration engineConf = new EngineConfiguration();

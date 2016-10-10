@@ -27,7 +27,7 @@ public class ProcessorMetrics {
         if (records.size() != 0) {
             Record metrics = new StandardRecord(METRICS_EVENT_TYPE);
 
-            metrics.setFields(processorFields);
+            metrics.addFields(processorFields);
             metrics.setStringField("search_index", METRICS_EVENT_TYPE);
 
             final List<Integer> eventSizesInBytes = new ArrayList<>();

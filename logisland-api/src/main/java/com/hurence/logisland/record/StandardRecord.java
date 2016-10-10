@@ -105,6 +105,11 @@ public class StandardRecord implements Record {
     }
 
     @Override
+    public void addFields(Map<String, Field> fields) {
+        fields.values().forEach(this::setField);
+    }
+
+    @Override
     public void setType(String type) {
         this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
     }

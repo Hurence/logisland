@@ -1,6 +1,7 @@
 package com.hurence.logisland.engine.spark
 
 import java.io.ByteArrayInputStream
+import java.net.InetAddress
 import java.util
 import java.util.Collections
 import java.util.regex.Pattern
@@ -11,7 +12,7 @@ import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.KafkaRecordStream
 import com.hurence.logisland.record._
 import com.hurence.logisland.serializer._
-import com.hurence.logisland.util.kafka.KafkaSink
+import com.hurence.logisland.util.kafka.{KafkaSerializedEventProducer, KafkaSink}
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.util.validator.StandardValidators
@@ -209,7 +210,7 @@ object SparkStreamProcessingEngine {
             "reliable file system (e.g., HDFS, S3, etc.) to which the checkpoint information will be saved. " +
             "This will allow you to use the aforementioned stateful transformations")
         .required(false)
-        .defaultValue("checkpoints")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 }
 
@@ -261,8 +262,24 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
         val timeout = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
-        val checkpointDirectory = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_CHECKPOINT_DIRECTORY).asString
-        val context = StreamingContext.getOrCreate(checkpointDirectory, () => createContext(engineContext))
+
+        val context = if (engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_CHECKPOINT_DIRECTORY).isSet) {
+            val checkpointDirectory = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_CHECKPOINT_DIRECTORY).asString
+            StreamingContext.getOrCreate(checkpointDirectory, () => createContext(engineContext))
+        } else {
+            createContext(engineContext)
+        }
+
+
+        /**
+          * shutdown context gracefully
+          */
+        sys.ShutdownHookThread {
+            logger.info("Gracefully stopping Spark Streaming Application")
+            context.stop(stopSparkContext = true, stopGracefully = true)
+            logger.info("Application stopped")
+        }
+
         context.start()
 
         if (timeout != -1) context.awaitTerminationOrTimeout(timeout)
@@ -314,7 +331,11 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
         SparkUtils.customizeLogLevels
         @transient val sc = new SparkContext(conf)
         @transient val context = new StreamingContext(sc, Milliseconds(batchDuration))
-        context.checkpoint(checkpointDirectory) // set checkpoint directory
+
+        if (engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_CHECKPOINT_DIRECTORY).isSet) {
+            logger.info(s"checkpointing to : $checkpointDirectory")
+            context.checkpoint(checkpointDirectory) // set checkpoint directory
+        }
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
             s"batchDuration:$batchDuration ")
@@ -328,8 +349,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             try {
                 // Define the Kafka parameters, broker list must be specified
                 val processorChainContext = new StandardProcessContext(processorChainInstance)
-                val inSerializerClass = processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString
-                val outSerializerClass = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString
                 val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString.split(",").toSet
                 val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toSet
                 val errorTopics = processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toSet
@@ -393,9 +412,11 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                             /**
                               * create serializers
                               */
-                            val deserializer = getSerializer(inSerializerClass,
+                            val deserializer = getSerializer(
+                                processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString,
                                 processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
-                            val serializer = getSerializer(inSerializerClass,
+                            val serializer = getSerializer(
+                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString,
                                 processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 
 
@@ -405,7 +426,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                             var isFirstProcessor = true
                             var incomingEvents: util.Collection[Record] = null
                             var outgoingEvents: util.Collection[Record] = null
-                            var processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
+                            val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
 
                             processorChainInstance.getProcessorInstances.foreach(processorInstance => {
                                 val startTime = System.currentTimeMillis()
@@ -418,7 +439,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                       * convert incoming Kafka messages into Records
                                       * if there's no serializer we assume that we need to compute a Record from K/V
                                       */
-                                    incomingEvents = if (inSerializerClass == KafkaRecordStream.NO_SERIALIZER.getValue) {
+                                    incomingEvents = if (
+                                        processorChainContext.getProperty(KafkaRecordStream.INPUT_SERIALIZER).asString
+                                            == KafkaRecordStream.NO_SERIALIZER.getValue) {
                                         // parser
                                         partition.map(rawMessage => {
                                             val key = if (rawMessage._1 != null) new String(rawMessage._1) else ""
@@ -443,10 +466,15 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 /**
                                   * send metrics if requested
                                   */
+                                // index to get the correct offset range for the rdd partition we're working on
+                                // This is safe because we haven't shuffled or otherwise disrupted partitioning,
+                                // and the original input rdd partitions were 1:1 with kafka partitions
+                                val osr: OffsetRange = offsetRanges(TaskContext.get.partitionId)
+
                                 processingMetrics.addAll(
                                     computeMetrics(maxRatePerPartition, appName, blockInterval, batchDuration, brokerList,
                                         processorChainContext, inputTopics, outputTopics, partition, startTime, partitionId,
-                                        serializer, incomingEvents, outgoingEvents))
+                                        serializer, incomingEvents, outgoingEvents, osr))
 
                             })
 
@@ -454,29 +482,24 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                             /**
                               * push outgoing events and errors to Kafka
                               */
-                            kafkaSink.value.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString,
+                            val kafkaProducer = new KafkaSerializedEventProducer(brokerList)
+                            kafkaProducer.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toList,
                                 outgoingEvents.toList,
                                 serializer)
 
-                        /*    kafkaSink.value.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString,
+                            kafkaProducer.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toList,
                                 outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERROR)).toList,
                                 serializer)
 
-                            kafkaSink.value.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString,
+                            kafkaProducer.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString.split(",").toList,
                                 processingMetrics.toList,
                                 serializer)
-*/
 
 
-
-                            // index to get the correct offset range for the rdd partition we're working on
-                            // This is safe because we haven't shuffled or otherwise disrupted partitioning,
-                            // and the original input rdd partitions were 1:1 with kafka partitions
-                            val osr: OffsetRange = offsetRanges(TaskContext.get.partitionId)
-                            logger.info(s"offset ${osr.topic} ${osr.partition} ${osr.fromOffset} -> ${osr.untilOffset}")
+                            storeOffsetRangeToZookeeper(zkQuorum, appName, offsetRanges)
                         }
                     })
                 })
@@ -490,7 +513,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
 
-    def getSerializer(inSerializerClass:String, schemaContent:String):RecordSerializer = {
+    def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
         inSerializerClass match {
             case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
                 val parser = new Parser
@@ -514,14 +537,16 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                        partitionId: Int,
                        serializer: RecordSerializer,
                        incomingEvents: util.Collection[Record],
-                       outgoingEvents: util.Collection[Record]): util.Collection[Record] = {
+                       outgoingEvents: util.Collection[Record],
+                       osr: OffsetRange): util.Collection[Record] = {
 
         val processorFields = new util.HashMap[String, Field]()
         processorFields.put("spark_app_name", new Field("spark_app_name", FieldType.STRING, appName))
         processorFields.put("input_topics", new Field("input_topics", FieldType.STRING, inputTopics.toString()))
         processorFields.put("output_topics", new Field("output_topics", FieldType.STRING, outputTopics.toString()))
         processorFields.put("component_name", new Field("component_name", FieldType.STRING, processorChainContext.getName))
-        processorFields.put("component_type", new Field("component_type", FieldType.STRING, "parser"))
+        processorFields.put("topic_offset_from", new Field("topic_offset_from", FieldType.LONG, osr.fromOffset))
+        processorFields.put("topic_offset_until", new Field("topic_offset_until", FieldType.LONG, osr.untilOffset))
 
         try {
             processorFields.put("batch_duration", new Field("batch_duration", FieldType.INT, batchDuration.toInt))
@@ -529,13 +554,60 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
             processorFields.put("max_rate_per_partition", new Field("max_rate_per_partition", FieldType.INT, maxRatePerPartition.toInt))
         }
         processorFields.put("spark_partition_id", new Field("spark_partition_id", FieldType.INT, partitionId))
-        processorFields.put("num_incoming_messages", new Field("num_incoming_messages", FieldType.INT, partition.size))
+        processorFields.put("num_incoming_messages", new Field("num_incoming_messages", FieldType.INT, osr.untilOffset - osr.fromOffset))
         processorFields.put("num_incoming_events", new Field("num_incoming_events", FieldType.INT, incomingEvents.size))
         processorFields.put("num_outgoing_events", new Field("num_outgoing_events", FieldType.INT, outgoingEvents.size))
 
-        ProcessorMetrics.computeMetrics(incomingEvents, processorFields, System.currentTimeMillis() - startTime).toList
 
+
+
+        val metrics = ProcessorMetrics.computeMetrics(incomingEvents, processorFields, System.currentTimeMillis() - startTime).toList
+        metrics
     }
+
+
+    def storeOffsetRangeToZookeeper(zkQuorum: String, group: String, offsets: Array[OffsetRange]): Unit = {
+
+        val zk = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+        offsets.foreach { o =>
+            // Consumer Offset
+            locally {
+                val nodePath = s"/consumers/$group/offsets/${o.topic}/${o.partition}"
+
+                if (!zk.exists(nodePath))
+                    zk.createPersistent(nodePath, true)
+                zk.writeData(nodePath, o.untilOffset.toString)
+            }
+
+
+            val hostname = InetAddress.getLocalHost.getHostName
+            val ownerId = s"$group-$hostname-${o.partition}"
+            val now = org.joda.time.DateTime.now.getMillis
+
+            // Consumer Ids
+            locally {
+                val nodePath = s"/consumers/$group/ids/$ownerId"
+                val value = s"""{"version":1,"subscription":{"${o.topic}":${o.partition},"pattern":"white_list","timestamp":"$now"}"""
+
+                if (!zk.exists(nodePath))
+                    zk.createPersistent(nodePath, true)
+
+                zk.writeData(nodePath, value)
+            }
+
+            // Consumer Owners
+            locally {
+                val nodePath = s"/consumers/$group/owners/${o.topic}/${o.partition}"
+                val value = ownerId
+
+                if (!zk.exists(nodePath))
+                    zk.createPersistent(nodePath, true)
+
+                zk.writeData(nodePath, value)
+            }
+        }
+    }
+
 
     /**
       * Topic creation
@@ -577,7 +649,9 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
     }
 
     override def onPropertyModified(descriptor: PropertyDescriptor, oldValue: String, newValue: String) = {
-        logger.info(s"property ${descriptor.getName} value changed from $oldValue to $newValue")
+        logger.info(s"property ${
+            descriptor.getName
+        } value changed from $oldValue to $newValue")
     }
 
 }

@@ -20,7 +20,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Properties
 
 import _root_.kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.RecordSerializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
@@ -28,7 +28,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 /**
   * Created by tom on 13/01/16.
   */
-class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer: RecordSerializer) extends LazyLogging with Serializable {
+class KafkaSerializedEventProducer(brokerList: String) extends LazyLogging with Serializable {
 
     // Zookeper connection properties
     val props = new Properties()
@@ -43,23 +43,50 @@ class KafkaSerializedEventProducer(brokerList: String, topic: String, serializer
     //props.setProperty("message.max.bytes", "2000024")
 
     val config = new ProducerConfig(props)
-
     val producer = new Producer[Array[Byte], Array[Byte]](config)
 
-    /**
-      * Send events to Kafka topics
-      *
-      * @param events
-      */
-    def produce(events: List[Record]) = {
+   /* sys.addShutdownHook {
+        logger.info("shutdown hook called")
+        close()
+    }*/
 
-        val messages = events.map(event => {
+    /**
+      * release resources
+      */
+    def close() = {
+        producer.close()
+    }
+
+    /**
+      * Send records to Kafka topics
+      *
+      * @param topics  the topic list where we want to push the records
+      * @param records the record list
+      */
+    def produce(topics: List[String], records: List[Record], serializer: RecordSerializer): Unit = {
+        topics.foreach(topic => produce(topic, records, serializer))
+    }
+
+    /**
+      * Send events to a Kafka topic
+      *
+      * @param topic   the topic where we want to push the records
+      * @param records the record list
+      */
+    def produce(topic: String, records: List[Record], serializer: RecordSerializer): Unit = {
+
+        val messages = records.map(event => {
             // messages are serialized with kryo first
             val baos: ByteArrayOutputStream = new ByteArrayOutputStream
             serializer.serialize(baos, event)
 
+
             // and then converted to KeyedMessage
-            val message = new KeyedMessage[Array[Byte], Array[Byte]](topic, "key-event".getBytes(), baos.toByteArray)
+            val key = if (event.hasField(FieldDictionary.RECORD_KEY))
+                event.getField(FieldDictionary.RECORD_KEY).asString()
+            else
+                ""
+            val message = new KeyedMessage[Array[Byte], Array[Byte]](topic, key.getBytes(), baos.toByteArray)
             baos.close()
 
             message
