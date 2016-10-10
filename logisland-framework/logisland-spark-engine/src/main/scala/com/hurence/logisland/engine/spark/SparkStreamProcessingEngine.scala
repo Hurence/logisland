@@ -501,21 +501,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 processingMetrics.toList,
                                 serializer
                             )
-                       /*     kafkaProducer.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toList,
-                                outgoingEvents.toList,
-                                serializer)
 
-                            kafkaProducer.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toList,
-                                outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERROR)).toList,
-                                serializer)
 
-                            kafkaProducer.produce(
-                                processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString.split(",").toList,
-                                processingMetrics.toList,
-                                serializer)
-                            */
 
 
                         }
@@ -583,49 +570,6 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
 
         val metrics = ProcessorMetrics.computeMetrics(incomingEvents, processorFields, System.currentTimeMillis() - startTime).toList
         metrics
-    }
-
-
-    def storeOffsetRangeToZookeeper(zkQuorum: String, group: String, offsets: Array[OffsetRange]): Unit = {
-
-        val zk = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
-        offsets.foreach { o =>
-            // Consumer Offset
-            locally {
-                val nodePath = s"/consumers/$group/offsets/${o.topic}/${o.partition}"
-
-                if (!zk.exists(nodePath))
-                    zk.createPersistent(nodePath, true)
-                zk.writeData(nodePath, o.untilOffset.toString)
-            }
-
-
-            val hostname = InetAddress.getLocalHost.getHostName
-            val ownerId = s"$group-$hostname-${o.partition}"
-            val now = org.joda.time.DateTime.now.getMillis
-
-            // Consumer Ids
-            locally {
-                val nodePath = s"/consumers/$group/ids/$ownerId"
-                val value = s"""{"version":1,"subscription":{"${o.topic}":${o.partition},"pattern":"white_list","timestamp":"$now"}"""
-
-                if (!zk.exists(nodePath))
-                    zk.createPersistent(nodePath, true)
-
-                zk.writeData(nodePath, value)
-            }
-
-            // Consumer Owners
-            locally {
-                val nodePath = s"/consumers/$group/owners/${o.topic}/${o.partition}"
-                val value = ownerId
-
-                if (!zk.exists(nodePath))
-                    zk.createPersistent(nodePath, true)
-
-                zk.writeData(nodePath, value)
-            }
-        }
     }
 
 

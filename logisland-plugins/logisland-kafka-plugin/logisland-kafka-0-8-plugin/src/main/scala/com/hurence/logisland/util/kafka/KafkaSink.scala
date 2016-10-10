@@ -46,12 +46,13 @@ class KafkaSink(createProducer: () => KafkaProducer[Array[Byte], Array[Byte]]) e
             serializer.serialize(baos, event)
 
             // and then converted to KeyedMessage
-            val key = if( event.hasField(FieldDictionary.RECORD_KEY))
-                event.getField(FieldDictionary.RECORD_KEY).asString()
+            val key = if( event.hasField(FieldDictionary.RECORD_ID))
+                event.getField(FieldDictionary.RECORD_ID).asString()
             else
                 ""
             val message = new ProducerRecord(topic, key.getBytes(), baos.toByteArray)
             baos.close()
+
 
             producer.send(message)
         })
