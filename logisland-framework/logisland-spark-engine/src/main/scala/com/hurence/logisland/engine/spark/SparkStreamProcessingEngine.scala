@@ -503,12 +503,12 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                             )
 
 
-
+                            zkSink.value.storeOffsetRangeToZookeeper(zkQuorum, appName, offsetRanges)
 
                         }
                     })
 
-                    zkSink.value.storeOffsetRangeToZookeeper(zkQuorum, appName, offsetRanges)
+
                 })
             } catch {
                 case ex: Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",
