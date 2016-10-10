@@ -376,8 +376,8 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                     "group.id" -> appName,
                     "refresh.leader.backoff.ms" -> "1000")
 
-                @transient val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
-                @transient val zkSink = context.sparkContext.broadcast(ZookeeperSink(zkQuorum))
+                 val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
+                 val zkSink = context.sparkContext.broadcast(ZookeeperSink(zkQuorum))
 
                 if (topicAutocreate) {
                     createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
