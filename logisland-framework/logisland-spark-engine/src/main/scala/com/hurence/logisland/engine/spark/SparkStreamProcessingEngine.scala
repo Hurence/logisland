@@ -147,7 +147,7 @@ object SparkStreamProcessingEngine {
             "receives only as fast as the system can process.")
         .required(false)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-        .defaultValue("true")
+        .defaultValue("false")
         .build
 
     val SPARK_STREAMING_UNPERSIST = new PropertyDescriptor.Builder()
@@ -489,10 +489,22 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 outgoingEvents.toList,
                                 serializer
                             )
+
+                            kafkaSink.value.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString,
+                                outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERROR)).toList,
+                                serializer
+                            )
+
+                            kafkaSink.value.produce(
+                                processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString,
+                                processingMetrics.toList,
+                                serializer
+                            )
                        /*     kafkaProducer.produce(
                                 processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toList,
                                 outgoingEvents.toList,
-                                serializer)*/
+                                serializer)
 
                             kafkaProducer.produce(
                                 processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString.split(",").toList,
@@ -503,7 +515,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                                 processorChainContext.getProperty(KafkaRecordStream.METRICS_TOPIC).asString.split(",").toList,
                                 processingMetrics.toList,
                                 serializer)
-
+                            */
 
 
                         }
