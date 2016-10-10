@@ -1,20 +1,20 @@
-[USR-BACK] 2016-07-24 00:04:15,885 [SES:PLAYER-WEB-FDJ:457237988:85860747B30CF1C566A374059DA6646A:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
-com.lotsys.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
-[USR-BACK] 2016-07-24 00:04:16,409 [SES:PLAYER-WEB-FDJ:456708989:6F25CA871B162F8F910F1B656971350A:oadp][ACC:][SRV:RemoteAuthenticationService.logout] ERROR c.l.f.r.c.error.BackendErrorMapper - Unexpected error
-com.lotsys.xs.fwk.core.session.SessionException: Unexpected error
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.closeSession(RemoteAuthenticationServiceImpl.java:229) ~[users-impl-2.1.22-1.jar:2.1.22-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.logout_aroundBody18(RemoteAuthenticationServiceImpl.java:157) ~[users-impl-2.1.22-1.jar:2.1.22-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl$AjcClosure19.run(RemoteAuthenticationServiceImpl.java:1) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+[USR-BACK] 2016-07-24 00:04:15,885 [SES:PLAYER-WEB-LOGISLAND:457237988:85860747B30CF1C566A374059DA6646A:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
+com.logisland.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
+[USR-BACK] 2016-07-24 00:04:16,409 [SES:PLAYER-WEB-LOGISLAND:456708989:6F25CA871B162F8F910F1B656971350A:oadp][ACC:][SRV:RemoteAuthenticationService.logout] ERROR c.l.f.r.c.error.BackendErrorMapper - Unexpected error
+com.logisland.xs.fwk.core.session.SessionException: Unexpected error
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.closeSession(RemoteAuthenticationServiceImpl.java:229) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.logout_aroundBody18(RemoteAuthenticationServiceImpl.java:157) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl$AjcClosure19.run(RemoteAuthenticationServiceImpl.java:1) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at org.springframework.transaction.aspectj.AbstractTransactionAspect.ajc$around$org_springframework_transaction_aspectj_AbstractTransactionAspect$1$2a73e96cproceed(AbstractTransactionAspect.aj:66) ~[spring-aspects-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at org.springframework.transaction.aspectj.AbstractTransactionAspect$AbstractTransactionAspect$1.proceedWithInvocation(AbstractTransactionAspect.aj:72) ~[spring-aspects-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:281) ~[spring-tx-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at org.springframework.transaction.aspectj.AbstractTransactionAspect.ajc$around$org_springframework_transaction_aspectj_AbstractTransactionAspect$1$2a73e96c(AbstractTransactionAspect.aj:70) ~[spring-aspects-4.2.4.RELEASE.jar:4.2.4.RELEASE]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.logout_aroundBody20(RemoteAuthenticationServiceImpl.java:154) ~[users-impl-2.1.22-1.jar:2.1.22-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl$AjcClosure21.run(RemoteAuthenticationServiceImpl.java:1) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.logout_aroundBody20(RemoteAuthenticationServiceImpl.java:154) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl$AjcClosure21.run(RemoteAuthenticationServiceImpl.java:1) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at org.aspectj.runtime.reflect.JoinPointImpl.proceed(JoinPointImpl.java:149) ~[aspectjrt-1.8.7.jar:na]
-	at com.lotsys.framework.core.timeout.MethodExecutionTimeoutProviderAspectSupport.methodExecution(MethodExecutionTimeoutProviderAspectSupport.java:67) ~[frwk-core-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.users.aspects.TransactionalMethodExecutionTimeoutProviderAspect.methodExecution(TransactionalMethodExecutionTimeoutProviderAspect.java:36) ~[users-common-aspects-2.1.22-1.jar:2.1.22-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.logout(RemoteAuthenticationServiceImpl.java:154) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.framework.core.timeout.MethodExecutionTimeoutProviderAspectSupport.methodExecution(MethodExecutionTimeoutProviderAspectSupport.java:67) ~[frwk-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.users.aspects.TransactionalMethodExecutionTimeoutProviderAspect.methodExecution(TransactionalMethodExecutionTimeoutProviderAspect.java:36) ~[users-common-aspects-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.logout(RemoteAuthenticationServiceImpl.java:154) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor739.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
@@ -59,19 +59,19 @@ com.lotsys.xs.fwk.core.session.SessionException: Unexpected error
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
 	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
-Caused by: com.lotsys.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-FDJ:456708989:6F25CA871B162F8F910F1B656971350A:oadp
-	at com.lotsys.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.closeSession(RemoteAuthenticationServiceImpl.java:222) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+Caused by: com.logisland.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-LOGISLAND:456708989:6F25CA871B162F8F910F1B656971350A:oadp
+	at com.logisland.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.closeSession(RemoteAuthenticationServiceImpl.java:222) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	... 56 common frames omitted
-[USR-BACK] 2016-07-24 00:04:16,476 [SES:PLAYER-WEB-FDJ:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
-org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.lotsys.xs.cluster.security.api.exception.SessionIdledException: Session is idled.PLAYER-WEB-FDJ:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+[USR-BACK] 2016-07-24 00:04:16,476 [SES:PLAYER-WEB-LOGISLAND:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.logisland.xs.cluster.security.api.exception.SessionIdledException: Session is idled.PLAYER-WEB-LOGISLAND:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	at org.springframework.transaction.support.AbstractPlatformTransactionManager.getTransaction(AbstractPlatformTransactionManager.java:373) ~[spring-tx-4.2.4.RELEASE.jar:4.2.4.RELEASE]
-	at com.lotsys.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.users.services.authentication.RemoteAuthenticationServiceImpl.getUserInfos(RemoteAuthenticationServiceImpl.java:102) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.users.services.authentication.RemoteAuthenticationServiceImpl.getUserInfos(RemoteAuthenticationServiceImpl.java:102) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor687.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
@@ -116,21 +116,21 @@ org.springframework.transaction.CannotCreateTransactionException: Could not begi
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
 	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
-Caused by: com.lotsys.xs.cluster.security.api.exception.SessionIdledException: Session is idled.PLAYER-WEB-FDJ:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp
-	at com.lotsys.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:138) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+Caused by: com.logisland.xs.cluster.security.api.exception.SessionIdledException: Session is idled.PLAYER-WEB-LOGISLAND:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp
+	at com.logisland.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:138) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	... 48 common frames omitted
-[USR-BACK] 2016-07-24 00:04:16,476 [SES:PLAYER-WEB-FDJ:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
-com.lotsys.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
-[USR-BACK] 2016-07-24 00:04:16,541 [SES:PLAYER-WEB-FDJ:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
-org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.lotsys.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-FDJ:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+[USR-BACK] 2016-07-24 00:04:16,476 [SES:PLAYER-WEB-LOGISLAND:457229761:93BEE204C28A4EE81C929CE311E920C7:oadp][ACC:][SRV:RemoteAuthenticationService.getUserInfos] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
+com.logisland.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
+[USR-BACK] 2016-07-24 00:04:16,541 [SES:PLAYER-WEB-LOGISLAND:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.logisland.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-LOGISLAND:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	at org.springframework.transaction.support.AbstractPlatformTransactionManager.getTransaction(AbstractPlatformTransactionManager.java:373) ~[spring-tx-4.2.4.RELEASE.jar:4.2.4.RELEASE]
-	at com.lotsys.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.users.services.account.banking.RemoteBankingServiceImpl.getAvailabilities(RemoteBankingServiceImpl.java:538) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.users.services.account.banking.RemoteBankingServiceImpl.getAvailabilities(RemoteBankingServiceImpl.java:538) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor427.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
@@ -175,21 +175,21 @@ org.springframework.transaction.CannotCreateTransactionException: Could not begi
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
 	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
-Caused by: com.lotsys.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-FDJ:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp
-	at com.lotsys.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+Caused by: com.logisland.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-LOGISLAND:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp
+	at com.logisland.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	... 48 common frames omitted
-[USR-BACK] 2016-07-24 00:04:16,541 [SES:PLAYER-WEB-FDJ:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
-com.lotsys.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
-[USR-BACK] 2016-07-24 00:04:17,835 [SES:PLAYER-WEB-FDJ:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
-org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.lotsys.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-FDJ:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+[USR-BACK] 2016-07-24 00:04:16,541 [SES:PLAYER-WEB-LOGISLAND:457236515:D46A31E22FBDEEBB4FC5E5A9AE6CAEB9:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
+com.logisland.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
+[USR-BACK] 2016-07-24 00:04:17,835 [SES:PLAYER-WEB-LOGISLAND:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.logisland.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-LOGISLAND:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:121) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	at org.springframework.transaction.support.AbstractPlatformTransactionManager.getTransaction(AbstractPlatformTransactionManager.java:373) ~[spring-tx-4.2.4.RELEASE.jar:4.2.4.RELEASE]
-	at com.lotsys.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.users.services.account.banking.RemoteBankingServiceImpl.getAvailabilities(RemoteBankingServiceImpl.java:538) ~[users-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.cluster.security.aspects.AbstractSecurityAspect.executeWithinClusteredSessionTransaction(AbstractSecurityAspect.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.aspects.PlayerSecurityAspect.accessCheck(PlayerSecurityAspect.java:69) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.users.services.account.banking.RemoteBankingServiceImpl.getAvailabilities(RemoteBankingServiceImpl.java:538) ~[users-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor427.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
@@ -234,11 +234,11 @@ org.springframework.transaction.CannotCreateTransactionException: Could not begi
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_60]
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-util.jar:8.0.28]
 	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_60]
-Caused by: com.lotsys.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-FDJ:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp
-	at com.lotsys.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+Caused by: com.logisland.xs.cluster.security.api.exception.SessionNotFoundException: PLAYER-WEB-LOGISLAND:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp
+	at com.logisland.xs.cluster.security.impl.service.SessionServiceImpl.find(SessionServiceImpl.java:133) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:119) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.xs.cluster.security.impl.manager.SessionManagerImpl.findSession(SessionManagerImpl.java:125) ~[security-impl-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.cluster.security.transaction.ClusteredSessionTransactionManager.doBegin(ClusteredSessionTransactionManager.java:93) ~[security-impl-2.2.3-1.jar:2.2.3-1]
 	... 48 common frames omitted
-[USR-BACK] 2016-07-24 00:04:17,835 [SES:PLAYER-WEB-FDJ:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
-com.lotsys.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !
+[USR-BACK] 2016-07-24 00:04:17,835 [SES:PLAYER-WEB-LOGISLAND:457227142:71EB3C4A59A15EEBAF9DCE6C03F1C8FA:oadp][ACC:][SRV:RemoteBankingService.getAvailabilities] ERROR c.l.f.r.c.error.BackendErrorMapper - current session has expired or is not authenticated !
+com.logisland.xs.fwk.core.session.SessionException: current session has expired or is not authenticated !

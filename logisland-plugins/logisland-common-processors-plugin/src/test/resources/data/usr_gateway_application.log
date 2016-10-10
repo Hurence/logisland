@@ -1,4 +1,4 @@
-[USR-REST] 2016-07-06 10:29:04,798 [SES:PLAYER-WEB-FDJ:452896484:1FC3CD997BE39B4A870F2972794D5C75:oadi5] ERROR c.l.f.r.s.r.ReplayTokenServerReadInboundInterceptor - Cannot find ipIndex for remote address : [{}]
+[USR-REST] 2016-07-06 10:29:04,798 [SES:PLAYER-WEB-LOGISLAND:452896484:1FC3CD997BE39B4A870F2972794D5C75:oadi5] ERROR c.l.f.r.s.r.ReplayTokenServerReadInboundInterceptor - Cannot find ipIndex for remote address : [{}]
 [USR-REST] 2016-07-24 22:19:48,607 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
 [USR-REST] 2016-07-24 22:19:48,607 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
 [USR-REST] 2016-07-24 22:19:59,116 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
@@ -11,14 +11,14 @@
 [USR-REST] 2016-07-24 22:25:08,573 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
 [USR-REST] 2016-07-24 22:25:51,886 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
 [USR-REST] 2016-07-24 22:25:51,886 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
-[USR-REST] 2016-07-24 22:31:29,626 [SES:PLAYER-WEB-FDJ:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
-org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.lotsys.xs.cluster.security.api.exception.InvalidTokenException: Invalid Token PLAYER-WEB-FDJ:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp with PLAYER-WEB-FDJ:457366947:FA9256BF22BED1DED4F45093ACAFD6B3:oadp
+[USR-REST] 2016-07-24 22:31:29,626 [SES:PLAYER-WEB-LOGISLAND:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+org.springframework.transaction.CannotCreateTransactionException: Could not begin clustered session transaction; nested exception is com.logisland.xs.cluster.security.api.exception.InvalidTokenException: Invalid Token PLAYER-WEB-LOGISLAND:457366947:39A31D844F60D8EE9CF0C26A3E836A6D:oadp with PLAYER-WEB-LOGISLAND:457366947:FA9256BF22BED1DED4F45093ACAFD6B3:oadp
 	at sun.reflect.GeneratedConstructorAccessor245.newInstance(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_60]
 	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_60]
-	at com.lotsys.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.checkResponse(ClientProxyImpl.java:304) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.handleResponse(ClientProxyImpl.java:750) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.doChainedInvocation(ClientProxyImpl.java:708) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
@@ -30,7 +30,7 @@ org.springframework.transaction.CannotCreateTransactionException: Could not begi
 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:302) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at com.sun.proxy.$Proxy58.getUserInfos(Unknown Source) ~[na:na]
-	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.userInfos(SessionServicesImpl.java:137) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.xs.users.rest.impl.session.SessionServicesImpl.userInfos(SessionServicesImpl.java:137) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor148.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
@@ -81,15 +81,15 @@ org.springframework.transaction.CannotCreateTransactionException: Could not begi
 [USR-REST] 2016-07-24 22:41:55,407 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
 [USR-REST] 2016-07-24 22:42:26,602 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - validation error mapper
 [USR-REST] 2016-07-24 22:42:26,602 [SES:] WARN  c.l.f.r.c.e.ValidationErrorMapper - constraint arg0.addressBundle.address.line2 not met: la taille doit être entre 0 et 30
-[USR-REST] 2016-07-24 22:56:44,219 [SES:PLAYER-MOB-FDJ:457369675:1B0C2A2AC4A78A68307F0E3B3168AD4B:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
+[USR-REST] 2016-07-24 22:56:44,219 [SES:PLAYER-MOB-LOGISLAND:457369675:1B0C2A2AC4A78A68307F0E3B3168AD4B:oadp] ERROR c.l.f.r.c.e.RuntimeExceptionMapper - Something unexepected happen
 java.lang.NullPointerException:
 	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:1.8.0_60]
 	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[na:1.8.0_60]
 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_60]
 	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_60]
-	at com.lotsys.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
-	at com.lotsys.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.RuntimeExceptionMapper.fromResponse(RuntimeExceptionMapper.java:104) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:35) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
+	at com.logisland.framework.rest.core.error.JaxrsClientExceptionHandler.fromResponse(JaxrsClientExceptionHandler.java:24) ~[frwk-rest-core-2.2.3-1.jar:2.2.3-1]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.checkResponse(ClientProxyImpl.java:304) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.handleResponse(ClientProxyImpl.java:750) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
 	at org.apache.cxf.jaxrs.client.ClientProxyImpl.doChainedInvocation(ClientProxyImpl.java:708) ~[cxf-rt-rs-client-3.0.6.jar:3.0.6]
@@ -101,8 +101,8 @@ java.lang.NullPointerException:
 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:302) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202) ~[spring-aop-4.2.4.RELEASE.jar:4.2.4.RELEASE]
 	at com.sun.proxy.$Proxy58.login(Unknown Source) ~[na:na]
-	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.authenticateUser(SessionServicesImpl.java:125) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
-	at com.lotsys.xs.users.rest.impl.session.SessionServicesImpl.authenticate(SessionServicesImpl.java:107) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.xs.users.rest.impl.session.SessionServicesImpl.authenticateUser(SessionServicesImpl.java:125) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
+	at com.logisland.xs.users.rest.impl.session.SessionServicesImpl.authenticate(SessionServicesImpl.java:107) ~[users-rest-impl-2.1.22-1.jar:2.1.22-1]
 	at sun.reflect.GeneratedMethodAccessor146.invoke(Unknown Source) ~[na:na]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
 	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]

@@ -18,7 +18,7 @@ engine:
     spark.executor.memory: 1500m
     spark.executor.cores: 2
     spark.executor.instances: 10
-    spark.appName: FdjIndexing
+    spark.appName: LogIndexing
     spark.streaming.batchDuration: 10000
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.backpressure.enabled: true

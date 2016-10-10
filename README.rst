@@ -76,7 +76,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
         spark.executor.memory: 1500m
         spark.executor.cores: 2
         spark.executor.instances: 10
-        spark.appName: FdjIndexing
+        spark.appName: LogIndexing
         spark.streaming.batchDuration: 10000
         spark.serializer: org.apache.spark.serializer.KryoSerializer
         spark.streaming.backpressure.enabled: true

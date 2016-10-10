@@ -89,7 +89,7 @@ class ApacheLogParserTest extends BaseLogParserTest {
          "10.3.10.134 - - [24/Jul/2016:08:49:40 +0200] \"POST /usr/rest/session HTTP/1.1\" 200 1082",
          "10.3.10.134 - - [24/Jul/2016:08:49:40 +0200] \"DELETE /usr/rest/session HTTP/1.1\" 204 -",
          "10.3.10.133 - - [24/Jul/2016:08:49:40 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 240",
-         "10.3.10.133 - - [24/Jul/2016:08:49:40 +0200] \"GET /usr/rest/limits/moderato?siteCode=FDJ_WEB HTTP/1.1\" 200 53"
+         "10.3.10.133 - - [24/Jul/2016:08:49:40 +0200] \"GET /usr/rest/limits/moderato?siteCode=LOGISLAND_WEB HTTP/1.1\" 200 53"
          )
 
          val parser = instance.getParser
