@@ -399,11 +399,10 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                 kafkaStream.foreachRDD(rdd => {
                     // Cast the rdd to an interface that lets us get an array of OffsetRange
                     val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
-
+                   // SparkUtils.customizeLogLevels
 
                     rdd.foreachPartition(partition => {
-                        SparkUtils.customizeLogLevels
-                        logger.info("partition")
+
 
                         /**
                           * index to get the correct offset range for the rdd partition we're working on
@@ -414,7 +413,7 @@ class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
 
                         if (partition.nonEmpty) {
-                            logger.info("partition non empty")
+
                             /**
                               * create serializers
                               */
