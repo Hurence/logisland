@@ -18,6 +18,7 @@ Contents:
    deploy
    api
    faq
+   tests
 
 Indices and tables
 ==================
