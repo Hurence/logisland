@@ -2,7 +2,7 @@
 
 API design
 ===================
-logisland is a framework and an API, you can use it to build your own ``Processors`` or to build data processing apps over it.
+logisland is a framework that you can extend through its API, you can use it to build your own ``Processors`` or to build data processing apps over it.
 
 
 
@@ -16,49 +16,75 @@ You can instanciate a ``Record`` like in the following code snipet:
 
 .. code-block:: java
 
-        String id = "firewall_record1";
-        String type = "cisco";
-        Record record = new Record(type);
-        record.setId(id);
+    String id = "firewall_record1";
+    String type = "cisco";
+    Record record = new Record(type);
+    record.setId(id);
 
-        assertTrue(record.isEmpty());
-        assertEquals(record.size(), 0);
+    assertTrue(record.isEmpty());
+    assertEquals(record.size(), 0);
 
-A record is defined by its type and a collection of fields. there three special fields:
-
-.. code-block:: java
-
-        // shortcut for id
-        assertEquals(record.getId(), id);
-        assertEquals(record.getField(Record.RECORD_ID).asString(), id);
-
-        // shortcut for time
-        assertEquals(record.getTime().getTime(),
-            record.getField(Record.RECORD_TIME).asLong().longValue());
-
-        // shortcut for type
-        assertEquals(record.getType(), type);
-        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).asString());
-        assertEquals(record.getType(), record.getField(Record.RECORD_TYPE).getRawValue());
-
-
-And the others fields have setters, getters and removers
+A record is defined by its type and a collection of fields. there are three special fields:
 
 .. code-block:: java
 
-        record.setField("method", FieldType.STRING, "GET");
-        record.setField("response_size", FieldType.INT, 452);
-        record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
-        record.setField("tags", FieldType.ARRAY,
-            new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+    // shortcut for id
+    assertEquals(record.getId(), id);
+    assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), id);
 
-        assertFalse(record.hasField("unkown_field"));
-        assertTrue(record.hasField("method"));
-        assertEquals(record.getField("method").asString(), "GET");
-        assertTrue(record.getField("response_size").asInteger() - 452 == 0);
-        assertTrue(record.getField("is_outside_office_hours").asBoolean());
-        record.removeField("is_outside_office_hours");
-        assertFalse(record.hasField("is_outside_office_hours"));
+    // shortcut for time
+    assertEquals(record.getTime().getTime(), record.getField(FieldDictionary.RECORD_TIME).asLong().longValue());
+
+    // shortcut for type
+    assertEquals(record.getType(), type);
+    assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).asString());
+    assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).getRawValue());
+
+
+And the other fields have generic setters, getters and removers
+
+.. code-block:: java
+
+    record.setStringField("url_host", "origin-www.20minutes.fr");
+    record.setField("method", FieldType.STRING, "GET");
+    record.setField("response_size", FieldType.INT, 452);
+    record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
+    record.setField("tags", FieldType.ARRAY,
+        new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+
+    assertFalse(record.hasField("unkown_field"));
+    assertTrue(record.hasField("method"));
+    assertEquals(record.getField("method").asString(), "GET");
+    assertTrue(record.getField("response_size").asInteger() - 452 == 0);
+    assertTrue(record.getField("is_outside_office_hours").asBoolean());
+    record.removeField("is_outside_office_hours");
+    assertFalse(record.hasField("is_outside_office_hours"));
+
+Fields are strongly typed, you can validate them
+
+.. code-block:: java
+
+    Record record = new StandardRecord();
+    record.setField("request_size", FieldType.INT, 1399);
+    assertTrue(record.isValid());
+    record.setField("request_size", FieldType.INT, "zer");
+    assertFalse(record.isValid());
+    record.setField("request_size", FieldType.INT, 45L);
+    assertFalse(record.isValid());
+    record.setField("request_size", FieldType.LONG, 45L);
+    assertTrue(record.isValid());
+    record.setField("request_size", FieldType.DOUBLE, 45.5d);
+    assertTrue(record.isValid());
+    record.setField("request_size", FieldType.DOUBLE, 45.5);
+    assertTrue(record.isValid());
+    record.setField("request_size", FieldType.DOUBLE, 45L);
+    assertFalse(record.isValid());
+    record.setField("request_size", FieldType.FLOAT, 45.5f);
+    assertTrue(record.isValid());
+    record.setField("request_size", FieldType.STRING, 45L);
+    assertFalse(record.isValid());
+    record.setField("request_size", FieldType.FLOAT, 45.5d);
+    assertFalse(record.isValid());
 
 The tools to handle processing : Processor
 ----

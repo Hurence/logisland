@@ -21,7 +21,8 @@ to build from the source just clone and package
 
 .. code-block::
 
-    git clone
+    git clone git@github.com:Hurence/logisland.git
+    cd logisland
     mvn package
     
 to deploy artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
@@ -179,7 +180,7 @@ Logisland processors are hosted in some plugins, you can create your own with a 
     
     Define value for property 'groupId': : com.hurence.logisland
     Define value for property 'artifactId': : logisland-sample-plugin
-    Define value for property 'version':  1.0-SNAPSHOT: : 0.1
+    Define value for property 'version':  0.9.5-SNAPSHOT: : 0.1
     Define value for property 'artifactBaseName': : sample
     Define value for property 'package':  com.hurence.logisland.sample: :
     [INFO] Using property: logislandVersion = 0.9.5-SNAPSHOT

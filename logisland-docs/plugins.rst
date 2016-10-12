@@ -1,7 +1,5 @@
-
 How to extend LogIsland ?
 =======
-
 
 In this new tutorial we will learn how to create a custom log parser and how to run it inside log-island Docker container
 
@@ -21,10 +19,8 @@ First you need to build log-island and to get the pom and jars availables for yo
 
 .. code-block:: sh
 
-    git clone https://github.com/Hurence/log-island.git 
-    cd log-island
-    sbt package 
-    cp target/logisland-core-0.9.2.jar super-plugin/lib
+    git clone https://github.com/Hurence/logisland.git
+    cd logisland
 
 .. note::
 
@@ -41,8 +37,6 @@ log-island jar dependencies are released on maven central :
 
 .. code-block:: sh
 
-    ├── lib
-    │   └── logisland-core-0.9.2.jar
     ├── pom.xml
     ├── src
     │   ├── main
@@ -171,40 +165,6 @@ Test your parser with JUnit
 
 
 which can be tested (not really deeply ...) with a small unit test
-
-.. code-block:: java
-
-    package com.hurence.logisland;
-    
-    
-    import com.hurence.logisland.event.Event;
-    import com.hurence.logisland.log.LogParser;
-    import org.junit.Test;
-    
-    import java.io.IOException;
-    
-    import static org.junit.Assert.assertTrue;
-    
-    
-    public class ProxyLogParserTest {
-    
-    
-        private static String[] flows = {
-                "Thu Jan 02 08:43:39 CET 2014	GET	101.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-20130905100226/Images/RightJauge.gif	724	409	false	false"};
-    
-    
-        @Test
-        public void ParsingBasicTest() throws IOException {
-            LogParser parser = new ProxyLogParser();
-    
-            Event[] parsedEvents = parser.parse(flows[0]);
-            assertTrue(parsedEvents.length == 1);
-            assertTrue(parsedEvents[0].get("timestamp").getType().equals("long"));
-            assertTrue(parsedEvents[0].get("ipTarget").getValue().equals("193.251.214.117"));
-        }
-    }
-
-
 
 
 Deploy the custom component to Docker container

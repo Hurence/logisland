@@ -43,9 +43,6 @@ public class StandardRecordTest {
         assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).asString());
         assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).getRawValue());
 
-        // shortcut for id
-        assertEquals(record.getId(), id);
-        assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), id);
 
         record.setField("timestamp", FieldType.LONG, new Date().getTime());
         record.setField("method", FieldType.STRING, "GET");

@@ -1,6 +1,4 @@
-
-
-how to test ?
+How to test your processors ?
 =============
 
 When you have coded your processor, pretty sure you want to test it with unit test.
@@ -23,8 +21,8 @@ first of all instanciate a Testrunner with your Processor and its properties.
     final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
     testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
     testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+    // check if config is valid
     testRunner.assertValid();
-
 
 Now enqueue some messages as if they were sent to input Kafka topics
 
@@ -33,14 +31,22 @@ Now enqueue some messages as if they were sent to input Kafka topics
     testRunner.clearQueues();
     testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
 
-Now run the process method
+Now run the process method and check that every ``Record`` has been correctly processed.
 
 .. code-block:: java
-
 
     testRunner.run();
     testRunner.assertAllInputRecordsProcessed();
     testRunner.assertOutputRecordsCount(200);
+    testRunner.assertOutputErrorCount(0);
+
+You can validate that all output records are validated against an avro schema
+
+.. code-block:: java
+
+    final RecordValidator avroValidator = new AvroRecordValidator(SplitTextTest.class.getResourceAsStream
+    testRunner.assertAllRecords(avroValidator);
+
 
 And check if your output records behave as expected.
 
@@ -51,3 +57,6 @@ And check if your output records behave as expected.
     out.assertFieldNotExists("src_ip2");
     out.assertFieldEquals("src_ip", "10.3.10.134");
     out.assertRecordSizeEquals(9);
+    out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "apache_log");
+    out.assertFieldEquals(FieldDictionary.RECORD_TIME, 1469342728000L);
+

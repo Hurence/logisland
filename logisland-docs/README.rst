@@ -1,4 +1,5 @@
 Welcome to the LogIsland documentation!
+====
 
 This readme will walk you through navigating and building the LogIsland documentation, which is included
 here with the  source code. 
@@ -7,7 +8,8 @@ Read on to learn more about viewing documentation in plain text (i.e., markdown)
 documentation yourself. Why build it yourself? So that you have the docs that corresponds to
 whichever version of LogIsland you currently have checked out of revision control.
 
-## Prerequisites
+Prerequisites
+----
 The LogIsland documentation build uses a number of tools to build HTML docs and API docs in Scala and Java. To get started you can run the following commands
 
     $ sudo gem install jekyll

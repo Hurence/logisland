@@ -14,7 +14,7 @@ Contents:
    concepts
    architecture
    getting-started
-   plugins
+   build
    deploy
    api
    faq
