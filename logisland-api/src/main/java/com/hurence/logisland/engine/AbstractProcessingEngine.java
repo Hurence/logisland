@@ -23,7 +23,7 @@ import com.hurence.logisland.component.ValidationResult;
 import java.util.Collection;
 import java.util.Collections;
 
-public abstract class AbstractStreamProcessingEngine extends AbstractConfigurableComponent implements StreamProcessingEngine {
+public abstract class AbstractProcessingEngine extends AbstractConfigurableComponent implements ProcessingEngine {
 
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext context){

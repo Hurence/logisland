@@ -6,7 +6,7 @@ import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.engine.{AbstractStreamProcessingEngine, EngineContext}
+import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.KafkaRecordStream
 import com.hurence.logisland.record._
@@ -206,7 +206,7 @@ object SparkStreamProcessingEngine {
 
 }
 
-class SparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
+class SparkStreamProcessingEngine extends AbstractProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
 

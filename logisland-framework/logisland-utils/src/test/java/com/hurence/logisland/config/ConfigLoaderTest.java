@@ -1,5 +1,6 @@
 package com.hurence.logisland.config;
 
+import com.hurence.logisland.engine.MockProcessingEngine;
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.processor.StandardProcessContext;
 import org.junit.Assert;
@@ -37,7 +38,7 @@ public class ConfigLoaderTest {
 
         StandardProcessContext context = new StandardProcessContext(engineInstance.get());
 
-        assertEquals(301, context.getProperty("fake.settings").asInteger().intValue());
+        assertEquals(301, context.getProperty(MockProcessingEngine.FAKE_SETTINGS).asInteger().intValue());
 
         assertEquals(1, engineInstance.get().getProcessorChainInstances().size());
         //   engineInstance.get().getProcessorChainInstances().get(0)

@@ -48,7 +48,7 @@ public class StandardEngineContext implements EngineContext, Serializable {
      */
     @Override
     public PropertyValue getProperty(final String propertyName) {
-        final StreamProcessingEngine engine = engineInstance.getEngine();
+        final ProcessingEngine engine = engineInstance.getEngine();
         final PropertyDescriptor descriptor = engine.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;

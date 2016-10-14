@@ -17,9 +17,11 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ComponentType;
-import com.hurence.logisland.config.*;
+import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.config.EngineConfiguration;
+import com.hurence.logisland.config.ProcessorChainConfiguration;
+import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.engine.spark.SparkStreamProcessingEngine;
-import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
 import org.junit.Test;
@@ -38,7 +40,7 @@ public class StreamProcessingDebuggerTest {
 
 
     @Test
-    public void remoteTest(){
+    public void remoteTest() {
 
         logger.info("starting StreamProcessingRunner");
 
@@ -53,22 +55,19 @@ public class StreamProcessingDebuggerTest {
         processorConf.setType(ComponentType.PARSER.toString());
         processorConf.setConfiguration(processorProperties);
         processorConf.setProcessor("parser");
-        
-        
+
 
         Map<String, String> chainProperties = new HashMap<>();
-        /*chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
-                "sd-79372:6667,sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
-        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
-                "sd-76387:2181,sd-84186:2181,sd-84189:2181");*/
         chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
+                "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
+        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
+                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
+        /*chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
                 "localhost:9092");
         chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
-                "localhost:2181");
-        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(),
-                "appl_prod_oad_falcon_usr-backend.localhost_access");
-        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(),
-                "logisland_events");
+                "localhost:2181");*/
+        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "appl_prod_oad_falcon_usr-backend.localhost_access");
+        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "logisland_events");
         chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
         chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
         chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR.getName(), "1");
@@ -80,9 +79,8 @@ public class StreamProcessingDebuggerTest {
         chainConf.setConfiguration(chainProperties);
         chainConf.setProcessorChain("KafkaStream");
         chainConf.addProcessorConfiguration(processorConf);
-        
-        
-        
+
+
         Map<String, String> engineProperties = new HashMap<>();
         engineProperties.put(SparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
         engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "5000");
@@ -91,7 +89,7 @@ public class StreamProcessingDebuggerTest {
 
 
         EngineConfiguration engineConf = new EngineConfiguration();
-        engineConf.setComponent(StandardSparkStreamProcessingEngine.class.getName());
+        engineConf.setComponent(SparkStreamProcessingEngine.class.getName());
         engineConf.setType(ComponentType.ENGINE.toString());
         engineConf.setConfiguration(engineProperties);
         engineConf.addProcessorChainConfigurations(chainConf);

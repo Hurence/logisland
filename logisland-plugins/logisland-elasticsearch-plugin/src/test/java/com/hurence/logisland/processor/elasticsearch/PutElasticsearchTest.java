@@ -34,14 +34,14 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearchTest.class);
 
-/*
-    @Override
-    protected Settings nodeSettings(int nodeOrdinal) {
-        return Settings.builder().put(super.nodeSettings(nodeOrdinal))
-                .put("node.mode", "network")
-                .build();
-    }
-*/
+    /*
+        @Override
+        protected Settings nodeSettings(int nodeOrdinal) {
+            return Settings.builder().put(super.nodeSettings(nodeOrdinal))
+                    .put("node.mode", "network")
+                    .build();
+        }
+    */
     @Before
     private void setup() throws IOException {
         Client client = client();
@@ -97,7 +97,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
         Record record2 = new StandardRecord(record);
         record2.setField("ip_source", FieldType.STRING, "123.34.45.12");
-  //      record2.setField("response_size", FieldType.STRING, "-");
+        //      record2.setField("response_size", FieldType.STRING, "-");
 
         PutElasticsearch processor = (PutElasticsearch) instance.get().getProcessor();
         processor.setClient(internalCluster().masterClient());
@@ -115,6 +115,13 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
 
         assertHitCount(searchResponse, 1);
-        assertEquals("{\"@timestamp\":\"2016-10-03T22:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record1\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}",searchResponse.getHits().getAt(0).getSourceAsString());
+
+        String response1 = "{\"@timestamp\":\"2016-10-03T22:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record1\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}";
+
+        String response2 = "{\"@timestamp\":\"2016-10-03T20:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record1\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}";
+
+
+        String esResponse = searchResponse.getHits().getAt(0).getSourceAsString();
+        assertTrue(response1.equals(esResponse) || response2.equals(esResponse));
     }
 }

@@ -20,18 +20,16 @@ import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
 import com.hurence.logisland.component.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 
 public class StandardEngineInstance extends AbstractConfiguredComponent {
 
-    private final StreamProcessingEngine engine;
+    private final ProcessingEngine engine;
 
     private final List<StandardProcessorChainInstance> processorChainInstances = new ArrayList<>();
 
-    public StandardEngineInstance(StreamProcessingEngine engine, String id) {
+    public StandardEngineInstance(ProcessingEngine engine, String id) {
         super((ConfigurableComponent)engine, id);
         this.engine = engine;
     }
@@ -44,7 +42,7 @@ public class StandardEngineInstance extends AbstractConfiguredComponent {
         return processorChainInstances;
     }
 
-    public StreamProcessingEngine getEngine() {
+    public ProcessingEngine getEngine() {
         return engine;
     }
 

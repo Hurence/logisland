@@ -2,7 +2,7 @@ version: 0.9.5
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 engine:
-  component: com.hurence.logisland.engine.MockStreamProcessingEngine
+  component: com.hurence.logisland.engine.MockProcessingEngine
   type: engine
   documentation: Main Logisland job entry point
   configuration:

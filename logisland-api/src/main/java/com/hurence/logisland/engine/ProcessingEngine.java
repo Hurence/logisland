@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Carry the business rules, to be applied to a bunch of events
  */
-public interface StreamProcessingEngine extends ConfigurableComponent {
+public interface ProcessingEngine extends ConfigurableComponent {
 
     void start(EngineContext engineContext);
 

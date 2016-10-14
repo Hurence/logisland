@@ -24,9 +24,9 @@ import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.engine.{AbstractStreamProcessingEngine, EngineContext}
+import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.processor.StandardProcessContext
-import com.hurence.logisland.processor.chain.KafkaRecordStream
+import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record._
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.util.kafka.KafkaSink
@@ -41,6 +41,7 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
@@ -225,7 +226,7 @@ object AbstractSparkStreamProcessingEngine {
 
 }
 
-abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcessingEngine {
+abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
 
@@ -369,11 +370,7 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
                     ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
 
-                val kafkaStreamsParams = Map(
-                    "metadata.broker.list" -> brokerList,
-                    "bootstrap.servers" -> brokerList,
-                    "group.id" -> appName,
-                    "refresh.leader.backoff.ms" -> "1000")
+
 
                 val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
                 val zkSink = context.sparkContext.broadcast(ZookeeperSink(zkQuorum))
@@ -396,6 +393,14 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
                 /**
                   * create streams from latest zk offsets
                   */
+                val kafkaStreamsParams = Map(
+                    "metadata.broker.list" -> brokerList,
+                    "bootstrap.servers" -> brokerList,
+                    "group.id" -> appName,
+                    "refresh.leader.backoff.ms" -> "1000",
+                    "auto.offset.reset" -> "largest"
+                )
+
                 val offsets = zkSink.value.loadOffsetRangesFromZookeeper(appName, inputTopics)
                 @transient val kafkaStream = if (offsets.isEmpty) {
                     KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
@@ -418,7 +423,7 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
 
                 // setup the stream processing
                 kafkaStream.foreachRDD(rdd => {
-                    process(rdd, processorChainContext)
+                    process(rdd, engineContext, processorChainInstance, kafkaSink, zkSink)
                 })
             } catch {
                 case ex: Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",
@@ -430,7 +435,11 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
     }
 
 
-    def process(rdd: RDD[(Array[Byte], Array[Byte])], processContext: StandardProcessContext): Unit
+    def process(rdd: RDD[(Array[Byte], Array[Byte])],
+                engineContext: EngineContext,
+                processorChainInstance: StandardProcessorChainInstance,
+                kafkaSink: Broadcast[KafkaSink],
+                zkSink: Broadcast[ZookeeperSink]): Unit
 
     def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
         inSerializerClass match {
@@ -449,8 +458,8 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
                        batchDuration: Int,
                        brokerList: String,
                        processorChainContext: StandardProcessContext,
-                       inputTopics: Set[String],
-                       outputTopics: Set[String],
+                       inputTopics: String,
+                       outputTopics: String,
                        partition: Iterator[(Array[Byte], Array[Byte])],
                        startTime: Long,
                        partitionId: Int,
@@ -461,8 +470,8 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractStreamProcess
 
         val processorFields = new util.HashMap[String, Field]()
         processorFields.put("spark_app_name", new Field("spark_app_name", FieldType.STRING, appName))
-        processorFields.put("input_topics", new Field("input_topics", FieldType.STRING, inputTopics.toString()))
-        processorFields.put("output_topics", new Field("output_topics", FieldType.STRING, outputTopics.toString()))
+        processorFields.put("input_topics", new Field("input_topics", FieldType.STRING, inputTopics))
+        processorFields.put("output_topics", new Field("output_topics", FieldType.STRING, outputTopics))
         processorFields.put("component_name", new Field("component_name", FieldType.STRING, processorChainContext.getName))
         processorFields.put("topic_offset_from", new Field("topic_offset_from", FieldType.LONG, osr.fromOffset))
         processorFields.put("topic_offset_until", new Field("topic_offset_until", FieldType.LONG, osr.untilOffset))

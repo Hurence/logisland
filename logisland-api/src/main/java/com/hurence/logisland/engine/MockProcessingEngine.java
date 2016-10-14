@@ -26,10 +26,10 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class MockStreamProcessingEngine extends AbstractStreamProcessingEngine {
+public class MockProcessingEngine extends AbstractProcessingEngine {
 
 
-    private static Logger logger = LoggerFactory.getLogger(MockStreamProcessingEngine.class);
+    private static Logger logger = LoggerFactory.getLogger(MockProcessingEngine.class);
     public static final PropertyDescriptor FAKE_SETTINGS = new PropertyDescriptor.Builder()
             .name("fake.settings")
             .description("")

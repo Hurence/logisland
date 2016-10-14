@@ -78,7 +78,7 @@ public class SparkStreamProcessingTest {
         Optional<StandardEngineInstance> instance = ComponentFactory.getEngineInstance(engineConfiguration);
         assertTrue(instance.isPresent());
         assertTrue(instance.get().isValid());
-        StreamProcessingEngine engine = instance.get().getEngine();
+        ProcessingEngine engine = instance.get().getEngine();
         EngineContext engineContext = new StandardEngineContext(instance.get());
 
         Thread.sleep(2000);

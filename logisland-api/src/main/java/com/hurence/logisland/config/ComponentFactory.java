@@ -18,7 +18,7 @@ package com.hurence.logisland.config;
 
 import com.hurence.logisland.engine.StandardEngineInstance;
 import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
-import com.hurence.logisland.engine.StreamProcessingEngine;
+import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardProcessorInstance;
@@ -38,8 +38,8 @@ public final class ComponentFactory {
 
     public static Optional<StandardEngineInstance> getEngineInstance(EngineConfiguration configuration) {
         try {
-            final StreamProcessingEngine processor =
-                    (StreamProcessingEngine) Class.forName(configuration.getComponent()).newInstance();
+            final ProcessingEngine processor =
+                    (ProcessingEngine) Class.forName(configuration.getComponent()).newInstance();
             final StandardEngineInstance engineInstance =
                     new StandardEngineInstance(processor, Long.toString(currentId.incrementAndGet()));
 
