@@ -155,7 +155,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
 
 
 
-Start an the stream workflow
+Start a stream workflow
 ----
 
 One you've edited your configuration file, you can submit it to execution engine with the following cmd :
