@@ -181,6 +181,27 @@ public class KafkaRecordStream extends AbstractProcessorChain {
             .defaultValue("sandbox:2181")
             .build();
 
+
+    public static final AllowableValue LARGEST_OFFSET = new AllowableValue("largest",
+            "largest offset",
+            "the offset to the largest offset");
+
+    public static final AllowableValue SMALLEST_OFFSET = new AllowableValue("smallest",
+            "smallest offset",
+            "the offset to the smallest offset");
+
+
+    public static final PropertyDescriptor KAFKA_MANUAL_OFFSET_RESET = new PropertyDescriptor.Builder()
+            .name("kafka.manual.offset.reset")
+            .description("Sets manually an initial offset in ZooKeeper:\n" +
+                    "* smallest : automatically reset the offset to the smallest offset\n" +
+                    "* largest : automatically reset the offset to the largest offset\n" +
+                    "* anything else: throw exception to the consumer")
+            .required(false)
+            .allowableValues(LARGEST_OFFSET,SMALLEST_OFFSET)
+            .defaultValue(LARGEST_OFFSET.getValue())
+            .build();
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -198,6 +219,7 @@ public class KafkaRecordStream extends AbstractProcessorChain {
         descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR);
         descriptors.add(KAFKA_METADATA_BROKER_LIST);
         descriptors.add(KAFKA_ZOOKEEPER_QUORUM);
+        descriptors.add(KAFKA_MANUAL_OFFSET_RESET);
 
         return Collections.unmodifiableList(descriptors);
     }

@@ -371,7 +371,6 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
 
 
 
-
                 val kafkaSink = context.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
                 val zkSink = context.sparkContext.broadcast(ZookeeperSink(zkQuorum))
 
@@ -398,11 +397,13 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
                     "bootstrap.servers" -> brokerList,
                     "group.id" -> appName,
                     "refresh.leader.backoff.ms" -> "1000",
-                    "auto.offset.reset" -> "largest"
+                    "auto.offset.reset" -> processorChainContext.getProperty(KafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).asString()
                 )
 
                 val offsets = zkSink.value.loadOffsetRangesFromZookeeper(appName, inputTopics)
-                @transient val kafkaStream = if (offsets.isEmpty) {
+                @transient val kafkaStream = if (
+                    processorChainContext.getProperty(KafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
+                        || offsets.isEmpty) {
                     KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
                         context,
                         kafkaStreamsParams,
@@ -528,6 +529,17 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
 
             deserialized
         }).toList
+    }
+
+    def deserializeRecord(record: (Array[Byte], Array[Byte]), serializer: RecordSerializer): Record = {
+
+
+        val bais = new ByteArrayInputStream(record._2)
+        val deserialized = serializer.deserialize(bais)
+        bais.close()
+
+        deserialized
+
     }
 
     override def shutdown(context: EngineContext) = {

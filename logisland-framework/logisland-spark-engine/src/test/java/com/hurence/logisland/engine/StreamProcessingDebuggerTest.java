@@ -21,6 +21,7 @@ import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorChainConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
+import com.hurence.logisland.engine.spark.HdfsBurnerEngine;
 import com.hurence.logisland.engine.spark.SparkStreamProcessingEngine;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
@@ -66,10 +67,10 @@ public class StreamProcessingDebuggerTest {
                 "localhost:9092");
         chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
                 "localhost:2181");*/
-        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "appl_prod_oad_falcon_usr-backend.localhost_access");
-        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "logisland_events");
-        chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
-        chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
+        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "logisland_events");
+        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "none");
+        chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
+        chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
         chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR.getName(), "1");
         chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS.getName(), "2");
 
@@ -89,7 +90,7 @@ public class StreamProcessingDebuggerTest {
 
 
         EngineConfiguration engineConf = new EngineConfiguration();
-        engineConf.setComponent(SparkStreamProcessingEngine.class.getName());
+        engineConf.setComponent(HdfsBurnerEngine.class.getName());
         engineConf.setType(ComponentType.ENGINE.toString());
         engineConf.setConfiguration(engineProperties);
         engineConf.addProcessorChainConfigurations(chainConf);
