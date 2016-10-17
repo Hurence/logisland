@@ -113,9 +113,8 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
 
         def convertToRow(record: Record): Row = {
-            Row(
+            Row.fromSeq(
                 record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
-
                     f.getType match {
                         case FieldType.INT => f.asInteger().intValue()
                         case FieldType.LONG => f.asLong().longValue()
@@ -124,7 +123,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
                         case FieldType.STRING => f.asString()
                         case _ => f.asString()
                     }
-                })
+                }).toSeq
             )
         }
 
