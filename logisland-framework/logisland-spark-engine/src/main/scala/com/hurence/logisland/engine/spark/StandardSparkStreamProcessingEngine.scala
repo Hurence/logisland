@@ -41,21 +41,23 @@ class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingE
                 zkSink: Broadcast[ZookeeperSink]): Unit = {
 
 
-        // Cast the rdd to an interface that lets us get an array of OffsetRange
-        val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-        val appName = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString
-        val batchDuration = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-        val maxRatePerPartition = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
-        val blockInterval = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
-        val processorChainContext = new StandardProcessContext(processorChainInstance)
-        val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString
-        val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString
-        val errorTopics = processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString
-        val brokerList = processorChainContext.getProperty(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
 
         rdd.foreachPartition(partition => {
             if (partition.nonEmpty) {
+                // Cast the rdd to an interface that lets us get an array of OffsetRange
+                val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+
+                val appName = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString
+                val batchDuration = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+                val maxRatePerPartition = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
+                val blockInterval = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
+                val processorChainContext = new StandardProcessContext(processorChainInstance)
+                val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString
+                val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString
+                val errorTopics = processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString
+                val brokerList = processorChainContext.getProperty(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
+
                 /**
                   * index to get the correct offset range for the rdd partition we're working on
                   * This is safe because we haven't shuffled or otherwise disrupted partitioning,
