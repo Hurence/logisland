@@ -155,6 +155,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         // for each disctinct record type
         recordsByType.map(_._1)
             .distinct()
+            .collect()
             .foreach(recordType => {
                 // get all records of this type
                 val records = recordsByType.filter(_._1 == recordType).flatMap(_._2).map(r => r._2)
