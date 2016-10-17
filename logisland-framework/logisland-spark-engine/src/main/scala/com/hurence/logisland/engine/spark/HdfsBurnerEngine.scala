@@ -165,13 +165,8 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
                     // compute a schema from the first record
                     val schema = convertFieldsNameToSchema(records.take(1)(0))
 
-                    logger.info(s"${schema.treeString}")
-                    logger.info(s"${records.take(1)(0)}")
                     // convert each Record to a Row
                     val recordRows = records.map(r => convertToRow(r))
-
-                    recordRows.take(10).foreach(println)
-
                     recordsDF += ((recordType, schema, recordRows))
                 }
 
@@ -181,7 +176,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         recordsDF.foreach(r => {
             sqlContext.createDataFrame(r._3, r._2)
                 .write
-                .partitionBy(FieldDictionary.RECORD_TYPE)
+          //      .partitionBy(FieldDictionary.RECORD_TYPE)
                 .mode(SaveMode.Append)
                 // TODO choose output format
                 .parquet(outPath)
