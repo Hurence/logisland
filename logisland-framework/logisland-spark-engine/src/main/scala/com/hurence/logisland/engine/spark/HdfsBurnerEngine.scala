@@ -156,7 +156,8 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
             .map(record => (record.getField(FieldDictionary.RECORD_TYPE).asString(), record))
             .groupBy(_._1)
             // compute schema and row of records
-            .map(r => (convertFieldsNameToSchema(r._2.head._2), rdd.sparkContext.parallelize(r._2.map(record => convertToRow(record._2)).toSeq)))
+            .map(r => (convertFieldsNameToSchema(r._2.head._2), r._2.map(record => convertToRow(record._2)).toSeq))
+            .map(r => (r._1, rdd.sparkContext.parallelize(r._2)))
             // create non empty dataframe of records
             .map(r => sqlContext.createDataFrame(r._2, r._1))
 
