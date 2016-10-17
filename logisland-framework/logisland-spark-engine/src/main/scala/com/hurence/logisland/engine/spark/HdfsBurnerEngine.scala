@@ -168,7 +168,11 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
                     logger.info(s"${schema.treeString}")
                     logger.info(s"${records.take(1)(0)}")
-                    logger.info(s"${convertToRow(records.take(1)(0)).toString()}")
+
+                    val sampleRow = convertToRow(records.take(1)(0))
+
+
+                    logger.info(s"${convertToRow(records.take(1)(0)).mkString}")
                     // convert each Record to a Row
                     val recordRows = records.map(r => convertToRow(r))
 
