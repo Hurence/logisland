@@ -152,15 +152,15 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         // group records by type
         val recordsByType = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
             .map(record => (record.getField(FieldDictionary.RECORD_TYPE).asString(), record))
-            .groupBy(_._1)
+            .groupByKey(40)
 
         // for each disctinct record type
         recordsByType.map(_._1)
-            .distinct(20)
+            .distinct(40)
             .collect()
             .foreach(recordType => {
                 // get all records of this type
-                val records = recordsByType.filter(_._1 == recordType).flatMap(_._2).map(r => r._2)
+                val records = recordsByType.filter(_._1 == recordType).flatMap(_._2)
                 if (!records.isEmpty()) {
                     // compute a schema from the first record
                     val schema = convertFieldsNameToSchema(records.take(1)(0))
@@ -175,7 +175,6 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
         recordsDF.foreach(r => {
             sqlContext.createDataFrame(r._3, r._2)
-                .repartition(20)
                 .write
           //      .partitionBy(FieldDictionary.RECORD_TYPE)
                 .mode(SaveMode.Append)
