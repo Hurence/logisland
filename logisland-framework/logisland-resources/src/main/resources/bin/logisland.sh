@@ -137,11 +137,42 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
     YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml"
-    CONF_FILE="logisland-configuration.yml"
     if [ ! -z "$YARN_APP_NAME" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
     fi
+
+    DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${DRIVER_CORES}" ]
+    then
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}" 
+    fi
+
+    DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${DRIVER_MEMORY}" ]
+    then
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}" 
+    fi
+
+    EXECUTORS_CORES=`awk '{ if( $1 == "spark.executors.cores:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_CORES}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}" 
+    fi
+
+    EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executors.memory:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_MEMORY}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}" 
+    fi
+
+    EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executors.instances:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_INSTANCES}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}" 
+    fi
+
+    CONF_FILE="logisland-configuration.yml"
     ;;
   yarn-client)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
