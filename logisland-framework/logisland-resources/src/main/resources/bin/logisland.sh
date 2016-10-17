@@ -154,19 +154,19 @@ case $MODE in
  	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}" 
     fi
 
-    EXECUTORS_CORES=`awk '{ if( $1 == "spark.executors.cores:" ){ print $2 } }' ${CONF_FILE}`
+    EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_CORES}" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}" 
     fi
 
-    EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executors.memory:" ){ print $2 } }' ${CONF_FILE}`
+    EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_MEMORY}" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}" 
     fi
 
-    EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executors.instances:" ){ print $2 } }' ${CONF_FILE}`
+    EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_INSTANCES}" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}" 
