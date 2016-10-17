@@ -17,6 +17,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SaveMode}
 import org.apache.spark.streaming.kafka.HasOffsetRanges
+import org.slf4j.LoggerFactory
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -58,6 +59,8 @@ object HdfsBurnerEngine {
 
 class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
+
+    private val logger = LoggerFactory.getLogger(classOf[HdfsBurnerEngine])
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -162,6 +165,9 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
                 if (!records.isEmpty()) {
                     // compute a schema from the first record
                     val schema = convertFieldsNameToSchema(records.take(1)(0))
+
+                    logger.info(s"${schema.treeString}")
+                    logger.info(s"${records.take(1)(0)}")
                     // convert each Record to a Row
                     val recordRows = records.map(r => convertToRow(r))
 
