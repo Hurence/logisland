@@ -175,6 +175,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
         recordsDF.foreach(r => {
             sqlContext.createDataFrame(r._3, r._2)
+                .repartition(20)
                 .write
           //      .partitionBy(FieldDictionary.RECORD_TYPE)
                 .mode(SaveMode.Append)
