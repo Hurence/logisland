@@ -156,7 +156,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
         // for each disctinct record type
         recordsByType.map(_._1)
-            .distinct()
+            .distinct(20)
             .collect()
             .foreach(recordType => {
                 // get all records of this type
