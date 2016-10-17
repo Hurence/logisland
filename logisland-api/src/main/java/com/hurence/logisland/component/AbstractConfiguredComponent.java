@@ -220,6 +220,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
         for (final ValidationResult result : validationResults) {
             if (!result.isValid()) {
+                logger.info("invalid property {}", result.getExplanation());
                 return false;
             }
         }

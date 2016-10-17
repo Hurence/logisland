@@ -55,19 +55,14 @@ class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingE
         val brokerList = processorChainContext.getProperty(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
 
         rdd.foreachPartition(partition => {
-
-
-            /**
-              * index to get the correct offset range for the rdd partition we're working on
-              * This is safe because we haven't shuffled or otherwise disrupted partitioning,
-              * and the original input rdd partitions were 1:1 with kafka partitions
-              */
-            val partitionId = TaskContext.get.partitionId()
-            val offsetRange = offsetRanges(TaskContext.get.partitionId)
-
-
-
             if (partition.nonEmpty) {
+                /**
+                  * index to get the correct offset range for the rdd partition we're working on
+                  * This is safe because we haven't shuffled or otherwise disrupted partitioning,
+                  * and the original input rdd partitions were 1:1 with kafka partitions
+                  */
+                val partitionId = TaskContext.get.partitionId()
+                val offsetRange = offsetRanges(TaskContext.get.partitionId)
 
                 /**
                   * create serializers
