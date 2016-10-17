@@ -1,7 +1,8 @@
 package com.hurence.logisland.engine.spark
 
+import java.text.SimpleDateFormat
 import java.util
-import java.util.Collections
+import java.util.{Date, TimeZone, Collections}
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
@@ -16,6 +17,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SaveMode}
 import org.apache.spark.streaming.kafka.HasOffsetRanges
+import org.elasticsearch.common.xcontent.XContentBuilder
+import org.elasticsearch.common.xcontent.XContentFactory._
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -140,8 +143,14 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         }
 
 
+
+        val sdf = new SimpleDateFormat("yyyy-MM-dd")
+        val today = sdf.format(new Date())
+        val outPath = engineContext.getProperty(HdfsBurnerEngine.OUTPUT_FOLDER_PATH).asString() + s"/day=$today"
+
+
         // deserialize events
-        rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
+        val recordsDF = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
 
             // group by type
             .map(record => (record.getField(FieldDictionary.RECORD_TYPE).asString(), record))
@@ -150,14 +159,14 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
             .map(r => (convertFieldsNameToSchema(r._2.head._2), rdd.sparkContext.parallelize(r._2.map(record => convertToRow(record._2)).toSeq)))
             // create non empty dataframe of records
             .map(r => sqlContext.createDataFrame(r._2, r._1))
-            .filter(df => df.count() != 0)
-            // save thme to parquet file
-            .foreach(df => {
-            df.repartition(1).write
+
+        // save thme to parquet file
+        recordsDF.foreach(df => {
+            df.write
                 .partitionBy(FieldDictionary.RECORD_TYPE)
                 .mode(SaveMode.Append)
                 // TODO choose output format
-                .parquet(engineContext.getProperty(HdfsBurnerEngine.OUTPUT_FOLDER_PATH).asString())
+                .parquet(outPath)
         })
 
 
