@@ -119,7 +119,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
                         case FieldType.FLOAT => f.asFloat().floatValue()
                         case FieldType.DOUBLE => f.asDouble().doubleValue()
                         case FieldType.STRING => f.asString()
-                        case _ => f.getRawValue
+                        case _ => f.asString()
                     }
                 })
             )
@@ -159,7 +159,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
             .foreach(recordType => {
                 // get all records of this type
                 val records = recordsByType.filter(_._1 == recordType).flatMap(_._2).map(r => r._2)
-                if(!records.isEmpty()){
+                if (!records.isEmpty()) {
                     // compute a schema from the first record
                     val schema = convertFieldsNameToSchema(records.take(1)(0))
                     // convert each Record to a Row
