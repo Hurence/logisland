@@ -2,7 +2,7 @@ package com.hurence.logisland.engine.spark
 
 import java.text.SimpleDateFormat
 import java.util
-import java.util.{Date, TimeZone, Collections}
+import java.util.{Collections, Date}
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
@@ -17,8 +17,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SaveMode}
 import org.apache.spark.streaming.kafka.HasOffsetRanges
-import org.elasticsearch.common.xcontent.XContentBuilder
-import org.elasticsearch.common.xcontent.XContentFactory._
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -147,28 +145,40 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         val sdf = new SimpleDateFormat("yyyy-MM-dd")
         val today = sdf.format(new Date())
         val outPath = engineContext.getProperty(HdfsBurnerEngine.OUTPUT_FOLDER_PATH).asString() + s"/day=$today"
+        val recordsDF = scala.collection.mutable.MutableList[(String, StructType, RDD[Row])]()
 
-
-        // deserialize events
-        val recordsDF = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
-
-            // group by type
+        // group records by type
+        val recordsByType = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
             .map(record => (record.getField(FieldDictionary.RECORD_TYPE).asString(), record))
             .groupBy(_._1)
-            // compute schema and row of records
-            .map(r => (convertFieldsNameToSchema(r._2.head._2), r._2.map(record => convertToRow(record._2)).toSeq))
-            .map(r => (r._1, rdd.sparkContext.parallelize(r._2)))
-            // create non empty dataframe of records
-            .map(r => sqlContext.createDataFrame(r._2, r._1))
 
-        // save thme to parquet file
-        recordsDF.foreach(df => {
-            df.write
+        // for each disctinct record type
+        recordsByType.map(_._1)
+            .distinct()
+            .foreach(recordType => {
+                // get all records of this type
+                val records = recordsByType.filter(_._1 == recordType).flatMap(_._2).map(r => r._2)
+                if(!records.isEmpty()){
+                    // compute a schema from the first record
+                    val schema = convertFieldsNameToSchema(records.take(1)(0))
+                    // convert each Record to a Row
+                    val recordRows = records.map(r => convertToRow(r))
+
+                    recordsDF += ((recordType, schema, recordRows))
+                }
+
+            })
+
+
+        recordsDF.foreach(r => {
+            sqlContext.createDataFrame(r._3, r._2)
+                .write
                 .partitionBy(FieldDictionary.RECORD_TYPE)
                 .mode(SaveMode.Append)
                 // TODO choose output format
                 .parquet(outPath)
         })
+
 
 
 
