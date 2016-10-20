@@ -68,7 +68,7 @@ object AbstractSparkStreamProcessingEngine {
         .description("Tha application name")
         .required(true)
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
-        .defaultValue("log-island")
+        .defaultValue("logisland")
         .build
 
     val SPARK_STREAMING_BATCH_DURATION = new PropertyDescriptor.Builder()

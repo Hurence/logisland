@@ -48,7 +48,7 @@ object SparkStreamProcessingEngine {
         .description("Tha application name")
         .required(true)
         .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[a-zA-z0-9-_\\.]+$")))
-        .defaultValue("log-island")
+        .defaultValue("logisland")
         .build
 
     val SPARK_STREAMING_BATCH_DURATION = new PropertyDescriptor.Builder()
@@ -290,7 +290,7 @@ class SparkStreamProcessingEngine extends AbstractProcessingEngine {
         val conf = new SparkConf()
 
         conf.setAppName(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
-        conf.setMaster(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
+        conf.setMaster(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
