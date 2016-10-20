@@ -19,15 +19,15 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.5</version>
     </parent>
 
     <artifactId>logisland-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <!--  <module>logisland-querymatcher-plugin</module>
-      <module>logisland-botsearch-plugin</module>
-        <module>logisland-outlier-detection-plugin</module>-->
+          <module>logisland-querymatcher-plugin</module>
+        <!--<module>logisland-botsearch-plugin</module>-->
+          <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-kafka-plugin</module>

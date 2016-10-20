@@ -15,7 +15,7 @@ language governing permissions and limitations under the License. -->
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.5</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -106,10 +106,10 @@ language governing permissions and limitations under the License. -->
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-outlier-detection-plugin</artifactId>
         </dependency>
-        <dependency>
+     <!--   <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-botsearch-plugin</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>

@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -36,13 +37,13 @@ public class CsvLoaderTest {
 
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
-            List<StandardRecord> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
+            List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
 
 
             Assert.assertTrue(!records.isEmpty());
             //Assert.assertTrue("should be 4032, was : " + events.size(), events.size() == 4032);
 
-            for (StandardRecord record : records) {
+            for (Record record : records) {
                 Assert.assertTrue("should be sensors, was " + record.getType(), record.getType().equals("sensors"));
                 Assert.assertTrue("should be 5, was " + record.getFieldsEntrySet().size(), record.getFieldsEntrySet().size() == 5);
                 Assert.assertTrue(record.getAllFieldNames().contains("timestamp"));

@@ -8,6 +8,7 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.string.Multiline;
 import com.hurence.logisland.util.validator.StandardValidators;
@@ -180,13 +181,13 @@ public class OutlierProcessor extends AbstractProcessor {
      *
      */
     @Override
-    public Collection<StandardRecord> process(final ProcessContext context, final Collection<StandardRecord> records) {
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         Collection list = new ArrayList();
 
 
         // loop over all events in collection
-        for (StandardRecord record : records) {
+        for (Record record : records) {
 
             try {
 
