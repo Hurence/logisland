@@ -8,7 +8,7 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
-import com.hurence.logisland.record.{Field, FieldType, Record}
+import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.ZookeeperSink
 import com.hurence.logisland.util.validator.StandardValidators
@@ -54,13 +54,20 @@ object HdfsBurnerEngine {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .allowableValues("parquet", "orc", "txt", "json")
         .build
+
+    val RECORD_TYPE = new PropertyDescriptor.Builder()
+        .name("record.type")
+        .description("the type of event to filter")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build
 }
 
 
 class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
 
-    private val logger = LoggerFactory.getLogger(classOf[HdfsBurnerEngine])
+
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -86,6 +93,7 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
         descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
         descriptors.add(HdfsBurnerEngine.OUTPUT_FOLDER_PATH)
         descriptors.add(HdfsBurnerEngine.OUTPUT_FORMAT)
+        descriptors.add(HdfsBurnerEngine.RECORD_TYPE)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -146,54 +154,31 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
             val sdf = new SimpleDateFormat("yyyy-MM-dd")
             val today = sdf.format(new Date())
-            val outPath = engineContext.getProperty(HdfsBurnerEngine.OUTPUT_FOLDER_PATH).asString() + s"/day=$today"
-            /*    val recordsDF = scala.collection.mutable.MutableList[(String, StructType, RDD[Row])]()
 
-         // group records by type
-              val recyType = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
-                  .map(record => (record.getField(FieldDictionary.RECORD_TYPE).asString(), record))
-                  .groupByKey(40)
+            val recordType = engineContext.getProperty(HdfsBurnerEngine.RECORD_TYPE).asString()
+            val outPath = engineContext.getProperty(HdfsBurnerEngine.OUTPUT_FOLDER_PATH).asString() +
+                s"/day=$today" +
+                s"/record_type=$recordType"
 
-              // for each disctinct record type
-              recordsByType.map(_._1)
-                  .distinct(40)
-                  .collect()
-                  .foreach(recordType => {
-                      // get all records of this type
-                      val records = recordsByType.filter(_._1 == recordType).flatMap(_._2)
-                      if (!records.isEmpty()) {
-                          // compute a schema from the first record
-                          val schema = convertFieldsNameToSchema(records.take(1)(0))
-
-                          // convert each Record to a Row
-                          val recordRows = records.map(r => convertToRow(r))
-                          recordsDF += ((recordType, schema, recordRows))
-                      }
-
-                  })
-
-
-              recordsDF.foreach(r => {
-                  sqlContext.createDataFrame(r._3, r._2)
-                      .write
-                //      .partitionBy(FieldDictionary.RECORD_TYPE)
-                      .mode(SaveMode.Append)
-                      // TODO choose output format
-                      .parquet(outPath)
-              })
-
-        */
 
             val records = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
-            val rows = records.map(r => convertToRow(r))
-            val schema = convertFieldsNameToSchema(records.take(1)(0))
+                .filter(r =>
+                    r.hasField(FieldDictionary.RECORD_TYPE) &&
+                    r.getField(FieldDictionary.RECORD_TYPE).asString() == recordType
+                )
 
-            sqlContext.createDataFrame(rows, schema)
-                .write
-                //      .partitionBy(FieldDictionary.RECORD_TYPE)
-                .mode(SaveMode.Append)
-                // TODO choose output format
-                .parquet(outPath)
+            if(!records.isEmpty()){
+                val rows = records.map(r => convertToRow(r))
+                val schema = convertFieldsNameToSchema(records.take(1)(0))
+
+                sqlContext.createDataFrame(rows, schema)
+                    .write
+                    //      .partitionBy(FieldDictionary.RECORD_TYPE)
+                    .mode(SaveMode.Append)
+                    // TODO choose output format
+                    .parquet(outPath)
+            }
+
 
 
             // TODO save offsets ranges

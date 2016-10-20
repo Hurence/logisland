@@ -1,6 +1,7 @@
 package com.hurence.logisland.engine.spark
 
 import java.util
+import java.util.Collections
 
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.processor.StandardProcessContext
@@ -72,14 +73,16 @@ class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingE
                     val serializer = getSerializer(
                         processorChainContext.getProperty(KafkaRecordStream.OUTPUT_SERIALIZER).asString,
                         processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-
+                    val errorSerializer = getSerializer(
+                        processorChainContext.getProperty(KafkaRecordStream.ERROR_SERIALIZER).asString,
+                        processorChainContext.getProperty(KafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 
                     /**
                       * process events by chaining output records
                       */
                     var firstPass = true
-                    var incomingEvents: util.Collection[Record] = null
-                    var outgoingEvents: util.Collection[Record] = null
+                    var incomingEvents: util.Collection[Record] = Collections.emptyList()
+                    var outgoingEvents: util.Collection[Record] = Collections.emptyList()
                     val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
 
 
@@ -141,7 +144,7 @@ class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingE
                     kafkaSink.value.produce(
                         processorChainContext.getProperty(KafkaRecordStream.ERROR_TOPICS).asString,
                         outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERROR)).toList,
-                        serializer
+                        errorSerializer
                     )
 
                     kafkaSink.value.produce(

@@ -2,6 +2,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -67,12 +68,13 @@ public class QueryMatcherProcessor extends AbstractProcessor {
     }
 
     @Override
-    public Collection<StandardRecord> process(final ProcessContext context, final Collection<StandardRecord> collection) {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        ArrayList<StandardRecord> outRecords = new ArrayList<>();
+
+        List<Record> outRecords = new ArrayList<>();
 
         ArrayList<InputDocument> docs = new ArrayList<>();
-        for (StandardRecord ev : collection) {
+        for (Record ev : records) {
             InputDocument.Builder docbuilder = InputDocument.builder(ev.getId());
             for (String fieldName : ev.getAllFieldNames()) {
                 if (ev.getField(fieldName).getType() == FieldType.STRING)

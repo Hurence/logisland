@@ -152,7 +152,7 @@ public class SplitText extends AbstractProcessor {
                         Matcher keyMatcher = keyRegex.matcher(key);
                         if (keyMatcher.matches()) {
 
-                            if(keepRawContent){
+                            if (keepRawContent) {
                                 outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, keyMatcher.group(0).replaceAll("\"", ""));
                             }
                             for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
@@ -161,11 +161,16 @@ public class SplitText extends AbstractProcessor {
                                     outputRecord.setField(keyFields[i], FieldType.STRING, keyMatcher.group(i + 1).replaceAll("\"", ""));
                                 }
                             }
-                        }else{
+                        } else {
                             outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, key);
                         }
                     } catch (Exception e) {
-                        logger.info("error while matching key {} with regex {}", key, keyRegexString);
+                        String errorMessage = "error while matching key " + key +
+                                " with regex " + keyRegexString +
+                                " : " + e.getMessage();
+                        logger.warn(errorMessage);
+                        outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, errorMessage);
+                        outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, value);
                     }
                 }
 
@@ -175,11 +180,11 @@ public class SplitText extends AbstractProcessor {
                     try {
                         Matcher valueMatcher = valueRegex.matcher(value);
                         if (valueMatcher.lookingAt()) {
-                            if(keepRawContent){
+                            if (keepRawContent) {
                                 outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
                             }
                             for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
-                                String content = valueMatcher.group(i+1);
+                                String content = valueMatcher.group(i + 1);
                                 String fieldName = valueFields[i];
                                 if (content != null) {
                                     outputRecord.setStringField(fieldName, content.replaceAll("\"", ""));
@@ -219,14 +224,19 @@ public class SplitText extends AbstractProcessor {
                                     }
                                 }
                             }
-                        }else{
-                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, ProcessError.REGEX_PARSING_ERROR);
+                        } else {
+                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, ProcessError.REGEX_PARSING_ERROR.toString());
                             outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                         }
 
                     } catch (Exception e) {
-                        logger.warn("issue while matching regex {} on string {} exception {}", valueRegexString, value, e.getMessage());
-                    }finally {
+                        String errorMessage = "error while matching value " + value +
+                                " with regex " + valueRegexString +
+                                " : " + e.getMessage();
+                        logger.warn(errorMessage);
+                        outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, errorMessage);
+                        outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
+                    } finally {
                         outputRecords.add(outputRecord);
                     }
                 }

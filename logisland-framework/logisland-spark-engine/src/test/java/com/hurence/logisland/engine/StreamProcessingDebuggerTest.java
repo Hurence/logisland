@@ -22,7 +22,8 @@ import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorChainConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.engine.spark.HdfsBurnerEngine;
-import com.hurence.logisland.engine.spark.SparkStreamProcessingEngine;
+import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
+import com.hurence.logisland.processor.RecordDebugger;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
 import org.junit.Test;
@@ -45,54 +46,10 @@ public class StreamProcessingDebuggerTest {
 
         logger.info("starting StreamProcessingRunner");
 
-        Map<String, String> processorProperties = new HashMap<>();
-        processorProperties.put(SplitText.VALUE_REGEX.getName(), APACHE_LOG_REGEX);
-        processorProperties.put(SplitText.VALUE_FIELDS.getName(), APACHE_LOG_FIELDS);
-        processorProperties.put(SplitText.KEY_REGEX.getName(), "(\\S*):(\\S*):(\\S*):(\\S*):(\\S*)");
-        processorProperties.put(SplitText.KEY_FIELDS.getName(), "search_index,sub_project_code,record_type,host_name,uuid");
-
-        ProcessorConfiguration processorConf = new ProcessorConfiguration();
-        processorConf.setComponent(SplitText.class.getName());
-        processorConf.setType(ComponentType.PARSER.toString());
-        processorConf.setConfiguration(processorProperties);
-        processorConf.setProcessor("parser");
-
-
-        Map<String, String> chainProperties = new HashMap<>();
-        chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
-                "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
-        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
-                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
-        /*chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
-                "localhost:9092");
-        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
-                "localhost:2181");*/
-        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "logisland_events");
-        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "none");
-        chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
-        chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
-        chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR.getName(), "1");
-        chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS.getName(), "2");
-
-        ProcessorChainConfiguration chainConf = new ProcessorChainConfiguration();
-        chainConf.setComponent(KafkaRecordStream.class.getName());
-        chainConf.setType(ComponentType.PROCESSOR_CHAIN.toString());
-        chainConf.setConfiguration(chainProperties);
-        chainConf.setProcessorChain("KafkaStream");
+        ProcessorConfiguration processorConf = getDebugProcessorConfiguration();
+        ProcessorChainConfiguration chainConf = getProcessorChainConfiguration();
         chainConf.addProcessorConfiguration(processorConf);
-
-
-        Map<String, String> engineProperties = new HashMap<>();
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "5000");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[8]");
-        engineProperties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "20000");
-
-
-        EngineConfiguration engineConf = new EngineConfiguration();
-        engineConf.setComponent(HdfsBurnerEngine.class.getName());
-        engineConf.setType(ComponentType.ENGINE.toString());
-        engineConf.setConfiguration(engineProperties);
+        EngineConfiguration engineConf = getStandardEngineConfiguration();
         engineConf.addProcessorChainConfigurations(chainConf);
 
 
@@ -114,5 +71,87 @@ public class StreamProcessingDebuggerTest {
         }
 
 
+    }
+    private EngineConfiguration getStandardEngineConfiguration() {
+        Map<String, String> engineProperties = new HashMap<>();
+        engineProperties.put(StandardSparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
+        engineProperties.put(StandardSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "5000");
+        engineProperties.put(StandardSparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[8]");
+        engineProperties.put(StandardSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "20000");
+
+        EngineConfiguration engineConf = new EngineConfiguration();
+        engineConf.setComponent(StandardSparkStreamProcessingEngine.class.getName());
+        engineConf.setType(ComponentType.ENGINE.toString());
+        engineConf.setConfiguration(engineProperties);
+        return engineConf;
+    }
+    private EngineConfiguration getHdfsBurnerEngineConfiguration() {
+        Map<String, String> engineProperties = new HashMap<>();
+        engineProperties.put(HdfsBurnerEngine.SPARK_APP_NAME().getName(), "testApp");
+        engineProperties.put(HdfsBurnerEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "5000");
+        engineProperties.put(HdfsBurnerEngine.SPARK_MASTER().getName(), "local[8]");
+        engineProperties.put(HdfsBurnerEngine.SPARK_STREAMING_TIMEOUT().getName(), "20000");
+
+        engineProperties.put(HdfsBurnerEngine.OUTPUT_FOLDER_PATH().getName(), "out-path");
+        engineProperties.put(HdfsBurnerEngine.OUTPUT_FORMAT().getName(), "parquet");
+
+
+        EngineConfiguration engineConf = new EngineConfiguration();
+        engineConf.setComponent(HdfsBurnerEngine.class.getName());
+        engineConf.setType(ComponentType.ENGINE.toString());
+        engineConf.setConfiguration(engineProperties);
+        return engineConf;
+    }
+
+    private ProcessorChainConfiguration getProcessorChainConfiguration() {
+        Map<String, String> chainProperties = new HashMap<>();
+        chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
+                "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
+        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
+                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
+        /*chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
+                "localhost:9092");
+        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
+                "localhost:2181");*/
+        chainProperties.put(KafkaRecordStream.INPUT_TOPICS.getName(), "logisland_events");
+        chainProperties.put(KafkaRecordStream.OUTPUT_TOPICS.getName(), "none");
+        chainProperties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.KRYO_SERIALIZER.getValue());
+        chainProperties.put(KafkaRecordStream.OUTPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
+        chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR.getName(), "1");
+        chainProperties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS.getName(), "2");
+
+        ProcessorChainConfiguration chainConf = new ProcessorChainConfiguration();
+        chainConf.setComponent(KafkaRecordStream.class.getName());
+        chainConf.setType(ComponentType.PROCESSOR_CHAIN.toString());
+        chainConf.setConfiguration(chainProperties);
+        chainConf.setProcessorChain("KafkaStream");
+        return chainConf;
+    }
+
+    private ProcessorConfiguration getSplitTextProcessorConfiguration() {
+        Map<String, String> processorProperties = new HashMap<>();
+        processorProperties.put(SplitText.VALUE_REGEX.getName(), APACHE_LOG_REGEX);
+        processorProperties.put(SplitText.VALUE_FIELDS.getName(), APACHE_LOG_FIELDS);
+        processorProperties.put(SplitText.KEY_REGEX.getName(), "(\\S*):(\\S*):(\\S*):(\\S*):(\\S*)");
+        processorProperties.put(SplitText.KEY_FIELDS.getName(), "search_index,sub_project_code,record_type,host_name,uuid");
+
+        ProcessorConfiguration processorConf = new ProcessorConfiguration();
+        processorConf.setComponent(SplitText.class.getName());
+        processorConf.setType(ComponentType.PARSER.toString());
+        processorConf.setConfiguration(processorProperties);
+        processorConf.setProcessor("parser");
+        return processorConf;
+    }
+
+    private ProcessorConfiguration getDebugProcessorConfiguration() {
+        Map<String, String> processorProperties = new HashMap<>();
+        processorProperties.put(RecordDebugger.SERIALIZER.getName(), RecordDebugger.JSON.getValue());
+
+        ProcessorConfiguration processorConf = new ProcessorConfiguration();
+        processorConf.setComponent(RecordDebugger.class.getName());
+        processorConf.setType(ComponentType.PROCESSOR.toString());
+        processorConf.setConfiguration(processorProperties);
+        processorConf.setProcessor("debugguer");
+        return processorConf;
     }
 }

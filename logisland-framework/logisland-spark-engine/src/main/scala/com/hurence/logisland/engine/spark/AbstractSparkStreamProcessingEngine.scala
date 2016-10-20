@@ -522,12 +522,20 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
     def deserializeEvents(partition: Iterator[(Array[Byte], Array[Byte])], serializer: RecordSerializer): List[Record] = {
 
 
-        partition.map(rawEvent => {
-            val bais = new ByteArrayInputStream(rawEvent._2)
-            val deserialized = serializer.deserialize(bais)
-            bais.close()
+        partition.flatMap(rawEvent => {
 
-            deserialized
+            try{
+                val bais = new ByteArrayInputStream(rawEvent._2)
+                val deserialized = serializer.deserialize(bais)
+                bais.close()
+
+                Some(deserialized)
+            }catch {
+                case t:Throwable =>
+                    logger.error(s"exception while deserializing events ${t.getMessage}")
+                    None
+            }
+
         }).toList
     }
 
