@@ -142,7 +142,8 @@ public class DateUtilTest {
                 "Jan 02 07:43:49",
                 "02/01/" + currentYear + "-07:43:49:000",
                 "02-Jan-" + currentYear + " 07:43:49:000",
-                "02-Jan-" + currentYear + " 07:43:49.000"
+                "02-Jan-" + currentYear + " 07:43:49.000",
+                "02/Jan/" + currentYear + ":03:43:49 -0400"
         };
 
 
