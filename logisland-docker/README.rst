@@ -18,22 +18,18 @@ Getting the docker image
 
 Pull the image from Docker Repository::
 
-    docker pull hurence/log-island:0.9.5
+    docker pull hurence/logisland
 
 Building the image::
 
-    # build log-island
-    maven install
-    
-    # build kafka-manager
-    git clone https://github.com/yahoo/kafka-manager.git
-    cd kafka-manager
-    sbt clean dist
+    # build logisland
+    maven clean install
+    cp logisland-assembly/target/logisland-0.9.5-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue :: 
 
-    docker build --rm -t hurence/log-island:0.9.5 .
+    docker build --rm -t hurence/logisland:0.9.5 .
 
 
 Running the image
@@ -56,27 +52,19 @@ Running the image
         -p 8080:8080 \
         -p 3000:3000 \
         -p 4050-4060:4050-4060 \
-        --name log-island \
+        --name logisland \
         -h sandbox \
-        hurence/log-island:0.9.5 bash
+        hurence/logisland:latest bash
 
 or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/log-island:0.9.5 -d
+    docker run -d -h sandbox hurence/logisland:latest -d
 
-if you want to mount a directory from your host :        
-    
-    -v /Users/tom/Documents/workspace/hurence/projects/log-island/docker/mount/:/usr/local/log-island 
-
-
-## LogParser: launching a com.hurence.logisland.logisland.parser job
-
-Run the following command to launch a parsing job that converts the logs into events and inject them into kafka:
+if you want to mount a directory from your host, add the following option :
 
 .. code-block::
 
-
-
+    -v ~/projects/logisland/docker/mount/:/usr/local/logisland
 

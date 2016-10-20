@@ -1,7 +1,7 @@
 How to extend LogIsland ?
 =======
 
-In this new tutorial we will learn how to create a custom log parser and how to run it inside log-island Docker container
+In this new tutorial we will learn how to create a custom log parser and how to run it inside logisland Docker container
 
 
 Maven setup
@@ -15,7 +15,7 @@ Create a folder for your ``super-plugin`` project :
     mkdir -p super-plugin/lib
     mkdir -p src/main/java/com/hurence/logisland
 
-First you need to build log-island and to get the pom and jars availables for your projet
+First you need to build logisland and to get the pom and jars availables for your projet
 
 .. code-block:: sh
 
@@ -24,7 +24,7 @@ First you need to build log-island and to get the pom and jars availables for yo
 
 .. note::
 
-log-island jar dependencies are released on maven central :
+logisland jar dependencies are released on maven central :
 
 .. code-block:: xml
 
@@ -176,11 +176,11 @@ Now you have a fully functionnal plugin and you can build it with maven by runni
 
 	mvn package
 
-It's time to deploy our splendid little plugin to log-island. We'll get the Docker image, run this container by `mounting a host directory into the container` to share the brand new jar we have built.
+It's time to deploy our splendid little plugin to logisland. We'll get the Docker image, run this container by `mounting a host directory into the container` to share the brand new jar we have built.
 
 .. code-block:: sh
 
-   docker pull hurence/log-island:latest
+   docker pull hurence/logisland:latest
    docker run \
         -it \
         -p 80:80 \
@@ -190,10 +190,10 @@ It's time to deploy our splendid little plugin to log-island. We'll get the Dock
         -p 9092:9092 \
         -p 9000:9000 \
         -p 4050-4060:4050-4060 \
-        --name log-island \
+        --name logisland \
         -h sandbox \
-        -v $HOME/Documents/workspace/hurence/projects/super-plugin/:/usr/local/log-island/super-plugin  \
-        hurence/log-island:latest bash
+        -v $HOME/Documents/workspace/hurence/projects/super-plugin/:/usr/local/logisland/super-plugin  \
+        hurence/logisland:latest bash
     
    cd $LOGISLAND_HOME
    cp super-plugin/target/super-plugin-1.0-SNAPSHOT.jar lib/
@@ -236,7 +236,7 @@ In another Docker shell, you should see that some events are going into Kafka (e
 
 
 
-Rebuild your jar, redeploy it to `log-island/lib` dir and launch a mapper job in the Docker container :
+Rebuild your jar, redeploy it to `logisland/lib` dir and launch a mapper job in the Docker container :
 
 Each event will be sent to Elasticsearch by bulk. 
 
@@ -255,4 +255,4 @@ Open up your browser and go to [http://sandbox:5601/](http://sandbox:5601/). Enj
 
 
 
-checkout the code of this tutorial here [https://github.com/Hurence/log-island-plugin-template.git](https://github.com/Hurence/log-island-plugin-template.git)
+checkout the code of this tutorial here [https://github.com/Hurence/logisland-plugin-template.git](https://github.com/Hurence/logisland-plugin-template.git)

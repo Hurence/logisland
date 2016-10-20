@@ -14,7 +14,6 @@ Contents:
    concepts
    architecture
    getting-started
-   build
    deploy
    api
    faq

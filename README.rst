@@ -59,31 +59,33 @@ The following `conf/configuration-template.yml` contains a sample of processor d
 .. code-block:: yaml
 
 
-
+    #########################################################################################################
     # Logisland configuration script tempate
+    #########################################################################################################
 
     version: 0.9.5
     documentation: LogIsland analytics main config file. Put here every engine or component config
 
+    #########################################################################################################
     # engine
     engine:
       component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
       type: engine
       documentation: Main Logisland job entry point
       configuration:
-        spark.master: yarn-cluster
+        spark.master: local[4]
         spark.driver.memory: 512m
         spark.driver.cores: 1
-        spark.executor.memory: 1500m
+        spark.executor.memory: 512m
         spark.executor.cores: 2
-        spark.executor.instances: 10
-        spark.appName: LogIndexing
-        spark.streaming.batchDuration: 10000
+        spark.executor.instances: 4
+        spark.app.name: LogislandTutorial
+        spark.streaming.batchDuration: 4000
         spark.serializer: org.apache.spark.serializer.KryoSerializer
         spark.streaming.backpressure.enabled: true
         spark.streaming.unpersist: false
         spark.streaming.blockInterval: 500
-        spark.streaming.kafka.maxRatePerPartition: 6000
+        spark.streaming.kafka.maxRatePerPartition: 3000
         spark.streaming.timeout: -1
         spark.ui.port: 4050
       processorChainConfigurations:
@@ -97,26 +99,24 @@ The following `conf/configuration-template.yml` contains a sample of processor d
             kafka.input.topics: logisland_raw
             kafka.output.topics: logisland_events
             kafka.error.topics: logisland_errors
-            kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
-            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
-            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
-            kafka.metadata.broker.list: <KAFKA_BROKER_HOST:PORT>
-            kafka.zookeeper.quorum: <ZK_HOST:PORT>
+            kafka.input.topics.serializer: none
+            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+            kafka.metadata.broker.list: sandbox:9092
+            kafka.zookeeper.quorum: sandbox:2181
             kafka.topic.autoCreate: true
-            kafka.topic.default.partitions: 10
+            kafka.topic.default.partitions: 2
             kafka.topic.default.replicationFactor: 1
           processorConfigurations:
 
-            # Generate random events based on an avro schema
-            - processor: sample_regex_parser
+            # parse apache logs
+            - processor: apache_parser
               component: com.hurence.logisland.processor.SplitText
               type: parser
-              documentation: a parser that produce events from a REGEX
+              documentation: a parser that produce events from an apache log REGEX
               configuration:
-                key.regex: (\S*):(\S*)
-                key.fields: c,d
-                value.regex: (\S*):(\S*)
-                value.fields: a,b
+                value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s+(\S+)"\s+(\S+)\s+(\S+)
+                value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         # indexing
         - processorChain: indexing_stream
@@ -125,15 +125,15 @@ The following `conf/configuration-template.yml` contains a sample of processor d
           documentation: a processor that push events to ES
           configuration:
             kafka.input.topics: logisland_events
-            kafka.output.topics: logisland_trash
+            kafka.output.topics: none
             kafka.error.topics: logisland_errors
-            kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
-            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoRecordSerializer
-            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonRecordSerializer
-            kafka.metadata.broker.list: <KAFKA_BROKER_HOST:PORT>
-            kafka.zookeeper.quorum: <ZK_HOST:PORT>
+            kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+            kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+            kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+            kafka.metadata.broker.list: sandbox:9092
+            kafka.zookeeper.quorum: sandbox:2181
             kafka.topic.autoCreate: true
-            kafka.topic.default.partitions: 10
+            kafka.topic.default.partitions: 2
             kafka.topic.default.replicationFactor: 1
           processorConfigurations:
 
@@ -143,14 +143,14 @@ The following `conf/configuration-template.yml` contains a sample of processor d
               type: processor
               documentation: a processor that trace the processed events
               configuration:
-                default.index: loterie
+                default.index: logisland
                 default.type: event
-                hosts: <ES_HOST:PORT>
-                cluster.name: elastic-hurence
-                batch.size: 8000
+                hosts: sandbox:9300
+                cluster.name: elasticsearch
+                batch.size: 2000
                 timebased.index: yesterday
                 es.index.field: search_index
-                es.type.field: event_type
+                es.type.field: record_type
 
 
 

@@ -89,6 +89,19 @@ ENV LOGISLAND_HOME /usr/local/logisland
 #EXPOSE 9000
 
 
+# Build and install kafkacat util
+RUN cd /usr/local; \
+    git clone https://github.com/edenhill/librdkafka.git; \
+    cd librdkafka/;  \
+    ./configure; \
+    make; \
+    make install;
+RUN https://github.com/edenhill/kafkacat.git; \
+    cd kafkacat/;  \
+    ./configure; \
+    make; \
+    make install;
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 # update boot script
 COPY bootstrap.sh /etc/bootstrap.sh

@@ -14,3 +14,5 @@ version 0.9.5
 - testRunner API
 - migrate LogParser to LogProcessor Interface
 - reporting metrics to know where are exactly the processors on the topics
+- add an HDFSBurner Engine
+- yarn stability improvements

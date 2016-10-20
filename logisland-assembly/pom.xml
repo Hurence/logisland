@@ -193,7 +193,7 @@ language governing permissions and limitations under the License. -->
                                 to handle a huge amount of log files.
                             </description>
                             <license>Apache License, Version 2.0 and others (see included LICENSE file)</license>
-                            <url>https://github.com/Hurence/log-island</url>
+                            <url>https://github.com/Hurence/logisland</url>
                             <group>Utilities</group>
                             <prefix>/opt/logisland</prefix>
                             <defineStatements>

@@ -38,12 +38,12 @@ sudo bin/nifi.sh start
 
 
 
-#echo "create a kafka topic for log-island"
+#echo "create a kafka topic for logisland"
 #sleep 5
-#$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic log-island
+#$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic logisland
 
 
-echo "to start go to /usr/local/log-island"
+echo "to start go to /usr/local/logisland"
 #cd $BOTSEARCH_HOME
 #nohup bin/logindexer > log/logindexer.log 2>&1 &
 
