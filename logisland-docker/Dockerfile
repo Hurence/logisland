@@ -31,8 +31,8 @@ COPY server.properties $KAFKA_HOME/config/server.properties
 
 
 # Spark
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.1-bin-hadoop2.6.tgz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s spark-1.6.1-bin-hadoop2.6 spark
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.2-bin-hadoop2.6.tgz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s spark-1.6.2-bin-hadoop2.6 spark
 ENV SPARK_HOME /usr/local/spark
 ENV PATH $PATH:$SPARK_HOME/bin
 EXPOSE 4040
@@ -69,12 +69,12 @@ EXPOSE 8080
 EXPOSE 3000
 
 # Log-Island
-COPY logisland-0.9.5-SNAPSHOT-bin.tar.gz /usr/local/logisland-0.9.5-SNAPSHOT-bin.tar.gz
+COPY logisland-0.9.5-bin.tar.gz /usr/local/logisland-0.9.5-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-0.9.5-SNAPSHOT-bin.tar.gz; \
-    ln -s /usr/local/logisland-0.9.5-SNAPSHOT /usr/local/logisland; \
+    tar -xzf logisland-0.9.5-bin.tar.gz; \
+    ln -s /usr/local/logisland-0.9.5 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/logisland-0.9.5-SNAPSHOT-bin.tar.gz
+    rm -f /usr/local/logisland-0.9.5-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
 
 

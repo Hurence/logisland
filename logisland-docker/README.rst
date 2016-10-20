@@ -3,11 +3,11 @@ LogIsland docker files
 
 Small standalone Hadoop distribution for development and testing purpose :
 
-- Spark 1.6.1
+- Spark 1.6.2
 - Elasticsearch 2.3.3
 - Kibana 4.5.1
 - Kafka 0.9.0.1
-- Logisland 0.9.5-SNAPSHOT
+- Logisland 0.9.5
 
 
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
@@ -18,7 +18,7 @@ Getting the docker image
 
 Pull the image from Docker Repository::
 
-    docker pull hurence/log-island:0.9.5-SNAPSHOT
+    docker pull hurence/log-island:0.9.5
 
 Building the image::
 
@@ -33,7 +33,7 @@ Building the image::
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue :: 
 
-    docker build --rm -t hurence/log-island:0.9.5-SNAPSHOT .
+    docker build --rm -t hurence/log-island:0.9.5 .
 
 
 Running the image
@@ -58,13 +58,13 @@ Running the image
         -p 4050-4060:4050-4060 \
         --name log-island \
         -h sandbox \
-        hurence/log-island:0.9.5-SNAPSHOT bash
+        hurence/log-island:0.9.5 bash
 
 or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/log-island:0.9.5-SNAPSHOT -d
+    docker run -d -h sandbox hurence/log-island:0.9.5 -d
 
 if you want to mount a directory from your host :        
     

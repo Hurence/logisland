@@ -32,7 +32,7 @@ log-island jar dependencies are released on maven central :
     <dependency>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-api</artifactId>
-        <version>0.9.5-SNAPSHOT</version>
+        <version>0.9.5</version>
     </dependency>
 
 .. code-block:: sh

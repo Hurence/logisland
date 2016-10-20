@@ -19,7 +19,7 @@ to deploy artifacts (if you're allowed to), follow this guide `release to OSS So
 
 .. code-block::
 
-    mvn versions:set -DnewVersion=0.9.5-SNAPSHOT
+    mvn versions:set -DnewVersion=0.9.5
     mvn clean deploy
     mvn versions:commit
 
@@ -36,4 +36,4 @@ you have to copy this file into your Dockerfile directory you can now issue
 .. code-block::
 
     cd logisland-docker
-    docker build --rm -t hurence/log-island:0.9.5-SNAPSHOT .
+    docker build --rm -t hurence/log-island:0.9.5 .
