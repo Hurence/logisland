@@ -289,8 +289,8 @@ class SparkStreamProcessingEngine extends AbstractProcessingEngine {
           */
         val conf = new SparkConf()
 
-        conf.setAppName(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
-        conf.setMaster(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString)
+        conf.setAppName(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString)
+        conf.setMaster(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
