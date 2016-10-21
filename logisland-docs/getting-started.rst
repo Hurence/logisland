@@ -33,7 +33,7 @@ You should be aware that this Docker container is quite eager in RAM and will ne
 
 Now run the container
 
-.. code-block::sh
+.. code-block:: sh
 
     # run container
     docker run \
@@ -57,9 +57,7 @@ Now run the container
     # or if your are on mac os
     docker-machine ip default
 
-you should add an entry for **sandbox** (with the container ip) in your `/etc/hosts` as it will be easier to access to all web services in logisland running container.
-
-
+you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
 
 
 Start playing with logs
@@ -80,7 +78,7 @@ Connect 1 shell to your logisland container to launch the following streaming jo
 This ``conf/configuration-template.yml`` configuration file defines a stream processing job setup.
 The first section configures the engine. (Here a spark one)
 
-.. code-block:: yaml
+.. code-block:: yml
 
     engine:
       component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
@@ -107,7 +105,7 @@ The first section configures the engine. (Here a spark one)
 Inside this engine you will run a Kafka stream of processor chain, so we setup input/output topics and Kafka/Zookeeper hosts.
 Here the stream will read all the logs sent in ``logisland_raw`` topic and push the processing output into ``logisland_events`` topic.
 
-.. code-block:: yaml
+.. code-block:: yml
 
     # parsing
     - processorChain: parsing_stream
@@ -131,7 +129,7 @@ Here the stream will read all the logs sent in ``logisland_raw`` topic and push 
 
 Within this stream a ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
 
-.. code-block:: yaml
+.. code-block:: yml
 
     - processor: apache_parser
       component: com.hurence.logisland.processor.SplitText
@@ -147,7 +145,7 @@ be parsed as an event which will be pushed back to Kafka in the ``logisland_even
 
 Another Kafka stream will handle ``Records`` pushed into ``logisland_events`` topic to index them into elasticsearch
 
-.. code-block:: yaml
+.. code-block:: yml
 
     - processorChain: indexing_stream
       component: com.hurence.logisland.processor.chain.KafkaRecordStream
