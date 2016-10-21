@@ -16,7 +16,7 @@ The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  als
 
 
 Build and deploy
-----
+----------------
 to build from the source just clone and package
 
 .. code-block::
@@ -38,20 +38,19 @@ follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#sta
 
 
 Basic Workflow
-----
+--------------
+Here is an example of how you can setup a full event mining pipeline.
 
 1. Raw log files are sent to Kafka topics by a NIFI / Logstash / Flume / Collectd (or whatever) agent 
-3. Logs in Kafka topic are translated into Events and pushed back to another Kafka topic by a Spark streaming job
+3. Logs in Kafka topic are translated into Events and pushed back to another Kafka topic by a LogIsland streaming job
 3. Events in Kafka topic are sent to Elasticsearch (or Solr or whatever backend) for online analytics (Kibana or Banana) by a Spark streaming job
 4. Log topics can also dumped to HDFS (master dataset) for offline analytics
 5. Event component do some time window based analytics on events to build new events
 
 
 
-    
-
-Setup a stream processing workflog
-----
+Setup a stream processing workflow
+----------------------------------
 
 A LogIsland stream processing flow is made of a bunch of components. At least one streaming engine and 1 or more stream processors. You set them up by a YAML configuration file. Please note that events are serialized against an Avro schema while transiting through any Kafka topic. Every `spark.streaming.batchDuration` (time window), each processor will handle its bunch of Events to eventually generate some new events to the output topic.
 The following `conf/configuration-template.yml` contains a sample of processor definitions.
@@ -166,7 +165,7 @@ One you've edited your configuration file, you can submit it to execution engine
 
 
 Create a new plugin
-----
+-------------------
 
 Logisland processors are hosted in some plugins, you can create your own with a maven archetype.
 
