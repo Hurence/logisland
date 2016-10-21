@@ -33,7 +33,7 @@ object BatchFlowsIndexer extends LazyLogging {
         options.addOption("o", "output", true, "es, solr, debug")
         options.addOption("w", "time-window", true, "window time for micro batch")
         options.addOption("b", "broker-list", true, "kafka broker list :localhost:9092,anotherhost:9092")
-        options.addOption("t", "topic-list", true, "kafka topic list log-island1,log-island2")
+        options.addOption("t", "topic-list", true, "kafka topic list logisland1,logisland2")
         options.addOption("e", "es-config", true, "elasticsearch config : localhost")
         options.addOption("h", "help", false, "print usage")
         options.addOption("f", "folder-path", true, "parquet folder path")
@@ -45,11 +45,11 @@ object BatchFlowsIndexer extends LazyLogging {
         val output = line.getOptionValue("o", "debug")
         val windowTime = line.getOptionValue("w", "2").toLong
         val brokerList = line.getOptionValue("b", "sandbox:9092")
-        val topicList = line.getOptionValue("t", "log-island")
+        val topicList = line.getOptionValue("t", "logisland")
         val esConfig = line.getOptionValue("e", "localhost")
         val doSaveAsParquet = line.hasOption("p")
         val doIndexation = line.hasOption("i")
-        val source = "file://" + line.getOptionValue("f", "/usr/local/log-island/data/out")
+        val source = "file://" + line.getOptionValue("f", "/usr/local/logisland/data/out")
 
         // set up context
         val sc = SparkUtils.initContext(this.getClass.getName)
@@ -57,7 +57,7 @@ object BatchFlowsIndexer extends LazyLogging {
         import sqlContext.implicits._
 
         // Define the Kafka parameters, broker list must be specified
-        val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> "log-island-demo")
+        val kafkaParams = Map("metadata.broker.list" -> brokerList, "group.id" -> "logisland-demo")
 
         // Define which topics to read from
         val topics = topicList.split(",").toSet
@@ -65,12 +65,12 @@ object BatchFlowsIndexer extends LazyLogging {
         // get first 100000 messages
         val lastOffest = KafkaOffsetUtils.getLastOffset(
             brokerList,
-            "log-island",
+            "logisland",
             0,
             kafka.api.OffsetRequest.LatestTime)
 
     /*    val offsetRanges = Array(
-            OffsetRange("log-island", 0, 0, lastOffest)
+            OffsetRange("logisland", 0, 0, lastOffest)
         )
         logger.info(s"last offset for kafka topic is $lastOffest")
 
@@ -90,12 +90,12 @@ object BatchFlowsIndexer extends LazyLogging {
             val flows = kafkaRdd.map(kv => NetworkFlow.parse(kv._2))
 
             val dateSuffix = new SimpleDateFormat("yyyy.MM.dd").format(new Date())
-            val esIndex = s"log-island-$dateSuffix"
+            val esIndex = s"logisland-$dateSuffix"
 
             if (doIndexation) {
                 logger.info("create es index")
                 val mapper = new NetworkFlowEventMapper()
-             //   val esIndexName = ElasticsearchUtils.createIndex(esHosts, "elasticsearch", "log-island", mapper)
+             //   val esIndexName = ElasticsearchUtils.createIndex(esHosts, "elasticsearch", "logisland", mapper)
 
                 logger.info("launch flows indexation to es")
                 //    EventIndexer.indexEvents(flows, esHosts, esIndexName, "flow")

@@ -16,8 +16,9 @@ Contents:
    getting-started
    deploy
    api
-   faq
    tests
+   faq
+   changes
 
 Indices and tables
 ==================

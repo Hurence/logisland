@@ -22,8 +22,8 @@ import scala.collection.mutable.ArrayBuffer
   *   # submit scala job
   *   spark-submit
   *      --class com.hurence.logisland.job.TracesAnalyzer
-  *      target/scala-2.10/log-island-assembly.jar
-  *      -f /user/log-island/data/cisco
+  *      target/scala-2.10/logisland-assembly.jar
+  *      -f /user/logisland/data/cisco
 
   * }}}
   *
@@ -59,7 +59,7 @@ object TracesAnalyzer extends LazyLogging {
 
         ////////////////////////////////////////
         logger.info("load flows from files")
-        val source = "/user/log-island/data/cisco"
+        val source = "/user/logisland/data/cisco"
         val flows = sc.textFile(s"$source/flows").map(line => NetworkFlow.parse(line))
 
 

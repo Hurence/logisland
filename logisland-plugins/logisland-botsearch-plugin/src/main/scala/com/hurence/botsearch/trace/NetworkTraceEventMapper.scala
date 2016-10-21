@@ -7,7 +7,7 @@ import org.elasticsearch.common.xcontent.XContentFactory._
   * Created by tom on 12/01/16.
   */
 class NetworkTraceEventMapper  {
-    val EVENT_TYPE = "log-island-trace"
+    val EVENT_TYPE = "logisland-trace"
 
     def getMapping: XContentBuilder = {
         jsonBuilder().startObject().startObject(EVENT_TYPE)

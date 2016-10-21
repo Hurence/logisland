@@ -16,3 +16,9 @@ version 0.9.5
 - reporting metrics to know where are exactly the processors on the topics
 - add an HDFSBurner Engine
 - yarn stability improvements
+- more spark parameters handling
+- driver failover through Zookeper offset checkpointing
+- add raw_content to event if regex matching failed in SplitText
+- integration testing with embedded Kafka/Spark
+- processor chaining
+-

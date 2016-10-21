@@ -1,10 +1,10 @@
 
 Frequently Asked Questions.
-=====
+===========================
 
 
 I already use ELK, why would I need to use LogIsland ?
-----
+------------------------------------------------------
 Well, at first one could say that that both stacks are overlapping, 
 but the real purpose of the LogIsland framework is the abstraction of scalability of log aggregation.
 
@@ -16,7 +16,7 @@ So you just have to route your logs from the Logstash (or Flume, or Collectd, ..
 
 
 Do I need Hadoop to play with LogIsland ?
-----
+-----------------------------------------
 
 No, if your goal is simply to aggregate a massive amount of logs in an Elasticsearch cluster, 
 and to define complex event processing rules to generate new events you definitely don't need an Hadoop cluster. 
@@ -26,18 +26,16 @@ But if you need advanced batch analytics, it's really easy to dump your logs int
 
 
 How do I make it scale ?
-----
-
-LogIsland relies on Spark and Kafka which are both scalable by essence, to scale LogIsland just have to add more kafka brokers and more Spark slaves.
-This is the *manual* way, but we've planned in further releases to provide either Docker Swarn support or Mesos Marathon.
+------------------------
+LogIsland is made for scalability, it relies on Spark and Kafka which are both scalable by essence, to scale LogIsland just have to add more kafka brokers and more Spark slaves.
+This is the *manual* way, but we've planned in further releases to provide auto-scaling either Docker Swarn support or Mesos Marathon.
 
 
 What's the difference between Apache NIFI and LogIsland ?
-----
-
-Apache NIFI is a scalable ETL very well suited to process incoming data such as logs file, process & enrich them and send them out to any datastore.
+---------------------------------------------------------
+Apache NIFI is a powerful ETL very well suited to process incoming data such as logs file, process & enrich them and send them out to any datastore.
 You can do that as well with LogIsland but LogIsland is an event oriented framework designed to process huge amount of events in a Complex Event Processing
-manner not a Single Event Processing as NIFI does.
+manner not a Single Event Processing as NIFI does. **LogIsland** is not an ETL or a DataFlow, the main goal is to extract information from realtime data.
 
 Anyway you can use Apache NIFI to process your logs and send them to Kafka in order to be processed by LogIsland
 

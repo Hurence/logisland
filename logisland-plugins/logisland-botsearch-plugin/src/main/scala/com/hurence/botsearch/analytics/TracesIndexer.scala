@@ -42,7 +42,7 @@ object TracesIndexer {
         val sqlContext = new SQLContext(sc)
 
 
-        val source = "/user/log-island/data/cisco"
+        val source = "/user/logisland/data/cisco"
         val traces = sqlContext.read.load(s"$source/traces.parquet").rdd.repartition(4)
 
 
@@ -51,7 +51,7 @@ object TracesIndexer {
         output match {
             case "es" => {
                 val esHosts = "localhost"
-                val esIndex = "log-island"
+                val esIndex = "logisland"
 
                 val parser = new NetworkTraceLogParser()
            //     traces.map(trace => parser.parse(null, "", trace.toString()))

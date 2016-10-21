@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
   */
 class NetworkTraceLogParser extends LazyLogging {
 
-    val EVENT_TYPE = "log-island-trace"
+    val EVENT_TYPE = "logisland-trace"
 
     /**
       * take a line of csv and convert it to a NetworkFlow
