@@ -124,9 +124,9 @@ public class SparkStreamProcessingTest {
     static EngineConfiguration createEngineConfiguration() {
         Map<String, String> properties = new HashMap<>();
         properties.put(SparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
-        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "500");
+        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "2000");
         properties.put(SparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[4]");
-        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "10000");
+        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "4000");
 
 
         EngineConfiguration conf = new EngineConfiguration();
@@ -146,6 +146,7 @@ public class SparkStreamProcessingTest {
         properties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR.getName(), "1");
         properties.put(KafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS.getName(), "2");
         properties.put(KafkaRecordStream.INPUT_SERIALIZER.getName(), KafkaRecordStream.NO_SERIALIZER.getValue());
+        properties.put(KafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.getName(), KafkaRecordStream.LARGEST_OFFSET.getValue());
 
         ProcessorChainConfiguration conf = new ProcessorChainConfiguration();
         conf.setComponent(KafkaRecordStream.class.getName());

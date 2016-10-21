@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
@@ -18,16 +18,25 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-plugins</artifactId>
+        <artifactId>logisland-framework</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
-
-    <artifactId>logisland-kafka-plugin</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>logisland-kafka-0-8-plugin</module>
-    </modules>
+    <artifactId>logisland-documentation</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

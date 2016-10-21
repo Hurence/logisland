@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-kafka-plugin</artifactId>
-        <version>0.9.5</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>logisland-kafka-0-8-plugin</artifactId>

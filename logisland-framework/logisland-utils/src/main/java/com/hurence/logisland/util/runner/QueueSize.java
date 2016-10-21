@@ -68,7 +68,7 @@ public class QueueSize {
 
     @Override
     public String toString() {
-        return "QueueSize[FlowFiles=" + objectCount + ", ContentSize=" + NumberFormat.getNumberInstance().format(totalSizeBytes) + " Bytes]";
+        return "QueueSize[Records=" + objectCount + ", ContentSize=" + NumberFormat.getNumberInstance().format(totalSizeBytes) + " Bytes]";
     }
 
     @Override

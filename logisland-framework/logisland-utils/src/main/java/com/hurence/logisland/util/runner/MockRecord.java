@@ -66,7 +66,7 @@ public class MockRecord extends StandardRecord {
 
 
     /**
-     * Asserts that the content of this FlowFile is the same as the content of
+     * Asserts that the content of this Record is the same as the content of
      * the given file
      *
      * @param record to compare content against

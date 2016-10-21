@@ -66,7 +66,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
     public static final PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
             .name("batch.size")
-            .description("The preferred number of FlowFiles to setField to the database in a single transaction")
+            .description("The preferred number of Records to setField to the database in a single transaction")
             .required(false)
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("1000")
