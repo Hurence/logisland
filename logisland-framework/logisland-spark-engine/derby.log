@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Tue Oct 11 17:42:39 CEST 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.1.1 - (1458268): instance a816c00e-0157-b468-f3e4-00002e7001f8 
+on database directory /Users/tom/Documents/workspace/hurence/projects/logisland-hurence/logisland-framework/logisland-spark-engine/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@7af2ee23
+Loaded from file:/Users/tom/Documents/tools/spark-1.6.1-bin-hadoop2.6/lib/spark-assembly-1.6.1-hadoop2.6.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_51-b16
+user.dir=/Users/tom/Documents/workspace/hurence/projects/logisland-hurence/logisland-framework/logisland-spark-engine
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.11.4
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
