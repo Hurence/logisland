@@ -1,3 +1,19 @@
+====
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+====
+
 C’est émue aux larmes que la vice-première ministre suédoise, Asa Romson (Les Verts), a annoncé mardi 24 novembre un durcissement historique de la politique d’accueil des demandeurs d’asile dans le pays. « Ce sont des décisions terribles que le gouvernement a été forcé de prendre », a-t-elle lâché, aux côtés du premier ministre social-démocrate, Stefan Löfven, en affirmant que le pays était arrivé à ses limites.
 
 Un mois seulement après une première série de mesures destinées à mieux gérer le nombre exceptionnel de réfugiés arrivés ces derniers mois et moins de deux semaines après le rétablissement temporaire du contrôle aux frontières, les deux dirigeants ont annoncé un plan destiné à réduire drastiquement leur nombre. « La Suède a besoin de répit. La législation va être adaptée au niveau minimal de l’Union européenne, a expliqué M. Löfven, mettant fin à l’ouverture et à la générosité suédoise, qui ont fait depuis le début de l’année de la Suède un des principaux pays d’accueil, avec l’Allemagne. Il faut soulager la pression pour que plus de personnes demandent l’asile dans d’autres pays européens. »

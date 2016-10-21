@@ -1,3 +1,19 @@
+====
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+====
+
 Au lendemain d'une manifestation qui a vu une vingtaine de personnes interpellées, les chauffeurs de taxis ont poursuivi leur mouvement dans une atmosphère plus calme ce mercredi. En fin de matinée, aucun incident n'était à déplorer, selon la préfecture de police. Quelque 780 taxis étaient mobilisés pour protester contre la concurrence des véhicules de transport avec chauffeur, Porte Maillot et dans le quartier de Bercy à Paris, ainsi qu'aux abords des aéroports, sans provoquer toutefois de ralentissements au niveau de la circulation. Le trafic était en effet totalement fluide, selon Bison Futé. La mobilisation semble s'être passée dans le calme, à Paris comme en province.
 Les organisations des taxis ont déposé dans la journée une demande de prolongation du mouvement pour demain. En fin d'après-midi, la CGT et FO ont annoncé à l'AFP la poursuite du mouvement. Le SDCTP et l'association Taxis de France ont quant à eux précisé que des délégués se rendaient à la préfecture, pour faire une demande de renouvellement de l'autorisation de manifester.
 «Il faut voir comment garantir une concurrence saine»

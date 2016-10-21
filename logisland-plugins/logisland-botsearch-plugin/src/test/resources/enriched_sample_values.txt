@@ -1,3 +1,19 @@
+====
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+====
+
 2012-10-19T16:12:51.000 UTC	10.201.27.82	POST	TCP_CLIENT_REFRESH_MISS/200	http	79.140.80.220	/idle/m0imdz02xSLiSe8Z/1052	-1	-	0	4376	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	79.140.80.220	sqc8b4vmfetr	38.11669921875	13.36669921875	Italy	43		
 2012-10-19T16:12:51.200 UTC	10.201.27.82	POST	TCP_CLIENT_REFRESH_MISS/200	http	79.140.80.220	/idle/m0imdz02xSLiSe8Z/1052	-1	-	0	4376	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	79.140.80.220	sqc8b4vmfetr	38.11669921875	13.36669921875	Italy	43		
 2012-10-19T16:12:51.300 UTC	10.201.27.82	POST	TCP_CLIENT_REFRESH_MISS/200	http	79.140.80.220	/idle/m0imdz02xSLiSe8Z/1053	-1	-	0	131582	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	79.140.80.220	sqc8b4vmfetr	38.11669921875	13.36669921875	Italy	43		
