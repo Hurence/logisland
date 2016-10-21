@@ -96,7 +96,8 @@ RUN cd /usr/local; \
     ./configure; \
     make; \
     make install;
-RUN https://github.com/edenhill/kafkacat.git; \
+RUN cd /usr/local; \
+    git clonehttps://github.com/edenhill/kafkacat.git; \
     cd kafkacat/;  \
     ./configure; \
     make; \
