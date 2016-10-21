@@ -66,19 +66,121 @@ Start playing with logs
 ----
 
 
-All we need now is a log parser and an event mapper, both are Java (or Scala) classes compiled into a jar file.
+For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
 
-> Connect 2 shells to your logisland container to launch the following streaming jobs.
+Connect 1 shell to your logisland container to launch the following streaming jobs.
 
-.. code-block::sh
+.. code-block:: sh
 
     docker exec -ti logisland bash
+    cd $LOGISLAND_HOME
     bin/logisland.sh --conf conf/configuration-template.yml
 
-A ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
+
+This ``conf/configuration-template.yml`` configuration file defines a stream processing job setup.
+The first section configures the engine. (Here a spark one)
+
+.. code-block:: yaml
+
+    engine:
+      component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
+      type: engine
+      documentation: Main Logisland job entry point
+      configuration:
+        spark.master: local[4]
+        spark.driver.memory: 512m
+        spark.driver.cores: 1
+        spark.executor.memory: 512m
+        spark.executor.cores: 2
+        spark.executor.instances: 4
+        spark.app.name: LogislandTutorial
+        spark.streaming.batchDuration: 4000
+        spark.serializer: org.apache.spark.serializer.KryoSerializer
+        spark.streaming.backpressure.enabled: true
+        spark.streaming.unpersist: false
+        spark.streaming.blockInterval: 500
+        spark.streaming.kafka.maxRatePerPartition: 3000
+        spark.streaming.timeout: -1
+        spark.ui.port: 4050
+      processorChainConfigurations:
+
+Inside this engine you will run a Kafka stream of processor chain, so we setup input/output topics and Kafka/Zookeeper hosts.
+Here the stream will read all the logs sent in ``logisland_raw`` topic and push the processing output into ``logisland_events`` topic.
+
+.. code-block:: yaml
+
+    # parsing
+    - processorChain: parsing_stream
+      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+
+Within this stream a ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
+
+.. code-block:: yaml
+
+    - processor: apache_parser
+      component: com.hurence.logisland.processor.SplitText
+      type: parser
+      documentation: a parser that produce events from an apache log REGEX
+      configuration:
+        value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s+(\S+)"\s+(\S+)\s+(\S+)
+        value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
 This stream will process log entries as soon as they will be queued into `logisland_raw` Kafka topics, each log will
 be parsed as an event which will be pushed back to Kafka in the ``logisland_events`` topic.
+
+
+Another Kafka stream will handle ``Records`` pushed into ``logisland_events`` topic to index them into elasticsearch
+
+.. code-block:: yaml
+
+    - processorChain: indexing_stream
+      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+      type: processor
+      documentation: a processor that push events to ES
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # put to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          type: processor
+          documentation: a processor that trace the processed events
+          configuration:
+            default.index: logisland
+            default.type: event
+            hosts: sandbox:9300
+            cluster.name: elasticsearch
+            batch.size: 2000
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
 
 
 
@@ -88,28 +190,23 @@ Inject some Apache logs into LogIsland (outside Docker)
 Now we're going to work on the host machine, outside logisland Docker container.
 
 We could setup a logstash or flume agent to load some apache logs into a kafka topic
-but there's a super useful tool in the Kafka ecosystem : [kafkacat](https://github.com/edenhill/kafkacat),
-a `generic command line non-JVM Apache Kafka producer and consumer` which can be easily installed.
+but there's a super useful tool in the Kafka ecosystem : 'kafkacat <https://github.com/edenhill/kafkacat>'_,
+a *generic command line non-JVM Apache Kafka producer and consumer* which can be easily installed.
 
-
-.. code-block::sh
-
-    #On recent enough Debian systems::
-    sudo apt-get install kafkacat
-
-    #And on Mac OS X with homebrew installed::
-    brew install kafkacat
 
 If you don't have your own httpd logs available, you can use some freely available log files from
 [NASA-HTTP](http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html) web site access:
 
-- [Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed](ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz)
-- [Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed](ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz)
+- 'Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz>'_
+- 'Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz>'_
 
 Send logs to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 
 .. code-block:: sh
 
+
+    docker exec -ti logisland bash
+    cd /tmp
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz
     cat NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
