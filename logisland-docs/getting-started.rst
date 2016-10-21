@@ -1,18 +1,14 @@
-
-
 Getting Started
-======================
-
+===============
 
 In the following getting started tutorial we'll drive you through the process of Apache log mining with LogIsland platform.
 
 We will start a Docker container hosting all the LogIsland services, launch two streaming processes and send some apache logs
 to the system in order to analyze them in a dashboard.
 
-.. note:: So how can I play as fast as possible ?
 
 Start LogIsland as a Docker container
----------
+-------------------------------------
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 The docker container is built from a Centos 6.4 image with the following tools enabled
 
@@ -25,12 +21,13 @@ The docker container is built from a Centos 6.4 image with the following tools e
 - Nginx
 - LogIsland
 
-Pull the image from Docker Repository (it may take some time)::
+Pull the image from Docker Repository (it may take some time)
 
-    docker pull hurence/logisland:latest
+.. code-block:: sh
+
+    docker pull hurence/logisland
 
 You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
-
 Now run the container
 
 .. code-block:: sh
@@ -61,12 +58,9 @@ you should add an entry for **sandbox** (with the container ip) in your ``/etc/h
 
 
 Start playing with logs
-----
-
-
+-----------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
-
-Connect 1 shell to your logisland container to launch the following streaming jobs.
+Connect a shell to your logisland container to launch the following streaming jobs.
 
 .. code-block:: sh
 
@@ -78,7 +72,7 @@ Connect 1 shell to your logisland container to launch the following streaming jo
 This ``conf/configuration-template.yml`` configuration file defines a stream processing job setup.
 The first section configures the engine. (Here a spark one)
 
-.. code-block:: yml
+.. code-block:: yaml
 
     engine:
       component: com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
@@ -105,7 +99,7 @@ The first section configures the engine. (Here a spark one)
 Inside this engine you will run a Kafka stream of processor chain, so we setup input/output topics and Kafka/Zookeeper hosts.
 Here the stream will read all the logs sent in ``logisland_raw`` topic and push the processing output into ``logisland_events`` topic.
 
-.. code-block:: yml
+.. code-block:: yaml
 
     # parsing
     - processorChain: parsing_stream
@@ -129,7 +123,7 @@ Here the stream will read all the logs sent in ``logisland_raw`` topic and push 
 
 Within this stream a ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
 
-.. code-block:: yml
+.. code-block:: yaml
 
     - processor: apache_parser
       component: com.hurence.logisland.processor.SplitText
@@ -145,7 +139,7 @@ be parsed as an event which will be pushed back to Kafka in the ``logisland_even
 
 Another Kafka stream will handle ``Records`` pushed into ``logisland_events`` topic to index them into elasticsearch
 
-.. code-block:: yml
+.. code-block:: yaml
 
     - processorChain: indexing_stream
       component: com.hurence.logisland.processor.chain.KafkaRecordStream
@@ -183,25 +177,23 @@ Another Kafka stream will handle ``Records`` pushed into ``logisland_events`` to
 
 
 Inject some Apache logs into LogIsland (outside Docker)
-----
-
-Now we're going to work on the host machine, outside logisland Docker container.
+-------------------------------------------------------
+Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 
 We could setup a logstash or flume agent to load some apache logs into a kafka topic
-but there's a super useful tool in the Kafka ecosystem : 'kafkacat <https://github.com/edenhill/kafkacat>'_,
+but there's a super useful tool in the Kafka ecosystem : `kafkacat <https://github.com/edenhill/kafkacat>`_,
 a *generic command line non-JVM Apache Kafka producer and consumer* which can be easily installed.
 
 
 If you don't have your own httpd logs available, you can use some freely available log files from
-[NASA-HTTP](http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html) web site access:
+`NASA-HTTP <http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html>`_ web site access:
 
-- 'Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz>'_
-- 'Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz>'_
+- `Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz>`_
+- `Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz>`_
 
 Send logs to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 
 .. code-block:: sh
-
 
     docker exec -ti logisland bash
     cd /tmp
@@ -212,16 +204,14 @@ Send logs to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 
 
 Use Kibana to inspect the logs
-----
-
+------------------------------
 Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
 
 .. image:: /_static/kibana-explore.png
 
 
 Monitor your spark jobs and Kafka topics
-----
-
+----------------------------------------
 Now go to `http://sandbox:4050/streaming/ <http://sandbox:4050/streaming/>`_ to see how fast Spark can process
 your data
 
@@ -229,6 +219,5 @@ your data
 
 
 Another tool can help you to tweak and monitor your processing `http://sandbox:9000/ <http://sandbox:9000>`_
-
 
 .. image:: /_static/kafka-mgr.png
