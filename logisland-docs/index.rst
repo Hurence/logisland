@@ -11,14 +11,15 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   changes
    concepts
    architecture
    getting-started
    deploy
    api
    tests
+   plugins
    faq
-   changes
 
 Indices and tables
 ==================
