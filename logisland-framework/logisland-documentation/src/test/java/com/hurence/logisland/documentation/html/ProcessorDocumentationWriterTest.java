@@ -41,7 +41,7 @@ public class ProcessorDocumentationWriterTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        writer.write(processor, baos, false);
+        writer.write(processor, baos);
         initializer.teardown(processor);
 
         String results = new String(baos.toByteArray());
@@ -81,7 +81,7 @@ public class ProcessorDocumentationWriterTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        writer.write(processor, baos, false);
+        writer.write(processor, baos);
         initializer.teardown(processor);
 
         String results = new String(baos.toByteArray());

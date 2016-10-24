@@ -15,6 +15,13 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.behavior.DynamicProperty;
+import com.hurence.logisland.annotation.behavior.ReadsAttribute;
+import com.hurence.logisland.annotation.behavior.WritesAttribute;
+import com.hurence.logisland.annotation.behavior.WritesAttributes;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.SeeAlso;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.ValidationContext;
 import com.hurence.logisland.component.ValidationResult;
@@ -31,7 +38,14 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Tags({"parser", "regex", "log"})
+@CapabilityDescription("This is a processor that is used to split a String into fields according to a given mapping")
+@WritesAttributes({
+        @WritesAttribute(attribute = "first", description = "this is the first attribute i write"),
+        @WritesAttribute(attribute = "second")})
+@ReadsAttribute(attribute = "incoming", description = "this specifies the format of the thing")
+@SeeAlso(value = {SplitTextMultiline.class}, classNames = {"com.hurence.logisland.processor.SplitTextMultiline"})
+@DynamicProperty(name = "Relationship Name", supportsExpressionLanguage = true, value = "some XPath", description = "Routes Records to relationships based on XPath")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;

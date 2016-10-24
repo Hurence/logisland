@@ -18,6 +18,8 @@ package com.hurence.logisland.engine.spark
 import java.util
 import java.util.Collections
 
+import com.hurence.logisland.annotation.behavior.{DynamicProperty, ReadsAttribute, WritesAttribute, WritesAttributes}
+import com.hurence.logisland.annotation.documentation.{CapabilityDescription, SeeAlso, Tags}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
@@ -47,6 +49,8 @@ import scala.collection.JavaConversions._
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@Tags(Array("engine", "spark", "kafka"))
+@CapabilityDescription("This is a spark streaming engine")
 class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingEngine {
 
     def process(rdd: RDD[(Array[Byte], Array[Byte])],

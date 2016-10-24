@@ -15,25 +15,42 @@
  */
 package com.hurence.logisland.documentation;
 
+import com.hurence.logisland.documentation.example.FullyDocumentedProcessor;
+import com.hurence.logisland.documentation.util.ClassFinder;
+import com.hurence.logisland.documentation.util.Visitor;
+import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
+import com.hurence.logisland.processor.SplitText;
+import com.hurence.logisland.processor.chain.KafkaRecordStream;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 
 public class DocGeneratorTest {
 
+
+
     @Test
-    public void testProcessorLoadsNarResources() throws IOException, ClassNotFoundException {
+    @Ignore
+    public void testProcessor() throws IOException, ClassNotFoundException {
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
 
 
-        /*ExtensionManager.discoverExtensions(NarClassLoaders.getInstance().getExtensionClassLoaders());
 
-        DocGenerator.generate(new File("docs"));
+
+
+
+
+        /*ExtensionManager.discoverExtensions(NarClassLoaders.getInstance().getExtensionClassLoaders());*/
+
+        DocGenerator.generate(new File("docs"), "rst");
 
         File processorDirectory = new File(temporaryFolder.getRoot(), "com.hurence.logisland.processors.WriteResourceToStream");
         File indexHtml = new File(processorDirectory, "index.html");
@@ -43,7 +60,7 @@ public class DocGeneratorTest {
         Assert.assertTrue(generatedHtml.contains("This example processor loads a resource from the nar and writes it to the Record content"));
         Assert.assertTrue(generatedHtml.contains("files that were successfully processed"));
         Assert.assertTrue(generatedHtml.contains("files that were not successfully processed"));
-        Assert.assertTrue(generatedHtml.contains("resources"));*/
+        Assert.assertTrue(generatedHtml.contains("resources"));
     }
 
 

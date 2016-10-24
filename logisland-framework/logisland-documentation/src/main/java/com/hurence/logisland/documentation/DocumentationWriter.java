@@ -27,6 +27,5 @@ import com.hurence.logisland.component.ConfigurableComponent;
  */
 public interface DocumentationWriter {
 
-    void write(ConfigurableComponent configurableComponent, OutputStream streamToWriteTo,
-            boolean includesAdditionalDocumentation) throws IOException;
+    void write(ConfigurableComponent configurableComponent, OutputStream streamToWriteTo) throws IOException;
 }

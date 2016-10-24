@@ -50,8 +50,7 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
     public static final String ADDITIONAL_DETAILS_HTML = "additionalDetails.html";
 
     @Override
-    public void write(final ConfigurableComponent configurableComponent, final OutputStream streamToWriteTo,
-                      final boolean includesAdditionalDocumentation) throws IOException {
+    public void write(final ConfigurableComponent configurableComponent, final OutputStream streamToWriteTo) throws IOException {
 
         try {
             XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(
@@ -60,7 +59,7 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
             xmlStreamWriter.writeStartElement("html");
             xmlStreamWriter.writeAttribute("lang", "en");
             writeHead(configurableComponent, xmlStreamWriter);
-            writeBody(configurableComponent, xmlStreamWriter, includesAdditionalDocumentation);
+            writeBody(configurableComponent, xmlStreamWriter);
             xmlStreamWriter.writeEndElement();
             xmlStreamWriter.close();
         } catch (XMLStreamException | FactoryConfigurationError e) {
@@ -109,16 +108,14 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
      *
      * @param configurableComponent the component to describe
      * @param xmlStreamWriter the stream writer
-     * @param hasAdditionalDetails whether there are additional details present
-     * or not
      * @throws XMLStreamException thrown if there was a problem writing to the
      * XML stream
      */
     private void writeBody(final ConfigurableComponent configurableComponent,
-                           final XMLStreamWriter xmlStreamWriter, final boolean hasAdditionalDetails)
+                           final XMLStreamWriter xmlStreamWriter)
             throws XMLStreamException {
         xmlStreamWriter.writeStartElement("body");
-        writeDescription(configurableComponent, xmlStreamWriter, hasAdditionalDetails);
+        writeDescription(configurableComponent, xmlStreamWriter);
         writeTags(configurableComponent, xmlStreamWriter);
         writeProperties(configurableComponent, xmlStreamWriter);
         writeDynamicProperties(configurableComponent, xmlStreamWriter);
@@ -214,23 +211,15 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
      *
      * @param configurableComponent the component to describe
      * @param xmlStreamWriter the stream writer
-     * @param hasAdditionalDetails whether there are additional details
-     * available as 'additionalDetails.html'
+
      * @throws XMLStreamException thrown if there was a problem writing to the
      * XML stream
      */
     protected void writeDescription(final ConfigurableComponent configurableComponent,
-                                    final XMLStreamWriter xmlStreamWriter, final boolean hasAdditionalDetails)
+                                    final XMLStreamWriter xmlStreamWriter)
             throws XMLStreamException {
         writeSimpleElement(xmlStreamWriter, "h2", "Description: ");
         writeSimpleElement(xmlStreamWriter, "p", getDescription(configurableComponent));
-        if (hasAdditionalDetails) {
-            xmlStreamWriter.writeStartElement("p");
-
-            writeLink(xmlStreamWriter, "Additional Details...", ADDITIONAL_DETAILS_HTML);
-
-            xmlStreamWriter.writeEndElement();
-        }
     }
 
     /**

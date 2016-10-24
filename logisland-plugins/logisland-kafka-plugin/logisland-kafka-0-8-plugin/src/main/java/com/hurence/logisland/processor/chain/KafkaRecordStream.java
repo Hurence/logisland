@@ -192,10 +192,10 @@ public class KafkaRecordStream extends AbstractProcessorChain {
 
     public static final PropertyDescriptor KAFKA_MANUAL_OFFSET_RESET = new PropertyDescriptor.Builder()
             .name("kafka.manual.offset.reset")
-            .description("Sets manually an initial offset in ZooKeeper:\n" +
-                    "* smallest : automatically reset the offset to the smallest offset\n" +
-                    "* largest : automatically reset the offset to the largest offset\n" +
-                    "* anything else: throw exception to the consumer")
+            .description("Sets manually an initial offset in ZooKeeper: " +
+                    "smallest (automatically reset the offset to the smallest offset), " +
+                    "largest (automatically reset the offset to the largest offset), " +
+                    "anything else (throw exception to the consumer)")
             .required(false)
             .allowableValues(LARGEST_OFFSET,SMALLEST_OFFSET)
             .defaultValue(LARGEST_OFFSET.getValue())
