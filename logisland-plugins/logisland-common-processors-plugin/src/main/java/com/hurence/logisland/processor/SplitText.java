@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +15,6 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.behavior.ReadsAttribute;
-import com.hurence.logisland.annotation.behavior.WritesAttribute;
-import com.hurence.logisland.annotation.behavior.WritesAttributes;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -38,14 +34,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Tags({"parser", "regex", "log"})
-@CapabilityDescription("This is a processor that is used to split a String into fields according to a given mapping")
-@WritesAttributes({
-        @WritesAttribute(attribute = "first", description = "this is the first attribute i write"),
-        @WritesAttribute(attribute = "second")})
-@ReadsAttribute(attribute = "incoming", description = "this specifies the format of the thing")
+@Tags({"parser", "regex", "log", "record"})
+@CapabilityDescription("This is a processor that is used to split a String into fields according to a given Record mapping")
 @SeeAlso(value = {SplitTextMultiline.class}, classNames = {"com.hurence.logisland.processor.SplitTextMultiline"})
-@DynamicProperty(name = "Relationship Name", supportsExpressionLanguage = true, value = "some XPath", description = "Routes Records to relationships based on XPath")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;
@@ -85,11 +76,11 @@ public class SplitText extends AbstractProcessor {
             .defaultValue(FieldDictionary.RECORD_RAW_KEY)
             .build();
 
-    public static final PropertyDescriptor EVENT_TYPE = new PropertyDescriptor.Builder()
-            .name("event.type")
-            .description("default type of event")
+    public static final PropertyDescriptor RECORD_TYPE = new PropertyDescriptor.Builder()
+            .name("record.type")
+            .description("default type of record")
             .required(false)
-            .defaultValue("event")
+            .defaultValue("record")
             .build();
 
     public static final PropertyDescriptor KEEP_RAW_CONTENT = new PropertyDescriptor.Builder()
@@ -107,7 +98,7 @@ public class SplitText extends AbstractProcessor {
         descriptors.add(VALUE_FIELDS);
         descriptors.add(KEY_REGEX);
         descriptors.add(KEY_FIELDS);
-        descriptors.add(EVENT_TYPE);
+        descriptors.add(RECORD_TYPE);
         descriptors.add(KEEP_RAW_CONTENT);
 
         return Collections.unmodifiableList(descriptors);
@@ -159,7 +150,7 @@ public class SplitText extends AbstractProcessor {
         final Pattern keyRegex = Pattern.compile(keyRegexString);
         final String[] valueFields = context.getProperty(VALUE_FIELDS).asString().split(",");
         final String valueRegexString = context.getProperty(VALUE_REGEX).asString();
-        final String eventType = context.getProperty(EVENT_TYPE).asString();
+        final String eventType = context.getProperty(RECORD_TYPE).asString();
         final boolean keepRawContent = context.getProperty(KEEP_RAW_CONTENT).asBoolean();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 

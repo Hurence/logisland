@@ -41,10 +41,7 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
-            <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-querymatcher-plugin</artifactId>
@@ -64,7 +61,6 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-spark-engine</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -75,6 +71,7 @@
                 <version>1.4.0</version>
                 <configuration>
                     <mainClass>com.hurence.logisland.documentation.DocGenerator</mainClass>
+                    <classpathScope>compile</classpathScope>
                 </configuration>
                 <executions>
                     <execution>

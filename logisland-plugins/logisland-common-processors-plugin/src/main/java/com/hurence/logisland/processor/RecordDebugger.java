@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
@@ -32,11 +34,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
+@Tags({"record", "debug"})
+@CapabilityDescription("This is a processor that logs incoming records")
 public class RecordDebugger extends AbstractProcessor {
-
-
-    static final long serialVersionUID = 3097445175348597100L;
 
     private static Logger logger = LoggerFactory.getLogger(RecordDebugger.class);
 

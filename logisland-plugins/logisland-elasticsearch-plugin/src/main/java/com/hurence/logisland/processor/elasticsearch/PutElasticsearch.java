@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,13 @@
 package com.hurence.logisland.processor.elasticsearch;
 
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.util.validator.StandardValidators;
 import org.elasticsearch.action.bulk.BackoffPolicy;
@@ -40,9 +42,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/**
- * a processor class that puts events to ES
- */
+
+@Tags({"record", "elasticsearch", "sink", "record"})
+@CapabilityDescription("This is a processor that puts records to ES")
 public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
     static final long serialVersionUID = -5661820708591436282L;
@@ -182,7 +184,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
                         @Override
                         public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                            if(bulkResponse.hasFailures()){
+                            if (bulkResponse.hasFailures()) {
                                 logger.info(bulkResponse.buildFailureMessage());
                                 logger.info("done bulk request in {} ms with failure = {}", bulkResponse.getTookInMillis(), bulkResponse.hasFailures());
                             }

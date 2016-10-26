@@ -110,7 +110,7 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
         testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
         testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "false");
-        testRunner.setProperty(SplitText.EVENT_TYPE, "apache_log");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
         testRunner.clearQueues();
@@ -146,7 +146,7 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.VALUE_REGEX, "bad_regex.*");
         testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
         testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
-        testRunner.setProperty(SplitText.EVENT_TYPE, "apache_log");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
         testRunner.assertValid();
         testRunner.enqueue(SplitTextTest.class.getResourceAsStream(APACHE_LOG));
         testRunner.clearQueues();

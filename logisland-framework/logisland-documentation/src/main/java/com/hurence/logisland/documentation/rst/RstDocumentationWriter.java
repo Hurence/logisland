@@ -150,6 +150,9 @@ public class RstDocumentationWriter implements DocumentationWriter {
                                     final RstPrintWriter rstWriter) {
         rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
         rstWriter.println(getDescription(configurableComponent));
+
+        rstWriter.writeSectionTitle(3, "Class");
+        rstWriter.println(configurableComponent.getClass().getCanonicalName());
     }
 
 

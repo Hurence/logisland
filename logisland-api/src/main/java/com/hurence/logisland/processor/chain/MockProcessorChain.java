@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor.chain;
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
@@ -28,8 +30,9 @@ import java.util.Collections;
 import java.util.List;
 
 
+@Tags({"record", "mock", "test"})
+@CapabilityDescription("This is a processor chain that does nothing")
 public class MockProcessorChain extends AbstractProcessorChain {
-
 
     public static final PropertyDescriptor MOCK_CHAIN = new PropertyDescriptor.Builder()
             .name("mock.chain")
@@ -38,12 +41,6 @@ public class MockProcessorChain extends AbstractProcessorChain {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("yoyo")
             .build();
-
-
-    private static Logger logger = LoggerFactory.getLogger(MockProcessorChain.class);
-
-    private static String EVENT_TYPE_NAME = "mock";
-
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {

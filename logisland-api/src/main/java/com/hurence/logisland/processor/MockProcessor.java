@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -28,7 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
+@Tags({"record", "mock", "test"})
+@CapabilityDescription("This is a processor that add a fake message to each incoming records")
 public class MockProcessor extends AbstractProcessor {
 
 
@@ -41,26 +44,14 @@ public class MockProcessor extends AbstractProcessor {
             .build();
 
 
-    private static Logger logger = LoggerFactory.getLogger(MockProcessor.class);
-
-    private static String EVENT_TYPE_NAME = "mock";
-
-
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
+        final String message = context.getProperty(FAKE_MESSAGE).asString();
+        final List<Record> outputRecords = new ArrayList<>(collection);
+        outputRecords.forEach(record -> record.setStringField("message", message));
 
-        //  collection.stream().forEach(event -> logger.info("mock processing event : {}", event));
-
-        StandardRecord mockRecord = new StandardRecord(EVENT_TYPE_NAME);
-        mockRecord.setField("incomingEventsCount", FieldType.INT, collection.size());
-        mockRecord.setField("message", FieldType.STRING, context.getProperty(FAKE_MESSAGE).getRawValue());
-
-
-        List<Record> mockResults = new ArrayList<>();
-        mockResults.add(mockRecord);
-        logger.info("mock processing event : {}", mockRecord);
-        return mockResults;
+        return outputRecords;
     }
 
 

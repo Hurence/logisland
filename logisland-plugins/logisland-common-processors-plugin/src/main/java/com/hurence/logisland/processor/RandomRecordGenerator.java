@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -32,7 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-
+@Tags({"record", "avro", "generator"})
+@CapabilityDescription("This is a processor that make random records given an Avro schema")
 public class RandomRecordGenerator extends AbstractProcessor {
 
 

@@ -219,6 +219,14 @@ object SparkStreamProcessingEngine {
         .defaultValue("false")
         .build
 
+    val SPARK_UI_SHOW_CONSOLE_PROGRESS = new PropertyDescriptor.Builder()
+        .name("spark.ui.showConsoleProgress")
+        .description("enable disable progress bar logging")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("false")
+        .build
+
 }
 
 class SparkStreamProcessingEngine extends AbstractProcessingEngine {
@@ -248,6 +256,7 @@ class SparkStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
         descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
         descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
+        descriptors.add(SparkStreamProcessingEngine.SPARK_UI_SHOW_CONSOLE_PROGRESS)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -320,6 +329,7 @@ class SparkStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_DRIVER_CORES)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
         setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
+        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_UI_SHOW_CONSOLE_PROGRESS)
 
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
