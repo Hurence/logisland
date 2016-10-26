@@ -24,33 +24,33 @@ import java.util.Set;
 public interface Record extends Serializable {
     Date getTime();
 
-    void setTime(Date recordTime);
+    Record setTime(Date recordTime);
 
-    void setFields(Map<String, Field> fields);
+    Record setFields(Map<String, Field> fields);
 
-    void addFields(Map<String, Field> fields);
+    Record addFields(Map<String, Field> fields);
 
-    void setType(String type);
+    Record setType(String type);
 
     String getType();
 
-    void setId(String id);
+    Record setId(String id);
 
     String getId();
 
     boolean hasField(String fieldName);
 
-    void setField(Field field);
+    Record setField(Field field);
 
-    void setField(String fieldName, FieldType fieldType, Object value);
+    Record setField(String fieldName, FieldType fieldType, Object value);
 
-    void setStringField(String fieldName, String value);
+    Record setStringField(String fieldName, String value);
 
     Field removeField(String fieldName);
 
     Field getField(String fieldName);
 
-    void setStringFields(Map<String, String> entrySets);
+    Record setStringFields(Map<String, String> entrySets);
 
     Collection<Field> getAllFieldsSorted();
 

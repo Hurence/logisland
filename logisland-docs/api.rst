@@ -1,13 +1,13 @@
 
 
 API design
-===================
+==========
 logisland is a framework that you can extend through its API, you can use it to build your own ``Processors`` or to build data processing apps over it.
 
 
 
 The primary material : Records
-----
+------------------------------
 
 The basic unit of processing is the Record.
 A ``Record`` is a collection of ``Field``, while a ``Field`` has a ``name``, a ``type`` and a ``value``.
@@ -18,8 +18,7 @@ You can instanciate a ``Record`` like in the following code snipet:
 
     String id = "firewall_record1";
     String type = "cisco";
-    Record record = new Record(type);
-    record.setId(id);
+    Record record = new Record(type).setId(id);
 
     assertTrue(record.isEmpty());
     assertEquals(record.size(), 0);
@@ -45,12 +44,11 @@ And the other fields have generic setters, getters and removers
 
 .. code-block:: java
 
-    record.setStringField("url_host", "origin-www.20minutes.fr");
-    record.setField("method", FieldType.STRING, "GET");
-    record.setField("response_size", FieldType.INT, 452);
-    record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
-    record.setField("tags", FieldType.ARRAY,
-        new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+    record.setStringField("url_host", "origin-www.20minutes.fr")
+        .setField("method", FieldType.STRING, "GET")
+        .setField("response_size", FieldType.INT, 452)
+        .setField("is_outside_office_hours", FieldType.BOOLEAN, false)
+        .setField("tags", FieldType.ARRAY, Arrays.asList("spam", "filter", "mail"));
 
     assertFalse(record.hasField("unkown_field"));
     assertTrue(record.hasField("method"));
@@ -87,7 +85,7 @@ Fields are strongly typed, you can validate them
     assertFalse(record.isValid());
 
 The tools to handle processing : Processor
-----
+------------------------------------------
 
 logisland is designed as a component centric framework, so there's a layer of abstraction to build configurable components.
 Basically a component can be Configurable and Configured.
@@ -162,7 +160,7 @@ And now the real business part with the ``process`` method which handles all the
 
 
 The runtime context : Instance
-----
+------------------------------
 you can use your wonderful processor by setting its configuration and asking the ``ComponentFactory`` to give you one ``ProcessorInstance`` which is a ``ConfiguredComponent``.
 
 .. code-block:: java
@@ -204,14 +202,14 @@ And finally you can use it to process records
 
 
 Chaining processors : ProcessorChain
-----
+------------------------------------
 
 .. warning:: @todo
 
 
 
 Running the processor's flow : Engine
-----
+-------------------------------------
 
 .. warning:: @todo
 
@@ -219,7 +217,7 @@ Running the processor's flow : Engine
 
 
 Packaging and conf
------
+------------------
 
 The end user of logisland is not the developer, but the business analyst which does understand any line of code.
 That's why we can deploy all our components through yaml config files

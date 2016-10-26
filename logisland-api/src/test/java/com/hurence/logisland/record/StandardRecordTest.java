@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,8 +40,7 @@ public class StandardRecordTest {
 
         String id = "firewall_record1";
         String type = "cisco";
-        Record record = new StandardRecord(type);
-        record.setId(id);
+        Record record = new StandardRecord(type).setId(id);
 
         assertTrue(record.isEmpty());
         assertEquals(record.size(), 0);
@@ -59,19 +58,19 @@ public class StandardRecordTest {
         assertEquals(record.getType(), record.getField(FieldDictionary.RECORD_TYPE).getRawValue());
 
 
-        record.setField("timestamp", FieldType.LONG, new Date().getTime());
-        record.setField("method", FieldType.STRING, "GET");
-        record.setField("ip_source", FieldType.STRING, "123.34.45.123");
-        record.setField("ip_target", FieldType.STRING, "255.255.255.255");
-        record.setField("url_scheme", FieldType.STRING, "http");
-        record.setStringField("url_host", "origin-www.20minutes.fr");
-        record.setField("url_port", FieldType.STRING, "80");
-        record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
-        record.setField("request_size", FieldType.INT, 1399);
-        record.setField("response_size", FieldType.INT, 452);
-        record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
-        record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
-        record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+        record.setField("timestamp", FieldType.LONG, new Date().getTime())
+                .setField("method", FieldType.STRING, "GET")
+                .setField("ip_source", FieldType.STRING, "123.34.45.123")
+                .setField("ip_target", FieldType.STRING, "255.255.255.255")
+                .setField("url_scheme", FieldType.STRING, "http")
+                .setStringField("url_host", "origin-www.20minutes.fr")
+                .setField("url_port", FieldType.STRING, "80")
+                .setField("url_path", FieldType.STRING, "/r15lgc-100KB.js")
+                .setField("request_size", FieldType.INT, 1399)
+                .setField("response_size", FieldType.INT, 452)
+                .setField("is_outside_office_hours", FieldType.BOOLEAN, false)
+                .setField("is_host_blacklisted", FieldType.BOOLEAN, false)
+                .setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
         assertEquals(record.size(), 13);  // 13 + 3
 
@@ -91,10 +90,9 @@ public class StandardRecordTest {
     @Test(expected = ClassCastException.class)
     public void validateRecordTypeConvertion() throws IOException {
 
-        List<String> tags = new ArrayList<>(Arrays.asList("spam", "filter", "mail"));
-        Record record = new StandardRecord();
-        record.setField("request_size", FieldType.INT, 1399);
-        Field field = record.getField("request_size");
+        Field field = new StandardRecord()
+                .setField("request_size", FieldType.INT, 1399)
+                .getField("request_size");
         field.asFloat();
     }
 

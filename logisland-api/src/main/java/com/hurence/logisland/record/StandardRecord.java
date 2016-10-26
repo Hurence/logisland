@@ -110,23 +110,27 @@ public class StandardRecord implements Record {
     }
 
     @Override
-    public void setTime(Date recordTime) {
+    public Record setTime(Date recordTime) {
         setField(FieldDictionary.RECORD_TIME, FieldType.LONG, recordTime.getTime());
+        return this;
     }
 
     @Override
-    public void setFields(Map<String, Field> fields) {
+    public Record setFields(Map<String, Field> fields) {
         this.fields = fields;
+        return this;
     }
 
     @Override
-    public void addFields(Map<String, Field> fields) {
+    public Record addFields(Map<String, Field> fields) {
         fields.values().forEach(this::setField);
+        return this;
     }
 
     @Override
-    public void setType(String type) {
+    public Record setType(String type) {
         this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
+        return this;
     }
 
     /**
@@ -154,8 +158,9 @@ public class StandardRecord implements Record {
      *
      * @param id
      */
-    public void setId(String id) {
+    public Record setId(String id) {
         setField(FieldDictionary.RECORD_ID, FieldType.STRING, id);
+        return this;
     }
 
     /**
@@ -175,8 +180,9 @@ public class StandardRecord implements Record {
      * @param field
      */
     @Override
-    public void setField(Field field) {
+    public Record setField(Field field) {
         fields.put(field.getName(), field);
+        return this;
     }
 
     /**
@@ -186,8 +192,9 @@ public class StandardRecord implements Record {
      * @param value
      */
     @Override
-    public void setField(String fieldName, FieldType fieldType, Object value) {
+    public Record setField(String fieldName, FieldType fieldType, Object value) {
         setField(new Field(fieldName, fieldType, value));
+        return this;
     }
 
     /**
@@ -197,8 +204,9 @@ public class StandardRecord implements Record {
      * @param value     the value to be added
      */
     @Override
-    public void setStringField(String fieldName, String value) {
+    public Record setStringField(String fieldName, String value) {
         setField(new Field(fieldName, FieldType.STRING, value));
+        return this;
     }
 
     /**
@@ -222,13 +230,14 @@ public class StandardRecord implements Record {
     }
 
     @Override
-    public void setStringFields(Map<String, String> entrySets) {
+    public Record setStringFields(Map<String, String> entrySets) {
         Objects.requireNonNull(entrySets, "Argument can not be null");
         for (Map.Entry<String, String> entry : entrySets.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             this.setStringField(key, value);
         }
+        return this;
     }
 
     @Override
