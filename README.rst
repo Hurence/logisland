@@ -4,6 +4,17 @@ Log Island
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
     :target: https://travis-ci.org/Hurence/logisland
 
+
+
+
+Chat with us on gitter
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+   :alt: Gitter
+
+
+
 **LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.**
 
 .. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png

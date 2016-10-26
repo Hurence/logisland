@@ -6,6 +6,13 @@
 Welcome to logisland's documentation!
 =====================================
 
+
+Chat with us on Gitter
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+   :alt: Gitter
+
 Contents:
 
 .. toctree::
