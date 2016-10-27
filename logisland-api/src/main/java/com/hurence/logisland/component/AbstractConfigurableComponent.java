@@ -96,6 +96,13 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
             }
         }
 
+        // log issues
+        if (!results.isEmpty()) {
+            for (ValidationResult result:results) {
+                logger.warn(result.toString());
+                            }
+        }
+
         return results;
     }
 
