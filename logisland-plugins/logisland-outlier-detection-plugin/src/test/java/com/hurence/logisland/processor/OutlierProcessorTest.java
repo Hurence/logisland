@@ -52,7 +52,16 @@ public class OutlierProcessorTest {
     @Ignore("too long")
     public void testDetection() throws IOException {
         final TestRunner testRunner = TestRunners.newTestRunner(new OutlierProcessor());
-        testRunner.setProperty(OutlierProcessor.BATCH_OUTLIER_ALGORITHM, "RAD");
+        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_AMOUNT, "100");
+        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_UNIT, "points");
+        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_AMOUNT, "10");
+        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_UNIT, "points");
+        testRunner.setProperty(OutlierProcessor.GLOBAL_STATISTICS_MIN, "-100000");
+        testRunner.setProperty(OutlierProcessor.MIN_AMOUNT_TO_PREDICT, "100");
+        testRunner.setProperty(OutlierProcessor.ZSCORE_CUTOFFS_NORMAL, "3.5");
+        testRunner.setProperty(OutlierProcessor.ZSCORE_CUTOFFS_MODERATE, "5");
         testRunner.assertValid();
 
 

@@ -18,6 +18,8 @@ package com.caseystella.analytics.outlier.streaming;
 import com.caseystella.analytics.distribution.GlobalStatistics;
 import com.caseystella.analytics.distribution.config.RotationConfig;
 import com.caseystella.analytics.distribution.scaling.ScalingFunctions;
+import com.caseystella.analytics.outlier.batch.rpca.RPCAOutlierAlgorithm;
+import com.caseystella.analytics.outlier.streaming.mad.SketchyMovingMAD;
 import com.google.common.collect.ImmutableList;
 
 import java.io.Serializable;
@@ -26,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 public class OutlierConfig implements Serializable {
-    private RotationConfig rotationPolicy;
-    private RotationConfig chunkingPolicy;
-    private GlobalStatistics globalStatistics;
+    private RotationConfig rotationPolicy = new RotationConfig();
+    private RotationConfig chunkingPolicy = new RotationConfig();
+    private GlobalStatistics globalStatistics = new GlobalStatistics();
     private OutlierAlgorithm sketchyOutlierAlgorithm;
     private com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
     private ScalingFunctions scalingFunction = null;

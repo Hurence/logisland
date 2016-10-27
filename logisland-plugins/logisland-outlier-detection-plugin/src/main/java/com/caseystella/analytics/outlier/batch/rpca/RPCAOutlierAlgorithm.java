@@ -31,14 +31,14 @@ import java.util.List;
 
 public class RPCAOutlierAlgorithm implements OutlierAlgorithm{
     private static final double EPSILON = 1e-12;
-    private static final String THRESHOLD_CONF = "rpca.threshold";
+    public static final String THRESHOLD_CONF = "rpca.threshold";
 
     private final double LPENALTY_DEFAULT = 1;
     private final double SPENALTY_DEFAULT = 1.4;
-    private final String LPENALTY_CONFIG = "lpenalty";
-    private final String SPENALTY_CONFIG = "spenalty";
-    private final String FORCE_DIFF_CONFIG = "forceDiff";
-    private final String MIN_RECORDS_CONFIG = "minRecords";
+    public static final String LPENALTY_CONFIG = "lpenalty";
+    public static final String SPENALTY_CONFIG = "spenalty";
+    public static final String FORCE_DIFF_CONFIG = "forceDiff";
+    public static final String MIN_RECORDS_CONFIG = "minRecords";
 
     private Double  lpenalty;
     private Double  spenalty;
