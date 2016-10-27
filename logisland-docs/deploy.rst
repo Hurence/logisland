@@ -39,6 +39,8 @@ When it comes to scale, you'll need a cluster. **logisland** is just a framework
 For now Log-Island is fully compatible with HDP 2.4 but it should work well on any cluster running Kafka and Spark.
 Get the latest release and build the package.
 
+You can download the `latest release build <https://github.com/Hurence/logisland/releases/download/v0.9.5/logisland-0.9.5-bin.tar.gz>`_
+
 .. code-block:: bash
 
     git clone git@github.com:Hurence/logisland.git

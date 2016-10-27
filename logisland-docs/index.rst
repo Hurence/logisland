@@ -13,6 +13,9 @@ Chat with us on Gitter
    :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
    :alt: Gitter
 
+
+Download the `latest release build <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
+
 Contents:
 
 .. toctree::

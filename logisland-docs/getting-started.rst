@@ -57,6 +57,11 @@ Now run the container
 you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
 
 
+
+.. note::
+
+    If you have your own Spark and Kafka cluster, you can download the `latest release build <https://github.com/Hurence/logisland/releases/download/v0.9.5/logisland-0.9.5-bin.tar.gz>`_ and unzip on an edge node.
+
 Start playing with logs
 -----------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch

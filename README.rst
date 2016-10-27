@@ -6,8 +6,7 @@ Log Island
 
 
 
-
-Chat with us on gitter
+Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and chat with us on gitter
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
