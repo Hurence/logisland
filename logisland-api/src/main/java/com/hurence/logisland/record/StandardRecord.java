@@ -70,9 +70,9 @@ public class StandardRecord implements Record {
 
     @Override
     public String toString() {
-        return "Event{" +
+        return "Record{" +
                 "fields=" + fields +
-                ", creationDate=" + getTime() +
+                ", time=" + getTime() +
                 ", type='" + getType() + '\'' +
                 ", id='" + getId() + '\'' +
                 '}';

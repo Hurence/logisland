@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 public enum ProcessError {
 
     REGEX_PARSING_ERROR,
+    RUNTIME_ERROR,
     UNKNOWN_ERROR;
 
 

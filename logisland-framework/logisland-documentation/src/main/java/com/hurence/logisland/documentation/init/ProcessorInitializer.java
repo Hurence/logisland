@@ -34,7 +34,7 @@ public class ProcessorInitializer implements ConfigurableComponentInitializer {
     @Override
     public void initialize(ConfigurableComponent component) {
         Processor processor = (Processor) component;
-        processor.init(new MockProcessContext());
+      //  processor.init(new MockProcessContext());
     }
 
     @Override

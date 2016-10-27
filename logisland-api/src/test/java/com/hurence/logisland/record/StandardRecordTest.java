@@ -22,10 +22,7 @@ package com.hurence.logisland.record;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -33,6 +30,7 @@ import static org.junit.Assert.*;
  * @author tom
  */
 public class StandardRecordTest {
+
 
 
     @Test

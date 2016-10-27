@@ -16,12 +16,12 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.math3.util.Pair;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Assert;
@@ -36,11 +36,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
-public class OutlierProcessorTest {
+public class OutliersDetectionTest {
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesCsvLoader.class);
     private final static Charset ENCODING = StandardCharsets.UTF_8;
     private final String RESOURCES_DIRECTORY = "target/test-classes/benchmark_data/";
@@ -51,23 +53,48 @@ public class OutlierProcessorTest {
     @Test
     @Ignore("too long")
     public void testDetection() throws IOException {
-        final TestRunner testRunner = TestRunners.newTestRunner(new OutlierProcessor());
-        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_TYPE, "by_amount");
-        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_AMOUNT, "100");
-        testRunner.setProperty(OutlierProcessor.ROTATION_POLICY_UNIT, "points");
-        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_TYPE, "by_amount");
-        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_AMOUNT, "10");
-        testRunner.setProperty(OutlierProcessor.CHUNKING_POLICY_UNIT, "points");
-        testRunner.setProperty(OutlierProcessor.GLOBAL_STATISTICS_MIN, "-100000");
-        testRunner.setProperty(OutlierProcessor.MIN_AMOUNT_TO_PREDICT, "100");
-        testRunner.setProperty(OutlierProcessor.ZSCORE_CUTOFFS_NORMAL, "3.5");
-        testRunner.setProperty(OutlierProcessor.ZSCORE_CUTOFFS_MODERATE, "5");
+        final TestRunner testRunner = TestRunners.newTestRunner(new OutliersDetection());
+        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_AMOUNT, "100");
+        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_UNIT, "points");
+        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_AMOUNT, "10");
+        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_UNIT, "points");
+        testRunner.setProperty(OutliersDetection.GLOBAL_STATISTICS_MIN, "-100000");
+        testRunner.setProperty(OutliersDetection.MIN_AMOUNT_TO_PREDICT, "100");
+        testRunner.setProperty(OutliersDetection.ZSCORE_CUTOFFS_NORMAL, "3.5");
+        testRunner.setProperty(OutliersDetection.ZSCORE_CUTOFFS_MODERATE, "5");
+
+        testRunner.setProperty(OutliersDetection.RECORD_VALUE_FIELD, "value");
+        testRunner.setProperty(OutliersDetection.RECORD_TIME_FIELD, "timestamp");
         testRunner.assertValid();
 
 
         File f = new File(RESOURCES_DIRECTORY);
 
+
+
+
+
+        Pair<Integer,Integer>[] results = new Pair[]{
+                new Pair(4032, 124),
+                new Pair(4032, 8),
+                new Pair(4032, 315),
+                new Pair(4032, 0),
+                new Pair(4032, 29),
+                new Pair(4032, 2442),
+                new Pair(4032, 314),
+                new Pair(4032, 296)
+
+        };
+
+        int count = 0;
         for (File file : FileUtils.listFiles(f, new SuffixFileFilter(".csv"), TrueFileFilter.INSTANCE)) {
+
+            if(count>=results.length)
+                break;
+
+
             BufferedReader reader = Files.newBufferedReader(file.toPath(), ENCODING);
             List<Record> records = TimeSeriesCsvLoader.load(reader, true, inputDateFormat);
             Assert.assertTrue(!records.isEmpty());
@@ -80,7 +107,9 @@ public class OutlierProcessorTest {
 
             System.out.println("records.size() = " + records.size());
             System.out.println("testRunner.getOutputRecords().size() = " + testRunner.getOutputRecords().size());
-          //  testRunner.assertOutputRecordsCount(533);
+            testRunner.assertOutputRecordsCount(results[count].getSecond());
+            count++;
+
         }
 
     }

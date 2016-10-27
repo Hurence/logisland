@@ -25,11 +25,13 @@ import com.caseystella.analytics.outlier.batch.rpca.RPCAOutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.streaming.mad.SketchyMovingMAD;
+import com.hurence.logisland.annotation.behavior.Stateful;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.ValidationContext;
 import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -40,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
+@Stateful
 @Tags({"analytic", "outlier", "record", "iot", "timeseries"})
 @CapabilityDescription("Outlier Analysis: A Hybrid Approach\n" +
         "In order to function at scale, a two-phase approach is taken\n" +
@@ -54,18 +57,35 @@ import java.util.*;
         "- Expensive computationally, but run infrequently\n" +
         "\n" +
         "This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.")
-public class OutlierProcessor extends AbstractProcessor {
+public class OutliersDetection extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
 
-    public static String EVENT_TYPE = "sensor_outlier";
+    public static String EVENT_TYPE = "outlier";
     public static String OUTLIER_PROCESSING_EXCEPTION_TYPE = "outlier_processing_exception";
 
-    private static final Logger logger = LoggerFactory.getLogger(OutlierProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(OutliersDetection.class);
     private OutlierConfig outlierConfig;
     private OutlierAlgorithm sketchyOutlierAlgorithm;
     com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
 
+
+    public static final PropertyDescriptor RECORD_VALUE_FIELD = new PropertyDescriptor.Builder()
+            .name("value.field")
+            .description("the numeric field to get the value")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(FieldDictionary.RECORD_VALUE)
+            .build();
+
+
+    public static final PropertyDescriptor RECORD_TIME_FIELD = new PropertyDescriptor.Builder()
+            .name("time.field")
+            .description("the numeric field to get the value")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(FieldDictionary.RECORD_TIME)
+            .build();
 
     public static final PropertyDescriptor ROTATION_POLICY_TYPE = new PropertyDescriptor.Builder()
             .name("rotation.policy.type")
@@ -281,6 +301,8 @@ public class OutlierProcessor extends AbstractProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(RECORD_VALUE_FIELD);
+        descriptors.add(RECORD_TIME_FIELD);
         descriptors.add(ROTATION_POLICY_TYPE);
         descriptors.add(ROTATION_POLICY_AMOUNT);
         descriptors.add(ROTATION_POLICY_UNIT);
@@ -512,7 +534,7 @@ public class OutlierProcessor extends AbstractProcessor {
 
         final Collection<ValidationResult> results = new ArrayList<>();
 
-        if(context.getProperty(DECAY).asDouble() < 0.0){
+        if (context.getProperty(DECAY).asDouble() < 0.0) {
             results.add(
                     new ValidationResult.Builder()
                             .valid(false)
@@ -522,7 +544,7 @@ public class OutlierProcessor extends AbstractProcessor {
                             .build()
             );
         }
-        if(context.getProperty(DECAY).asDouble() >= 1.0){
+        if (context.getProperty(DECAY).asDouble() >= 1.0) {
             results.add(
                     new ValidationResult.Builder()
                             .valid(false)
@@ -547,18 +569,18 @@ public class OutlierProcessor extends AbstractProcessor {
 
         Collection<Record> list = new ArrayList<>();
 
+        final String valueField = context.getProperty(RECORD_VALUE_FIELD).asString();
+        final String timeField = context.getProperty(RECORD_TIME_FIELD).asString();
 
         // loop over all events in collection
         for (Record record : records) {
 
             try {
-
                 // convert an event to a dataPoint.
-                long timestamp = (long) record.getField("timestamp").getRawValue();
-                double value = (double) record.getField("value").getRawValue();
+                long timestamp = record.getField(timeField).asLong();
+                double value = record.getField(valueField).asDouble();
 
-                DataPoint dp = new DataPoint(timestamp, value, new HashMap<String, String>(), "kafka_topic");
-
+                DataPoint dp = new DataPoint(timestamp, value, new HashMap<>(), record.getType());
 
                 // now let's look for outliers
                 Outlier outlier = sketchyOutlierAlgorithm.analyze(dp);
@@ -567,27 +589,22 @@ public class OutlierProcessor extends AbstractProcessor {
                     outlier = batchOutlierAlgorithm.analyze(outlier, outlier.getSample(), dp);
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
-                        StandardRecord evt = new StandardRecord(EVENT_TYPE);
-                        evt.setField("root_event_value", FieldType.DOUBLE, record.getField("value").getRawValue());
-                        evt.setStringField("root_event_id", record.getId());
-                        evt.setStringField("root_event_type", record.getType());
-                        evt.setStringField("severity", outlier.getSeverity().name());
-                        evt.setField("score", FieldType.DOUBLE, outlier.getScore());
-                        evt.setField("num_points", FieldType.INT, outlier.getNumPts());
+                        Record evt = new StandardRecord(record)
+                                .setType(EVENT_TYPE)
+                                .setTime(new Date(timestamp))
+                                .setStringField("outlier_severity", "severe")
+                                .setField("outlier_score", FieldType.DOUBLE, outlier.getScore())
+                                .setField("outlier_num_points", FieldType.INT, outlier.getNumPts());
                         list.add(evt);
-
-
-                    }/*else{
-                        logger.info("outlier not so severe");
-                    }*/
+                    }
                 }
 
             } catch (RuntimeException e) {
-
-                StandardRecord evt = new StandardRecord(OUTLIER_PROCESSING_EXCEPTION_TYPE);
-                evt.setStringField("message", e.getMessage());
-                list.add(evt);
-                //  logger.info(e.getMessage(), e);
+                list.add(new StandardRecord(OUTLIER_PROCESSING_EXCEPTION_TYPE)
+                        .setStringField(FieldDictionary.RECORD_ERROR, ProcessError.RUNTIME_ERROR.toString())
+                        .setStringField(FieldDictionary.RECORD_RAW_VALUE, e.getMessage())
+                        .setStringField(FieldDictionary.PROCESSOR_NAME, OutliersDetection.class.getName())
+                );
             }
         }
 

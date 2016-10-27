@@ -8,23 +8,17 @@ FullyDocumentedProcessor
 ------------------------
 This is a processor that is used to test documentation.
 
+Class
+_____
+com.hurence.logisland.documentation.example.FullyDocumentedProcessor
+
 Tags
 ____
 one, two, three
 
 Properties
 __________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-, and whether a property supports the  `Expression Language <expression-language.html>`_ .
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**Input Directory**", "The input directory from which to pull files", "", "null", "", "**true**"
-   "**Recurse Subdirectories**", "Indicates whether or not to pull files from subdirectories", "true : Should pull from sub directories, false : Should not pull from sub directories, ", "true", "", ""
-   "Optional Property", "This is a property you can use or not", "", "null", "", ""
-   "**Type**", "This is the type of something that you can choose.  It has several possible values", "yes : , no : , maybe : , possibly : , not likely : , longer option name : , ", "null", "", ""
+This component has no required or optional properties.
 
 Dynamic Properties
 __________________
@@ -47,6 +41,10 @@ _________
 HdfsBurnerEngine
 ----------------
 No description provided.
+
+Class
+_____
+com.hurence.logisland.engine.spark.HdfsBurnerEngine
 
 Tags
 ____
@@ -91,11 +89,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 KafkaRecordStream
 -----------------
-No description provided.
+This is a processor chain that connects to Kafka topics
+
+Class
+_____
+com.hurence.logisland.processor.chain.KafkaRecordStream
 
 Tags
 ____
-None.
+chain, kafka
 
 Properties
 __________
@@ -130,6 +132,10 @@ MockProcessingEngine
 --------------------
 No description provided.
 
+Class
+_____
+com.hurence.logisland.engine.MockProcessingEngine
+
 Tags
 ____
 None.
@@ -151,11 +157,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MockProcessor
 -------------
-No description provided.
+This is a processor that add a fake message to each incoming records
+
+Class
+_____
+com.hurence.logisland.processor.MockProcessor
 
 Tags
 ____
-None.
+record, mock, test
 
 Properties
 __________
@@ -174,11 +184,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MockProcessorChain
 ------------------
-No description provided.
+This is a processor chain that does nothing
+
+Class
+_____
+com.hurence.logisland.processor.chain.MockProcessorChain
 
 Tags
 ____
-None.
+record, mock, test
 
 Properties
 __________
@@ -199,6 +213,10 @@ NakedProcessor
 --------------
 No description provided.
 
+Class
+_____
+com.hurence.logisland.documentation.example.NakedProcessor
+
 Tags
 ____
 None.
@@ -209,15 +227,31 @@ This component has no required or optional properties.
 
 ----------
 
-.. _com.hurence.logisland.processor.OutlierProcessor: 
+.. _com.hurence.logisland.processor.OutliersDetection: 
 
-OutlierProcessor
-----------------
-No description provided.
+OutliersDetection
+-----------------
+Outlier Analysis: A Hybrid Approach
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Class
+_____
+com.hurence.logisland.processor.OutliersDetection
 
 Tags
 ____
-None.
+analytic, outlier, record, iot, timeseries
 
 Properties
 __________
@@ -228,14 +262,34 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**Rotation Policy Type**", "...", "", "BY_AMOUNT", "", ""
-   "**Rotation Policy Amount**", "...", "", "100", "", ""
-   "**Rotation Policy Amount**", "...", "", "100", "", ""
-   "**Chunking Policy Type**", "...", "", "BY_AMOUNT", "", ""
-   "**Chunking Policy Amount**", "...", "", "100", "", ""
-   "**Chunking Policy Amount**", "...", "", "100", "", ""
-   "**Sketchy outlier algorithm**", "...", "SKETCHY_MOVING_MAD : , ", "SKETCHY_MOVING_MAD", "", ""
-   "**Batch outlier algorithm**", "...", "RAD : , ", "RAD", "", ""
+   "**value.field**", "the numeric field to get the value", "", "record_value", "", ""
+   "**time.field**", "the numeric field to get the value", "", "record_time", "", ""
+   "**rotation.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
+   "**rotation.policy.amount**", "...", "", "100", "", ""
+   "**rotation.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
+   "**chunking.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
+   "**chunking.policy.amount**", "...", "", "100", "", ""
+   "**chunking.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD : , ", "SKETCHY_MOVING_MAD", "", ""
+   "batch.outlier.algorithm", "...", "RAD : , ", "RAD", "", ""
+   "global.statistics.min", "minimum value", "", "null", "", ""
+   "global.statistics.max", "maximum value", "", "null", "", ""
+   "global.statistics.mean", "mean value", "", "null", "", ""
+   "global.statistics.stddev", "standard deviation value", "", "null", "", ""
+   "**zscore.cutoffs.normal**", "zscoreCutoffs levele for normal outlier", "", "0.000000000000001", "", ""
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs levele for moderate outlier", "", "1.5", "", ""
+   "**zscore.cutoffs.severe**", "zscoreCutoffs levele for severe outlier", "", "10.0", "", ""
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs levele for notEnoughData outlier", "", "100", "", ""
+   "smooth", "do smoothing ?", "", "false", "", ""
+   "decay", "the decay", "", "0.1", "", ""
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "", ""
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "", ""
+   "reservoir_size", "the size of points reservoir", "", "100", "", ""
+   "rpca.force.diff", "No Description Provided.", "", "null", "", ""
+   "rpca.lpenalty", "No Description Provided.", "", "null", "", ""
+   "rpca.min.records", "No Description Provided.", "", "null", "", ""
+   "rpca.spenalty", "No Description Provided.", "", "null", "", ""
+   "rpca.threshold", "No Description Provided.", "", "null", "", ""
 
 ----------
 
@@ -243,11 +297,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 PutElasticsearch
 ----------------
-No description provided.
+This is a processor that puts records to ES
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.PutElasticsearch
 
 Tags
 ____
-None.
+record, elasticsearch, sink, record
 
 Properties
 __________
@@ -279,15 +337,46 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.RandomRecordGenerator: 
+.. _com.hurence.logisland.processor.QueryMatcherProcessor: 
 
-RandomRecordGenerator
+QueryMatcherProcessor
 ---------------------
 No description provided.
+
+Class
+_____
+com.hurence.logisland.processor.QueryMatcherProcessor
 
 Tags
 ____
 None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**Luwak rules**", "a comma separated string of rules", "", "*", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.RandomRecordGenerator: 
+
+RandomRecordGenerator
+---------------------
+This is a processor that make random records given an Avro schema
+
+Class
+_____
+com.hurence.logisland.processor.RandomRecordGenerator
+
+Tags
+____
+record, avro, generator
 
 Properties
 __________
@@ -308,11 +397,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 RecordDebugger
 --------------
-No description provided.
+This is a processor that logs incoming records
+
+Class
+_____
+com.hurence.logisland.processor.RecordDebugger
 
 Tags
 ____
-None.
+record, debug
 
 Properties
 __________
@@ -332,6 +425,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
 SparkStreamProcessingEngine
 ---------------------------
 No description provided.
+
+Class
+_____
+com.hurence.logisland.engine.spark.SparkStreamProcessingEngine
 
 Tags
 ____
@@ -366,6 +463,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "spark.streaming.kafka.maxRetries", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "3", "", ""
    "spark.streaming.ui.retainedBatches", "How many batches the Spark Streaming UI and status APIs remember before garbage collecting.", "", "200", "", ""
    "spark.streaming.receiver.writeAheadLog.enable", "Enable write ahead logs for receivers. All the input data received through receivers will be saved to write ahead logs that will allow it to be recovered after driver failures.", "", "false", "", ""
+   "spark.ui.showConsoleProgress", "enable disable progress bar logging", "", "false", "", ""
 
 ----------
 
@@ -373,11 +471,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SplitText
 ---------
-This is a processor that is used to split a String into fields according to a given mapping
+This is a processor that is used to split a String into fields according to a given Record mapping
+
+Class
+_____
+com.hurence.logisland.processor.SplitText
 
 Tags
 ____
-parser, regex, log
+parser, regex, log, record
 
 Properties
 __________
@@ -392,18 +494,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**value.fields**", "a comma separated list of fields corresponding to matching groups for the message value", "", "null", "", ""
    "key.regex", "the regex to match for the message key", "", ".*", "", ""
    "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
-   "event.type", "default type of event", "", "event", "", ""
+   "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
-
-Dynamic Properties
-__________________
-Dynamic Properties allow the user to specify both the name and value of a property.
-
-.. csv-table:: dynamic-properties
-   :header: "Name","Value","Description","EL"
-   :widths: 20,20,40,10
-
-   "Relationship Name", "some XPath", "Routes Records to relationships based on XPath", **true**
 
 See Also:
 _________
@@ -416,6 +508,10 @@ _________
 SplitTextMultiline
 ------------------
 No description provided.
+
+Class
+_____
+com.hurence.logisland.processor.SplitTextMultiline
 
 Tags
 ____
@@ -441,6 +537,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
 StandardSparkStreamProcessingEngine
 -----------------------------------
 This is a spark streaming engine
+
+Class
+_____
+com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine
 
 Tags
 ____
