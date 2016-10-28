@@ -73,7 +73,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         this.inputRecordsQueue = new RecordQueue();
         this.outputRecordsList = new ArrayList<>();
         this.context = new MockProcessContext(processor);
-        this.processor.init(context);
     }
 
 
@@ -90,6 +89,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void run() {
+        this.processor.init(context);
         while (!inputRecordsQueue.isEmpty()) {
             Record inputRecord = inputRecordsQueue.poll();
             Collection<Record> outputRecords = processor.process(context, inputRecord);

@@ -19,6 +19,7 @@ import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,14 @@ import java.util.Collections;
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
 
+
+    public static final PropertyDescriptor INCLUDE_INPUT_RECORDS = new PropertyDescriptor.Builder()
+            .name("include.input.records")
+            .description("if set to true all the input records are copied to output")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
+            .build();
 
     private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 

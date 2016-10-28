@@ -48,11 +48,13 @@ import java.util.*;
         "In order to function at scale, a two-phase approach is taken\n" +
         "\n" +
         "For every data point\n" +
+        "\n" +
         "- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)\n" +
         "- Gather a biased sample (biased by recency)\n" +
         "- Extremely deterministic in space and cheap in computation\n" +
         "\n" +
         "For every outlier candidate\n" +
+        "\n" +
         "- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample\n" +
         "- Expensive computationally, but run infrequently\n" +
         "\n" +
