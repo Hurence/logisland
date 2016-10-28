@@ -350,7 +350,7 @@ a new record is added to output each time a registered query is matched
 
 A query is expressed as a lucene query against a field like for example: 
 
-.. code-block::
+.. code-block:: guess
 
    message:'bad exception'
    error_count:[10 TO *]
