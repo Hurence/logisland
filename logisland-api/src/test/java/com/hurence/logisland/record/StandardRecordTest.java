@@ -85,15 +85,6 @@ public class StandardRecordTest {
     }
 
 
-    @Test(expected = ClassCastException.class)
-    public void validateRecordTypeConvertion() throws IOException {
-
-        Field field = new StandardRecord()
-                .setField("request_size", FieldType.INT, 1399)
-                .getField("request_size");
-        field.asFloat();
-    }
-
     @Test
     public void validateRecordValidity() {
 
@@ -119,5 +110,9 @@ public class StandardRecordTest {
         assertFalse(record.isValid());
         record.setField("request_size", FieldType.FLOAT, 45.5d);
         assertFalse(record.isValid());
+
+
+        record.setField("request_size", FieldType.INT, 45);
+        assertTrue(45.0d- record.getField("request_size").asDouble() == 0);
     }
 }

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,14 +63,14 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     private final Processor processor;
     private final MockProcessContext context;
-    private final RecordQueue inputRecordsQueue;
+    private final List<Record> inputRecordsQueue;
     private final List<Record> outputRecordsList;
     private static Logger logger = LoggerFactory.getLogger(StandardProcessorTestRunner.class);
     private static final AtomicLong currentId = new AtomicLong(0);
 
     StandardProcessorTestRunner(final Processor processor) {
         this.processor = processor;
-        this.inputRecordsQueue = new RecordQueue();
+        this.inputRecordsQueue = new ArrayList<>();
         this.outputRecordsList = new ArrayList<>();
         this.context = new MockProcessContext(processor);
     }
@@ -90,11 +90,9 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void run() {
         this.processor.init(context);
-        while (!inputRecordsQueue.isEmpty()) {
-            Record inputRecord = inputRecordsQueue.poll();
-            Collection<Record> outputRecords = processor.process(context, inputRecord);
-            outputRecordsList.addAll(outputRecords);
-        }
+        Collection<Record> outputRecords = processor.process(context, inputRecordsQueue);
+        outputRecordsList.addAll(outputRecords);
+        inputRecordsQueue.clear();
     }
 
 
@@ -112,7 +110,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void enqueue(final Record... records) {
         for (final Record record : records) {
-            inputRecordsQueue.offer(record);
+            inputRecordsQueue.add(record);
         }
     }
 

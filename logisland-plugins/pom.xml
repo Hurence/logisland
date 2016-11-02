@@ -34,5 +34,6 @@
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-kafka-plugin</module>
+        <module>logisland-sampling-plugin</module>
     </modules>
 </project>
