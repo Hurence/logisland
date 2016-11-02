@@ -37,7 +37,7 @@ import java.util.*;
 
 
 @Tags({"analytic", "percolator", "record", "record", "query", "lucene"})
-@CapabilityDescription("Query matching processor\n\n" +
+@CapabilityDescription("Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_\n\n" +
         "you can use this processor to handle custom events defined by lucene queries\n" +
         "a new record is added to output each time a registered query is matched\n\n" +
         "A query is expressed as a lucene query against a field like for example: \n\n" +
