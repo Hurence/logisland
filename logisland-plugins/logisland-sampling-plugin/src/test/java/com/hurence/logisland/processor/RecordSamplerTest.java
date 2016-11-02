@@ -16,10 +16,8 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
+import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
@@ -80,13 +78,21 @@ public class RecordSamplerTest {
         return res;
     }
 
+    private void printRecords(List<MockRecord> records){
+        records.forEach(r ->
+                System.out.println(r.getField(FieldDictionary.RECORD_TIME).asLong() + ":" +
+                        r.getField(FieldDictionary.RECORD_VALUE).asDouble())
+        );
+
+    }
+
 
     @Test
     public void validateNoSampling() {
         final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
         testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
         testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, "none");
+        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.NO_SAMPLING);
         testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "0");
         testRunner.assertValid();
 
@@ -104,7 +110,7 @@ public class RecordSamplerTest {
         final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
         testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
         testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, "first_item");
+        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.FIRST_ITEM_SAMPLING);
         testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
         testRunner.assertValid();
 
@@ -114,6 +120,44 @@ public class RecordSamplerTest {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(9);
-        testRunner.getOutputRecords().forEach(System.out::println);
+        printRecords(testRunner.getOutputRecords());
+    }
+
+    @Test
+    public void validateAverageSampling() {
+        int recordsCount = 2000;
+        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
+        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.AVERAGE_SAMPLING);
+        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
+        testRunner.assertValid();
+
+
+        testRunner.clearQueues();
+        testRunner.enqueue(createRawData(recordsCount));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(9);
+        printRecords(testRunner.getOutputRecords());
+    }
+
+    @Test
+    public void validateLLTBSampling() {
+        int recordsCount = 2000;
+        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
+        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.LTTB_SAMPLING);
+        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "10"); // bucket size => 9 buckets
+        testRunner.assertValid();
+
+
+        testRunner.clearQueues();
+        testRunner.enqueue(createRawData(recordsCount));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(9);
+        printRecords(testRunner.getOutputRecords());
     }
 }

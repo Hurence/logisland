@@ -51,7 +51,7 @@ public class AverageSampler extends AbstractSampler {
 
         // simple average to 100 data points
         final int realBucketSize = SamplingUtils.fitBucketSize(inputRecords, bucketSize);
-        List<Record> sampledRecords = SamplingUtils.grouped(inputRecords, realBucketSize)
+        return SamplingUtils.grouped(inputRecords, realBucketSize)
                 .map(bucket -> {
 
                     bucket.forEach(record -> {
@@ -79,8 +79,5 @@ public class AverageSampler extends AbstractSampler {
                     }
                     return sampleRecord;
                 }).collect(Collectors.toList());
-
-
-        return null;
     }
 }

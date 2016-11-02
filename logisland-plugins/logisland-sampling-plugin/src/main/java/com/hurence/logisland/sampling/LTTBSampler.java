@@ -20,6 +20,7 @@ import com.hurence.logisland.record.Record;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LTTBSampler extends AbstractSampler {
 
@@ -120,6 +121,9 @@ public class LTTBSampler extends AbstractSampler {
         }
 
         ArrayList<Record> sampled = new ArrayList<>(threshold);
+        for(int i=0; i<threshold; i++){
+            sampled.add(null);
+        }
         ArrayList<Record> data = new ArrayList<>(inputRecords);
 
 
@@ -180,6 +184,9 @@ public class LTTBSampler extends AbstractSampler {
         }
 
         sampled.set(sampledIndex++, data.get(inputRecords.size() - 1));
-        return sampled;
+        return sampled
+                .stream()
+                .filter(record -> record != null)
+                .collect(Collectors.toList());
     }
 }

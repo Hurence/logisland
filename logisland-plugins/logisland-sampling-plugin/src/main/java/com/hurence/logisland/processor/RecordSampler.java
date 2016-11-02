@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -65,12 +66,18 @@ public class RecordSampler extends AbstractProcessor {
             .defaultValue(FieldDictionary.RECORD_TIME)
             .build();
 
+    public static final AllowableValue NO_SAMPLING = new AllowableValue("none");
+    public static final AllowableValue LTTB_SAMPLING = new AllowableValue("lttb");
+    public static final AllowableValue AVERAGE_SAMPLING = new AllowableValue("average");
+    public static final AllowableValue FIRST_ITEM_SAMPLING = new AllowableValue("first_item");
+
+
     public static final PropertyDescriptor SAMPLING_ALGORITHM = new PropertyDescriptor.Builder()
             .name("sampling.algorithm")
             .description("the implementation of the algorithm")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .allowableValues("none", "lttb", "average", "first_item")
+            .allowableValues(NO_SAMPLING.getValue(), LTTB_SAMPLING.getValue(), AVERAGE_SAMPLING.getValue(), FIRST_ITEM_SAMPLING.getValue())
             .build();
 
     public static final PropertyDescriptor SAMPLING_PARAMETER = new PropertyDescriptor.Builder()
