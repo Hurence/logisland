@@ -4,5 +4,7 @@
 **/dependency-reduced-pom.xml
 *.tar.gz
 **/_build/
+*.DS_Store
+*.versionsBackup
 checkpoints/
 logs/

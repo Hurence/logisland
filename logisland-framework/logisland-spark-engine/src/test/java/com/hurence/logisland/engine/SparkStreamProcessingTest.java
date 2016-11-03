@@ -21,6 +21,7 @@ import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorChainConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.engine.spark.AbstractSparkStreamProcessingEngine;
+import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
 import com.hurence.logisland.processor.MockProcessor;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
 import com.hurence.logisland.record.Record;
@@ -130,7 +131,7 @@ public class SparkStreamProcessingTest {
 
 
         EngineConfiguration conf = new EngineConfiguration();
-        conf.setComponent(AbstractSparkStreamProcessingEngine.class.getName());
+        conf.setComponent(StandardSparkStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
         conf.addProcessorChainConfigurations(createProcessorChainConfiguration());

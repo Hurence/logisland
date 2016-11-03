@@ -25,6 +25,7 @@ import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
 import com.hurence.logisland.processor.RecordDebugger;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ public class StreamProcessingDebuggerTest {
 
 
     @Test
+    @Ignore
     public void remoteTest() {
 
         logger.info("starting StreamProcessingRunner");
