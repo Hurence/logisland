@@ -25,7 +25,7 @@ import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.util.kafka.KafkaSink
-import com.hurence.logisland.util.spark.ZookeeperSink
+import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
 import com.hurence.logisland.util.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -86,26 +86,26 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-        descriptors.add(SparkStreamProcessingEngine.SPARK_APP_NAME)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_MASTER)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_YARN_QUEUE)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_DRIVER_CORES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_SERIALIZER)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_UI_PORT)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_APP_NAME)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_MASTER)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_YARN_QUEUE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_DRIVER_CORES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_SERIALIZER)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_UI_PORT)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
         descriptors.add(HdfsBurnerEngine.OUTPUT_FOLDER_PATH)
         descriptors.add(HdfsBurnerEngine.OUTPUT_FORMAT)
         descriptors.add(HdfsBurnerEngine.RECORD_TYPE)
@@ -135,35 +135,6 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
 
 
 
-            def convertToRow(record: Record): Row = {
-                Row.fromSeq(
-                    record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
-                        f.getType match {
-                            case FieldType.INT => f.asInteger().intValue()
-                            case FieldType.LONG => f.asLong().longValue()
-                            case FieldType.FLOAT => f.asFloat().floatValue()
-                            case FieldType.DOUBLE => f.asDouble().doubleValue()
-                            case FieldType.STRING => f.asString()
-                            case _ => f.asString()
-                        }
-                    }).toSeq
-                )
-            }
-
-            def convertFieldsNameToSchema(record: Record): StructType = {
-                StructType(
-                    record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
-                        f.getType match {
-                            case FieldType.INT => StructField(f.getName, IntegerType, nullable = true)
-                            case FieldType.LONG => StructField(f.getName, LongType, nullable = true)
-                            case FieldType.FLOAT => StructField(f.getName, FloatType, nullable = true)
-                            case FieldType.DOUBLE => StructField(f.getName, DoubleType, nullable = true)
-                            case FieldType.STRING => StructField(f.getName, StringType, nullable = true)
-                            case _ => StructField(f.getName, StringType, nullable = true)
-                        }
-                    })
-                )
-            }
 
 
 
@@ -183,8 +154,8 @@ class HdfsBurnerEngine extends AbstractSparkStreamProcessingEngine {
                 )
 
             if(!records.isEmpty()){
-                val rows = records.map(r => convertToRow(r))
-                val schema = convertFieldsNameToSchema(records.take(1)(0))
+                val rows = records.map(r => SparkUtils.convertToRow(r))
+                val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
 
                 sqlContext.createDataFrame(rows, schema)
                     .write

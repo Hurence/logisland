@@ -63,10 +63,10 @@ class StandardSparkStreamProcessingEngine extends AbstractSparkStreamProcessingE
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-            val appName = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString
-            val batchDuration = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-            val maxRatePerPartition = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
-            val blockInterval = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
+            val appName = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_APP_NAME).asString
+            val batchDuration = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+            val maxRatePerPartition = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
+            val blockInterval = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
             val processorChainContext = new StandardProcessContext(processorChainInstance)
             val inputTopics = processorChainContext.getProperty(KafkaRecordStream.INPUT_TOPICS).asString
             val outputTopics = processorChainContext.getProperty(KafkaRecordStream.OUTPUT_TOPICS).asString

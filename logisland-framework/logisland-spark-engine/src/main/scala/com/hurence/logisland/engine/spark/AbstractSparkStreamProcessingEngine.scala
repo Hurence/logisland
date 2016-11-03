@@ -243,31 +243,31 @@ object AbstractSparkStreamProcessingEngine {
 
 abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEngine {
 
-    private val logger = LoggerFactory.getLogger(classOf[SparkStreamProcessingEngine])
+    private val logger = LoggerFactory.getLogger(classOf[AbstractSparkStreamProcessingEngine])
 
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-        descriptors.add(SparkStreamProcessingEngine.SPARK_APP_NAME)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_MASTER)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_YARN_QUEUE)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_DRIVER_CORES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_SERIALIZER)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_UI_PORT)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
-        descriptors.add(SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_APP_NAME)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_MASTER)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_YARN_QUEUE)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_DRIVER_CORES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_SERIALIZER)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_UI_PORT)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
+        descriptors.add(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -287,7 +287,7 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
       */
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
-        val timeout = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
+        val timeout = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
 
         val context = createContext(engineContext)
 
@@ -311,12 +311,12 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
 
     def createContext(engineContext: EngineContext): StreamingContext = {
 
-        val sparkMaster = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString
-        val appName = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_APP_NAME).asString
-        val batchDuration = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
-        val timeout = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
-        val maxRatePerPartition = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
-        val blockInterval = engineContext.getProperty(SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
+        val sparkMaster = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_MASTER).asString
+        val appName = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_APP_NAME).asString
+        val batchDuration = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION).asInteger().intValue()
+        val timeout = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
+        val maxRatePerPartition = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION).asInteger().intValue()
+        val blockInterval = engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL).asInteger().intValue()
 
 
         /**
@@ -324,27 +324,27 @@ abstract class AbstractSparkStreamProcessingEngine extends AbstractProcessingEng
           */
         val conf = new SparkConf()
 
-        conf.setAppName(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
-        conf.setMaster(engineContext.getProperty(SparkStreamProcessingEngine.SPARK_MASTER).asString)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_UI_PORT)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_SERIALIZER)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_DRIVER_CORES)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
-        setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
+        conf.setAppName(engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_MASTER).asString)
+        conf.setMaster(engineContext.getProperty(AbstractSparkStreamProcessingEngine.SPARK_MASTER).asString)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_UI_PORT)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_UNPERSIST)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_SERIALIZER)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_DRIVER_MEMORY)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_MEMORY)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_DRIVER_CORES)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_CORES)
+        setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
 
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
             // That's why we do not need to propagate it here
-            setConfProperty(conf, engineContext, SparkStreamProcessingEngine.SPARK_YARN_QUEUE)
+            setConfProperty(conf, engineContext, AbstractSparkStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
         SparkUtils.customizeLogLevels

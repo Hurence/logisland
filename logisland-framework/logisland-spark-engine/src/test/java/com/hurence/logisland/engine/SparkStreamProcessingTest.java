@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ import com.hurence.logisland.config.ComponentFactory;
 import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorChainConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.engine.spark.SparkStreamProcessingEngine;
+import com.hurence.logisland.engine.spark.AbstractSparkStreamProcessingEngine;
 import com.hurence.logisland.processor.MockProcessor;
 import com.hurence.logisland.processor.chain.KafkaRecordStream;
 import com.hurence.logisland.record.Record;
@@ -123,14 +123,14 @@ public class SparkStreamProcessingTest {
 
     static EngineConfiguration createEngineConfiguration() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(SparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
-        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "2000");
-        properties.put(SparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[4]");
-        properties.put(SparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "4000");
+        properties.put(AbstractSparkStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
+        properties.put(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "2000");
+        properties.put(AbstractSparkStreamProcessingEngine.SPARK_MASTER().getName(), "local[4]");
+        properties.put(AbstractSparkStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "4000");
 
 
         EngineConfiguration conf = new EngineConfiguration();
-        conf.setComponent(SparkStreamProcessingEngine.class.getName());
+        conf.setComponent(AbstractSparkStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
         conf.addProcessorChainConfigurations(createProcessorChainConfiguration());

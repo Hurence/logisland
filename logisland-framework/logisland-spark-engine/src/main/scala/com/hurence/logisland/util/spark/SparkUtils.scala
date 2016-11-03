@@ -33,9 +33,10 @@ package com.hurence.logisland.util.spark
 
 import java.text.SimpleDateFormat
 
+import com.hurence.logisland.record.{Field, FieldType, Record}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -145,5 +146,45 @@ object SparkUtils extends LazyLogging {
       }
     })
 
+  }
+
+  /**
+    * convert a Record to a SQL Row
+    * @param record the Record to convert
+    * @return the Spar SQL row
+    */
+  def convertToRow(record: Record): Row = {
+    Row.fromSeq(
+      record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
+        f.getType match {
+          case FieldType.INT => f.asInteger().intValue()
+          case FieldType.LONG => f.asLong().longValue()
+          case FieldType.FLOAT => f.asFloat().floatValue()
+          case FieldType.DOUBLE => f.asDouble().doubleValue()
+          case FieldType.STRING => f.asString()
+          case _ => f.asString()
+        }
+      }).toSeq
+    )
+  }
+
+  /**
+    * create a dataframe schema from a Record
+    * @param record the Record to infer schema
+    * @return th schema
+    */
+  def convertFieldsNameToSchema(record: Record): StructType = {
+    StructType(
+      record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
+        f.getType match {
+          case FieldType.INT => StructField(f.getName, IntegerType, nullable = true)
+          case FieldType.LONG => StructField(f.getName, LongType, nullable = true)
+          case FieldType.FLOAT => StructField(f.getName, FloatType, nullable = true)
+          case FieldType.DOUBLE => StructField(f.getName, DoubleType, nullable = true)
+          case FieldType.STRING => StructField(f.getName, StringType, nullable = true)
+          case _ => StructField(f.getName, StringType, nullable = true)
+        }
+      })
+    )
   }
 }
