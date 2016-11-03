@@ -168,6 +168,16 @@ object SparkUtils extends LazyLogging {
     )
   }
 
+    /**
+      * convert a SQL Row to a Record to
+      * @param row the Row to convert
+      * @return the Record
+      */
+    def convertToRecord(row: Row): Record = {
+
+                       throw new NotImplementedError("todo implement here")
+    }
+
   /**
     * create a dataframe schema from a Record
     * @param record the Record to infer schema

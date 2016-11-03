@@ -46,8 +46,9 @@ public class ProcessorChainConfiguration extends AbstractComponentConfiguration 
 
     @Override
     public String toString() {
-        return "StreamConfiguration{" +
-                "processorConfigurations=" + processorConfigurations +
+        return "ProcessorChainConfiguration{" +
+                "processorChain='" + processorChain + '\'' +
+                ", processorConfigurations=" + processorConfigurations +
                 '}';
     }
 }

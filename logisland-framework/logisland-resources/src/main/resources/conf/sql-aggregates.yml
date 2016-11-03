@@ -34,8 +34,8 @@ engine:
     spark.ui.port: 4050
   processorChainConfigurations:
 
-    - processorChain: parsing_stream
-      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+    - processorChain: metrics_by_host
+      component: com.hurence.logisland.stream.spark.KafkaSQLAggregator
       type: stream
       documentation: a processor that links
       configuration:
@@ -50,28 +50,50 @@ engine:
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
+        sql.query: "SELECT count(*) AS my_exception, avg(bytes_out) AS avg_bytes_out, host_name
+                    FROM logisland_events
+                    WHERE exception = 'OhMyGodException'
+                    GROUP BY host_name"
+        max.results.count: 1000
 
-        - processor: my_god_exception_by_host
-          component: com.hurence.logisland.processor.SQLAggregator
-          type: processor
-          documentation: OhMyGodException count by host name
-          configuration:
-            sql.query: "SELECT count(*) AS my_exception FROM logisland_events WHERE exception = 'OhMyGodException' GROUP BY host_name"
-            max.results.count: 1000
+    - processorChain: top_ten_bytes_out_by_src_ip
+      component: com.hurence.logisland.stream.spark.KafkaSQLAggregator
+      type: stream
+      documentation: average bytes sent by host_name
+      configuration:
+        kafka.input.topics: syslog_events
+        kafka.output.topics: logisland_aggregations
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+        sql.query: "SELECT sum(bytes_out) AS sum_bytes_out, src_ip
+                    FROM logisland_events
+                    GROUP BY src_ip
+                    ORDER BY sum_bytes_out DESC
+                    LIMIT 10"
+        max.results.count: 1000
 
-        - processor: avg_bytes_out_by_host
-          component: com.hurence.logisland.processor.SQLAggregator
-          type: processor
-          documentation: average byes sent by host_name
-          configuration:
-            sql.query: "SELECT avg(bytes_out) AS avg_bytes_out, host_name FROM logisland_events GROUP BY host_name"
-            max.results.count: 1000
-
-        - processor: top_ten_bytes_out_by_src_ip
-          component: com.hurence.logisland.processor.SQLAggregator
-          type: processor
-          documentation: top ten traffic by src ip
-          configuration:
-            sql.query: "SELECT sum(bytes_out) AS sum_bytes_out, src_ip FROM logisland_events GROUP BY src_ip ORDER BY sum_bytes_out DESC"
-            max.results.count: 10
+    - processorChain: syslog_events_burner
+      component: com.hurence.logisland.stream.spark.KafkaHDFSBurner
+      type: stream
+      documentation: average bytes sent by host_name
+      configuration:
+        kafka.input.topics: syslog_events
+        kafka.output.topics: logisland_aggregations
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+        output.format: parquet
+        output.folder.path: "data/syslog_events"
