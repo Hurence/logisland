@@ -1,7 +1,20 @@
+# IntelliJ
 *.iml
 .idea/*
+
+# Eclipse
+**/.project
+**/.settings
+**/.classpath
+
+# Maven
 **/target/*
 **/dependency-reduced-pom.xml
+
+# File copy 
+**/*.*~
+
+# Misc
 *.tar.gz
 **/_build/
 *.DS_Store
