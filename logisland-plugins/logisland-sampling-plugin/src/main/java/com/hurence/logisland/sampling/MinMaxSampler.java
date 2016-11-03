@@ -16,11 +16,31 @@
  */
 package com.hurence.logisland.sampling;
 
-public enum SamplingAlgorithm {
-    NONE,
-    FIRST_ITEM,
-    AVERAGE,
-    MODE_MEDIAN,
-    LTTB,
-    MIN_MAX
+import com.hurence.logisland.record.Record;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class MinMaxSampler extends AbstractSampler {
+
+
+    private int numBuckets;
+
+    public MinMaxSampler(String valueFieldName, String timeFieldName, int numBuckets) {
+        super(valueFieldName,timeFieldName);
+        this.numBuckets = numBuckets;
+    }
+
+
+    /**
+     * divide the points sequence into equally sized buckets
+     * and select the first point of each bucket
+     *
+     * @param inputRecords the iput list
+     * @return
+     */
+    @Override
+    public List<Record> sample(List<Record> inputRecords) {
+       return null;
+    }
 }

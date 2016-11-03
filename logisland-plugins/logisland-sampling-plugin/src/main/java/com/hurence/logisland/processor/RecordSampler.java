@@ -70,6 +70,8 @@ public class RecordSampler extends AbstractProcessor {
     public static final AllowableValue LTTB_SAMPLING = new AllowableValue("lttb");
     public static final AllowableValue AVERAGE_SAMPLING = new AllowableValue("average");
     public static final AllowableValue FIRST_ITEM_SAMPLING = new AllowableValue("first_item");
+    public static final AllowableValue MIN_MAX_SAMPLING = new AllowableValue("min_max");
+    public static final AllowableValue MODE_MEDIAN_SAMPLING = new AllowableValue("mode_median");
 
 
     public static final PropertyDescriptor SAMPLING_ALGORITHM = new PropertyDescriptor.Builder()
@@ -77,7 +79,7 @@ public class RecordSampler extends AbstractProcessor {
             .description("the implementation of the algorithm")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .allowableValues(NO_SAMPLING.getValue(), LTTB_SAMPLING.getValue(), AVERAGE_SAMPLING.getValue(), FIRST_ITEM_SAMPLING.getValue())
+            .allowableValues(NO_SAMPLING.getValue(), LTTB_SAMPLING.getValue(), AVERAGE_SAMPLING.getValue(), FIRST_ITEM_SAMPLING.getValue(), MIN_MAX_SAMPLING.getValue(), MODE_MEDIAN_SAMPLING.getValue())
             .build();
 
     public static final PropertyDescriptor SAMPLING_PARAMETER = new PropertyDescriptor.Builder()

@@ -39,6 +39,10 @@ public class SamplerFactory {
                 return new FirstItemSampler(valueFieldName, timeFieldName, parameter);
             case AVERAGE:
                 return new AverageSampler(valueFieldName, timeFieldName, parameter);
+            case MIN_MAX:
+                return new MinMaxSampler(valueFieldName, timeFieldName, parameter);
+            case MODE_MEDIAN:
+                return new ModeMedianSampler(valueFieldName, timeFieldName, parameter);
             case NONE:
             default:
                 return new IsoSampler();
