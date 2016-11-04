@@ -31,7 +31,6 @@
         <module>logisland-plugins</module>
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
-        <module>logisland-elasticsearch-shaded</module>
         <module>logisland-assembly</module>
     </modules>
     <url>http://hurence.github.io/logisland/</url>
@@ -617,11 +616,6 @@
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-kafka-0-8-plugin</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-elasticsearch-shaded</artifactId>
-                <version>${elasticsearch.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>

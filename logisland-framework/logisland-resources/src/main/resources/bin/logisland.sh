@@ -130,7 +130,7 @@ fi
 
 case $MODE in
   default)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-shaded-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-plugin-[^,]*.jar,#,#'`
     ;;
   yarn-cluster)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
