@@ -8,7 +8,7 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 #########################################################################################################
 # engine
 engine:
-  component: com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
   documentation: Main Logisland job entry point
   configuration:
@@ -32,11 +32,11 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
-  processorChainConfigurations:
+  streamConfigurations:
 
     # parsing
     - stream: parsing_stream
-      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
       documentation: a processor that links
       configuration:
@@ -64,7 +64,7 @@ engine:
 
     # indexing
     - stream: indexing_stream
-      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: processor
       documentation: a processor that push events to ES
       configuration:

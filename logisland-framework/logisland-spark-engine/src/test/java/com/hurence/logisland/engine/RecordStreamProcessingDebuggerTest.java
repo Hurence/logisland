@@ -24,6 +24,7 @@ import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
 import com.hurence.logisland.processor.RecordDebugger;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
+import com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -47,8 +48,8 @@ public class RecordStreamProcessingDebuggerTest {
         logger.info("starting StreamProcessingRunner");
 
         ProcessorConfiguration processorConf = getDebugProcessorConfiguration();
-        StreamConfiguration chainConf = getProcessorChainConfiguration();
-        chainConf.addProcessorConfiguration(processorConf);
+        StreamConfiguration chainConf = getStreamConfiguration();
+     //   chainConf.addProcessorConfiguration(processorConf);
         EngineConfiguration engineConf = getStandardEngineConfiguration();
         engineConf.addProcessorChainConfigurations(chainConf);
 
@@ -77,7 +78,7 @@ public class RecordStreamProcessingDebuggerTest {
         Map<String, String> engineProperties = new HashMap<>();
         engineProperties.put(KafkaStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
         engineProperties.put(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "5000");
-        engineProperties.put(KafkaStreamProcessingEngine.SPARK_MASTER().getName(), "local[8]");
+        engineProperties.put(KafkaStreamProcessingEngine.SPARK_MASTER().getName(), "local[4]");
         engineProperties.put(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "20000");
 
         EngineConfiguration engineConf = new EngineConfiguration();
@@ -87,27 +88,31 @@ public class RecordStreamProcessingDebuggerTest {
         return engineConf;
     }
 
-    private StreamConfiguration getProcessorChainConfiguration() {
-        Map<String, String> chainProperties = new HashMap<>();
-        chainProperties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(),
+    private StreamConfiguration getStreamConfiguration() {
+        Map<String, String> streamProperties = new HashMap<>();
+        /*chainProperties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(),
                 "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84196:6667");
         chainProperties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(),
-                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
-        /*chainProperties.put(KafkaRecordStream.KAFKA_METADATA_BROKER_LIST.getName(),
-                "localhost:9092");
-        chainProperties.put(KafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM.getName(),
-                "localhost:2181");*/
-        chainProperties.put(AbstractKafkaRecordStream.INPUT_TOPICS().getName(), "logisland_events");
-        chainProperties.put(AbstractKafkaRecordStream.OUTPUT_TOPICS().getName(), "none");
-        chainProperties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
-        chainProperties.put(AbstractKafkaRecordStream.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.NO_SERIALIZER().getValue());
-        chainProperties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        chainProperties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
+                "sd-76387:2181,sd-84186:2181,sd-84189:2181");*/
+        streamProperties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(),
+                "sandbox:9092");
+        streamProperties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(),
+                "sandbox:2181");
+        streamProperties.put(AbstractKafkaRecordStream.INPUT_TOPICS().getName(), "logisland_events");
+        streamProperties.put(AbstractKafkaRecordStream.OUTPUT_TOPICS().getName(), "none");
+        streamProperties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
+        streamProperties.put(AbstractKafkaRecordStream.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.NO_SERIALIZER().getValue());
+        streamProperties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
+        streamProperties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
+
+        streamProperties.put(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH().getName(), "data/logisland_events");
+        streamProperties.put(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT().getName(), "parquet");
+        streamProperties.put(KafkaRecordStreamHDFSBurner.RECORD_TYPE().getName(), "record");
 
         StreamConfiguration chainConf = new StreamConfiguration();
-        chainConf.setComponent(AbstractKafkaRecordStream.class.getName());
+        chainConf.setComponent(KafkaRecordStreamHDFSBurner.class.getName());
         chainConf.setType(ComponentType.PROCESSOR_CHAIN.toString());
-        chainConf.setConfiguration(chainProperties);
+        chainConf.setConfiguration(streamProperties);
         chainConf.setStream("KafkaStream");
         return chainConf;
     }

@@ -187,12 +187,12 @@ object SparkUtils extends LazyLogging {
     StructType(
       record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
         f.getType match {
-          case FieldType.INT => StructField(f.getName, IntegerType, nullable = true)
-          case FieldType.LONG => StructField(f.getName, LongType, nullable = true)
-          case FieldType.FLOAT => StructField(f.getName, FloatType, nullable = true)
-          case FieldType.DOUBLE => StructField(f.getName, DoubleType, nullable = true)
-          case FieldType.STRING => StructField(f.getName, StringType, nullable = true)
-          case _ => StructField(f.getName, StringType, nullable = true)
+          case FieldType.INT => StructField(f.getName, DataTypes.IntegerType, nullable = true)
+          case FieldType.LONG => StructField(f.getName, DataTypes.LongType, nullable = true)
+          case FieldType.FLOAT => StructField(f.getName, DataTypes.FloatType, nullable = true)
+          case FieldType.DOUBLE => StructField(f.getName, DataTypes.DoubleType, nullable = true)
+          case FieldType.STRING => StructField(f.getName, DataTypes.StringType, nullable = true)
+          case _ => StructField(f.getName, DataTypes.StringType, nullable = true)
         }
       })
     )

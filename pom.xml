@@ -403,10 +403,11 @@
                 <version>1.7.7</version>
             </dependency>
             <dependency>
-                <groupId>com.esotericsoftware</groupId>
+                <groupId>com.esotericsoftware.kryo</groupId>
                 <artifactId>kryo</artifactId>
-                <version>3.0.3</version>
+                <version>2.21</version>
             </dependency>
+
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>

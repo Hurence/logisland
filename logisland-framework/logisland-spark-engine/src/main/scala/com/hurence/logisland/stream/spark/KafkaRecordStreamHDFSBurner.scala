@@ -127,12 +127,21 @@ class KafkaRecordStreamHDFSBurner    extends AbstractKafkaRecordStream{
                             r.getField(FieldDictionary.RECORD_TYPE).asString() == recordType
                     )
 
+
+
                 if (!records.isEmpty()) {
-                    val rows = records.map(r => SparkUtils.convertToRow(r))
+                    val rows = records.filter(r => !r.hasField(FieldDictionary.RECORD_ERROR)).map(r => SparkUtils.convertToRow(r))
+
+                    rows.filter(r => r.toString().contains("regex_parsing_error")).foreach(println)
                     val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
 
-                    sqlContext.createDataFrame(rows, schema)
-                        .write
+                    logger.info(schema.toString())
+                    val rowSample = rows.take(10)
+                    val df = sqlContext.createDataFrame(rows, schema)
+
+
+
+                        df.write
                         //      .partitionBy(FieldDictionary.RECORD_TYPE)
                         .mode(SaveMode.Append)
                         // TODO choose output format
