@@ -21,7 +21,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DoubleField;
@@ -108,8 +108,8 @@ public class QueryMatcherProcessor extends AbstractProcessor {
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
 
-            if (context.getProperty(NUMERIC_FIELDS).isSet()) {
-                final String[] numericFields = context.getProperty(NUMERIC_FIELDS).asString().split(",");
+            if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
+                final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
                 for (String numericField : numericFields) {
                     queryMatcher.setNumericField(numericField);
                 }

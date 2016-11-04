@@ -15,13 +15,6 @@
  */
 package com.hurence.logisland.documentation;
 
-import com.hurence.logisland.documentation.example.FullyDocumentedProcessor;
-import com.hurence.logisland.documentation.util.ClassFinder;
-import com.hurence.logisland.documentation.util.Visitor;
-import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
-import com.hurence.logisland.processor.SplitText;
-import com.hurence.logisland.processor.chain.KafkaRecordStream;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -30,10 +23,8 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 public class DocGeneratorTest {
-
 
 
     @Test

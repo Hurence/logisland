@@ -18,10 +18,10 @@ package com.hurence.logisland.documentation.init;
 import com.hurence.logisland.annotation.lifecycle.OnShutdown;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
-import com.hurence.logisland.documentation.mock.MockComponentLogger;
-import com.hurence.logisland.documentation.mock.MockProcessContext;
+import com.hurence.logisland.logging.MockComponentLogger;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.processor.MockProcessContext;
 import com.hurence.logisland.processor.Processor;
 
 /**
@@ -43,7 +43,7 @@ public class ProcessorInitializer implements ConfigurableComponentInitializer {
 
 
         final ComponentLog logger = new MockComponentLogger();
-        final MockProcessContext context = new MockProcessContext();
+        final MockProcessContext context = new MockProcessContext(processor);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, processor, logger, context);
     }
 

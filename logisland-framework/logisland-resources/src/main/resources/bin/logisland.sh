@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #. $(dirname $0)/launcher.sh
-lib_dir="$(readlink -f "$(dirname $0)/../lib")"
+lib_dir="$(reaalpath "$(dirname $0)/../lib")"
 
 app_classpath=""
 for entry in "$lib_dir"/*
@@ -130,7 +130,7 @@ fi
 
 case $MODE in
   default)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-shaded-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-plugin-[^,]*.jar,#,#'`
     ;;
   yarn-cluster)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`

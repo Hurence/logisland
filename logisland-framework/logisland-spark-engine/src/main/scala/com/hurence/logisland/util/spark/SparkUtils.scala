@@ -168,6 +168,16 @@ object SparkUtils extends LazyLogging {
     )
   }
 
+    /**
+      * convert a SQL Row to a Record to
+      * @param row the Row to convert
+      * @return the Record
+      */
+    def convertToRecord(row: Row): Record = {
+
+                       throw new NotImplementedError("todo implement here")
+    }
+
   /**
     * create a dataframe schema from a Record
     * @param record the Record to infer schema
@@ -177,12 +187,12 @@ object SparkUtils extends LazyLogging {
     StructType(
       record.getAllFieldsSorted.toArray(Array[Field]()).map(f => {
         f.getType match {
-          case FieldType.INT => StructField(f.getName, IntegerType, nullable = true)
-          case FieldType.LONG => StructField(f.getName, LongType, nullable = true)
-          case FieldType.FLOAT => StructField(f.getName, FloatType, nullable = true)
-          case FieldType.DOUBLE => StructField(f.getName, DoubleType, nullable = true)
-          case FieldType.STRING => StructField(f.getName, StringType, nullable = true)
-          case _ => StructField(f.getName, StringType, nullable = true)
+          case FieldType.INT => StructField(f.getName, DataTypes.IntegerType, nullable = true)
+          case FieldType.LONG => StructField(f.getName, DataTypes.LongType, nullable = true)
+          case FieldType.FLOAT => StructField(f.getName, DataTypes.FloatType, nullable = true)
+          case FieldType.DOUBLE => StructField(f.getName, DataTypes.DoubleType, nullable = true)
+          case FieldType.STRING => StructField(f.getName, DataTypes.StringType, nullable = true)
+          case _ => StructField(f.getName, DataTypes.StringType, nullable = true)
         }
       })
     )

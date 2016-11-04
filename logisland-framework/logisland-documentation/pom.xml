@@ -68,16 +68,30 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>1.5.0</version>
+
                 <configuration>
-                    <mainClass>com.hurence.logisland.documentation.DocGenerator</mainClass>
-                    <classpathScope>compile</classpathScope>
+                    <includeProjectDependencies>false</includeProjectDependencies>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <!-- automatically creates the classpath using all project dependencies,
+                             also adding the project build directory -->
+                        <classpath/>
+                        <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+
+                    </arguments>
+
+
                 </configuration>
+
+
                 <executions>
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <goal>java</goal>
+                            <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>

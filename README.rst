@@ -100,7 +100,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
       processorChainConfigurations:
 
         # parsing
-        - processorChain: parsing_stream
+        - stream: parsing_stream
           component: com.hurence.logisland.processor.chain.KafkaRecordStream
           type: stream
           documentation: a processor that links
@@ -128,7 +128,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
                 value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         # indexing
-        - processorChain: indexing_stream
+        - stream: indexing_stream
           component: com.hurence.logisland.processor.chain.KafkaRecordStream
           type: processor
           documentation: a processor that push events to ES

@@ -41,9 +41,11 @@ Anyway you can use Apache NIFI to process your logs and send them to Kafka in or
 
 
 Error : realpath not found
-----
+--------------------------
 
 If you don't have the ``realpath`` command on you system you may need to install it::
 
     brew install coreutils
     sudo apt-get install coreutils
+
+

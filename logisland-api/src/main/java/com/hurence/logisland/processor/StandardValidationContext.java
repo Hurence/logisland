@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,18 +16,14 @@
 package com.hurence.logisland.processor;
 
 
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
-import com.hurence.logisland.component.ValidationContext;
+import com.hurence.logisland.validator.ValidationContext;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StandardValidationContext implements ValidationContext {
 
@@ -35,8 +31,7 @@ public class StandardValidationContext implements ValidationContext {
     private final Map<String, Boolean> expressionLanguageSupported;
 
 
-
-    public StandardValidationContext(           final Map<PropertyDescriptor, String> properties) {
+    public StandardValidationContext(final Map<PropertyDescriptor, String> properties) {
         this.properties = new HashMap<>(properties);
         expressionLanguageSupported = new HashMap<>(properties.size());
         for (final PropertyDescriptor descriptor : properties.keySet()) {
@@ -50,9 +45,8 @@ public class StandardValidationContext implements ValidationContext {
     }
 
 
-
     @Override
-    public PropertyValue getProperty(final PropertyDescriptor property) {
+    public PropertyValue getPropertyValue(final PropertyDescriptor property) {
         final String configuredValue = properties.get(property);
         return new StandardPropertyValue(configuredValue == null ? property.getDefaultValue() : configuredValue);
     }
@@ -61,7 +55,6 @@ public class StandardValidationContext implements ValidationContext {
     public Map<PropertyDescriptor, String> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
-
 
 
     @Override

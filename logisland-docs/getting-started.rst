@@ -107,7 +107,7 @@ Here the stream will read all the logs sent in ``logisland_raw`` topic and push 
 .. code-block:: yaml
 
     # parsing
-    - processorChain: parsing_stream
+    - stream: parsing_stream
       component: com.hurence.logisland.processor.chain.KafkaRecordStream
       type: stream
       documentation: a processor that links
@@ -146,7 +146,7 @@ Another Kafka stream will handle ``Records`` pushed into ``logisland_events`` to
 
 .. code-block:: yaml
 
-    - processorChain: indexing_stream
+    - stream: indexing_stream
       component: com.hurence.logisland.processor.chain.KafkaRecordStream
       type: processor
       documentation: a processor that push events to ES

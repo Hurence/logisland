@@ -15,29 +15,39 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.validator.ValidationResult;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
 public interface ConfiguredComponent extends Serializable {
 
-    public String getIdentifier();
+    /**
+     * identifier is read-only
+     *
+     * @return the identifier of the component
+     */
+    String getIdentifier();
 
-    public String getName();
+    /**
+     * @return component name
+     */
+    String getName();
 
-    public void setName(String name);
-
-    public String getAnnotationData();
-
-    public void setAnnotationData(String data);
+    /**
+     * set the name of the component
+     *
+     * @param name
+     */
+    void setName(String name);
 
     /**
      * Sets the property with the given name to the given value
-     *
-     * @param name the name of the property to update
+     *  @param name the name of the property to update
      * @param value the value to update the property to
      */
-    public void setProperty(String name, String value);
+    ValidationResult setProperty(String name, String value);
 
     /**
      * Removes the property and value for the given property name if a
@@ -49,12 +59,24 @@ public interface ConfiguredComponent extends Serializable {
      * @return true if removed; false otherwise
      * @throws IllegalArgumentException if the name is null
      */
-    public boolean removeProperty(String name);
+    boolean removeProperty(String name);
 
-    public Map<PropertyDescriptor, String> getProperties();
+    /**
+     * @return map of property/names
+     */
+    Map<PropertyDescriptor, String> getProperties();
 
-    public String getProperty(final PropertyDescriptor property);
+    /**
+     * get a property
+     *
+     * @param property
+     * @return
+     */
+    String getProperty(final PropertyDescriptor property);
 
+    /**
+     * @return if configuration is valid
+     */
     boolean isValid();
 
     /**

@@ -24,7 +24,7 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -46,8 +46,6 @@ import java.util.concurrent.TimeUnit;
 @Tags({"record", "elasticsearch", "sink", "record"})
 @CapabilityDescription("This is a processor that puts records to ES")
 public class PutElasticsearch extends AbstractElasticsearchProcessor {
-
-    static final long serialVersionUID = -5661820708591436282L;
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
 
@@ -197,10 +195,10 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         }
 
                     })
-                    .setBulkActions(context.getProperty(BATCH_SIZE).asInteger())
-                    .setBulkSize(new ByteSizeValue(context.getProperty(BULK_SIZE).asInteger(), ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(context.getProperty(FLUSH_INTERVAL).asInteger()))
-                    .setConcurrentRequests(context.getProperty(CONCURRENT_REQUESTS).asInteger())
+                    .setBulkActions(context.getPropertyValue(BATCH_SIZE).asInteger())
+                    .setBulkSize(new ByteSizeValue(context.getPropertyValue(BULK_SIZE).asInteger(), ByteSizeUnit.MB))
+                    .setFlushInterval(TimeValue.timeValueSeconds(context.getPropertyValue(FLUSH_INTERVAL).asInteger()))
+                    .setConcurrentRequests(context.getPropertyValue(CONCURRENT_REQUESTS).asInteger())
                     .setBackoffPolicy(
                             BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(100), 3))
                     .build();
@@ -209,13 +207,13 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             /**
              * compute global index from Processor settings
              */
-            String defaultIndex = context.getProperty(DEFAULT_INDEX).asString();
-            String defaultType = context.getProperty(DEFAULT_TYPE).asString();
-            if (context.getProperty(TIMEBASED_INDEX).isSet()) {
+            String defaultIndex = context.getPropertyValue(DEFAULT_INDEX).asString();
+            String defaultType = context.getPropertyValue(DEFAULT_TYPE).asString();
+            if (context.getPropertyValue(TIMEBASED_INDEX).isSet()) {
                 final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
-                if (context.getProperty(TIMEBASED_INDEX).getRawValue().equals(TODAY_DATE_SUFFIX.getValue())) {
+                if (context.getPropertyValue(TIMEBASED_INDEX).getRawValue().equals(TODAY_DATE_SUFFIX.getValue())) {
                     defaultIndex += "." + sdf.format(new Date());
-                } else if (context.getProperty(TIMEBASED_INDEX).getRawValue().equals(YESTERDAY_DATE_SUFFIX.getValue())) {
+                } else if (context.getPropertyValue(TIMEBASED_INDEX).getRawValue().equals(YESTERDAY_DATE_SUFFIX.getValue())) {
                     DateTime dt = new DateTime(new Date()).minusDays(1);
                     defaultIndex += "." + sdf.format(dt.toDate());
                 }
@@ -230,8 +228,8 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
                 // compute es index from event if any
                 String docIndex = defaultIndex;
-                if (context.getProperty(ES_INDEX_FIELD).isSet()) {
-                    Field eventIndexField = record.getField(context.getProperty(ES_INDEX_FIELD).asString());
+                if (context.getPropertyValue(ES_INDEX_FIELD).isSet()) {
+                    Field eventIndexField = record.getField(context.getPropertyValue(ES_INDEX_FIELD).asString());
                     if (eventIndexField != null && eventIndexField.getRawValue() != null) {
                         docIndex = eventIndexField.getRawValue().toString();
                     }
@@ -239,8 +237,8 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
                 // compute es type from event if any
                 String docType = defaultType;
-                if (context.getProperty(ES_TYPE_FIELD).isSet()) {
-                    Field eventTypeField = record.getField(context.getProperty(ES_TYPE_FIELD).asString());
+                if (context.getPropertyValue(ES_TYPE_FIELD).isSet()) {
+                    Field eventTypeField = record.getField(context.getPropertyValue(ES_TYPE_FIELD).asString());
                     if (eventTypeField != null && eventTypeField.getRawValue() != null) {
                         docType = eventTypeField.getRawValue().toString();
                     }

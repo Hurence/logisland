@@ -19,14 +19,14 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationContext;
-import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.time.DateUtil;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +110,7 @@ public class SplitText extends AbstractProcessor {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
 
         // key regex and fields must be set together
-        if (context.getProperty(KEY_REGEX).isSet() ^ context.getProperty(KEY_FIELDS).isSet()) {
+        if (context.getPropertyValue(KEY_REGEX).isSet() ^ context.getPropertyValue(KEY_FIELDS).isSet()) {
             validationResults.add(
                     new ValidationResult.Builder()
                             .input(KEY_REGEX.getName())
@@ -145,13 +145,13 @@ public class SplitText extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        final String[] keyFields = context.getProperty(KEY_FIELDS).asString().split(",");
-        final String keyRegexString = context.getProperty(KEY_REGEX).asString();
+        final String[] keyFields = context.getPropertyValue(KEY_FIELDS).asString().split(",");
+        final String keyRegexString = context.getPropertyValue(KEY_REGEX).asString();
         final Pattern keyRegex = Pattern.compile(keyRegexString);
-        final String[] valueFields = context.getProperty(VALUE_FIELDS).asString().split(",");
-        final String valueRegexString = context.getProperty(VALUE_REGEX).asString();
-        final String eventType = context.getProperty(RECORD_TYPE).asString();
-        final boolean keepRawContent = context.getProperty(KEEP_RAW_CONTENT).asBoolean();
+        final String[] valueFields = context.getPropertyValue(VALUE_FIELDS).asString().split(",");
+        final String valueRegexString = context.getPropertyValue(VALUE_REGEX).asString();
+        final String eventType = context.getPropertyValue(RECORD_TYPE).asString();
+        final boolean keepRawContent = context.getPropertyValue(KEEP_RAW_CONTENT).asBoolean();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 
         List<Record> outputRecords = new ArrayList<>();

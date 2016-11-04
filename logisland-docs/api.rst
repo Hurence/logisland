@@ -201,8 +201,8 @@ And finally you can use it to process records
 
 
 
-Chaining processors : ProcessorChain
-------------------------------------
+Chaining processors in a stream : RecordStream
+----------------------------------------------
 
 .. warning:: @todo
 

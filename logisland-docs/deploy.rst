@@ -50,6 +50,9 @@ You can download the `latest release build <https://github.com/Hurence/logisland
 This will produce a ``logisland-assembly/target/logisland-0.9.5-bin.tar.gz`` file that you can untar into any folder of your choice in a edge node of your cluster.
 
 
+
+Please read this excellent article on spark long running job setup : `http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/ <http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/>`_
+
 3. Elastic scale with Mesos and Docker
 ----
 

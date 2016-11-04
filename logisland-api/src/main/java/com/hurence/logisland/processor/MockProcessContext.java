@@ -15,24 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import com.hurence.logisland.component.*;
+import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
 
@@ -49,18 +33,18 @@ public class MockProcessContext implements ProcessContext {
      *
      * @param component being mocked
      */
-    public MockProcessContext(final ConfigurableComponent component) {
+    public MockProcessContext(final Processor component) {
         this.component = Objects.requireNonNull(component);
     }
 
 
     @Override
-    public PropertyValue getProperty(final PropertyDescriptor descriptor) {
-        return getProperty(descriptor.getName());
+    public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
+        return getPropertyValue(descriptor.getName());
     }
 
     @Override
-    public PropertyValue getProperty(final String propertyName) {
+    public PropertyValue getPropertyValue(final String propertyName) {
         final PropertyDescriptor descriptor = component.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;
@@ -77,8 +61,15 @@ public class MockProcessContext implements ProcessContext {
         return new StandardPropertyValue(rawValue);
     }
 
+
+    @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
         return setProperty(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
+    }
+
+    @Override
+    public boolean removeProperty(String name) {
+        return false;
     }
 
     /**
@@ -140,6 +131,11 @@ public class MockProcessContext implements ProcessContext {
         }
     }
 
+    @Override
+    public String getProperty(PropertyDescriptor property) {
+        return null;
+    }
+
     /**
      * Validates the current properties, returning ValidationResults for any
      * invalid properties. All processor defined properties will be validated.
@@ -164,10 +160,29 @@ public class MockProcessContext implements ProcessContext {
         return true;
     }
 
+    @Override
+    public Collection<ValidationResult> getValidationErrors() {
+        return null;
+    }
+
+
+    @Override
+    public String getIdentifier() {
+        return "";
+    }
 
     @Override
     public String getName() {
         return "";
     }
 
+    @Override
+    public void setName(String name) {
+
+    }
+
+    @Override
+    public Processor getProcessor() {
+        return (Processor)component;
+    }
 }

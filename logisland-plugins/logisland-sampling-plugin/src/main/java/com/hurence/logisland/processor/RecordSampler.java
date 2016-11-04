@@ -24,7 +24,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.sampling.Sampler;
 import com.hurence.logisland.sampling.SamplerFactory;
 import com.hurence.logisland.sampling.SamplingAlgorithm;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,10 +109,10 @@ public class RecordSampler extends AbstractProcessor {
 
 
         SamplingAlgorithm algorithm = SamplingAlgorithm.valueOf(
-                context.getProperty(SAMPLING_ALGORITHM).asString().toUpperCase());
-        String valueFieldName = context.getProperty(VALUE_FIELD).asString();
-        String timeFieldName = context.getProperty(TIME_FIELD).asString();
-        int parameter = context.getProperty(SAMPLING_PARAMETER).asInteger();
+                context.getPropertyValue(SAMPLING_ALGORITHM).asString().toUpperCase());
+        String valueFieldName = context.getPropertyValue(VALUE_FIELD).asString();
+        String timeFieldName = context.getPropertyValue(TIME_FIELD).asString();
+        int parameter = context.getPropertyValue(SAMPLING_PARAMETER).asInteger();
 
 
         Sampler sampler = SamplerFactory.getSampler(algorithm, valueFieldName, timeFieldName, parameter);
