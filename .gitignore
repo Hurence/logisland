@@ -6,6 +6,8 @@
 **/.project
 **/.settings
 **/.classpath
+#   added by eclipse when importing maven projects
+**/.gitignore
 
 # Maven
 **/target/*
