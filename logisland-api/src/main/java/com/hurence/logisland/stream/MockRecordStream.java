@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.stream;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-@Tags({"record", "mock", "test"})
-@CapabilityDescription("This is a processor that add a fake message to each incoming records")
-public class MockProcessor extends AbstractProcessor {
+@Tags({"stream", "mock", "test"})
+@CapabilityDescription("This is a stream for test purpose")
+public class MockRecordStream extends AbstractRecordStream {
 
 
     public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
@@ -39,16 +37,6 @@ public class MockProcessor extends AbstractProcessor {
             .defaultValue("yoyo")
             .build();
 
-
-    @Override
-    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
-
-        final String message = context.getPropertyValue(FAKE_MESSAGE).asString();
-        final List<Record> outputRecords = new ArrayList<>(collection);
-        outputRecords.forEach(record -> record.setStringField("message", message));
-
-        return outputRecords;
-    }
 
 
     @Override

@@ -75,9 +75,9 @@ public class SplitTextMultiline extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        final String[] fields = context.getProperty(FIELDS).asString().split(",");
-        final String regexString = context.getProperty(REGEX).asString();
-        final String eventType = context.getProperty(EVENT_TYPE).asString();
+        final String[] fields = context.getPropertyValue(FIELDS).asString().split(",");
+        final String regexString = context.getPropertyValue(REGEX).asString();
+        final String eventType = context.getPropertyValue(EVENT_TYPE).asString();
         final Pattern regex = Pattern.compile(regexString, Pattern.DOTALL);
 
         List<Record> outputRecords = new ArrayList<>();

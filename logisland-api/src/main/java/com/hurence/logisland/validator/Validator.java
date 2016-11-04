@@ -15,8 +15,6 @@
  */
 package com.hurence.logisland.validator;
 
-import com.hurence.logisland.component.ValidationResult;
-
 import java.io.Serializable;
 
 /**

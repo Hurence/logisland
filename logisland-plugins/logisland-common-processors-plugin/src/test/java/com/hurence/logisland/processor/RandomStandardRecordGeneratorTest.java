@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,18 +15,13 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.component.ComponentType;
-import com.hurence.logisland.config.ComponentFactory;
-import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.runner.TestRunner;
+import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.util.string.Multiline;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 
 public class RandomStandardRecordGeneratorTest {
@@ -114,27 +109,17 @@ public class RandomStandardRecordGeneratorTest {
     @Test
     public void testLoadConfig() throws Exception {
 
+        final TestRunner testRunner = TestRunners.newTestRunner(new RandomRecordGenerator());
+        testRunner.setProperty(RandomRecordGenerator.OUTPUT_SCHEMA.getName(), avroSchema);
+        testRunner.setProperty(RandomRecordGenerator.MIN_EVENTS_COUNT.getName(), "5");
+        testRunner.setProperty(RandomRecordGenerator.MAX_EVENTS_COUNT.getName(), "20");
 
-        Map<String, String> conf = new HashMap<>();
-        conf.put(RandomRecordGenerator.OUTPUT_SCHEMA.getName(), avroSchema);
-        conf.put(RandomRecordGenerator.MIN_EVENTS_COUNT.getName(), "5");
-        conf.put(RandomRecordGenerator.MAX_EVENTS_COUNT.getName(), "20");
+        testRunner.assertValid();
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
 
-        ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
-
-        componentConfiguration.setComponent(RandomRecordGenerator.class.getName());
-        componentConfiguration.setType(ComponentType.PROCESSOR.toString());
-        componentConfiguration.setConfiguration(conf);
-
-        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        assert instance.isPresent();
-        ProcessContext context = new StandardProcessContext(instance.get());
-
-        Assert.assertTrue(instance.get().isValid());
-
-        Collection<Record> records = instance.get().getProcessor().process(context, Collections.emptyList());
-
-        Assert.assertTrue(records.size() <= 20);
-        Assert.assertTrue(records.size() >= 5);
+        Assert.assertTrue(testRunner.getOutputRecords().size() <= 20);
+        Assert.assertTrue(testRunner.getOutputRecords().size() >= 5);
     }
 }

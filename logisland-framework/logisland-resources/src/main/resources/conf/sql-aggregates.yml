@@ -34,7 +34,7 @@ engine:
     spark.ui.port: 4050
   processorChainConfigurations:
 
-    - processorChain: metrics_by_host
+    - stream: metrics_by_host
       component: com.hurence.logisland.stream.spark.KafkaSQLAggregator
       type: stream
       documentation: a processor that links
@@ -56,7 +56,7 @@ engine:
                     GROUP BY host_name"
         max.results.count: 1000
 
-    - processorChain: top_ten_bytes_out_by_src_ip
+    - stream: top_ten_bytes_out_by_src_ip
       component: com.hurence.logisland.stream.spark.KafkaSQLAggregator
       type: stream
       documentation: average bytes sent by host_name
@@ -79,7 +79,7 @@ engine:
                     LIMIT 10"
         max.results.count: 1000
 
-    - processorChain: syslog_events_burner
+    - stream: syslog_events_burner
       component: com.hurence.logisland.stream.spark.KafkaHDFSBurner
       type: stream
       documentation: average bytes sent by host_name

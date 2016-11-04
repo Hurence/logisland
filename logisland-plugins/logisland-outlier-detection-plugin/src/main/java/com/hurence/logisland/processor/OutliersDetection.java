@@ -29,8 +29,8 @@ import com.hurence.logisland.annotation.behavior.Stateful;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationContext;
-import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -347,8 +347,8 @@ public class OutliersDetection extends AbstractProcessor {
         /**
          * chunking policy
          */
-        outlierConfig.getChunkingPolicy().setAmount(context.getProperty(CHUNKING_POLICY_AMOUNT).asLong());
-        switch (context.getProperty(CHUNKING_POLICY_TYPE).asString().toLowerCase()) {
+        outlierConfig.getChunkingPolicy().setAmount(context.getPropertyValue(CHUNKING_POLICY_AMOUNT).asLong());
+        switch (context.getPropertyValue(CHUNKING_POLICY_TYPE).asString().toLowerCase()) {
             case "by_time":
                 outlierConfig.getChunkingPolicy().setType(Type.BY_TIME);
                 break;
@@ -359,7 +359,7 @@ public class OutliersDetection extends AbstractProcessor {
                 outlierConfig.getChunkingPolicy().setType(Type.NEVER);
                 break;
         }
-        switch (context.getProperty(CHUNKING_POLICY_UNIT).asString().toLowerCase()) {
+        switch (context.getPropertyValue(CHUNKING_POLICY_UNIT).asString().toLowerCase()) {
             case "milliseconds":
                 outlierConfig.getChunkingPolicy().setUnit(Unit.MILLISECONDS);
                 break;
@@ -386,8 +386,8 @@ public class OutliersDetection extends AbstractProcessor {
         /**
          * rotation policy
          */
-        outlierConfig.getRotationPolicy().setAmount(context.getProperty(ROTATION_POLICY_AMOUNT).asLong());
-        switch (context.getProperty(ROTATION_POLICY_TYPE).asString().toLowerCase()) {
+        outlierConfig.getRotationPolicy().setAmount(context.getPropertyValue(ROTATION_POLICY_AMOUNT).asLong());
+        switch (context.getPropertyValue(ROTATION_POLICY_TYPE).asString().toLowerCase()) {
             case "by_time":
                 outlierConfig.getRotationPolicy().setType(Type.BY_TIME);
                 break;
@@ -398,7 +398,7 @@ public class OutliersDetection extends AbstractProcessor {
                 outlierConfig.getRotationPolicy().setType(Type.NEVER);
                 break;
         }
-        switch (context.getProperty(ROTATION_POLICY_UNIT).asString().toLowerCase()) {
+        switch (context.getPropertyValue(ROTATION_POLICY_UNIT).asString().toLowerCase()) {
             case "milliseconds":
                 outlierConfig.getRotationPolicy().setUnit(Unit.MILLISECONDS);
                 break;
@@ -427,17 +427,17 @@ public class OutliersDetection extends AbstractProcessor {
          * global stats
          */
         GlobalStatistics globalStatistics = new GlobalStatistics();
-        if (context.getProperty(GLOBAL_STATISTICS_MIN).isSet()) {
-            globalStatistics.setMin(context.getProperty(GLOBAL_STATISTICS_MIN).asDouble());
+        if (context.getPropertyValue(GLOBAL_STATISTICS_MIN).isSet()) {
+            globalStatistics.setMin(context.getPropertyValue(GLOBAL_STATISTICS_MIN).asDouble());
         }
-        if (context.getProperty(GLOBAL_STATISTICS_MAX).isSet()) {
-            globalStatistics.setMax(context.getProperty(GLOBAL_STATISTICS_MAX).asDouble());
+        if (context.getPropertyValue(GLOBAL_STATISTICS_MAX).isSet()) {
+            globalStatistics.setMax(context.getPropertyValue(GLOBAL_STATISTICS_MAX).asDouble());
         }
-        if (context.getProperty(GLOBAL_STATISTICS_MEAN).isSet()) {
-            globalStatistics.setMean(context.getProperty(GLOBAL_STATISTICS_MEAN).asDouble());
+        if (context.getPropertyValue(GLOBAL_STATISTICS_MEAN).isSet()) {
+            globalStatistics.setMean(context.getPropertyValue(GLOBAL_STATISTICS_MEAN).asDouble());
         }
-        if (context.getProperty(GLOBAL_STATISTICS_STDDEV).isSet()) {
-            globalStatistics.setStddev(context.getProperty(GLOBAL_STATISTICS_STDDEV).asDouble());
+        if (context.getPropertyValue(GLOBAL_STATISTICS_STDDEV).isSet()) {
+            globalStatistics.setStddev(context.getPropertyValue(GLOBAL_STATISTICS_STDDEV).asDouble());
         }
         outlierConfig.setGlobalStatistics(globalStatistics);
 
@@ -445,30 +445,30 @@ public class OutliersDetection extends AbstractProcessor {
         /**
          * skechy conf
          */
-        if (context.getProperty(MIN_AMOUNT_TO_PREDICT).isSet()) {
+        if (context.getPropertyValue(MIN_AMOUNT_TO_PREDICT).isSet()) {
             outlierConfig.getConfig().put(
                     SketchyMovingMAD.MIN_AMOUNT_TO_PREDICT,
-                    context.getProperty(MIN_AMOUNT_TO_PREDICT).asLong());
+                    context.getPropertyValue(MIN_AMOUNT_TO_PREDICT).asLong());
         }
-        if (context.getProperty(RESERVOIR_SIZE).isSet()) {
+        if (context.getPropertyValue(RESERVOIR_SIZE).isSet()) {
             outlierConfig.getConfig().put(
                     SketchyMovingMAD.RESERVOIR_SIZE,
-                    context.getProperty(RESERVOIR_SIZE).asInteger());
+                    context.getPropertyValue(RESERVOIR_SIZE).asInteger());
         }
-        if (context.getProperty(SMOOTH).isSet()) {
+        if (context.getPropertyValue(SMOOTH).isSet()) {
             outlierConfig.getConfig().put(
                     SketchyMovingMAD.SMOOTH,
-                    context.getProperty(SMOOTH).asBoolean());
+                    context.getPropertyValue(SMOOTH).asBoolean());
         }
-        if (context.getProperty(DECAY).isSet()) {
+        if (context.getPropertyValue(DECAY).isSet()) {
             outlierConfig.getConfig().put(
                     SketchyMovingMAD.DECAY,
-                    context.getProperty(DECAY).asDouble());
+                    context.getPropertyValue(DECAY).asDouble());
         }
-        if (context.getProperty(MIN_ZSCORE_PERCENTILE).isSet()) {
+        if (context.getPropertyValue(MIN_ZSCORE_PERCENTILE).isSet()) {
             outlierConfig.getConfig().put(
                     SketchyMovingMAD.MIN_ZSCORE_PERCENTILE,
-                    context.getProperty(MIN_ZSCORE_PERCENTILE).asDouble());
+                    context.getPropertyValue(MIN_ZSCORE_PERCENTILE).asDouble());
         }
 
 
@@ -476,21 +476,21 @@ public class OutliersDetection extends AbstractProcessor {
          * zscore cuttoffs
          */
         Map<String, Object> zscoreCuttoffsConf = new HashMap<>();
-        if (context.getProperty(ZSCORE_CUTOFFS_NORMAL).isSet()) {
+        if (context.getPropertyValue(ZSCORE_CUTOFFS_NORMAL).isSet()) {
             zscoreCuttoffsConf.put("NORMAL",
-                    context.getProperty(ZSCORE_CUTOFFS_NORMAL).asDouble());
+                    context.getPropertyValue(ZSCORE_CUTOFFS_NORMAL).asDouble());
         }
-        if (context.getProperty(ZSCORE_CUTOFFS_MODERATE).isSet()) {
+        if (context.getPropertyValue(ZSCORE_CUTOFFS_MODERATE).isSet()) {
             zscoreCuttoffsConf.put("MODERATE_OUTLIER",
-                    context.getProperty(ZSCORE_CUTOFFS_MODERATE).asDouble());
+                    context.getPropertyValue(ZSCORE_CUTOFFS_MODERATE).asDouble());
         }
-        if (context.getProperty(ZSCORE_CUTOFFS_SEVERE).isSet()) {
+        if (context.getPropertyValue(ZSCORE_CUTOFFS_SEVERE).isSet()) {
             zscoreCuttoffsConf.put("SEVERE_OUTLIER",
-                    context.getProperty(ZSCORE_CUTOFFS_SEVERE).asDouble());
+                    context.getPropertyValue(ZSCORE_CUTOFFS_SEVERE).asDouble());
         }
-        if (context.getProperty(ZSCORE_CUTOFFS_NOT_ENOUGH_DATA).isSet()) {
+        if (context.getPropertyValue(ZSCORE_CUTOFFS_NOT_ENOUGH_DATA).isSet()) {
             zscoreCuttoffsConf.put("NOT_ENOUGH_DATA",
-                    context.getProperty(ZSCORE_CUTOFFS_NOT_ENOUGH_DATA).asDouble());
+                    context.getPropertyValue(ZSCORE_CUTOFFS_NOT_ENOUGH_DATA).asDouble());
         }
         outlierConfig.getConfig().put(SketchyMovingMAD.ZSCORE_CUTOFFS_CONF, zscoreCuttoffsConf);
 
@@ -498,30 +498,30 @@ public class OutliersDetection extends AbstractProcessor {
         /**
          * rpca conf
          */
-        if (context.getProperty(RPCA_FORCE_DIFF).isSet()) {
+        if (context.getPropertyValue(RPCA_FORCE_DIFF).isSet()) {
             outlierConfig.getConfig().put(
                     RPCAOutlierAlgorithm.FORCE_DIFF_CONFIG,
-                    context.getProperty(RPCA_FORCE_DIFF).asBoolean());
+                    context.getPropertyValue(RPCA_FORCE_DIFF).asBoolean());
         }
-        if (context.getProperty(RPCA_THRESHOLD).isSet()) {
+        if (context.getPropertyValue(RPCA_THRESHOLD).isSet()) {
             outlierConfig.getConfig().put(
                     RPCAOutlierAlgorithm.THRESHOLD_CONF,
-                    context.getProperty(RPCA_THRESHOLD).asDouble());
+                    context.getPropertyValue(RPCA_THRESHOLD).asDouble());
         }
-        if (context.getProperty(RPCA_LPENALTY).isSet()) {
+        if (context.getPropertyValue(RPCA_LPENALTY).isSet()) {
             outlierConfig.getConfig().put(
                     RPCAOutlierAlgorithm.LPENALTY_CONFIG,
-                    context.getProperty(RPCA_LPENALTY).asDouble());
+                    context.getPropertyValue(RPCA_LPENALTY).asDouble());
         }
-        if (context.getProperty(RPCA_SPENALTY).isSet()) {
+        if (context.getPropertyValue(RPCA_SPENALTY).isSet()) {
             outlierConfig.getConfig().put(
                     RPCAOutlierAlgorithm.SPENALTY_CONFIG,
-                    context.getProperty(RPCA_SPENALTY).asDouble());
+                    context.getPropertyValue(RPCA_SPENALTY).asDouble());
         }
-        if (context.getProperty(RPCA_MIN_RECORDS).isSet()) {
+        if (context.getPropertyValue(RPCA_MIN_RECORDS).isSet()) {
             outlierConfig.getConfig().put(
                     RPCAOutlierAlgorithm.MIN_RECORDS_CONFIG,
-                    context.getProperty(RPCA_MIN_RECORDS).asInteger());
+                    context.getPropertyValue(RPCA_MIN_RECORDS).asInteger());
         }
 
         sketchyOutlierAlgorithm = new SketchyMovingMAD();
@@ -536,7 +536,7 @@ public class OutliersDetection extends AbstractProcessor {
 
         final Collection<ValidationResult> results = new ArrayList<>();
 
-        if (context.getProperty(DECAY).asDouble() < 0.0) {
+        if (context.getPropertyValue(DECAY).asDouble() < 0.0) {
             results.add(
                     new ValidationResult.Builder()
                             .valid(false)
@@ -546,7 +546,7 @@ public class OutliersDetection extends AbstractProcessor {
                             .build()
             );
         }
-        if (context.getProperty(DECAY).asDouble() >= 1.0) {
+        if (context.getPropertyValue(DECAY).asDouble() >= 1.0) {
             results.add(
                     new ValidationResult.Builder()
                             .valid(false)
@@ -571,8 +571,8 @@ public class OutliersDetection extends AbstractProcessor {
 
         Collection<Record> list = new ArrayList<>();
 
-        final String valueField = context.getProperty(RECORD_VALUE_FIELD).asString();
-        final String timeField = context.getProperty(RECORD_TIME_FIELD).asString();
+        final String valueField = context.getPropertyValue(RECORD_VALUE_FIELD).asString();
+        final String timeField = context.getPropertyValue(RECORD_TIME_FIELD).asString();
 
         // loop over all events in collection
         for (Record record : records) {

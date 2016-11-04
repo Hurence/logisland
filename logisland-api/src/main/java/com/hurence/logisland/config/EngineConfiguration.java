@@ -21,14 +21,14 @@ import java.util.List;
 
 public class EngineConfiguration extends AbstractComponentConfiguration {
 
-    private List<ProcessorChainConfiguration> processorChainConfigurations = new ArrayList<>();
+    private List<StreamConfiguration> streamConfigurations = new ArrayList<>();
 
-    public List<ProcessorChainConfiguration> getProcessorChainConfigurations() {
-        return processorChainConfigurations;
+    public List<StreamConfiguration> getStreamConfigurations() {
+        return streamConfigurations;
     }
 
-    public void addProcessorChainConfigurations(ProcessorChainConfiguration processorChains) {
-        this.processorChainConfigurations.add(processorChains);
+    public void addProcessorChainConfigurations(StreamConfiguration processorChains) {
+        this.streamConfigurations.add(processorChains);
     }
 
 }

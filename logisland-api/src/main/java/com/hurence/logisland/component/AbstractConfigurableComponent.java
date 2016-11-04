@@ -16,6 +16,8 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.processor.AbstractProcessor;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
         final List<PropertyDescriptor> supportedDescriptors = getSupportedPropertyDescriptors();
         if (null != supportedDescriptors) {
             for (final PropertyDescriptor descriptor : supportedDescriptors) {
-                String value = context.getProperty(descriptor).asString();
+                String value = context.getPropertyValue(descriptor).asString();
                 if (value == null) {
                     value = descriptor.getDefaultValue();
                 }

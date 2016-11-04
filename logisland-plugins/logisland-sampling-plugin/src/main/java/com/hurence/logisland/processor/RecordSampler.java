@@ -109,10 +109,10 @@ public class RecordSampler extends AbstractProcessor {
 
 
         SamplingAlgorithm algorithm = SamplingAlgorithm.valueOf(
-                context.getProperty(SAMPLING_ALGORITHM).asString().toUpperCase());
-        String valueFieldName = context.getProperty(VALUE_FIELD).asString();
-        String timeFieldName = context.getProperty(TIME_FIELD).asString();
-        int parameter = context.getProperty(SAMPLING_PARAMETER).asInteger();
+                context.getPropertyValue(SAMPLING_ALGORITHM).asString().toUpperCase());
+        String valueFieldName = context.getPropertyValue(VALUE_FIELD).asString();
+        String timeFieldName = context.getPropertyValue(TIME_FIELD).asString();
+        int parameter = context.getPropertyValue(SAMPLING_PARAMETER).asInteger();
 
 
         Sampler sampler = SamplerFactory.getSampler(algorithm, valueFieldName, timeFieldName, parameter);

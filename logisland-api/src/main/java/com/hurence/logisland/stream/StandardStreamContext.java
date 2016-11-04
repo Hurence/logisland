@@ -13,25 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.stream;
 
 
 import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.processor.ProcessContext;
 
-public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+public class StandardStreamContext extends AbstractConfiguredComponent implements StreamContext {
 
-    public StandardProcessContext(final Processor processor, final String id) {
-        super(processor, id);
+    private final List<ProcessContext> processContexts = new ArrayList<>();
+
+    public StandardStreamContext(final RecordStream recordStream, final String id) {
+        super(recordStream, id);
     }
 
     @Override
-    public Processor getProcessor() {
-        return (Processor) component;
+    public RecordStream getStream() {
+        return (RecordStream) component;
     }
+
+    @Override
+    public Collection<ProcessContext> getProcessContexts() {
+        return processContexts;
+    }
+
+    @Override
+    public void addProcessContext(ProcessContext processContext) {
+        processContexts.add(processContext);
+    }
+
 
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {

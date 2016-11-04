@@ -70,7 +70,7 @@ public class RecordDebugger extends AbstractProcessor {
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
-            if (context.getProperty(SERIALIZER).getRawValue().equals(JSON.getValue())) {
+            if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {
                 serializer = new JsonSerializer();
             } else {
                 serializer = new StringSerializer();

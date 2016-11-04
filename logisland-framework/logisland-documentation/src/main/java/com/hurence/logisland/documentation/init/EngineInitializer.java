@@ -18,25 +18,21 @@ package com.hurence.logisland.documentation.init;
 import com.hurence.logisland.annotation.lifecycle.OnShutdown;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
-import com.hurence.logisland.documentation.mock.MockComponentLogger;
-import com.hurence.logisland.documentation.mock.MockEngineContext;
-import com.hurence.logisland.documentation.mock.MockProcessContext;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.processor.MockProcessContext;
 
 /**
  * Initializes a Procesor using a MockProcessorInitializationContext
- *
- *
  */
 public class EngineInitializer implements ConfigurableComponentInitializer {
 
     @Override
     public void initialize(ConfigurableComponent component) {
         ProcessingEngine engine = (ProcessingEngine) component;
-       // engine.start(new MockEngineContext());
+        // engine.start(new MockEngineContext());
     }
 
     @Override
@@ -45,7 +41,7 @@ public class EngineInitializer implements ConfigurableComponentInitializer {
 
 
         final ComponentLog logger = new MockComponentLogger();
-        final MockProcessContext context = new MockProcessContext();
+        final MockProcessContext context = new MockProcessContext(null);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, engine, logger, context);
     }
 
