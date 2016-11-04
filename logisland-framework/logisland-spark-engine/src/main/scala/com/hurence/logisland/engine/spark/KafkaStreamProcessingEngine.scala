@@ -207,7 +207,74 @@ object KafkaStreamProcessingEngine {
         .defaultValue("false")
         .build
 
+
+
+
+
+
+    val SPARK_YARN_MAX_APP_ATTEMPTS = new PropertyDescriptor.Builder()
+        .name("spark.yarn.maxAppAttempts")
+        .description( "Because Spark driver and Application Master share a single JVM," +
+            " any error in Spark driver stops our long-running job. " +
+            "Fortunately it is possible to configure maximum number of attempts " +
+            "that will be made to re-run the application. " +
+            "It is reasonable to set higher value than default 2 " +
+            "(derived from YARN cluster property yarn.resourcemanager.am.max-attempts). " +
+            "4 works quite well, higher value may cause unnecessary restarts" +
+            " even if the reason of the failure is permanent.")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("4")
+        .build
+
+
+    val SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL = new PropertyDescriptor.Builder()
+        .name("spark.yarn.am.attemptFailuresValidityInterval")
+        .description("If the application runs for days or weeks without restart " +
+            "or redeployment on highly utilized cluster, " +
+            "4 attempts could be exhausted in few hours. " +
+            "To avoid this situation, the attempt counter should be reset on every hour of so.")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("1h")
+        .build
+
+    val SPARK_YARN_MAX_EXECUTOR_FAILURES = new PropertyDescriptor.Builder()
+        .name("spark.yarn.max.executor.failures")
+        .description("a maximum number of executor failures before the application fails. " +
+            "By default it is max(2 * num executors, 3), " +
+            "well suited for batch jobs but not for long-running jobs." +
+            " The property comes with corresponding validity interval which also should be set." +
+            "8 * num_executors")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("20")
+        .build
+
+
+    val SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL = new PropertyDescriptor.Builder()
+        .name("spark.yarn.executor.failuresValidityInterval")
+        .description("If the application runs for days or weeks without restart " +
+            "or redeployment on highly utilized cluster, " +
+            "x attempts could be exhausted in few hours. " +
+            "To avoid this situation, the attempt counter should be reset on every hour of so.")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("1h")
+        .build
+
+    val SPARK_TASK_MAX_FAILURES = new PropertyDescriptor.Builder()
+        .name("spark.task.maxFailures")
+        .description("For long-running jobs you could also consider to boost maximum" +
+            " number of task failures before giving up the job. " +
+            "By default tasks will be retried 4 times and then job fails.")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("8")
+        .build
 }
+
+
 
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
@@ -236,6 +303,12 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_MAX_APP_ATTEMPTS)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_MAX_EXECUTOR_FAILURES)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
+
         Collections.unmodifiableList(descriptors)
     }
 
@@ -303,6 +376,12 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_DRIVER_CORES)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_EXECUTOR_CORES)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES)
+
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_MAX_APP_ATTEMPTS)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_MAX_EXECUTOR_FAILURES)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
 
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
