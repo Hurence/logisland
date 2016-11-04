@@ -31,7 +31,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 
 @Tags({"one", "two", "three"})
 @CapabilityDescription("This is a processor that is used to test documentation.")

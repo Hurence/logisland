@@ -26,7 +26,7 @@ import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcess
 import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._

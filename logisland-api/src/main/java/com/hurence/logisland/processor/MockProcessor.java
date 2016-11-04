@@ -18,12 +18,8 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.ArrayList;
 import java.util.Collection;

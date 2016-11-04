@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.stream;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
 
-
-public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
+public abstract class AbstractStream extends AbstractConfigurableComponent implements Stream {
 
 
     public static final PropertyDescriptor INCLUDE_INPUT_RECORDS = new PropertyDescriptor.Builder()
@@ -37,7 +33,7 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
             .defaultValue("true")
             .build();
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractStream.class);
 
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
@@ -45,20 +41,14 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
     }
 
     @Override
-    public void init(ProcessContext context) {
-        logger.info("init");
+    public void start(){
+        logger.info("start stream processing");
     }
 
-
-    /**
-     * Call process with a singleton list made with the single record
-     *
-     * @param context the current process context
-     * @param record the record to handle
-     * @return
-     */
     @Override
-    public Collection<Record> process(ProcessContext context, Record record) {
-        return process(context, Collections.singleton(record));
+    public void stop(){
+        logger.info("stop stream processing");
     }
+
+
 }

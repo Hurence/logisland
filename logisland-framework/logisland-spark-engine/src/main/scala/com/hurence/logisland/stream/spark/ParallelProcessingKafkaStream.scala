@@ -23,12 +23,11 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.HasOffsetRanges
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -58,10 +57,6 @@ class ParallelProcessingKafkaStream(override val appName: String,
                                     override val processorChainInstance: StandardProcessorChainInstance)
     extends AbstractKafkaStream(appName, ssc, processorChainInstance) {
 
-
-    private val logger = LoggerFactory.getLogger(classOf[ParallelProcessingKafkaStream])
-
-
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(AbstractKafkaStream.ERROR_TOPICS)
@@ -85,6 +80,11 @@ class ParallelProcessingKafkaStream(override val appName: String,
         Collections.unmodifiableList(descriptors)
     }
 
+    /**
+      * launch the chain of processing for each partition of the RDD in parallel
+      *
+      * @param rdd
+      */
     override def process(rdd: RDD[(Array[Byte], Array[Byte])]) = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
@@ -149,7 +149,7 @@ class ParallelProcessingKafkaStream(override val appName: String,
                                 }).toList
                             } else {
                                 // processor
-                                deserializeEvents(partition, deserializer)
+                                deserializeRecords(partition, deserializer)
                             }
 
                             firstPass = false

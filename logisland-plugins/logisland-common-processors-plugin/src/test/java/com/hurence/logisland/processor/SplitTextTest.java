@@ -21,7 +21,7 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import com.hurence.logisland.util.validator.AvroRecordValidator;
+import com.hurence.logisland.validator.AvroRecordValidator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

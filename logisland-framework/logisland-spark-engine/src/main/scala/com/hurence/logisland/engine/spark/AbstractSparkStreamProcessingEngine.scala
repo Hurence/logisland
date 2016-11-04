@@ -47,7 +47,7 @@ import com.hurence.logisland.serializer._
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder

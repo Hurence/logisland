@@ -8,7 +8,7 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record.FieldDictionary
 import com.hurence.logisland.util.spark.SparkUtils
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.streaming.StreamingContext
@@ -109,7 +109,7 @@ class KafkaStreamHDFSBurner(override val appName: String,
                 processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
 
 
-            val records = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
+            val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
 
 
             if (!records.isEmpty()) {
@@ -124,7 +124,7 @@ class KafkaStreamHDFSBurner(override val appName: String,
                     s"/record_type=$recordType"
 
 
-                val records = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
+                val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
                     .filter(r =>
                         r.hasField(FieldDictionary.RECORD_TYPE) &&
                             r.getField(FieldDictionary.RECORD_TYPE).asString() == recordType

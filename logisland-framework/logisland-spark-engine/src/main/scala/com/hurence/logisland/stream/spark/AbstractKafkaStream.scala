@@ -25,10 +25,11 @@ import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.processor.chain.{AbstractProcessorChain, KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record.{Field, FieldType, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
+import com.hurence.logisland.stream.AbstractStream
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.ZookeeperSink
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder
@@ -44,8 +45,6 @@ import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-
-
 
 
 object AbstractKafkaStream {
@@ -193,7 +192,7 @@ object AbstractKafkaStream {
 abstract class AbstractKafkaStream(val appName: String,
                                    val ssc: StreamingContext,
                                    val processorChainInstance: StandardProcessorChainInstance)
-    extends AbstractConfigurableComponent {
+    extends AbstractStream {
 
 
     private val logger = LoggerFactory.getLogger(classOf[AbstractKafkaStream])
@@ -221,7 +220,7 @@ abstract class AbstractKafkaStream(val appName: String,
         Collections.unmodifiableList(descriptors)
     }
 
-    def run() = {
+    override def start() = {
         try {
 
             // Define the Kafka parameters, broker list must be specified
@@ -302,9 +301,22 @@ abstract class AbstractKafkaStream(val appName: String,
         }
     }
 
+
+    /**
+      * to be overriden by subclasses
+      * @param rdd
+      */
     def process(rdd: RDD[(Array[Byte], Array[Byte])])
 
+
+    /**
+      * build a serializer
+      * @param inSerializerClass the serializer type
+      * @param schemaContent an Avro schema
+      * @return the serializer
+      */
     def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
+        // TODO move this in a utility class
         inSerializerClass match {
             case c if c == KafkaRecordStream.AVRO_SERIALIZER.getValue =>
                 val parser = new Parser
@@ -315,9 +327,13 @@ abstract class AbstractKafkaStream(val appName: String,
         }
     }
 
-    def deserializeEvents(partition: Iterator[(Array[Byte], Array[Byte])], serializer: RecordSerializer): List[Record] = {
-
-
+    /**
+      *
+      * @param partition
+      * @param serializer
+      * @return
+      */
+    def deserializeRecords(partition: Iterator[(Array[Byte], Array[Byte])], serializer: RecordSerializer): List[Record] = {
         partition.flatMap(rawEvent => {
 
             try {

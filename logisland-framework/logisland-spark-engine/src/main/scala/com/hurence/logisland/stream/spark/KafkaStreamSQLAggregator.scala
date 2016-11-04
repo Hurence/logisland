@@ -7,7 +7,7 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.processor.chain.{KafkaRecordStream, StandardProcessorChainInstance}
 import com.hurence.logisland.record.FieldDictionary
 import com.hurence.logisland.util.spark.SparkUtils
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.HasOffsetRanges
@@ -97,7 +97,7 @@ class KafkaStreamSQLAggregator(override val appName: String,
                 processorChainContext.getProperty(KafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
 
 
-            val records = rdd.mapPartitions(p => deserializeEvents(p, deserializer).iterator)
+            val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
 
 
             if (!records.isEmpty()) {

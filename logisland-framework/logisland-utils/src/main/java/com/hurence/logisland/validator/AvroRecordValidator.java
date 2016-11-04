@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.util.validator;
+package com.hurence.logisland.validator;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.AvroSerializer;

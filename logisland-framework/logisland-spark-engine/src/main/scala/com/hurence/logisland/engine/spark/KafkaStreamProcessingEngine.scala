@@ -27,7 +27,7 @@ import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.processor.StandardProcessContext
 import com.hurence.logisland.stream.spark.ParallelProcessingKafkaStream
 import com.hurence.logisland.util.spark.SparkUtils
-import com.hurence.logisland.util.validator.StandardValidators
+import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
@@ -328,7 +328,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             try {
 
                 val kafkaStream = new ParallelProcessingKafkaStream(appName, ssc, processorChainInstance)
-                kafkaStream.run()
+                kafkaStream.start()
             } catch {
                 case ex: Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",
                     ex.getMessage)
