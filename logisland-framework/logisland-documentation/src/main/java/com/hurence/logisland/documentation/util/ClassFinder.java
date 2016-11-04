@@ -17,26 +17,38 @@
 package com.hurence.logisland.documentation.util;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ClassFinder {
+
+    private static Logger logger = LoggerFactory.getLogger(ClassFinder.class);
+
+    /**
+     * find classes in the classpath
+     * @param visitor
+     */
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
+
         String[] paths = classpath.split(System.getProperty("path.separator"));
 
-        String javaHome = System.getProperty("java.home");
+     /*   String javaHome = System.getProperty("java.home");
         File file = new File(javaHome + File.separator + "lib");
         if (file.exists()) {
             findClasses(file, file, true, visitor);
-        }
+        }*/
 
         for (String path : paths) {
-            file = new File(path);
-            if (file.exists()) {
-                findClasses(file, file, false, visitor);
+            File file = new File(path);
+            if (file.exists() && file.getName().contains("logisland")) {
+                findClasses(file, file, true, visitor);
+
             }
         }
     }
@@ -50,6 +62,7 @@ public class ClassFinder {
             }
         } else {
             if (file.getName().toLowerCase().endsWith(".jar") && includeJars) {
+
                 JarFile jar = null;
                 try {
                     jar = new JarFile(file);
