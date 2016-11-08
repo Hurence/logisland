@@ -19,12 +19,9 @@ package com.hurence.logisland.stream.spark
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.schema.{SchemaManager, StandardSchemaManager}
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
-import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
@@ -34,51 +31,9 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
 
-object KafkaRecordStreamParallelProcessing {
-
-
-    val SQL_QUERY = new PropertyDescriptor.Builder()
-        .name("sql.query")
-        .description("The SQL query to execute")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
-
-    val MAX_RESULTS_COUNT = new PropertyDescriptor.Builder()
-        .name("max.results.count")
-        .description("the max number of rows to output. (-1 for no limit)")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("-1")
-        .build
-
-}
-
-class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
+class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
     val logger = LoggerFactory.getLogger(KafkaRecordStreamParallelProcessing.getClass.getName)
 
-    override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
-        val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-        descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.ERROR_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_AUTOCREATE)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
-
-        descriptors.add(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT)
-        descriptors.add(KafkaRecordStreamSQLAggregator.SQL_QUERY)
-        Collections.unmodifiableList(descriptors)
-    }
 
     /**
       * launch the chain of processing for each partition of the RDD in parallel
@@ -92,6 +47,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
 
             val inputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_TOPICS).asString
             val outputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString
+            val errorTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString
+            val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
+
 
             rdd.foreachPartition(partition => {
                 if (partition.nonEmpty) {
@@ -123,6 +81,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                     var incomingEvents: util.Collection[Record] = Collections.emptyList()
                     var outgoingEvents: util.Collection[Record] = Collections.emptyList()
                     val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
+                    logger.info("start processing")
 
                     streamContext.getProcessContexts.foreach(processorContext => {
                         val startTime = System.currentTimeMillis()
@@ -163,7 +122,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         processingMetrics.addAll(ProcessorMetrics.computeMetrics(
                             appName,
-                            processorContext.getName,
+                            streamContext.getName,
                             inputTopics,
                             outputTopics,
                             partitionId,
@@ -179,20 +138,23 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                     /**
                       * Do we make records compliant with a given Avro schema ?
                       */
-                    if(streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).isSet){
-                        try{
+                    if (streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).isSet) {
+                        try {
                             val strSchema = streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString()
                             val parser = new Schema.Parser
                             val schema = parser.parse(strSchema)
 
-                            outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema) )
-                        }catch {
-                            case t:Throwable =>
+                            outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema))
+                        } catch {
+                            case t: Throwable =>
                                 logger.warn("something wrong while converting records " +
                                     "to valid accordingly to provide Avro schma " + t.getMessage)
                         }
 
                     }
+
+
+                    logger.info("sending to kafka")
 
                     /**
                       * push outgoing events and errors to Kafka
@@ -214,11 +176,13 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         processingMetrics.toList,
                         serializer
                     )
+                    logger.info("saving offsets")
 
                     /**
                       * save latest offset to Zookeeper
                       */
                     zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
+                    logger.info("processed " + outgoingEvents.size() + " messages")
                 }
             })
         }

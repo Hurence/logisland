@@ -2,6 +2,47 @@ Extension plugins
 =================
 You'll find here the list of all usable Processors, Engines and other components taht can be usable out of the box in your analytics streams
 
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
+
+KafkaRecordStreamDebugger
+-------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "8", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner: 
 
 KafkaRecordStreamHDFSBurner
@@ -39,7 +80,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "largest", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
    "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
    "**output.format**", "can be parquet, orc csv", "parquet : , orc : , txt : , json : , ", "null", "", ""
    "**record.type**", "the type of event to filter", "", "null", "", ""
@@ -83,9 +124,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "largest", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
-   "**sql.query**", "The SQL query to execute", "", "null", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
 
 ----------
 
@@ -93,7 +134,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 KafkaRecordStreamSQLAggregator
 ------------------------------
-No description provided.
+This is a stream capable of SQL query interpretations
 
 Class
 _____
@@ -101,7 +142,7 @@ com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
 
 Tags
 ____
-None.
+stream, SQL, query, record
 
 Properties
 __________
@@ -126,9 +167,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "largest", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
-   "**sql.query**", "The SQL query to execute", "", "null", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "aggregation", "", ""
 
 ----------
 

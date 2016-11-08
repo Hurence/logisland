@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
@@ -25,6 +26,9 @@ import com.hurence.logisland.validator.AvroRecordValidator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.List;
 
 
 public class SplitTextTest {
@@ -125,7 +129,7 @@ public class SplitTextTest {
         out.assertFieldNotExists("src_ip2");
         out.assertFieldEquals("src_ip", "10.3.10.134");
         out.assertFieldEquals("http_method", "GET");
-        out.assertFieldEquals("bytes_out", "51");
+        out.assertFieldEquals("bytes_out", 51);
         out.assertFieldEquals("http_query", "/usr/rest/account/email");
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
@@ -158,9 +162,44 @@ public class SplitTextTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldNotExists("src_ip");
         out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
-        out.assertFieldEquals(FieldDictionary.RECORD_ERROR, ProcessError.REGEX_PARSING_ERROR.toString());
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(2);
     }
 
+
+    @Test
+    public void tesBigApacheLog() throws IOException {
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
+        testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
+        testRunner.assertValid();
+
+
+
+        // Construct BufferedReader from FileReader
+        File fin = new File("/Users/tom/Documents/workspace/hurence/data/apache/NASA_access_log_Jul95");
+        BufferedReader br = new BufferedReader(new FileReader(fin));
+
+        String line = null;
+        int count = 0;
+        while ((line = br.readLine()) != null) {
+
+            count ++;
+            testRunner.enqueue("",line);
+            if(count %10000 == 0){
+                testRunner.clearQueues();
+                testRunner.run();
+                testRunner.assertAllInputRecordsProcessed();
+                testRunner.assertOutputRecordsCount(10000);
+                List<MockRecord> records = testRunner.getErrorRecords();
+                System.out.println("testRunner = " + testRunner.getErrorRecords().size());
+            }
+
+        }
+
+        br.close();
+    }
 
 }

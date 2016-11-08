@@ -189,7 +189,7 @@ public class SplitText extends AbstractProcessor {
                                 " with regex " + keyRegexString +
                                 " : " + e.getMessage();
                         logger.warn(errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, errorMessage);
+                        outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
                         outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, value);
                     }
                 }
@@ -245,7 +245,7 @@ public class SplitText extends AbstractProcessor {
                                 }
                             }
                         } else {
-                            outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, ProcessError.REGEX_PARSING_ERROR.toString());
+                            outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "");
                             outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                         }
 
@@ -254,7 +254,7 @@ public class SplitText extends AbstractProcessor {
                                 " with regex " + valueRegexString +
                                 " : " + e.getMessage();
                         logger.warn(errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_ERROR, FieldType.STRING, errorMessage);
+                        outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
                         outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                     } finally {
                         outputRecords.add(outputRecord);
@@ -266,7 +266,6 @@ public class SplitText extends AbstractProcessor {
                 logger.warn("issue while matching getting K/V on record {}, exception {}", record, e.getMessage());
             }
         });
-
 
         return outputRecords;
     }

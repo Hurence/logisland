@@ -6,12 +6,10 @@ import java.util.{Collections, Date}
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.FieldDictionary
-import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SaveMode
-import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.slf4j.LoggerFactory
 
@@ -62,7 +60,7 @@ object KafkaRecordStreamHDFSBurner {
 
 }
 
-class KafkaRecordStreamHDFSBurner    extends AbstractKafkaRecordStream{
+class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
 
     private val logger = LoggerFactory.getLogger(classOf[KafkaRecordStreamHDFSBurner])
@@ -130,10 +128,9 @@ class KafkaRecordStreamHDFSBurner    extends AbstractKafkaRecordStream{
 
 
                 if (!records.isEmpty()) {
-                    val rows = records.filter(r => !r.hasField(FieldDictionary.RECORD_ERROR)).map(r => SparkUtils.convertToRow(r))
-
-                    rows.filter(r => r.toString().contains("regex_parsing_error")).foreach(println)
                     val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
+                    val rows = records.filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS)).map(r => SparkUtils.convertToRow(r, schema))
+
 
                     logger.info(schema.toString())
                     val rowSample = rows.take(10)
@@ -141,7 +138,7 @@ class KafkaRecordStreamHDFSBurner    extends AbstractKafkaRecordStream{
 
 
 
-                        df.write
+                    df.write
                         //      .partitionBy(FieldDictionary.RECORD_TYPE)
                         .mode(SaveMode.Append)
                         // TODO choose output format

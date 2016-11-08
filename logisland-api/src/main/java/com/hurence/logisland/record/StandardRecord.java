@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -313,7 +313,7 @@ public class StandardRecord implements Record {
             } catch (Throwable ex) {
                 return false;
             }
-            if(!isValid) {
+            if (!isValid) {
                 logger.info("field {} is not an instance of type {}", field.getName(), field.getType());
                 return false;
             }
@@ -381,5 +381,26 @@ public class StandardRecord implements Record {
         }
 
         return size;
+    }
+
+
+    private List<String> errors = new ArrayList<>();
+
+    @Override
+    public Record addError(final String type, final String message) {
+        StringBuilder finalMessage = new StringBuilder();
+        finalMessage.append(type);
+        if(message == null || !message.isEmpty()) {
+            finalMessage.append(": ");
+            finalMessage.append(message);
+        }
+        errors.add(finalMessage.toString());
+        setField(FieldDictionary.RECORD_ERRORS, FieldType.ARRAY, errors);
+        return this;
+    }
+
+    @Override
+    public Collection<String> getErrors() {
+        return new ArrayList<>(errors);
     }
 }

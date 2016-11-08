@@ -187,7 +187,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void assertOutputErrorCount(int count) {
-        long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERROR)).count();
+        long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
         assertTrue("expected output error record count was " + count + " but is currently " +
                 errorCount, errorCount == count);
     }
@@ -246,7 +246,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     public List<MockRecord> getErrorRecords() {
         return getOutputRecords()
                 .stream()
-                .filter(r -> r.hasField(FieldDictionary.RECORD_ERROR))
+                .filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS))
                 .collect(Collectors.toList());
     }
 }

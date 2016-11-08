@@ -17,11 +17,22 @@ package com.hurence.logisland.processor;
 
 public enum ProcessError {
 
-    REGEX_PARSING_ERROR,
+    RECORD_CONVERSION_ERROR,
+    NUMBER_PARSING_ERROR,
+    DATE_PARSING_ERROR,
+    REGEX_MATCHING_ERROR,
     RUNTIME_ERROR,
     UNKNOWN_ERROR;
 
+    private String name;
 
+    ProcessError() {
+        this.name = this.name().toLowerCase();
+    }
+
+    public String getName() {
+        return name;
+    }
     public String toString() {
         return name().toLowerCase();
     }

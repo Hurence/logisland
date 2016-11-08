@@ -208,13 +208,9 @@ object KafkaStreamProcessingEngine {
         .build
 
 
-
-
-
-
     val SPARK_YARN_MAX_APP_ATTEMPTS = new PropertyDescriptor.Builder()
         .name("spark.yarn.maxAppAttempts")
-        .description( "Because Spark driver and Application Master share a single JVM," +
+        .description("Because Spark driver and Application Master share a single JVM," +
             " any error in Spark driver stops our long-running job. " +
             "Fortunately it is possible to configure maximum number of attempts " +
             "that will be made to re-run the application. " +
@@ -273,7 +269,6 @@ object KafkaStreamProcessingEngine {
         .defaultValue("8")
         .build
 }
-
 
 
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
@@ -409,8 +404,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 kafkaStream.setup(appName, ssc, streamingContext)
                 kafkaStream.start()
             } catch {
-                case ex: Exception => logger.error("something bad happened, please check Kafka or cluster health : {}",
-                    ex.getMessage)
+                case ex: Exception =>
+                    logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
             }
 
         })

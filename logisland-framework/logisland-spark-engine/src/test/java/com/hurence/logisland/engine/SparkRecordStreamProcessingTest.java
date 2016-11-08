@@ -151,7 +151,7 @@ public class SparkRecordStreamProcessingTest {
 
         StreamConfiguration conf = new StreamConfiguration();
         conf.setComponent(KafkaRecordStreamParallelProcessing.class.getName());
-        conf.setType(ComponentType.PROCESSOR_CHAIN.toString());
+        conf.setType(ComponentType.STREAM.toString());
         conf.setConfiguration(properties);
         conf.setStream("KafkaStream");
         conf.addProcessorConfiguration(createProcessorConfiguration());

@@ -31,7 +31,7 @@ engine:
     spark.streaming.kafka.maxRetries: 3
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
-    spark.ui.port: 4050
+    spark.ui.port: 4051
   streamConfigurations:
 
     - stream: metrics_by_host
@@ -50,34 +50,33 @@ engine:
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
-        sql.query: "SELECT count(*) AS my_exception, avg(bytes_out) AS avg_bytes_out, host_name
-                    FROM logisland_events
-                    WHERE exception = 'OhMyGodException'
-                    GROUP BY host_name"
+        avro.input.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.apache_log",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "src_ip",      "type": ["string","null"] },
+               { "name": "http_method", "type": ["string","null"] },
+               { "name": "bytes_out",   "type": ["long","null"] },
+               { "name": "http_query",  "type": ["string","null"] },
+               { "name": "http_version","type": ["string","null"] },
+               { "name": "http_status", "type": ["string","null"] },
+               { "name": "identd",      "type": ["string","null"] },
+               { "name": "user",        "type": ["string","null"] }    ]}
+        sql.query: >
+          SELECT count(*) AS my_exception, avg(bytes_out) AS avg_bytes_out, host_name
+          FROM logisland_events
+          WHERE exception = 'OhMyGodException'
+          GROUP BY host_name
         max.results.count: 1000
 
-    - stream: top_ten_bytes_out_by_src_ip
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
-      type: stream
-      documentation: average bytes sent by host_name
-      configuration:
-        kafka.input.topics: syslog_events
-        kafka.output.topics: logisland_aggregations
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-        sql.query: "SELECT sum(bytes_out) AS sum_bytes_out, src_ip
-                    FROM logisland_events
-                    GROUP BY src_ip
-                    ORDER BY sum_bytes_out DESC
-                    LIMIT 10"
-        max.results.count: 1000
+
 
     - stream: syslog_events_burner
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
@@ -85,7 +84,7 @@ engine:
       documentation: average bytes sent by host_name
       configuration:
         kafka.input.topics: syslog_events
-        kafka.output.topics: logisland_aggregations
+        kafka.output.topics: logisland_aggregates
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer

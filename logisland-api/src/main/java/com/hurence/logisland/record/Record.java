@@ -67,4 +67,8 @@ public interface Record extends Serializable {
     int size();
 
     int sizeInBytes();
+
+    Record addError(String errorType, String errorMessage);
+
+    Collection<String> getErrors();
 }

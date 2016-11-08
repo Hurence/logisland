@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #. $(dirname $0)/launcher.sh
-lib_dir="$(reaalpath "$(dirname $0)/../lib")"
+lib_dir="$(realpath "$(dirname $0)/../lib")"
 
 app_classpath=""
 for entry in "$lib_dir"/*

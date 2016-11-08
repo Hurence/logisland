@@ -21,7 +21,7 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.record.{Field, FieldType, Record}
+import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
@@ -183,7 +183,6 @@ object AbstractKafkaRecordStream {
             + "anything else (throw exception to the consumer)")
         .required(false)
         .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
-        .defaultValue(LARGEST_OFFSET.getValue)
         .build
 }
 
@@ -275,13 +274,15 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 "bootstrap.servers" -> brokerList,
                 "group.id" -> appName,
                 "refresh.leader.backoff.ms" -> "1000",
-                "auto.offset.reset" -> streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).asString()
+                "auto.offset.reset" -> "largest"
             )
 
             val offsets = zkSink.value.loadOffsetRangesFromZookeeper(appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
                     || offsets.isEmpty) {
+
+                logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
                     ssc,
                     kafkaStreamsParams,
@@ -292,6 +293,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 val messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => (Array[Byte], Array[Byte]) =
                     (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
 
+                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $offsets")
                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder, (Array[Byte], Array[Byte])](
                     ssc,
                     kafkaStreamsParams,
@@ -360,33 +362,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         }).toList
     }
 
-    def computeMetrics(appName: String,
-                       streamContext: StreamContext,
-                       inputTopics: String,
-                       outputTopics: String,
-                       partition: Iterator[(Array[Byte], Array[Byte])],
-                       startTime: Long,
-                       partitionId: Int,
-                       serializer: RecordSerializer,
-                       incomingEvents: util.Collection[Record],
-                       outgoingEvents: util.Collection[Record],
-                       osr: OffsetRange): util.Collection[Record] = {
 
-        val processorFields = new util.HashMap[String, Field]()
-        processorFields.put("spark_app_name", new Field("spark_app_name", FieldType.STRING, appName))
-        processorFields.put("input_topics", new Field("input_topics", FieldType.STRING, inputTopics))
-        processorFields.put("output_topics", new Field("output_topics", FieldType.STRING, outputTopics))
-        processorFields.put("component_name", new Field("component_name", FieldType.STRING, streamContext.getName))
-        processorFields.put("topic_offset_from", new Field("topic_offset_from", FieldType.LONG, osr.fromOffset))
-        processorFields.put("topic_offset_until", new Field("topic_offset_until", FieldType.LONG, osr.untilOffset))
-        processorFields.put("spark_partition_id", new Field("spark_partition_id", FieldType.INT, partitionId))
-        processorFields.put("num_incoming_messages", new Field("num_incoming_messages", FieldType.INT, osr.untilOffset - osr.fromOffset))
-        processorFields.put("num_incoming_events", new Field("num_incoming_events", FieldType.INT, incomingEvents.size))
-        processorFields.put("num_outgoing_events", new Field("num_outgoing_events", FieldType.INT, outgoingEvents.size))
-
-        val metrics = ProcessorMetrics.computeMetrics(incomingEvents, processorFields, System.currentTimeMillis() - startTime).toList
-        metrics
-    }
 
     /**
       * Topic creation

@@ -22,7 +22,7 @@ public enum ComponentType {
     ENGINE,
     PARSER,
     SINK,
-    PROCESSOR_CHAIN;
+    STREAM;
 
     public String toString() {
         return name().toLowerCase();

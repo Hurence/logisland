@@ -115,7 +115,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).intValue();
         } else {
-            return null;
+            try {
+                return Integer.parseInt(rawValue.toString());
+            }catch (Exception ex){
+                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as an integer");
+            }
         }
     }
 
@@ -123,11 +127,18 @@ public class Field implements PropertyValue, Serializable {
     public Long asLong() {
         if (rawValue == null) {
             return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).longValue();
         } else {
-            return null;
+            if (rawValue instanceof Number) {
+                return ((Number) rawValue).longValue();
+            } else {
+                try {
+                    return Long.parseLong(rawValue.toString());
+                }catch (Exception ex){
+                    throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as a long");
+                }
+            }
         }
+
     }
 
     @Override
@@ -142,7 +153,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).floatValue();
         } else {
-            return null;
+            try {
+                return Float.parseFloat(rawValue.toString());
+            }catch (Exception ex){
+                return null;
+            }
         }
     }
 
@@ -153,7 +168,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).doubleValue();
         } else {
-            return null;
+            try {
+                return Double.parseDouble(rawValue.toString());
+            }catch (Exception ex){
+                return null;
+            }
         }
     }
 

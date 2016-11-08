@@ -539,13 +539,13 @@
                 <version>2.11.0</version>
             </dependency>
 
-            <!-- Test Dependencies for testing interactions with ZooKeeper -->
+            <!-- Test Dependencies for testing interactions with ZooKeeper
             <dependency>
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-test</artifactId>
                 <version>2.9.1</version>
                 <scope>test</scope>
-            </dependency>
+            </dependency>-->
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
@@ -901,7 +901,7 @@
                 <artifactId>antlr3-maven-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
-            <plugin>
+           <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>2.15</version>
@@ -919,7 +919,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
-                    <!-- Only run for tests -->
+
                     <execution>
                         <id>groovy-tests</id>
                         <goals>
@@ -946,7 +946,7 @@
                         <version>2.4.3-01</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
