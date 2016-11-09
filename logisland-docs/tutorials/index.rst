@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to logisland's documentation!
-=====================================
+Tutorials
+=========
 
 
 Chat with us on Gitter
@@ -17,25 +17,11 @@ Chat with us on Gitter
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
 
 Contents:
----------
+
 
 .. toctree::
    :maxdepth: 2
 
-   changes
-   concepts
-   architecture
-   tutorials/index
-   deploy
-   api
-   tests
-   plugins
-   faq
+   getting-started
 
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 

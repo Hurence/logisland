@@ -166,40 +166,4 @@ public class SplitTextTest {
         out.assertRecordSizeEquals(2);
     }
 
-
-    @Test
-    public void tesBigApacheLog() throws IOException {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
-        testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
-        testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
-        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
-        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
-        testRunner.assertValid();
-
-
-
-        // Construct BufferedReader from FileReader
-        File fin = new File("/Users/tom/Documents/workspace/hurence/data/apache/NASA_access_log_Jul95");
-        BufferedReader br = new BufferedReader(new FileReader(fin));
-
-        String line = null;
-        int count = 0;
-        while ((line = br.readLine()) != null) {
-
-            count ++;
-            testRunner.enqueue("",line);
-            if(count %10000 == 0){
-                testRunner.clearQueues();
-                testRunner.run();
-                testRunner.assertAllInputRecordsProcessed();
-                testRunner.assertOutputRecordsCount(10000);
-                List<MockRecord> records = testRunner.getErrorRecords();
-                System.out.println("testRunner = " + testRunner.getErrorRecords().size());
-            }
-
-        }
-
-        br.close();
-    }
-
 }
