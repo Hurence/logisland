@@ -225,6 +225,61 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.MatchQuery: 
+
+MatchQuery
+----------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code-block::
+   message:'bad exception'
+   error_count:[10 TO *]
+   bytes_out:5000
+   user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+   don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Class
+_____
+com.hurence.logisland.processor.MatchQuery
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "alert_match", "", ""
+   "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "query", "some Lucene query", "generate a new record when this query is matched", **true**
+
+----------
+
 .. _com.hurence.logisland.processor.OutliersDetection: 
 
 OutliersDetection
@@ -334,60 +389,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**timebased.index**", "do we add a date suffix", "No date : no date added to default index, Today's date : today's date added to default index, yesterday's date : yesterday's date added to default index, ", "no", "", ""
    "es.index.field", "the name of the event field containing es index type => will override index value if set", "", "null", "", ""
    "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.QueryMatcherProcessor: 
-
-QueryMatcherProcessor
----------------------
-Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
-
-you can use this processor to handle custom events defined by lucene queries
-a new record is added to output each time a registered query is matched
-
-A query is expressed as a lucene query against a field like for example: 
-
-.. code-block::
-   message:'bad exception'
-   error_count:[10 TO *]
-   bytes_out:5000
-   user_name:tom*
-
-Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
-
-.. warning::
-   don't forget to set numeric fields property to handle correctly numeric ranges queries
-
-Class
-_____
-com.hurence.logisland.processor.QueryMatcherProcessor
-
-Tags
-____
-analytic, percolator, record, record, query, lucene
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "", ""
-   "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
-
-Dynamic Properties
-__________________
-Dynamic Properties allow the user to specify both the name and value of a property.
-
-.. csv-table:: dynamic-properties
-   :header: "Name","Value","Description","EL"
-   :widths: 20,20,40,10
-
-   "query", "some Lucene query", "generate a new record when this query is matched", **true**
 
 ----------
 

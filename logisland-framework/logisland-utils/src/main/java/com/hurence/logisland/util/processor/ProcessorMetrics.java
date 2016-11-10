@@ -33,7 +33,7 @@ import static com.hurence.logisland.record.FieldType.LONG;
  */
 public class ProcessorMetrics {
 
-    public static String METRICS_EVENT_TYPE = "process_metric";
+    public static String METRICS_EVENT_TYPE = "logisland_metrics";
 
     private static Logger logger = LoggerFactory.getLogger(ProcessorMetrics.class);
 

@@ -335,6 +335,12 @@
                 <artifactId>lucene-codecs</artifactId>
                 <version>${lucene.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queries</artifactId>
+                <version>5.4.0</version>
+            </dependency>
+
 
 
             <!-- Hadoop dependencies -->
@@ -487,7 +493,7 @@
             <dependency>
                 <groupId>com.github.flaxsearch</groupId>
                 <artifactId>luwak</artifactId>
-                <version>1.3.0</version>
+                <version>1.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -764,7 +770,16 @@
                         <quiet>true</quiet>
                         <javadocVersion>1.7</javadocVersion>
                         <additionalJOption>-J-Xmx512m</additionalJOption>
+                        <excludePackageNames>com.caseystella.*</excludePackageNames>
                     </configuration>
+                    <executions>
+                        <execution>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>aggregate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

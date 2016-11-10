@@ -22,6 +22,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   getting-started
+   index-apache-logs
+   query-matching
 
 

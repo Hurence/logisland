@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.9.5
+version: 0.9.6
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -82,36 +82,36 @@ engine:
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
     # indexing
-#    - stream: indexing_stream
-#      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-#      type: processor
-#      documentation: a processor that push events to ES
-#      configuration:
-#        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregates
-#        kafka.output.topics: none
-#        kafka.error.topics: logisland_errors
-#        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-#        kafka.output.topics.serializer: none
-#        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-#        kafka.metadata.broker.list: sandbox:9092
-#        kafka.zookeeper.quorum: sandbox:2181
-#        kafka.topic.autoCreate: true
-#        kafka.topic.default.partitions: 2
-#        kafka.topic.default.replicationFactor: 1
-#      processorConfigurations:
-#
-#        # put to elasticsearch
-#        - processor: es_publisher
-#          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
-#          type: processor
-#          documentation: a processor that trace the processed events
-#          configuration:
-#            default.index: logisland
-#            default.type: event
-#            hosts: sandbox:9300
-#            cluster.name: elasticsearch
-#            batch.size: 2000
-#            timebased.index: yesterday
-#            es.index.field: search_index
-#            es.type.field: record_type
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES
+      configuration:
+        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregates
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # put to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          type: processor
+          documentation: a processor that trace the processed events
+          configuration:
+            default.index: logisland
+            default.type: event
+            hosts: sandbox:9300
+            cluster.name: elasticsearch
+            batch.size: 2000
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
 
