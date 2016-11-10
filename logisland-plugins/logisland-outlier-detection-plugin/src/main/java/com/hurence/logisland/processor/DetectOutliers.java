@@ -59,14 +59,14 @@ import java.util.*;
         "- Expensive computationally, but run infrequently\n" +
         "\n" +
         "This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.")
-public class OutliersDetection extends AbstractProcessor {
+public class DetectOutliers extends AbstractProcessor {
 
     static final long serialVersionUID = -1L;
 
     public static String EVENT_TYPE = "outlier";
     public static String OUTLIER_PROCESSING_EXCEPTION_TYPE = "outlier_processing_exception";
 
-    private static final Logger logger = LoggerFactory.getLogger(OutliersDetection.class);
+    private static final Logger logger = LoggerFactory.getLogger(DetectOutliers.class);
     private OutlierConfig outlierConfig;
     private OutlierAlgorithm sketchyOutlierAlgorithm;
     com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
@@ -299,12 +299,20 @@ public class OutliersDetection extends AbstractProcessor {
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()
+            .name("output.record.type")
+            .description("the output type of the record")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("alert_match")
+            .build();
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(RECORD_VALUE_FIELD);
         descriptors.add(RECORD_TIME_FIELD);
+        descriptors.add(OUTPUT_RECORD_TYPE);
         descriptors.add(ROTATION_POLICY_TYPE);
         descriptors.add(ROTATION_POLICY_AMOUNT);
         descriptors.add(ROTATION_POLICY_UNIT);
@@ -569,10 +577,15 @@ public class OutliersDetection extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
+        // context may not have been initialized
+        if(outlierConfig == null)
+            init(context);
+
         Collection<Record> list = new ArrayList<>();
 
         final String valueField = context.getPropertyValue(RECORD_VALUE_FIELD).asString();
         final String timeField = context.getPropertyValue(RECORD_TIME_FIELD).asString();
+        final String outputRecordType = context.getPropertyValue(OUTPUT_RECORD_TYPE).asString();
 
         // loop over all events in collection
         for (Record record : records) {
@@ -592,7 +605,7 @@ public class OutliersDetection extends AbstractProcessor {
                     if (outlier.getSeverity() == Severity.SEVERE_OUTLIER) {
 
                         Record evt = new StandardRecord(record)
-                                .setType(EVENT_TYPE)
+                                .setType(outputRecordType)
                                 .setTime(new Date(timestamp))
                                 .setStringField("outlier_severity", "severe")
                                 .setField("outlier_score", FieldType.DOUBLE, outlier.getScore())
@@ -605,7 +618,7 @@ public class OutliersDetection extends AbstractProcessor {
                 list.add(new StandardRecord(OUTLIER_PROCESSING_EXCEPTION_TYPE)
                         .setStringField(FieldDictionary.RECORD_ERRORS, ProcessError.RUNTIME_ERROR.toString())
                         .setStringField(FieldDictionary.RECORD_RAW_VALUE, e.getMessage())
-                        .setStringField(FieldDictionary.PROCESSOR_NAME, OutliersDetection.class.getName())
+                        .setStringField(FieldDictionary.PROCESSOR_NAME, DetectOutliers.class.getName())
                 );
             }
         }

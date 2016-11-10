@@ -20,6 +20,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.sampling.Sampler;
 import com.hurence.logisland.sampling.SamplerFactory;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Tags({"analytic", "sampler", "record", "iot", "timeseries"})
@@ -47,19 +49,19 @@ import java.util.List;
         "Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations\n\n" +
         ".. warning::\n" +
         "   don't forget to set numeric fields property to handle correctly numeric ranges queries")
-public class RecordSampler extends AbstractProcessor {
+public class SampleRecords extends AbstractProcessor {
 
 
-    public static final PropertyDescriptor VALUE_FIELD = new PropertyDescriptor.Builder()
-            .name("value.field")
+    public static final PropertyDescriptor RECORD_VALUE_FIELD = new PropertyDescriptor.Builder()
+            .name("record.value.field")
             .description("the name of the numeric field to sample")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
-    public static final PropertyDescriptor TIME_FIELD = new PropertyDescriptor.Builder()
-            .name("time.field")
+    public static final PropertyDescriptor RECORD_TIME_FIELD = new PropertyDescriptor.Builder()
+            .name("record.time.field")
             .description("the name of the time field to sample")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -92,8 +94,8 @@ public class RecordSampler extends AbstractProcessor {
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(VALUE_FIELD);
-        descriptors.add(TIME_FIELD);
+        descriptors.add(RECORD_VALUE_FIELD);
+        descriptors.add(RECORD_TIME_FIELD);
         descriptors.add(SAMPLING_ALGORITHM);
         descriptors.add(SAMPLING_PARAMETER);
 
@@ -101,7 +103,7 @@ public class RecordSampler extends AbstractProcessor {
     }
 
 
-    private static Logger logger = LoggerFactory.getLogger(RecordSampler.class);
+    private static Logger logger = LoggerFactory.getLogger(SampleRecords.class);
 
 
     @Override
@@ -110,15 +112,17 @@ public class RecordSampler extends AbstractProcessor {
 
         SamplingAlgorithm algorithm = SamplingAlgorithm.valueOf(
                 context.getPropertyValue(SAMPLING_ALGORITHM).asString().toUpperCase());
-        String valueFieldName = context.getPropertyValue(VALUE_FIELD).asString();
-        String timeFieldName = context.getPropertyValue(TIME_FIELD).asString();
+        String valueFieldName = context.getPropertyValue(RECORD_VALUE_FIELD).asString();
+        String timeFieldName = context.getPropertyValue(RECORD_TIME_FIELD).asString();
         int parameter = context.getPropertyValue(SAMPLING_PARAMETER).asInteger();
 
 
         Sampler sampler = SamplerFactory.getSampler(algorithm, valueFieldName, timeFieldName, parameter);
 
-
-        return sampler.sample(new ArrayList<>(records));
+        return sampler.sample(new ArrayList<>(records)).stream()
+                .map(r -> {
+                    return r.setField("is_sampled", FieldType.BOOLEAN, true);
+                }).collect(Collectors.toList());
     }
 
 

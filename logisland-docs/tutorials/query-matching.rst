@@ -16,7 +16,7 @@ to compute some metrics and then add a `MatchQuery </plugins.html#matchquery>`_ 
 
 1. Setup SQL Aggregation Stream
 -------------------------------
-Our application will be composed of 2 streams, the first one use a `KafkaRecordStreamSQLAggregator <../plugins.html#kafkarecordstreamsqlaggregator>`_.
+Our application will be composed of 2 streams, the first one use a `KafkaRecordStreamSQLAggregator </plugins.html#kafkarecordstreamsqlaggregator>`_.
 This stream defines input/output topics names as well as Serializers, avro schema.
 
 .. note::
@@ -175,10 +175,19 @@ The third one will match numeric fields on sql aggregates computed in the very f
 ------------------------------
 Connect a shell to your logisland container to launch the following stream processing job previously defined.
 
+
 .. code-block:: sh
 
+    docker exec -ti logisland bash
+
+    #launch logisland streams
     cd $LOGISLAND_HOME
+    bin/logisland.sh --conf conf/index-apache-logs.yml
     bin/logisland.sh --conf conf/query-matching.yml
+
+    # send logs to kafka
+    head 500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
+
 
 
 5. Check your alerts with Kibana

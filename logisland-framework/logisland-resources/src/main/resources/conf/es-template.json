@@ -1,0 +1,154 @@
+{
+    "template":"*",
+    "settings":{
+        "number_of_shards" : 3,
+        "number_of_replicas" : 0,
+        "index.refresh_interval": "5s",
+        "index":{
+            "analysis":{
+                "analyzer":{
+                    "default":{
+                        "tokenizer":"standard",
+                        "filter":[
+                            "standard",
+                            "lowercase",
+                            "asciifolding"
+                        ],
+                        "type":"custom"
+                    },
+                    "lkeyword":{
+                        "tokenizer":"keyword",
+                        "filter":[
+                            "lowercase"
+                        ],
+                        "type":"custom"
+                    },
+                    "completion2":{
+                        "tokenizer":"standard",
+                        "filter":[
+                            "standard",
+                            "lowercase",
+                            "asciifolding",
+                            "completion2"
+                        ],
+                        "type":"custom"
+                    },
+                    "completion3":{
+                        "tokenizer":"standard",
+                        "filter":[
+                            "standard",
+                            "lowercase",
+                            "asciifolding",
+                            "completion3"
+                        ],
+                        "type":"custom"
+                    }
+                   
+                },
+                "filter":{
+                    "completion2":{
+                        "min_gram":"2",
+                        "type":"edgeNGram",
+                        "max_gram":"20"
+                    },
+                    "completion3":{
+                        "min_gram":"3",
+                        "type":"edgeNGram",
+                        "max_gram":"20"
+                    }
+                }
+            }
+        }
+    }
+    ,
+    "mappings":{
+        "_default_":{
+            "_all": {
+                "enabled":  true
+            },
+            "dynamic_templates": [
+                {
+                    "uuid":{
+                        "match" : "uuid?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "string",
+                            "index":"not_analyzed"
+                        }
+                    }
+                },
+                {
+                    "sub_project_code":{
+                        "match" : "sub_project_code?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "string",
+                            "index":"not_analyzed"
+                        }
+                    }
+                },
+                {
+                    "bytes":{
+                        "match" : ".*bytes_.*?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "long",
+                            "ignore_malformed": true
+                        }
+                    }
+                },
+                {
+                    "http":{
+                        "match" : ".*http.*",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "string",
+                            "index":"not_analyzed"
+                        }
+                    }
+                },
+                {
+                    "packets":{
+                        "match" : ".*packets_.*",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "long",
+                            "ignore_malformed": true
+                        }
+                    }
+                },
+                {  
+                    "record_type":{
+                        "match" : "record_type?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "string",
+                             "analyzer" : "lkeyword"
+                        }
+                    }
+                },
+                {
+                    "record_type":{
+                        "match" : "record_errors?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "string",
+                            "analyzer" : "lkeyword"
+                        }
+                    }
+                },,
+                {
+                    "ip":{
+                        "match" : ".*_ip?$",
+                        "match_pattern" : "regex",
+                        "mapping":{
+                            "type" : "ip",
+                            "index":"not_analyzed",
+                            "ignore_malformed": true
+                        }
+                    }
+                }         
+            ]
+        }
+    }
+}

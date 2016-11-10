@@ -141,7 +141,7 @@ public class RecordSchemaUtil {
                                 }catch (Exception ex){
                                     outputRecord.addError(ProcessError.RECORD_CONVERSION_ERROR.getName(),
                                             "field " + avroFieldName +
-                                                    " could be casted to " + avroTypes.get(0).getName());
+                                                    " couldn't be converted to " + avroTypes.get(0).getName());
                                 }
                                 break;
 
@@ -151,7 +151,7 @@ public class RecordSchemaUtil {
                                 }catch (Exception ex){
                                     outputRecord.addError(ProcessError.RECORD_CONVERSION_ERROR.getName(),
                                             "field " + avroFieldName +
-                                                    " could be casted to " + avroTypes.get(0).getName());
+                                                    " couldn't be converted to " + avroTypes.get(0).getName());
                                 }
                                 break;
 
@@ -161,7 +161,7 @@ public class RecordSchemaUtil {
                                 }catch (Exception ex){
                                     outputRecord.addError(ProcessError.RECORD_CONVERSION_ERROR.getName(),
                                             "field " + avroFieldName +
-                                                    " could be casted to " + avroTypes.get(0).getName());
+                                                    " couldn't be converted to " + avroTypes.get(0).getName());
                                 }
                                 break;
 
@@ -171,7 +171,7 @@ public class RecordSchemaUtil {
                                 }catch (Exception ex){
                                     outputRecord.addError(ProcessError.RECORD_CONVERSION_ERROR.getName(),
                                             "field " + avroFieldName +
-                                                    " could be casted to " + avroTypes.get(0).getName());
+                                                    " couldn't be converted to " + avroTypes.get(0).getName());
                                 }
                                 break;
 

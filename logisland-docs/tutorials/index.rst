@@ -24,5 +24,6 @@ Contents:
 
    index-apache-logs
    query-matching
+   outlier-detection
 
 

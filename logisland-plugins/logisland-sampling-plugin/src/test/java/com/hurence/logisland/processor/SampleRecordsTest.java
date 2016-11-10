@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecordSamplerTest {
+public class SampleRecordsTest {
 
     static String RAW_DATA1 = "/data/raw-data1.txt";
     static String RAW_DATA2 = "/data/raw-data2.txt";
     static String SAMPLED_RECORD = "sampled_record";
 
-    private static Logger logger = LoggerFactory.getLogger(RecordSamplerTest.class);
+    private static Logger logger = LoggerFactory.getLogger(SampleRecordsTest.class);
 
     private Record createRecord(long time, double value) {
         return new StandardRecord(SAMPLED_RECORD)
@@ -89,11 +89,11 @@ public class RecordSamplerTest {
 
     @Test
     public void validateNoSampling() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
-        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.NO_SAMPLING);
-        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "0");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
+        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.NO_SAMPLING);
+        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "0");
         testRunner.assertValid();
 
         int recordsCount = 2000;
@@ -107,11 +107,11 @@ public class RecordSamplerTest {
     @Test
     public void validateFirstItemSampling() {
         int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
-        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.FIRST_ITEM_SAMPLING);
-        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
+        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
+        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.FIRST_ITEM_SAMPLING);
+        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
         testRunner.assertValid();
 
 
@@ -126,11 +126,11 @@ public class RecordSamplerTest {
     @Test
     public void validateAverageSampling() {
         int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
-        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.AVERAGE_SAMPLING);
-        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
+        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
+        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.AVERAGE_SAMPLING);
+        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "230"); // bucket size => 9 buckets
         testRunner.assertValid();
 
 
@@ -145,11 +145,11 @@ public class RecordSamplerTest {
     @Test
     public void validateLLTBSampling() {
         int recordsCount = 2000;
-        final TestRunner testRunner = TestRunners.newTestRunner(new RecordSampler());
-        testRunner.setProperty(RecordSampler.VALUE_FIELD, FieldDictionary.RECORD_VALUE);
-        testRunner.setProperty(RecordSampler.TIME_FIELD, FieldDictionary.RECORD_TIME);
-        testRunner.setProperty(RecordSampler.SAMPLING_ALGORITHM, RecordSampler.LTTB_SAMPLING);
-        testRunner.setProperty(RecordSampler.SAMPLING_PARAMETER, "10"); // bucket size => 9 buckets
+        final TestRunner testRunner = TestRunners.newTestRunner(new SampleRecords());
+        testRunner.setProperty(SampleRecords.RECORD_VALUE_FIELD, FieldDictionary.RECORD_VALUE);
+        testRunner.setProperty(SampleRecords.RECORD_TIME_FIELD, FieldDictionary.RECORD_TIME);
+        testRunner.setProperty(SampleRecords.SAMPLING_ALGORITHM, SampleRecords.LTTB_SAMPLING);
+        testRunner.setProperty(SampleRecords.SAMPLING_PARAMETER, "10"); // bucket size => 9 buckets
         testRunner.assertValid();
 
 

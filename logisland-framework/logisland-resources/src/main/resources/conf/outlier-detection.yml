@@ -1,34 +1,47 @@
-Time series sampling & Outliers detection
-=========================================
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
 
-In the following tutorial we'll handle time series data from a sensor. We'll see how sample the datapoints in a visually
-non destructive way and
+version: 0.9.6
+documentation: LogIsland analytics main config file. Put here every engine or component config
 
-We assume that you are already familiar with logisland platform and that you have successfully done the previous tutorials.
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Main Logisland job entry point
+  configuration:
+    spark.app.name: QueryMatching
+    spark.master: local[4]
+    spark.driver.memory: 1g
+    spark.driver.cores: 1
+    spark.executor.memory: 2g
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 10000
+    spark.streaming.backpressure.enabled: true
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4051
+  streamConfigurations:
 
-.. note::
-
-    You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/outlier-detection.yml>`_ for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory.
-
-
-1. Setup the time series collection Stream
-------------------------------------------
-The first Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and chain of a `SplitText </plugins.html#splittext>`_
-
-The first Processor simply parse the csv lines while the second index them into the serach engine.
-Please note the output schema.
-
-.. code-block:: yaml
-
-    # parsing time series
+    # 1. parse time series
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
       documentation: a processor that links
       configuration:
-        kafka.input.topics: logisland_ts_raw
-        kafka.output.topics: logisland_ts_events
+        kafka.input.topics: logisland_sensor_raw
+        kafka.output.topics: logisland_sensor_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
@@ -44,7 +57,7 @@ Please note the output schema.
                { "name": "record_id",   "type": ["string"] },
                { "name": "record_time", "type": ["long"] },
                { "name": "record_type", "type": ["string"] },
-               { "name": "record_value",      "type": ["string","null"] } ]}
+               { "name": "record_value",      "type": ["double","null"] } ]}
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
@@ -56,28 +69,10 @@ Please note the output schema.
           type: parser
           documentation: a parser that produce events from an apache log REGEX
           configuration:
-            record.type: apache_log
-            value.regex: (\S+),(\S+)
+            record.type: sensor
+            value.regex: (\S*\s*\S*),(\S*)
             value.fields: record_time,record_value
 
-
-
-
-
-
-
-2. Setup the Outliers detection Stream
---------------------------------------
-The first Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and a `DetectOutliers </plugins.html#detectoutliers>`_  Processor
-
-.. note::
-    It's important to see that we perform outliers detection in parallel.
-    So if we would perform this detection for a particular grouping of record we would have used
-    a `KafkaRecordStreamSQLAggregator </plugins.html#kafkarecordstreamsqlaggregator>`_ with a ``GROUP BY`` clause instead.
-
-
-.. code-block:: yaml
 
     # detect outliers
     - stream: detect_outliers
@@ -116,15 +111,6 @@ and a `DetectOutliers </plugins.html#detectoutliers>`_  Processor
             record.time.field: record_time
             output.record.type: sensor_outlier
 
-3. Setup the time series Sampling Stream
-----------------------------------------
-The first Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and a `RecordSampler </plugins.html#recordsampler>`_  Processor
-
-
-.. code-block:: yaml
-
-
     # sample time series
     - stream: detect_toutliers
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
@@ -152,17 +138,6 @@ and a `RecordSampler </plugins.html#recordsampler>`_  Processor
             record.time.field: record_time
             sampling.algorithm: average
             sampling.parameter: 10
-
-
-
-
-4. Setup the indexing Stream
-----------------------------
-The last Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and chain of a `SplitText </plugins.html#splittext>`_  and a `PutElasticsearch </plugins.html#putelasticsearch>`_
-for indexing the whole records
-
-.. code-block:: yaml
 
     # index records
     - stream: indexing_stream
@@ -196,25 +171,3 @@ for indexing the whole records
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type
-
-
-4. Start logisland application
-------------------------------
-Connect a shell to your logisland container to launch the following stream processing job previously defined.
-
-
-.. code-block:: sh
-
-    docker exec -ti logisland bash
-
-    #launch logisland streams
-    cd $LOGISLAND_HOME
-    bin/logisland.sh --conf conf/outlier-detection.yml
-
-    # send logs to kafka
-    cat cpu_utilization_asg_misconfiguration.csv | kafkacat -b sandbox:9092 -P -t logisland_sensor_raw
-
-
-
-5. Check your alerts with Kibana
---------------------------------

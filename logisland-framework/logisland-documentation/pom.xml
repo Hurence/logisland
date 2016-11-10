@@ -62,6 +62,10 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-spark-engine</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-sampling-plugin</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

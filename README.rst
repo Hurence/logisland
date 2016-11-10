@@ -2,7 +2,7 @@ Log Island
 ==========
 
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
-    :target: https://travis-ci.org/Hurence/logisland
+   :target: https://travis-ci.org/Hurence/logisland
 
 
 
@@ -19,10 +19,11 @@ Download the `latest release build <https://github.com/Hurence/logisland/release
 .. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png
     :alt: architecture
 
-You can start right now playing with **logisland** through the Docker image, by following the `getting started <http://logisland.readthedocs.io/en/latest/getting-started.html>`_ guide.
+You can start right now playing with **logisland** through the Docker image, by getting started with `apache log indexing tutorial <http://logisland.readthedocs.io/en/latest/tutorials/index-apache-logs.html>`_ guide.
 
 The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  also explains how to implement your own processors and deploy them as custom `plugins <http://logisland.readthedocs.io/en/latest/plugins.html>`_.
 
+Browse the `Java API documentation <http://logisland.readthedocs.io/en/latest/_static/apidocs/>`_ for more information.
 
 
 Build and deploy

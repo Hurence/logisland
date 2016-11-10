@@ -2,6 +2,75 @@ Extension plugins
 =================
 You'll find here the list of all usable Processors, Engines and other components taht can be usable out of the box in your analytics streams
 
+.. _com.hurence.logisland.processor.DetectOutliers: 
+
+DetectOutliers
+--------------
+Outlier Analysis: A Hybrid Approach
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
+
+Class
+_____
+com.hurence.logisland.processor.DetectOutliers
+
+Tags
+____
+analytic, outlier, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**value.field**", "the numeric field to get the value", "", "record_value", "", ""
+   "**time.field**", "the numeric field to get the value", "", "record_time", "", ""
+   "output.record.type", "the output type of the record", "", "alert_match", "", ""
+   "**rotation.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
+   "**rotation.policy.amount**", "...", "", "100", "", ""
+   "**rotation.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
+   "**chunking.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
+   "**chunking.policy.amount**", "...", "", "100", "", ""
+   "**chunking.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
+   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD : , ", "SKETCHY_MOVING_MAD", "", ""
+   "batch.outlier.algorithm", "...", "RAD : , ", "RAD", "", ""
+   "global.statistics.min", "minimum value", "", "null", "", ""
+   "global.statistics.max", "maximum value", "", "null", "", ""
+   "global.statistics.mean", "mean value", "", "null", "", ""
+   "global.statistics.stddev", "standard deviation value", "", "null", "", ""
+   "**zscore.cutoffs.normal**", "zscoreCutoffs levele for normal outlier", "", "0.000000000000001", "", ""
+   "**zscore.cutoffs.moderate**", "zscoreCutoffs levele for moderate outlier", "", "1.5", "", ""
+   "**zscore.cutoffs.severe**", "zscoreCutoffs levele for severe outlier", "", "10.0", "", ""
+   "zscore.cutoffs.notEnoughData", "zscoreCutoffs levele for notEnoughData outlier", "", "100", "", ""
+   "smooth", "do smoothing ?", "", "false", "", ""
+   "decay", "the decay", "", "0.1", "", ""
+   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "", ""
+   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "", ""
+   "reservoir_size", "the size of points reservoir", "", "100", "", ""
+   "rpca.force.diff", "No Description Provided.", "", "null", "", ""
+   "rpca.lpenalty", "No Description Provided.", "", "null", "", ""
+   "rpca.min.records", "No Description Provided.", "", "null", "", ""
+   "rpca.spenalty", "No Description Provided.", "", "null", "", ""
+   "rpca.threshold", "No Description Provided.", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
 
 KafkaRecordStreamDebugger
@@ -280,74 +349,6 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
-.. _com.hurence.logisland.processor.OutliersDetection: 
-
-OutliersDetection
------------------
-Outlier Analysis: A Hybrid Approach
-In order to function at scale, a two-phase approach is taken
-
-For every data point
-
-- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
-- Gather a biased sample (biased by recency)
-- Extremely deterministic in space and cheap in computation
-
-For every outlier candidate
-
-- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
-- Expensive computationally, but run infrequently
-
-This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
-
-Class
-_____
-com.hurence.logisland.processor.OutliersDetection
-
-Tags
-____
-analytic, outlier, record, iot, timeseries
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**value.field**", "the numeric field to get the value", "", "record_value", "", ""
-   "**time.field**", "the numeric field to get the value", "", "record_time", "", ""
-   "**rotation.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
-   "**rotation.policy.amount**", "...", "", "100", "", ""
-   "**rotation.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
-   "**chunking.policy.type**", "...", "by_amount : , by_time : , never : , ", "by_amount", "", ""
-   "**chunking.policy.amount**", "...", "", "100", "", ""
-   "**chunking.policy.unit**", "...", "milliseconds : , seconds : , hours : , days : , months : , years : , points : , ", "points", "", ""
-   "sketchy.outlier.algorithm", "...", "SKETCHY_MOVING_MAD : , ", "SKETCHY_MOVING_MAD", "", ""
-   "batch.outlier.algorithm", "...", "RAD : , ", "RAD", "", ""
-   "global.statistics.min", "minimum value", "", "null", "", ""
-   "global.statistics.max", "maximum value", "", "null", "", ""
-   "global.statistics.mean", "mean value", "", "null", "", ""
-   "global.statistics.stddev", "standard deviation value", "", "null", "", ""
-   "**zscore.cutoffs.normal**", "zscoreCutoffs levele for normal outlier", "", "0.000000000000001", "", ""
-   "**zscore.cutoffs.moderate**", "zscoreCutoffs levele for moderate outlier", "", "1.5", "", ""
-   "**zscore.cutoffs.severe**", "zscoreCutoffs levele for severe outlier", "", "10.0", "", ""
-   "zscore.cutoffs.notEnoughData", "zscoreCutoffs levele for notEnoughData outlier", "", "100", "", ""
-   "smooth", "do smoothing ?", "", "false", "", ""
-   "decay", "the decay", "", "0.1", "", ""
-   "**min.amount.to.predict**", "minAmountToPredict", "", "100", "", ""
-   "min_zscore_percentile", "minZscorePercentile", "", "50.0", "", ""
-   "reservoir_size", "the size of points reservoir", "", "100", "", ""
-   "rpca.force.diff", "No Description Provided.", "", "null", "", ""
-   "rpca.lpenalty", "No Description Provided.", "", "null", "", ""
-   "rpca.min.records", "No Description Provided.", "", "null", "", ""
-   "rpca.spenalty", "No Description Provided.", "", "null", "", ""
-   "rpca.threshold", "No Description Provided.", "", "null", "", ""
-
-----------
-
 .. _com.hurence.logisland.processor.elasticsearch.PutElasticsearch: 
 
 PutElasticsearch
@@ -445,6 +446,52 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**event.serializer**", "the way to serialize event", "Json serialization : serialize events as json blocs, String serialization : serialize events as toString() blocs, ", "json", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SampleRecords: 
+
+SampleRecords
+-------------
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code-block::
+   message:'bad exception'
+   error_count:[10 TO *]
+   bytes_out:5000
+   user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+   don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Class
+_____
+com.hurence.logisland.processor.SampleRecords
+
+Tags
+____
+analytic, sampler, record, iot, timeseries
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "record.value.field", "the name of the numeric field to sample", "", "record_value", "", ""
+   "record.time.field", "the name of the time field to sample", "", "record_time", "", ""
+   "**sampling.algorithm**", "the implementation of the algorithm", "none : , lttb : , average : , first_item : , min_max : , mode_median : , ", "null", "", ""
+   "**sampling.parameter**", "the parmater of the algorithm", "", "null", "", ""
 
 ----------
 

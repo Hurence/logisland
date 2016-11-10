@@ -36,13 +36,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
-public class OutliersDetectionTest {
+public class DetectOutliersTest {
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesCsvLoader.class);
     private final static Charset ENCODING = StandardCharsets.UTF_8;
     private final String RESOURCES_DIRECTORY = "target/test-classes/benchmark_data/";
@@ -53,20 +50,20 @@ public class OutliersDetectionTest {
     @Test
     @Ignore("too long")
     public void testDetection() throws IOException {
-        final TestRunner testRunner = TestRunners.newTestRunner(new OutliersDetection());
-        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_TYPE, "by_amount");
-        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_AMOUNT, "100");
-        testRunner.setProperty(OutliersDetection.ROTATION_POLICY_UNIT, "points");
-        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_TYPE, "by_amount");
-        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_AMOUNT, "10");
-        testRunner.setProperty(OutliersDetection.CHUNKING_POLICY_UNIT, "points");
-        testRunner.setProperty(OutliersDetection.GLOBAL_STATISTICS_MIN, "-100000");
-        testRunner.setProperty(OutliersDetection.MIN_AMOUNT_TO_PREDICT, "100");
-        testRunner.setProperty(OutliersDetection.ZSCORE_CUTOFFS_NORMAL, "3.5");
-        testRunner.setProperty(OutliersDetection.ZSCORE_CUTOFFS_MODERATE, "5");
+        final TestRunner testRunner = TestRunners.newTestRunner(new DetectOutliers());
+        testRunner.setProperty(DetectOutliers.ROTATION_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(DetectOutliers.ROTATION_POLICY_AMOUNT, "100");
+        testRunner.setProperty(DetectOutliers.ROTATION_POLICY_UNIT, "points");
+        testRunner.setProperty(DetectOutliers.CHUNKING_POLICY_TYPE, "by_amount");
+        testRunner.setProperty(DetectOutliers.CHUNKING_POLICY_AMOUNT, "10");
+        testRunner.setProperty(DetectOutliers.CHUNKING_POLICY_UNIT, "points");
+        testRunner.setProperty(DetectOutliers.GLOBAL_STATISTICS_MIN, "-100000");
+        testRunner.setProperty(DetectOutliers.MIN_AMOUNT_TO_PREDICT, "100");
+        testRunner.setProperty(DetectOutliers.ZSCORE_CUTOFFS_NORMAL, "3.5");
+        testRunner.setProperty(DetectOutliers.ZSCORE_CUTOFFS_MODERATE, "5");
 
-        testRunner.setProperty(OutliersDetection.RECORD_VALUE_FIELD, "value");
-        testRunner.setProperty(OutliersDetection.RECORD_TIME_FIELD, "timestamp");
+        testRunner.setProperty(DetectOutliers.RECORD_VALUE_FIELD, "value");
+        testRunner.setProperty(DetectOutliers.RECORD_TIME_FIELD, "timestamp");
         testRunner.assertValid();
 
 
