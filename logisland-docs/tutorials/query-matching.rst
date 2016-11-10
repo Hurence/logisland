@@ -31,13 +31,14 @@ The following SQL query will be applied
 
 .. code-block:: sql
 
-    SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time)
+    SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time) as record_time
     FROM logisland_events
     GROUP BY src_ip
     ORDER BY connections_count DESC
     LIMIT 20
 
-which will consider ``logisland_events`` topic as SQL table
+which will consider ``logisland_events`` topic as SQL table and create 20 output Record with the fields avg_bytes_out, src_ip & record_time.
+the statement with record_time will ensure that the created Records will correspond to the effective input event time (not the actual time).
 
 
 .. code-block:: yaml
