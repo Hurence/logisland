@@ -1,12 +1,13 @@
 Alerts & Query Matching
 =======================
 
-In the following tutorial we'll learn how to monitor our apache log by generating custom alerts based on query criterion.
+In the following tutorial we'll learn how to generate time window metrics on some http traffic (apache log records) and
+how to raise custom alerts based on lucene matching query criterion.
 
 We assume that you already know how to parse and ingest Apache logs into logisland.
-If it's not the case please refer to the previous `Index Apache logs tutorial <index-apache-logs.html>`.
-We will first add an SQLAggregator stream to compute some metrics and
-then add a `MatchQuery <apidocs/com/hurence/logisland/processor/MatchQuery.html>`_
+If it's not the case please refer to the previous `Apache logs indexing tutorial <index-apache-logs.html>`_.
+We will first add an `SQLAggregator </plugins.html#kafkarecordstreamsqlaggregator>`_  Stream
+to compute some metrics and then add a `MatchQuery </plugins.html#matchquery>`_ Processor.
 
 .. note::
 
@@ -25,6 +26,18 @@ This stream defines input/output topics names as well as Serializers, avro schem
 
 The most important part of the `KafkaRecordStreamSQLAggregator` is its `sql.query` property which defines
 a query to apply on the incoming records for the given time window.
+
+The following SQL query will be applied
+
+.. code-block:: sql
+
+    SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time)
+    FROM logisland_events
+    GROUP BY src_ip
+    ORDER BY connections_count DESC
+    LIMIT 20
+
+which will consider ``logisland_events`` topic as SQL table
 
 
 .. code-block:: yaml
@@ -117,8 +130,8 @@ and anywhen someone from *.edu domain makes a connection (src_ip:*.edu).
           type: processor
           documentation: a parser that produce events from an apache log REGEX
           configuration:
-            blacklisted_host: src_ip:199.0.2.27
-            edu_host: src_ip:*.edu
+            blacklisted_host: src_ip:slip-5.io.com
+            edu_host: src_ip:edu
             output.record.type: connection_alert
 
 
@@ -167,8 +180,25 @@ Connect a shell to your logisland container to launch the following stream proce
     bin/logisland.sh --conf conf/query-matching.yml
 
 
-5. Check your alerts
---------------------
+5. Check your alerts with Kibana
+--------------------------------
+Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
 
 
 
+As we explore data logs from july 1995 we'll have to select an absolute time filter from 1995-06-30 to 1995-07-08 to see the events.
+
+.. image:: /_static/kibana-apache-logs.png
+
+
+you can filter your events with ``record_type:connection_alert`` to get 71733 connections alerts matching your query
+
+.. image:: /_static/kibana-connection-alerts.png
+
+by adding another filter on ``alert_match_name:blacklisted_host`` you'll only get request from ``slip-5.io.com`` which is a host we where monitoring.
+
+.. image:: /_static/kibana-blacklisted-host.png
+
+if we filter now on threshold alerts whith ``record_type:threshold_alert`` you'll get the 13 src_ip that have been catched by the threshold query.
+
+.. image:: /_static/kibana-threshold-alerts.png

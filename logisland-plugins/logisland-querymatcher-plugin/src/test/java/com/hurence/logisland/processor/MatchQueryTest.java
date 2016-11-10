@@ -89,6 +89,31 @@ public class MatchQueryTest {
         testRunner.assertOutputRecordsCount(2);
     }
 
+
+    @Test
+    public void testWildcardMatch() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MatchQuery());
+        testRunner.setProperty("some_message", "message:wrong");
+        testRunner.assertValid();
+
+        Record[] records = {
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id1")
+                        .setStringField("message", "something.wrong"),
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id2")
+                        .setStringField("message", "something.messy"),
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id3")
+                        .setStringField("message", "oh bad boy!")
+        };
+        testRunner.clearQueues();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+    }
+
     @Test
     public void testNumericRangeQuery() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MatchQuery());

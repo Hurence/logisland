@@ -23,6 +23,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
@@ -95,6 +96,7 @@ public class MatchQuery extends AbstractProcessor {
     private Monitor monitor;
     private KeywordAnalyzer keywordAnalyzer;
     private StandardAnalyzer standardAnalyzer;
+    private StopAnalyzer stopAnalyzer;
     private Map<String, MatchingRule> matchingRules;
 
     @Override
@@ -103,6 +105,7 @@ public class MatchQuery extends AbstractProcessor {
 
         keywordAnalyzer = new KeywordAnalyzer();
         standardAnalyzer = new StandardAnalyzer();
+        stopAnalyzer = new StopAnalyzer();
         matchingRules = new HashMap<>();
         NumericQueryParser queryMatcher = new NumericQueryParser("field");
 
@@ -159,7 +162,7 @@ public class MatchQuery extends AbstractProcessor {
 
                 switch (record.getField(fieldName).getType()) {
                     case STRING:
-                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), standardAnalyzer);
+                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
                         break;
                     case INT:
                         docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));

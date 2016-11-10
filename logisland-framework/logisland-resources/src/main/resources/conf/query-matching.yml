@@ -71,7 +71,7 @@ engine:
                { "name": "identd",      "type": ["string","null"] },
                { "name": "user",        "type": ["string","null"] }    ]}
         sql.query: >
-          SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip
+          SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time) as record_time
           FROM logisland_events
           GROUP BY src_ip
           ORDER BY connections_count DESC
@@ -100,10 +100,10 @@ engine:
         - processor: match_query
           component: com.hurence.logisland.processor.MatchQuery
           type: processor
-          documentation: a parser that produce events from an apache log REGEX
+          documentation: a parser that produce alerts from lucene queries
           configuration:
             numeric.fields: bytes_out,connections_count
-            too_much_bandwidth: average_bytes:[100 TO 50000]
+            too_much_bandwidth: avg_bytes_out:[50000 TO 5000000]
             too_many_connections: connections_count:[500 TO 1000000]
             output.record.type: threshold_alert
 
@@ -131,6 +131,6 @@ engine:
           type: processor
           documentation: a parser that produce events from an apache log REGEX
           configuration:
-            blacklisted_host: src_ip:199.0.2.27
-            edu_host: src_ip:*.edu
+            blacklisted_host: src_ip:slip-5.io.com
+            edu_host: src_ip:edu
             output.record.type: connection_alert

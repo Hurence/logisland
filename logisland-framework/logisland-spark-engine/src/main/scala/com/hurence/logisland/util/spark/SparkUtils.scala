@@ -33,6 +33,7 @@ package com.hurence.logisland.util.spark
 
 import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
 
 import com.hurence.logisland.record._
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -161,7 +162,7 @@ object SparkUtils extends LazyLogging {
         Row.fromSeq(schema.map(structField => {
             val fieldName = structField.name
 
-            if(record.hasField(fieldName)){
+            if (record.hasField(fieldName)) {
                 structField.dataType match {
                     case DataTypes.StringType =>
                         if (record.getField(fieldName).getType == FieldType.ARRAY)
@@ -174,7 +175,7 @@ object SparkUtils extends LazyLogging {
                     case DataTypes.DoubleType => record.getField(fieldName).asDouble()
                     case _ => record.getField(fieldName).asString()
                 }
-            }else{
+            } else {
                 null
             }
 
@@ -191,6 +192,7 @@ object SparkUtils extends LazyLogging {
     def convertToRecord(row: Row, inRecordType: String = "logisland_record"): Record = {
 
         var recordType = inRecordType
+        var recordTime = new Date().getTime
         val fields = row.schema.map(structField => {
             val fieldName = structField.name
 
@@ -201,7 +203,11 @@ object SparkUtils extends LazyLogging {
                     }
                     new Field(fieldName, FieldType.STRING, row.getAs[String](fieldName))
                 case DataTypes.IntegerType => new Field(fieldName, FieldType.INT, row.getAs[Int](fieldName))
-                case DataTypes.LongType => new Field(fieldName, FieldType.LONG, row.getAs[Long](fieldName))
+                case DataTypes.LongType =>
+                    if (fieldName == FieldDictionary.RECORD_TIME) {
+                        recordTime = row.getAs[Long](fieldName)
+                    }
+                    new Field(fieldName, FieldType.LONG, row.getAs[Long](fieldName))
                 case DataTypes.FloatType => new Field(fieldName, FieldType.FLOAT, row.getAs[Float](fieldName))
                 case DataTypes.DoubleType => new Field(fieldName, FieldType.DOUBLE, row.getAs[Double](fieldName))
                 case _ => new Field(fieldName, FieldType.STRING, row.getAs[String](fieldName))
@@ -209,7 +215,10 @@ object SparkUtils extends LazyLogging {
 
         })
 
-        val outputRecord = new StandardRecord(recordType)
+        // construct new Record with type and time from the row
+        val outputRecord = new StandardRecord()
+            .setType(recordType)
+            .setTime(new Date(recordTime))
         fields.foreach(field => outputRecord.setField(field))
         outputRecord
     }

@@ -240,7 +240,7 @@ If you don't have your own httpd logs available, you can use some freely availab
 - `Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz>`_
 - `Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz>`_
 
-Send logs to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
+Let's send the first 500000 lines of NASA hhtp access over July 1995 to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 
 .. code-block:: sh
 
@@ -248,25 +248,39 @@ Send logs to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
     cd /tmp
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz
-    cat NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
+    head 500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
 
 
-
-4. Use Kibana to inspect the logs
----------------------------------
-Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
-
-.. image:: /_static/kibana-explore.png
-
-
-5. Monitor your spark jobs and Kafka topics
+4. Monitor your spark jobs and Kafka topics
 -------------------------------------------
 Now go to `http://sandbox:4050/streaming/ <http://sandbox:4050/streaming/>`_ to see how fast Spark can process
 your data
 
-.. image:: /_static/streaming-rate.png
+.. image:: /_static/spark-job-monitoring.png
 
 
 Another tool can help you to tweak and monitor your processing `http://sandbox:9000/ <http://sandbox:9000>`_
 
 .. image:: /_static/kafka-mgr.png
+
+
+5. Use Kibana to inspect the logs
+---------------------------------
+Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
+
+
+Configure a new index pattern with ``logisland.*`` as the pattern name and ``@timestamp`` as the time value field.
+
+.. image:: /_static/kibana-configure-index.png
+
+Then if you go to Explore panel for the latest 15' time window you'll only see logisland process_metrics events which give you
+insights about the processing bandwidth of your streams.
+
+.. image:: /_static/kibana-logisland-metrics.png
+
+As we explore data logs from july 1995 we'll have to select an absolute time filter from 1995-06-30 to 1995-07-08 to see the events.
+
+.. image:: /_static/kibana-apache-logs.png
+
+
+

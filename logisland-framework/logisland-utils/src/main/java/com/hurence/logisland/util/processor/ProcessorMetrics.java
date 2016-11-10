@@ -54,7 +54,6 @@ public class ProcessorMetrics {
         if (outgoingEvents.size() != 0) {
             Record metrics = new StandardRecord(METRICS_EVENT_TYPE);
 
-            metrics.setStringField("search_index", METRICS_EVENT_TYPE);
             metrics.setField("spark_app_name", FieldType.STRING, appName);
             metrics.setField("spark_partition_id", FieldType.INT, partitionId);
             metrics.setField("component_name", FieldType.STRING, componentName);

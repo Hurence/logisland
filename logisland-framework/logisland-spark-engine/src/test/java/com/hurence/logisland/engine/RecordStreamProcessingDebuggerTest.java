@@ -195,7 +195,7 @@ public class RecordStreamProcessingDebuggerTest {
         streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_ZOOKEEPER_QUORUM().getName(),
                 "sandbox:2181");
         streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_TOPICS().getName(), "logisland_events");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_TOPICS().getName(), "logisland_aggregates");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_TOPICS().getName(), "logisland_aggregations");
         streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
 
         streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
@@ -203,7 +203,7 @@ public class RecordStreamProcessingDebuggerTest {
         streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
 
         streamProperties.put(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT().getName(), "10");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.SQL_QUERY().getName(), "SELECT COUNT(*) AS num_events, AVG(bytes_out) AS avg_bytes_out, src_ip FROM logisland_events GROUP BY src_ip ORDER BY num_events DESC LIMIT 10");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.SQL_QUERY().getName(), "SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time) FROM logisland_events GROUP BY src_ip ORDER BY connections_count DESC LIMIT 20");
 
 
         streamProperties.put(KafkaRecordStreamSQLAggregator.AVRO_INPUT_SCHEMA().getName(),
