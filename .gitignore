@@ -6,8 +6,13 @@
 **/.project
 **/.settings
 **/.classpath
+#   pydev projects
+**/.pydevproject
 #   added by eclipse when importing maven projects
 **/.gitignore
+
+# Python files
+**/*.pyc
 
 # Maven
 **/target/*
