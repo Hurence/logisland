@@ -1,0 +1,36 @@
+version: 0.1
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+components:
+  # Main event streaming engine
+  - component: com.hurence.logisland.engine.SparkStreamComplexProcessingEngine
+    type: engine
+    version: 0.1.0
+    documentation: Main Logisland job entry point
+    configuration:
+      spark.master: local[4]
+      spark.executorMemory: 4g
+      spark.checkpointingDirectory: file:///tmp
+      spark.appName: My first processor component
+      spark.streaming.batchDuration: 2000000
+      spark.serializer: org.apache.spark.serializer.KryoSerializer
+      spark.streaming.backpressure.enabled: true
+      spark.streaming.unpersist: false
+      spark.streaming.blockInterval: 350
+      spark.streaming.kafka.maxRatePerPartition: 1
+      spark.streaming.timeout: 100000
+      spark.ui.port: 4050
+      kafka.metadata.broker.list: localhost:9001
+      kafka.zookeeper.quorum: localhost:9000
+
+  - component: com.hurence.logisland.processor.SplitTextMultiline
+    type: parser
+    version: 0.1.0
+    documentation: a processor that parse multiLine events
+    configuration:
+      kafka.input.topics: logisland-mock-in
+      kafka.output.topics: logisland-mock-out
+      fake.message: I'm a creep
+      regex: \s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})\s+(\S*)\s+\[([^\]]*)\]\s*---\s*(\S*)\s*-\s*SESSION\[([^\]]*)\]\s*-\s*USERID\[([^\]]*)\]\s*-\s*(?<trace>.*\n\s*-*\s*\n?ID:\s*(?<id>\S*)\s*\n?(?:Response-Code:\s*(?<responseCode>\S*)\s*\n?)?(?:Address:\s*(?<address>\S*)\s*\n?)?(?:Encoding:\s*(?<encoding>\S*)\s*\n?)?(?:Http-Method:\s*(?<httpMethod>\S*)\s*\n?)?Content-Type:\s*(?<contentType>[^\n]*)\n?Headers:\s*\{(?<headers>[^}]*)\}\s*\n?(?:Payload:\s*(?<payload>(?:(?:\[\s*)?\{.*\}(?:\s*\])?)?|(?:[a-zA-Z0-9]*))\s*\n?)?\s*-*\s*\n?)
+      fields: event_timestamp,log_level,unknown1,logger,session,user_id,trace,id,response_code,address,encoding,http_method,content_type,headers,payload
+      event.type: mtr
