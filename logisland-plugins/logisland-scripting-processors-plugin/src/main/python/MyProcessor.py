@@ -4,6 +4,7 @@ class MyProcessor(AbstractProcessor):
 
     def init(self, context):
         print "Inside init of MyProcessor code"
+        print context
   
     def process(self, context, records):
         print "Inside process multi records of MyProcessor code"
