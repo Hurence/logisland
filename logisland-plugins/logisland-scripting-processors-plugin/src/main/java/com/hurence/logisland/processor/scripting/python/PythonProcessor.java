@@ -30,11 +30,17 @@ import java.io.File;
 import java.util.*;
 
 @Tags({"scripting", "python"})
-@CapabilityDescription("This processor allows to implement a processor written in python")
+@CapabilityDescription("This processor allows to implement and run a processor written in python")
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
     
+    // Python interpreter
+    private PythonInterpreter pythonInterpreter = new PythonInterpreter();
+
+    // Reference to the python processor object
+    private PyObject pyProcessor = null;
+
     /**
      * Logisland python modules definitions
      */
@@ -47,9 +53,6 @@ public class PythonProcessor extends AbstractProcessor {
         // Set logisland python modules to be loaded
         logislandPythonModules.add("AbstractProcessor");
     }
-    
-    // Python interpreter
-    private PythonInterpreter pythonInterpreter = new PythonInterpreter();
 
     public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT = new PropertyDescriptor.Builder()
             .name("python_processor.python_rocessor_script")
@@ -75,6 +78,9 @@ public class PythonProcessor extends AbstractProcessor {
         
         logger.info("Python processor: initializing " + pythonProcessorScript);
         
+        // Load necessary logisland python modules
+        loadLogislandPythonModules();
+        
         // Get python processor name
         String pythonProcessorName = null;
         try {
@@ -82,17 +88,19 @@ public class PythonProcessor extends AbstractProcessor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        // Load necessary logisland python modules
-        loadLogislandPythonModules();
-        
+              
         // Load processor script
         pythonInterpreter.execfile(pythonProcessorScript);
         
-        // processor = MyProcessor()
-        PyObject pyProcessor = pythonInterpreter.eval("processor = " + pythonProcessorName + "()" );
+        /**
+         * Instantiate and init the processor python object
+         */
+
+        pythonInterpreter.exec("pyProcessor = " + pythonProcessorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
+        pyProcessor = pythonInterpreter.get("pyProcessor");
         
-        //pythonInterpreter.
+        pythonInterpreter.set("context", context);
+        pythonInterpreter.exec("pyProcessor.init(context)");
     }
     
     /**
@@ -102,15 +110,19 @@ public class PythonProcessor extends AbstractProcessor {
     {
         // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
         // python modules. A potential way of doing this seems to be the usage of sys.meta_path
+        
+        pythonInterpreter.exec("import sys");
+        //pythonInterpreter.exec("sys.path.append('/local/logisland/logisland-plugins/logisland-scripting-processors-plugin/src/main/resources/python')");
+        pythonInterpreter.exec("sys.path.append('src/main/resources/python')");
 
-        Class thisClass = getClass();
-        for (String logislandModule : logislandPythonModules)
-        {
-            String logislandModulePath = logislandPythonModulesBasePath + File.separator + logislandModule + ".py";
-            logger.info("Loading logisland python module: " + logislandModulePath);
-            pythonInterpreter.execfile(thisClass.getResourceAsStream(logislandModulePath));
-            //pythonInterpreter.execfile(logislandModulePath);
-        }
+//        Class thisClass = getClass();
+//        for (String logislandModule : logislandPythonModules)
+//        {
+//            String logislandModulePath = logislandPythonModulesBasePath + File.separator + logislandModule + ".py";
+//            logger.info("Loading logisland python module: " + logislandModulePath);
+//            pythonInterpreter.execfile(thisClass.getResourceAsStream(logislandModulePath));
+//            //pythonInterpreter.execfile(logislandModulePath);
+//        }
     }
     
     /**
