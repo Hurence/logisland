@@ -28,7 +28,7 @@ public class PythonProcessorTest {
     
     private static Logger logger = LoggerFactory.getLogger(PythonProcessorTest.class);
     
-    private static final String PYTHON_PROCESSOR = "src/main/python/MyProcessor.py";
+    private static final String PYTHON_PROCESSOR = "./src/main/python/MyProcessor.py";
 
     @Test
     public void testSimple() {

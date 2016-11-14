@@ -23,8 +23,10 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 
+import java.io.File;
 import java.util.*;
 
 @Tags({"scripting", "python"})
@@ -32,6 +34,19 @@ import java.util.*;
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
+    
+    /**
+     * Logisland python modules definitions
+     */
+    private static final String logislandPythonModulesBasePath = File.separator + "python";
+    //private static final String logislandPythonModulesBasePath = "./src/main/resources/python";
+    private static final Set<String> logislandPythonModules = new HashSet<String>();
+    
+    static
+    {
+        // Set logisland python modules to be loaded
+        logislandPythonModules.add("AbstractProcessor");
+    }
     
     // Python interpreter
     private PythonInterpreter pythonInterpreter = new PythonInterpreter();
@@ -44,7 +59,8 @@ public class PythonProcessor extends AbstractProcessor {
             .build();
 
     @Override
-    public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+    public final List<PropertyDescriptor> getSupportedPropertyDescriptors()
+    {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(PYTHON_PROCESSOR_SCRIPT);
 
@@ -52,23 +68,88 @@ public class PythonProcessor extends AbstractProcessor {
     }
     
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context)
+    {
 
         final String pythonProcessorScript = context.getProperty(PYTHON_PROCESSOR_SCRIPT).asString();
         
         logger.info("Python processor: initializing " + pythonProcessorScript);
         
+        // Get python processor name
+        String pythonProcessorName = null;
+        try {
+            pythonProcessorName = getPythonProcessorName(pythonProcessorScript);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // Load necessary logisland python modules
+        loadLogislandPythonModules();
+        
+        // Load processor script
         pythonInterpreter.execfile(pythonProcessorScript);
         
-        pythonInterpreter.eval("")
+        // processor = MyProcessor()
+        PyObject pyProcessor = pythonInterpreter.eval("processor = " + pythonProcessorName + "()" );
         
         //pythonInterpreter.
     }
+    
+    /**
+     * Loads the logisland python modules
+     */
+    private void loadLogislandPythonModules()
+    {
+        // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
+        // python modules. A potential way of doing this seems to be the usage of sys.meta_path
+
+        Class thisClass = getClass();
+        for (String logislandModule : logislandPythonModules)
+        {
+            String logislandModulePath = logislandPythonModulesBasePath + File.separator + logislandModule + ".py";
+            logger.info("Loading logisland python module: " + logislandModulePath);
+            pythonInterpreter.execfile(thisClass.getResourceAsStream(logislandModulePath));
+            //pythonInterpreter.execfile(logislandModulePath);
+        }
+    }
+    
+    /**
+     * Gets the name of the processor from the processor script file name
+     * @param pythonProcessorScript Path to processor script file
+     * @return
+     * @throws Exception
+     */
+    private String getPythonProcessorName(String pythonProcessorScript) throws Exception
+    {
+        File processorFile = null;
+        try {
+            processorFile = new File(pythonProcessorScript);
+        } catch (NullPointerException npe)
+        {
+            throw new Exception("Null python processor script");
+        }
+        
+        String processorFileName = processorFile.getName();
+        
+        if (!processorFileName.endsWith(".py"))
+        {
+            throw new Exception("Python processor script file should end with .py: " + processorFileName);
+        }
+        
+        if (processorFileName.startsWith(".py"))
+        {
+            throw new Exception("No python processor name in .py");
+        }
+        
+        String pythonProcessorName = processorFileName.substring(0, processorFileName.length()-3);
+
+        return pythonProcessorName;   
+    }
 
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
-       
+    public Collection<Record> process(ProcessContext context, Collection<Record> records)
+    {
+        // TODO
         List<Record> outputRecords = new ArrayList<>();
         
         return outputRecords;
@@ -76,7 +157,8 @@ public class PythonProcessor extends AbstractProcessor {
     
     @Override
     public Collection<Record> process(ProcessContext context, Record record) {
-        return null;
         
+        // TODO
+        return null;
     }
 }

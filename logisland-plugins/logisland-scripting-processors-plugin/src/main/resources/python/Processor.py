@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" generated source for module Processor """
+
 # 
 #  * Copyright (C) 2016 Hurence
 #  *
@@ -14,8 +14,7 @@
 #  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  * See the License for the specific language governing permissions and
 #  * limitations under the License.
-#  
-# package: com.hurence.logisland.processor
+
 import com.hurence.logisland.component.ConfigurableComponent
 
 import com.hurence.logisland.record.Record
