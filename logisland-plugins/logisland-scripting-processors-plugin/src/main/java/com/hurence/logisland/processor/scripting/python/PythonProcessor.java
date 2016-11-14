@@ -34,29 +34,30 @@ import java.util.*;
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
+   
+    // Path to the user's python processor script
+    private String pythonProcessorScript = null;
+
+    // Path of the directory containing the logisland python modules
+    private String pythonModulesPath = null;
     
     // Python interpreter
     private PythonInterpreter pythonInterpreter = new PythonInterpreter();
 
-    // Reference to the python processor object
+    // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;
-
-    /**
-     * Logisland python modules definitions
-     */
-    private static final String logislandPythonModulesBasePath = File.separator + "python";
-    //private static final String logislandPythonModulesBasePath = "./src/main/resources/python";
-    private static final Set<String> logislandPythonModules = new HashSet<String>();
-    
-    static
-    {
-        // Set logisland python modules to be loaded
-        logislandPythonModules.add("AbstractProcessor");
-    }
 
     public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT = new PropertyDescriptor.Builder()
             .name("python_processor.python_rocessor_script")
-            .description("The path to the python processor script")
+            .description("The path to the user's python processor script")
+            .required(true)
+            .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+            .build();
+    
+    public static final PropertyDescriptor PYTHON_LOGISLAND_MODULES_PATH = new PropertyDescriptor.Builder()
+            .name("python_processor.python_logisland_modules_path_script")
+            .description("The path to the directory containing the logisland python modules")
+            .defaultValue("src/main/resources/python") // Default path
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
@@ -66,15 +67,25 @@ public class PythonProcessor extends AbstractProcessor {
     {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(PYTHON_PROCESSOR_SCRIPT);
+        descriptors.add(PYTHON_LOGISLAND_MODULES_PATH);
 
         return Collections.unmodifiableList(descriptors);
+    }
+    
+    /**
+     * Gets config parameters
+     */
+    private void getConfigParameters(ProcessContext context)
+    {
+        pythonProcessorScript = context.getProperty(PYTHON_PROCESSOR_SCRIPT).asString();
+        pythonModulesPath = context.getProperty(PYTHON_LOGISLAND_MODULES_PATH).asString();
     }
     
     @Override
     public void init(final ProcessContext context)
     {
-
-        final String pythonProcessorScript = context.getProperty(PYTHON_PROCESSOR_SCRIPT).asString();
+        // Get config parameters
+        getConfigParameters(context);
         
         logger.info("Python processor: initializing " + pythonProcessorScript);
         
@@ -111,18 +122,9 @@ public class PythonProcessor extends AbstractProcessor {
         // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
         // python modules. A potential way of doing this seems to be the usage of sys.meta_path
         
+        logger.info("Using logsiland python modules directory: " + pythonModulesPath);
         pythonInterpreter.exec("import sys");
-        //pythonInterpreter.exec("sys.path.append('/local/logisland/logisland-plugins/logisland-scripting-processors-plugin/src/main/resources/python')");
-        pythonInterpreter.exec("sys.path.append('src/main/resources/python')");
-
-//        Class thisClass = getClass();
-//        for (String logislandModule : logislandPythonModules)
-//        {
-//            String logislandModulePath = logislandPythonModulesBasePath + File.separator + logislandModule + ".py";
-//            logger.info("Loading logisland python module: " + logislandModulePath);
-//            pythonInterpreter.execfile(thisClass.getResourceAsStream(logislandModulePath));
-//            //pythonInterpreter.execfile(logislandModulePath);
-//        }
+        pythonInterpreter.exec("sys.path.append('" + pythonModulesPath + "')");
     }
     
     /**
