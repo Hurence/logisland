@@ -163,7 +163,7 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        // TODO
+        // TODO call python processor code
         List<Record> outputRecords = new ArrayList<>();
         
         return outputRecords;
@@ -172,7 +172,13 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Record record) {
         
-        // TODO
-        return null;
+        // TODO call python processor code
+        return process(context, Collections.singleton(record));
+    }
+    
+    @Override
+    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
+        // TODO call python processor code
+        logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
     }
 }
