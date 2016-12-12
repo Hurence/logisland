@@ -40,7 +40,8 @@ to deploy artifacts (if you're allowed to), follow this guide `release to OSS So
 
 .. code-block::
     
-    mvn versions:set -DnewVersion=0.9.6-SNAPSHOT
+    mvn versions:set -DnewVersion=0.9.6
+    mvn license:format
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
