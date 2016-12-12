@@ -123,7 +123,7 @@ public class PythonProcessor extends AbstractProcessor {
         // python modules. A potential way of doing this seems to be the usage of sys.meta_path
         
         logger.info("Using logsiland python modules directory: " + pythonModulesPath);
-        pythonInterpreter.exec("import sys");
+        pythonInterpreter.exec("import sys"); // Allows to call next sys.path.append
         pythonInterpreter.exec("sys.path.append('" + pythonModulesPath + "')");
     }
     
@@ -163,6 +163,8 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
+        logger.debug("Processing multi records: " + records);
+
         // TODO call python processor code
         List<Record> outputRecords = new ArrayList<>();
         
@@ -171,6 +173,8 @@ public class PythonProcessor extends AbstractProcessor {
     
     @Override
     public Collection<Record> process(ProcessContext context, Record record) {
+        
+        logger.debug("Processing mono record: " + record);
         
         // TODO call python processor code
         return process(context, Collections.singleton(record));
