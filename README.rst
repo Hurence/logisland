@@ -34,7 +34,7 @@ to build from the source just clone and package
 
     git clone git@github.com:Hurence/logisland.git
     cd logisland
-    mvn package
+    mvn install
     
 to deploy artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
 
@@ -166,7 +166,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
 
 
 Start a stream workflow
-----
+-----------------------
 
 One you've edited your configuration file, you can submit it to execution engine with the following cmd :
 
