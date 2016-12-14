@@ -35,19 +35,21 @@ public class PythonProcessorTest {
         final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
         testRunner.setProperty(PythonProcessor.PYTHON_PROCESSOR_SCRIPT, PYTHON_PROCESSOR);
         testRunner.assertValid();
-        Record record = new StandardRecord("simple_record"); 
+        Record record = new StandardRecord("simple_record");
+        record.setStringField("java_field", "java_field_value");
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputRecordsCount(1);
 
 
-//        MockRecord out = testRunner.getOutputRecords().get(0);
-//        out.assertFieldExists("src_ip");
-//        out.assertFieldNotExists("src_ip2");
-//        out.assertFieldEquals("src_ip", "10.3.10.134");
-//        out.assertRecordSizeEquals(9);
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldExists("java_field");
+        out.assertFieldEquals("java_field", "java_field_value");
+        out.assertFieldExists("python_field");
+        out.assertFieldEquals("python_field", "python_field_value");
+        out.assertRecordSizeEquals(2);
     }
 
 }

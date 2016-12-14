@@ -1,4 +1,6 @@
 from AbstractProcessor import AbstractProcessor
+#from java.util import Date, ArrayList
+from com.hurence.logisland.record import StandardRecord
 
 class MyProcessor(AbstractProcessor):
 
@@ -6,10 +8,26 @@ class MyProcessor(AbstractProcessor):
         print "Inside init of MyProcessor code"
         print context
   
+    #def process(self, context, records: Record):
     def process(self, context, records):
         print "Inside process multi records of MyProcessor python code"
         print context
-        print records
+        print 'class of records object: ' + type(records).__name__
+        #print records.getTime()
+        #records.setTime("Wed Dec 14 18:05:47 CET 2017")
+        #records.setTime(Date(100))
+        #print records.getTime()
+
+        print "-------------------------"
+        outputRecords = []
+        #outputRecords = ArrayList()
+        for record in records:
+            copyRecord = StandardRecord(record)
+            copyRecord.setStringField('python_field', 'python_field_value')
+            outputRecords.append(copyRecord)
+            #outputRecords.add(standardRecord)
+         
+        return outputRecords
 
 # same-name method with different parameters in python seems impossible or at 
 # least tricky. See http://stackoverflow.com/questions/22377338/how-to-write-same-name-methods-with-different-parameters-in-python

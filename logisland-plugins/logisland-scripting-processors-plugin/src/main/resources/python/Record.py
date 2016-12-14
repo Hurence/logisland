@@ -24,98 +24,73 @@ import java.util.Set
 
 class Record:
     """ generated source for interface Record """
-    __metaclass__ = ABCMeta
-    @abstractmethod
     def getTime(self):
         """ generated source for method getTime """
+        return "test time"
 
-    @abstractmethod
     def setTime(self, recordTime):
         """ generated source for method setTime """
 
-    @abstractmethod
     def setFields(self, fields):
         """ generated source for method setFields """
 
-    @abstractmethod
     def addFields(self, fields):
         """ generated source for method addFields """
 
-    @abstractmethod
     def setType(self, type_):
         """ generated source for method setType """
 
-    @abstractmethod
     def getType(self):
         """ generated source for method getType """
 
-    @abstractmethod
     def setId(self, id):
         """ generated source for method setId """
 
-    @abstractmethod
     def getId(self):
         """ generated source for method getId """
 
-    @abstractmethod
     def hasField(self, fieldName):
         """ generated source for method hasField """
 
-    @abstractmethod
-    @overloaded
     def setField(self, field):
         """ generated source for method setField """
 
-    @abstractmethod
-    @setField.register(object, str, FieldType, object)
     def setField_0(self, fieldName, fieldType, value):
         """ generated source for method setField_0 """
 
-    @abstractmethod
     def setStringField(self, fieldName, value):
         """ generated source for method setStringField """
 
-    @abstractmethod
     def removeField(self, fieldName):
         """ generated source for method removeField """
 
-    @abstractmethod
     def getField(self, fieldName):
         """ generated source for method getField """
 
-    @abstractmethod
     def setStringFields(self, entrySets):
         """ generated source for method setStringFields """
 
-    @abstractmethod
     def getAllFieldsSorted(self):
         """ generated source for method getAllFieldsSorted """
 
-    @abstractmethod
     def getAllFields(self):
         """ generated source for method getAllFields """
 
-    @abstractmethod
     def getAllFieldNames(self):
         """ generated source for method getAllFieldNames """
 
-    @abstractmethod
     def getFieldsEntrySet(self):
         """ generated source for method getFieldsEntrySet """
 
-    @abstractmethod
     def isEmpty(self):
         """ generated source for method isEmpty """
 
-    @abstractmethod
     def isValid(self):
         """ generated source for method isValid """
 
-    @abstractmethod
     def size(self):
         """ generated source for method size """
 
-    @abstractmethod
     def sizeInBytes(self):
         """ generated source for method sizeInBytes """
 
