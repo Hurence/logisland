@@ -168,6 +168,14 @@ public class PythonProcessor extends AbstractProcessor {
         // TODO call python processor code
         List<Record> outputRecords = new ArrayList<>();
         
+        
+        /**
+         * Call process method of python processor script with the records we received
+         */
+        pythonInterpreter.set("context", context);
+        pythonInterpreter.set("records", records);
+        pythonInterpreter.exec("pyProcessor.process(context, records)");
+        
         return outputRecords;
     }
     
