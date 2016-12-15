@@ -13,6 +13,7 @@
 
 # Python files
 **/*.pyc
+**/*$py.class
 
 # Maven
 **/target/*
