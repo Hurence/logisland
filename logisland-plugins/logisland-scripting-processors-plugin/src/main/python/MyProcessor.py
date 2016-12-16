@@ -1,18 +1,21 @@
 from AbstractProcessor import AbstractProcessor
 #from java.util import Date, ArrayList
 from com.hurence.logisland.record import StandardRecord
+from com.hurence.logisland.processor import MockProcessContext
 
 class MyProcessor(AbstractProcessor):
 
     def init(self, context):
         print "Inside init of MyProcessor code"
         print context
+        print 'Class of context object: ' + type(context).__name__
+        #def MockProcessContext processContext = context
+        #print processContext.getProperties()
   
     #def process(self, context, records: Record):
     def process(self, context, records):
         print "Inside process multi records of MyProcessor python code"
-        print context
-        print 'class of records object: ' + type(records).__name__
+        print 'Class of records object: ' + type(records).__name__
         #print records.getTime()
         #records.setTime("Wed Dec 14 18:05:47 CET 2017")
         #records.setTime(Date(100))

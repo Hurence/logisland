@@ -105,13 +105,16 @@ public class PythonProcessor extends AbstractProcessor {
         
         /**
          * Instantiate and init the processor python object
+         * 
+         * pyProcessor = MyProcessor()
+         * pyProcessor.init(context)
          */
 
         pythonInterpreter.exec("pyProcessor = " + pythonProcessorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
         pyProcessor = pythonInterpreter.get("pyProcessor");
         
         pythonInterpreter.set("context", context);
-        pythonInterpreter.exec("pyProcessor.init(context)"); // TODO see if one can access context insiders in python code
+        pythonInterpreter.exec("pyProcessor.init(context)");
     }
     
     /**
