@@ -16,9 +16,12 @@
 package com.hurence.logisland.util.runner;
 
 
-import com.hurence.logisland.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.processor.ProcessContext;
+
 
 public class TestRunners {
 
@@ -26,6 +29,10 @@ public class TestRunners {
 
     public static TestRunner newTestRunner(final Processor processor) {
         return new StandardProcessorTestRunner(processor);
+    }
+    
+    public static TestRunner newTestRunner(final ProcessContext processContext) {
+        return new StandardProcessorTestRunner(processContext);
     }
 
     public static TestRunner newTestRunner(final Class<? extends Processor> processorClass) {

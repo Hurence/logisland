@@ -62,12 +62,19 @@ import static org.junit.Assert.assertTrue;
 public class StandardProcessorTestRunner implements TestRunner {
 
     private final Processor processor;
-    private final MockProcessContext context;
+    private final ProcessContext context;
     private final List<Record> inputRecordsQueue;
     private final List<Record> outputRecordsList;
     private static Logger logger = LoggerFactory.getLogger(StandardProcessorTestRunner.class);
     private static final AtomicLong currentId = new AtomicLong(0);
 
+    StandardProcessorTestRunner(final ProcessContext processContext) {
+		this.processor = processContext.getProcessor();
+		this.inputRecordsQueue = new ArrayList<>();
+		this.outputRecordsList = new ArrayList<>();
+		this.context = processContext;
+	}
+    
     StandardProcessorTestRunner(final Processor processor) {
         this.processor = processor;
         this.inputRecordsQueue = new ArrayList<>();
@@ -155,7 +162,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public boolean removeProperty(PropertyDescriptor descriptor) {
-        return context.removeProperty(descriptor);
+        return context.removeProperty(descriptor.getName());
     }
 
     @Override
@@ -165,12 +172,12 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public ValidationResult setProperty(final PropertyDescriptor descriptor, final String value) {
-        return context.setProperty(descriptor, value);
+        return context.setProperty(descriptor.getName(), value);
     }
 
     @Override
     public ValidationResult setProperty(final PropertyDescriptor descriptor, final AllowableValue value) {
-        return context.setProperty(descriptor, value.getValue());
+        return context.setProperty(descriptor.getName(), value.getValue());
     }
 
 
