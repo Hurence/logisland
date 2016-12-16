@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.9.6
+version: 0.9.7
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -12,7 +12,7 @@ engine:
   type: engine
   documentation: Main Logisland job entry point
   configuration:
-    spark.app.name: LogislandTutorial
+    spark.app.name: SaveToHDFS
     spark.master: local[4]
     spark.driver.memory: 512m
     spark.driver.cores: 1
@@ -20,6 +20,11 @@ engine:
     spark.executor.instances: 4
     spark.executor.cores: 2
     spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.batchDuration: 4000
     spark.streaming.backpressure.enabled: true

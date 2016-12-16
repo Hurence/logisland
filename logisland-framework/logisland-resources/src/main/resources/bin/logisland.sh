@@ -142,6 +142,13 @@ case $MODE in
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
     fi
 
+
+    SPARK_YARN_QUEUE=`awk '{ if( $1 == "spark.yarn.queue:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_YARN_QUEUE}" ]
+    then
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --queue ${SPARK_YARN_QUEUE}"
+    fi
+
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_CORES}" ]
     then
@@ -170,6 +177,36 @@ case $MODE in
     if [ ! -z "${EXECUTORS_INSTANCES}" ]
     then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}" 
+    fi
+
+    SPARK_YARN_MAX_APP_ATTEMPTS=`awk '{ if( $1 == "spark.yarn.maxAppAttempts: " ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_YARN_MAX_APP_ATTEMPTS}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.maxAppAttempts=${SPARK_YARN_MAX_APP_ATTEMPTS}"
+    fi
+
+    SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL=`awk '{ if( $1 == "spark.yarn.am.attemptFailuresValidityInterval: " ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.am.attemptFailuresValidityInterval=${SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL}"
+    fi
+
+    SPARK_YARN_MAX_EXECUTOR_FAILURES=`awk '{ if( $1 == "spark.yarn.max.executor.failures: " ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_YARN_MAX_EXECUTOR_FAILURES}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.max.executor.failures=${SPARK_YARN_MAX_EXECUTOR_FAILURES}"
+    fi
+
+    SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL=`awk '{ if( $1 == "spark.yarn.executor.failuresValidityInterval: " ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.executor.failuresValidityInterval=${SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL}"
+    fi
+
+    SPARK_TASK_MAX_FAILURES=`awk '{ if( $1 == "spark.task.maxFailures: " ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${SPARK_TASK_MAX_FAILURES}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}"
     fi
 
     CONF_FILE="logisland-configuration.yml"
