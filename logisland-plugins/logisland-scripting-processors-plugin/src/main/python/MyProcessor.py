@@ -7,10 +7,7 @@ class MyProcessor(AbstractProcessor):
 
     def init(self, context):
         print "Inside init of MyProcessor code"
-        print context
-        print 'Class of context object: ' + type(context).__name__
-        #def MockProcessContext processContext = context
-        #print processContext.getProperties()
+        print context.getProperties()
   
     #def process(self, context, records: Record):
     def process(self, context, records):
