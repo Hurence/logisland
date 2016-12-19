@@ -23,6 +23,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.python.core.PyInteger;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 
@@ -102,17 +103,32 @@ public class PythonProcessor extends AbstractProcessor {
               
         // Load processor script
         pythonInterpreter.execfile(pythonProcessorScript);
-        
+
         /**
          * Instantiate and init the processor python object
          * 
+         * Run python code:
+         *
          * pyProcessor = MyProcessor()
+         * # Check that the python class is inheriting from AbstractProcessor python class
+         * isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)
          * pyProcessor.init(context)
          */
 
         pythonInterpreter.exec("pyProcessor = " + pythonProcessorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
         pyProcessor = pythonInterpreter.get("pyProcessor");
         
+        // Check that the python class is inheriting from AbstractProcessor python class
+        pythonInterpreter.exec("isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)");
+        PyObject pyIsInheritingFromAbstractProcessor = pythonInterpreter.get("isInheritingFromAbstractProcessor");
+        boolean isInheritingFromAbstractProcessor = ((PyInteger) pyIsInheritingFromAbstractProcessor).asInt() != 0;
+        if (!isInheritingFromAbstractProcessor)
+        {
+            // This is not a python logisland processor
+            throw new RuntimeException("Not a logisland python processor class: " +
+                    pythonProcessorName + " does not inherits from AbstractProcessor python class" );
+        }
+
         pythonInterpreter.set("context", context);
         pythonInterpreter.exec("pyProcessor.init(context)");
     }
