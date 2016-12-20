@@ -1,32 +1,31 @@
+# coding: utf-8
 from AbstractProcessor import AbstractProcessor
-#from java.util import Date, ArrayList
 from com.hurence.logisland.record import StandardRecord
-from com.hurence.logisland.processor import MockProcessContext
 
+#
+# Simple python processor to test ability to run python code and process some
+# records
+#
 class BasicProcessor(AbstractProcessor):
 
     def init(self, context):
-        print "Inside init of MyProcessor code"
-        print context.getProperties()
+        print "Inside init of BasicProcessor code"
   
-    #def process(self, context, records: Record):
     def process(self, context, records):
-        print "Inside process multi records of MyProcessor python code"
-        print 'Class of records object: ' + type(records).__name__
-        #print records.getTime()
-        #records.setTime("Wed Dec 14 18:05:47 CET 2017")
-        #records.setTime(Date(100))
-        #print records.getTime()
+        print "Inside process multi records of BasicProcessor python code"
 
-        print "-------------------------"
+        # Copy the records and add python_field field in it
         outputRecords = []
-        #outputRecords = ArrayList()
         for record in records:
             copyRecord = StandardRecord(record)
+
+            # Check that one can read values coming from java
+            javaFieldValue = copyRecord.getField("java_field").getRawValue()
+            expectedValue = "java_field_value"
+            assert (javaFieldValue == expectedValue) , "Expected " + expectedValue + " but got " + javaFieldValue
+
             copyRecord.setStringField('python_field', 'python_field_value')
             outputRecords.append(copyRecord)
-            #outputRecords.add(standardRecord)
-         
         return outputRecords
 
 # same-name method with different parameters in python seems impossible or at 
