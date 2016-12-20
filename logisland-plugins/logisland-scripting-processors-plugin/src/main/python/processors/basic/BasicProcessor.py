@@ -3,7 +3,7 @@ from AbstractProcessor import AbstractProcessor
 from com.hurence.logisland.record import StandardRecord
 from com.hurence.logisland.processor import MockProcessContext
 
-class MyProcessor(AbstractProcessor):
+class BasicProcessor(AbstractProcessor):
 
     def init(self, context):
         print "Inside init of MyProcessor code"

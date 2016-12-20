@@ -24,11 +24,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PythonProcessorTest {
+/**
+ * Test the ability of calling a python processor and executing some python code in the processor
+ */
+public class BasicPythonProcessorTest {
     
-    private static Logger logger = LoggerFactory.getLogger(PythonProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(BasicPythonProcessorTest.class);
     
-    private static final String PYTHON_PROCESSOR = "./src/main/python/MyProcessor.py";
+    private static final String PYTHON_PROCESSOR = "./src/main/python/processors/basic/BasicProcessor.py";
 
     @Test
     public void testSimple() {
@@ -47,6 +50,7 @@ public class PythonProcessorTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldExists("java_field");
         out.assertFieldEquals("java_field", "java_field_value");
+        // The python_field is added when processing the record from python code
         out.assertFieldExists("python_field");
         out.assertFieldEquals("python_field", "python_field_value");
         out.assertRecordSizeEquals(2);
