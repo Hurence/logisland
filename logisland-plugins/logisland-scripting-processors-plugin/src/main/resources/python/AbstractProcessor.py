@@ -15,8 +15,6 @@
 #  * limitations under the License.
 
 class AbstractProcessor:
-    """ generated source for class AbstractProcessor """
-    #INCLUDE_INPUT_RECORDS = PropertyDescriptor.Builder().name("include.input.records").description("if set to true all the input records are copied to output").required(False).addValidator(StandardValidators.BOOLEAN_VALIDATOR).defaultValue("true").build()
 
     def onPropertyModified(self, descriptor, oldValue, newValue):
         """ generated source for method onPropertyModified """
@@ -24,6 +22,6 @@ class AbstractProcessor:
     def init(self, context):
         """ generated source for method init """
 
-    def process(self, context, record):
+    def process(self, context, records):
         """ generated source for method process """
 

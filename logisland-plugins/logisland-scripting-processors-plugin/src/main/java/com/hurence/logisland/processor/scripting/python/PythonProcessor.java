@@ -57,6 +57,8 @@ public class PythonProcessor extends AbstractProcessor {
 
     // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;
+    
+    private boolean initDone = false;
 
     public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT_PATH = new PropertyDescriptor.Builder()
             .name("python_processor.python_processor_script_path")
@@ -157,6 +159,9 @@ public class PythonProcessor extends AbstractProcessor {
 
         pythonInterpreter.set("context", context);
         pythonInterpreter.exec("pyProcessor.init(context)");
+        
+        // Allow forwarding calls to onPropertyModified
+        initDone = true;
     }
     
     /**
@@ -342,7 +347,22 @@ public class PythonProcessor extends AbstractProcessor {
     
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-        // TODO call python processor code
+
         logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+        
+        /**
+         * In java, onPropertyModified for config properties is called before the init method is called so before our
+         * init method is called our python interpreter is not initialized and we cannot call it before
+         */
+        if (initDone)
+        {
+            /**
+             * pyProcessor.onPropertyModified(context, oldValue, newValue)
+             */
+            pythonInterpreter.set("descriptor", descriptor);
+            pythonInterpreter.set("oldValue", oldValue);
+            pythonInterpreter.set("newValue", newValue);
+            pythonInterpreter.exec("pyProcessor.onPropertyModified(context, oldValue, newValue)");
+        }
     }
 }
