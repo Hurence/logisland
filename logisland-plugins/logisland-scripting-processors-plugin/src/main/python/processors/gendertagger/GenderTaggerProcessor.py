@@ -53,11 +53,11 @@ class GenderTaggerProcessor(AbstractProcessor):
         print "Gender classifier trained"
 
     def init(self, context):
-        print "Inside init of GenderTaggerProcessor code"
+        print "Inside init of GenderTaggerProcessor python code"
         self.initClassifier()
         
     def onPropertyModified(self, descriptor, oldValue, newValue):
-        print "Inside onPropertyModified of GenderTaggerProcessor code"
+        print "Inside onPropertyModified of GenderTaggerProcessor python code"
    
     #
     # Get the record's author firstname and tag the record with the author's

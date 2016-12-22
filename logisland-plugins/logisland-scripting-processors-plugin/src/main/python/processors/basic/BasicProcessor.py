@@ -15,7 +15,7 @@ from com.hurence.logisland.record import StandardRecord
 class BasicProcessor(AbstractProcessor):
 
     def init(self, context):
-        print "Inside init of BasicProcessor code"
+        print "Inside init of BasicProcessor python code"
   
     def process(self, context, records):
         print "Inside process of BasicProcessor python code"
