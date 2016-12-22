@@ -137,7 +137,7 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark-engine-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml --files ${CONF_DIR}/log4j.properties --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\""
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/log4j.properties --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\""
 
     if [ ! -z "$YARN_APP_NAME" ]
     then
