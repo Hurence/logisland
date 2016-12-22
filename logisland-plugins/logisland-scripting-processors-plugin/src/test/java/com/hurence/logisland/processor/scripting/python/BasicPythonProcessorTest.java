@@ -36,7 +36,7 @@ public class BasicPythonProcessorTest {
     @Test
     public void testSimple() {
         final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
-        testRunner.setProperty(PythonProcessor.PYTHON_PROCESSOR_SCRIPT, PYTHON_PROCESSOR);
+        testRunner.setProperty(PythonProcessor.PYTHON_PROCESSOR_SCRIPT_PATH, PYTHON_PROCESSOR);
         testRunner.assertValid();
         Record record = new StandardRecord("simple_record");
         record.setStringField("java_field", "java_field_value");

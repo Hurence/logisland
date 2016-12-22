@@ -37,10 +37,20 @@ public class PythonProcessor extends AbstractProcessor {
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
    
     // Path to the user's python processor script
-    private String pythonProcessorScript = null;
+    private String pythonProcessorScriptPath = null;
+    
+    // Python processor name (derived from pythonProcessorScriptPath)
+    private String pythonProcessorName = null;
+    // Python processor directory (derived from pythonProcessorScriptPath)
+    private String pythonProcessorDirectoryPath = null;
+    
+    // Path to the directory of the dependencies of the processor script
+    private String pythonProcessorDependenciesPath = null;
+    // True if one must load dependencies in the dependencies path
+    private boolean hasDependencies = false;
 
-    // Path of the directory containing the logisland python modules
-    private String pythonModulesPath = null;
+    // Path of the directory containing the logisland python modules (delivered with logisland)
+    private String pythonLogislandModulesPath = null;
     
     // Python interpreter
     private PythonInterpreter pythonInterpreter = new PythonInterpreter();
@@ -48,15 +58,27 @@ public class PythonProcessor extends AbstractProcessor {
     // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;
 
-    public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT = new PropertyDescriptor.Builder()
-            .name("python_processor.python_rocessor_script")
+    public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT_PATH = new PropertyDescriptor.Builder()
+            .name("python_processor.python_processor_script_path")
             .description("The path to the user's python processor script")
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     
+    // Name of the default directory for dependencies of the processor script
+    private static final String DEFAULT_DEPENDENCIES_DIRNAME = "dependencies";
+    
+    public static final PropertyDescriptor PYTHON_PROCESSOR_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
+            .name("python_processor.python_processor_dependencies_path")
+            .description("The path to the dependencies for the user's python processor script. If not set, the following"
+                    + " default directory is used: <directory_holding_processor_script>"
+                    + File.separator + DEFAULT_DEPENDENCIES_DIRNAME)
+            .required(false)
+            .addValidator(StandardValidators.createDirectoryExistsValidator(false, false))
+            .build();
+    
     public static final PropertyDescriptor PYTHON_LOGISLAND_MODULES_PATH = new PropertyDescriptor.Builder()
-            .name("python_processor.python_logisland_modules_path_script")
+            .name("python_processor.python_logisland_modules_path")
             .description("The path to the directory containing the logisland python modules")
             .defaultValue("src/main/resources/python") // Default path
             .required(true)
@@ -67,7 +89,8 @@ public class PythonProcessor extends AbstractProcessor {
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors()
     {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(PYTHON_PROCESSOR_SCRIPT);
+        descriptors.add(PYTHON_PROCESSOR_SCRIPT_PATH);
+        descriptors.add(PYTHON_PROCESSOR_DEPENDENCIES_PATH);
         descriptors.add(PYTHON_LOGISLAND_MODULES_PATH);
 
         return Collections.unmodifiableList(descriptors);
@@ -77,32 +100,35 @@ public class PythonProcessor extends AbstractProcessor {
      * Gets config parameters
      */
     private void getConfigParameters(ProcessContext context)
-    {
-        pythonProcessorScript = context.getProperty(PYTHON_PROCESSOR_SCRIPT).asString();
-        pythonModulesPath = context.getProperty(PYTHON_LOGISLAND_MODULES_PATH).asString();
+    {   
+        // Extract needed configuration information
+        try {
+            getPythonProcessorNameAndDirectory(context);
+            getPythonProcessorDependenciesPath(context);
+            getPythonLogislandModulesPath(context);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }       
     }
-    
+
     @Override
     public void init(final ProcessContext context)
     {
         // Get config parameters
         getConfigParameters(context);
         
-        logger.info("Python processor: initializing " + pythonProcessorScript);
+        logger.info("Initializing python processor: " + pythonProcessorScriptPath);
         
         // Load necessary logisland python modules
         loadLogislandPythonModules();
         
-        // Get python processor name
-        String pythonProcessorName = null;
-        try {
-            pythonProcessorName = getPythonProcessorName(pythonProcessorScript);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (hasDependencies)
+        {
+            loadPythonProcessorDependencies();
         }
               
         // Load processor script
-        pythonInterpreter.execfile(pythonProcessorScript);
+        pythonInterpreter.execfile(pythonProcessorScriptPath);
 
         /**
          * Instantiate and init the processor python object
@@ -140,43 +166,151 @@ public class PythonProcessor extends AbstractProcessor {
     {
         // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
         // python modules. A potential way of doing this seems to be the usage of sys.meta_path
-        
-        logger.info("Using logsiland python modules directory: " + pythonModulesPath);
         pythonInterpreter.exec("import sys"); // Allows to call next sys.path.append
-        pythonInterpreter.exec("sys.path.append('" + pythonModulesPath + "')");
+        pythonInterpreter.exec("sys.path.append('" + pythonLogislandModulesPath + "')");
     }
     
     /**
-     * Gets the name of the processor from the processor script file name
-     * @param pythonProcessorScript Path to processor script file
-     * @return
+     * Loads the python processor dependencies
+     */
+    private void loadPythonProcessorDependencies()
+    {
+        logger.info("Using python processor dependencies under: " + pythonProcessorDependenciesPath);
+        // 'import sys' has already been called in loadLogislandPythonModules, so just add the path to sys.path
+        pythonInterpreter.exec("sys.path.append('" + pythonProcessorDependenciesPath + "')");
+    }
+    
+    /**
+     * Gets the name and directory of the processor from the processor script file path of the configuration
+     * @param context Logisland context
      * @throws Exception
      */
-    private String getPythonProcessorName(String pythonProcessorScript) throws Exception
+    private void getPythonProcessorNameAndDirectory(ProcessContext context) throws Exception
     {
+        String configPythonProcessorScriptPath = context.getProperty(PYTHON_PROCESSOR_SCRIPT_PATH).asString();
+        
         File processorFile = null;
         try {
-            processorFile = new File(pythonProcessorScript);
+            processorFile = new File(configPythonProcessorScriptPath);
         } catch (NullPointerException npe)
         {
-            throw new Exception("Null python processor script");
+            throw new Exception("Null python processor script path");
         }
+        
+        if (!processorFile.isFile())
+        {
+            throw new Exception("Python processor script path is not a file: " + configPythonProcessorScriptPath);
+        }
+        
+        /**
+         * Replace path with absolute path name
+         */
+        this.pythonProcessorScriptPath = processorFile.getAbsolutePath();
+        
+        /**
+         * Get the directory in which resides the python processor script file
+         */
+        
+        File parentFile = processorFile.getParentFile();
+        if (parentFile == null)
+        {
+            parentFile = new File(".");
+        }
+        this.pythonProcessorDirectoryPath = parentFile.getAbsolutePath();
+        
+        /**
+         * Get the name of the python processor script file
+         */
         
         String processorFileName = processorFile.getName();
         
         if (!processorFileName.endsWith(".py"))
         {
-            throw new Exception("Python processor script file should end with .py: " + processorFileName);
+            throw new Exception("Python processor script file should end with .py extension: " + configPythonProcessorScriptPath);
         }
         
         if (processorFileName.startsWith(".py"))
         {
-            throw new Exception("No python processor name in .py");
+            throw new Exception("Invalid python porcessor script path: " + configPythonProcessorScriptPath);
         }
         
-        String pythonProcessorName = processorFileName.substring(0, processorFileName.length()-3);
+        this.pythonProcessorName =  processorFileName.substring(0, processorFileName.length()-3);
+    }
+    
+    /**
+     * Gets the directory for dependencies of the processor script 
+     * @param context Logisland context
+     * @throws Exception
+     */
+    private void getPythonProcessorDependenciesPath(ProcessContext context) throws Exception
+    {
+        String configPythonProcessorDependenciesPath = context.getProperty(PYTHON_PROCESSOR_DEPENDENCIES_PATH).asString();
+        
+        /**
+         * If no dependences path is given, use the default one which is the a directory named
+         * DEFAULT_DEPENDENCIES_DIRNAME at the same location of the python processor script and us it if it exists,
+         * otherwise use the specified one
+         */
+        if (configPythonProcessorDependenciesPath == null)
+        {
+            this.pythonProcessorDependenciesPath = this.pythonProcessorDirectoryPath + File.separator + DEFAULT_DEPENDENCIES_DIRNAME;
+            logger.info("No python processor dependencies path specified, using default one: " + pythonProcessorDependenciesPath);
+            
+            File dependenciesDir = null;
+            try {
+                dependenciesDir = new File(pythonProcessorDependenciesPath);
+            } catch (NullPointerException npe)
+            {
+                // Cannot happen in fact...
+                throw new Exception("Null python processor dependencies path");
+            }
 
-        return pythonProcessorName;   
+            if (dependenciesDir.exists())
+            {
+                if (dependenciesDir.isDirectory())
+                {
+                    hasDependencies = true;
+                }
+                else
+                {
+                    // Exists but is a file !! Strange...
+                    logger.info(pythonProcessorDependenciesPath + " is a file, not a directory");
+                }
+            }
+        }
+        else
+        {
+            // Dependencies path is provided, check and use it
+            
+            File dependenciesDir = null;
+            try {
+                dependenciesDir = new File(configPythonProcessorDependenciesPath);
+            } catch (NullPointerException npe)
+            {
+                // Cannot happen in fact...
+                throw new Exception("Null python processor dependencies path");
+            }
+            
+            if (!dependenciesDir.isDirectory())
+            {
+                throw new Exception("Python processor dependencies path is not a directory: " + configPythonProcessorDependenciesPath);
+            }
+            
+            this.pythonProcessorDependenciesPath = dependenciesDir.getAbsolutePath();
+            hasDependencies = true;
+        }
+    }
+    
+    /**
+     * Gets the directory containing the logisland python modules (delivered with logisland)
+     * @param context Logisland context
+     * @throws Exception
+     */
+    private void getPythonLogislandModulesPath(ProcessContext context) throws Exception
+    {
+        // TODO: can this be found with correct default value poiting to resources in jar file  
+        pythonLogislandModulesPath = context.getProperty(PYTHON_LOGISLAND_MODULES_PATH).asString();
+        logger.info("Using python logisland modules path: " + pythonLogislandModulesPath);
     }
 
     @Override
