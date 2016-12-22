@@ -49,16 +49,4 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
         logger.debug("init");
     }
 
-
-    /**
-     * Call process with a singleton list made with the single record
-     *
-     * @param context the current process context
-     * @param record the record to handle
-     * @return
-     */
-    @Override
-    public Collection<Record> process(ProcessContext context, Record record) {
-        return process(context, Collections.singleton(record));
-    }
 }
