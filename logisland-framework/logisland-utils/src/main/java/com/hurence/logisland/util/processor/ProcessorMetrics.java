@@ -65,7 +65,10 @@ public class ProcessorMetrics {
             metrics.setField("num_incoming_records", FieldType.INT, incomingEvents.size());
             metrics.setField("num_outgoing_records", FieldType.INT, outgoingEvents.size());
 
+
+
             float errorCount = outgoingEvents.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
+            metrics.setField("num_errors_records", FieldType.LONG, errorCount );
             if (outgoingEvents.size() != 0)
                 metrics.setField("error_percentage", FieldType.FLOAT, 100.0f * errorCount / outgoingEvents.size());
 
