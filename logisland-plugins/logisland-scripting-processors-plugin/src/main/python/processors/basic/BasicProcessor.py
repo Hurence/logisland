@@ -12,7 +12,7 @@ class BasicProcessor(AbstractProcessor):
         print "Inside init of BasicProcessor code"
   
     def process(self, context, records):
-        print "Inside process multi records of BasicProcessor python code"
+        print "Inside process of BasicProcessor python code"
 
         # Copy the records and add python_field field in it
         outputRecords = []
