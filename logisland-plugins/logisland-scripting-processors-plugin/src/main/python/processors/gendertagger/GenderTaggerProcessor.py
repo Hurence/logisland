@@ -1,7 +1,11 @@
 # coding: utf-8
 from AbstractProcessor import AbstractProcessor
 from com.hurence.logisland.record import StandardRecord
-from com.hurence.logisland.processor import MockProcessContext
+
+# NLTK dependencies are by default searched in the dependencies directory
+# (conventional name) at the same location of the python processor script
+# This can be changed using the python_processor.python_processor_dependencies_path
+# config property of the java python processor poiting to this current script
 from nltk.corpus import names
 import nltk.data
 import random
@@ -17,6 +21,12 @@ def gender_features(word):
 #
 # This gender tagger processor uses a trained classifier to tag a record event
 # with the passed record author with a tag specifying the gender of the author
+# 
+# The python_processor.python_processor_script_path config property of the
+# java python processor must point to a pyhton module file. This module must
+# at least contain the definition of a python class with the same name as the
+# one of the module and this class must inherits from the logisland provided
+# python class: AbstractProcessor
 #
 class GenderTaggerProcessor(AbstractProcessor):
     

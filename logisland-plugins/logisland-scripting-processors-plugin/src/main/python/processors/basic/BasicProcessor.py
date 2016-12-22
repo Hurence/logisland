@@ -4,7 +4,13 @@ from com.hurence.logisland.record import StandardRecord
 
 #
 # Simple python processor to test ability to run python code and process some
-# records
+# records.
+# 
+# The python_processor.python_processor_script_path config property of the
+# java python processor must point to a pyhton module file. This module must
+# at least contain the definition of a python class with the same name as the
+# one of the module and this class must inherits from the logisland provided
+# python class: AbstractProcessor
 #
 class BasicProcessor(AbstractProcessor):
 
