@@ -67,10 +67,13 @@ object SparkUtils extends LazyLogging {
 
 
     def customizeLogLevels: Unit = {
-        // Logging verbosity lowered
+       /* // Logging verbosity lowered
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.scheduler").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.streaming").setLevel(Level.WARN)
+        Logger.getLogger("org.apache.spark.deploy.yarn").setLevel(Level.DEBUG)
+
+       // log4j.logger.org.apache.spark.deploy.yarn.Client=DEBUG
 
 
         Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
@@ -83,7 +86,7 @@ object SparkUtils extends LazyLogging {
 
         Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
         Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
-        Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
+        Logger.getLogger("com.hurence").setLevel(Level.DEBUG)*/
     }
 
     def initContext(appName: String,

@@ -144,7 +144,7 @@ object AbstractKafkaRecordStream {
         .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
         .required(false)
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("8")
+        .defaultValue("20")
         .build
 
     val KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR = new PropertyDescriptor.Builder()
@@ -152,7 +152,7 @@ object AbstractKafkaRecordStream {
         .description("if autoCreate is set to true, this will set the number of replica for each partition at topic creation time")
         .required(false)
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("2")
+        .defaultValue("3")
         .build
 
     val KAFKA_METADATA_BROKER_LIST = new PropertyDescriptor.Builder()
@@ -244,7 +244,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.CLIENT_ID_CONFIG -> appName,
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getCanonicalName,
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
-                ProducerConfig.ACKS_CONFIG -> "1",
+                ProducerConfig.ACKS_CONFIG -> "all",
+                ProducerConfig.RETRIES_CONFIG -> "3",
                 ProducerConfig.BATCH_SIZE_CONFIG -> "5000",
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
