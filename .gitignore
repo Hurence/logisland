@@ -11,7 +11,8 @@
 #   added by eclipse when importing maven projects
 **/.gitignore
 
-# Python files
+# Python/Jython compiled files
+**/*.pyc
 **/*$py.class
 
 # Maven
