@@ -25,7 +25,7 @@ import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSer
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.ZookeeperSink
+import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -220,6 +220,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
+        SparkUtils.customizeLogLevels
     }
 
     override def start() = {
@@ -246,7 +247,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
                 ProducerConfig.ACKS_CONFIG -> "all",
                 ProducerConfig.RETRIES_CONFIG -> "3",
-                ProducerConfig.BATCH_SIZE_CONFIG -> "5000",
+                ProducerConfig.BATCH_SIZE_CONFIG -> "500",
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
