@@ -71,7 +71,7 @@ object SparkUtils extends LazyLogging {
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.scheduler").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.streaming").setLevel(Level.WARN)
-        Logger.getLogger("org.apache.spark.deploy.yarn").setLevel(Level.DEBUG)
+        Logger.getLogger("org.apache.spark.deploy.yarn.Client").setLevel(Level.DEBUG)
         Logger.getLogger("org.apache.spark.streaming.scheduler").setLevel(Level.WARN)
 
        // log4j.logger.org.apache.spark.deploy.yarn.Client=DEBUG
