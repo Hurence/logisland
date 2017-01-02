@@ -15,100 +15,32 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.util.runner.TestRunner;
-import com.hurence.logisland.util.runner.TestRunners;
-import com.hurence.logisland.util.string.Multiline;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hurence.logisland.util.runner.TestRunner;
+import com.hurence.logisland.util.runner.TestRunners;
+
 
 public class RandomStandardRecordGeneratorTest {
 
-    private static Logger logger = LoggerFactory.getLogger(RandomStandardRecordGeneratorTest.class);
-
-
-    /**
-     * {
-     * "version": 1,
-     * "type": "record",
-     * "namespace": "com.hurence.logisland",
-     * "name": "Event",
-     * "fields": [
-     * {
-     * "name": "_type",
-     * "type": "string"
-     * },
-     * {
-     * "name": "_id",
-     * "type": "string"
-     * },
-     * {
-     * "name": "timestamp",
-     * "type": "long"
-     * },
-     * {
-     * "name": "method",
-     * "type": "string"
-     * },
-     * {
-     * "name": "ipSource",
-     * "type": "string"
-     * },
-     * {
-     * "name": "ipTarget",
-     * "type": "string"
-     * },
-     * {
-     * "name": "urlScheme",
-     * "type": "string"
-     * },
-     * {
-     * "name": "urlHost",
-     * "type": "string"
-     * },
-     * {
-     * "name": "urlPort",
-     * "type": "string"
-     * },
-     * {
-     * "name": "urlPath",
-     * "type": "string"
-     * },
-     * {
-     * "name": "requestSize",
-     * "type": "int"
-     * },
-     * {
-     * "name": "responseSize",
-     * "type": "int"
-     * },
-     * {
-     * "name": "isOutsideOfficeHours",
-     * "type": "boolean"
-     * },
-     * {
-     * "name": "isHostBlacklisted",
-     * "type": "boolean"
-     * },
-     * {
-     * "name": "tags",
-     * "type": {
-     * "type": "array",
-     * "items": "string"
-     * }
-     * }
-     * ]
-     * }
-     */
-    @Multiline
-    public String avroSchema;
-
+    private static final Logger logger = LoggerFactory.getLogger(RandomStandardRecordGeneratorTest.class);
 
     @Test
     public void testLoadConfig() throws Exception {
 
+    	String avroSchema = loadResurceFileToString("/schemas/testLoadConfig-schema.json");
+    	
         final TestRunner testRunner = TestRunners.newTestRunner(new RandomRecordGenerator());
         testRunner.setProperty(RandomRecordGenerator.OUTPUT_SCHEMA.getName(), avroSchema);
         testRunner.setProperty(RandomRecordGenerator.MIN_EVENTS_COUNT.getName(), "5");
@@ -122,4 +54,9 @@ public class RandomStandardRecordGeneratorTest {
         Assert.assertTrue(testRunner.getOutputRecords().size() <= 20);
         Assert.assertTrue(testRunner.getOutputRecords().size() >= 5);
     }
+
+	private String loadResurceFileToString(String resourceFile) throws Exception {
+		Path resourcePath = Paths.get(getClass().getResource(resourceFile).toURI());
+		return FileUtils.readFileToString(resourcePath.toFile());
+	}
 }
