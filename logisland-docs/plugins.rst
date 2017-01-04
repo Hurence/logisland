@@ -71,6 +71,36 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.EvaluateJsonPath: 
+
+EvaluateJsonPath
+----------------
+Evaluates one or more JsonPath expressions against the content of a FlowFile. The results of those expressions are assigned to Records Fieldsdepending on configuration of the Processor. JsonPaths are entered by adding user-defined properties; the name of the property maps to the Field Name into which the result will be placed. The value of the property must be a valid JsonPath expression. A Return Type of 'auto-detect' will make a determination based off the configured destination. If the JsonPath evaluates to a JSON array or JSON object and the Return Type is set to 'scalar' the Record will be routed to error. A Return Type of JSON can return scalar values if the provided JsonPath evaluates to the specified value. If the expression matches nothing, Fields will be created with empty strings as the value 
+
+Class
+_____
+com.hurence.logisland.processor.EvaluateJsonPath
+
+Tags
+____
+JSON, evaluate, JsonPath
+
+Properties
+__________
+This component has no required or optional properties.
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "A Record field", "A JsonPath expression", "will be set to any JSON objects that match the JsonPath. ", ****
+
+----------
+
 .. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
 
 KafkaRecordStreamDebugger
@@ -104,8 +134,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "8", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
@@ -145,8 +175,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "8", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
@@ -189,8 +219,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "8", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
@@ -232,8 +262,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "8", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "2", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
@@ -431,6 +461,33 @@ This is a processor that logs incoming records
 Class
 _____
 com.hurence.logisland.processor.RecordDebugger
+
+Tags
+____
+record, debug
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**event.serializer**", "the way to serialize event", "Json serialization : serialize events as json blocs, String serialization : serialize events as toString() blocs, ", "json", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.RecordNormalizer: 
+
+RecordNormalizer
+----------------
+This is a processor that logs incoming records
+
+Class
+_____
+com.hurence.logisland.processor.RecordNormalizer
 
 Tags
 ____
