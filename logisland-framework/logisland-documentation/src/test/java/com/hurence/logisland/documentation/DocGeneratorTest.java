@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,13 +15,6 @@
  */
 package com.hurence.logisland.documentation;
 
-import com.hurence.logisland.documentation.example.FullyDocumentedProcessor;
-import com.hurence.logisland.documentation.util.ClassFinder;
-import com.hurence.logisland.documentation.util.Visitor;
-import com.hurence.logisland.engine.spark.StandardSparkStreamProcessingEngine;
-import com.hurence.logisland.processor.SplitText;
-import com.hurence.logisland.processor.chain.KafkaRecordStream;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -30,10 +23,8 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 public class DocGeneratorTest {
-
 
 
     @Test

@@ -15,11 +15,10 @@
  */
 package com.hurence.logisland.runner;
 
-import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
-import com.hurence.logisland.engine.StandardEngineContext;
-import com.hurence.logisland.engine.StandardEngineInstance;
+import com.hurence.logisland.engine.EngineContext;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +59,15 @@ public class StreamProcessingRunner {
         options.addOption(conf);
 
 
+        String logisland =
+                "██╗      ██████╗  ██████╗   ██╗███████╗██╗      █████╗ ███╗   ██╗██████╗ \n" +
+                "██║     ██╔═══██╗██╔════╝   ██║██╔════╝██║     ██╔══██╗████╗  ██║██╔══██╗\n" +
+                "██║     ██║   ██║██║  ███╗  ██║███████╗██║     ███████║██╔██╗ ██║██║  ██║\n" +
+                "██║     ██║   ██║██║   ██║  ██║╚════██║██║     ██╔══██║██║╚██╗██║██║  ██║\n" +
+                "███████╗╚██████╔╝╚██████╔╝  ██║███████║███████╗██║  ██║██║ ╚████║██████╔╝\n" +
+                "╚══════╝ ╚═════╝  ╚═════╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝   v0.9.7\n\n\n";
+
+        System.out.println(logisland);
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(options, args);
@@ -69,14 +77,14 @@ public class StreamProcessingRunner {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(sessionConf.getEngine());
+            Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
             logger.info("starting Logisland session version {}", sessionConf.getVersion());
             logger.info(sessionConf.getDocumentation());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 
             // start the engine
-            StandardEngineContext engineContext = new StandardEngineContext(engineInstance.get());
+            EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
 
 

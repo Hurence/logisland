@@ -15,48 +15,66 @@
  */
 package com.hurence.logisland.util.runner;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Assert;
+
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import org.junit.Assert;
 
 public class MockRecord extends StandardRecord {
 
+	private static final long serialVersionUID = 7750544989597574120L;
 
+	private final Set<String> assertedFields;
+	
     public MockRecord(Record toClone) {
         super(toClone);
+        
+        this.assertedFields = new HashSet<>();
     }
 
     public void assertFieldExists(final String fieldName) {
         Assert.assertTrue("Field " + fieldName + " does not exist", hasField(fieldName));
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldNotExists(final String fieldName) {
         Assert.assertFalse("Attribute " + fieldName + " not exists with value " + getField(fieldName),
                 hasField(fieldName));
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final String expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());
-    }
+		assertedFields.add(fieldName);
+	}
 
     public void assertFieldEquals(final String fieldName, final int expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asInteger().intValue());
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final long expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asLong().longValue());
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final float expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), 0.000001);
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final double expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), 0.000001);
+		assertedFields.add(fieldName);
     }
 
     public void assertFieldNotEquals(final String fieldName, final String expectedValue) {
         Assert.assertNotSame(expectedValue, getField(fieldName).asString());
+		assertedFields.add(fieldName);
     }
 
 
@@ -64,7 +82,14 @@ public class MockRecord extends StandardRecord {
         Assert.assertEquals(size, size());
     }
 
-
+    public void assertAllFieldsAsserted(List<String> ignoreFields) {
+		// get missing asserted fields
+		Set<String> fields = new HashSet<>(getAllFieldNames());
+		fields.removeAll(ignoreFields);
+		fields.removeAll(assertedFields);
+		Assert.assertEquals("List of not asserted fields: " + fields, 0, fields.size());
+    }
+    
     /**
      * Asserts that the content of this Record is the same as the content of
      * the given file

@@ -16,17 +16,23 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.processor.StandardProcessorInstance;
-
-import java.util.List;
 
 /**
- * Carry the business rules, to be applied to a bunch of events
+ * Carry the whole workload of processing
  */
 public interface ProcessingEngine extends ConfigurableComponent {
 
+    /**
+     * start the engine with a context
+     *
+     * @param engineContext
+     */
     void start(EngineContext engineContext);
 
+    /**
+     * shutdown the engine with a context
+     * @param engineContext
+     */
     void shutdown(EngineContext engineContext);
 
 }

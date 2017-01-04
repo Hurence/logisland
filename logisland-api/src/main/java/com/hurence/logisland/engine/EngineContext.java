@@ -17,11 +17,27 @@ package com.hurence.logisland.engine;
 
 
 import com.hurence.logisland.component.ComponentContext;
-import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
+import com.hurence.logisland.stream.StreamContext;
 
 import java.util.Collection;
 
 public interface EngineContext extends ComponentContext {
 
-    Collection<StandardProcessorChainInstance> getProcessorChainInstances();
+    /**
+     * @return retrieve the list of stream contexts
+     */
+    Collection<StreamContext> getStreamContexts();
+
+    /**
+     * add a stream to the collection of Streams
+     *
+     * @param streamContext the Stream to add
+     */
+    void addStreamContext(StreamContext streamContext);
+
+
+    /**
+     * @return the engine
+     */
+    ProcessingEngine getEngine();
 }

@@ -20,38 +20,32 @@ import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
-import com.hurence.logisland.processor.ProcessContext;
 
-import java.util.Map;
-
-public class StandardProcessContext implements ProcessContext {
-
-    private final AbstractConfiguredComponent component;
+public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
 
 
-    public StandardProcessContext(final AbstractConfiguredComponent component) {
-        this.component = component;
-
+    public StandardProcessContext(final Processor processor, final String id) {
+        super(processor, id);
     }
 
     @Override
-    public PropertyValue getProperty(final PropertyDescriptor descriptor) {
-        return getProperty(descriptor.getName());
+    public Processor getProcessor() {
+        return (Processor) component;
     }
 
-    /**
-     * <p>
-     * Returns the currently configured value for the property with the given name.
-     * </p>
-     */
     @Override
-    public PropertyValue getProperty(final String propertyName) {
+    public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
+        return getPropertyValue(descriptor.getName());
+    }
+
+    @Override
+    public PropertyValue getPropertyValue(final String propertyName) {
         final PropertyDescriptor descriptor = component.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;
         }
 
-        final String setPropertyValue = component.getProperty(descriptor);
+        final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
         return new StandardPropertyValue(propValue);
@@ -62,15 +56,8 @@ public class StandardProcessContext implements ProcessContext {
         return new StandardPropertyValue(rawValue);
     }
 
-
     @Override
-    public Map<PropertyDescriptor, String> getProperties() {
-        return component.getProperties();
-    }
+    public void verifyModifiable() throws IllegalStateException {
 
-
-    @Override
-    public String getName() {
-        return component.getName();
     }
 }

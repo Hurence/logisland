@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -115,7 +115,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).intValue();
         } else {
-            return null;
+            try {
+                return Integer.parseInt(rawValue.toString());
+            }catch (Exception ex){
+                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as an integer");
+            }
         }
     }
 
@@ -123,11 +127,18 @@ public class Field implements PropertyValue, Serializable {
     public Long asLong() {
         if (rawValue == null) {
             return null;
-        } else if (rawValue instanceof Number) {
-            return ((Number) rawValue).longValue();
         } else {
-            return null;
+            if (rawValue instanceof Number) {
+                return ((Number) rawValue).longValue();
+            } else {
+                try {
+                    return Long.parseLong(rawValue.toString());
+                }catch (Exception ex){
+                    throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as a long");
+                }
+            }
         }
+
     }
 
     @Override
@@ -142,7 +153,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).floatValue();
         } else {
-            return null;
+            try {
+                return Float.parseFloat(rawValue.toString());
+            }catch (Exception ex){
+                return null;
+            }
         }
     }
 
@@ -153,7 +168,11 @@ public class Field implements PropertyValue, Serializable {
         } else if (rawValue instanceof Number) {
             return ((Number) rawValue).doubleValue();
         } else {
-            return null;
+            try {
+                return Double.parseDouble(rawValue.toString());
+            }catch (Exception ex){
+                return null;
+            }
         }
     }
 

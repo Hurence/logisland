@@ -16,15 +16,19 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import com.hurence.logisland.util.validator.AvroRecordValidator;
+import com.hurence.logisland.validator.AvroRecordValidator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.List;
 
 
 public class SplitTextTest {
@@ -125,7 +129,7 @@ public class SplitTextTest {
         out.assertFieldNotExists("src_ip2");
         out.assertFieldEquals("src_ip", "10.3.10.134");
         out.assertFieldEquals("http_method", "GET");
-        out.assertFieldEquals("bytes_out", "51");
+        out.assertFieldEquals("bytes_out", 51);
         out.assertFieldEquals("http_query", "/usr/rest/account/email");
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
@@ -158,9 +162,8 @@ public class SplitTextTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldNotExists("src_ip");
         out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
-        out.assertFieldEquals(FieldDictionary.RECORD_ERROR, ProcessError.REGEX_PARSING_ERROR.toString());
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(2);
     }
-
 
 }

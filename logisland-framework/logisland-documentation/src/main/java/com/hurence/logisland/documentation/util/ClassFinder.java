@@ -1,12 +1,11 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,26 +16,38 @@
 package com.hurence.logisland.documentation.util;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ClassFinder {
+
+    private static Logger logger = LoggerFactory.getLogger(ClassFinder.class);
+
+    /**
+     * find classes in the classpath
+     * @param visitor
+     */
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
+
         String[] paths = classpath.split(System.getProperty("path.separator"));
 
-        String javaHome = System.getProperty("java.home");
+     /*   String javaHome = System.getProperty("java.home");
         File file = new File(javaHome + File.separator + "lib");
         if (file.exists()) {
             findClasses(file, file, true, visitor);
-        }
+        }*/
 
         for (String path : paths) {
-            file = new File(path);
-            if (file.exists()) {
-                findClasses(file, file, false, visitor);
+            File file = new File(path);
+            if (file.exists() && file.getName().contains("logisland")) {
+                findClasses(file, file, true, visitor);
+
             }
         }
     }
@@ -50,6 +61,7 @@ public class ClassFinder {
             }
         } else {
             if (file.getName().toLowerCase().endsWith(".jar") && includeJars) {
+
                 JarFile jar = null;
                 try {
                     jar = new JarFile(file);

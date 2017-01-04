@@ -313,7 +313,7 @@ public class StandardRecord implements Record {
             } catch (Throwable ex) {
                 return false;
             }
-            if(!isValid) {
+            if (!isValid) {
                 logger.info("field {} is not an instance of type {}", field.getName(), field.getType());
                 return false;
             }
@@ -381,5 +381,26 @@ public class StandardRecord implements Record {
         }
 
         return size;
+    }
+
+
+    private List<String> errors = new ArrayList<>();
+
+    @Override
+    public Record addError(final String type, final String message) {
+        StringBuilder finalMessage = new StringBuilder();
+        finalMessage.append(type);
+        if(message == null || !message.isEmpty()) {
+            finalMessage.append(": ");
+            finalMessage.append(message);
+        }
+        errors.add(finalMessage.toString());
+        setField(FieldDictionary.RECORD_ERRORS, FieldType.ARRAY, errors);
+        return this;
+    }
+
+    @Override
+    public Collection<String> getErrors() {
+        return new ArrayList<>(errors);
     }
 }

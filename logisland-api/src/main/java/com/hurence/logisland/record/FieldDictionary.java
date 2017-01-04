@@ -18,7 +18,7 @@ package com.hurence.logisland.record;
 
 public class FieldDictionary {
 
-    public static String RECORD_ERROR= "record_error";
+    public static String RECORD_ERRORS = "record_errors";
     public static String RECORD_TYPE = "record_type";
     public static String RECORD_ID = "record_id";
     public static String RECORD_TIME = "record_time";

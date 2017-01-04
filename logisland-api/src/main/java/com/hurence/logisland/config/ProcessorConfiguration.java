@@ -44,8 +44,9 @@ public class ProcessorConfiguration extends AbstractComponentConfiguration {
 
     @Override
     public String toString() {
-        return "StreamConfiguration{" +
-                "processors=" + processors +
+        return "ProcessorConfiguration{" +
+                "processor='" + processor + '\'' +
+                ", processors=" + processors +
                 '}';
     }
 }

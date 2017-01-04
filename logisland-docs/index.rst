@@ -17,22 +17,21 @@ Chat with us on Gitter
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
 
 Contents:
+---------
 
 .. toctree::
    :maxdepth: 2
 
-   changes
    concepts
    architecture
-   getting-started
-   deploy
+   tutorials/index
    api
-   tests
    plugins
+   changes
    faq
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

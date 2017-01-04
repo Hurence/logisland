@@ -2,7 +2,7 @@ Log Island
 ==========
 
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
-    :target: https://travis-ci.org/Hurence/logisland
+   :target: https://travis-ci.org/Hurence/logisland
 
 
 
@@ -19,10 +19,11 @@ Download the `latest release build <https://github.com/Hurence/logisland/release
 .. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png
     :alt: architecture
 
-You can start right now playing with **logisland** through the Docker image, by following the `getting started <http://logisland.readthedocs.io/en/latest/getting-started.html>`_ guide.
+You can start right now playing with **logisland** through the Docker image, by getting started with `apache log indexing tutorial <http://logisland.readthedocs.io/en/latest/tutorials/index-apache-logs.html>`_ guide.
 
 The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  also explains how to implement your own processors and deploy them as custom `plugins <http://logisland.readthedocs.io/en/latest/plugins.html>`_.
 
+Browse the `Java API documentation <http://logisland.readthedocs.io/en/latest/_static/apidocs/>`_ for more information.
 
 
 Build and deploy
@@ -33,13 +34,14 @@ to build from the source just clone and package
 
     git clone git@github.com:Hurence/logisland.git
     cd logisland
-    mvn package
+    mvn install
     
 to deploy artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
 
 .. code-block::
     
-    mvn versions:set -DnewVersion=0.9.6-SNAPSHOT
+    mvn versions:set -DnewVersion=0.9.7-SNAPSHOT
+    mvn license:format
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
@@ -100,7 +102,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
       processorChainConfigurations:
 
         # parsing
-        - processorChain: parsing_stream
+        - stream: parsing_stream
           component: com.hurence.logisland.processor.chain.KafkaRecordStream
           type: stream
           documentation: a processor that links
@@ -128,7 +130,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
                 value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         # indexing
-        - processorChain: indexing_stream
+        - stream: indexing_stream
           component: com.hurence.logisland.processor.chain.KafkaRecordStream
           type: processor
           documentation: a processor that push events to ES
@@ -165,7 +167,7 @@ The following `conf/configuration-template.yml` contains a sample of processor d
 
 
 Start a stream workflow
-----
+-----------------------
 
 One you've edited your configuration file, you can submit it to execution engine with the following cmd :
 

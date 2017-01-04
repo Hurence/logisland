@@ -19,7 +19,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,9 +75,9 @@ public class SplitTextMultiline extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        final String[] fields = context.getProperty(FIELDS).asString().split(",");
-        final String regexString = context.getProperty(REGEX).asString();
-        final String eventType = context.getProperty(EVENT_TYPE).asString();
+        final String[] fields = context.getPropertyValue(FIELDS).asString().split(",");
+        final String regexString = context.getPropertyValue(REGEX).asString();
+        final String eventType = context.getPropertyValue(EVENT_TYPE).asString();
         final Pattern regex = Pattern.compile(regexString, Pattern.DOTALL);
 
         List<Record> outputRecords = new ArrayList<>();

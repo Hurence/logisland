@@ -29,6 +29,21 @@ ENV KAFKA_HOME /usr/local/kafka
 EXPOSE 2181 9092
 COPY server.properties $KAFKA_HOME/config/server.properties
 
+# Build and install kafkacat util
+RUN cd /usr/local; \
+    git clone https://github.com/edenhill/librdkafka.git; \
+    cd librdkafka/;  \
+    ./configure; \
+    make; \
+    make install;
+RUN cd /usr/local; \
+    git clone https://github.com/edenhill/kafkacat.git; \
+    cd kafkacat/;  \
+    ./configure; \
+    make; \
+    make install;
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
+
 
 # Spark
 RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.2-bin-hadoop2.6.tgz | tar -xz -C /usr/local/
@@ -69,12 +84,12 @@ EXPOSE 8080
 EXPOSE 3000
 
 # Log-Island
-COPY logisland-0.9.5-bin.tar.gz /usr/local/logisland-0.9.5-bin.tar.gz
+COPY logisland-0.9.7-bin.tar.gz /usr/local/logisland-0.9.7-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-0.9.5-bin.tar.gz; \
-    ln -s /usr/local/logisland-0.9.5 /usr/local/logisland; \
+    tar -xzf logisland-0.9.7-bin.tar.gz; \
+    ln -s /usr/local/logisland-0.9.7 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/logisland-0.9.5-bin.tar.gz
+    rm -f /usr/local/logisland-0.9.7-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
 
 
@@ -89,20 +104,6 @@ ENV LOGISLAND_HOME /usr/local/logisland
 #EXPOSE 9000
 
 
-# Build and install kafkacat util
-RUN cd /usr/local; \
-    git clone https://github.com/edenhill/librdkafka.git; \
-    cd librdkafka/;  \
-    ./configure; \
-    make; \
-    make install;
-RUN cd /usr/local; \
-    git clone https://github.com/edenhill/kafkacat.git; \
-    cd kafkacat/;  \
-    ./configure; \
-    make; \
-    make install;
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 # update boot script
 COPY bootstrap.sh /etc/bootstrap.sh

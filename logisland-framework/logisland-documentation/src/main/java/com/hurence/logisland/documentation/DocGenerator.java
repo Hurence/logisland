@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,19 +21,22 @@ import com.hurence.logisland.documentation.html.HtmlDocumentationWriter;
 import com.hurence.logisland.documentation.html.HtmlProcessorDocumentationWriter;
 import com.hurence.logisland.documentation.init.EngineInitializer;
 import com.hurence.logisland.documentation.init.ProcessorInitializer;
+import com.hurence.logisland.documentation.init.RecordStreamInitializer;
 import com.hurence.logisland.documentation.rst.RstDocumentationWriter;
-import com.hurence.logisland.documentation.rst.RstPrintWriter;
 import com.hurence.logisland.documentation.util.ClassFinder;
 import com.hurence.logisland.documentation.util.Visitor;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.Processor;
-import com.sun.tools.javac.util.Assert;
-import org.apache.commons.io.FileUtils;
+import com.hurence.logisland.processor.SplitText;
+import com.hurence.logisland.stream.RecordStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Uses the ExtensionManager to get a list of Processor, ControllerService, and
@@ -46,41 +49,42 @@ public class DocGenerator {
     /**
      * Generates documentation into the work/docs dir specified
 
-    public static void generate(final File docsDirectory, final String writerType) {
-        @SuppressWarnings("rawtypes")
-        final Set<Class> extensionClasses = new HashSet<>();
+     public static void generate(final File docsDirectory, final String writerType) {
+    @SuppressWarnings("rawtypes") final Set<Class> extensionClasses = new HashSet<>();
 
-        // TODO add extensionmanager here
-        ///extensionClasses.addAll(ExtensionManager.getExtensions(Processor.class));
+    // TODO add extensionmanager here
+    ///extensionClasses.addAll(ExtensionManager.getExtensions(Processor.class));
 
 
-        logger.debug("Generating documentation for: " + extensionClasses.size() + " components in: "
-                + docsDirectory);
+    logger.debug("Generating documentation for: " + extensionClasses.size() + " components in: "
+    + docsDirectory);
 
-        for (final Class<?> extensionClass : extensionClasses) {
-            if (ConfigurableComponent.class.isAssignableFrom(extensionClass)) {
-                final Class<? extends ConfigurableComponent> componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
-                try {
-                    logger.debug("Documenting: " + componentClass);
-                    document(docsDirectory, componentClass, writerType);
-                } catch (Exception e) {
-                    logger.warn("Unable to document: " + componentClass, e);
-                }
-            }
-        }
+    for (final Class<?> extensionClass : extensionClasses) {
+    if (ConfigurableComponent.class.isAssignableFrom(extensionClass)) {
+    final Class<? extends ConfigurableComponent> componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
+    try {
+    logger.debug("Documenting: " + componentClass);
+    document(docsDirectory, componentClass, writerType);
+    } catch (Exception e) {
+    logger.warn("Unable to document: " + componentClass, e);
     }
- */
+    }
+    }
+    }
+     */
     /**
      * Generates documentation into the work/docs dir specified from a specified set of class
      */
     public static void generate(final File docsDirectory, final String writerType) {
 
 
-        Map<String,Class> extensionClasses = new TreeMap<>();
+        Processor p = new SplitText();
+
+        Map<String, Class> extensionClasses = new TreeMap<>();
         ClassFinder.findClasses(new Visitor<String>() {
             @Override
             public boolean visit(String clazz) {
-                if(clazz.contains("logisland")){
+                if (clazz.contains("logisland") && !clazz.contains("Mock")) {
                     try {
                         Class c = Class.forName(clazz);
                         extensionClasses.put(c.getSimpleName(), c);
@@ -94,12 +98,12 @@ public class DocGenerator {
         });
 
         docsDirectory.mkdirs();
-        logger.debug("Generating documentation for: " + extensionClasses.size() + " components in: "
+        logger.info("Generating documentation for: " + extensionClasses.size() + " components in: "
                 + docsDirectory);
 
 
         // write headers for single rst file
-        if(writerType.equals("rst")){
+        if (writerType.equals("rst")) {
             final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
             if (baseDocumenationFile.exists())
                 baseDocumenationFile.delete();
@@ -115,17 +119,39 @@ public class DocGenerator {
             }
         }
 
+        Class[] sortedExtensionsClasses = new Class[extensionClasses.size()];
+        extensionClasses.values().toArray(sortedExtensionsClasses);
 
+        Arrays.sort(sortedExtensionsClasses, new Comparator<Class>() {
+            @Override
+            public int compare(Class s1, Class s2) {
+                // the +1 is to avoid including the '.' in the extension and to avoid exceptions
+                // EDIT:
+                // We first need to make sure that either both files or neither file
+                // has an extension (otherwise we'll end up comparing the extension of one
+                // to the start of the other, or else throwing an exception)
+                final int s1Dot = s1.getName().lastIndexOf('.');
+                final int s2Dot = s2.getName().lastIndexOf('.');
+                if ((s1Dot == -1) == (s2Dot == -1)) { // both or neither
+                    String s1Name = s1.getName().substring(s1Dot + 1);
+                    String s2Name = s2.getName().substring(s2Dot + 1);
+                    return s1Name.compareTo(s2Name);
+                } else if (s1Dot == -1) { // only s2 has an extension, so s1 goes first
+                    return -1;
+                } else { // only s1 has an extension, so s1 goes second
+                    return 1;
+                }
+            }
+        });
 
-        extensionClasses.values().stream()
+        Arrays.stream(sortedExtensionsClasses)
                 .filter(ConfigurableComponent.class::isAssignableFrom)
                 .forEach(extensionClass -> {
                     final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
                     try {
-                        logger.debug("Documenting: " + componentClass);
                         document(docsDirectory, componentClass, writerType);
                     } catch (Exception e) {
-                        logger.warn("Unable to document: " + componentClass, e);
+                        // nothing to do
                     }
                 });
     }
@@ -145,22 +171,19 @@ public class DocGenerator {
     private static void document(final File docsDir, final Class<? extends ConfigurableComponent> componentClass, final String writerType)
             throws InstantiationException, IllegalAccessException, IOException, InitializationException {
 
+        logger.debug("Documenting: " + componentClass);
         final ConfigurableComponent component = componentClass.newInstance();
         final ConfigurableComponentInitializer initializer = getComponentInitializer(componentClass);
         initializer.initialize(component);
 
         final DocumentationWriter writer = getDocumentWriter(componentClass, writerType);
 
-        //  final File directory = new File(docsDir, componentClass.getCanonicalName());
-        // directory.mkdirs();
-
         final File baseDocumenationFile = new File(docsDir, "plugins" + "." + writerType);
-        if (baseDocumenationFile.exists()) {
-            logger.warn(baseDocumenationFile + " already exists, overwriting!");
-        }
 
         try (final OutputStream output = new BufferedOutputStream(new FileOutputStream(baseDocumenationFile, true))) {
             writer.write(component, output);
+        }catch (Exception e){
+            logger.error(e.getMessage());
         }
 
         initializer.teardown(component);
@@ -178,16 +201,15 @@ public class DocGenerator {
                                                          final String writerType) {
 
         if (writerType.equals("html")) {
-            if (Processor.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
+            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
                 return new HtmlProcessorDocumentationWriter();
             }
 
             return null;
         } else if (writerType.equals("rst")) {
-            if (Processor.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
+            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
                 return new RstDocumentationWriter();
             }
-
             return null;
         } else {
             return null;
@@ -209,6 +231,8 @@ public class DocGenerator {
             return new ProcessorInitializer();
         } else if (ProcessingEngine.class.isAssignableFrom(componentClass)) {
             return new EngineInitializer();
+        }else if (RecordStream.class.isAssignableFrom(componentClass)) {
+            return new RecordStreamInitializer();
         }
 
         return null;
@@ -235,11 +259,7 @@ public class DocGenerator {
     public static void main(String[] args) {
 
 
-
-
-
-        DocGenerator.generate(new File("logisland-docs"), "rst");
-
+        DocGenerator.generate(new File("../../logisland-docs"), "rst");
 
 
     }

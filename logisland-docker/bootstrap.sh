@@ -32,9 +32,10 @@ grafana-server --config=/usr/local/etc/grafana/grafana.ini --homepath /usr/local
 
 
 
-echo "starting nifi"
-cd $NIFI_HOME
-sudo bin/nifi.sh start
+echo "you could start nifi with the following command"
+echo "cd $NIFI_HOME; bin/nifi.sh start"
+#cd $NIFI_HOME
+#sudo bin/nifi.sh start
 
 
 
@@ -44,17 +45,19 @@ sudo bin/nifi.sh start
 
 
 echo "to start go to /usr/local/logisland"
-#cd $BOTSEARCH_HOME
+
 #nohup bin/logindexer > log/logindexer.log 2>&1 &
 
 
 echo "starting elasticsearch"
 runuser -l  elastic -c '/usr/local/elasticsearch/bin/elasticsearch -d'
+sleep 5
+curl -XPUT http://localhost:9200/_template/logisland-template -d @$LOGISLAND_HOME/conf/es-template.json
 
 
 
-
-cd $BOTSEARCH_HOME
+echo "logisland is installed in /usr/local/logisland  enjoy!"
+cd $LOGISLAND_HOME
 
 
 CMD=${1:-"exit 0"}

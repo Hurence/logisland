@@ -18,8 +18,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,24 +41,12 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
 
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-        logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
     }
 
     @Override
     public void init(ProcessContext context) {
-        logger.info("init");
+        logger.debug("init");
     }
 
-
-    /**
-     * Call process with a singleton list made with the single record
-     *
-     * @param context the current process context
-     * @param record the record to handle
-     * @return
-     */
-    @Override
-    public Collection<Record> process(ProcessContext context, Record record) {
-        return process(context, Collections.singleton(record));
-    }
 }

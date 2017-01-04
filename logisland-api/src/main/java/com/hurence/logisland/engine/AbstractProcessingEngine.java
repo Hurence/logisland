@@ -16,8 +16,8 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
-import com.hurence.logisland.component.ValidationContext;
-import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.Collection;
 import java.util.Collections;

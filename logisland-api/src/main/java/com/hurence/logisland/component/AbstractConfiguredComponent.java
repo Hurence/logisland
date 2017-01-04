@@ -16,6 +16,8 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractConfiguredComponent implements ConfigurableComponent, ConfiguredComponent {
 
     private final String id;
-    private final ConfigurableComponent component;
+    protected final ConfigurableComponent component;
 
     private final AtomicReference<String> name;
     private final AtomicReference<String> annotationData = new AtomicReference<>();
@@ -62,27 +64,19 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     }
 
     @Override
-    public String getAnnotationData() {
-        return annotationData.get();
-    }
-
-    @Override
-    public void setAnnotationData(final String data) {
-        annotationData.set(data);
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) {
+    public ValidationResult setProperty(final String name, final String value) {
         if (null == name || null == value) {
             throw new IllegalArgumentException();
         }
 
         lock.lock();
+        ValidationResult result =null;
         try {
+
             verifyModifiable();
 
             final PropertyDescriptor descriptor = component.getPropertyDescriptor(name);
-            ValidationResult result = descriptor.validate(value);
+            result = descriptor.validate(value);
             if (!result.isValid()) {
                 //throw new IllegalArgumentException(result.toString());
                 logger.warn(result.toString());
@@ -102,6 +96,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
             // nothing really to do here...
         } finally {
             lock.unlock();
+            return result;
         }
     }
 
@@ -214,9 +209,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public boolean isValid() {
-        final Collection<ValidationResult> validationResults = validate(new StandardValidationContext(
-                getProperties()));
-
+        final Collection<ValidationResult> validationResults = getValidationErrors();
         for (final ValidationResult result : validationResults) {
             if (!result.isValid()) {
                 logger.info("invalid property {}", result.getExplanation());
@@ -225,23 +218,11 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         }
 
         return true;
-       /* final boolean[] isValid = {true};
-
-        Map<PropertyDescriptor, String> properties = getProperties();
-        properties.forEach((propertyDescriptor, value) -> {
-            ValidationResult result = propertyDescriptor.validate(value);
-            if (!result.isValid()) {
-                logger.info("invalid property {}", result.getExplanation());
-                isValid[0] = false;
-            }
-        });
-
-        return isValid[0];*/
     }
 
     @Override
     public Collection<ValidationResult> getValidationErrors() {
-        return Collections.emptySet();
+        return validate(new StandardValidationContext(getProperties()));
     }
 
 
@@ -252,5 +233,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
         return component.validate(context);
     }
+
+
 
 }

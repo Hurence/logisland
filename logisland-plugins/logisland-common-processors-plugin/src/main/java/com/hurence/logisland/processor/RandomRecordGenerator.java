@@ -24,7 +24,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.AvroSerializer;
 import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -72,7 +72,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        final String schemaContent = context.getProperty(OUTPUT_SCHEMA).asString();
+        final String schemaContent = context.getPropertyValue(OUTPUT_SCHEMA).asString();
         final Schema.Parser parser = new Schema.Parser();
         final Schema schema = parser.parse(schemaContent);
 
@@ -80,8 +80,8 @@ public class RandomRecordGenerator extends AbstractProcessor {
         final RandomDataGenerator randomData = new RandomDataGenerator();
         final AvroSerializer avroSerializer = new AvroSerializer(schema);
 
-        final int minEventsCount = context.getProperty(MIN_EVENTS_COUNT).asInteger();
-        final int maxEventsCount = context.getProperty(MAX_EVENTS_COUNT).asInteger();
+        final int minEventsCount = context.getPropertyValue(MIN_EVENTS_COUNT).asInteger();
+        final int maxEventsCount = context.getPropertyValue(MAX_EVENTS_COUNT).asInteger();
         final int eventsCount = randomData.nextInt(minEventsCount, maxEventsCount);
         logger.debug("generating {} events in [{},{}]", eventsCount, minEventsCount, maxEventsCount);
 

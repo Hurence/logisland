@@ -16,44 +16,54 @@
 package com.hurence.logisland.engine;
 
 
-import com.hurence.logisland.processor.chain.StandardProcessorChainInstance;
+import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.stream.StreamContext;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
-public class StandardEngineContext implements EngineContext, Serializable {
-
-    private final StandardEngineInstance engineInstance;
+public class StandardEngineContext extends AbstractConfiguredComponent implements EngineContext {
 
 
-    public StandardEngineContext(final StandardEngineInstance engineInstance) {
-        this.engineInstance = engineInstance;
+    private final List<StreamContext> streamContexts = new ArrayList<>();
 
+    public StandardEngineContext(final ProcessingEngine engine, final String id) {
+        super(engine, id);
+    }
+
+
+    @Override
+    public Collection<StreamContext> getStreamContexts() {
+        return streamContexts;
     }
 
     @Override
-    public PropertyValue getProperty(final PropertyDescriptor descriptor) {
-        return getProperty(descriptor.getName());
+    public void addStreamContext(StreamContext streamContext) {
+        streamContexts.add(streamContext);
     }
 
-    /**
-     * <p>
-     * Returns the currently configured value for the property with the given name.
-     * </p>
-     */
     @Override
-    public PropertyValue getProperty(final String propertyName) {
-        final ProcessingEngine engine = engineInstance.getEngine();
-        final PropertyDescriptor descriptor = engine.getPropertyDescriptor(propertyName);
+    public ProcessingEngine getEngine() {
+        return (ProcessingEngine) component;
+    }
+
+    @Override
+    public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
+        return getPropertyValue(descriptor.getName());
+    }
+
+    @Override
+    public PropertyValue getPropertyValue(final String propertyName) {
+        final PropertyDescriptor descriptor = component.getPropertyDescriptor(propertyName);
         if (descriptor == null) {
             return null;
         }
 
-        final String setPropertyValue = engineInstance.getProperty(descriptor);
+        final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
         return new StandardPropertyValue(propValue);
@@ -64,20 +74,8 @@ public class StandardEngineContext implements EngineContext, Serializable {
         return new StandardPropertyValue(rawValue);
     }
 
-
     @Override
-    public Map<PropertyDescriptor, String> getProperties() {
-        return engineInstance.getProperties();
-    }
+    public void verifyModifiable() throws IllegalStateException {
 
-
-    @Override
-    public String getName() {
-        return engineInstance.getName();
-    }
-
-    @Override
-    public Collection<StandardProcessorChainInstance> getProcessorChainInstances() {
-        return engineInstance.getProcessorChainInstances();
     }
 }

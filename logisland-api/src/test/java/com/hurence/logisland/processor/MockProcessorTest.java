@@ -16,7 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.ComponentType;
-import com.hurence.logisland.config.ComponentFactory;
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -43,15 +43,14 @@ public class MockProcessorTest {
         componentConfiguration.setType(ComponentType.PROCESSOR.toString());
         componentConfiguration.setConfiguration(conf);
 
-        Optional<StandardProcessorInstance> instance = ComponentFactory.getProcessorInstance(componentConfiguration);
-        assertTrue(instance.isPresent());
-        ProcessContext context = new StandardProcessContext(instance.get());
-        Processor processor = instance.get().getProcessor();
+        Optional<ProcessContext> context = ComponentFactory.getProcessContext(componentConfiguration);
+        assertTrue(context.isPresent());
+        Processor processor = context.get().getProcessor();
 
         Record record = new StandardRecord("mock_record");
         record.setId("record1");
         record.setStringField("name", "tom");
-        List<Record> records = new ArrayList<>(processor.process(context, Collections.singleton(record)));
+        List<Record> records = new ArrayList<>(processor.process(context.get(), Collections.singleton(record)));
 
         assertEquals(1, records.size());
         assertTrue(records.get(0).hasField("message"));

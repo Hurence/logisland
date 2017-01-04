@@ -15,10 +15,9 @@
  */
 package com.hurence.logisland.config;
 
+import com.hurence.logisland.component.ComponentFactory;
+import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.MockProcessingEngine;
-import com.hurence.logisland.engine.StandardEngineInstance;
-import com.hurence.logisland.processor.StandardProcessContext;
-import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +46,15 @@ public class ConfigLoaderTest {
 
         logger.info(config.toString());
 
-        Optional<StandardEngineInstance> engineInstance = ComponentFactory.getEngineInstance(config.getEngine());
+        Optional<EngineContext> context = ComponentFactory.getEngineContext(config.getEngine());
 
-        assertTrue(engineInstance.isPresent());
+        assertTrue(context.isPresent());
 
-        StandardProcessContext context = new StandardProcessContext(engineInstance.get());
+        assertEquals(301, context.get().getPropertyValue(MockProcessingEngine.FAKE_SETTINGS).asInteger().intValue());
 
-        assertEquals(301, context.getProperty(MockProcessingEngine.FAKE_SETTINGS).asInteger().intValue());
-
-        assertEquals(1, engineInstance.get().getProcessorChainInstances().size());
+        assertEquals(1, context.get().getStreamContexts().size());
         //   engineInstance.get().getProcessorChainInstances().get(0)
 
-        assertTrue(engineInstance.get().isValid());
+        assertTrue(context.get().isValid());
     }
 }

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.9.6-SNAPSHOT</version>
+        <version>0.9.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>logisland-elasticsearch-plugin</artifactId>
@@ -36,6 +36,12 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.esotericsoftware.kryo</groupId>
+                    <artifactId>kryo</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -101,7 +107,37 @@
                     <argLine>-Dtests.security.manager=false</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.guava:guava</include>
+                                    <include>org.elasticsearch:elasticsearch</include>
+                                </includes>
+                            </artifactSet>
 
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>com.hurence.logisland.com.google</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

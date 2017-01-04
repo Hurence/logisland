@@ -7,14 +7,15 @@ engine:
   documentation: Main Logisland job entry point
   configuration:
     fake.settings: 301
-  processorChainConfigurations:
+  streamConfigurations:
 
-    - processorChain: parsing_stream
-      component: com.hurence.logisland.processor.chain.MockProcessorChain
-      type: processor_chain
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.MockRecordStream
+      type: stream
       documentation: a processor that links
       configuration:
         mock.chain: oula
+
       processorConfigurations:
 
         - processor: mock_processor

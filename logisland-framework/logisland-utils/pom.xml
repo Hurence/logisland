@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>0.9.6-SNAPSHOT</version>
+        <version>0.9.7-SNAPSHOT</version>
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
@@ -44,9 +44,10 @@
             <artifactId>avro</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.esotericsoftware</groupId>
+            <groupId>com.esotericsoftware.kryo</groupId>
             <artifactId>kryo</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>

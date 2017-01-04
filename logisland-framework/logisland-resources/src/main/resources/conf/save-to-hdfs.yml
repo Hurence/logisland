@@ -1,0 +1,59 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.9.7
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Main Logisland job entry point
+  configuration:
+    spark.app.name: SaveToHDFS
+    spark.master: local[4]
+    spark.driver.memory: 512m
+    spark.driver.cores: 1
+    spark.executor.memory: 512m
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: true
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4051
+  streamConfigurations:
+
+    - stream: events_burner
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
+      type: stream
+      documentation: average bytes sent by host_name
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+        output.format: parquet
+        output.folder.path: "data/syslog_events"

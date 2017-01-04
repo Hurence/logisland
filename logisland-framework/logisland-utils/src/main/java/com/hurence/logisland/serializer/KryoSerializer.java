@@ -113,7 +113,7 @@ public class KryoSerializer implements RecordSerializer {
 
             return kryo.readObject(input, StandardRecord.class);
         } catch (Throwable t) {
-            t.printStackTrace();
+         //   t.printStackTrace();
             throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }

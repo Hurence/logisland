@@ -36,6 +36,15 @@ public enum FieldType {
     BOOLEAN;
 
     public String toString() {
-        return name().toLowerCase();
+        return name;
+    }
+    private String name;
+
+    FieldType() {
+        this.name = this.name().toLowerCase();
+    }
+
+    public String getName() {
+        return name;
     }
 }

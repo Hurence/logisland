@@ -17,12 +17,12 @@ package com.hurence.logisland.processor.elasticsearch;
 
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.util.validator.StandardValidators;
-import com.hurence.logisland.util.validator.Validator;
+import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -182,21 +182,21 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
         }
 
         try {
-            final String clusterName = context.getProperty(CLUSTER_NAME).asString();
-            final String pingTimeout = context.getProperty(PING_TIMEOUT).asString();
-            final String samplerInterval = context.getProperty(SAMPLER_INTERVAL).asString();
-            final String username = context.getProperty(USERNAME).asString();
-            final String password = context.getProperty(PASSWORD).asString();
+            final String clusterName = context.getPropertyValue(CLUSTER_NAME).asString();
+            final String pingTimeout = context.getPropertyValue(PING_TIMEOUT).asString();
+            final String samplerInterval = context.getPropertyValue(SAMPLER_INTERVAL).asString();
+            final String username = context.getPropertyValue(USERNAME).asString();
+            final String password = context.getPropertyValue(PASSWORD).asString();
 
           /*  final SSLContextService sslService =
-                    context.getProperty(PROP_SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
+                    context.getPropertyValue(PROP_SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
 */
             Settings.Builder settingsBuilder = Settings.settingsBuilder()
                     .put("cluster.name", clusterName)
                     .put("client.transport.ping_timeout", pingTimeout)
                     .put("client.transport.nodes_sampler_interval", samplerInterval);
 
-            String shieldUrl = context.getProperty(PROP_SHIELD_LOCATION).asString();
+            String shieldUrl = context.getPropertyValue(PROP_SHIELD_LOCATION).asString();
           /*  if (sslService != null) {
                 settingsBuilder.setField("shield.transport.ssl", "true")
                         .setField("shield.ssl.keystore.path", sslService.getKeyStoreFile())
@@ -218,7 +218,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
             TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);
 
-            final String hosts = context.getProperty(HOSTS).asString();
+            final String hosts = context.getPropertyValue(HOSTS).asString();
             esHosts = getEsHosts(hosts);
 
             if (esHosts != null) {

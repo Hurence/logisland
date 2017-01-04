@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.ValidationResult;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.processor.MockProcessContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
@@ -62,12 +62,19 @@ import static org.junit.Assert.assertTrue;
 public class StandardProcessorTestRunner implements TestRunner {
 
     private final Processor processor;
-    private final MockProcessContext context;
+    private final ProcessContext context;
     private final List<Record> inputRecordsQueue;
     private final List<Record> outputRecordsList;
     private static Logger logger = LoggerFactory.getLogger(StandardProcessorTestRunner.class);
     private static final AtomicLong currentId = new AtomicLong(0);
 
+    StandardProcessorTestRunner(final ProcessContext processContext) {
+		this.processor = processContext.getProcessor();
+		this.inputRecordsQueue = new ArrayList<>();
+		this.outputRecordsList = new ArrayList<>();
+		this.context = processContext;
+	}
+    
     StandardProcessorTestRunner(final Processor processor) {
         this.processor = processor;
         this.inputRecordsQueue = new ArrayList<>();
@@ -155,7 +162,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public boolean removeProperty(PropertyDescriptor descriptor) {
-        return context.removeProperty(descriptor);
+        return context.removeProperty(descriptor.getName());
     }
 
     @Override
@@ -165,12 +172,12 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public ValidationResult setProperty(final PropertyDescriptor descriptor, final String value) {
-        return context.setProperty(descriptor, value);
+        return context.setProperty(descriptor.getName(), value);
     }
 
     @Override
     public ValidationResult setProperty(final PropertyDescriptor descriptor, final AllowableValue value) {
-        return context.setProperty(descriptor, value.getValue());
+        return context.setProperty(descriptor.getName(), value.getValue());
     }
 
 
@@ -187,7 +194,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void assertOutputErrorCount(int count) {
-        long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERROR)).count();
+        long errorCount = outputRecordsList.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
         assertTrue("expected output error record count was " + count + " but is currently " +
                 errorCount, errorCount == count);
     }
@@ -246,7 +253,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     public List<MockRecord> getErrorRecords() {
         return getOutputRecords()
                 .stream()
-                .filter(r -> r.hasField(FieldDictionary.RECORD_ERROR))
+                .filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS))
                 .collect(Collectors.toList());
     }
 }

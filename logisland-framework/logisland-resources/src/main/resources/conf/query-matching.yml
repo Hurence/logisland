@@ -1,0 +1,141 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.9.7
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: A logisland stream that match custom queries
+  configuration:
+    spark.app.name: QueryMatchingDemo
+    spark.master: local[4]
+    spark.driver.memory: 1g
+    spark.driver.cores: 1
+    spark.executor.memory: 2g
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 10000
+    spark.streaming.backpressure.enabled: true
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4051
+  streamConfigurations:
+
+    # grab metrics
+    - stream: metrics_by_host
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: logisland_aggregations
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+        avro.input.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.apache_log",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "src_ip",      "type": ["string","null"] },
+               { "name": "http_method", "type": ["string","null"] },
+               { "name": "bytes_out",   "type": ["long","null"] },
+               { "name": "http_query",  "type": ["string","null"] },
+               { "name": "http_version","type": ["string","null"] },
+               { "name": "http_status", "type": ["string","null"] },
+               { "name": "identd",      "type": ["string","null"] },
+               { "name": "user",        "type": ["string","null"] }    ]}
+        sql.query: >
+          SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time) as record_time
+          FROM logisland_events
+          GROUP BY src_ip
+          ORDER BY connections_count DESC
+          LIMIT 20
+        max.results.count: 1000
+        output.record.type: top_client_metrics
+
+    # match threshold queries
+    - stream: query_matching_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_aggregations
+        kafka.output.topics: logisland_alerts
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: match_query
+          component: com.hurence.logisland.processor.MatchQuery
+          type: processor
+          documentation: a parser that produce alerts from lucene queries
+          configuration:
+            numeric.fields: bytes_out,connections_count
+            too_much_bandwidth: avg_bytes_out:[50000 TO 5000000]
+            too_many_connections: connections_count:[500 TO 1000000]
+            output.record.type: threshold_alert
+
+
+    # match particular events queries
+    - stream: query_matching_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: logisland_alerts
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: match_query
+          component: com.hurence.logisland.processor.MatchQuery
+          type: processor
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            blacklisted_host: src_ip:slip-5.io.com
+            edu_host: src_ip:edu
+            output.record.type: connection_alert

@@ -16,11 +16,8 @@
 package com.hurence.logisland.component;
 
 
+import com.hurence.logisland.validator.ValidationResult;
 
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
-
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -33,7 +30,7 @@ import java.util.Map;
  * thread-safe.
  * </p>
  */
-public interface ComponentContext extends Serializable{
+public interface ComponentContext extends ConfiguredComponent {
 
     /**
      * Retrieves the current value set for the given descriptor, if a value is
@@ -42,7 +39,7 @@ public interface ComponentContext extends Serializable{
      * @param descriptor to lookup the value of
      * @return the property value of the given descriptor
      */
-    PropertyValue getProperty(PropertyDescriptor descriptor);
+    PropertyValue getPropertyValue(PropertyDescriptor descriptor);
 
     /**
      * Retrieves the current value set for the given descriptor, if a value is
@@ -51,7 +48,15 @@ public interface ComponentContext extends Serializable{
      * @param propertyName of the property to lookup the value for
      * @return property value as retrieved by property name
      */
-    PropertyValue getProperty(String propertyName);
+    PropertyValue getPropertyValue(String propertyName);
+
+    /**
+     * Sets the property with the given name to the given value
+     *
+     * @param name the name of the property to update
+     * @param value the value to update the property to
+     */
+    ValidationResult setProperty(String name, String value);
 
     /**
      * Creates and returns a {@link PropertyValue} object that can be used for
@@ -64,14 +69,12 @@ public interface ComponentContext extends Serializable{
     PropertyValue newPropertyValue(String rawValue);
 
 
-
     /**
      * @return a Map of all PropertyDescriptors to their configured getAllFields. This
      * Map may or may not be modifiable, but modifying its getAllFields will not
      * change the getAllFields of the processor's properties
      */
     Map<PropertyDescriptor, String> getProperties();
-
 
 
     /**
