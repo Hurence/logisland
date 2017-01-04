@@ -1,5 +1,5 @@
 LogIsland docker files
-===========
+======================
 
 Small standalone Hadoop distribution for development and testing purpose :
 
@@ -13,14 +13,22 @@ Small standalone Hadoop distribution for development and testing purpose :
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
 This Docker image depends on [centos 6.7](https://github.com/CentOS/CentOS-Dockerfiles) image.
 
-Getting the docker image
-------------------------
+Getting the docker image from repository
+----------------------------------------
 
-Pull the image from Docker Repository::
+Pull the image from Docker Repository
+
+.. code-block::sh
 
     docker pull hurence/logisland
 
-Building the image::
+
+Build your own
+--------------
+
+Building the image
+
+.. code-block::sh
 
     # build logisland
     maven clean install
