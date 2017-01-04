@@ -87,7 +87,7 @@ public class StreamProcessingRunner {
         } catch (Exception e) {
             logger.error("unable to launch runner : {}", e);
         }
-        
+
         try {
             // start the engine
             EngineContext engineContext = engineInstance.get();
