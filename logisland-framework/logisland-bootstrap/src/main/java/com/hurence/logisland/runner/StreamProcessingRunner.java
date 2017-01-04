@@ -68,6 +68,7 @@ public class StreamProcessingRunner {
                 "╚══════╝ ╚═════╝  ╚═════╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝   v0.9.7\n\n\n";
 
         System.out.println(logisland);
+        Optional<EngineContext> engineInstance = Optional.empty();
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(options, args);
@@ -77,19 +78,23 @@ public class StreamProcessingRunner {
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
             // instanciate engine and all the processor from the config
-            Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
-            logger.info("starting Logisland session version {}", sessionConf.getVersion());
-            logger.info(sessionConf.getDocumentation());
+            engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 
+            logger.info("starting Logisland session version {}", sessionConf.getVersion());
+            logger.info(sessionConf.getDocumentation());
+        } catch (Exception e) {
+            logger.error("unable to launch runner : {}", e);
+        }
+        
+        try {
             // start the engine
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
-
-
         } catch (Exception e) {
-            logger.error("unable to launch runner : {}", e);
+            logger.error("something went bad while running the job : {}", e);
+            System.exit(-1);
         }
 
 
