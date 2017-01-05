@@ -20,7 +20,10 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.util.validator.StandardValidators;
+import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.python.core.PyInteger;
@@ -31,57 +34,100 @@ import java.io.File;
 import java.util.*;
 
 @Tags({"scripting", "python"})
-@CapabilityDescription("This processor allows to implement and run a processor written in python")
+@CapabilityDescription("This processor allows to implement and run a processor written in python."
+        + "This can be done in 2 ways. Either defining init and process method codes as configuration property values or"
+        + " poiting to a python module script file with another configuration property value. Directly defining methods is"
+        + " called the inline mode whereas using a script file is called the file mode. Both methods are mutually"
+        + " exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies."
+        + " If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can"
+        + " use a configuration property to give their location.")
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
-   
-    // Path to the user's python processor script
-    private String pythonProcessorScriptPath = null;
     
-    // Python processor name (derived from pythonProcessorScriptPath)
-    private String pythonProcessorName = null;
-    // Python processor directory (derived from pythonProcessorScriptPath)
-    private String pythonProcessorDirectoryPath = null;
+    // Python code for init method
+    private String scriptCodeInit = null;
+    
+    // Python code for process method
+    private String scriptCodeProcess = null;
+   
+    // Path to the user provided python processor script file
+    private String scriptPath = null;
+    
+    // Python processor name (derived from scriptPath)
+    private String processorName = null;
+    // Python processor directory (derived from scriptPath)
+    private String scriptDirectory = null;
     
     // Path to the directory of the dependencies of the processor script
-    private String pythonProcessorDependenciesPath = null;
+    private String dependenciesPath = null;
     // True if one must load dependencies in the dependencies path
     private boolean hasDependencies = false;
 
-    // Path of the directory containing the logisland python modules (delivered with logisland)
-    private String pythonLogislandModulesPath = null;
+    // Path of the directory containing the logisland pyhton dependnecies (shipped with logisland)
+    private String logislandDependenciesPath = null;
     
     // Python interpreter
     private PythonInterpreter pythonInterpreter = new PythonInterpreter();
 
     // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;
-    
+
     private boolean initDone = false;
 
-    public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT_PATH = new PropertyDescriptor.Builder()
-            .name("script.path")
-            .description("The path to the user's python processor script")
-            .required(true)
+    // If true, the python code to use resides in a script file, otherwise the code resides in the script.init and
+    // script.process properties
+    private boolean useScriptFile = false;
+    
+    private static final String KEY_SCRIPT_CODE_INIT = "script.code.init";
+    private static final String KEY_SCRIPT_CODE_PROCESS = "script.code.process";
+    private static final String KEY_SCRIPT_PATH = "script.path";
+    private static final String KEY_DEPENDENCIES_PATH = "dependencies.path";
+    private static final String KEY_LOGISLAND_DEPENDENCIES_PATH = "logisland.dependencies.path";
+
+    public static final PropertyDescriptor SCRIPT_CODE_INIT = new PropertyDescriptor.Builder()
+            .name(KEY_SCRIPT_CODE_INIT)
+            .description("The python code to be called when the processor is initialized. This is the python"
+                    + " equivalent of the init method code for a java processor. This is not mandatory but can only"
+                    + " be used if " + KEY_SCRIPT_CODE_PROCESS + " is defined")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor SCRIPT_CODE_PROCESS = new PropertyDescriptor.Builder()
+            .name(KEY_SCRIPT_CODE_PROCESS)
+            .description("The python code to be called to process the records. This is the pyhton equivalent"
+                    + " of the process method code for a java processor. For inline mode, this is the only minimum"
+                    + " required configuration property. Using this property, you may also optionally define the "
+                    + KEY_SCRIPT_CODE_INIT + " property")
+            .required(false)
+            .build();
+
+    public static final PropertyDescriptor SCRIPT_PATH = new PropertyDescriptor.Builder()
+            .name(KEY_SCRIPT_PATH)
+            .description("The path to the user's python processor script. Use this property for file mode." )
+            .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     
     // Name of the default directory for dependencies of the processor script
     private static final String DEFAULT_DEPENDENCIES_DIRNAME = "dependencies";
     
-    public static final PropertyDescriptor PYTHON_PROCESSOR_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
-            .name("dependencies.path")
-            .description("The path to the dependencies for the user's python processor script. If not set, the following"
-                    + " default directory is used: <directory_holding_processor_script>"
-                    + File.separator + DEFAULT_DEPENDENCIES_DIRNAME)
+    public static final PropertyDescriptor DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
+            .name(KEY_DEPENDENCIES_PATH)
+            .description("The path to the dependencies for the user's python code, whether in inline or file mode."
+                    + " This is optional as your code may not have additional dependencies. If you defined"
+                    + KEY_SCRIPT_PATH + " (so using file mode) and if " + KEY_DEPENDENCIES_PATH + " is not defined,"
+                    + " Logisland will scan a potential directory named " + DEFAULT_DEPENDENCIES_DIRNAME
+                    + " in the same directory where the script file resides and if it exists, any python code located"
+                    + " there will be loaded as dependency as needed.")
             .required(false)
             .addValidator(StandardValidators.createDirectoryExistsValidator(false, false))
             .build();
     
-    public static final PropertyDescriptor PYTHON_LOGISLAND_MODULES_PATH = new PropertyDescriptor.Builder()
-            .name("logisland.modules.path")
-            .description("The path to the directory containing the logisland python modules")
+    public static final PropertyDescriptor LOGISLAND_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
+            .name(KEY_LOGISLAND_DEPENDENCIES_PATH)
+            .description("The path to the directory containing the python dependencies shipped with logisland. You"
+                    + " should not have to tune this.")
             .defaultValue("src/main/resources/python") // Default path
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
@@ -91,9 +137,11 @@ public class PythonProcessor extends AbstractProcessor {
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors()
     {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(PYTHON_PROCESSOR_SCRIPT_PATH);
-        descriptors.add(PYTHON_PROCESSOR_DEPENDENCIES_PATH);
-        descriptors.add(PYTHON_LOGISLAND_MODULES_PATH);
+        descriptors.add(SCRIPT_CODE_INIT);
+        descriptors.add(SCRIPT_CODE_PROCESS);
+        descriptors.add(SCRIPT_PATH);
+        descriptors.add(DEPENDENCIES_PATH);
+        descriptors.add(LOGISLAND_DEPENDENCIES_PATH);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -105,9 +153,10 @@ public class PythonProcessor extends AbstractProcessor {
     {   
         // Extract needed configuration information
         try {
-            getPythonProcessorNameAndDirectory(context);
-            getPythonProcessorDependenciesPath(context);
-            getPythonLogislandModulesPath(context);
+            getScriptInitAndProcessCode(context);
+            getScriptFileNameAndDirectory(context);
+            getDependenciesPath(context);
+            getLogislandDependenciesPath(context);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }       
@@ -119,7 +168,7 @@ public class PythonProcessor extends AbstractProcessor {
         // Get config parameters
         getConfigParameters(context);
         
-        logger.info("Initializing python processor: " + pythonProcessorScriptPath);
+        logger.info("Initializing python processor: " + scriptPath);
         
         // Load necessary logisland python modules
         loadLogislandPythonModules();
@@ -130,7 +179,7 @@ public class PythonProcessor extends AbstractProcessor {
         }
               
         // Load processor script
-        pythonInterpreter.execfile(pythonProcessorScriptPath);
+        pythonInterpreter.execfile(scriptPath);
 
         /**
          * Instantiate and init the processor python object
@@ -143,7 +192,7 @@ public class PythonProcessor extends AbstractProcessor {
          * pyProcessor.init(context)
          */
 
-        pythonInterpreter.exec("pyProcessor = " + pythonProcessorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
+        pythonInterpreter.exec("pyProcessor = " + processorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
         pyProcessor = pythonInterpreter.get("pyProcessor");
         
         // Check that the python class is inheriting from AbstractProcessor python class
@@ -154,7 +203,7 @@ public class PythonProcessor extends AbstractProcessor {
         {
             // This is not a python logisland processor
             throw new RuntimeException("Not a logisland python processor class: " +
-                    pythonProcessorName + " does not inherits from AbstractProcessor python class" );
+                    processorName + " does not inherits from AbstractProcessor python class" );
         }
 
         pythonInterpreter.set("context", context);
@@ -172,7 +221,7 @@ public class PythonProcessor extends AbstractProcessor {
         // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
         // python modules. A potential way of doing this seems to be the usage of sys.meta_path
         pythonInterpreter.exec("import sys"); // Allows to call next sys.path.append
-        pythonInterpreter.exec("sys.path.append('" + pythonLogislandModulesPath + "')");
+        pythonInterpreter.exec("sys.path.append('" + logislandDependenciesPath + "')");
     }
     
     /**
@@ -180,9 +229,9 @@ public class PythonProcessor extends AbstractProcessor {
      */
     private void loadPythonProcessorDependencies()
     {
-        logger.info("Using python processor dependencies under: " + pythonProcessorDependenciesPath);
+        logger.info("Using python processor dependencies under: " + dependenciesPath);
         // 'import sys' has already been called in loadLogislandPythonModules, so just add the path to sys.path
-        pythonInterpreter.exec("sys.path.append('" + pythonProcessorDependenciesPath + "')");
+        pythonInterpreter.exec("sys.path.append('" + dependenciesPath + "')");
     }
     
     /**
@@ -190,9 +239,15 @@ public class PythonProcessor extends AbstractProcessor {
      * @param context Logisland context
      * @throws Exception
      */
-    private void getPythonProcessorNameAndDirectory(ProcessContext context) throws Exception
+    private void getScriptFileNameAndDirectory(ProcessContext context) throws Exception
     {
-        String configPythonProcessorScriptPath = context.getProperty(PYTHON_PROCESSOR_SCRIPT_PATH).asString();
+        String configPythonProcessorScriptPath = context.getPropertyValue(SCRIPT_PATH).asString();
+        
+        if (configPythonProcessorScriptPath == null)
+        {
+            // If this is empty then init and process code must have been used...
+            return;
+        }
         
         File processorFile = null;
         try {
@@ -210,7 +265,7 @@ public class PythonProcessor extends AbstractProcessor {
         /**
          * Replace path with absolute path name
          */
-        this.pythonProcessorScriptPath = processorFile.getAbsolutePath();
+        this.scriptPath = processorFile.getAbsolutePath();
         
         /**
          * Get the directory in which resides the python processor script file
@@ -221,7 +276,7 @@ public class PythonProcessor extends AbstractProcessor {
         {
             parentFile = new File(".");
         }
-        this.pythonProcessorDirectoryPath = parentFile.getAbsolutePath();
+        this.scriptDirectory = parentFile.getAbsolutePath();
         
         /**
          * Get the name of the python processor script file
@@ -239,7 +294,9 @@ public class PythonProcessor extends AbstractProcessor {
             throw new Exception("Invalid python porcessor script path: " + configPythonProcessorScriptPath);
         }
         
-        this.pythonProcessorName =  processorFileName.substring(0, processorFileName.length()-3);
+        this.processorName =  processorFileName.substring(0, processorFileName.length()-3);
+        
+        useScriptFile = true;
     }
     
     /**
@@ -247,39 +304,43 @@ public class PythonProcessor extends AbstractProcessor {
      * @param context Logisland context
      * @throws Exception
      */
-    private void getPythonProcessorDependenciesPath(ProcessContext context) throws Exception
+    private void getDependenciesPath(ProcessContext context) throws Exception
     {
-        String configPythonProcessorDependenciesPath = context.getProperty(PYTHON_PROCESSOR_DEPENDENCIES_PATH).asString();
+        String configPythonProcessorDependenciesPath = context.getPropertyValue(DEPENDENCIES_PATH).asString();
         
         /**
-         * If no dependences path is given, use the default one which is the a directory named
-         * DEFAULT_DEPENDENCIES_DIRNAME at the same location of the python processor script and us it if it exists,
-         * otherwise use the specified one
+         * If a dependencies path is provided, just use it.
+         * If no dependencies path is not given and if a script path is used, use the default dependencies path which is
+         * e directory named DEFAULT_DEPENDENCIES_DIRNAME at the same location of the python processor script and us it
+         * if it exists.
          */
         if (configPythonProcessorDependenciesPath == null)
         {
-            this.pythonProcessorDependenciesPath = this.pythonProcessorDirectoryPath + File.separator + DEFAULT_DEPENDENCIES_DIRNAME;
-            logger.info("No python processor dependencies path specified, using default one: " + pythonProcessorDependenciesPath);
-            
-            File dependenciesDir = null;
-            try {
-                dependenciesDir = new File(pythonProcessorDependenciesPath);
-            } catch (NullPointerException npe)
+            if (useScriptFile)
             {
-                // Cannot happen in fact...
-                throw new Exception("Null python processor dependencies path");
-            }
-
-            if (dependenciesDir.exists())
-            {
-                if (dependenciesDir.isDirectory())
+                this.dependenciesPath = this.scriptDirectory + File.separator + DEFAULT_DEPENDENCIES_DIRNAME;
+                logger.info("No python processor dependencies path specified, using default one: " + dependenciesPath);
+                
+                File dependenciesDir = null;
+                try {
+                    dependenciesDir = new File(dependenciesPath);
+                } catch (NullPointerException npe)
                 {
-                    hasDependencies = true;
+                    // Cannot happen in fact...
+                    throw new Exception("Null python processor dependencies path");
                 }
-                else
+    
+                if (dependenciesDir.exists())
                 {
-                    // Exists but is a file !! Strange...
-                    logger.info(pythonProcessorDependenciesPath + " is a file, not a directory");
+                    if (dependenciesDir.isDirectory())
+                    {
+                        hasDependencies = true;
+                    }
+                    else
+                    {
+                        // Exists but is a file !! Strange...
+                        logger.info(dependenciesPath + " is a file, not a directory");
+                    }
                 }
             }
         }
@@ -301,21 +362,32 @@ public class PythonProcessor extends AbstractProcessor {
                 throw new Exception("Python processor dependencies path is not a directory: " + configPythonProcessorDependenciesPath);
             }
             
-            this.pythonProcessorDependenciesPath = dependenciesDir.getAbsolutePath();
+            this.dependenciesPath = dependenciesDir.getAbsolutePath();
             hasDependencies = true;
         }
     }
     
     /**
-     * Gets the directory containing the logisland python modules (delivered with logisland)
+     * Gets the directory containing the logisland python dependencies (shipped with logisland)
      * @param context Logisland context
      * @throws Exception
      */
-    private void getPythonLogislandModulesPath(ProcessContext context) throws Exception
+    private void getLogislandDependenciesPath(ProcessContext context) throws Exception
     {
         // TODO: can this be found with correct default value poiting to resources in jar file  
-        pythonLogislandModulesPath = context.getProperty(PYTHON_LOGISLAND_MODULES_PATH).asString();
-        logger.info("Using python logisland modules path: " + pythonLogislandModulesPath);
+        logislandDependenciesPath = context.getPropertyValue(LOGISLAND_DEPENDENCIES_PATH).asString();
+        logger.info("Using python logisland dependencies path: " + logislandDependenciesPath);
+    }
+    
+    /**
+     * Gets the python processor init and process methods code
+     * @param context Logisland context
+     * @throws Exception
+     */
+    private void getScriptInitAndProcessCode(ProcessContext context) throws Exception
+    {
+        scriptCodeInit = context.getPropertyValue(SCRIPT_CODE_INIT).asString();
+        scriptCodeProcess = context.getPropertyValue(SCRIPT_CODE_PROCESS).asString();        
     }
 
     @Override
@@ -337,15 +409,6 @@ public class PythonProcessor extends AbstractProcessor {
     }
     
     @Override
-    public Collection<Record> process(ProcessContext context, Record record) {
-        
-        logger.debug("Processing mono record: " + record);
-        
-        // TODO call python processor code
-        return process(context, Collections.singleton(record));
-    }
-    
-    @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
 
         logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
@@ -356,13 +419,68 @@ public class PythonProcessor extends AbstractProcessor {
          */
         if (initDone)
         {
-            /**
-             * pyProcessor.onPropertyModified(context, oldValue, newValue)
-             */
-            pythonInterpreter.set("descriptor", descriptor);
-            pythonInterpreter.set("oldValue", oldValue);
-            pythonInterpreter.set("newValue", newValue);
-            pythonInterpreter.exec("pyProcessor.onPropertyModified(context, oldValue, newValue)");
+            if (useScriptFile)
+            {
+                /**
+                 * pyProcessor.onPropertyModified(context, oldValue, newValue)
+                 */
+                pythonInterpreter.set("descriptor", descriptor);
+                pythonInterpreter.set("oldValue", oldValue);
+                pythonInterpreter.set("newValue", newValue);
+                pythonInterpreter.exec("pyProcessor.onPropertyModified(context, oldValue, newValue)");
+            } else
+            {
+                // TODO
+                logger.warn("Dynamic update of configuration properties is not supported when not using python"
+                        + " script file");
+            }
         }
+    }
+    
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+
+        logger.info("customValidate");
+
+        /**
+         * Either script file mode or inline mode, not both
+         */
+        if (context.getPropertyValue(SCRIPT_CODE_PROCESS).isSet())
+        {
+            // inline mode, 
+            if (context.getPropertyValue(SCRIPT_PATH).isSet()) {
+                // attempt to use both modes -> error
+                validationResults.add(
+                        new ValidationResult.Builder()
+                            .explanation("You must declare " + SCRIPT_CODE_PROCESS.getName() + " or " + SCRIPT_PATH.getName() + " but not both")
+                            .valid(false)
+                            .build());
+            }
+        } else
+        {
+            // Not inline mode, check this will be file mode
+            if (!context.getPropertyValue(SCRIPT_PATH).isSet()) {
+                // no python code provided
+                validationResults.add(
+                        new ValidationResult.Builder()
+                            .explanation("No python code declared. Use " + SCRIPT_CODE_PROCESS.getName() + " or " + SCRIPT_PATH.getName() + " to define some python code")
+                            .valid(false)
+                            .build());
+            } else
+            {
+                // Be sure that other inline mode config properties are not set
+                if (context.getPropertyValue(SCRIPT_CODE_INIT).isSet()) {
+                    // init defined but not process!
+                    validationResults.add(
+                            new ValidationResult.Builder()
+                                .explanation("Inline mode requires at least " + SCRIPT_CODE_PROCESS.getName() + " to be defined")
+                                .valid(false)
+                                .build());
+                }
+            }
+        }
+      
+        return validationResults;
     }
 }

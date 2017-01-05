@@ -73,7 +73,7 @@ public class GenderTaggerPythonProcessorTest {
     public void testGenderTagger() {
         
         final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
-        testRunner.setProperty(PythonProcessor.PYTHON_PROCESSOR_SCRIPT_PATH, PYTHON_PROCESSOR);
+        testRunner.setProperty(PythonProcessor.SCRIPT_PATH, PYTHON_PROCESSOR);
         testRunner.assertValid();
         int nRecords = recordAuthorsToGender.size();
         /**

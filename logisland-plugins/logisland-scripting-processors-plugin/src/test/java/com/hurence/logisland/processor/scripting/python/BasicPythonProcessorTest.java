@@ -36,7 +36,7 @@ public class BasicPythonProcessorTest {
     @Test
     public void testSimple() {
         final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
-        testRunner.setProperty(PythonProcessor.PYTHON_PROCESSOR_SCRIPT_PATH, PYTHON_PROCESSOR);
+        testRunner.setProperty(PythonProcessor.SCRIPT_PATH, PYTHON_PROCESSOR);
         testRunner.assertValid();
         Record record = new StandardRecord("simple_record");
         record.setStringField("java_field", "java_field_value");
@@ -45,7 +45,6 @@ public class BasicPythonProcessorTest {
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
-
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldExists("java_field");
