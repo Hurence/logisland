@@ -47,7 +47,7 @@ public class RemoveFields extends AbstractProcessor {
                 });
             }
         }catch (Exception ex){
-            logger.info("issue while trying to remove field list {} :  {}",
+            logger.warn("issue while trying to remove field list {} :  {}",
                     context.getPropertyValue(FIELDS_TO_REMOVE).asString(),
                     ex.toString());
         }

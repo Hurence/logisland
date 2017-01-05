@@ -41,7 +41,7 @@ public class ParseProperties extends AbstractProcessor {
 
 	@Override
 	public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-		String property = context.getPropertyValue(PROPERTIES_FIELD).getRawValue().toString();
+		String property = context.getPropertyValue(PROPERTIES_FIELD).asString();
 		for (Record record : records) {
 			extractAndParsePropertiesField(record, property);
 		}

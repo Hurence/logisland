@@ -92,7 +92,7 @@ public class SplitText extends AbstractProcessor {
             .build();
 
     @Override
-    public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(VALUE_REGEX);
         descriptors.add(VALUE_FIELDS);
@@ -209,25 +209,6 @@ public class SplitText extends AbstractProcessor {
                                 if (content != null) {
                                     outputRecord.setStringField(fieldName, content.replaceAll("\"", ""));
                                 }
-                            }
-
-
-                            // TODO removeField this ugly stuff with EL
-                            if (outputRecord.getField("date") != null && outputRecord.getField("time") != null) {
-                                String eventTimeString = outputRecord.getField("date").asString() +
-                                        " " +
-                                        outputRecord.getField("time").asString();
-
-                                try {
-                                    Date eventDate = DateUtil.parse(eventTimeString);
-
-                                    if (eventDate != null) {
-                                        outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
-                                    }
-                                } catch (Exception e) {
-                                    logger.warn("unable to parse date {}", eventTimeString);
-                                }
-
                             }
 
 
