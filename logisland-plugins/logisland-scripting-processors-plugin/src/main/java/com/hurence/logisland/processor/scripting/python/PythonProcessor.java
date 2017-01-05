@@ -61,7 +61,7 @@ public class PythonProcessor extends AbstractProcessor {
     private boolean initDone = false;
 
     public static final PropertyDescriptor PYTHON_PROCESSOR_SCRIPT_PATH = new PropertyDescriptor.Builder()
-            .name("python_processor.python_processor_script_path")
+            .name("script.path")
             .description("The path to the user's python processor script")
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
@@ -71,7 +71,7 @@ public class PythonProcessor extends AbstractProcessor {
     private static final String DEFAULT_DEPENDENCIES_DIRNAME = "dependencies";
     
     public static final PropertyDescriptor PYTHON_PROCESSOR_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
-            .name("python_processor.python_processor_dependencies_path")
+            .name("dependencies.path")
             .description("The path to the dependencies for the user's python processor script. If not set, the following"
                     + " default directory is used: <directory_holding_processor_script>"
                     + File.separator + DEFAULT_DEPENDENCIES_DIRNAME)
@@ -80,7 +80,7 @@ public class PythonProcessor extends AbstractProcessor {
             .build();
     
     public static final PropertyDescriptor PYTHON_LOGISLAND_MODULES_PATH = new PropertyDescriptor.Builder()
-            .name("python_processor.python_logisland_modules_path")
+            .name("logisland.modules.path")
             .description("The path to the directory containing the logisland python modules")
             .defaultValue("src/main/resources/python") // Default path
             .required(true)
