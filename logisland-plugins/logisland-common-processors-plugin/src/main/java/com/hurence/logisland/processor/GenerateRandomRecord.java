@@ -36,7 +36,7 @@ import java.util.*;
 
 @Tags({"record", "avro", "generator"})
 @CapabilityDescription("This is a processor that make random records given an Avro schema")
-public class RandomRecordGenerator extends AbstractProcessor {
+public class GenerateRandomRecord extends AbstractProcessor {
 
 
     static final long serialVersionUID = -1L;
@@ -64,7 +64,7 @@ public class RandomRecordGenerator extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    private static Logger logger = LoggerFactory.getLogger(RandomRecordGenerator.class);
+    private static Logger logger = LoggerFactory.getLogger(GenerateRandomRecord.class);
 
     private static String RECORD_TYPE = "random_record";
 

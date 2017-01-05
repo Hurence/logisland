@@ -19,6 +19,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.record.StandardRecord;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Exception indicating that a failure or early completion condition was
@@ -44,4 +45,13 @@ public class ProcessException extends java.lang.RuntimeException {
         this.errorRecords = errorRecords;
     }
 
+    /**
+     * Create a new {@link ProcessException} based on a message string
+     *
+     * @param message the error message for this exception
+     */
+    public ProcessException(String message) {
+        super(message);
+        this.errorRecords = Collections.emptyList();
+    }
 }

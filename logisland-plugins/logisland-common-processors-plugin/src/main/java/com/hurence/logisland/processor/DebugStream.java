@@ -36,9 +36,9 @@ import java.util.List;
 
 @Tags({"record", "debug"})
 @CapabilityDescription("This is a processor that logs incoming records")
-public class RecordDebugger extends AbstractProcessor {
+public class DebugStream extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(RecordDebugger.class);
+    private static Logger logger = LoggerFactory.getLogger(DebugStream.class);
 
 
     public static final AllowableValue JSON = new AllowableValue("json", "Json serialization",
