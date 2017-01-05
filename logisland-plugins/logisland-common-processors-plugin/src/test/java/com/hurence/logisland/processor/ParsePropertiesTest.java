@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;

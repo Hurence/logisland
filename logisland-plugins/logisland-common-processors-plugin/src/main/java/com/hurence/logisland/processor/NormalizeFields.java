@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.record.Record;
@@ -15,6 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Tags({"record", "fields", "normalizer"})
+@CapabilityDescription("Changes the name of a field according to a provided name mapping\n" +
+        "...")
 public class NormalizeFields extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

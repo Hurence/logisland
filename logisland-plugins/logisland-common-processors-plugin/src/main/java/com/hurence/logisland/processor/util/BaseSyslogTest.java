@@ -1,9 +1,10 @@
-package com.hurence.logisland.processor;
+package com.hurence.logisland.processor.util;
 
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -12,6 +13,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.Assert;
 
 import java.io.*;
 import java.net.URI;
@@ -90,7 +92,7 @@ public abstract class BaseSyslogTest {
 		// Check we found them all
 		Set<String> schemaFields = getSchemaFields(schema);
 		schemaFields.removeAll(allFieldsNames);
-		assertEquals("Missing fields: " + schemaFields, 0, schemaFields.size());
+		Assert.assertEquals("Missing fields: " + schemaFields, 0, schemaFields.size());
 	}
 
 	protected void printFields(String message, MockRecord out) {
