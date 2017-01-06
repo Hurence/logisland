@@ -33,8 +33,32 @@ import org.python.util.PythonInterpreter;
 import java.io.File;
 import java.util.*;
 
+/**
+ * 
+ * !!! WARNING !!!!
+ * The python processor is currently an experimental feature : it is delivered as is, with the current set of features
+ * and is subject to modifications in API or anything else in further logisland releases without warnings.
+ * 
+ * So far identified list of things still to be done:
+ * - see TODOs here
+ * - test usage in real situation (.yml config file usage). To also validate logsiland dependencies delivered. 
+ * - both modes: configuration parameters of the python processor (with customvalidation possibilities?)
+ * - inline mode: default imports list
+ * - inline mode: user imports  usage, init usage (access context?))
+ * - inline mode: real process code
+ * - onPropertyModified up to python code (test)
+ * - online doc (complete tags here (@Tags, @CapabilityDescription), add some? ),
+ * - more tests
+ * - doc for tutorial (inline?, file? , both?)
+ * - validate thread safe behaviour !!!
+ */
+
 @Tags({"scripting", "python"})
-@CapabilityDescription("This processor allows to implement and run a processor written in python."
+@CapabilityDescription(
+        " !!!! WARNING !!!!\n\nThe python processor is currently an experimental feature : it is delivered as is, with the"
+        + " current set of features and is subject to modifications in API or anything else in further logisland releases"
+        + " without warnings.\n\n"
+        + "This processor allows to implement and run a processor written in python."
         + "This can be done in 2 ways. Either defining init and process method codes as configuration property values or"
         + " poiting to a python module script file with another configuration property value. Directly defining methods is"
         + " called the inline mode whereas using a script file is called the file mode. Both methods are mutually"
@@ -44,6 +68,9 @@ import java.util.*;
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
+    
+    // Python code for import statements
+    private String scriptCodeImports = null;
     
     // Python code for init method
     private String scriptCodeInit = null;
@@ -79,11 +106,18 @@ public class PythonProcessor extends AbstractProcessor {
     // script.process properties
     private boolean useScriptFile = false;
     
+    private static final String KEY_SCRIPT_CODE_IMPORTS = "script.code.imports";
     private static final String KEY_SCRIPT_CODE_INIT = "script.code.init";
     private static final String KEY_SCRIPT_CODE_PROCESS = "script.code.process";
     private static final String KEY_SCRIPT_PATH = "script.path";
     private static final String KEY_DEPENDENCIES_PATH = "dependencies.path";
     private static final String KEY_LOGISLAND_DEPENDENCIES_PATH = "logisland.dependencies.path";
+    
+    public static final PropertyDescriptor SCRIPT_CODE_IMPORTS = new PropertyDescriptor.Builder()
+            .name(KEY_SCRIPT_CODE_IMPORTS)
+            .description("For inline mode, this is the pyhton code that should hold the import statements if required")
+            .required(false)
+            .build();
 
     public static final PropertyDescriptor SCRIPT_CODE_INIT = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_CODE_INIT)
@@ -132,11 +166,18 @@ public class PythonProcessor extends AbstractProcessor {
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
+    
+    // Default import statements automatically done in inle mode, before potential user ones are done.
+    // TODO Also import StandardProcessContext, Processor (see when using/testing init method)
+    private static final String DEFAULT_INLINE_MODE_IMPORTS =
+            "from AbstractProcessor import AbstractProcessor\n" +
+            "from com.hurence.logisland.record import StandardRecord"; 
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors()
     {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(SCRIPT_CODE_IMPORTS);
         descriptors.add(SCRIPT_CODE_INIT);
         descriptors.add(SCRIPT_CODE_PROCESS);
         descriptors.add(SCRIPT_PATH);
@@ -149,14 +190,14 @@ public class PythonProcessor extends AbstractProcessor {
     /**
      * Gets config parameters
      */
-    private void getConfigParameters(ProcessContext context)
+    private void getConfigParams(ProcessContext context)
     {   
         // Extract needed configuration information
         try {
-            getScriptInitAndProcessCode(context);
-            getScriptFileNameAndDirectory(context);
-            getDependenciesPath(context);
-            getLogislandDependenciesPath(context);
+            getInlineModeParams(context);
+            getFileModeParams(context);
+            getDependenciesPathParam(context);
+            getLogislandDependenciesPathParam(context);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }       
@@ -166,10 +207,8 @@ public class PythonProcessor extends AbstractProcessor {
     public void init(final ProcessContext context)
     {
         // Get config parameters
-        getConfigParameters(context);
-        
-        logger.info("Initializing python processor: " + scriptPath);
-        
+        getConfigParams(context);
+
         // Load necessary logisland python modules
         loadLogislandPythonModules();
         
@@ -177,37 +216,83 @@ public class PythonProcessor extends AbstractProcessor {
         {
             loadPythonProcessorDependencies();
         }
-              
-        // Load processor script
-        pythonInterpreter.execfile(scriptPath);
-
-        /**
-         * Instantiate and init the processor python object
-         * 
-         * Run python code:
-         *
-         * pyProcessor = MyProcessor()
-         * # Check that the python class is inheriting from AbstractProcessor python class
-         * isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)
-         * pyProcessor.init(context)
-         */
-
-        pythonInterpreter.exec("pyProcessor = " + processorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
-        pyProcessor = pythonInterpreter.get("pyProcessor");
         
-        // Check that the python class is inheriting from AbstractProcessor python class
-        pythonInterpreter.exec("isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)");
-        PyObject pyIsInheritingFromAbstractProcessor = pythonInterpreter.get("isInheritingFromAbstractProcessor");
-        boolean isInheritingFromAbstractProcessor = ((PyInteger) pyIsInheritingFromAbstractProcessor).asInt() != 0;
-        if (!isInheritingFromAbstractProcessor)
+        if (useScriptFile)
         {
-            // This is not a python logisland processor
-            throw new RuntimeException("Not a logisland python processor class: " +
-                    processorName + " does not inherits from AbstractProcessor python class" );
-        }
+            // File mode
+            
+            logger.info("Initializing python processor: " + scriptPath);
 
-        pythonInterpreter.set("context", context);
-        pythonInterpreter.exec("pyProcessor.init(context)");
+            // Load processor script
+            pythonInterpreter.execfile(scriptPath);
+    
+            /**
+             * Instantiate and init the processor python object
+             * 
+             * Run python code:
+             *
+             * pyProcessor = MyProcessor()
+             * # Check that the python class is inheriting from AbstractProcessor python class
+             * isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)
+             * pyProcessor.init(context)
+             */
+    
+            pythonInterpreter.exec("pyProcessor = " + processorName + "()" ); // Equivalent to "pyProcessor = MyProcessor()"
+            pyProcessor = pythonInterpreter.get("pyProcessor");
+            
+            // Check that the python class is inheriting from AbstractProcessor python class
+            pythonInterpreter.exec("isInheritingFromAbstractProcessor = issubclass(pyProcessor.__class__, AbstractProcessor)");
+            PyObject pyIsInheritingFromAbstractProcessor = pythonInterpreter.get("isInheritingFromAbstractProcessor");
+            boolean isInheritingFromAbstractProcessor = ((PyInteger) pyIsInheritingFromAbstractProcessor).asInt() != 0;
+            if (!isInheritingFromAbstractProcessor)
+            {
+                // This is not a python logisland processor
+                throw new RuntimeException("Not a logisland python processor class: " +
+                        processorName + " does not inherits from AbstractProcessor python class" );
+            }
+    
+            pythonInterpreter.set("context", context);
+            pythonInterpreter.exec("pyProcessor.init(context)");
+        } else
+        {
+            // Inline mode
+            
+            /**
+             * Do something like:
+             * 
+             * # Default imports
+             * import...
+             * 
+             * # User imports
+             * import....
+             * import...
+             * 
+             * # Call init user code if any
+             * init(context)
+             * 
+             * # Define process method once for all with code from the user
+             * def process(context, records):
+             *     ....
+             */
+
+            pythonInterpreter.exec(DEFAULT_INLINE_MODE_IMPORTS);
+
+            // Declare imports once for all if any
+            if (scriptCodeImports != null)
+            {
+                pythonInterpreter.exec(scriptCodeImports);
+            }
+
+            // Call init method code if any
+            if (scriptCodeInit != null)
+            {
+                pythonInterpreter.set("context", context);
+                pythonInterpreter.exec(scriptCodeInit);
+            }
+            
+            // Define the process method
+            pythonInterpreter.exec("def process(context, records):\n" + scriptCodeProcess);
+        }
         
         // Allow forwarding calls to onPropertyModified
         initDone = true;
@@ -217,9 +302,7 @@ public class PythonProcessor extends AbstractProcessor {
      * Loads the logisland python modules
      */
     private void loadLogislandPythonModules()
-    {
-        // TODO: this system to be reinforced or replaced by a security feature allowing to load only specific
-        // python modules. A potential way of doing this seems to be the usage of sys.meta_path
+    {       
         pythonInterpreter.exec("import sys"); // Allows to call next sys.path.append
         pythonInterpreter.exec("sys.path.append('" + logislandDependenciesPath + "')");
     }
@@ -235,11 +318,12 @@ public class PythonProcessor extends AbstractProcessor {
     }
     
     /**
+     * Gets parameters needed for file mode.
      * Gets the name and directory of the processor from the processor script file path of the configuration
      * @param context Logisland context
      * @throws Exception
      */
-    private void getScriptFileNameAndDirectory(ProcessContext context) throws Exception
+    private void getFileModeParams(ProcessContext context) throws Exception
     {
         String configPythonProcessorScriptPath = context.getPropertyValue(SCRIPT_PATH).asString();
         
@@ -304,7 +388,7 @@ public class PythonProcessor extends AbstractProcessor {
      * @param context Logisland context
      * @throws Exception
      */
-    private void getDependenciesPath(ProcessContext context) throws Exception
+    private void getDependenciesPathParam(ProcessContext context) throws Exception
     {
         String configPythonProcessorDependenciesPath = context.getPropertyValue(DEPENDENCIES_PATH).asString();
         
@@ -372,20 +456,21 @@ public class PythonProcessor extends AbstractProcessor {
      * @param context Logisland context
      * @throws Exception
      */
-    private void getLogislandDependenciesPath(ProcessContext context) throws Exception
+    private void getLogislandDependenciesPathParam(ProcessContext context) throws Exception
     {
-        // TODO: can this be found with correct default value poiting to resources in jar file  
+        // TODO: can this be found with correct default value pointing to resources in jar file? 
         logislandDependenciesPath = context.getPropertyValue(LOGISLAND_DEPENDENCIES_PATH).asString();
         logger.info("Using python logisland dependencies path: " + logislandDependenciesPath);
     }
     
     /**
-     * Gets the python processor init and process methods code
+     * Gets parameters needed for inline mode: imports, init and process methods code
      * @param context Logisland context
      * @throws Exception
      */
-    private void getScriptInitAndProcessCode(ProcessContext context) throws Exception
+    private void getInlineModeParams(ProcessContext context) throws Exception
     {
+        scriptCodeImports = context.getPropertyValue(SCRIPT_CODE_IMPORTS).asString();
         scriptCodeInit = context.getPropertyValue(SCRIPT_CODE_INIT).asString();
         scriptCodeProcess = context.getPropertyValue(SCRIPT_CODE_PROCESS).asString();        
     }
@@ -393,17 +478,33 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        logger.debug("Processing multi records: " + records);
+        logger.debug("Processing records: " + records);
 
         Collection<Record> outputRecords = null;
+        
+        if (useScriptFile)
+        {
+            // File mode
+             
+            /**
+             * Call process method of python processor script with the records we received
+             */
+            pythonInterpreter.set("context", context);
+            pythonInterpreter.set("records", records);
+            pythonInterpreter.exec("outputRecords = pyProcessor.process(context, records)");
+            outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+        } else
+        {
+            // Inline mode
 
-        /**
-         * Call process method of python processor script with the records we received
-         */
-        pythonInterpreter.set("context", context);
-        pythonInterpreter.set("records", records);
-        pythonInterpreter.exec("outputRecords = pyProcessor.process(context, records)");
-        outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+            /**
+             * Call process method of python processor script with the records we received
+             */
+            pythonInterpreter.set("context", context);
+            pythonInterpreter.set("records", records);
+            pythonInterpreter.exec("outputRecords = process(context, records)");
+            outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+        }
 
         return outputRecords;
     }
@@ -470,11 +571,21 @@ public class PythonProcessor extends AbstractProcessor {
             } else
             {
                 // Be sure that other inline mode config properties are not set
+
                 if (context.getPropertyValue(SCRIPT_CODE_INIT).isSet()) {
                     // init defined but not process!
                     validationResults.add(
                             new ValidationResult.Builder()
                                 .explanation("Inline mode requires at least " + SCRIPT_CODE_PROCESS.getName() + " to be defined")
+                                .valid(false)
+                                .build());
+                }
+                
+                if (context.getPropertyValue(SCRIPT_CODE_IMPORTS).isSet()) {
+                    // init defined but not process!
+                    validationResults.add(
+                            new ValidationResult.Builder()
+                                .explanation("Inline mode requires at least " + SCRIPT_CODE_IMPORTS.getName() + " to be defined")
                                 .valid(false)
                                 .build());
                 }

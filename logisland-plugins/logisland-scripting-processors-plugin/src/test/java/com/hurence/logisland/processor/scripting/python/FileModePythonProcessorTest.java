@@ -25,11 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test the ability of calling a python processor and executing some python code in the processor
+ * Test the ability of calling a python processor loaded from a script file (file mode)
+ * and executing some python code in the processor.
  */
-public class BasicPythonProcessorTest {
+public class FileModePythonProcessorTest {
     
-    private static Logger logger = LoggerFactory.getLogger(BasicPythonProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(FileModePythonProcessorTest.class);
     
     private static final String PYTHON_PROCESSOR = "./src/main/python/processors/basic/BasicProcessor.py";
 

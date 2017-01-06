@@ -5,7 +5,7 @@ from com.hurence.logisland.record import StandardRecord
 # NLTK dependencies are by default searched in the dependencies directory
 # (conventional name) at the same location of the python processor script
 # This can be changed using the python_processor.python_processor_dependencies_path
-# config property of the java python processor poiting to this current script
+# config property of the java python processor pointing to this current script
 from nltk.corpus import names
 import nltk.data
 import random
@@ -29,10 +29,6 @@ def gender_features(word):
 # python class: AbstractProcessor
 #
 class GenderTaggerProcessor(AbstractProcessor):
-    
-    # Features are the 2 last characters of the first name
-    #def gender_features(self, word):
-    #    return {'suffix1': word[-2] , 'suffix2': word[-1]}
 
     def initClassifier(self):
         
