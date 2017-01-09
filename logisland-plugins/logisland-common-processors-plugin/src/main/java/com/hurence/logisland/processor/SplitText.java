@@ -35,14 +35,17 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 
 @Tags({"parser", "regex", "log", "record"})
 @CapabilityDescription("This is a processor that is used to split a String into fields according to a given Record mapping")
 @SeeAlso(value = {SplitTextMultiline.class}, classNames = {"com.hurence.logisland.processor.SplitTextMultiline"})
-@DynamicProperty(name = "alternative.key.regex",
+@DynamicProperty(name = "alternative regex & mapping",
         supportsExpressionLanguage = true,
         value = "another regex that could match",
-        description = "this regex will be tried if the main one has'nt matched")
+        description = "this regex will be tried if the main one has'nt matched " +
+                "must be in the form alt.value.regex.1 and alt.value.fields.1")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;
@@ -96,6 +99,25 @@ public class SplitText extends AbstractProcessor {
             .defaultValue("true")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
+
+    private class AlternativeMappingPattern{
+
+        private String[] mapping;
+        private Pattern pattern;
+
+        AlternativeMappingPattern(String mapping,Pattern pattern) {
+            this.mapping = mapping.split(",");
+            this.pattern = pattern;
+        }
+
+        public String[] getMapping() {
+            return mapping;
+        }
+
+        public Pattern getPattern() {
+            return pattern;
+        }
+    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -171,21 +193,6 @@ public class SplitText extends AbstractProcessor {
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 
 
-        /**
-         * list alternative regex
-         */
-        List<Pattern> alternativeRegexList = new ArrayList<>();
-        // loop over dynamic properties to add alternative regex
-        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
-            if (!entry.getKey().isDynamic()) {
-                continue;
-            }
-
-            final String type = entry.getValue().toLowerCase();
-            final Pattern alternativeValueRegex = Pattern.compile(valueRegexString);
-            alternativeRegexList.add(alternativeValueRegex);
-        }
-
 
         /**
          * try to match the regexp to create an event
@@ -235,17 +242,23 @@ public class SplitText extends AbstractProcessor {
                             extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher);
                         } else {
                             // try the other Regex
+                            List<AlternativeMappingPattern> alternativeRegexList =
+                                    getAlternativePatterns(context, valueRegexString);
                             boolean hasMatched = false;
-                            for( Pattern alternativeRegex : alternativeRegexList){
-                                Matcher alternativeValueMatcher = alternativeRegex.matcher(value);
-                                if(alternativeValueMatcher.matches()){
-                                    extractValueFields(valueFields, keepRawContent, outputRecord, alternativeValueMatcher);
+                            for (AlternativeMappingPattern alternativeMatchingRegex : alternativeRegexList) {
+                                Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value);
+                                if (alternativeValueMatcher.matches()) {
+                                    extractValueFields(
+                                            alternativeMatchingRegex.getMapping(),
+                                            keepRawContent,
+                                            outputRecord,
+                                            alternativeValueMatcher);
                                     hasMatched = true;
                                     break;
                                 }
                             }
                             // if we don't have any matches output an error
-                            if(!hasMatched){
+                            if (!hasMatched) {
                                 outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "");
                                 outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                             }
@@ -271,6 +284,32 @@ public class SplitText extends AbstractProcessor {
         });
 
         return outputRecords;
+    }
+
+    private List<AlternativeMappingPattern> getAlternativePatterns(ProcessContext context, String valueRegexString) {
+        /**
+         * list alternative regex
+         */
+        List<AlternativeMappingPattern> alternativeMappingRegex = new ArrayList<>();
+        // loop over dynamic properties to add alternative regex
+        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
+            if (!entry.getKey().isDynamic()) {
+                continue;
+            }
+            if(!entry.getKey().getName().toLowerCase().contains("alt.value.fields")){
+                continue;
+            }
+            final String patternPropertyKey = entry.getKey().getName().toLowerCase().replace("fields", "regex");
+
+            if(context.getPropertyValue(patternPropertyKey) != null){
+                final String alternativeRegexString = context.getPropertyValue(patternPropertyKey).asString();
+                final String mapping = entry.getValue();
+                final Pattern pattern = Pattern.compile(alternativeRegexString);
+                alternativeMappingRegex.add(new AlternativeMappingPattern(mapping, pattern));
+            }
+
+        }
+        return alternativeMappingRegex;
     }
 
     private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher) {

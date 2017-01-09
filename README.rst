@@ -26,8 +26,8 @@ The `documentation <http://logisland.readthedocs.io/en/latest/index.html>`_  als
 Browse the `Java API documentation <http://logisland.readthedocs.io/en/latest/_static/apidocs/>`_ for more information.
 
 
-Build and deploy
-----------------
+Build
+-----
 to build from the source just clone and package
 
 .. code-block::
@@ -35,18 +35,6 @@ to build from the source just clone and package
     git clone git@github.com:Hurence/logisland.git
     cd logisland
     mvn install
-    
-to deploy artifacts (if you're allowed to), follow this guide `release to OSS Sonatype with maven <http://central.sonatype.org/pages/apache-maven.html>`_
-
-.. code-block::
-    
-    mvn versions:set -DnewVersion=0.9.7-SNAPSHOT
-    mvn license:format
-    mvn -DperformRelease=true clean deploy
-    mvn versions:commit
-
-follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
-    
 
 
 Basic Workflow

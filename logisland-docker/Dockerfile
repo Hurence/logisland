@@ -84,12 +84,12 @@ EXPOSE 8080
 EXPOSE 3000
 
 # Log-Island
-COPY logisland-0.9.7-bin.tar.gz /usr/local/logisland-0.9.7-bin.tar.gz
+COPY logisland-0.9.7-SNAPSHOT-bin.tar.gz /usr/local/logisland-0.9.7-SNAPSHOT-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-0.9.7-bin.tar.gz; \
-    ln -s /usr/local/logisland-0.9.7 /usr/local/logisland; \
+    tar -xzf logisland-0.9.7-SNAPSHOT-bin.tar.gz; \
+    ln -s /usr/local/logisland-0.9.7-SNAPSHOT /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/logisland-0.9.7-bin.tar.gz
+    rm -f /usr/local/logisland-0.9.7-SNAPSHOT-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
 
 

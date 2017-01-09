@@ -678,7 +678,7 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :header: "Name","Value","Description","EL"
    :widths: 20,20,40,10
 
-   "alternative.key.regex", "another regex that could match", "this regex will be tried if the main one has'nt matched", **true**
+   "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has'nt matched must be in the form alt.value.regex.1 and alt.value.fields.1", **true**
 
 See Also:
 _________
@@ -754,7 +754,7 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :header: "Name","Value","Description","EL"
    :widths: 20,20,40,10
 
-   "alternative.key.regex", "another regex that could match", "this regex will be tried if the main one has'nt matched", **true**
+   "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has'nt matched must be in the form alt.value.regex.1 and alt.value.fields.1", **true**
 
 See Also:
 _________

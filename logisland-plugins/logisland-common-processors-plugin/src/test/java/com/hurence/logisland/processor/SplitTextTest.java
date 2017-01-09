@@ -170,10 +170,7 @@ public class SplitTextTest {
 
 
     @Test
-    @Ignore
-    public void testAlternativeMatch() {
-
-
+    public void testAlternativeSingleMatch() {
         List<String> logs = new ArrayList<>();
         logs.add("10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
         logs.add("10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/limits/moderato?siteCode=LOGISLAND_WEB HTTP/1.1\" 200 52");
@@ -184,10 +181,10 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
         testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
         testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
-        testRunner.setProperty("value.regex.1", "(\\S+)\\s*(\\S+)\\s*(\\S+)");
-        testRunner.setProperty("value.fields.1", "src_ip,http_status,bytes_out");
+        testRunner.setProperty("alt.value.regex.1", "(\\S+)\\s*(\\S+)\\s*(\\S+)");
+        testRunner.setProperty("alt.value.fields.1", "src_ip,http_status,bytes_out");
         testRunner.assertValid();
-       // testRunner.enqueue(logs.toArray(Record[]());
+        logs.forEach(l -> testRunner.enqueue(null, l));
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
@@ -195,9 +192,86 @@ public class SplitTextTest {
         testRunner.assertOutputErrorCount(0);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldNotExists("src_ip");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
+        out.assertFieldExists("src_ip");
+        out.assertFieldNotExists("src_ip2");
+        out.assertFieldEquals("src_ip", "10.3.10.134");
+        out.assertFieldEquals("http_method", "GET");
+        out.assertFieldEquals("bytes_out", 239);
+        out.assertFieldEquals("http_query", "/usr/rest/bank/purses?activeOnly=true");
+        out.assertFieldEquals("http_version", "HTTP/1.1");
+        out.assertFieldEquals("identd", "-");
+        out.assertFieldEquals("user", "-");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1 200 239");
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
+        out.assertRecordSizeEquals(9);
+
+        out = testRunner.getOutputRecords().get(2);
+        out.assertFieldNotExists("http_method");
+        out.assertFieldNotExists("http_method");
+        out.assertFieldEquals("src_ip", "10.3.10.134");
+        out.assertFieldEquals("http_status", 200);
+        out.assertFieldEquals("bytes_out", 52);
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 200 52");
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
+        out.assertRecordSizeEquals(4);
+    }
+
+    @Test
+    public void testAlternativeMultiMatch() {
+        List<String> logs = new ArrayList<>();
+        logs.add("10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
+        logs.add("[24/Jul/2016:08:45:29 +0200] 52");
+        logs.add("10.3.10.134 200 52");
+
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
+        testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
+        testRunner.setProperty("alt.value.regex.1", "(\\S+)\\s*(\\S+)\\s*(\\S+)");
+        testRunner.setProperty("alt.value.fields.1", "src_ip,http_status,bytes_out");
+        testRunner.setProperty("alt.value.regex.2", "\\[([\\w:/]+\\s[+\\-]\\d{4})\\]\\s+(\\S*)");
+        testRunner.setProperty("alt.value.fields.2", "record_time,bytes_out");
+        testRunner.assertValid();
+        testRunner.enqueue(logs);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputErrorCount(0);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldExists("src_ip");
+        out.assertFieldNotExists("src_ip2");
+        out.assertFieldEquals("src_ip", "10.3.10.134");
+        out.assertFieldEquals("http_method", "GET");
+        out.assertFieldEquals("bytes_out", 239);
+        out.assertFieldEquals("http_query", "/usr/rest/bank/purses?activeOnly=true");
+        out.assertFieldEquals("http_version", "HTTP/1.1");
+        out.assertFieldEquals("identd", "-");
+        out.assertFieldEquals("user", "-");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1 200 239");
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
+        out.assertRecordSizeEquals(9);
+
+        out = testRunner.getOutputRecords().get(1);
+        out.assertFieldNotExists("http_query");
+        out.assertFieldNotExists("http_method");
+        out.assertFieldEquals(FieldDictionary.RECORD_TIME, 1469342729000L);
+        out.assertFieldNotExists("http_status");
+        out.assertFieldEquals("bytes_out", 52);
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "[24/Jul/2016:08:45:29 +0200] 52");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(2);
+
+        out = testRunner.getOutputRecords().get(2);
+        out.assertFieldNotExists("http_method");
+        out.assertFieldNotExists("http_query");
+        out.assertFieldEquals("src_ip", "10.3.10.134");
+        out.assertFieldEquals("http_status", 200);
+        out.assertFieldEquals("bytes_out", 52);
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 200 52");
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
+        out.assertRecordSizeEquals(4);
     }
 }

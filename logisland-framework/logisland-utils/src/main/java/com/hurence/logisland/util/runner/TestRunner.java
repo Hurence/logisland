@@ -158,6 +158,20 @@ public interface TestRunner {
      */
     void enqueue(Record... Records);
 
+    /**
+     * Enqueues the given Records into the Processor's input queue
+     *
+     * @param values to enqueue
+     */
+    void enqueue(List<String> values);
+
+    /**
+     * Enqueues the given list of string as Records
+     *
+     * @param values
+     */
+    void enqueue(String[] values);
+
 
     /**
      * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,

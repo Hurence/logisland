@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,13 +34,13 @@ package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.processor.MockProcessContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
+import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,12 +69,12 @@ public class StandardProcessorTestRunner implements TestRunner {
     private static final AtomicLong currentId = new AtomicLong(0);
 
     StandardProcessorTestRunner(final ProcessContext processContext) {
-		this.processor = processContext.getProcessor();
-		this.inputRecordsQueue = new ArrayList<>();
-		this.outputRecordsList = new ArrayList<>();
-		this.context = processContext;
-	}
-    
+        this.processor = processContext.getProcessor();
+        this.inputRecordsQueue = new ArrayList<>();
+        this.outputRecordsList = new ArrayList<>();
+        this.context = processContext;
+    }
+
     StandardProcessorTestRunner(final Processor processor) {
         this.processor = processor;
         this.inputRecordsQueue = new ArrayList<>();
@@ -121,6 +121,19 @@ public class StandardProcessorTestRunner implements TestRunner {
         }
     }
 
+    @Override
+    public void enqueue(List<String> values) {
+        for (final String value : values) {
+            enqueue(null,value);
+        }
+    }
+
+    @Override
+    public void enqueue(String[] values) {
+        for (final String value : values) {
+            enqueue(null,value);
+        }
+    }
 
     @Override
     public void enqueue(final String key, String value) {
