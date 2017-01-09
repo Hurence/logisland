@@ -118,7 +118,7 @@ public class Field implements PropertyValue, Serializable {
             try {
                 return Integer.parseInt(rawValue.toString());
             }catch (Exception ex){
-                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as an integer");
+                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as an integer");
             }
         }
     }
@@ -134,7 +134,7 @@ public class Field implements PropertyValue, Serializable {
                 try {
                     return Long.parseLong(rawValue.toString());
                 }catch (Exception ex){
-                    throw new IllegalArgumentException("unable to convert " + rawValue.toString() + "as a long");
+                    throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a long");
                 }
             }
         }
@@ -156,7 +156,7 @@ public class Field implements PropertyValue, Serializable {
             try {
                 return Float.parseFloat(rawValue.toString());
             }catch (Exception ex){
-                return null;
+                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a float");
             }
         }
     }
@@ -171,7 +171,7 @@ public class Field implements PropertyValue, Serializable {
             try {
                 return Double.parseDouble(rawValue.toString());
             }catch (Exception ex){
-                return null;
+                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a double");
             }
         }
     }

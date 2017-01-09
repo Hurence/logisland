@@ -23,11 +23,13 @@ import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.validator.AvroRecordValidator;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -166,4 +168,36 @@ public class SplitTextTest {
         out.assertRecordSizeEquals(2);
     }
 
+
+    @Test
+    @Ignore
+    public void testAlternativeMatch() {
+
+
+        List<String> logs = new ArrayList<>();
+        logs.add("10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
+        logs.add("10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/limits/moderato?siteCode=LOGISLAND_WEB HTTP/1.1\" 200 52");
+        logs.add("10.3.10.134 200 52");
+
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
+        testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
+        testRunner.setProperty("value.regex.1", "(\\S+)\\s*(\\S+)\\s*(\\S+)");
+        testRunner.setProperty("value.fields.1", "src_ip,http_status,bytes_out");
+        testRunner.assertValid();
+       // testRunner.enqueue(logs.toArray(Record[]());
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputErrorCount(0);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldNotExists("src_ip");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
+        //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
+        out.assertRecordSizeEquals(2);
+    }
 }

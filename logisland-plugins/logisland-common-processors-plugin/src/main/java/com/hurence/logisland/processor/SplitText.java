@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,21 +15,23 @@
  */
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.time.DateUtil;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +39,10 @@ import java.util.regex.Pattern;
 @Tags({"parser", "regex", "log", "record"})
 @CapabilityDescription("This is a processor that is used to split a String into fields according to a given Record mapping")
 @SeeAlso(value = {SplitTextMultiline.class}, classNames = {"com.hurence.logisland.processor.SplitTextMultiline"})
+@DynamicProperty(name = "alternative.key.regex",
+        supportsExpressionLanguage = true,
+        value = "another regex that could match",
+        description = "this regex will be tried if the main one has'nt matched")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;
@@ -104,6 +110,16 @@ public class SplitText extends AbstractProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
+    @Override
+    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
+        return new PropertyDescriptor.Builder()
+                .name(propertyDescriptorName)
+                .expressionLanguageSupported(false)
+                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                .required(false)
+                .dynamic(true)
+                .build();
+    }
 
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext context) {
@@ -154,11 +170,27 @@ public class SplitText extends AbstractProcessor {
         final boolean keepRawContent = context.getPropertyValue(KEEP_RAW_CONTENT).asBoolean();
         final Pattern valueRegex = Pattern.compile(valueRegexString);
 
-        List<Record> outputRecords = new ArrayList<>();
+
+        /**
+         * list alternative regex
+         */
+        List<Pattern> alternativeRegexList = new ArrayList<>();
+        // loop over dynamic properties to add alternative regex
+        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
+            if (!entry.getKey().isDynamic()) {
+                continue;
+            }
+
+            final String type = entry.getValue().toLowerCase();
+            final Pattern alternativeValueRegex = Pattern.compile(valueRegexString);
+            alternativeRegexList.add(alternativeValueRegex);
+        }
+
 
         /**
          * try to match the regexp to create an event
          */
+        List<Record> outputRecords = new ArrayList<>();
         records.forEach(record -> {
             try {
                 final String key = record.getField(FieldDictionary.RECORD_KEY).asString();
@@ -200,34 +232,24 @@ public class SplitText extends AbstractProcessor {
                     try {
                         Matcher valueMatcher = valueRegex.matcher(value);
                         if (valueMatcher.lookingAt()) {
-                            if (keepRawContent) {
-                                outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
-                            }
-                            for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
-                                String content = valueMatcher.group(i + 1);
-                                String fieldName = valueFields[i];
-                                if (content != null) {
-                                    outputRecord.setStringField(fieldName, content.replaceAll("\"", ""));
-                                }
-                            }
-
-
-                            // TODO removeField this ugly stuff with EL
-                            if (outputRecord.getField(FieldDictionary.RECORD_TIME) != null) {
-
-                                try {
-                                    long eventTime = Long.parseLong(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
-                                } catch (Exception ex) {
-
-                                    Date eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
-                                    if (eventDate != null) {
-                                        outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
-                                    }
-                                }
-                            }
+                            extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher);
                         } else {
-                            outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "");
-                            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
+                            // try the other Regex
+                            boolean hasMatched = false;
+                            for( Pattern alternativeRegex : alternativeRegexList){
+                                Matcher alternativeValueMatcher = alternativeRegex.matcher(value);
+                                if(alternativeValueMatcher.matches()){
+                                    extractValueFields(valueFields, keepRawContent, outputRecord, alternativeValueMatcher);
+                                    hasMatched = true;
+                                    break;
+                                }
+                            }
+                            // if we don't have any matches output an error
+                            if(!hasMatched){
+                                outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "");
+                                outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
+                            }
+
                         }
 
                     } catch (Exception e) {
@@ -249,6 +271,39 @@ public class SplitText extends AbstractProcessor {
         });
 
         return outputRecords;
+    }
+
+    private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher) {
+        if (keepRawContent) {
+            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
+        }
+        for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
+            String content = valueMatcher.group(i + 1);
+            String fieldName = valueFields[i];
+            if (content != null) {
+                outputRecord.setStringField(fieldName, content.replaceAll("\"", ""));
+            }
+        }
+
+
+        // TODO removeField this ugly stuff with EL
+        if (outputRecord.getField(FieldDictionary.RECORD_TIME) != null) {
+
+            try {
+                long eventTime = Long.parseLong(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
+            } catch (Exception ex) {
+
+                Date eventDate = null;
+                try {
+                    eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
+                } catch (ParseException e) {
+                    logger.info("issue while parsing date : {} ", e.toString());
+                }
+                if (eventDate != null) {
+                    outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());
+                }
+            }
+        }
     }
 
 

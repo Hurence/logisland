@@ -2,6 +2,63 @@ Extension plugins
 =================
 You'll find here the list of all usable Processors, Engines and other components taht can be usable out of the box in your analytics streams
 
+.. _com.hurence.logisland.processor.ConvertFieldsType: 
+
+ConvertFieldsType
+-----------------
+Converts a field value into the given type. does nothing if converison is not possible
+
+Class
+_____
+com.hurence.logisland.processor.ConvertFieldsType
+
+Tags
+____
+type, fields, update, convert
+
+Properties
+__________
+This component has no required or optional properties.
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field", "the new type", "convert field value into new type", **true**
+
+----------
+
+.. _com.hurence.logisland.processor.DebugStream: 
+
+DebugStream
+-----------
+This is a processor that logs incoming records
+
+Class
+_____
+com.hurence.logisland.processor.DebugStream
+
+Tags
+____
+record, debug
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**event.serializer**", "the way to serialize event", "Json serialization : serialize events as json blocs, String serialization : serialize events as toString() blocs, ", "json", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.DetectOutliers: 
 
 DetectOutliers
@@ -98,6 +155,35 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :widths: 20,20,40,10
 
    "A Record field", "A JsonPath expression", "will be set to any JSON objects that match the JsonPath. ", ****
+
+----------
+
+.. _com.hurence.logisland.processor.GenerateRandomRecord: 
+
+GenerateRandomRecord
+--------------------
+This is a processor that make random records given an Avro schema
+
+Class
+_____
+com.hurence.logisland.processor.GenerateRandomRecord
+
+Tags
+____
+record, avro, generator
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**avro.output.schema**", "the avro schema definition for the output serialization", "", "null", "", ""
+   "**min.events.count**", "the minimum number of generated events each run", "", "10", "", ""
+   "**max.events.count**", "the maximum number of generated events each run", "", "200", "", ""
 
 ----------
 
@@ -336,15 +422,17 @@ a new record is added to output each time a registered query is matched
 A query is expressed as a lucene query against a field like for example: 
 
 .. code-block::
-   message:'bad exception'
-   error_count:[10 TO *]
-   bytes_out:5000
-   user_name:tom*
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
 
 Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
 
 .. warning::
-   don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
 
 Class
 _____
@@ -376,6 +464,62 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :widths: 20,20,40,10
 
    "query", "some Lucene query", "generate a new record when this query is matched", **true**
+
+----------
+
+.. _com.hurence.logisland.processor.NormalizeFields: 
+
+NormalizeFields
+---------------
+Changes the name of a field according to a provided name mapping
+...
+
+Class
+_____
+com.hurence.logisland.processor.NormalizeFields
+
+Tags
+____
+record, fields, normalizer
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**fields_name.mapping**", "the mapping to convert names (e.g. "policy_id" --> "policyid"", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.ParseProperties: 
+
+ParseProperties
+---------------
+Parse a field made of key=value fields separated by spaces
+a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,2 & 3 to the current Record
+
+Class
+_____
+com.hurence.logisland.processor.ParseProperties
+
+Tags
+____
+record, properties, parser
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**properties.field**", "the field containing the properties to split and treat", "", "null", "", ""
 
 ----------
 
@@ -423,19 +567,19 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.RandomRecordGenerator: 
+.. _com.hurence.logisland.processor.RemoveFields: 
 
-RandomRecordGenerator
----------------------
-This is a processor that make random records given an Avro schema
+RemoveFields
+------------
+Removes a list of fields defined by a comma separated list of field names
 
 Class
 _____
-com.hurence.logisland.processor.RandomRecordGenerator
+com.hurence.logisland.processor.RemoveFields
 
 Tags
 ____
-record, avro, generator
+record, fields, remove, delete
 
 Properties
 __________
@@ -446,63 +590,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**avro.output.schema**", "the avro schema definition for the output serialization", "", "null", "", ""
-   "**min.events.count**", "the minimum number of generated events each run", "", "10", "", ""
-   "**max.events.count**", "the maximum number of generated events each run", "", "200", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.RecordDebugger: 
-
-RecordDebugger
---------------
-This is a processor that logs incoming records
-
-Class
-_____
-com.hurence.logisland.processor.RecordDebugger
-
-Tags
-____
-record, debug
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**event.serializer**", "the way to serialize event", "Json serialization : serialize events as json blocs, String serialization : serialize events as toString() blocs, ", "json", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.RecordNormalizer: 
-
-RecordNormalizer
-----------------
-This is a processor that logs incoming records
-
-Class
-_____
-com.hurence.logisland.processor.RecordNormalizer
-
-Tags
-____
-record, debug
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**event.serializer**", "the way to serialize event", "Json serialization : serialize events as json blocs, String serialization : serialize events as toString() blocs, ", "json", "", ""
+   "**fields.to.remove**", "the comma separated list of field names (e.g. "policyid,date_raw"", "", "null", "", ""
 
 ----------
 
@@ -582,6 +670,16 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative.key.regex", "another regex that could match", "this regex will be tried if the main one has'nt matched", **true**
+
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
@@ -614,6 +712,53 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**regex**", "the regex to match", "", "null", "", ""
    "**fields**", "a comma separated list of fields corresponding to matching groups", "", "null", "", ""
    "**event.type**", "the type of event", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SplitTextWithProperties: 
+
+SplitTextWithProperties
+-----------------------
+This is a processor that is used to split a String into fields according to a given Record mapping
+
+Class
+_____
+com.hurence.logisland.processor.SplitTextWithProperties
+
+Tags
+____
+parser, regex, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**value.regex**", "the regex to match for the message value", "", "null", "", ""
+   "**value.fields**", "a comma separated list of fields corresponding to matching groups for the message value", "", "null", "", ""
+   "key.regex", "the regex to match for the message key", "", ".*", "", ""
+   "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
+   "record.type", "default type of record", "", "record", "", ""
+   "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
+   "**properties.field**", "the field containing the properties to split and treat", "", "properties", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative.key.regex", "another regex that could match", "this regex will be tried if the main one has'nt matched", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.SplitTextMultiline`_ 
 
 ----------
 
