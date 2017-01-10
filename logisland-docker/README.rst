@@ -18,7 +18,7 @@ Getting the docker image from repository
 
 Pull the image from Docker Repository
 
-.. code-block::sh
+.. code-block:: sh
 
     docker pull hurence/logisland
 
@@ -28,14 +28,16 @@ Build your own
 
 Building the image
 
-.. code-block::sh
+.. code-block:: sh
 
     # build logisland
     maven clean install
     cp logisland-assembly/target/logisland-0.9.7-SNAPSHOT-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
-you have to copy this file into your Dockerfile directory you can now issue :: 
+you have to copy this file into your Dockerfile directory you can now issue
+
+.. code-block:: sh
 
     docker build --rm -t hurence/logisland:0.9.7-SNAPSHOT .
 
@@ -47,7 +49,7 @@ Running the image
 * in your /etc/hosts file add $(boot2docker ip) as host 'sandbox' to make it easier to access your sandbox UI
 * open yarn UI ports when running container
 
-.. code-block::
+.. code-block:: sh
 
     docker run \
         -it \
