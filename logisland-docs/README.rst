@@ -10,12 +10,10 @@ whichever version of LogIsland you currently have checked out of revision contro
 
 Prerequisites
 ----
-The LogIsland documentation build uses a number of tools to build HTML docs and API docs in Scala and Java. To get started you can run the following commands
+The LogIsland documentation build uses `Sphinx <ttp://www.sphinx-doc.org/en/1.5.1/>`_
+To get started you can run the following commands
 
-    $ sudo gem install jekyll
-    $ sudo gem install jekyll-redirect-from
-    $ sudo pip install Pygments
-    $ sudo pip install sphinx
+    $ sudo pip install Sphinx
 
 
 ## Generating the Documentation HTML
@@ -26,30 +24,13 @@ the source code and be captured by revision control (currently git). This way th
 includes the version of the documentation that is relevant regardless of which version or release
 you have checked out or downloaded.
 
-In this directory you will find textfiles formatted using Markdown, with an ".md" suffix. You can
-read those text files directly if you want. Start with index.md.
+In this directory you will find textfiles formatted using ReSTructured, with an ".rst" suffix. You can
+read those text files directly if you want.
 
 Execute `jekyll build` from the `docs/` directory to compile the site. Compiling the site with
 Jekyll will create a directory called `_site` containing index.html as well as the rest of the
 compiled files.
 
-    $ cd docs
-    $ jekyll build
+    $ cd logisland-docs
+    $ make html
 
-You can modify the default Jekyll build as follows:
-
-    # Skip generating API docs (which takes a while)
-    $ SKIP_API=1 jekyll build
-    # Serve content locally on port 4000
-    $ jekyll serve --watch
-    # Build the site with extra features used on the live page
-    $ PRODUCTION=1 jekyll build
-
-
-## API Docs (Scaladoc, Sphinx, roxygen2)
-
-You can build just the LogIsland scaladoc by running 
-
-```
-jekyll build; sbt doc;  mv target/scala-2.10/api/ docs/_site/
-```

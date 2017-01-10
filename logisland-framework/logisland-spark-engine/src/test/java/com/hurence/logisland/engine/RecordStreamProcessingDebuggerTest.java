@@ -22,7 +22,7 @@ import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
 import com.hurence.logisland.processor.MockProcessor;
-import com.hurence.logisland.processor.RecordDebugger;
+import com.hurence.logisland.processor.DebugStream;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.stream.spark.*;
 import org.junit.Ignore;
@@ -262,10 +262,10 @@ public class RecordStreamProcessingDebuggerTest {
 
     private ProcessorConfiguration getDebugProcessorConfiguration() {
         Map<String, String> processorProperties = new HashMap<>();
-        processorProperties.put(RecordDebugger.SERIALIZER.getName(), RecordDebugger.JSON.getValue());
+        processorProperties.put(DebugStream.SERIALIZER.getName(), DebugStream.JSON.getValue());
 
         ProcessorConfiguration processorConf = new ProcessorConfiguration();
-        processorConf.setComponent(RecordDebugger.class.getName());
+        processorConf.setComponent(DebugStream.class.getName());
         processorConf.setType(ComponentType.PROCESSOR.toString());
         processorConf.setConfiguration(processorProperties);
         processorConf.setProcessor("debugguer");

@@ -42,14 +42,14 @@ import java.util.*;
         "you can use this processor to handle custom events defined by lucene queries\n" +
         "a new record is added to output each time a registered query is matched\n\n" +
         "A query is expressed as a lucene query against a field like for example: \n\n" +
-        ".. code-block::\n" +
-        "   message:'bad exception'\n" +
-        "   error_count:[10 TO *]\n" +
-        "   bytes_out:5000\n" +
-        "   user_name:tom*\n\n" +
+        ".. code-block::\n\n" +
+        "\tmessage:'bad exception'\n" +
+        "\terror_count:[10 TO *]\n" +
+        "\tbytes_out:5000\n" +
+        "\tuser_name:tom*\n\n" +
         "Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations\n\n" +
-        ".. warning::\n" +
-        "   don't forget to set numeric fields property to handle correctly numeric ranges queries")
+        ".. warning::\n\n" +
+        "\tdon't forget to set numeric fields property to handle correctly numeric ranges queries")
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
 public class MatchQuery extends AbstractProcessor {
 

@@ -98,3 +98,63 @@ This will produce a ``logisland-assembly/target/logisland-0.9.5-bin.tar.gz`` fil
 
 Please read this excellent article on spark long running job setup : `http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/ <http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/>`_
 
+
+How can I configure Kafka to avoid irrecoverable exceptions ?
+-------------------------------------------------------------
+If the message must be reliable published on Kafka cluster, Kafka producer and Kafka cluster needs to be configured with care. It needs to be done independently of chosen streaming framework.
+
+Kafka producer buffers messages in memory before sending. When our memory buffer is exhausted, Kafka producer must either stop accepting new records (block) or throw errors. By default Kafka producer blocks and this behavior is legitimate for stream processing. The processing should be delayed if Kafka producer memory buffer is full and could not accept new messages. Ensure that block.on.buffer.full Kafka producer configuration property is set.
+
+With default configuration, when Kafka broker (leader of the partition) receive the message, store the message in memory and immediately send acknowledgment to Kafka producer. To avoid data loss the message should be replicated to at least one replica (follower). Only when the follower acknowledges the leader, the leader acknowledges the producer.
+
+This guarantee you will get with ack=all property in Kafka producer configuration. This guarantees that the record will not be lost as long as at least one in-sync replica remains alive.
+
+But this is not enough. The minimum number of replicas in-sync must be defined. You should configure min.insync.replicas property for every topic. I recommend to configure at least 2 in-sync replicas (leader and one follower). If you have datacenter with two zones, I also recommend to keep leader in the first zone and 2 followers in the second zone. This configuration guarantees that every message will be stored in both zones.
+
+We are almost done with Kafka cluster configuration. When you set min.insync.replicas=2 property, the topic should be replicated with factor 2 + N. Where N is the number of brokers which could fail, and Kafka producer will still be able to publish messages to the cluster. I recommend to configure replication factor 3 for the topic (or more).
+
+With replication factor 3, the number of brokers in the cluster should be at least 3 + M. When one or more brokers are unavailable, you will get underreplicated partitions state of the topics. With more brokers in the cluster than replication factor, you can reassign underreplicated partitions and achieve fully replicated cluster again. I recommend to build the 4 nodes cluster at least for topics with replication factor 3.
+
+The last important Kafka cluster configuration property is unclean.leader.election.enable. It should be disabled (by default it is enabled) to avoid unrecoverable exceptions from Kafka consumer. Consider the situation when the latest committed offset is N, but after leader failure, the latest offset on the new leader is M < N. M < N because the new leader was elected from the lagging follower (not in-sync replica). When the streaming engine ask for data from offset N using Kafka consumer, it will get an exception because the offset N does not exist yet. Someone will have to fix offsets manually.
+
+So the minimal recommended Kafka setup for reliable message processing is:
+
+.. code-block:: bash
+
+    4 nodes in the cluster
+    unclean.leader.election.enable=false in the brokers configuration
+    replication factor for the topics – 3
+    min.insync.replicas=2 property in topic configuration
+    ack=all property in the producer configuration
+    block.on.buffer.full=true property in the producer configuration
+
+With the above setup your configuration should be resistant to single broker failure, and Kafka consumers will survive new leader election.
+
+You could also take look at replica.lag.max.messages and replica.lag.time.max.ms properties for tuning when the follower is removed from ISR by the leader. But this is out of this blog post scope.
+
+
+
+How to purge a Kafka queue ?
+----------------------------
+Temporarily update the retention time on the topic to one second:
+
+.. code-block:: bash
+
+    kafka-topics.sh --zookeeper localhost:13003 --alter --topic MyTopic --config retention.ms=1000
+
+then wait for the purge to take effect (about one minute). Once purged, restore the previous retention.ms value.
+
+
+You can also try to delete the topic :
+
+add one line to server.properties file under config folder:
+
+.. code-block:: bash
+
+    delete.topic.enable=true
+
+then, you can run this command:
+
+.. code-block:: bash
+
+    bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic test

@@ -15,14 +15,10 @@
  */
 package com.hurence.logisland.processor;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -41,10 +37,10 @@ public class RandomStandardRecordGeneratorTest {
 
     	String avroSchema = loadResurceFileToString("/schemas/testLoadConfig-schema.json");
     	
-        final TestRunner testRunner = TestRunners.newTestRunner(new RandomRecordGenerator());
-        testRunner.setProperty(RandomRecordGenerator.OUTPUT_SCHEMA.getName(), avroSchema);
-        testRunner.setProperty(RandomRecordGenerator.MIN_EVENTS_COUNT.getName(), "5");
-        testRunner.setProperty(RandomRecordGenerator.MAX_EVENTS_COUNT.getName(), "20");
+        final TestRunner testRunner = TestRunners.newTestRunner(new GenerateRandomRecord());
+        testRunner.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA.getName(), avroSchema);
+        testRunner.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT.getName(), "5");
+        testRunner.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT.getName(), "20");
 
         testRunner.assertValid();
         testRunner.clearQueues();

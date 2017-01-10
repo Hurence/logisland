@@ -1,5 +1,5 @@
 LogIsland docker files
-===========
+======================
 
 Small standalone Hadoop distribution for development and testing purpose :
 
@@ -7,29 +7,39 @@ Small standalone Hadoop distribution for development and testing purpose :
 - Elasticsearch 2.3.3
 - Kibana 4.5.1
 - Kafka 0.9.0.1
-- Logisland 0.9.5
+- Logisland 0.9.7-SNAPSHOT
 
 
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
 This Docker image depends on [centos 6.7](https://github.com/CentOS/CentOS-Dockerfiles) image.
 
-Getting the docker image
-------------------------
+Getting the docker image from repository
+----------------------------------------
 
-Pull the image from Docker Repository::
+Pull the image from Docker Repository
+
+.. code-block:: sh
 
     docker pull hurence/logisland
 
-Building the image::
+
+Build your own
+--------------
+
+Building the image
+
+.. code-block:: sh
 
     # build logisland
     maven clean install
-    cp logisland-assembly/target/logisland-0.9.5-bin.tar.gz logisland-docker
+    cp logisland-assembly/target/logisland-0.9.7-SNAPSHOT-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
-you have to copy this file into your Dockerfile directory you can now issue :: 
+you have to copy this file into your Dockerfile directory you can now issue
 
-    docker build --rm -t hurence/logisland:0.9.5 .
+.. code-block:: sh
+
+    docker build --rm -t hurence/logisland:0.9.7-SNAPSHOT .
 
 
 Running the image
@@ -39,7 +49,7 @@ Running the image
 * in your /etc/hosts file add $(boot2docker ip) as host 'sandbox' to make it easier to access your sandbox UI
 * open yarn UI ports when running container
 
-.. code-block::
+.. code-block:: sh
 
     docker run \
         -it \
@@ -54,13 +64,13 @@ Running the image
         -p 4050-4060:4050-4060 \
         --name logisland \
         -h sandbox \
-        hurence/logisland:latest bash
+        hurence/logisland:0.9.7-SNAPSHOT bash
 
 or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/logisland:latest -d
+    docker run -d -h sandbox hurence/logisland:0.9.7-SNAPSHOT -d
 
 if you want to mount a directory from your host, add the following option :
 
