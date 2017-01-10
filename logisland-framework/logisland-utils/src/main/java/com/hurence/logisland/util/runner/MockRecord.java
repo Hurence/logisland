@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.hurence.logisland.record.FieldType;
 import org.junit.Assert;
 
 import com.hurence.logisland.record.Record;
@@ -46,6 +47,12 @@ public class MockRecord extends StandardRecord {
                 hasField(fieldName));
 		assertedFields.add(fieldName);
     }
+
+    public void assertFieldTypeEquals(final String fieldName, final FieldType type) {
+        Assert.assertEquals(type, getField(fieldName).getType());
+        assertedFields.add(fieldName);
+    }
+
 
     public void assertFieldEquals(final String fieldName, final String expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());

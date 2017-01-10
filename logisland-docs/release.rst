@@ -50,3 +50,9 @@ then login and push the latest image
 
     docker login
     docker push hurence/logisland
+
+
+Publish artefact to github
+--------------------------
+
+Tag the release + upload latest tgz
