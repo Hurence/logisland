@@ -283,7 +283,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 "auto.offset.reset" -> "largest"
             )
 
-            val offsets = zkSink.value.loadOffsetRangesFromZookeeper(appName, inputTopics)
+            val offsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
                     || offsets.isEmpty) {
