@@ -109,8 +109,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                             val topicAndPartition = TopicAndPartition(topic, partitionId)
                             val request = OffsetRequest(Map(topicAndPartition -> PartitionOffsetRequestInfo(time, nOffsets)))
                             val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
-
-                            partitionId -> Some(offsets(2))
+                            partitionId -> Some(offsets.head)
                         case None =>
                             logger.error("Error: partition %d does not have a leader. Skip getting offsets".format(partitionId))
                             partitionId -> None
@@ -132,7 +131,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
       * @return
       */
     def loadOffsetRangesFromZookeeper(brokerList: String, group: String, topics: Set[String]): Map[TopicAndPartition, Long] = {
-
+        logger.info(s"loading latest Offsets from Zookeeper, brokerList: $brokerList, consumer group : $group in topics $topics")
         topics.flatMap(topic => {
 
             // first retrieve latest offsets of th topics
