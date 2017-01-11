@@ -77,8 +77,8 @@ EXPOSE 9200 9300 9201 9301
 # Grafana
 RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470047149.x86_64.rpm
 
-RUN curl -s http://www-eu.apache.org/dist/nifi/1.0.0/nifi-1.0.0-bin.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s nifi-1.0.0 nifi
+RUN curl -s http://www-eu.apache.org/dist/nifi/1.1.1/nifi-1.1.1-bin.tar.gz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s nifi-1.1.1 nifi
 ENV NIFI_HOME /usr/local/nifi
 EXPOSE 8080
 EXPOSE 3000
