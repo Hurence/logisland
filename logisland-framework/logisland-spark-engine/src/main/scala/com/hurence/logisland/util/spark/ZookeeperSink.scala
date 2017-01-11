@@ -1,24 +1,26 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.util.spark
 
 import java.net.InetAddress
 import java.util.Collections
 
 import kafka.admin.AdminUtils
+import kafka.api.{OffsetRequest, PartitionOffsetRequestInfo}
+import kafka.client.ClientUtils
 import kafka.common.TopicAndPartition
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
@@ -28,6 +30,7 @@ import org.apache.spark.streaming.kafka.OffsetRange
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -45,7 +48,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
       *
       * @param topic the topic to count partition
       */
-    def getNumPartitions(topic: String): Option[Int] = {
+    def getNumPartitions(brokerList: String, topic: String): Option[Int] = {
 
         try {
             zkClient.setZkSerializer(new ZkSerializer() {
@@ -72,93 +75,148 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
     }
 
     /**
-      * retrieves latest consummed offset ranges
+      * retrieve the latest offsets for a given kafka topic
+      * it will find offsets for all partitions
       *
-      * @param group  the group name
-      * @param topics the topic name
+      * @param topic
+      * @param time timestamp of the offsets before that "timestamp/-1(latest)/-2(earliest)"
       * @return
       */
-    def loadOffsetRangesFromZookeeper(group: String, topics: Set[String]): Map[TopicAndPartition, Long] = {
+    def getLatestOffset(brokerList: String, clientId: String, topic: String, time: Long): Map[Int, Option[Long]] = {
 
-        topics.flatMap(topic => {
-            val partitions = getNumPartitions(topic)
-            if (partitions.isDefined) {
-                (0 until partitions.get).map(i => {
-                    val nodePath = s"/consumers/$group/offsets/$topic/$i"
 
-                    try {
-                        zkClient.exists(nodePath) match {
-                            case true =>
-                                val maybeOffset = Option(zkClient.readData[String](nodePath))
-                                maybeOffset.map { offset =>
-                                    TopicAndPartition(topic, i) -> new String(offset).toLong
-                                }
+        val metadataTargetBrokers = ClientUtils.parseBrokerList(brokerList)
 
-                            case false =>
-                                logger info s"Kafka Direct Stream - From Offset - ZK Node ($nodePath) does NOT exist"
-                                None
-                        }
-                    } catch {
-                        case scala.util.control.NonFatal(error) =>
-                            logger error s"Kafka Direct Stream - From Offset - ZK Node ($nodePath) - Error: $error"
-                            None
+        val nOffsets = 1
+        val maxWaitMs = 1000
+
+        val topicsMetadata = ClientUtils.fetchTopicMetadata(Set(topic), metadataTargetBrokers, clientId, maxWaitMs).topicsMetadata
+        if (topicsMetadata.size != 1 || !topicsMetadata.head.topic.equals(topic)) {
+            logger.error(("Error: no valid topic metadata for topic: %s, " + " probably the topic does not exist ").format(topic))
+        }
+
+        val partitions = topicsMetadata.head.partitionsMetadata.map(_.partitionId)
+
+        val buffer = new ArrayBuffer[String]()
+
+        partitions.map { partitionId =>
+            val partitionMetadataOpt = topicsMetadata.head.partitionsMetadata.find(_.partitionId == partitionId)
+            partitionMetadataOpt match {
+                case Some(metadata) =>
+                    metadata.leader match {
+                        case Some(leader) =>
+                            val consumer = new kafka.consumer.SimpleConsumer(leader.host, leader.port, 10000, 100000, clientId)
+                            val topicAndPartition = TopicAndPartition(topic, partitionId)
+                            val request = OffsetRequest(Map(topicAndPartition -> PartitionOffsetRequestInfo(time, nOffsets)))
+                            val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
+                            partitionId -> Some(offsets.head)
+                        case None =>
+                            logger.error("Error: partition %d does not have a leader. Skip getting offsets".format(partitionId))
+                            partitionId -> None
                     }
-                })
-            } else None
-        }).filter(_.isDefined)
-            .map(node => node.get._1 -> node.get._2)
-            .toMap
+                case None =>
+                    logger.error("Error: partition %d does not exist".format(partitionId))
+                    partitionId -> None
+            }
+        }.toMap
+
     }
 
+    /**
+      * retrieves latest consumed offset ranges for each partitions of each topic.
+      * return latest offset if something went wrong
+      *
+      * @param group  the group name
+      * @param topics the topic names
+      * @return
+      */
+    def loadOffsetRangesFromZookeeper(brokerList: String, group: String, topics: Set[String]): Map[TopicAndPartition, Long] = {
+        logger.info(s"loading latest Offsets from Zookeeper, brokerList: $brokerList, consumer group : $group in topics $topics")
+        topics.flatMap(topic => {
 
+            // first retrieve latest offsets of th topics
+            getLatestOffset(brokerList, group, topic, -1).map( topicOffset => {
+                val partitionId = topicOffset._1
+                val latestOffset = topicOffset._2
+                val zkNodePath = s"/consumers/$group/offsets/$topic/$partitionId"
 
+                if (latestOffset.isEmpty) {
+                    logger.error(s"latest offset doesn't exist for partition $partitionId in topic $topic")
+                    TopicAndPartition(topic, partitionId) -> -1L
+                } else {
+                    val latestStoredOffset =
+                        try {
+                            zkClient.exists(zkNodePath) match {
+                                case true =>
+                                    val maybeOffset = Option(zkClient.readData[String](zkNodePath))
+                                    maybeOffset.map { offset =>
+                                        TopicAndPartition(topic, partitionId) -> new String(offset).toLong
+                                    }
+                                case false =>
+                                    logger.error(s"ZK Node ($zkNodePath) does NOT exist")
+                                    None
+                            }
+                        } catch {
+                            case scala.util.control.NonFatal(error) =>
+                                logger.error(s"ZK Node ($zkNodePath) - Error: $error")
+                                None
+                        }
+                    if (latestStoredOffset.isEmpty || (latestOffset.get < latestStoredOffset.get._2)) {
+                        TopicAndPartition(topic, partitionId) -> latestOffset.get
+                    } else {
+                        TopicAndPartition(topic, partitionId) -> latestStoredOffset.get._2
+                    }
+                }
+            })
+        }).toMap
+    }
 
 
     /**
       * store in zookeeper the latest processed offsets for a given group
       *
-      * @param group   the processing group
-      * @param o the latest offest
+      * @param group the processing group
+      * @param o     the latest offest
       */
     def saveOffsetRangesToZookeeper(group: String, o: OffsetRange): Unit = {
 
 
-            // Consumer Offset
-            locally {
-                val nodePath = s"/consumers/$group/offsets/${o.topic}/${o.partition}"
+        // Consumer Offset
+        locally {
+            val nodePath = s"/consumers/$group/offsets/${o.topic}/${o.partition}"
 
-                if (!zkClient.exists(nodePath))
-                    zkClient.createPersistent(nodePath, true)
-                zkClient.writeData(nodePath, o.untilOffset.toString)
-            }
-
-
-            val hostname = InetAddress.getLocalHost.getHostName
-            val ownerId = s"$group-$hostname-${o.partition}"
-            val now = org.joda.time.DateTime.now.getMillis
-
-            // Consumer Ids
-            locally {
-                val nodePath = s"/consumers/$group/ids/$ownerId"
-                val value = s"""{"version":1,"subscription":{"${o.topic}":${o.partition},"pattern":"white_list","timestamp":"$now"}"""
-
-                if (!zkClient.exists(nodePath))
-                    zkClient.createPersistent(nodePath, true)
-
-                zkClient.writeData(nodePath, value)
-            }
-
-            // Consumer Owners
-            locally {
-                val nodePath = s"/consumers/$group/owners/${o.topic}/${o.partition}"
-                val value = ownerId
-
-                if (!zkClient.exists(nodePath))
-                    zkClient.createPersistent(nodePath, true)
-
-                zkClient.writeData(nodePath, value)
-            }
+            if (!zkClient.exists(nodePath))
+                zkClient.createPersistent(nodePath, true)
+            zkClient.writeData(nodePath, o.untilOffset.toString)
         }
+
+
+        val hostname = InetAddress.getLocalHost.getHostName
+        val ownerId = s"$group-$hostname-${o.partition}"
+        val now = org.joda.time.DateTime.now.getMillis
+
+        // Consumer Ids
+        locally {
+            val nodePath = s"/consumers/$group/ids/$ownerId"
+            val value = s"""{"version":1,"subscription":{"${o.topic}":${o.partition},"pattern":"white_list","timestamp":"$now"}"""
+
+            if (!zkClient.exists(nodePath))
+                zkClient.createPersistent(nodePath, true)
+
+            zkClient.writeData(nodePath, value)
+        }
+
+        // Consumer Owners
+        locally {
+            val nodePath = s"/consumers/$group/owners/${o.topic}/${o.partition}"
+            val value = ownerId
+
+            if (!zkClient.exists(nodePath))
+                zkClient.createPersistent(nodePath, true)
+
+            zkClient.writeData(nodePath, value)
+        }
+    }
 
 }
 

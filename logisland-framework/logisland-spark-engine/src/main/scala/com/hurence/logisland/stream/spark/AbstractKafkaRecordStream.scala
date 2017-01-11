@@ -269,16 +269,21 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             /**
               * create streams from latest zk offsets
+              *
+              * previous values :
+              *    refresh.leader.backoff.ms -> 1000
+              *    retry.backoff.ms -> not set
               */
             val kafkaStreamsParams = Map(
                 "metadata.broker.list" -> brokerList,
                 "bootstrap.servers" -> brokerList,
                 "group.id" -> appName,
-                "refresh.leader.backoff.ms" -> "1000",
+                "refresh.leader.backoff.ms" -> "5000",
+                "retry.backoff.ms" -> "2000",
                 "auto.offset.reset" -> "largest"
             )
 
-            val offsets = zkSink.value.loadOffsetRangesFromZookeeper(appName, inputTopics)
+            val offsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
                     || offsets.isEmpty) {

@@ -491,7 +491,17 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**fields_name.mapping**", "the mapping to convert names (e.g. "policy_id" --> "policyid"", "", "null", "", ""
+   "**conflict.resolution.policy**", "waht to do when a field with the same name already exists ?", "nothing to do : leave record as it was, overwrite existing field : if field already exist, keep only old field and delete the other : keep only old field and delete the other, ", "do_nothing", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative mapping", "a comma separated list of possible field name", "when a field has a name contained in the list it will be renamed with this property field name", **true**
 
 ----------
 
