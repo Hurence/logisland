@@ -91,6 +91,7 @@ RUN cd /usr/local; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/logisland-0.9.7-SNAPSHOT-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
+RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
 
 
 # Kafka manager
