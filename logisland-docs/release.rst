@@ -11,13 +11,17 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block::
 
-    mvn versions:set -DnewVersion=0.9.7-SNAPSHOT
+    mvn versions:set -DnewVersion=0.9.7
     mvn license:format
+    mvn test
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
+    git tag -a v0.9.7 -m "new logisland release 0.9.7"
+
 follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 
+go to `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ to release manually the artefact
 
 Publish Docker image
 --------------------
@@ -26,15 +30,15 @@ Building the image
 .. code-block::sh
 
     # build logisland
-    maven clean install
-    cp logisland-assembly/target/logisland-0.9.7-SNAPSHOT-bin.tar.gz logisland-docker
+    mvn clean install
+    cp logisland-assembly/target/logisland-0.9.7-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory,
 you have to copy this file into your Dockerfile directory you can now issue
 
 .. code-block::sh
 
-    docker build --rm -t hurence/logisland:0.9.7-SNAPSHOT .
+    docker build --rm -t hurence/logisland:0.9.7 .
 
 
 To tag the latest docker image find its id

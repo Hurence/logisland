@@ -1,9 +1,39 @@
 What's new in logisland ?
-====
+=========================
 
 
-version 0.9.5
-----
+
+v0.9.7
+------
+
+- add HDFS burner feature processor #89
+- add ExtractJsonPath processor  #90
+- check compatibility with HDP 2.5 #112
+- sometimes the drivers fails with status SUCCEEDED which prevents YARN to resubmit the job automatically #105
+- logisland crashes when starting with wrong offsets #111
+- add type checking for SplitText component enhancement #46
+- add optional regex to SplitText #106
+- add record schema management with ConvertFieldsType processor #75
+- add field auto extractor processor : SplitTextWithProperties #49
+- add a new RemoveFields processor
+- add a NormalizeFields processor #88
+- Add notion of asserting the asserted fields in MockRecord
+
+
+v0.9.6
+------
+
+- add a Documentation generator for plugins feature #69
+- add SQL aggregator plugin feature #74
+- #66 merge elasticsearch-shaded and elasticsearch-plugin enhancement
+- #73 add metric aggregator processor feature
+- #57 add sampling processor enhancement
+- #72 integrate OutlierDetection plugin feature
+- #34 integrate QueryMatcherProcessor bug
+
+
+v0.9.5
+------
 
 - generify API from Event to Records
 - add docker container for demo

@@ -6,7 +6,7 @@ version: 0.9.7
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
-# engine
+# engine every 10'
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
@@ -26,7 +26,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 4000
+    spark.streaming.batchDuration: 600000
     spark.streaming.backpressure.enabled: true
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
@@ -56,4 +56,4 @@ engine:
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
         output.format: parquet
-        output.folder.path: "data/syslog_events"
+        output.folder.path: data/syslog_events
