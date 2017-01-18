@@ -17,10 +17,10 @@ package com.hurence.logisland.stream.spark
 
 import java.text.SimpleDateFormat
 import java.util
-import java.util.{Collections, Date}
+import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.record.FieldDictionary
+import com.hurence.logisland.record.{FieldDictionary, FieldType}
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.rdd.RDD
@@ -68,7 +68,7 @@ object KafkaRecordStreamHDFSBurner {
         .build
 
     val EXCLUDE_ERRORS = new PropertyDescriptor.Builder()
-            .name("exclude.errors")
+        .name("exclude.errors")
         .description("do we include records with errors ?")
         .required(false)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
@@ -129,21 +129,29 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
 
                 val sdf = new SimpleDateFormat("yyyy-MM-dd")
-                val today = sdf.format(new Date())
+
 
                 val numPartitions = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.NUM_PARTITIONS).asInteger()
                 val outputFormat = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT).asString()
                 val doExcludeErrors = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.EXCLUDE_ERRORS).asBoolean()
                 val recordType = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.RECORD_TYPE).asString()
-                val outPath = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH).asString() +
-                    s"/day=$today"
-
+                val outPath = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH).asString()
 
                 val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
                     .filter(r =>
                         r.hasField(FieldDictionary.RECORD_TYPE) &&
-                            r.getField(FieldDictionary.RECORD_TYPE).asString() == recordType
-                    )
+                            r.getField(FieldDictionary.RECORD_TYPE).asString() == recordType)
+                    .map(r => {
+                        try {
+                            if (r.hasField(FieldDictionary.RECORD_DAYTIME))
+                                r
+                            else
+                                r.setField(FieldDictionary.RECORD_DAYTIME, FieldType.STRING, sdf.format(r.getTime))
+                        }
+                        catch {
+                            case ex: Throwable => r
+                        }
+                    })
 
 
 
@@ -162,29 +170,29 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                     val df = sqlContext.createDataFrame(rows, schema)
 
 
-                    outputFormat match  {
+                    outputFormat match {
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_PARQUET =>
                             df.repartition(numPartitions)
                                 .write
-                                .partitionBy(FieldDictionary.RECORD_TYPE)
+                                .partitionBy(FieldDictionary.RECORD_DAYTIME, FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .parquet(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_JSON =>
                             df.repartition(numPartitions)
                                 .write
-                                .partitionBy(FieldDictionary.RECORD_TYPE)
+                                .partitionBy(FieldDictionary.RECORD_DAYTIME, FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .json(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_ORC =>
                             df.repartition(numPartitions)
                                 .write
-                                .partitionBy(FieldDictionary.RECORD_TYPE)
+                                .partitionBy(FieldDictionary.RECORD_DAYTIME, FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .orc(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_TXT =>
                             df.repartition(numPartitions)
                                 .write
-                                .partitionBy(FieldDictionary.RECORD_TYPE)
+                                .partitionBy(FieldDictionary.RECORD_DAYTIME, FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .text(outPath)
                         case _ =>
