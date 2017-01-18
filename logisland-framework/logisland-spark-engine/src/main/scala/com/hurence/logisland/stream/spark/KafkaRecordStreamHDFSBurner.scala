@@ -68,7 +68,7 @@ object KafkaRecordStreamHDFSBurner {
         .build
 
     val EXCLUDE_ERRORS = new PropertyDescriptor.Builder()
-        .name("exclude.errors")
+            .name("exclude.errors")
         .description("do we include records with errors ?")
         .required(false)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
@@ -131,6 +131,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                 val sdf = new SimpleDateFormat("yyyy-MM-dd")
                 val today = sdf.format(new Date())
 
+                val numPartitions = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.NUM_PARTITIONS).asInteger()
                 val outputFormat = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT).asString()
                 val doExcludeErrors = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.EXCLUDE_ERRORS).asBoolean()
                 val recordType = streamContext.getPropertyValue(KafkaRecordStreamHDFSBurner.RECORD_TYPE).asString()
@@ -163,22 +164,26 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
                     outputFormat match  {
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_PARQUET =>
-                            df.write
+                            df.repartition(numPartitions)
+                                .write
                                 .partitionBy(FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .parquet(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_JSON =>
-                            df.write
+                            df.repartition(numPartitions)
+                                .write
                                 .partitionBy(FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .json(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_ORC =>
-                            df.write
+                            df.repartition(numPartitions)
+                                .write
                                 .partitionBy(FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .orc(outPath)
                         case KafkaRecordStreamHDFSBurner.FILE_FORMAT_TXT =>
-                            df.write
+                            df.repartition(numPartitions)
+                                .write
                                 .partitionBy(FieldDictionary.RECORD_TYPE)
                                 .mode(SaveMode.Append)
                                 .text(outPath)
