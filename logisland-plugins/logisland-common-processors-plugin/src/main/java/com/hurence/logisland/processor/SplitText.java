@@ -212,7 +212,7 @@ public class SplitText extends AbstractProcessor {
                         if (keyMatcher.matches()) {
 
                             if (keepRawContent) {
-                                outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, keyMatcher.group(0).replaceAll("\"", ""));
+                                outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, keyMatcher.group(0));
                             }
                             for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
                                 String content = keyMatcher.group(i);
@@ -314,7 +314,7 @@ public class SplitText extends AbstractProcessor {
 
     private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher) {
         if (keepRawContent) {
-            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0).replaceAll("\"", ""));
+            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0));
         }
         for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
             String content = valueMatcher.group(i + 1);

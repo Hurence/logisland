@@ -201,7 +201,7 @@ public class SplitTextTest {
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
         out.assertFieldEquals("user", "-");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1 200 239");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(9);
 
@@ -250,7 +250,7 @@ public class SplitTextTest {
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
         out.assertFieldEquals("user", "-");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1 200 239");
+        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(9);
 
