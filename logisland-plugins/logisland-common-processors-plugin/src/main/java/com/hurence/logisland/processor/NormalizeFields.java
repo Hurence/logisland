@@ -35,12 +35,15 @@ public class NormalizeFields extends AbstractProcessor {
     public static final AllowableValue KEEP_ONLY_OLD_FIELD =
             new AllowableValue("keep_only_old_field", "keep only old field and delete the other", "keep only old field and delete the other");
 
+    public static final AllowableValue KEEP_BOTH_FIELDS =
+            new AllowableValue("keep_both_fields", "keep old field and new one", "creates an alias for the new field");
+
     public static final PropertyDescriptor CONFLICT_RESOLUTION_POLICY = new PropertyDescriptor.Builder()
             .name("conflict.resolution.policy")
             .description("waht to do when a field with the same name already exists ?")
             .required(true)
             .defaultValue(DO_NOTHING.getValue())
-            .allowableValues(DO_NOTHING, OVERWRITE_EXISTING, KEEP_ONLY_OLD_FIELD)
+            .allowableValues(DO_NOTHING, OVERWRITE_EXISTING, KEEP_ONLY_OLD_FIELD, KEEP_BOTH_FIELDS)
             .build();
 
     @Override
@@ -90,6 +93,13 @@ public class NormalizeFields extends AbstractProcessor {
                 } else if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
                     for (String obsoleteFieldName : obsoleteFieldNames) {
                         overwriteObsoleteFieldName(record, normalizedFieldName, obsoleteFieldName);
+                    }
+                }
+            }else if (conflictPolicy.equals(KEEP_BOTH_FIELDS.getValue())) {
+                for (String obsoleteFieldName : obsoleteFieldNames) {
+                    if (record.hasField(obsoleteFieldName)) {
+                        final Field oldField = record.getField(obsoleteFieldName);
+                        record.setField(normalizedFieldName, oldField.getType(), oldField.getRawValue());
                     }
                 }
             } else {

@@ -127,7 +127,9 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
                 if (!records.isEmpty()) {
                     val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
-                    val rows = records.filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS)).map(r => SparkUtils.convertToRow(r, schema))
+                    val rows = records
+                        .filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS))
+                        .map(r => SparkUtils.convertToRow(r, schema))
 
 
                     logger.info(schema.toString())
@@ -137,7 +139,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
 
                     df.write
-                        //      .partitionBy(FieldDictionary.RECORD_TYPE)
+                        .partitionBy(FieldDictionary.RECORD_TYPE)
                         .mode(SaveMode.Append)
                         // TODO choose output format
                         .parquet(outPath)

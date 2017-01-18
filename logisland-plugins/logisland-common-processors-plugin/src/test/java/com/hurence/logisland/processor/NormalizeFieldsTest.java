@@ -181,6 +181,34 @@ public class NormalizeFieldsTest extends BaseSyslogTest {
     }
 
     @Test
+    public void testNormalizeWithConflictKeepBoth() {
+
+        Record record1 = getRecord1();
+
+        TestRunner testRunner = TestRunners.newTestRunner(new NormalizeFields());
+        testRunner.setProperty("string1bis", "string1");
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.KEEP_BOTH_FIELDS);
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(5);
+        out.assertFieldEquals("string1bis", "value1");
+        out.assertFieldTypeEquals("string1bis", FieldType.STRING);
+        out.assertFieldEquals("string1", "value1");
+        out.assertFieldTypeEquals("string1", FieldType.STRING);
+        out.assertFieldEquals("string2", "value2");
+        out.assertFieldTypeEquals("string2", FieldType.STRING);
+        out.assertFieldEquals("long1", 1L);
+        out.assertFieldTypeEquals("long1", FieldType.LONG);
+        out.assertFieldEquals("long2", 2L);
+        out.assertFieldTypeEquals("long2", FieldType.LONG);
+    }
+
+    @Test
     public void testNormalizeMappingNotUsed() {
 
         Record record1 = getRecord1();
