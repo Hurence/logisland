@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,19 +16,16 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.RecordValidator;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.validator.AvroRecordValidator;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -274,4 +271,90 @@ public class SplitTextTest {
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(4);
     }
+
+    @Test
+    public void testSpecificAlternativematch() {
+        List<String> logs = new ArrayList<>();
+        logs.add("Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
+        logs.add("Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        logs.add("Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        logs.add("Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        logs.add("Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+
+        final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProperty(SplitText.VALUE_REGEX, "(\\w{3}\\s+\\d{1,2}\\s\\d{2}:\\d{2}:\\d{2})\\s([\\.\\w]+)\\/([\\.\\w]+)\\s(\\d{4}\\s+\\w{3}\\s\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\s+(\\w+)\\s+(PROXY_LOG)\\s\\[(.{26})\\]\\s\\d+\\s\\\"([^\"]+)\\\"\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s->\\s([\\w\\.{0,1}\\-]+)\\s->\\s(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s(\\d+)\\s->\\s+(\\d+|\\-)\\s(\\d+\\.\\d+\\.\\d+\\.\\d+|-)\\s(\\d+|\\-)\\s+\\\"\\s+([\\d\\.]+)\\s+([\\w]+)\\s(\\d+)\\s(\\w+)\\s(\\S+)\\s(\\S+)\\s(\\S+)\\s[^\\\"]*\\\"\\s+([\\w\\/\\-\\.\\+]+)\\s(\\d+)\\s*");
+        testRunner.setProperty(SplitText.VALUE_FIELDS, "raw_date,host1,host2,raw_date2,level,source,record_time,http_user_agent,src_ip,host_name,host_ip,host_port,tunnel_local_port,tunnel_remote_local_address,tunnel_remote_port,http_version,http_method,http_result_code,http_result,http_uri,http_query,http_referrer,http_content_type,bytes_out");
+        testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
+        testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
+
+
+
+        testRunner.setProperty("alt.value.regex.1", "(\\w{3}\\s+\\d{1,2}\\s\\d{2}:\\d{2}:\\d{2})\\s([\\.\\w]+)\\/([\\.\\w]+)\\s(\\d{4}\\s+\\w{3}\\s\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\s+(\\w+)\\s+(\\w+)\\:\\s+(.*)");
+        testRunner.setProperty("alt.value.fields.1", "raw_date,host1,host2,record_time,level,source,message");
+        testRunner.setProperty("alt.value.regex.2", "(\\w{3}\\s+\\d{1,2}\\s\\d{2}:\\d{2}:\\d{2})\\s([\\.\\w]+)\\/([\\.\\w]+)\\s(\\d{4}\\s+\\w{3}\\s\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\s+(\\w+)\\s+(.*)");
+        testRunner.setProperty("alt.value.fields.2", "raw_date,host1,host2,record_time,level,message");
+        testRunner.assertValid();
+        testRunner.enqueue(logs);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(5);
+        testRunner.assertOutputErrorCount(0);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("host1", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("host2", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("level", "INFO");
+        out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
+        out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
+        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
+        out.assertFieldEquals("record_time", 1484679138000L);
+        out.assertFieldEquals("record_type", "apache_log");
+        out.assertRecordSizeEquals(6);
+
+        out = testRunner.getOutputRecords().get(1);
+        out.assertFieldEquals("host1", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("host2", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("level", "INFO");
+        out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
+        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_time", 1484679138000L);
+        out.assertFieldEquals("record_type", "apache_log");
+        out.assertRecordSizeEquals(6);
+
+        out = testRunner.getOutputRecords().get(2);
+        out.assertFieldEquals("host1", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("host2", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("level", "INFO");
+        out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
+        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_time", 1484679138000L);
+        out.assertFieldEquals("record_type", "apache_log");
+        out.assertRecordSizeEquals(6);
+
+        out = testRunner.getOutputRecords().get(3);
+        out.assertFieldEquals("host1", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("host2", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("level", "INFO");
+        out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
+        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_time", 1484679138000L);
+        out.assertFieldEquals("record_type", "apache_log");
+        out.assertRecordSizeEquals(6);
+
+        out = testRunner.getOutputRecords().get(4);
+        out.assertFieldEquals("host1", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("host2", "EagleP13.prod.hurence.fr");
+        out.assertFieldEquals("level", "INFO");
+        out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
+        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_time", 1484679138000L);
+        out.assertFieldEquals("record_type", "apache_log");
+        out.assertRecordSizeEquals(6);
+    }
+
 }

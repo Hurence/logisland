@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -133,7 +133,7 @@ public class DateUtilTest {
     }
 
     @Test
-    public void testParsing() {
+    public void testParsing() throws ParseException {
         // Date expectedDate = new Date(1388648629000L);
         DateTime today = new DateTime(DateTimeZone.UTC);
         String currentYear = today.year().getAsString();
@@ -158,18 +158,18 @@ public class DateUtilTest {
                 "02/01/" + currentYear + "-07:43:49:000",
                 "02-Jan-" + currentYear + " 07:43:49:000",
                 "02-Jan-" + currentYear + " 07:43:49.000",
-                "02/Jan/" + currentYear + ":03:43:49 -0400"
+                "02/Jan/" + currentYear + ":03:43:49 -0400",
+                currentYear + " Jan 02 07:43:49",
+                currentYear + " Jan 2 7:43:49",
         };
 
 
         for (String strDate : strDates) {
             logger.info("parsing " + strDate);
-            try {
-                Date date = DateUtil.parse(strDate);
-                assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+
+            Date date = DateUtil.parse(strDate);
+            assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
+
         }
 
     }
