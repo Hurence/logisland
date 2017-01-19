@@ -18,6 +18,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
     mvn versions:commit
 
     git tag -a v0.9.7 -m "new logisland release 0.9.7"
+    git push origin v0.9.7
 
 follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 
