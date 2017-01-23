@@ -1,7 +1,28 @@
+# IntelliJ
 *.iml
 .idea/*
+
+# Eclipse
+**/.project
+**/.settings
+**/.classpath
+#   pydev projects
+**/.pydevproject
+#   added by eclipse when importing maven projects
+**/.gitignore
+
+# Python/Jython compiled files
+**/*.pyc
+**/*$py.class
+
+# Maven
 **/target/*
 **/dependency-reduced-pom.xml
+
+# File copy 
+**/*.*~
+
+# Misc
 *.tar.gz
 **/_build/
 *.DS_Store
