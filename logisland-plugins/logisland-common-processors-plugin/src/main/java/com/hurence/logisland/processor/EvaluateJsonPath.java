@@ -1,12 +1,11 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,15 +19,23 @@ import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 @Tags({"JSON", "evaluate", "JsonPath"})
@@ -47,8 +54,9 @@ import java.util.concurrent.ConcurrentMap;
         description = "will be set to any JSON objects that match the JsonPath. ")
 public class EvaluateJsonPath extends AbstractJsonPathProcessor {
 
+    private static Logger logger = LoggerFactory.getLogger(EvaluateJsonPath.class);
 
-    public static final String RETURN_TYPE_AUTO = "auto-detect";
+    public static final String ERROR_INVALID_JSON_FIELD = "invalid_json_field";
     public static final String RETURN_TYPE_JSON = "json";
     public static final String RETURN_TYPE_SCALAR = "scalar";
 
@@ -57,20 +65,27 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
 
 
     public static final PropertyDescriptor RETURN_TYPE = new PropertyDescriptor.Builder()
-            .name("Return Type").description("Indicates the desired return type of the JSON Path expressions.  " +
+            .name("return.type").description("Indicates the desired return type of the JSON Path expressions.  " +
                     "Selecting 'auto-detect' will set the return type to 'json'  or 'scalar' ")
             .required(true)
-            .allowableValues(RETURN_TYPE_AUTO, RETURN_TYPE_JSON, RETURN_TYPE_SCALAR)
-            .defaultValue(RETURN_TYPE_AUTO)
+            .allowableValues(RETURN_TYPE_JSON, RETURN_TYPE_SCALAR)
+            .defaultValue(RETURN_TYPE_SCALAR)
             .build();
 
     public static final PropertyDescriptor PATH_NOT_FOUND = new PropertyDescriptor.Builder()
-            .name("Path Not Found Behavior")
+            .name("path.not.found.behavior")
             .description("Indicates how to handle missing JSON path expressions. Selecting 'warn' will "
                     + "generate a warning when a JSON path expression is not found.")
             .required(true)
             .allowableValues(PATH_NOT_FOUND_WARN, PATH_NOT_FOUND_IGNORE)
             .defaultValue(PATH_NOT_FOUND_IGNORE)
+            .build();
+
+    public static final PropertyDescriptor JSON_INPUT_FIELD = new PropertyDescriptor.Builder()
+            .name("json.input.field.name")
+            .description("the name of the field containing the json string")
+            .required(true)
+            .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
 
@@ -85,6 +100,7 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
         properties.add(RETURN_TYPE);
         properties.add(PATH_NOT_FOUND);
         properties.add(NULL_VALUE_DEFAULT_REPRESENTATION);
+        properties.add(JSON_INPUT_FIELD);
         this.properties = Collections.unmodifiableList(properties);
     }
 
@@ -93,18 +109,18 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
         final List<ValidationResult> results = new ArrayList<>(super.customValidate(context));
 
 
-            int jsonPathCount = 0;
+        int jsonPathCount = 0;
 
-            for (final PropertyDescriptor desc : context.getProperties().keySet()) {
-                if (desc.isDynamic()) {
-                    jsonPathCount++;
-                }
+        for (final PropertyDescriptor desc : context.getProperties().keySet()) {
+            if (desc.isDynamic()) {
+                jsonPathCount++;
             }
+        }
 
-            if (jsonPathCount != 1) {
-                results.add(new ValidationResult.Builder().subject("JsonPaths").valid(false)
-                        .explanation("Exactly one JsonPath must be set if using d").build());
-            }
+        if (jsonPathCount != 1) {
+            results.add(new ValidationResult.Builder().subject("JsonPaths").valid(false)
+                    .explanation("Exactly one JsonPath must be set if using d").build());
+        }
 
 
         return results;
@@ -118,29 +134,17 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
 
     @Override
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
-        return new PropertyDescriptor.Builder()
-                .name(propertyDescriptorName)
-                .expressionLanguageSupported(false)
-                .addValidator(new JsonPathValidator() {
+        return new PropertyDescriptor.Builder().name(propertyDescriptorName).expressionLanguageSupported(false).addValidator(new JsonPathValidator() {
+            @Override
+            public void cacheComputedValue(String subject, String input, JsonPath computedJsonPath) {
+                cachedJsonPathMap.put(input, computedJsonPath);
+            }
 
-                    @Override
-                    public ValidationResult validate(String subject, String input) {
-                        return null;
-                    }
-
-                    @Override
-                    public void cacheComputedValue(String subject, String input, JsonPath computedJsonPath) {
-                        cachedJsonPathMap.put(input, computedJsonPath);
-                    }
-
-                    @Override
-                    public boolean isStale(String subject, String input) {
-                        return cachedJsonPathMap.get(input) == null;
-                    }
-                })
-                .required(false)
-                .dynamic(true)
-                .build();
+            @Override
+            public boolean isStale(String subject, String input) {
+                return cachedJsonPathMap.get(input) == null;
+            }
+        }).required(false).dynamic(true).build();
     }
 
     @Override
@@ -170,7 +174,7 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
     }*/
     @Override
     public Collection<Record> process(ProcessContext processContext, Collection<Record> records) throws ProcessException {
-
+        String returnType = processContext.getPropertyValue(RETURN_TYPE).asString();
 
         String representationOption = processContext.getPropertyValue(NULL_VALUE_DEFAULT_REPRESENTATION).asString();
         final String nullDefaultValue = NULL_REPRESENTATION_MAP.get(representationOption);
@@ -186,75 +190,66 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
             attributeToJsonPathMap.put(entry.getKey().getName(), jsonPath);
         }
 
- /*       final String destination = processContext.getPropertyValue(DESTINATION).asString();
-        String returnType = processContext.getPropertyValue(RETURN_TYPE).asString();
-        if (returnType.equals(RETURN_TYPE_AUTO)) {
-            returnType = destination.equals(DESTINATION_CONTENT) ? RETURN_TYPE_JSON : RETURN_TYPE_SCALAR;
-        }
+        String jsonInputField = processContext.getPropertyValue(JSON_INPUT_FIELD).asString();
 
-        DocumentContext documentContext = null;
-        try {
-            documentContext = validateAndEstablishJsonContext(processSession, flowFile);
-        } catch (InvalidJsonException e) {
-            logger.error("FlowFile {} did not have valid JSON content.", new Object[]{flowFile});
-            processSession.transfer(flowFile, REL_FAILURE);
-            return;
-        }
 
-        final Map<String, String> jsonPathResults = new HashMap<>();
-
-        for (final Map.Entry<String, JsonPath> attributeJsonPathEntry : attributeToJsonPathMap.entrySet()) {
-
-            final String jsonPathAttrKey = attributeJsonPathEntry.getKey();
-            final JsonPath jsonPathExp = attributeJsonPathEntry.getValue();
-            final String pathNotFound = processContext.getPropertyValue(PATH_NOT_FOUND).asString();
-
-            final AtomicReference<Object> resultHolder = new AtomicReference<>(null);
-            try {
-                final Object result = documentContext.read(jsonPathExp);
-                if (returnType.equals(RETURN_TYPE_SCALAR) && !isJsonScalar(result)) {
-                    logger.error("Unable to return a scalar value for the expression {} for FlowFile {}. Evaluated value was {}. Transferring to {}.",
-                            new Object[]{jsonPathExp.getPath(), flowFile.getId(), result.toString(), REL_FAILURE.getName()});
-                    processSession.transfer(flowFile, REL_FAILURE);
-                    return;
-                }
-                resultHolder.set(result);
-            } catch (PathNotFoundException e) {
-
-                if (pathNotFound.equals(PATH_NOT_FOUND_WARN)) {
-                    logger.warn("FlowFile {} could not find path {} for attribute key {}.",
-                            new Object[]{flowFile.getId(), jsonPathExp.getPath(), jsonPathAttrKey}, e);
+        records.forEach(record -> {
+            if (record.hasField(jsonInputField)) {
+                DocumentContext documentContext = null;
+                try {
+                    documentContext = validateAndEstablishJsonContext(record.getField(jsonInputField).asString());
+                } catch (InvalidJsonException e) {
+                    logger.error("Record {} did not have valid JSON content.", record);
+                    record.addError(ERROR_INVALID_JSON_FIELD, "unable to parse content of field : " + jsonInputField);
                 }
 
-                if (destination.equals(DESTINATION_ATTRIBUTE)) {
-                    jsonPathResults.put(jsonPathAttrKey, StringUtils.EMPTY);
-                    continue;
-                } else {
-                    processSession.transfer(flowFile, REL_NO_MATCH);
-                    return;
-                }
-            }
+                final Map<String, String> jsonPathResults = new HashMap<>();
+                for (final Map.Entry<String, JsonPath> attributeJsonPathEntry : attributeToJsonPathMap.entrySet()) {
 
-            final String resultRepresentation = getResultRepresentation(resultHolder.get(), nullDefaultValue);
-            switch (destination) {
-                case DESTINATION_ATTRIBUTE:
-                    jsonPathResults.put(jsonPathAttrKey, resultRepresentation);
-                    break;
-                case DESTINATION_CONTENT:
-                    flowFile = processSession.write(flowFile, new OutputStreamCallback() {
-                        @Override
-                        public void process(final OutputStream out) throws IOException {
-                            try (OutputStream outputStream = new BufferedOutputStream(out)) {
-                                outputStream.write(resultRepresentation.getBytes(StandardCharsets.UTF_8));
-                            }
+                    final String jsonPathAttrKey = attributeJsonPathEntry.getKey();
+                    final JsonPath jsonPathExp = attributeJsonPathEntry.getValue();
+                    final String pathNotFound = processContext.getPropertyValue(PATH_NOT_FOUND).asString();
+
+                    final AtomicReference<Object> resultHolder = new AtomicReference<>(null);
+                    try {
+                        final Object result = documentContext.read(jsonPathExp);
+                        if (returnType.equals(RETURN_TYPE_SCALAR) && !isJsonScalar(result)) {
+                            String error = String.format("Unable to return a scalar value for the expression %s " +
+                                            "for Record %s. Evaluated value was %s.",
+                                    jsonPathExp.getPath(), record.getId(), result.toString());
+
+                            logger.error(error);
+                            record.addError(ERROR_INVALID_JSON_FIELD, error);
                         }
-                    });
-                    processSession.getProvenanceReporter().modifyContent(flowFile, "Replaced content with result of expression " + jsonPathExp.getPath());
-                    break;
+                        resultHolder.set(result);
+                    } catch (PathNotFoundException e) {
+
+                        if (pathNotFound.equals(PATH_NOT_FOUND_WARN)) {
+
+                            String error = String.format("Record %s could not find path %s for field %s..",
+                                    record.getId(), jsonPathExp.getPath(), jsonPathAttrKey);
+                            logger.error(error);
+                            record.addError(ERROR_INVALID_JSON_FIELD, error);
+                        }
+                        jsonPathResults.put(jsonPathAttrKey, StringUtils.EMPTY);
+
+                    }
+
+                    final FieldType resultType = getResultType(resultHolder.get());
+                    if (resultType != FieldType.STRING)
+                        record.setField(jsonPathAttrKey, resultType, resultHolder.get());
+                    else
+                        record.setField(jsonPathAttrKey, resultType,getResultRepresentation(resultHolder.get(), nullDefaultValue));
+
+                }
+
+            } else {
+                String error = String.format("Record %s has no field %s.", record.getId(), jsonInputField);
+                logger.error(error);
+                record.addError(ERROR_INVALID_JSON_FIELD, error);
             }
-        }
-        flowFile = processSession.putAllAttributes(flowFile, jsonPathResults);
-        processSession.transfer(flowFile, REL_MATCH);*/
-        return Collections.emptyList();
+        });
+
+        return records;
     }
 }

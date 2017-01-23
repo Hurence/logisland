@@ -1,8 +1,23 @@
+/**
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.util.JsonPathExpressionValidator;
-import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import com.jayway.jsonpath.Configuration;
@@ -11,9 +26,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Provides common functionality used for processors interacting and manipulating JSON data via JsonPath.
  *
  * @see <a href="http://json.org">http://json.org</a>
- * @see
- * <a href="https://github.com/jayway/JsonPath">https://github.com/jayway/JsonPath</a>
+ * @see <a href="https://github.com/jayway/JsonPath">https://github.com/jayway/JsonPath</a>
  */
 public abstract class AbstractJsonPathProcessor extends AbstractProcessor {
 
@@ -51,21 +62,15 @@ public abstract class AbstractJsonPathProcessor extends AbstractProcessor {
             .defaultValue(EMPTY_STRING_OPTION)
             .build();
 
-    /*static DocumentContext validateAndEstablishJsonContext(ProcessSession processSession, FlowFile flowFile) {
+    static DocumentContext validateAndEstablishJsonContext(String jsonContent) {
         // Parse the document once into an associated context to support multiple path evaluations if specified
         final AtomicReference<DocumentContext> contextHolder = new AtomicReference<>(null);
-        processSession.read(flowFile, new InputStreamCallback() {
-            @Override
-            public void process(InputStream in) throws IOException {
-                try (BufferedInputStream bufferedInputStream = new BufferedInputStream(in)) {
-                    DocumentContext ctx = JsonPath.using(STRICT_PROVIDER_CONFIGURATION).parse(bufferedInputStream);
-                    contextHolder.set(ctx);
-                }
-            }
-        });
+
+        DocumentContext ctx = JsonPath.using(STRICT_PROVIDER_CONFIGURATION).parse(jsonContent);
+        contextHolder.set(ctx);
 
         return contextHolder.get();
-    }*/
+    }
 
     /**
      * Determines the context by which JsonSmartJsonProvider would treat the value. {@link Map} and {@link List} objects can be rendered as JSON elements, everything else is
@@ -86,10 +91,29 @@ public abstract class AbstractJsonPathProcessor extends AbstractProcessor {
         return JSON_PROVIDER.toJson(jsonPathResult);
     }
 
+    static FieldType getResultType(Object jsonPathResult) {
+        if (jsonPathResult instanceof String) {
+            return FieldType.STRING;
+        } else if (jsonPathResult instanceof Float) {
+            return FieldType.FLOAT;
+        } else if (jsonPathResult instanceof Double) {
+            return FieldType.DOUBLE;
+        } else if (jsonPathResult instanceof Integer) {
+            return FieldType.INT;
+        } else if (jsonPathResult instanceof Long) {
+            return FieldType.LONG;
+        } else if (jsonPathResult instanceof Boolean) {
+            return FieldType.BOOLEAN;
+        } else {
+            return FieldType.STRING;
+        }
+
+    }
+
     abstract static class JsonPathValidator implements Validator {
 
-       // @Override
-        public ValidationResult validate(final String subject, final String input, final ValidationContext context) {
+        @Override
+        public ValidationResult validate(final String subject, final String input) {
             String error = null;
             if (isStale(subject, input)) {
                 if (JsonPathExpressionValidator.isValidExpression(input)) {

@@ -267,8 +267,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
    "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
-   "**output.format**", "can be parquet, orc csv", "parquet : , orc : , txt : , json : , ", "null", "", ""
+   "**output.format**", "can be parquet, orc csv", "parquet : , txt : , json : , json : , ", "null", "", ""
    "**record.type**", "the type of event to filter", "", "null", "", ""
+   "num.partitions", "the numbers of physical files on HDFS", "", "4", "", ""
+   "exclude.errors", "do we include records with errors ?", "", "true", "", ""
 
 ----------
 
@@ -491,7 +493,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**conflict.resolution.policy**", "waht to do when a field with the same name already exists ?", "nothing to do : leave record as it was, overwrite existing field : if field already exist, keep only old field and delete the other : keep only old field and delete the other, ", "do_nothing", "", ""
+   "**conflict.resolution.policy**", "waht to do when a field with the same name already exists ?", "nothing to do : leave record as it was, overwrite existing field : if field already exist, keep only old field and delete the other : keep only old field and delete the other, keep old field and new one : creates an alias for the new field, ", "do_nothing", "", ""
 
 Dynamic Properties
 __________________

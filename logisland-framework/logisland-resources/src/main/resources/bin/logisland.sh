@@ -1,8 +1,8 @@
 #!/bin/sh
 
 #. $(dirname $0)/launcher.sh
-lib_dir="$(realpath "$(dirname $0)/../lib")"
-CONF_DIR="$(realpath "$(dirname $0)/../conf")"
+lib_dir="$(readlink -f "$(dirname $0)/../lib")"
+CONF_DIR="$(readlink -f "$(dirname $0)/../conf")"
 
 app_classpath=""
 for entry in "$lib_dir"/*

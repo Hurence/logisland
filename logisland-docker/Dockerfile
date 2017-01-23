@@ -77,20 +77,21 @@ EXPOSE 9200 9300 9201 9301
 # Grafana
 RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470047149.x86_64.rpm
 
-RUN curl -s http://www-eu.apache.org/dist/nifi/1.0.0/nifi-1.0.0-bin.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s nifi-1.0.0 nifi
+RUN curl -s http://www-eu.apache.org/dist/nifi/1.1.1/nifi-1.1.1-bin.tar.gz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s nifi-1.1.1 nifi
 ENV NIFI_HOME /usr/local/nifi
 EXPOSE 8080
 EXPOSE 3000
 
 # Log-Island
-COPY logisland-0.9.7-SNAPSHOT-bin.tar.gz /usr/local/logisland-0.9.7-SNAPSHOT-bin.tar.gz
+COPY logisland-0.9.7-bin.tar.gz /usr/local/logisland-0.9.7-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-0.9.7-SNAPSHOT-bin.tar.gz; \
-    ln -s /usr/local/logisland-0.9.7-SNAPSHOT /usr/local/logisland; \
+    tar -xzf logisland-0.9.7-bin.tar.gz; \
+    ln -s /usr/local/logisland-0.9.7 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/logisland-0.9.7-SNAPSHOT-bin.tar.gz
+    rm -f /usr/local/logisland-0.9.7-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
+RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
 
 
 # Kafka manager
