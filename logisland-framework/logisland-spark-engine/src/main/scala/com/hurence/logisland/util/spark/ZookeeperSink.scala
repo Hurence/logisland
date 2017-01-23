@@ -107,7 +107,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
 
         val topicsMetadata = ClientUtils.fetchTopicMetadata(Set(topic), metadataTargetBrokers, clientId, maxWaitMs).topicsMetadata
         if (topicsMetadata.size != 1 || !topicsMetadata.head.topic.equals(topic)) {
-            logger.error(("Error: no valid topic metadata for topic: %s, " + " probably the topic does not exist ").format(topic))
+            logger.info(("no valid topic metadata for topic: %s, " + " probably the topic does not exist ").format(topic))
         }
 
         val partitions = topicsMetadata.head.partitionsMetadata.map(_.partitionId)
@@ -126,11 +126,11 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                             val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
                             partitionId -> Some(offsets.head)
                         case None =>
-                            logger.error("Error: partition %d does not have a leader. Skip getting offsets".format(partitionId))
+                            logger.info("partition %d does not have a leader. Skip getting offsets".format(partitionId))
                             partitionId -> None
                     }
                 case None =>
-                    logger.error("Error: partition %d does not exist".format(partitionId))
+                    logger.info("partition %d does not exist".format(partitionId))
                     partitionId -> None
             }
         }.toMap
@@ -156,7 +156,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                 val zkNodePath = s"/consumers/$group/offsets/$topic/$partitionId"
 
                 if (latestOffset.isEmpty) {
-                    logger.error(s"latest offset doesn't exist for partition $partitionId in topic $topic")
+                    logger.info(s"latest offset doesn't exist for partition $partitionId in topic $topic")
                     TopicAndPartition(topic, partitionId) -> -1L
                 } else {
                     val latestStoredOffset =
@@ -168,12 +168,12 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                                         TopicAndPartition(topic, partitionId) -> new String(offset).toLong
                                     }
                                 case false =>
-                                    logger.error(s"ZK Node ($zkNodePath) does NOT exist")
+                                    logger.info(s"ZK Node ($zkNodePath) does NOT exist")
                                     None
                             }
                         } catch {
                             case scala.util.control.NonFatal(error) =>
-                                logger.error(s"ZK Node ($zkNodePath) - Error: $error")
+                                logger.info(s"ZK Node ($zkNodePath) - Error: $error")
                                 None
                         }
                     if (latestStoredOffset.isEmpty || (latestOffset.get < latestStoredOffset.get._2)) {

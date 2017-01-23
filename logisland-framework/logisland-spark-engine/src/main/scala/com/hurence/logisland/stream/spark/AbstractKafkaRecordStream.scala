@@ -272,14 +272,12 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
               *
               * previous values :
               *    refresh.leader.backoff.ms -> 1000
-              *    retry.backoff.ms -> not set
               */
             val kafkaStreamsParams = Map(
                 "metadata.broker.list" -> brokerList,
                 "bootstrap.servers" -> brokerList,
                 "group.id" -> appName,
                 "refresh.leader.backoff.ms" -> "5000",
-                "retry.backoff.ms" -> "2000",
                 "auto.offset.reset" -> "largest"
             )
 
