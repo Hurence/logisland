@@ -247,7 +247,7 @@ public class SplitText extends AbstractProcessor {
                             boolean hasMatched = false;
                             for (AlternativeMappingPattern alternativeMatchingRegex : alternativeRegexList) {
                                 Matcher alternativeValueMatcher = alternativeMatchingRegex.getPattern().matcher(value);
-                                if (alternativeValueMatcher.matches()) {
+                                if (alternativeValueMatcher.lookingAt()) {
                                     extractValueFields(
                                             alternativeMatchingRegex.getMapping(),
                                             keepRawContent,
@@ -259,7 +259,7 @@ public class SplitText extends AbstractProcessor {
                             }
                             // if we don't have any matches output an error
                             if (!hasMatched) {
-                                outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "");
+                                outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "check your conf");
                                 outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
                             }
 
