@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.scripting.python;
 
+import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -32,6 +33,8 @@ import org.python.util.PythonInterpreter;
 
 import java.io.File;
 import java.util.*;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * 
@@ -95,7 +98,7 @@ public class PythonProcessor extends AbstractProcessor {
     private String logislandDependenciesPath = null;
     
     // Python interpreter
-    private PythonInterpreter pythonInterpreter = new PythonInterpreter();
+    private PythonInterpreter pythonInterpreter = null;
 
     // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;
@@ -206,6 +209,7 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        pythonInterpreter = new PythonInterpreter();
         // Get config parameters
         getConfigParams(context);
 
@@ -291,7 +295,13 @@ public class PythonProcessor extends AbstractProcessor {
             }
             
             // Define the process method
-            pythonInterpreter.exec("def process(context, records):\n" + scriptCodeProcess);
+
+            String statement = Lists.newArrayList(scriptCodeProcess.split("\n"))
+                    .stream()
+                    .map( t -> String.format("  %s", t))
+                    .collect(joining("\n"));
+            System.out.println(statement);
+            pythonInterpreter.exec("def process(context, records):\n" + statement);
         }
         
         // Allow forwarding calls to onPropertyModified
@@ -478,7 +488,10 @@ public class PythonProcessor extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
-        logger.debug("Processing records: " + records);
+        if(pythonInterpreter == null)
+            init(context);
+
+
 
         Collection<Record> outputRecords = null;
         
@@ -505,6 +518,7 @@ public class PythonProcessor extends AbstractProcessor {
             pythonInterpreter.exec("outputRecords = process(context, records)");
             outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
         }
+        logger.debug("Processed records ");
 
         return outputRecords;
     }
