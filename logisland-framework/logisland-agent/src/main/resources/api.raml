@@ -1,0 +1,124 @@
+#%RAML 1.0
+---
+title: logisland-agent API
+baseUri: http://logisland.hurence.com/agent/api/{version}
+version: v0.9.8
+mediaType: [ application/json, application/yml ]
+types:
+  Property:
+    type: object
+    properties:
+      key:   string
+      value: string
+  Field:
+    type: object
+    properties:
+      type: string
+      name: string
+      optional:
+        type: boolean
+        default: true
+  Schema:
+    type: object
+    displayName: AvroSchema
+    description: |
+      This item describes the semantic content of the topic.
+    properties:
+      version:       string
+      name:          string
+      dateModified:
+        type: datetime
+        format: rfc3339
+      documentation?: string
+      fields:        Field[]
+  Cluster:
+    type: object
+    properties:
+      name: string
+      kafka.metadata.broker.list: string
+      kafka.zookeeper.quorum: string
+      kafka.topic.autoCreate:
+        type: boolean
+        default: true
+      kafka.topic.default.partitions:
+        type: integer
+        minimum: 1
+      kafka.topic.default.replicationFactor:
+        type: number
+        minimum: 1
+  Topic:
+    type: object
+    properties:
+      name: string
+      serializer: string
+      schema: Schema
+      partitions: integer
+      replicationFactor: integer
+  Job:
+    type: object
+    properties:
+      version:       string
+      name:          string
+      dateModified:
+        type: datetime
+        format: rfc3339
+      documentation?: string
+      engine: Engine
+      streams:
+        type: Stream[]
+        minItems: 1
+        uniqueItems: true
+
+  Engine:
+    type: object
+    properties:
+      name:          string
+      component:     string
+      documentation?: string
+      config:        Property[]
+
+  Stream:
+    type: object
+    properties:
+      name:          string
+      component:     string
+      documentation: string
+      kafka.input.topics: Topic[]
+      kafka.output.topics: Topic[]
+      kafka.error.topics: Topic[]
+      processors: Processor[]
+  Processor:
+    type: object
+    properties:
+      name:          string
+      component:     string
+      documentation?: string
+      config:        Property[]
+
+/cluster:
+  description: The configuration of the cluster
+  get:
+    responses:
+      200:
+        body: Cluster
+  put:
+
+/topics:
+  description: A collection of managed topics
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: Topic[]
+  post:
+    body:
+      application/json:
+        type: Topic
+  /{topicId}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: Topic
