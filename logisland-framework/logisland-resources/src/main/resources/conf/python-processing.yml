@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.9.7
+version: 0.9.8
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -93,7 +93,7 @@ engine:
           type: parser
           documentation: a parser that add a new field if a threshold has been crossed
           configuration:
-            dependencies.path: logisland-assembly/target/logisland-0.9.7-bin/logisland-0.9.7/python
+            dependencies.path: logisland-assembly/target/logisland-0.9.8-bin/logisland-0.9.8/python
             script.code.process: >
                 outputRecords = []
 

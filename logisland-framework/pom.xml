@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.9.7</version>
+        <version>0.9.8</version>
     </parent>
 
     <artifactId>logisland-framework</artifactId>
@@ -31,6 +31,7 @@
         <module>logisland-utils</module>
         <module>logisland-spark-engine</module>
         <module>logisland-bootstrap</module>
+        <module>logisland-agent</module>
         <module>logisland-documentation</module>
     </modules>
 </project>
