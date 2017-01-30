@@ -7,7 +7,7 @@ Small standalone Hadoop distribution for development and testing purpose :
 - Elasticsearch 2.3.3
 - Kibana 4.5.1
 - Kafka 0.9.0.1
-- Logisland 0.9.7
+- Logisland 0.10.0-SNAPSHOT
 
 
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
@@ -32,14 +32,14 @@ Building the image
 
     # build logisland
     mvn clean install
-    cp logisland-assembly/target/logisland-0.9.7-bin.tar.gz logisland-docker
+    cp logisland-assembly/target/logisland-0.10.0-SNAPSHOT-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue
 
 .. code-block:: sh
 
-    docker build --rm -t hurence/logisland:0.9.7 .
+    docker build --rm -t hurence/logisland:0.10.0-SNAPSHOT .
 
 
 Running the image
@@ -64,13 +64,13 @@ Running the image
         -p 4050-4060:4050-4060 \
         --name logisland \
         -h sandbox \
-        hurence/logisland:0.9.7 bash
+        hurence/logisland:0.10.0-SNAPSHOT bash
 
 or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/logisland:0.9.7 -d
+    docker run -d -h sandbox hurence/logisland:0.10.0-SNAPSHOT -d
 
 if you want to mount a directory from your host, add the following option :
 

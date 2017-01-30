@@ -3,7 +3,7 @@ What's new in logisland ?
 
 
 
-v0.9.7
+v0.10.0-SNAPSHOT
 ------
 
 - add HDFS burner feature processor #89
