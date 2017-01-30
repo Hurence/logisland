@@ -222,7 +222,7 @@ public class SparkRecordStreamProcessingTest {
 
 
         sendMessage("logisland_raw", "ok right now");
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         Collection<Record> records = readMessages(AbstractKafkaRecordStream.DEFAULT_EVENTS_TOPIC().getValue());
 
         assertTrue(records.size() != 0);

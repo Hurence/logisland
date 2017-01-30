@@ -234,9 +234,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             .map(o => s"${o.topic}_${o.partition}:${o.fromOffset}/${o.untilOffset}")
                             .mkString( ", ")
 
-                        logger.error("exception : {}", ex.toString)
-                        logger.error("unable to process partition. " +
-                            "current Offsets {} latest offsets {}", offestsString, latestOffsetsString)
+                        logger.error(s"exception : ${ex.toString}")
+                        logger.error(s"unable to process partition. current Offsets $offestsString latest offsets $latestOffsetsString")
                 }
 
             })
