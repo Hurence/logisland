@@ -33,15 +33,18 @@ package com.hurence.logisland.util.spark
 import java.net.InetAddress
 import java.util.Collections
 
+import com.hurence.logisland.zookeeper.serializers.ZkStringSerializer
 import kafka.admin.AdminUtils
 import kafka.api.{OffsetRequest, PartitionOffsetRequestInfo}
 import kafka.client.ClientUtils
 import kafka.common.TopicAndPartition
-import kafka.utils.ZKStringSerializer
+import org.apache.kafka.common.TopicPartition
+import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
 import org.I0Itec.zkclient.exception.ZkMarshallingError
 import org.I0Itec.zkclient.serialize.ZkSerializer
-import org.apache.spark.streaming.kafka.OffsetRange
+import org.apache.kafka.common.security.JaasUtils
+import org.apache.spark.streaming.kafka010.OffsetRange
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions
@@ -68,13 +71,15 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
         try {
             zkClient.setZkSerializer(new ZkSerializer() {
                 @throws[ZkMarshallingError]
-                def serialize(o: Object): Array[Byte] = ZKStringSerializer.serialize(o)
+                def serialize(o: Object): Array[Byte] = new ZkStringSerializer().serialize(o)
 
-                def deserialize(bytes: Array[Byte]): Object = ZKStringSerializer.deserialize(bytes)
+                def deserialize(bytes: Array[Byte]): Object = new ZkStringSerializer().deserialize(bytes)
             })
-            val topicMetadatas = AdminUtils.fetchTopicMetadataFromZk(JavaConversions.asScalaSet(Collections.singleton(topic)), zkClient)
+
+            val zkUtils = ZkUtils.apply(zkClient, JaasUtils.isZkSecurityEnabled)
+            val topicMetadatas = AdminUtils.fetchTopicMetadataFromZk(JavaConversions.asScalaSet(Collections.singleton(topic)), zkUtils)
             if (topicMetadatas != null && topicMetadatas.nonEmpty)
-                Some(JavaConversions.setAsJavaSet(topicMetadatas).iterator.next.partitionsMetadata.size)
+                Some(JavaConversions.setAsJavaSet(topicMetadatas).iterator.next.partitionMetadata().size)
             else {
                 logger.info("Failed to get metadata for topic " + topic)
                 None
@@ -121,7 +126,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                     metadata.leader match {
                         case Some(leader) =>
                             val consumer = new kafka.consumer.SimpleConsumer(leader.host, leader.port, 10000, 100000, clientId)
-                            val topicAndPartition = TopicAndPartition(topic, partitionId)
+                            val topicAndPartition = new TopicAndPartition(topic, partitionId)
                             val request = OffsetRequest(Map(topicAndPartition -> PartitionOffsetRequestInfo(time, nOffsets)))
                             val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
                             partitionId -> Some(offsets.head)
@@ -145,7 +150,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
       * @param topics the topic names
       * @return
       */
-    def loadOffsetRangesFromZookeeper(brokerList: String, group: String, topics: Set[String]): Map[TopicAndPartition, Long] = {
+    def loadOffsetRangesFromZookeeper(brokerList: String, group: String, topics: Set[String]): Map[TopicPartition, Long] = {
         logger.info(s"loading latest Offsets from Zookeeper, brokerList: $brokerList, consumer group : $group in topics $topics")
         topics.flatMap(topic => {
 
@@ -157,7 +162,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
 
                 if (latestOffset.isEmpty) {
                     logger.info(s"latest offset doesn't exist for partition $partitionId in topic $topic")
-                    TopicAndPartition(topic, partitionId) -> -1L
+                    new TopicPartition(topic, partitionId) -> -1L
                 } else {
                     val latestStoredOffset =
                         try {
@@ -165,7 +170,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                                 case true =>
                                     val maybeOffset = Option(zkClient.readData[String](zkNodePath))
                                     maybeOffset.map { offset =>
-                                        TopicAndPartition(topic, partitionId) -> new String(offset).toLong
+                                        new TopicPartition(topic, partitionId) -> new String(offset).toLong
                                     }
                                 case false =>
                                     logger.info(s"ZK Node ($zkNodePath) does NOT exist")
@@ -177,9 +182,9 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                                 None
                         }
                     if (latestStoredOffset.isEmpty || (latestOffset.get < latestStoredOffset.get._2)) {
-                        TopicAndPartition(topic, partitionId) -> latestOffset.get
+                        new TopicPartition(topic, partitionId) -> latestOffset.get
                     } else {
-                        TopicAndPartition(topic, partitionId) -> latestStoredOffset.get._2
+                        new TopicPartition(topic, partitionId) -> latestStoredOffset.get._2
                     }
                 }
             })
@@ -241,7 +246,7 @@ object ZookeeperSink {
     def apply(zkQuorum: String): ZookeeperSink = {
         val f = () => {
             logger.info("creating Zk client")
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+            val zkClient = new ZkClient(zkQuorum, 10000, 10000, new ZkStringSerializer())
 
             zkClient
         }

@@ -17,7 +17,7 @@
 base_dir=$(dirname $0)/..
 
 # Development jars. `mvn package` should collect all the required dependency jars here
-for dir in $base_dir/package-schema-registry/target/kafka-schema-registry-package-*-development; do
+for dir in $base_dir/lib; do
   CLASSPATH=$CLASSPATH:$dir/share/java/schema-registry/*
 done
 
@@ -30,7 +30,7 @@ done
 if [ "x$SCHEMA_REGISTRY_LOG4J_OPTS" = "x" ]; then
   # Test for files from dev -> packages so this will work as expected in dev if you have packages
   # installed
-  if [ -e "$base_dir/config/log4j.properties" ]; then # Dev environment
+  if [ -e "$base_dir/conf/log4j.properties" ]; then # Dev environment
     SCHEMA_REGISTRY_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/config/log4j.properties"
   elif [ -e "$base_dir/etc/schema-registry/log4j.properties" ]; then # Simple zip file layout
     SCHEMA_REGISTRY_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/etc/schema-registry/log4j.properties"

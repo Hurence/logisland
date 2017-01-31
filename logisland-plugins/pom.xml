@@ -34,7 +34,7 @@
         <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
-        <module>logisland-kafka-plugin</module>
+        <module>logisland-kafka-0-10-plugin</module>
         <module>logisland-sampling-plugin</module>
     </modules>
 </project>

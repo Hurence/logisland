@@ -26,7 +26,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
-import com.hurence.logisland.util.kafka.EmbeddedKafkaEnvironment;
+import com.hurence.logisland.kafka.util.EmbeddedKafkaEnvironment;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;

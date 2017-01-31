@@ -16,7 +16,7 @@
 
 package io.confluent.connect.avro;
 
-import io.confluent.kafka.serializers.NonRecordContainer;
+import com.hurence.logisland.kafka.serializers.NonRecordContainer;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;

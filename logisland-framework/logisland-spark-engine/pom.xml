@@ -39,7 +39,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-kafka-0-8-plugin</artifactId>
+            <artifactId>logisland-kafka-0-10-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -53,66 +53,24 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-        <!--       <dependency>
-                   <groupId>org.apache.avro</groupId>
-                   <artifactId>avro</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>com.esotericsoftware</groupId>
-                   <artifactId>kryo</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>org.elasticsearch</groupId>
-                   <artifactId>elasticsearch</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>commons-codec</groupId>
-                   <artifactId>commons-codec</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>joda-time</groupId>
-                   <artifactId>joda-time</artifactId>
-               </dependency>
-           <dependency>
-                   <groupId>org.apache.kafka</groupId>
-                   <artifactId>kafka_2.10</artifactId>
-               </dependency>
 
-
-               <dependency>
-                   <groupId>org.codehaus.jackson</groupId>
-                   <artifactId>jackson-mapper-asl</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>com.fasterxml.jackson.core</groupId>
-                   <artifactId>jackson-databind</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>com.googlecode.json-simple</groupId>
-                   <artifactId>json-simple</artifactId>
-               </dependency>
-               <dependency>
-                   <groupId>org.apache.commons</groupId>
-                   <artifactId>commons-lang3</artifactId>
-               </dependency>
-       -->
 
         <!-- spark dependencies -->
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.10</artifactId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.10</artifactId>
+            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
+            <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -139,7 +97,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>

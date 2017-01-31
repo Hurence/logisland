@@ -18,10 +18,10 @@ package io.confluent.connect.avro;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerializer;
-import io.confluent.kafka.serializers.NonRecordContainer;
+import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroDeserializer;
+import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroSerializer;
+import com.hurence.logisland.kafka.serializers.NonRecordContainer;
 import org.apache.avro.generic.GenericContainer;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.config.ConfigException;

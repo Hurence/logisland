@@ -15,6 +15,7 @@
  */
 package io.confluent.kafka.schemaregistry.zookeeper;
 
+import com.hurence.logisland.zookeeper.serializers.ZkStringSerializer;
 import io.confluent.common.utils.zookeeper.ZkUtils;
 import io.confluent.kafka.schemaregistry.ClusterTestHarness;
 import io.confluent.kafka.schemaregistry.RestApp;
@@ -23,7 +24,6 @@ import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.storage.KafkaSchemaRegistry;
-import io.confluent.kafka.schemaregistry.storage.serialization.ZkStringSerializer;
 import io.confluent.kafka.schemaregistry.utils.TestUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.junit.Test;

@@ -87,17 +87,17 @@
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.1</hbase.version>
-        <spark.version>1.6.2</spark.version>
-        <kafka.version>0.8.2.1</kafka.version>
+        <spark.version>2.1.0</spark.version>
+        <kafka.version>0.10.0.1</kafka.version>
         <hadoop.guava.version>12.0.1</hadoop.guava.version>
         <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
-        <scala.version>2.10.6</scala.version>
+        <scala.version>2.11.8</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
         <elasticsearch.version>2.3.3</elasticsearch.version>
-        <scala.binary.version>2.10</scala.binary.version>
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
     </properties>
@@ -145,6 +145,11 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <name>Confluent</name>
+            <url>http://packages.confluent.io/maven/</url>
         </repository>
     </repositories>
 
@@ -194,7 +199,7 @@
 
             <dependency>
                 <groupId>com.twitter</groupId>
-                <artifactId>algebird-core_2.10</artifactId>
+                <artifactId>algebird-core_${scala.binary.version}</artifactId>
                 <version>${algebird.version}</version>
             </dependency>
             <dependency>
@@ -206,7 +211,7 @@
 
             <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
-                <artifactId>scala-logging-slf4j_2.10</artifactId>
+                <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
                 <version>2.1.2</version>
             </dependency>
             <dependency>
@@ -342,7 +347,6 @@
             </dependency>
 
 
-
             <!-- Hadoop dependencies -->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -393,12 +397,12 @@
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.10</artifactId>
+                <artifactId>kafka_${scala.binary.version}</artifactId>
                 <version>${kafka.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.10</artifactId>
+                <artifactId>kafka_${scala.binary.version}</artifactId>
                 <version>${kafka.version}</version>
                 <classifier>test</classifier>
             </dependency>
@@ -413,6 +417,26 @@
                 <artifactId>kryo</artifactId>
                 <version>2.21</version>
             </dependency>
+
+            <!--
+            Confluent stuff
+            -->
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>common-config</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>common-utils</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>rest-utils</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.elasticsearch</groupId>
@@ -502,31 +526,31 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_2.10</artifactId>
+                <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming_2.10</artifactId>
+                <artifactId>spark-streaming_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_2.10</artifactId>
+                <artifactId>spark-sql_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-mllib_2.10</artifactId>
+                <artifactId>spark-mllib_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
+                <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
@@ -566,7 +590,7 @@
 
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.10</artifactId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
                 <version>2.2.4</version>
             </dependency>
 
@@ -641,7 +665,7 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-kafka-0-8-plugin</artifactId>
+                <artifactId>logisland-kafka-0-10-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -666,11 +690,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-       <!-- <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
-        </dependency>-->
+        <!-- <dependency>
+             <groupId>org.slf4j</groupId>
+             <artifactId>slf4j-simple</artifactId>
+             <scope>test</scope>
+         </dependency>-->
 
     </dependencies>
     <build>
@@ -810,7 +834,7 @@
                         <releaseProfiles>apache-release</releaseProfiles>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <goals>deploy</goals>
-                       <!-- <tagNameFormat>@{project.artifactId}-@{project.version}</tagNameFormat>-->
+                        <!-- <tagNameFormat>@{project.artifactId}-@{project.version}</tagNameFormat>-->
                         <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
                     </configuration>
@@ -887,10 +911,10 @@
                     <reuseForks>true</reuseForks>
                     <argLine>-Xmx1024m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true</argLine>
                 </configuration>
-               <!-- <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <argLine combine.children="append">-Xmx1G -Djava.net.preferIPv4Stack=true</argLine>
-                </configuration>-->
+                <!-- <configuration>
+                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                     <argLine combine.children="append">-Xmx1G -Djava.net.preferIPv4Stack=true</argLine>
+                 </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -936,52 +960,52 @@
                 <artifactId>antlr3-maven-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
-           <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.15</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>6.5</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+            <!-- <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-checkstyle-plugin</artifactId>
+                 <version>2.15</version>
+                 <dependencies>
+                     <dependency>
+                         <groupId>com.puppycrawl.tools</groupId>
+                         <artifactId>checkstyle</artifactId>
+                         <version>6.5</version>
+                     </dependency>
+                 </dependencies>
+             </plugin>
 
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <executions>
 
-                    <execution>
-                        <id>groovy-tests</id>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerId>groovy-eclipse-compiler</compilerId>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.source}</target>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.9.2-01</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-batch</artifactId>
-                        <version>2.4.3-01</version>
-                    </dependency>
-                </dependencies>
-            </plugin>-->
+                     <execution>
+                         <id>groovy-tests</id>
+                         <goals>
+                             <goal>testCompile</goal>
+                         </goals>
+                         <configuration>
+                             <compilerId>groovy-eclipse-compiler</compilerId>
+                         </configuration>
+                     </execution>
+                 </executions>
+                 <configuration>
+                     <source>${maven.compiler.source}</source>
+                     <target>${maven.compiler.source}</target>
+                 </configuration>
+                 <dependencies>
+                     <dependency>
+                         <groupId>org.codehaus.groovy</groupId>
+                         <artifactId>groovy-eclipse-compiler</artifactId>
+                         <version>2.9.2-01</version>
+                     </dependency>
+                     <dependency>
+                         <groupId>org.codehaus.groovy</groupId>
+                         <artifactId>groovy-eclipse-batch</artifactId>
+                         <version>2.4.3-01</version>
+                     </dependency>
+                 </dependencies>
+             </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1034,7 +1058,7 @@
                                 </module>-->
                                 <module name="OuterTypeFilename"/>
                                 <module name="LineLength">
-                                    <!-- needs extra, because Eclipse formatter ignores the ending left 
+                                    <!-- needs extra, because Eclipse com.hurence.logisland.kafka.formatter ignores the ending left
                                     brace -->
                                     <property name="max" value="200"/>
                                     <property name="ignorePattern"

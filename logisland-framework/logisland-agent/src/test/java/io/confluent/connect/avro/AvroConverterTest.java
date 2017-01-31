@@ -18,9 +18,9 @@ package io.confluent.connect.avro;
 
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDe;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroSerDe;
+import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import com.hurence.logisland.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;

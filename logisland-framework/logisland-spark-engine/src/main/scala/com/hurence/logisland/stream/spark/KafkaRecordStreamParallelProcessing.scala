@@ -25,9 +25,10 @@ import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.kafka.HasOffsetRanges
+import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -84,7 +85,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
       *
       * @param rdd
       */
-    override def process(rdd: RDD[(Array[Byte], Array[Byte])]) = {
+    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]) = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
@@ -138,8 +139,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                     == AbstractKafkaRecordStream.NO_SERIALIZER.getValue) {
                                 // parser
                                 partition.map(rawMessage => {
-                                    val key = if (rawMessage._1 != null) new String(rawMessage._1) else ""
-                                    val value = if (rawMessage._2 != null) new String(rawMessage._2) else ""
+                                    val key = if (rawMessage.key() != null) new String(rawMessage.key()) else ""
+                                    val value = if (rawMessage.value() != null) new String(rawMessage.value()) else ""
                                     RecordUtils.getKeyValueRecord(key, value)
                                 }).toList
                             } else {
@@ -220,6 +221,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                     zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
                 }
             })
+
+            // some time later, after outputs have completed
+            rdd.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
         }
     }
 }

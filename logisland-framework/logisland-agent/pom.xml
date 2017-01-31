@@ -36,6 +36,10 @@
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-kafka-0-10-plugin</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -48,13 +52,12 @@
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.10.0.1</version>
+            <artifactId>kafka_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
-            <version>0.10.0.1</version>
+            <version>${kafka.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -64,17 +67,14 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>common-config</artifactId>
-            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>common-utils</artifactId>
-            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>rest-utils</artifactId>
-            <version>3.0.1</version>
         </dependency>
 
         <dependency>
@@ -92,15 +92,15 @@
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.10.0.1</version>
+            <artifactId>kafka_${scala.binary.version}</artifactId>
+            <version>${kafka.version}</version>
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>0.10.0.1</version>
+            <version>${kafka.version}</version>
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
@@ -112,11 +112,48 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>confluent</id>
-            <name>Confluent</name>
-            <url>http://packages.confluent.io/maven/</url>
-        </repository>
-    </repositories>
+
+    <build>
+        <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.raml.plugins</groupId>
+                <artifactId>raml-jaxrs-maven-plugin</artifactId>
+                <version>LATEST</version>
+                <configuration>
+                    <!-- Use sourcePaths if you want to provide a single RAML file or a list of RAML files -->
+                    <sourceDirectory>${basedir}/src/main/raml</sourceDirectory>
+                    <!-- Optionally configure outputDirectory if you don't like the default value: ${project.build.directory}/generated-sources/raml-JAX-RS -->
+                    <!-- Replace with your package name -->
+                    <basePackageName>com.hurence.logisland</basePackageName>
+                    <!-- Valid values: 1.1 2.0 -->
+                    <jaxrsVersion>2.0</jaxrsVersion>
+                    <useJsr303Annotations>false</useJsr303Annotations>
+                    <!-- Valid values: jackson1 jackson2 gson none -->
+                    <jsonMapper>jackson2</jsonMapper>
+                    <removeOldOutput>true</removeOldOutput>
+                    <!-- Optionally set extensions to a list of fully qualified names of classes
+                    that implement org.raml.jaxrs.codegen.core.ext.GeneratorExtension -->
+                    <!-- for example:
+                    <extensions>
+                        <param>com.abc.AuthorizationAnnotationExtension</param>
+                        <param>com.abc.ParameterFilterExtension</param>
+                    </extensions>
+                    Custom annotator for json schema to pojo convertor
+                    <customAnnotator>com.abc.MyCustomAnnotator</customAnnotator>
+                    -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        </pluginManagement>
+
+    </build>
 </project>

@@ -15,6 +15,8 @@
  */
 package io.confluent.kafka.schemaregistry.client;
 
+import com.hurence.logisland.kafka.serializers.KafkaAvroDeserializer;
+import com.hurence.logisland.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.schemaregistry.ClusterTestHarness;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -64,7 +66,7 @@ public class CachedSchemaRegistryClientSecondTest extends ClusterTestHarness {
     props.put("auto.commit.interval.ms", "1000");
     props.put("auto.offset.reset", "earliest");
     props.put("key.deserializer", org.apache.kafka.common.serialization.StringDeserializer.class);
-    props.put("value.deserializer", io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
+    props.put("value.deserializer", KafkaAvroDeserializer.class);
     props.put(SCHEMA_REGISTRY_URL, restApp.restConnect);
     return props;
   }
@@ -98,7 +100,7 @@ public class CachedSchemaRegistryClientSecondTest extends ClusterTestHarness {
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
               org.apache.kafka.common.serialization.StringSerializer.class);
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-              io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+              KafkaAvroSerializer.class);
     return props;
   }
 
@@ -117,7 +119,7 @@ public class CachedSchemaRegistryClientSecondTest extends ClusterTestHarness {
   private Properties createProducerProps() {
     Properties props = new Properties();
     props.put("key.serializer", org.apache.kafka.common.serialization.StringSerializer.class);
-    props.put("value.serializer", io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+    props.put("value.serializer", KafkaAvroSerializer.class);
     props.put("bootstrap.servers", brokerList);
     props.put(SCHEMA_REGISTRY_URL, restApp.restConnect);
     return props;
