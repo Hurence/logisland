@@ -15,94 +15,95 @@
  */
 package com.hurence.logisland.kafka.util;
 
-/*
- * Copyright (C) 2014 Christopher Batey
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-//import org.apache.kafka.common.serialization.LongSerializer;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
+import org.I0Itec.zkclient.ZkClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.junit.Test;
+import kafka.admin.AdminUtils;
+import kafka.admin.RackAwareMode;
+import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
+import kafka.utils.MockTime;
+import kafka.utils.TestUtils;
+import kafka.utils.Time;
+import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
+import kafka.zk.EmbeddedZookeeper;
+import static org.junit.Assert.*;
 
 public class KafkaIntegrationTest {
 
-   /* private KafkaUnit kafkaUnitServer;
-
-    @Before
-    public void setUp() throws Exception {
-        kafkaUnitServer = new KafkaUnit(30000, 30001);
-        kafkaUnitServer.setKafkaBrokerConfig("log.segment.bytes", "1024");
-        kafkaUnitServer.startup();
-    }
-
-    @After
-    public void shutdown() throws Exception {
-        Field f = kafkaUnitServer.getClass().getDeclaredField("broker");
-        f.setAccessible(true);
-        KafkaServerStartable broker = (KafkaServerStartable) f.getField(kafkaUnitServer);
-        assertEquals(1024, (int) broker.serverConfig().logSegmentBytes());
-
-        kafkaUnitServer.shutdown();
-    }
-
-    @Test(expected = ComparisonFailure.class)
-    public void shouldThrowComparisonFailureIfMoreMessagesRequestedThanSent() throws Exception {
-        //given
-        String testTopic = "TestTopic";
-        kafkaUnitServer.createTopic(testTopic);
-        KeyedMessage<String, String> keyedMessage = new KeyedMessage<>(testTopic, "key", "value");
-
-        //when
-        kafkaUnitServer.sendMessages(keyedMessage);
-
-        try {
-            kafkaUnitServer.readMessages(testTopic, 2);
-            fail("Expected ComparisonFailure to be thrown");
-        } catch (ComparisonFailure e) {
-            assertEquals("Wrong value for 'expected'", "2", e.getExpected());
-            assertEquals("Wrong value for 'actual'", "1", e.getActual());
-            assertEquals("Wrong error message", "Incorrect number of messages returned", e.getMessage());
-        }
-    }
+    private static final String ZKHOST = "127.0.0.1";
+    private static final String BROKERHOST = "127.0.0.1";
+    private static final String BROKERPORT = "9092";
+    private static final String TOPIC = "test";
 
     @Test
-    public void canUseKafkaConnectToProduce() throws Exception {
-        final String topic = "KafkakConnectTestTopic";
-        Properties props = new Properties();
-        props.setField(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        props.setField(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        props.setField(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUnitServer.getKafkaConnect());
-        Producer<String, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic, "1", "test");
-        producer.send(record);      // would be good to have KafkaUnit.sendMessages() support the new producer
-        assertEquals("test", kafkaUnitServer.readMessages(topic, 1).getField(0));
+    public void producerTest() throws InterruptedException, IOException {
+
+        // setup Zookeeper
+        EmbeddedZookeeper zkServer = new EmbeddedZookeeper();
+        String zkConnect = ZKHOST + ":" + zkServer.port();
+        ZkClient zkClient = new ZkClient(zkConnect, 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkUtils zkUtils = ZkUtils.apply(zkClient, false);
+
+        // setup Broker
+        Properties brokerProps = new Properties();
+        brokerProps.setProperty("zookeeper.connect", zkConnect);
+        brokerProps.setProperty("broker.id", "0");
+        brokerProps.setProperty("log.dirs", Files.createTempDirectory("kafka-").toAbsolutePath().toString());
+        brokerProps.setProperty("listeners", "PLAINTEXT://" + BROKERHOST +":" + BROKERPORT);
+        KafkaConfig config = new KafkaConfig(brokerProps);
+        Time mock = new MockTime();
+        KafkaServer kafkaServer = TestUtils.createServer(config, mock);
+
+        // create topic
+        AdminUtils.createTopic(zkUtils, TOPIC, 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+
+        // setup producer
+        Properties producerProps = new Properties();
+        producerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        producerProps.setProperty("key.serializer","org.apache.kafka.common.serialization.IntegerSerializer");
+        producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        KafkaProducer<Integer, byte[]> producer = new KafkaProducer<Integer, byte[]>(producerProps);
+
+        // setup consumer
+        Properties consumerProps = new Properties();
+        consumerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        consumerProps.setProperty("group.id", "group0");
+        consumerProps.setProperty("client.id", "consumer0");
+        consumerProps.setProperty("key.deserializer","org.apache.kafka.common.serialization.IntegerDeserializer");
+        consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
+        KafkaConsumer<Integer, byte[]> consumer = new KafkaConsumer<>(consumerProps);
+        consumer.subscribe(Arrays.asList(TOPIC));
+
+        // send message
+        ProducerRecord<Integer, byte[]> data = new ProducerRecord<>(TOPIC, 42, "test-message".getBytes(StandardCharsets.UTF_8));
+        producer.send(data);
+        producer.close();
+
+        // starting consumer
+        ConsumerRecords<Integer, byte[]> records = consumer.poll(1000);
+        assertEquals(1, records.count());
+        Iterator<ConsumerRecord<Integer, byte[]>> recordIterator = records.iterator();
+        ConsumerRecord<Integer, byte[]> record = recordIterator.next();
+        System.out.printf("offset = %d, key = %s, value = %s", record.offset(), record.key(), record.value());
+        assertEquals(42, (int) record.key());
+        assertEquals("test-message", new String(record.value(), StandardCharsets.UTF_8));
+
+        kafkaServer.shutdown();
+        zkClient.close();
+        zkServer.shutdown();
     }
 
-    @Test
-    public void canReadKeyedMessages() throws Exception {
-        //given
-        String testTopic = "TestTopic2";
-        kafkaUnitServer.createTopic(testTopic);
-        KeyedMessage<String, String> keyedMessage = new KeyedMessage<>(testTopic, "key", "value");
-
-        //when
-        kafkaUnitServer.sendMessages(keyedMessage);
-
-        KeyedMessage<String, String> receivedMessage = kafkaUnitServer.readKeyedMessages(testTopic, 1).getField(0);
-
-        assertEquals("Received message value is incorrect", "value", receivedMessage.message());
-        assertEquals("Received message key is incorrect", "key", receivedMessage.key());
-        assertEquals("Received message topic is incorrect", testTopic, receivedMessage.topic());
-    }*/
 }

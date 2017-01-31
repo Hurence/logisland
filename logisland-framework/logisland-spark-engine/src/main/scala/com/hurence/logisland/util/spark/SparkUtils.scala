@@ -76,8 +76,8 @@ object SparkUtils extends LazyLogging {
 
        // log4j.logger.org.apache.spark.deploy.yarn.Client=DEBUG
 
-
-        Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
+        Logger.getLogger("org.spark_project").setLevel(Level.ERROR)
+        Logger.getLogger("org.eclipse.jetty").setLevel(Level.ERROR)
         Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
@@ -89,6 +89,7 @@ object SparkUtils extends LazyLogging {
         Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
         Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
         Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
+
     }
 
     def initContext(appName: String,

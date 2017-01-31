@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,16 +19,18 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.producer.KeyedMessage;
-import kafka.producer.Producer;
-import kafka.producer.ProducerConfig;
-import kafka.utils.TestUtils;
+import kafka.admin.AdminUtils;
+import kafka.admin.RackAwareMode;
+import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
+import kafka.utils.*;
+import kafka.zk.EmbeddedZookeeper;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,43 +38,66 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Created by lhubert on 15/04/16.
- */
+
 public class EmbeddedKafkaEnvironmentTest {
 
 
-    private String topic = "test";
-    private EmbeddedKafkaEnvironment context = null;
+    private static final String ZKHOST = "127.0.0.1";
+    private static final String BROKERHOST = "127.0.0.1";
+    private static final String BROKERPORT = "9092";
+    private static final String TOPIC = "test";
 
     private static Logger logger = LoggerFactory.getLogger(EmbeddedKafkaEnvironmentTest.class);
 
-
     @Test
-    public void producerTest() throws InterruptedException, IOException, NoSuchFieldException, IllegalAccessException {
+    public void producerTest() throws InterruptedException, IOException {
 
-        /**
-         * setup an embedded Kafka environment
-         * create a topic
-         * send a serialized event to it
-         */
+        // setup Zookeeper
+        EmbeddedZookeeper zkServer = new EmbeddedZookeeper();
+        String zkConnect = ZKHOST + ":" + zkServer.port();
+        ZkClient zkClient = new ZkClient(zkConnect, 30000, 30000, ZKStringSerializer$.MODULE$);
+        ZkUtils zkUtils = ZkUtils.apply(zkClient, false);
 
-        // embeded Kafka
-        EmbeddedKafkaEnvironment context = new EmbeddedKafkaEnvironment();
-        assertTrue(context.getZkClient() != null);
-        ZkClient zkClient = context.getZkClient();
-        context.getKafkaUnitServer().createTopic(topic);
+        // setup Broker
+        Properties brokerProps = new Properties();
+        brokerProps.setProperty("zookeeper.connect", zkConnect);
+        brokerProps.setProperty("broker.id", "0");
+        brokerProps.setProperty("log.dirs", Files.createTempDirectory("kafka-").toAbsolutePath().toString());
+        brokerProps.setProperty("listeners", "PLAINTEXT://" + BROKERHOST + ":" + BROKERPORT);
+        KafkaConfig config = new KafkaConfig(brokerProps);
+        Time mock = new MockTime();
+        KafkaServer kafkaServer = TestUtils.createServer(config, mock);
+
+        // create topic
+        AdminUtils.createTopic(zkUtils, TOPIC, 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
 
         // setup producer
-        Properties properties = TestUtils.getProducerConfig("localhost:" + context.getBrokerPort());
-        ProducerConfig producerConfig = new ProducerConfig(properties);
-        Producer producer = new Producer(producerConfig);
+        Properties producerProps = new Properties();
+        producerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.IntegerSerializer");
+        producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        KafkaProducer<Integer, byte[]> producer = new KafkaProducer<Integer, byte[]>(producerProps);
 
-        // create an event
+        // setup consumer
+        Properties consumerProps = new Properties();
+        consumerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        consumerProps.setProperty("group.id", "group0");
+        consumerProps.setProperty("client.id", "consumer0");
+        consumerProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.IntegerDeserializer");
+        consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
+        KafkaConsumer<Integer, byte[]> consumer = new KafkaConsumer<>(consumerProps);
+        consumer.subscribe(Arrays.asList(TOPIC));
+
+        // send message
         Record record = new StandardRecord("cisco");
         record.setId("firewall_record1");
         record.setField("method", FieldType.STRING, "GET");
@@ -88,56 +113,31 @@ public class EmbeddedKafkaEnvironmentTest {
         record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
         record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
-        // serialize event
+        // serialize and send record
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final KryoSerializer kryoSerializer = new KryoSerializer(true);
         kryoSerializer.serialize(baos, record);
-        KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
-        baos.close();
-        List<KeyedMessage> messages = new ArrayList<>();
-        messages.add(data);
-
-        // send event to Kafka topic
-        producer.send(scala.collection.JavaConversions.asScalaBuffer(messages));
+        ProducerRecord<Integer, byte[]> data = new ProducerRecord<>(TOPIC, 42, baos.toByteArray());
+        producer.send(data);
         producer.close();
+        baos.close();
 
-
-        /**
-         * start a Kafka consumer
-         *
-         */
-        // deleting zookeeper information to make sure the consumer starts from the beginning
-        // see https://stackoverflow.com/questions/14935755/how-to-get-data-from-old-offset-point-in-kafka
-        zkClient.delete("/consumers/group0");
-
-        // setup simple consumer
-        Properties consumerProperties = TestUtils.createConsumerProperties(context.getZkConnect(), "group0", "consumer0", 500);
-        ConsumerConnector consumer = Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
         // starting consumer
-        Map<String, Integer> topicCountMap = new HashMap<>();
-        topicCountMap.put(topic, 1);
-        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
-        KafkaStream<byte[], byte[]> stream = consumerMap.get(topic).get(0);
-        ConsumerIterator<byte[], byte[]> iterator = stream.iterator();
+        ConsumerRecords<Integer, byte[]> messages = consumer.poll(1000);
+        assertEquals(1, messages.count());
+        Iterator<ConsumerRecord<Integer, byte[]>> recordIterator = messages.iterator();
+        ConsumerRecord<Integer, byte[]> message = recordIterator.next();
+        final KryoSerializer deserializer = new KryoSerializer(true);
 
-        // verify the integrity of the retrieved event
-        if (iterator.hasNext()) {
-            final KryoSerializer deserializer = new KryoSerializer(true);
-
-
-            ByteArrayInputStream bais = new ByteArrayInputStream(iterator.next().message());
-            Record deserializedRecord = deserializer.deserialize(bais);
-            logger.info(deserializedRecord.toString());
-            assertEquals(record, deserializedRecord);
-            bais.close();
-        } else {
-            fail();
-        }
-
-        /**
-         * final cleanup
-         */
-        consumer.shutdown();
-        context.close();
+        ByteArrayInputStream bais = new ByteArrayInputStream(message.value());
+        Record deserializedRecord = deserializer.deserialize(bais);
+        logger.info(deserializedRecord.toString());
+        assertEquals(record, deserializedRecord);
+        assertEquals(42, (int) message.key());
+        bais.close();
+        System.out.printf("offset = %d, key = %s, value = %s", message.offset(), message.key(), message.value());
+        kafkaServer.shutdown();
+        zkClient.close();
+        zkServer.shutdown();
     }
 }
