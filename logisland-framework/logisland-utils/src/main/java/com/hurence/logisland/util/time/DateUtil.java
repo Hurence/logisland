@@ -407,10 +407,9 @@ public final class DateUtil {
         }
         return parse(dateString, dateFormat);
     }
-
     /**
      * Validate the actual date of the given date string based on the given date format pattern and
-     * return a date instance based on the given date string.
+     * return a date instance based on the given date string using UTC timezone.
      * @param dateString The date string.
      * @param dateFormat The date format pattern which should respect the SimpleDateFormat rules.
      * @return The parsed date object.
@@ -419,8 +418,23 @@ public final class DateUtil {
      * @see SimpleDateFormat
      */
     public static Date parse(String dateString, String dateFormat) throws ParseException {
+        return parse(dateString, dateFormat, TimeZone.getTimeZone("UTC"));
+    }
+
+    /**
+     * Validate the actual date of the given date string based on the given date format pattern and
+     * return a date instance based on the given date string.
+     * @param dateString The date string.
+     * @param dateFormat The date format pattern which should respect the SimpleDateFormat rules.
+     * @param timeZone The timezone to use to parse the date.
+     * @return The parsed date object.
+     * @throws ParseException If the given date string or its actual date is invalid based on the
+     * given date format pattern.
+     * @see SimpleDateFormat
+     */
+    public static Date parse(String dateString, String dateFormat, TimeZone timeZone) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        simpleDateFormat.setTimeZone(timeZone);
         simpleDateFormat.setLenient(false); // Don't automatically convert invalid date.
         if (dateFormat.equals("MMM dd HH:mm:ss")) {
 

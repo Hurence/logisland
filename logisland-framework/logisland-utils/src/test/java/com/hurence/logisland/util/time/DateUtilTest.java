@@ -166,7 +166,6 @@ public class DateUtilTest {
 
         for (String strDate : strDates) {
             logger.info("parsing " + strDate);
-
             Date date = DateUtil.parse(strDate);
             assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
 
@@ -174,4 +173,66 @@ public class DateUtilTest {
 
     }
 
+    @Test
+    public void testParsingWithTimeZone() throws ParseException {
+        // Date expectedDate = new Date(1388648629000L);
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forTimeZone(tz));
+        DateTime expectedEuropeDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
+
+        Date dateAsEuropeanDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", tz);
+
+
+        assertTrue(dateAsEuropeanDate + " should be equal to " + expectedEuropeDate.toDate(),
+               dateAsEuropeanDate.getTime() == expectedEuropeDate.getMillis());
+
+        Date dateAsUtcDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedEuropeDate.toDate() + " plus 1 hour",
+                dateAsUtcDate.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60);
+
+        Date dateAsCancun = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("America/Cancun"));
+
+        assertTrue(dateAsCancun + " should be equal to " + expectedEuropeDate.toDate() + " plus 6 hour",
+                dateAsCancun.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60 * 6 );
+
+        /**
+         * should not use set timezone when timezone on pattern
+         */
+        f = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").withZone(DateTimeZone.forTimeZone(tz));
+        DateTime expectedDate = f.parseDateTime("2001-07-04T12:08:56.235-0700");
+
+        dateAsEuropeanDate = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", tz);
+
+
+        assertTrue(dateAsEuropeanDate + " should be equal to " + expectedDate.toDate(),
+                dateAsEuropeanDate.getTime() == expectedDate.getMillis());
+
+        dateAsUtcDate = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedDate.toDate(),
+                dateAsUtcDate.getTime() == expectedDate.getMillis());
+
+        dateAsCancun = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("America/Cancun"));
+
+        assertTrue(dateAsCancun + " should be equal to " + expectedDate.toDate(),
+                dateAsCancun.getTime() == expectedDate.getMillis());
+
+    }
+    @Test
+    public void testParsingWithoutTimeZone() throws ParseException {
+        // Date expectedDate = new Date(1388648629000L);
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
+        DateTime expectedUtcDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
+
+        Date dateAsUtcDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedUtcDate.toDate(), expectedUtcDate.getMillis() == dateAsUtcDate.getTime());
+
+    }
 }
