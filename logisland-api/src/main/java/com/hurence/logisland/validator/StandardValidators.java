@@ -22,6 +22,8 @@ import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 public class StandardValidators {
@@ -224,6 +226,17 @@ public class StandardValidators {
     };
 
 
+    /**
+     * Time Validators
+     */
+    public static final Validator TIMEZONE_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            String reason = null;
+            if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(value)) reason = "not a valid timezone";
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
     //
     //
     // FACTORY METHODS FOR VALIDATORS

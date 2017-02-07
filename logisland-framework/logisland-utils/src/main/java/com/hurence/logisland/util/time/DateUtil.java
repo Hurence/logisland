@@ -401,11 +401,24 @@ public final class DateUtil {
      * the given date string or its actual date is invalid based on the date format pattern.
      */
     public static Date parse(String dateString) throws ParseException {
+        return parse(dateString, TimeZone.getTimeZone("UTC"));
+    }
+    /**
+     * Parse the given date string to date object and return a date instance based on the given
+     * date string. This makes use of the {@link DateUtil#determineDateFormat(String)} to determine
+     * the SimpleDateFormat pattern to be used for parsing.
+     * @param dateString The date string to be parsed to date object.
+     * @param timezone The timezone to use to parse the date.
+     * @return The parsed date object.
+     * @throws ParseException If the date format pattern of the given date string is unknown, or if
+     * the given date string or its actual date is invalid based on the date format pattern.
+     */
+    public static Date parse(String dateString, TimeZone timezone) throws ParseException {
         String dateFormat = determineDateFormat(dateString);
         if (dateFormat == null) {
             throw new ParseException("Unknown date format for date \'" + dateString + "\'", 0);
         }
-        return parse(dateString, dateFormat);
+        return parse(dateString, dateFormat, timezone);
     }
     /**
      * Validate the actual date of the given date string based on the given date format pattern and
