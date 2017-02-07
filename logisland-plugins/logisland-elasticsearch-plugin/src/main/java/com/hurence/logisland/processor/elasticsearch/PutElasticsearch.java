@@ -25,10 +25,7 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.validator.StandardValidators;
-import org.elasticsearch.action.bulk.BackoffPolicy;
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -96,6 +93,42 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .defaultValue("2")
             .build();
 
+    public static final PropertyDescriptor BULK_RETRY_NUMBER = new PropertyDescriptor.Builder()
+            .name("num.retry")
+            .description("number of time we should try to inject a bulk into es")
+            .required(true)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("5")
+            .build();
+
+    public static final PropertyDescriptor BULK_THROTTLING_DELAY = new PropertyDescriptor.Builder()
+            .name("throttling.delay")
+            .description("number of time we should wait between each retry (in milliseconds)")
+            .required(true)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .defaultValue("100")
+            .build();
+
+    public static final AllowableValue NO_BACKOFF_POLICY = new AllowableValue("noBackoff", "No retry policy",
+            "when a request fail there won't be any retry.");
+
+    public static final AllowableValue CONSTANT_BACKOFF_POLICY = new AllowableValue("constantBackoff", "wait a fixed amount of time between retries",
+            "wait a fixed amount of time between retries, using user put retry number and throttling delay");
+
+    public static final AllowableValue EXPONENTIAL_BACKOFF_POLICY = new AllowableValue("exponentialBackoff", "custom exponential policy",
+            "time waited between retries grow exponentially, using user put retry number and throttling delay");
+
+    public static final AllowableValue DEFAULT_EXPONENTIAL_BACKOFF_POLICY = new AllowableValue("defaultExponentialBackoff", "es default exponential policy",
+            "time waited between retries grow exponentially, using es default parameters");
+
+    public static final PropertyDescriptor BULK_BACK_OFF_POLICY = new PropertyDescriptor.Builder()
+            .name("backoff.policy")
+            .description("strategy for retrying to execute requests in bulkRequest")
+            .required(true)
+            .allowableValues(NO_BACKOFF_POLICY, CONSTANT_BACKOFF_POLICY, EXPONENTIAL_BACKOFF_POLICY, DEFAULT_EXPONENTIAL_BACKOFF_POLICY)
+            .defaultValue(DEFAULT_EXPONENTIAL_BACKOFF_POLICY.getValue())
+            .build();
+
 
     public static final AllowableValue NO_DATE_SUFFIX = new AllowableValue("no", "No date",
             "no date added to default index");
@@ -146,6 +179,9 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
         descriptors.add(BATCH_SIZE);
         descriptors.add(BULK_SIZE);
         descriptors.add(CONCURRENT_REQUESTS);
+        descriptors.add(BULK_RETRY_NUMBER);
+        descriptors.add(BULK_THROTTLING_DELAY);
+        descriptors.add(BULK_BACK_OFF_POLICY);
         descriptors.add(FLUSH_INTERVAL);
         descriptors.add(TIMEBASED_INDEX);
         descriptors.add(ES_INDEX_FIELD);
@@ -167,7 +203,25 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
 
         if (records.size() != 0) {
 
-            long numItemProcessed = 0L;
+            /**
+             * set up BackoffPolicy
+             */
+            BackoffPolicy backoffPolicy = BackoffPolicy.exponentialBackoff();
+            if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(DEFAULT_EXPONENTIAL_BACKOFF_POLICY.getValue())){
+                backoffPolicy = BackoffPolicy.exponentialBackoff();
+            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(EXPONENTIAL_BACKOFF_POLICY.getValue())) {
+                backoffPolicy = BackoffPolicy.exponentialBackoff(
+                        TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
+                        context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
+                );
+            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(CONSTANT_BACKOFF_POLICY.getValue())) {
+                backoffPolicy = BackoffPolicy.constantBackoff(
+                        TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
+                        context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
+                );
+            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(NO_BACKOFF_POLICY.getValue())) {
+                backoffPolicy = BackoffPolicy.noBackoff();
+            }
 
             /**
              * create the bulk processor
@@ -177,16 +231,24 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                     new BulkProcessor.Listener() {
                         @Override
                         public void beforeBulk(long l, BulkRequest bulkRequest) {
-
+                            logger.debug("Going to execute bulk [id:{}] composed of {} actions", l, bulkRequest.numberOfActions());
                         }
 
                         @Override
                         public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
+                            logger.debug("Executed bulk [id:{}] composed of {} actions", l, bulkRequest.numberOfActions());
                             if (bulkResponse.hasFailures()) {
-                                logger.info(bulkResponse.buildFailureMessage());
-                                logger.info("done bulk request in {} ms with failure = {}", bulkResponse.getTookInMillis(), bulkResponse.hasFailures());
+                                logger.warn("There was failures while executing bulk [id:{}]," +
+                                        " done bulk request in {} ms with failure = {}",
+                                        l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage());
+                                for (BulkItemResponse item : bulkResponse.getItems()) {
+                                    if (item.isFailed()) {
+                                        logger.debug("Error for {}/{}/{} for {} operation: {}, itemId:{}", item.getIndex(),
+                                                item.getType(), item.getId(), item.getOpType(), item.getFailureMessage(),
+                                                item.getItemId());
+                                    }
+                                }
                             }
-
                         }
 
                         @Override
@@ -199,8 +261,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                     .setBulkSize(new ByteSizeValue(context.getPropertyValue(BULK_SIZE).asInteger(), ByteSizeUnit.MB))
                     .setFlushInterval(TimeValue.timeValueSeconds(context.getPropertyValue(FLUSH_INTERVAL).asInteger()))
                     .setConcurrentRequests(context.getPropertyValue(CONCURRENT_REQUESTS).asInteger())
-                    .setBackoffPolicy(
-                            BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(100), 3))
+                    .setBackoffPolicy(backoffPolicy)
                     .build();
 
 
@@ -224,7 +285,6 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
              * loop over events to add them to bulk
              */
             for (Record record : records) {
-                numItemProcessed += 1;
 
                 // compute es index from event if any
                 String docIndex = defaultIndex;
@@ -256,12 +316,15 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             }
             bulkProcessor.flush();
 
-
             /**
              * fluch remaining items
              */
             try {
-                bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
+                if (!bulkProcessor.awaitClose(10, TimeUnit.SECONDS)) {
+                    logger.error("some records could not be injected because of time out");
+                } else {
+                    logger.info("all requests have been submitted");
+                }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
