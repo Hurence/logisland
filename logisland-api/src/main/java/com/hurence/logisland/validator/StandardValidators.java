@@ -22,6 +22,8 @@ import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 public class StandardValidators {
@@ -221,6 +223,24 @@ public class StandardValidators {
                 reason = "Character Set is not supported by this JVM.";
             } catch (final IllegalArgumentException iae) {
                 reason = "Character Set value cannot be null.";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    public static final Validator HASH_ALGORITHM_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = null;
+            try {
+                final MessageDigest digest = MessageDigest.getInstance(value);
+            } catch (final NoSuchAlgorithmException nsae) {
+                reason = "'" + value + "' is not a supported algorithme by this JVM.";
+            } catch (final NullPointerException npe) {
+                reason = "null is not a supported algorithm";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();

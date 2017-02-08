@@ -232,5 +232,17 @@ public class StandardValidatorsTest {
         //TODO
     }
 
+    @Test
+    public void fhashAlgorithmValidator() throws IOException {
+        Validator boolV = StandardValidators.HASH_ALGORITHM_VALIDATOR;
+        ValidationResult result = boolV.validate(null, "SHA-256");
+        Assert.assertTrue("'SHA-256' should be validated as an hash algorithm", result.isValid());
+        result = boolV.validate(null, "1");
+        Assert.assertFalse("'1' should not be validated as an hash algorithm", result.isValid());
+        result = boolV.validate(null, null);
+        Assert.assertFalse("null should not be validated as an hash algorithm", result.isValid());
+    }
+
+
 
 }
