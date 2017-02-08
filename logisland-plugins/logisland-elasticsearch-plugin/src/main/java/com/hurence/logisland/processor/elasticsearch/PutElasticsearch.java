@@ -21,10 +21,12 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.validator.StandardValidators;
+import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -98,7 +100,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .description("number of time we should try to inject a bulk into es")
             .required(true)
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("5")
+            .defaultValue("3")
             .build();
 
     public static final PropertyDescriptor BULK_THROTTLING_DELAY = new PropertyDescriptor.Builder()
@@ -106,7 +108,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             .description("number of time we should wait between each retry (in milliseconds)")
             .required(true)
             .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
-            .defaultValue("100")
+            .defaultValue("500")
             .build();
 
     public static final AllowableValue NO_BACKOFF_POLICY = new AllowableValue("noBackoff", "No retry policy",
@@ -201,6 +203,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         super.setup(context);
 
+        final Collection<Record> failedRecords = new ArrayList<>();
         if (records.size() != 0) {
 
             /**
@@ -223,6 +226,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                 backoffPolicy = BackoffPolicy.noBackoff();
             }
 
+            final Map<String/*id*/, String/*errors*/> failedIds = new HashMap<>();
             /**
              * create the bulk processor
              */
@@ -237,23 +241,32 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         @Override
                         public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
                             logger.debug("Executed bulk [id:{}] composed of {} actions", l, bulkRequest.numberOfActions());
+
                             if (bulkResponse.hasFailures()) {
                                 logger.warn("There was failures while executing bulk [id:{}]," +
                                         " done bulk request in {} ms with failure = {}",
                                         l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage());
                                 for (BulkItemResponse item : bulkResponse.getItems()) {
                                     if (item.isFailed()) {
-                                        logger.debug("Error for {}/{}/{} for {} operation: {}, itemId:{}", item.getIndex(),
-                                                item.getType(), item.getId(), item.getOpType(), item.getFailureMessage(),
-                                                item.getItemId());
+                                        failedIds.put(item.getId(), item.getFailureMessage());
+//                                        List<String> errors = null;
+//                                        if (failedIds.containsKey(item.getId())) {
+//                                            errors = failedIds.get(item.getId());
+//                                        } else {
+//                                            errors = new LinkedList<String>();
+//                                            failedIds.put(item.getId(), errors);
+//                                        }
+//                                        errors.add(item.getFailureMessage());
                                     }
                                 }
+
                             }
                         }
 
                         @Override
                         public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
                             logger.error("something went wrong while bulk loading events to es : {}", throwable.getMessage());
+                            failedRecords.addAll(records);
                         }
 
                     })
@@ -310,6 +323,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                 // add it to the bulk
                 IndexRequestBuilder result = esClient.get()
                         .prepareIndex(docIndex, docType)
+                        .setId(record.getId())
                         .setSource(document)
                         .setOpType(IndexRequest.OpType.CREATE);
                 bulkProcessor.add(result.request());
@@ -321,9 +335,20 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
              */
             try {
                 if (!bulkProcessor.awaitClose(10, TimeUnit.SECONDS)) {
-                    logger.error("some records could not be injected because of time out");
+                    logger.error("some request could not be send to es because of time out");
                 } else {
-                    logger.info("all requests have been submitted");
+                    logger.info("all requests have been submitted to es");
+                }
+                /**
+                 * loop over events to add failed ones
+                 */
+                if (!failedIds.isEmpty()) {
+                    for (Record record : records) {
+                        if (failedIds.keySet().contains(record.getId())) {
+                            failedRecords.add(record);
+                            record.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), failedIds.get(record.getId()));
+                        }
+                    }
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
@@ -333,7 +358,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             esClient.get().close();
         }
 
-        return Collections.emptyList();
+        return failedRecords;
     }
 
 
