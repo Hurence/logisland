@@ -36,6 +36,8 @@ public class StandardValidators {
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -51,6 +53,8 @@ public class StandardValidators {
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -64,10 +68,13 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final int intVal = Integer.parseInt(value);
-
-                if (intVal <= 0) {
-                    reason = "not a positive value";
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final int intVal = Integer.parseInt(value);
+                    if (intVal <= 0) {
+                        reason = "not a positive value";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
@@ -84,10 +91,14 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final long longVal = Long.parseLong(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final long longVal = Long.parseLong(value);
 
-                if (longVal <= 0) {
-                    reason = "not a positive value";
+                    if (longVal <= 0) {
+                        reason = "not a positive value";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid 64-bit integer";
@@ -123,7 +134,11 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                Integer.parseInt(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    Integer.parseInt(value);
+                }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
             }
@@ -139,7 +154,11 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                Long.parseLong(value);
+                if (value==null) {
+                    reason = "null is not a valid long";
+                } else {
+                    Long.parseLong(value);
+                }
             } catch (final NumberFormatException e) {
                 reason = "not a valid Long";
             }
@@ -155,10 +174,14 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final int intVal = Integer.parseInt(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final int intVal = Integer.parseInt(value);
 
-                if (intVal < 0) {
-                    reason = "value is negative";
+                    if (intVal < 0) {
+                        reason = "value is negative";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "value is not a valid integer";
