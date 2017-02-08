@@ -26,7 +26,6 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.validator.StandardValidators;
-import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -41,7 +40,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * This processor put records into Es
+ * Currently it use Record.getId() method as elasticsearch ids and record having same id does not override each other.
+ * We only support the Do not override documents behaviour for now.
+ * We pre-filter input records with same ids to keep only first one. THe others will be output with a duplicate id error.
+ * in case of major failure, all records will be output with corresponding error.
+ */
 @Tags({"record", "elasticsearch", "sink", "record"})
 @CapabilityDescription("This is a processor that puts records to ES")
 public class PutElasticsearch extends AbstractElasticsearchProcessor {
@@ -210,23 +215,41 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
              * set up BackoffPolicy
              */
             BackoffPolicy backoffPolicy = BackoffPolicy.exponentialBackoff();
-            if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(DEFAULT_EXPONENTIAL_BACKOFF_POLICY.getValue())){
-                backoffPolicy = BackoffPolicy.exponentialBackoff();
-            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(EXPONENTIAL_BACKOFF_POLICY.getValue())) {
-                backoffPolicy = BackoffPolicy.exponentialBackoff(
-                        TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
-                        context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
-                );
-            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(CONSTANT_BACKOFF_POLICY.getValue())) {
-                backoffPolicy = BackoffPolicy.constantBackoff(
-                        TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
-                        context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
-                );
-            } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(NO_BACKOFF_POLICY.getValue())) {
-                backoffPolicy = BackoffPolicy.noBackoff();
+            {
+                if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(DEFAULT_EXPONENTIAL_BACKOFF_POLICY.getValue())) {
+                    backoffPolicy = BackoffPolicy.exponentialBackoff();
+                } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(EXPONENTIAL_BACKOFF_POLICY.getValue())) {
+                    backoffPolicy = BackoffPolicy.exponentialBackoff(
+                            TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
+                            context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
+                    );
+                } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(CONSTANT_BACKOFF_POLICY.getValue())) {
+                    backoffPolicy = BackoffPolicy.constantBackoff(
+                            TimeValue.timeValueMillis(context.getPropertyValue(BULK_THROTTLING_DELAY).asLong()),
+                            context.getPropertyValue(BULK_RETRY_NUMBER).asInteger()
+                    );
+                } else if (context.getPropertyValue(BULK_BACK_OFF_POLICY).getRawValue().equals(NO_BACKOFF_POLICY.getValue())) {
+                    backoffPolicy = BackoffPolicy.noBackoff();
+                }
             }
-
-            final Map<String/*id*/, String/*errors*/> failedIds = new HashMap<>();
+            /**
+             * Verify there is no duplicate ids
+             */
+            {
+                Set<String> ids = new HashSet<>();
+                Iterator<Record> it = records.iterator();
+                while (it.hasNext()) {
+                    Record record = it.next();
+                    if (ids.contains(record.getId())) {//remove records from list and add it to output with duplicate Id error
+                        record.addError(ProcessError.DUPLICATE_ID_ERROR.getName(), "can not create two documents with same id in elasticsearch");
+                        failedRecords.add(record);
+                        it.remove();
+                    } else {
+                        ids.add(record.getId());
+                    }
+                }
+            }
+            final Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
             /**
              * create the bulk processor
              */
@@ -248,18 +271,9 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                                         l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage());
                                 for (BulkItemResponse item : bulkResponse.getItems()) {
                                     if (item.isFailed()) {
-                                        failedIds.put(item.getId(), item.getFailureMessage());
-//                                        List<String> errors = null;
-//                                        if (failedIds.containsKey(item.getId())) {
-//                                            errors = failedIds.get(item.getId());
-//                                        } else {
-//                                            errors = new LinkedList<String>();
-//                                            failedIds.put(item.getId(), errors);
-//                                        }
-//                                        errors.add(item.getFailureMessage());
+                                        errors.put(item.getId(), item.getFailureMessage());
                                     }
                                 }
-
                             }
                         }
 
@@ -267,6 +281,9 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
                             logger.error("something went wrong while bulk loading events to es : {}", throwable.getMessage());
                             failedRecords.addAll(records);
+                            for (Record failedRecord: failedRecords) {
+                                failedRecord.addError(ProcessError.ELASTICSEARCH_INDEXATION_ERROR.getName(), throwable.getMessage());
+                            }
                         }
 
                     })
@@ -342,11 +359,11 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                 /**
                  * loop over events to add failed ones
                  */
-                if (!failedIds.isEmpty()) {
+                if (!errors.isEmpty()) {
                     for (Record record : records) {
-                        if (failedIds.keySet().contains(record.getId())) {
+                        if (errors.keySet().contains(record.getId())) {
                             failedRecords.add(record);
-                            record.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), failedIds.get(record.getId()));
+                            record.addError(ProcessError.ELASTICSEARCH_INDEXATION_ERROR.getName(), errors.get(record.getId()));
                         }
                     }
                 }
