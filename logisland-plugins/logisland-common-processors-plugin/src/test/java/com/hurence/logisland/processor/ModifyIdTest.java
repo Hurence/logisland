@@ -36,12 +36,21 @@ public class ModifyIdTest {
         return record1;
     }
 
-    //TODO all options must be tested (charset for ex)
+
+    @Test
+    public void testValidity() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.assertValid();
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY.getValue());
+        testRunner.assertNotValid();
+        testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "fzgzgzh");
+        testRunner.assertValid();
+    }
 
     @Test
     public void testHashStrategy() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
-        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
         testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1");
         testRunner.assertValid();
 
@@ -64,7 +73,7 @@ public class ModifyIdTest {
     @Test
     public void testRandomUidStrategy() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
-        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.RANDOM_UUID_STRATEGY.getValue());
         testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1");
         testRunner.assertValid();
 
@@ -89,7 +98,7 @@ public class ModifyIdTest {
     @Test
     public void testFormatStrategy() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
-        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.FORMAT_STRING_WITH_FIELDS.getValue());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY.getValue());
         testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1, string2");
         testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "field 1 is : '%1$2s'");
         testRunner.assertValid();
@@ -174,7 +183,7 @@ public class ModifyIdTest {
     @Test
     public void testTypeTimeHashStrategy() throws ParseException {
         final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
-        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.TYPE_TIME_HASH.getValue());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.TYPE_TIME_HASH_STRATEGY.getValue());
         testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2");
         testRunner.assertValid();
 
@@ -216,18 +225,18 @@ public class ModifyIdTest {
 
         TestRunner modifierIdProcessor = TestRunners.newTestRunner(new ModifyId());
         //hash
-        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
+        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
         modifierIdProcessor.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2,string1,string2,string1,string2");
         modifierIdProcessor.assertValid();
         testProcessorPerfByRecord(modifierIdProcessor, records, 100);
         //randomUID
         modifierIdProcessor.clearQueues();
-        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
+        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.RANDOM_UUID_STRATEGY.getValue());
         modifierIdProcessor.removeProperty(ModifyId.FIELDS_TO_USE);
         modifierIdProcessor.assertValid();
         testProcessorPerfByRecord(modifierIdProcessor, records, 100);
-        //TODO FORMAT STRING
-//        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
+        //TODO FORMAT STRING and TYPE_TIME_FORMAT_STRING
+//        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
 //        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2,string1,string2,string1,string2");
 //        testRunner.assertValid();
 //        testProcessorPerfByRecord(testRunner, records, 100);

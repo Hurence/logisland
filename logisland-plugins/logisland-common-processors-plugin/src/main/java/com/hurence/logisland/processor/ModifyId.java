@@ -23,6 +23,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,22 +35,23 @@ import java.util.*;
 
 @Tags({"record", "id", "idempotent", "generate", "modify"})
 @CapabilityDescription("modify id of records or generate it following defined rules")
+//TODO add others tags see others processor
 public class ModifyId extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyId.class);
 
-    public static final AllowableValue GENERATE_RANDOM_UUID = new AllowableValue("randomUuid", "generate a random uid",
+    public static final AllowableValue RANDOM_UUID_STRATEGY = new AllowableValue("randomUuid", "generate a random uid",
             "generate a randomUid using java library");
 
-    public static final AllowableValue GENERATE_HASH = new AllowableValue("hashFields", "generate a hash from fields",
+    public static final AllowableValue HASH_FIELDS_STRATEGY = new AllowableValue("hashFields", "generate a hash from fields",
             "generate a hash from fields");
 
-    public static final AllowableValue FORMAT_STRING_WITH_FIELDS = new AllowableValue("fromFields", "generate a string from java pattern and fields",
+    public static final AllowableValue JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY = new AllowableValue("fromFields", "generate a string from java pattern and fields",
             "generate a string from java pattern and fields");
 
-    public static final AllowableValue TYPE_TIME_HASH = new AllowableValue("typetimehash", "generate a concatenation of type, time and a hash from fields",
+    public static final AllowableValue TYPE_TIME_HASH_STRATEGY = new AllowableValue("typetimehash", "generate a concatenation of type, time and a hash from fields",
             "generate a concatenation of type, time and a hash from fields (as for generate_hash strategy)");
 
 
@@ -58,8 +61,8 @@ public class ModifyId extends AbstractProcessor {
             .name("id.generation.strategy")
             .description("the strategy to generate new Id")
             .required(true)
-            .allowableValues(GENERATE_RANDOM_UUID, GENERATE_HASH, FORMAT_STRING_WITH_FIELDS, TYPE_TIME_HASH)
-            .defaultValue(GENERATE_RANDOM_UUID.getValue())
+            .allowableValues(RANDOM_UUID_STRATEGY, HASH_FIELDS_STRATEGY, JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY, TYPE_TIME_HASH_STRATEGY)
+            .defaultValue(RANDOM_UUID_STRATEGY.getValue())
             .build();
 
 
@@ -81,9 +84,8 @@ public class ModifyId extends AbstractProcessor {
     public static final PropertyDescriptor JAVA_FORMAT_STRING = new PropertyDescriptor.Builder()
             .name("java.formatter.string")
             .description("the format to use to build id string (e.g. \"%4$2s %3$2s %2$2s %1$2s\" (see java Formatter)")
-            .required(true)
+            .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO JAVA_FORMAT_STRING_VALIDATOR ?
-            .defaultValue("asfreghtr")
             .build();
 
 
@@ -91,8 +93,9 @@ public class ModifyId extends AbstractProcessor {
             .name("language.tag")
             .description("the language to use to format numbers in string")
             .required(true)
+            .addValidator(StandardValidators.LANGUAGE_TAG_VALIDATOR)
             .allowableValues(Locale.getISOLanguages())
-            .defaultValue(Locale.ENGLISH.toLanguageTag())//TODO add LANGUAGE_TAG VALIDATOR
+            .defaultValue(Locale.ENGLISH.toLanguageTag())
             .build();
 
     /**
@@ -136,6 +139,26 @@ public class ModifyId extends AbstractProcessor {
 
 
     @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+        if (context.getPropertyValue(STRATEGY).isSet()) {
+            if (context.getPropertyValue(STRATEGY).getRawValue().equals(JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY.getValue())) {
+                if (!context.getPropertyValue(JAVA_FORMAT_STRING).isSet()) {
+                    validationResults.add(
+                            new ValidationResult.Builder()
+                                    .input(JAVA_FORMAT_STRING.getName())
+                                    .explanation(String.format("%s must be set when strategy is %s",
+                                            JAVA_FORMAT_STRING.getName(),
+                                            context.getPropertyValue(STRATEGY).getRawValue()))
+                                    .valid(false)
+                                    .build());
+                }
+            }
+        }
+        return validationResults;
+    }
+
+    @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         /**
@@ -143,14 +166,14 @@ public class ModifyId extends AbstractProcessor {
          */
         IdBuilder idBuilder = null;
         if (context.getPropertyValue(STRATEGY).isSet()) {
-            if (context.getPropertyValue(STRATEGY).getRawValue().equals(GENERATE_RANDOM_UUID.getValue())) {
+            if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {
                 idBuilder = new IdBuilder() {
                     @Override
                     public void buildId(Record record) {
                         record.setId(UUID.randomUUID().toString());
                     }
                 };
-            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(GENERATE_HASH.getValue())) {
+            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(HASH_FIELDS_STRATEGY.getValue())) {
                 final List<String> fieldsForHash = Lists.newArrayList(
                         context.getPropertyValue(FIELDS_TO_USE).asString().split(","));
 
@@ -172,7 +195,7 @@ public class ModifyId extends AbstractProcessor {
                 } catch (NoSuchAlgorithmException e) {
                     throw new Error("This error should not happen because the validator should ensure the algorythme exist", e);
                 }
-            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(FORMAT_STRING_WITH_FIELDS.getValue())) {
+            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY.getValue())) {
                 final String[] fieldsForFormat = context.getPropertyValue(FIELDS_TO_USE).asString().split(",");
                 final String format = context.getPropertyValue(JAVA_FORMAT_STRING).asString();
                 final Locale local = Locale.forLanguageTag(context.getPropertyValue(LANGUAGE_TAG).asString());
@@ -202,7 +225,7 @@ public class ModifyId extends AbstractProcessor {
                         }
                     }
                 };
-            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(TYPE_TIME_HASH.getValue())) {
+            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(TYPE_TIME_HASH_STRATEGY.getValue())) {
                 final List<String> fieldsForHash = Lists.newArrayList(
                         context.getPropertyValue(FIELDS_TO_USE).asString().split(","));
                 try {
