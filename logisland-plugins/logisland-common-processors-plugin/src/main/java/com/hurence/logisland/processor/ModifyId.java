@@ -85,7 +85,7 @@ public class ModifyId extends AbstractProcessor {
             .name("java.formatter.string")
             .description("the format to use to build id string (e.g. \"%4$2s %3$2s %2$2s %1$2s\" (see java Formatter)")
             .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO JAVA_FORMAT_STRING_VALIDATOR ?
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
 
@@ -158,13 +158,10 @@ public class ModifyId extends AbstractProcessor {
         return validationResults;
     }
 
-    @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+    private IdBuilder idBuilder = null;
 
-        /**
-         * set up strategy to build id
-         */
-        IdBuilder idBuilder = null;
+    @Override
+    public void init(ProcessContext context) {
         if (context.getPropertyValue(STRATEGY).isSet()) {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {
                 idBuilder = new IdBuilder() {
@@ -189,7 +186,7 @@ public class ModifyId extends AbstractProcessor {
                             }
                             digest.update(stb.toString().getBytes(charset));
                             byte[] digested = digest.digest();
-                           record.setId(new String(digested, charset));
+                            record.setId(new String(digested, charset));
                         }
                     };
                 } catch (NoSuchAlgorithmException e) {
@@ -252,14 +249,31 @@ public class ModifyId extends AbstractProcessor {
                 }
             }
         }
+    }
+
+
+    @Override
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         /**
-        * build new id for all records
-        */
-        for (Record record : records) {
-            idBuilder.buildId(record);
+         * set up strategy to build id
+         */
+        try {
+            init(context);
+        } catch (Throwable t) {
+            logger.error("error while initializing idBuilder", t);
         }
 
+        /**
+         * build new id for all records
+         */
+        try {
+            for (Record record : records) {
+                idBuilder.buildId(record);
+            }
+        } catch (Throwable t) {
+            logger.error("error while setting id for records", t);
+        }
         return records;
     }
 
