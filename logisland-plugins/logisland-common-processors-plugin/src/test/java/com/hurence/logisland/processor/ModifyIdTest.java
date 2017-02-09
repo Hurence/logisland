@@ -57,8 +57,7 @@ public class ModifyIdTest {
         outputRecord.assertFieldEquals("string2",  "value2");
         outputRecord.assertFieldEquals("long1",  1);
         outputRecord.assertFieldEquals("long2",  2);
-        outputRecord.assertFieldEquals("record_id",  "��ok\u007Fwc��\"ݦ\u000B*\u000B��A*�\u0018K�N�x�M7�\u001D\u000B");
-
+        outputRecord.assertFieldEquals("record_id",  "<��\u0001\u007F�K�=\u000F��&�\u0014?�-��\u0014TA�_\u0006\u0004\u0004~��");
 
     }
 
