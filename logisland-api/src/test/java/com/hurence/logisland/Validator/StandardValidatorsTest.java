@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * @author greg
@@ -233,7 +234,7 @@ public class StandardValidatorsTest {
     }
 
     @Test
-    public void fhashAlgorithmValidator() throws IOException {
+    public void hashAlgorithmValidator() throws IOException {
         Validator boolV = StandardValidators.HASH_ALGORITHM_VALIDATOR;
         ValidationResult result = boolV.validate(null, "SHA-256");
         Assert.assertTrue("'SHA-256' should be validated as an hash algorithm", result.isValid());
@@ -243,6 +244,18 @@ public class StandardValidatorsTest {
         Assert.assertFalse("null should not be validated as an hash algorithm", result.isValid());
     }
 
+    @Test
+    public void languageTagValidator() throws IOException {
+        Validator boolV = StandardValidators.LANGUAGE_TAG_VALIDATOR;
+        ValidationResult result = boolV.validate(null, "SHA-256");
+        Assert.assertFalse("'SHA-256' should not be validated as a language tag", result.isValid());
+        result = boolV.validate(null, "1");
+        Assert.assertFalse("'1' should not be validated as a language tag", result.isValid());
+        result = boolV.validate(null, null);
+        Assert.assertFalse("null should not be validated as a language tag", result.isValid());
+        result = boolV.validate(null, Locale.ENGLISH.toLanguageTag());
+        Assert.assertTrue("english tag should be validated as a language tag", result.isValid());
+    }
 
 
 }

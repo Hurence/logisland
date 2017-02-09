@@ -16,14 +16,13 @@
 package com.hurence.logisland.validator;
 
 
-
-
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class StandardValidators {
@@ -246,6 +245,20 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };
+
+    public static final Validator LANGUAGE_TAG_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = String.format("'%s' is not a supported language tag", value);
+            for (String tag: Locale.getISOLanguages()) {
+                if (tag.equals(value)) reason = null;
+            }
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
 
     /**
      * URL Validator that does not allow the Expression Language to be used
