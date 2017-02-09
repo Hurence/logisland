@@ -22,7 +22,6 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,38 +45,66 @@ public class ModifyId extends AbstractProcessor {
     public static final AllowableValue GENERATE_HASH = new AllowableValue("hashFields", "generate a hash from fields",
             "generate a hash from fields");
 
+    public static final AllowableValue FORMAT_STRING_WITH_FIELDS = new AllowableValue("fromFields", "generate a string from java pattern and fields",
+            "generate a string from java pattern and fields");
+
+    public static final AllowableValue TYPE_TIME_HASH = new AllowableValue("typetimehash", "generate a concatenation of type, time and a hash from fields",
+            "generate a concatenation of type, time and a hash from fields (as for generate_hash strategy)");
 
 
-    //TODO add a third strategy (TYPE_TIME_HASH) based on the pattern
-    //TODO $record_type-$record_time-hash($fields.to.hash)
 
 
     public static final PropertyDescriptor STRATEGY = new PropertyDescriptor.Builder()
             .name("id.generation.strategy")
             .description("the strategy to generate new Id")
             .required(true)
-            .allowableValues(GENERATE_RANDOM_UUID, GENERATE_HASH)
+            .allowableValues(GENERATE_RANDOM_UUID, GENERATE_HASH, FORMAT_STRING_WITH_FIELDS, TYPE_TIME_HASH)
             .defaultValue(GENERATE_RANDOM_UUID.getValue())
             .build();
+
+
 
     /**
      * properties sued only in case of Hash strategy
      */
-    public static final PropertyDescriptor FIELDS_TO_USE_FOR_HASH = new PropertyDescriptor.Builder()
-            .name("fields.to.hash")
-            .description("the comma separated list of field names (e.g. \"policyid,date_raw\"")
-            .required(true)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue(FieldDictionary.RECORD_RAW_VALUE)
-            .build();
-
     public static final PropertyDescriptor CHARSET_TO_USE_FOR_HASH = new PropertyDescriptor.Builder()
             .name("hash.charset")
             .description("the charset to use to hash id string (e.g. \"UTF-8\"")
             .required(true)
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .defaultValue("UTF-8")
+            .build();
+
+    /**
+     * properties sued only in case of Format strategy
+     */
+    public static final PropertyDescriptor JAVA_FORMAT_STRING = new PropertyDescriptor.Builder()
+            .name("java.formatter.string")
+            .description("the format to use to build id string (e.g. \"%4$2s %3$2s %2$2s %1$2s\" (see java Formatter)")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)//TODO JAVA_FORMAT_STRING_VALIDATOR ?
+            .defaultValue("asfreghtr")
+            .build();
+
+
+    public static final PropertyDescriptor LANGUAGE_TAG = new PropertyDescriptor.Builder()
+            .name("language.tag")
+            .description("the language to use to format numbers in string")
+            .required(true)
+            .allowableValues(Locale.getISOLanguages())
+            .defaultValue(Locale.ENGLISH.toLanguageTag())//TODO add LANGUAGE_TAG VALIDATOR
+            .build();
+
+    /**
+     * properties sued only in case of Hash strategy or Format strategy
+     */
+    public static final PropertyDescriptor FIELDS_TO_USE = new PropertyDescriptor.Builder()
+            .name("fields.to.hash")
+            .description("the comma separated list of field names (e.g. \"policyid,date_raw\"")
+            .required(true)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(FieldDictionary.RECORD_RAW_VALUE)
             .build();
 
     //TODO determines those values dynamically, used this code to determine those
@@ -119,41 +146,95 @@ public class ModifyId extends AbstractProcessor {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(GENERATE_RANDOM_UUID.getValue())) {
                 idBuilder = new IdBuilder() {
                     @Override
-                    public String buildId(Record record) {
-                        return UUID.randomUUID().toString();
+                    public void buildId(Record record) {
+                        record.setId(UUID.randomUUID().toString());
                     }
                 };
             } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(GENERATE_HASH.getValue())) {
-                List<String> fieldsForHash = Lists.newArrayList(
-                        context.getPropertyValue(FIELDS_TO_USE_FOR_HASH).asString().split(","));
+                final List<String> fieldsForHash = Lists.newArrayList(
+                        context.getPropertyValue(FIELDS_TO_USE).asString().split(","));
 
                 try {
                     final MessageDigest digest = MessageDigest.getInstance(context.getPropertyValue(HASH_ALGORITHM).asString());
                     final Charset charset = Charset.forName(context.getPropertyValue(CHARSET_TO_USE_FOR_HASH).asString());
                     idBuilder = new IdBuilder() {
                         @Override
-                        public String buildId(Record record) {
+                        public void buildId(Record record) {
                             StringBuilder stb = new StringBuilder();
                             for (String fieldName: fieldsForHash) {
-                                stb.append(record.getField(fieldName));
+                                stb.append(record.getField(fieldName).asString());
                             }
                             digest.update(stb.toString().getBytes(charset));
                             byte[] digested = digest.digest();
-                            return new String(digested, charset);
+                           record.setId(new String(digested, charset));
                         }
                     };
                 } catch (NoSuchAlgorithmException e) {
                     throw new Error("This error should not happen because the validator should ensure the algorythme exist", e);
                 }
-
+            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(FORMAT_STRING_WITH_FIELDS.getValue())) {
+                final String[] fieldsForFormat = context.getPropertyValue(FIELDS_TO_USE).asString().split(",");
+                final String format = context.getPropertyValue(JAVA_FORMAT_STRING).asString();
+                final Locale local = Locale.forLanguageTag(context.getPropertyValue(LANGUAGE_TAG).asString());
+                idBuilder = new IdBuilder() {
+                    @Override
+                    public void buildId(Record record) {
+                        final Object[] valuesForFormat = new Object[fieldsForFormat.length];
+                        for (int i=0; i < valuesForFormat.length; i++) {
+                            if (!record.hasField(fieldsForFormat[i])) {
+                                List<String> fieldsName =  Lists.newArrayList(fieldsForFormat);
+                                record.addError(ProcessError.CONFIG_SETTING_ERROR.getName(),
+                                        String.format("could not build id with format : '%s' \nfields: '%s' \n because "+
+                                                "field: '%s' does not exist", format, fieldsName, fieldsForFormat[i]));
+                                return;
+                            }
+                            valuesForFormat[i] = record.getField(fieldsForFormat[i]).getRawValue();
+                        }
+                        try {
+                            record.setId(String.format(local, format, valuesForFormat));
+                        } catch (IllegalFormatException e) {
+                            // If a format string contains an illegal syntax, a format specifier that is incompatible with the given arguments,
+                            // insufficient arguments given the format string, or other illegal conditions.
+                            // For specification of all possible formatting errors, see the Details section of the formatter class specification.
+                            record.addError(ProcessError.STRING_FORMAT_ERROR.getName(), e.getMessage());
+                        } catch (NullPointerException  e) {//should not happen
+                            record.addError(ProcessError.CONFIG_SETTING_ERROR.getName(), e.getMessage());
+                        }
+                    }
+                };
+            } else if (context.getPropertyValue(STRATEGY).getRawValue().equals(TYPE_TIME_HASH.getValue())) {
+                final List<String> fieldsForHash = Lists.newArrayList(
+                        context.getPropertyValue(FIELDS_TO_USE).asString().split(","));
+                try {
+                    final MessageDigest digest = MessageDigest.getInstance(context.getPropertyValue(HASH_ALGORITHM).asString());
+                    final Charset charset = Charset.forName(context.getPropertyValue(CHARSET_TO_USE_FOR_HASH).asString());
+                    idBuilder = new IdBuilder() {
+                        @Override
+                        public void buildId(Record record) {
+                            StringBuilder stb = new StringBuilder();
+                            for (String fieldName: fieldsForHash) {
+                                stb.append(record.getField(fieldName).asString());
+                            }
+                            digest.update(stb.toString().getBytes(charset));
+                            byte[] digested = digest.digest();
+                            final String hashString = new String(digested, charset);
+                            final String recordType = record.getField(FieldDictionary.RECORD_TYPE).asString();
+                            final String recordTime = record.getField(FieldDictionary.RECORD_TIME).asString();
+                            final String newId = String.format("%s-%s-%s", recordType, recordTime, hashString);
+                            record.setId(newId);
+                        }
+                    };
+                } catch (NoSuchAlgorithmException e) {
+                    throw new Error("This error should not happen because the validator should ensure the algorythme exist", e);
+                }
             }
         }
+
         /**
         * build new id for all records
         */
         for (Record record : records) {
-            String newId = idBuilder.buildId(record);
-            record.setId(newId);
+            idBuilder.buildId(record);
         }
 
         return records;
@@ -163,14 +244,16 @@ public class ModifyId extends AbstractProcessor {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(STRATEGY);
-        descriptors.add(FIELDS_TO_USE_FOR_HASH);
+        descriptors.add(FIELDS_TO_USE);
         descriptors.add(CHARSET_TO_USE_FOR_HASH);
         descriptors.add(HASH_ALGORITHM);
+        descriptors.add(JAVA_FORMAT_STRING);
+        descriptors.add(LANGUAGE_TAG);
 
         return Collections.unmodifiableList(descriptors);
     }
 
     interface IdBuilder {
-        String buildId(Record record);
+        void buildId(Record record);
     }
 }

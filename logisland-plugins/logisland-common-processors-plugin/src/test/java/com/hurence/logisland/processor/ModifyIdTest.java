@@ -1,13 +1,14 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
 import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import com.hurence.logisland.util.time.DateUtil;
 import org.apache.avro.Schema;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import static org.hamcrest.Matchers.*;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +42,7 @@ public class ModifyIdTest {
     public void testHashStrategy() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
         testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
-        testRunner.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1");
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1");
         testRunner.assertValid();
 
         Record record1 = getRecord1();
@@ -59,6 +61,142 @@ public class ModifyIdTest {
 
 
     }
+
+    @Test
+    public void testRandomUidStrategy() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1");
+        testRunner.assertValid();
+
+        Record record1 = getRecord1();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        String uid = UUID.randomUUID().toString();
+
+        outputRecord.assertRecordSizeEquals(4);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        String recordId = outputRecord.getId();
+        Assert.assertTrue("recordId should be an UUID", UUID.fromString(recordId) != null);
+    }
+
+    @Test
+    public void testFormatStrategy() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.FORMAT_STRING_WITH_FIELDS.getValue());
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1, string2");
+        testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "field 1 is : '%1$2s'");
+        testRunner.assertValid();
+
+        /**
+         * ERRORS
+         */
+        Record record1 = getRecord1();
+
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        outputRecord.assertRecordSizeEquals(5);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        outputRecord.assertFieldEquals(FieldDictionary.RECORD_ERRORS,
+                "[config_setting_error: could not build id with format : 'field 1 is : '%1$2s'' \n" +
+                        "fields: '[string1,  string2]' \n" +
+                        " because field: ' string2' does not exist]");
+
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2");
+        testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "string1 is %s, string2 is %s, long1 is %f, long2 is %f");
+        testRunner.clearQueues();
+        record1 = getRecord1();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+
+        outputRecord.assertRecordSizeEquals(5);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        outputRecord.assertFieldEquals(FieldDictionary.RECORD_ERRORS,"[string_format_error: f != java.lang.Integer]");
+
+        /**
+         * WORKING FINE
+         */
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2");
+        testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "field 1 is : '%1$2s'");
+        testRunner.clearQueues();
+        record1 = getRecord1();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+
+        outputRecord.assertRecordSizeEquals(4);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        outputRecord.assertFieldEquals("record_id",  "field 1 is : 'value1'");
+
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2");
+        testRunner.setProperty(ModifyId.JAVA_FORMAT_STRING, "string1 is %s, string2 is %s, long1 is %d, long2 is %d");
+        testRunner.clearQueues();
+        record1 = getRecord1();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+
+        outputRecord.assertRecordSizeEquals(4);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        outputRecord.assertFieldEquals("record_id",  "string1 is value1, string2 is value2, long1 is 1, long2 is 2");
+
+    }
+
+    @Test
+    public void testTypeTimeHashStrategy() throws ParseException {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.TYPE_TIME_HASH.getValue());
+        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2");
+        testRunner.assertValid();
+
+        Record record1 = getRecord1();
+        record1.setTime(DateUtil.parse("2018"));
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        outputRecord.assertRecordSizeEquals(4);
+        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string2",  "value2");
+        outputRecord.assertFieldEquals("long1",  1);
+        outputRecord.assertFieldEquals("long2",  2);
+        outputRecord.assertFieldEquals("record_id",  "generic-1514764800000-\b ���qt:��1$\u0006�v���{�Xd \u001F\u001B��� \\�");
+
+
+    }
+
     @Test
     public void testPerf() {
         Record record1 = getRecord1();
@@ -80,47 +218,21 @@ public class ModifyIdTest {
         TestRunner modifierIdProcessor = TestRunners.newTestRunner(new ModifyId());
         //hash
         modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
-        modifierIdProcessor.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1,string2,long1,long2,string1,string2,string1,string2");
+        modifierIdProcessor.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2,string1,string2,string1,string2");
         modifierIdProcessor.assertValid();
         testProcessorPerfByRecord(modifierIdProcessor, records, 100);
         //randomUID
         modifierIdProcessor.clearQueues();
         modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
-        modifierIdProcessor.removeProperty(ModifyId.FIELDS_TO_USE_FOR_HASH);
+        modifierIdProcessor.removeProperty(ModifyId.FIELDS_TO_USE);
         modifierIdProcessor.assertValid();
         testProcessorPerfByRecord(modifierIdProcessor, records, 100);
         //TODO FORMAT STRING
 //        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
-//        testRunner.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1,string2,long1,long2,string1,string2,string1,string2");
+//        testRunner.setProperty(ModifyId.FIELDS_TO_USE, "string1,string2,long1,long2,string1,string2,string1,string2");
 //        testRunner.assertValid();
 //        testProcessorPerfByRecord(testRunner, records, 100);
     }
-    @Test
-    public void testRandomUidStrategy() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
-        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
-        testRunner.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1");
-        testRunner.assertValid();
-
-        Record record1 = getRecord1();
-        testRunner.enqueue(record1);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
-        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
-
-        String uid = UUID.randomUUID().toString();
-
-        outputRecord.assertRecordSizeEquals(4);
-        outputRecord.assertFieldEquals("string1",  "value1");
-        outputRecord.assertFieldEquals("string2",  "value2");
-        outputRecord.assertFieldEquals("long1",  1);
-        outputRecord.assertFieldEquals("long2",  2);
-        String recordId = outputRecord.getId();
-        Assert.assertTrue("recordId should be an UUID", UUID.fromString(recordId) != null);
-    }
-
-
 
     /**
      *
