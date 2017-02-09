@@ -96,9 +96,54 @@ public class GenerateRandomRecord extends AbstractProcessor {
 
                 for (final Schema.Field schemaField : schema.getFields()) {
 
-                    String fieldName = schemaField.name();
-                    Object fieldValue = eventRecord.get(fieldName);
-                    FieldType fieldType = FieldType.valueOf(schemaField.schema().getType().getName().toUpperCase());
+                    final String fieldName = schemaField.name();
+                    final Object fieldValue = eventRecord.get(fieldName);
+                    final FieldType fieldType;
+                    {
+                        /**
+                         * currently all avro type are : RECORD,ENUM,ARRAY,MAP,UNION,FIXED,STRING,BYTES,INT,LONG,FLOAT,DOUBLE,BOOLEAN,NULL;
+                         * all LogIsland type are : RECORD,ENUM,ARRAY,MAP,STRING,BYTES,INT,LONG,FLOAT,DOUBLE,BOOLEAN,NULL;
+                         *
+                         * So we lack of types: UNION, FIXED
+                         */
+                        Schema.Type avroType = schemaField.schema().getType();
+                        switch (avroType) {
+                            case UNION:
+                                List<Schema> schemas = schemaField.schema().getTypes();
+                                List<Schema.Type> types= new LinkedList<>();
+                                for (Schema schemaF2: schemas) {
+                                        types.add(schemaF2.getType());
+                                }
+
+                                if (types.size() > 2 || !types.contains(Schema.Type.NULL)) {
+                                    throw new UnsupportedOperationException(
+                                            "avro schema with types UNION with another format than '['null', 'atype']' is not yet supported"
+                                    );
+                                }
+                                Schema.Type determineType = null;
+                                for (Schema.Type type: types) {
+                                    switch (type) {
+                                        case NULL:
+                                            break;
+                                        default:
+                                            determineType = type;
+                                            break;
+                                    }
+                                }
+                                if (determineType==null) {
+                                    throw new UnsupportedOperationException("UNION of null type makes no sense");
+                                }
+                                fieldType = FieldType.valueOf(determineType.getName().toUpperCase());
+                                break;
+                            case FIXED:
+                                //TODO verify this is a correct behaviour
+                                fieldType = FieldType.STRING;
+                                break;
+                            default:
+                                fieldType =  FieldType.valueOf(avroType.getName().toUpperCase());
+                                break;
+                        }
+                    }
 
                     if (Objects.equals(fieldName, FieldDictionary.RECORD_ID)) {
                         record.setId(fieldValue.toString());
@@ -119,7 +164,7 @@ public class GenerateRandomRecord extends AbstractProcessor {
 
                 outRecords.add(record);
             } catch (Exception e) {
-                logger.error("problem while generating random event from avro schema {}");
+                logger.error("problem while generating random event from avro schema {}", e);
             }
         }
 
