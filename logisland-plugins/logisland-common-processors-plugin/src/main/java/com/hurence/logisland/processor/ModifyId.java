@@ -20,7 +20,9 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +47,13 @@ public class ModifyId extends AbstractProcessor {
             "generate a hash from fields");
 
 
+
+    //TODO add a third strategy (TYPE_TIME_HASH) based on the pattern
+    //TODO $record_type-$record_time-hash($fields.to.hash)
+
+
     public static final PropertyDescriptor STRATEGY = new PropertyDescriptor.Builder()
-            .name("strategy.to.use")
+            .name("id.generation.strategy")
             .description("the strategy to generate new Id")
             .required(true)
             .allowableValues(GENERATE_RANDOM_UUID, GENERATE_HASH)
@@ -57,25 +64,45 @@ public class ModifyId extends AbstractProcessor {
      * properties sued only in case of Hash strategy
      */
     public static final PropertyDescriptor FIELDS_TO_USE_FOR_HASH = new PropertyDescriptor.Builder()
-            .name("fields.to.use.for.hash")
+            .name("fields.to.hash")
             .description("the comma separated list of field names (e.g. \"policyid,date_raw\"")
             .required(true)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(FieldDictionary.RECORD_RAW_VALUE)
             .build();
 
     public static final PropertyDescriptor CHARSET_TO_USE_FOR_HASH = new PropertyDescriptor.Builder()
-            .name("charset.to.use.for.hash")
+            .name("hash.charset")
             .description("the charset to use to hash id string (e.g. \"UTF-8\"")
             .required(true)
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .defaultValue("UTF-8")
             .build();
 
+    //TODO determines those values dynamically, used this code to determine those
+    //    Provider[] providers = Security.getProviders();
+    //    for (Provider p : providers) {
+    //        String providerStr = String.format("%s/%s/%f\n", p.getName(),
+    //                p.getInfo(), p.getVersion());
+    //        System.out.println("provider: " + p.getName());
+    //        Set<Provider.Service> services = p.getServices();
+    //        for (Provider.Service s : services) {
+    //            if ("MessageDigest".equals(s.getType())) {
+    //                System.out.printf("\t%s//%s//%s\n", s.getType(),
+    //                        s.getAlgorithm(), s.getClassName());
+    //            }
+    //        }
+    //    }
+    public static final Set<String> HASH_ALGORITHMS = new HashSet<>(Arrays.asList(
+            "MD2", "MD5", "SHA", "SHA-224", "SHA-256", "SHA-384", "SHA-512"
+    ));
+
     public static final PropertyDescriptor HASH_ALGORITHM = new PropertyDescriptor.Builder()
-            .name("algorithm.to.use.for.hash")
+            .name("hash.algorithm")
             .description("the algorithme to use to hash id string (e.g. \"SHA-256\"")
             .required(true)
+            .allowableValues(HASH_ALGORITHMS)
             .addValidator(StandardValidators.HASH_ALGORITHM_VALIDATOR)
             .defaultValue("SHA-256")
             .build();
