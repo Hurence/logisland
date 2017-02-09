@@ -3,22 +3,28 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
+import com.hurence.logisland.util.record.RecordSchemaUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.apache.avro.Schema;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import static org.hamcrest.Matchers.*;
 
-import java.rmi.server.UID;
-import java.security.Provider;
-import java.security.Security;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by gregoire on 08/02/17.
  */
 public class ModifyIdTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ModifyIdTest.class);
+
     private Record getRecord1() {
         Record record1 = new StandardRecord();
         record1.setField("string1", FieldType.STRING, "value1");
@@ -51,9 +57,43 @@ public class ModifyIdTest {
         outputRecord.assertFieldEquals("long2",  2);
         outputRecord.assertFieldEquals("record_id",  "��ok\u007Fwc��\"ݦ\u000B*\u000B��A*�\u0018K�N�x�M7�\u001D\u000B");
 
-        //TODO add a unit test to monitor performance overhead
-        //TODO should be less than x ms / record (loop over 10000 records for example)
 
+    }
+    @Test
+    public void testPerf() {
+        Record record1 = getRecord1();
+        Schema schema = RecordSchemaUtil.generateSchema(record1);
+
+        TestRunner generator = TestRunners.newTestRunner(new GenerateRandomRecord());
+        generator.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA, schema.toString());
+        generator.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT, "10000");
+        generator.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT, "20000");
+        generator.run();
+
+        final Record[] records;
+        {
+            List<MockRecord> recordsList = generator.getOutputRecords();
+            Record[] recordsArray = new Record[recordsList.size()];
+            records = recordsList.toArray(recordsArray);
+        }
+
+        TestRunner modifierIdProcessor = TestRunners.newTestRunner(new ModifyId());
+        //hash
+        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
+        modifierIdProcessor.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1,string2,long1,long2,string1,string2,string1,string2");
+        modifierIdProcessor.assertValid();
+        testProcessorPerfByRecord(modifierIdProcessor, records, 100);
+        //randomUID
+        modifierIdProcessor.clearQueues();
+        modifierIdProcessor.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_RANDOM_UUID.getValue());
+        modifierIdProcessor.removeProperty(ModifyId.FIELDS_TO_USE_FOR_HASH);
+        modifierIdProcessor.assertValid();
+        testProcessorPerfByRecord(modifierIdProcessor, records, 100);
+        //TODO FORMAT STRING
+//        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.GENERATE_HASH.getValue());
+//        testRunner.setProperty(ModifyId.FIELDS_TO_USE_FOR_HASH, "string1,string2,long1,long2,string1,string2,string1,string2");
+//        testRunner.assertValid();
+//        testProcessorPerfByRecord(testRunner, records, 100);
     }
     @Test
     public void testRandomUidStrategy() {
@@ -78,5 +118,25 @@ public class ModifyIdTest {
         outputRecord.assertFieldEquals("long2",  2);
         String recordId = outputRecord.getId();
         Assert.assertTrue("recordId should be an UUID", UUID.fromString(recordId) != null);
+    }
+
+
+
+    /**
+     *
+     * @param runner processor
+     * @param records input
+     * @param maxTimeByRecord (milliseconds)
+     */
+    public void testProcessorPerfByRecord(TestRunner runner, Record[] records, long maxTimeByRecord) {
+        runner.assertValid();
+        long startTime = System.currentTimeMillis();
+        runner.enqueue(records);
+        runner.run();
+        long endTime = System.currentTimeMillis();
+        runner.assertOutputRecordsCount(records.length);
+        long processingTimeByRecord = (endTime - startTime) / records.length;
+        logger.info("timeProcessByRecordWas '{}'", processingTimeByRecord);
+        Assert.assertTrue("maxTimeByRecord should be inferior to " + maxTimeByRecord, processingTimeByRecord <= maxTimeByRecord);
     }
 }
