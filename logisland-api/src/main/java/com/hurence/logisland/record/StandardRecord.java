@@ -289,7 +289,6 @@ public class StandardRecord implements Record {
                     switch (field.getType()) {
                         case STRING:
                             isValid = field.getRawValue() instanceof String;
-
                             break;
                         case INT:
                             isValid = field.getRawValue() instanceof Integer;
