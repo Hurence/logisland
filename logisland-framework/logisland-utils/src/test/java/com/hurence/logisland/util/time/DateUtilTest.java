@@ -188,6 +188,13 @@ public class DateUtilTest {
     @Test
     public void testParsingWithTimeZone() throws ParseException {
 
+        /**
+         * WARNING ! Oracle is playing with timeZones object between minor version changes...
+         * For exemple that caused this test to fail with "America/Cancun" timeZone if the jvm
+         * version was inferior to 8u45... So I replaced it by "Canada/Atlantic" that should be more stable
+         * and put it as a variable so we can easily change it
+         */
+        TimeZone testTimeZone = TimeZone.getTimeZone("Canada/Atlantic");
         // Date expectedDate = new Date(1388648629000L);
         DateTime today = new DateTime(DateTimeZone.UTC);
         String currentYear = today.year().getAsString();
@@ -206,10 +213,10 @@ public class DateUtilTest {
         assertTrue(dateAsUtcDate + " should be equal to " + expectedEuropeDate.toDate() + " plus 1 hour",
                 dateAsUtcDate.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60);
 
-        Date dateAsCancun = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("America/Cancun"));
+        Date dateAsTest = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", testTimeZone);
 
-        assertTrue(dateAsCancun + " should be equal to " + expectedEuropeDate.toDate() + " plus 6 hour",
-                dateAsCancun.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60 * 6 );
+        assertTrue(dateAsTest + " should be equal to " + expectedEuropeDate.toDate() + " plus 6 hour",
+                dateAsTest.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60 * 5 );
 
         /**
          * should not use set timezone when timezone on pattern
@@ -228,10 +235,10 @@ public class DateUtilTest {
         assertTrue(dateAsUtcDate + " should be equal to " + expectedDate.toDate(),
                 dateAsUtcDate.getTime() == expectedDate.getMillis());
 
-        dateAsCancun = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("America/Cancun"));
+        dateAsTest = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", testTimeZone);
 
-        assertTrue(dateAsCancun + " should be equal to " + expectedDate.toDate(),
-                dateAsCancun.getTime() == expectedDate.getMillis());
+        assertTrue(dateAsTest + " should be equal to " + expectedDate.toDate(),
+                dateAsTest.getTime() == expectedDate.getMillis());
 
     }
     @Test
