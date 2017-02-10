@@ -379,7 +379,7 @@ public class SplitTextTest {
         testRunner.setProperty(SplitText.VALUE_FIELDS, "raw_date,host1,host2,raw_date2,level,source,record_time,http_user_agent,src_ip,host_name,host_ip,host_port,tunnel_local_port,tunnel_remote_local_address,tunnel_remote_port,http_version,http_method,http_result_code,http_result,http_uri,http_query,http_referrer,http_content_type,bytes_out");
         testRunner.setProperty(SplitText.KEEP_RAW_CONTENT, "true");
         testRunner.setProperty(SplitText.RECORD_TYPE, "apache_log");
-        testRunner.setProperty(SplitText.TIME_ZONE_RECORD_TIME, "America/Cancun");
+        testRunner.setProperty(SplitText.TIME_ZONE_RECORD_TIME, "Canada/Atlantic");
 
 
         testRunner.setProperty("alt.value.regex.1", "(\\w{3}\\s+\\d{1,2}\\s\\d{2}:\\d{2}:\\d{2})\\s([\\.\\w]+)\\/([\\.\\w]+)\\s(\\d{4}\\s+\\w{3}\\s\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\s+(\\w+)\\s+(\\w+)\\:\\s+(.*)");
@@ -401,7 +401,7 @@ public class SplitTextTest {
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
         out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
-        out.assertFieldEquals("record_time", 1484697138000L);
+        out.assertFieldEquals("record_time", 1484693538000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
     }
