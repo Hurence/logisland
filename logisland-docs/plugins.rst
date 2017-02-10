@@ -681,6 +681,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
+   "timezone.record.time", "what is the time zone of the string formatted date for 'record_time' field.", "", "UTC", "", ""
 
 Dynamic Properties
 __________________
