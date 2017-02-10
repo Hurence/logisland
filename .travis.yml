@@ -10,7 +10,7 @@ cache:
 language: java
 
 script: 
-  - mvn install -e
+  - mvn install -e -X
 
 jdk:
   - oraclejdk8
