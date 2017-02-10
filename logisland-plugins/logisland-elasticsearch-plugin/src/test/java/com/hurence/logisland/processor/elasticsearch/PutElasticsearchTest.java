@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertHitCount;
@@ -318,7 +317,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         for (MockRecord failedRecord: failedRecords) {
             List<String> errors = (List<String>) failedRecord.getErrors();
             Assert.assertEquals("there should be one error", errors.size(), 1);
-            Assert.assertTrue("there should be one error", errors.get(0).contains(ProcessError.ELASTICSEARCH_INDEXATION_ERROR.getName()));
+            Assert.assertTrue("there should be one error", errors.get(0).contains(ProcessError.INDEXATION_ERROR.getName()));
         }
 
         flushAndRefresh();

@@ -282,7 +282,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                             logger.error("something went wrong while bulk loading events to es : {}", throwable.getMessage());
                             failedRecords.addAll(records);
                             for (Record failedRecord: failedRecords) {
-                                failedRecord.addError(ProcessError.ELASTICSEARCH_INDEXATION_ERROR.getName(), throwable.getMessage());
+                                failedRecord.addError(ProcessError.INDEXATION_ERROR.getName(), throwable.getMessage());
                             }
                         }
 
@@ -363,7 +363,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                     for (Record record : records) {
                         if (errors.keySet().contains(record.getId())) {
                             failedRecords.add(record);
-                            record.addError(ProcessError.ELASTICSEARCH_INDEXATION_ERROR.getName(), errors.get(record.getId()));
+                            record.addError(ProcessError.INDEXATION_ERROR.getName(), errors.get(record.getId()));
                         }
                     }
                 }
