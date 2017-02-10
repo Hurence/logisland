@@ -15,17 +15,16 @@
  */
 package com.hurence.logisland.processor;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.hurence.logisland.util.runner.TestRunner;
+import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hurence.logisland.util.runner.TestRunner;
-import com.hurence.logisland.util.runner.TestRunners;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class RandomStandardRecordGeneratorTest {
@@ -51,8 +50,29 @@ public class RandomStandardRecordGeneratorTest {
         Assert.assertTrue(testRunner.getOutputRecords().size() >= 5);
     }
 
+    @Test
+    public void testUnionTypeInSchema() throws Exception {
+
+        String avroSchema = loadResurceFileToString("/schemas/testSchemaWithUnion.json");
+
+        final TestRunner testRunner = TestRunners.newTestRunner(new GenerateRandomRecord());
+        testRunner.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA.getName(), avroSchema);
+        testRunner.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT.getName(), "1");
+        testRunner.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT.getName(), "2");
+
+        testRunner.assertValid();
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+
+        Assert.assertTrue(testRunner.getOutputRecords().size() <= 2);
+        Assert.assertTrue(testRunner.getOutputRecords().size() >= 1);
+    }
+
 	private String loadResurceFileToString(String resourceFile) throws Exception {
 		Path resourcePath = Paths.get(getClass().getResource(resourceFile).toURI());
 		return FileUtils.readFileToString(resourcePath.toFile());
 	}
+
+
 }

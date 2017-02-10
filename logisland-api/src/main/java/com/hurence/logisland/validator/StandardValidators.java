@@ -16,14 +16,15 @@
 package com.hurence.logisland.validator;
 
 
-
-
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.TimeZone;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class StandardValidators {
@@ -38,6 +39,8 @@ public class StandardValidators {
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -53,6 +56,8 @@ public class StandardValidators {
 
             } catch (final NumberFormatException e) {
                 reason = "not a valid double";
+            } catch (final NullPointerException e) {
+                reason = "null is not a valid double";
             }
 
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -66,10 +71,13 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final int intVal = Integer.parseInt(value);
-
-                if (intVal <= 0) {
-                    reason = "not a positive value";
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final int intVal = Integer.parseInt(value);
+                    if (intVal <= 0) {
+                        reason = "not a positive value";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
@@ -86,10 +94,14 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final long longVal = Long.parseLong(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final long longVal = Long.parseLong(value);
 
-                if (longVal <= 0) {
-                    reason = "not a positive value";
+                    if (longVal <= 0) {
+                        reason = "not a positive value";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "not a valid 64-bit integer";
@@ -125,7 +137,11 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                Integer.parseInt(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    Integer.parseInt(value);
+                }
             } catch (final NumberFormatException e) {
                 reason = "not a valid integer";
             }
@@ -141,7 +157,11 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                Long.parseLong(value);
+                if (value==null) {
+                    reason = "null is not a valid long";
+                } else {
+                    Long.parseLong(value);
+                }
             } catch (final NumberFormatException e) {
                 reason = "not a valid Long";
             }
@@ -157,10 +177,14 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                final int intVal = Integer.parseInt(value);
+                if (value==null) {
+                    reason = "null is not a valid integer";
+                } else {
+                    final int intVal = Integer.parseInt(value);
 
-                if (intVal < 0) {
-                    reason = "value is negative";
+                    if (intVal < 0) {
+                        reason = "value is negative";
+                    }
                 }
             } catch (final NumberFormatException e) {
                 reason = "value is not a valid integer";
@@ -205,6 +229,38 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };
+
+    public static final Validator HASH_ALGORITHM_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = null;
+            try {
+                final MessageDigest digest = MessageDigest.getInstance(value);
+            } catch (final NoSuchAlgorithmException nsae) {
+                reason = "'" + value + "' is not a supported algorithme by this JVM.";
+            } catch (final NullPointerException npe) {
+                reason = "null is not a supported algorithm";
+            }
+
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
+    public static final Validator LANGUAGE_TAG_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+
+
+            String reason = String.format("'%s' is not a supported language tag", value);
+            for (String tag: Locale.getISOLanguages()) {
+                if (tag.equals(value)) reason = null;
+            }
+            return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
+        }
+    };
+
 
     /**
      * URL Validator that does not allow the Expression Language to be used

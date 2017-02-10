@@ -124,6 +124,7 @@ public class MatchQuery extends AbstractProcessor {
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
 
+            // TODO infer numeric type here
             if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
                 final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
                 for (String numericField : numericFields) {

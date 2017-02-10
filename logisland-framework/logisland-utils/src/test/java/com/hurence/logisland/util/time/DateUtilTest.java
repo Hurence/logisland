@@ -172,9 +172,18 @@ public class DateUtilTest {
         }
 
     }
+  
+    public void testParsing2() throws ParseException {
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
+        DateTime expectedDate = f.parseDateTime(currentYear);
+
+        Date date = DateUtil.parse(currentYear);
+        assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
+    }
 
     @Test
     public void testParsingWithTimeZone() throws ParseException {
+
         // Date expectedDate = new Date(1388648629000L);
         DateTime today = new DateTime(DateTimeZone.UTC);
         String currentYear = today.year().getAsString();
@@ -235,4 +244,6 @@ public class DateUtilTest {
         assertTrue(dateAsUtcDate + " should be equal to " + expectedUtcDate.toDate(), expectedUtcDate.getMillis() == dateAsUtcDate.getTime());
 
     }
+
+
 }
