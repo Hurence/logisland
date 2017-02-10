@@ -469,6 +469,38 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.ModifyId: 
+
+ModifyId
+--------
+modify id of records or generate it following defined rules
+
+Class
+_____
+com.hurence.logisland.processor.ModifyId
+
+Tags
+____
+record, id, idempotent, generate, modify
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**id.generation.strategy**", "the strategy to generate new Id", "generate a random uid : generate a randomUid using java library, generate a hash from fields : generate a hash from fields, generate a string from java pattern and fields : generate a string from java pattern and fields, generate a concatenation of type, time and a hash from fields : generate a concatenation of type, time and a hash from fields (as for generate_hash strategy), ", "randomUuid", "", ""
+   "**fields.to.hash**", "the comma separated list of field names (e.g. "policyid,date_raw"", "", "record_raw_value", "", ""
+   "**hash.charset**", "the charset to use to hash id string (e.g. "UTF-8"", "", "UTF-8", "", ""
+   "**hash.algorithm**", "the algorithme to use to hash id string (e.g. "SHA-256"", "SHA-384 : , SHA-224 : , SHA-256 : , MD2 : , SHA : , SHA-512 : , MD5 : , ", "SHA-256", "", ""
+   "java.formatter.string", "the format to use to build id string (e.g. "%4$2s %3$2s %2$2s %1$2s" (see java Formatter)", "", "null", "", ""
+   "**language.tag**", "the language to use to format numbers in string", "aa : , ab : , ae : , af : , ak : , am : , an : , ar : , as : , av : , ay : , az : , ba : , be : , bg : , bh : , bi : , bm : , bn : , bo : , br : , bs : , ca : , ce : , ch : , co : , cr : , cs : , cu : , cv : , cy : , da : , de : , dv : , dz : , ee : , el : , en : , eo : , es : , et : , eu : , fa : , ff : , fi : , fj : , fo : , fr : , fy : , ga : , gd : , gl : , gn : , gu : , gv : , ha : , he : , hi : , ho : , hr : , ht : , hu : , hy : , hz : , ia : , id : , ie : , ig : , ii : , ik : , in : , io : , is : , it : , iu : , iw : , ja : , ji : , jv : , ka : , kg : , ki : , kj : , kk : , kl : , km : , kn : , ko : , kr : , ks : , ku : , kv : , kw : , ky : , la : , lb : , lg : , li : , ln : , lo : , lt : , lu : , lv : , mg : , mh : , mi : , mk : , ml : , mn : , mo : , mr : , ms : , mt : , my : , na : , nb : , nd : , ne : , ng : , nl : , nn : , no : , nr : , nv : , ny : , oc : , oj : , om : , or : , os : , pa : , pi : , pl : , ps : , pt : , qu : , rm : , rn : , ro : , ru : , rw : , sa : , sc : , sd : , se : , sg : , si : , sk : , sl : , sm : , sn : , so : , sq : , sr : , ss : , st : , su : , sv : , sw : , ta : , te : , tg : , th : , ti : , tk : , tl : , tn : , to : , tr : , ts : , tt : , tw : , ty : , ug : , uk : , ur : , uz : , ve : , vi : , vo : , wa : , wo : , xh : , yi : , yo : , za : , zh : , zu : , ", "en", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.NormalizeFields: 
 
 NormalizeFields
@@ -681,6 +713,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
+   "timezone.record.time", "what is the time zone of the string formatted date for 'record_time' field.", "", "UTC", "", ""
 
 Dynamic Properties
 __________________

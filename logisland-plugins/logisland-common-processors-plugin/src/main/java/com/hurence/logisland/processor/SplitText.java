@@ -100,6 +100,14 @@ public class SplitText extends AbstractProcessor {
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor TIME_ZONE_RECORD_TIME = new PropertyDescriptor.Builder()
+            .name("timezone.record.time")
+            .description("what is the time zone of the string formatted date for 'record_time' field.")
+            .required(false)
+            .defaultValue("UTC")
+            .addValidator(StandardValidators.TIMEZONE_VALIDATOR)
+            .build();
+
     private class AlternativeMappingPattern{
 
         private String[] mapping;
@@ -128,6 +136,7 @@ public class SplitText extends AbstractProcessor {
         descriptors.add(KEY_FIELDS);
         descriptors.add(RECORD_TYPE);
         descriptors.add(KEEP_RAW_CONTENT);
+        descriptors.add(TIME_ZONE_RECORD_TIME);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -232,14 +241,22 @@ public class SplitText extends AbstractProcessor {
                         outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, value);
                     }
                 }
-
+                /**
+                 * initializing timezone
+                 */
+                TimeZone timezone = null;
+                if (context.getPropertyValue(TIME_ZONE_RECORD_TIME).isSet()) {
+                    timezone = TimeZone.getTimeZone(context.getPropertyValue(TIME_ZONE_RECORD_TIME).asString());
+                } else {
+                    timezone = TimeZone.getTimeZone("UTC");
+                }
 
                 // match the value
                 if (value != null && !value.isEmpty()) {
                     try {
                         Matcher valueMatcher = valueRegex.matcher(value);
                         if (valueMatcher.lookingAt()) {
-                            extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher);
+                            extractValueFields(valueFields, keepRawContent, outputRecord, valueMatcher, timezone);
                         } else {
                             // try the other Regex
                             List<AlternativeMappingPattern> alternativeRegexList =
@@ -252,7 +269,7 @@ public class SplitText extends AbstractProcessor {
                                             alternativeMatchingRegex.getMapping(),
                                             keepRawContent,
                                             outputRecord,
-                                            alternativeValueMatcher);
+                                            alternativeValueMatcher, timezone);
                                     hasMatched = true;
                                     break;
                                 }
@@ -312,7 +329,8 @@ public class SplitText extends AbstractProcessor {
         return alternativeMappingRegex;
     }
 
-    private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher) {
+    private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher,
+                                    TimeZone timezone) {
         if (keepRawContent) {
             outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0));
         }
@@ -331,10 +349,9 @@ public class SplitText extends AbstractProcessor {
             try {
                 long eventTime = Long.parseLong(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
             } catch (Exception ex) {
-
                 Date eventDate = null;
                 try {
-                    eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString());
+                    eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString(), timezone);
                 } catch (ParseException e) {
                     logger.info("issue while parsing date : {} ", e.toString());
                 }
