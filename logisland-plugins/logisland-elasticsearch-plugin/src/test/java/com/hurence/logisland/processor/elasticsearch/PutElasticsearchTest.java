@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertHitCount;
+import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.hasStatus;
 
 @ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, maxNumDataNodes = 2)
 @ThreadLeakScope(ThreadLeakScope.Scope.SUITE)
@@ -59,6 +60,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
     @Before
     private void setup() throws IOException {
         Client client = client();
+        assertNotNull(client);
 
         createIndex("test");
         ensureGreen("test");
@@ -124,6 +126,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
 
         flushAndRefresh();
+        ensureGreen("test");
         SearchResponse searchResponse = client().prepareSearch(indexName)
                 .setTypes(recordType)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
@@ -248,6 +251,7 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
 
         flushAndRefresh();
+        ensureGreen("test");
         SearchResponse searchResponse = client().prepareSearch(indexName)
                 .setTypes(recordType)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
