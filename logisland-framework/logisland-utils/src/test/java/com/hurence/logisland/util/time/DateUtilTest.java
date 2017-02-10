@@ -172,8 +172,12 @@ public class DateUtilTest {
         }
 
     }
-  
+
+    @Test
     public void testParsing2() throws ParseException {
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
         DateTimeFormatter f = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
         DateTime expectedDate = f.parseDateTime(currentYear);
 
