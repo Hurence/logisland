@@ -51,6 +51,8 @@ public class StandardRecord implements Record {
 
     private Map<String, Field> fields = new HashMap<>();
 
+    private List<String> errors = new ArrayList<>();
+
     public StandardRecord() {
         this(DEFAULT_RECORD_TYPE);
     }
@@ -66,6 +68,7 @@ public class StandardRecord implements Record {
         this.setTime(toClone.getTime());
         this.setId(UUID.randomUUID().toString());
         toClone.getAllFieldsSorted().forEach(this::setField);
+        this.errors = (List<String>) toClone.getErrors();
     }
 
     @Override
@@ -382,9 +385,6 @@ public class StandardRecord implements Record {
 
         return size;
     }
-
-
-    private List<String> errors = new ArrayList<>();
 
     @Override
     public Record addError(final String type, final String message) {
