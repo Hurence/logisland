@@ -6,6 +6,7 @@
 **/.project
 **/.settings
 **/.classpath
+**/bin
 #   pydev projects
 **/.pydevproject
 #   added by eclipse when importing maven projects
