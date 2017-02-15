@@ -16,8 +16,8 @@
 
 package io.confluent.connect.avro;
 
-import com.hurence.logisland.kafka.serializers.AbstractKafkaAvroDeserializer;
-import com.hurence.logisland.kafka.serializers.NonRecordContainer;
+import io.confluent.kafka.schemaregistry.serializers.AbstractKafkaAvroDeserializer;
+import io.confluent.kafka.schemaregistry.serializers.NonRecordContainer;
 import org.apache.avro.generic.*;
 import org.apache.kafka.common.cache.Cache;
 import org.apache.kafka.common.cache.LRUCache;

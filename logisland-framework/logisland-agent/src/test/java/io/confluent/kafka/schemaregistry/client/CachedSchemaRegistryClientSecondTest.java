@@ -15,8 +15,8 @@
  */
 package io.confluent.kafka.schemaregistry.client;
 
-import com.hurence.logisland.kafka.serializers.KafkaAvroDeserializer;
-import com.hurence.logisland.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.schemaregistry.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.schemaregistry.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.schemaregistry.ClusterTestHarness;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;

@@ -111,7 +111,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
         config.getString(SchemaRegistryConfig.KAFKASTORE_CONNECTION_URL_CONFIG);
     this.zkSessionTimeoutMs =
         config.getInt(SchemaRegistryConfig.KAFKASTORE_ZK_SESSION_TIMEOUT_MS_CONFIG);
-    this.kafkaStoreTimeoutMs = 
+    this.kafkaStoreTimeoutMs =
         config.getInt(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG);
     this.serializer = serializer;
     this.defaultCompatibilityLevel = config.compatibilityType();
@@ -168,7 +168,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
       throw new SchemaRegistryInitializationException(
           "Error initializing kafka store while initializing schema registry", e);
     }
-    
+
     try {
       createZkNamespace();
       masterElector = new ZookeeperMasterElector(zkUtils, myIdentity, this,
@@ -205,7 +205,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
         schemaRegistryZkUrl, zkSessionTimeoutMs, zkSessionTimeoutMs,
         JaasUtils.isZkSecurityEnabled());
   }
-  
+
   public boolean isMaster() {
     synchronized (masterLock) {
       if (masterIdentity != null && masterIdentity.equals(myIdentity)) {
@@ -215,7 +215,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
       }
     }
   }
-  
+
   /**
    * 'Inform' this SchemaRegistry instance which SchemaRegistry is the current master.
    * If this instance is set as the new master, ensure it is up-to-date with data in

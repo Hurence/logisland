@@ -95,6 +95,45 @@ types:
       documentation?: string
       config:        Property[]
 
+
+# for testing purpose
+/:
+  get:
+  post:
+
+/config:
+  put:
+  /{subjet}:
+    put:
+    get:
+
+/subjects:
+  get:
+  /{subject}:
+    post:
+
+/subjects/{subject}/versions:
+  get:
+  post:
+  /{version}:
+    get:
+  /latest:
+    get:
+
+/schemas/ids:
+  /{id}:
+    get:
+
+/compatibility:
+  /subjects/{subject}/versions/{numVersion}:
+    post:
+
+
+
+
+
+
+
 /cluster:
   description: The configuration of the cluster
   get:

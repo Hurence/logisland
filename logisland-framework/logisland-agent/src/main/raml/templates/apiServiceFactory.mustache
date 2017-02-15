@@ -1,0 +1,18 @@
+package {{package}}.factories;
+
+import {{package}}.{{classname}}Service;
+import {{package}}.impl.{{classname}}ServiceImpl;
+
+import com.hurence.logisland.kakfa.registry.LogislandKafkaRegistry;
+
+{{>generatedAnnotation}}
+public class {{classname}}ServiceFactory {
+    private static {{classname}}Service service = null;
+
+    public static {{classname}}Service get{{classname}}(LogislandKafkaRegistry kafkaRegistry) {
+        if (service == null) {
+            service = new {{classname}}ServiceImpl(kafkaRegistry);
+        }
+        return service;
+    }
+}
