@@ -47,4 +47,4 @@ do
       ;;
     esac
 done
-exec $(dirname $0)/schema-registry-run-class kafka.tools.ConsoleProducer $DEFAULT_LINE_READER $DEFAULT_SCHEMA_REGISTRY_URL "$@"
+exec $(dirname $0)/logisland-agent-run-class kafka.tools.ConsoleProducer $DEFAULT_LINE_READER $DEFAULT_SCHEMA_REGISTRY_URL "$@"

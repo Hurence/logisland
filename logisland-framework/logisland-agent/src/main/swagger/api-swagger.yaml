@@ -1,0 +1,699 @@
+swagger: '2.0'
+info:
+  description: REST API for logisland agent
+  version: v1
+  title: logisland-agent
+  contact:
+    name: Thomas Bailet
+    email: bailet.thomas@gmail.com
+host: localhost:8080
+basePath: /logisland/api/v1
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+
+  # Job API
+  /jobs:
+    get:
+      tags:
+       - job
+      operationId: getAllJobs
+      summary:  get all jobs
+      description:  retrieve all job configurations
+      responses:
+        "200":
+          description: job configuration list
+          schema:
+            type: array
+            items:
+              type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+       - job
+      summary:  create new job
+      description:  store a new job configuration if valid
+      operationId: addJob
+      parameters:
+        - name: job
+          in: body
+          description: Job to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}:
+    get:
+      tags:
+        - job
+      summary: get job
+      description: get the corresponding Job definition
+      operationId: getJob
+      produces:
+        - application/json
+        - text/plain
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job definition
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - job
+      summary: delete job
+      description: remove the corresponding Job definition and stop if its currently running
+      operationId: deleteJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: job successfully removed
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+       - job
+      summary:  update job
+      description: update an existing job configuration if valid
+      operationId: updateJob
+      parameters:
+        - name: jobId
+          in: path
+          description: Job to add to the store
+          required: true
+          type: string
+        - name: job
+          in: body
+          description: Job to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+       - job
+      summary:  create new job
+      description:  store a new job configuration if valid
+      operationId: addJobWithId
+      parameters:
+        - name: body
+          in: body
+          description: Job configuration to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+        - name: jobId
+          in: path
+          description: JobId to add to the store
+          required: true
+          type: string
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/start:
+     post:
+      tags:
+        - job
+      summary: start job
+      description: start the corresponding Job definition
+      operationId: startJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/shutdown:
+     post:
+      tags:
+        - job
+      summary: shutdown job
+      description: shutdown the running Job
+      operationId: shutdownJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/pause:
+     post:
+      tags:
+        - job
+      summary: pause job
+      description: pause the corresponding Job
+      operationId: pauseJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly paused
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/status:
+     get:
+      tags:
+        - job
+      summary: get job status
+      description: get the status of corresponding Job
+      operationId: getJobStatus
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job status
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/metrics:
+     get:
+      tags:
+        - job
+      summary: get job metrics
+      description: get the metrics of corresponding Job
+      operationId: getJobMetrics
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job metrics
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/errors:
+     get:
+      tags:
+        - job
+      summary: get last job errors
+      description: get the metrics of corresponding Job
+      operationId: getJobErrors
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job errors
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  # Topics API
+  /topics:
+    get:
+      tags:
+        - topic
+      summary: get all topics
+      operationId: getAllTopics
+      parameters: []
+      responses:
+        '200':
+          description: Status 200
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Topic'
+    post:
+      tags:
+          - topic
+      summary: create new topic
+      operationId: addNewTopic
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Topic'
+      responses:
+        '200':
+          description: Status 200
+  /topics/{topicId}:
+    get:
+      tags:
+        - topic
+      summary: get topic
+      operationId: getTopic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Status 200
+          schema:
+            $ref: '#/definitions/Topic'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+          - topic
+      summary: update topic
+      operationId: updateTopic
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Topic'
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Topic'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - topic
+      summary: delete topic
+      description: remove a topic config and remove all content from Kafka
+      operationId: deleteTopic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: topic successfully deleted
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/keySchema:
+    get:
+      tags:
+        - schema
+      summary: get topic key schema
+      operationId: getTopicKeySchema
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+        - name: version
+          in: query
+          description: version of the schema ("latest" if not provided)
+          required: false
+          type: string
+          default: latest
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - schema
+      summary: update topic key schema
+      operationId: updateTopicKeySchema
+      parameters:
+        - name: body
+          in: body
+          description: schema to add to the store
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/keySchema/checkCompatibility:
+    post:
+      tags:
+        - schema
+      summary: check topic key schema compatibility
+      operationId: checkTopicKeySchemaCompatibility
+      parameters:
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: compatibility level
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/valueSchema:
+    get:
+      tags:
+        - schema
+      summary: get topic value schema
+      operationId: getTopicValueSchema
+      parameters:
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+        - name: version
+          in: query
+          description: version of the schema ("latest" if not provided)
+          required: false
+          type: string
+          default: latest
+      responses:
+        "200":
+          description: job definition
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - schema
+      summary: update topic value schema
+      operationId: updateTopicValueSchema
+      parameters:
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/valueSchema/checkCompatibility:
+    post:
+      tags:
+        - schema
+      summary: check topic value schema compatibility
+      operationId: checkTopicValueSchemaCompatibility
+      parameters:
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: compatibility level
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+  Property:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+  Topic:
+    type: object
+    required:
+      - name
+      - partitions
+      - replicationFactor
+      - schema
+      - serializer
+    properties:
+      name:
+        description: the name of the topic
+        type: string
+      serializer:
+        description: the class of the Serializer
+        type: string
+      schema:
+        description: Avro schema as a json string
+        type: string
+      partitions:
+        description: default number of partitions
+        type: integer
+        format: int64
+      replicationFactor:
+        description: default replication factor
+        type: integer
+        format: int64
+  Job:
+    type: object
+    required:
+      - engine
+      - name
+      - streams
+      - version
+    properties:
+      version:
+        type: string
+        default: "v1"
+      name:
+        type: string
+      dateModified:
+        type: string
+      documentation:
+        type: string
+      engine:
+        $ref: '#/definitions/Engine'
+      streams:
+        type: array
+        items:
+          $ref: '#/definitions/Stream'
+  Engine:
+    type: object
+    required:
+      - component
+      - config
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+  Stream:
+    type: object
+    required:
+      - component
+      - documentation
+      - kafka.input.topics
+      - kafka.output.topics
+      - name
+      - processors
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      kafka.input.topics:
+        type: array
+        items:
+          type: string
+      kafka.output.topics:
+        type: array
+        items:
+          type: string
+      kafka.error.topics:
+        type: array
+        items:
+          type: string
+      processors:
+        type: array
+        items:
+          $ref: '#/definitions/Processor'
+  Processor:
+    type: object
+    required:
+      - component
+      - config
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

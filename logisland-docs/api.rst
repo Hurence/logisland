@@ -339,8 +339,8 @@ You can then start to generate the source code from the swgger yaml file
         --model-package com.hurence.logisland.agent.rest.model \
         -o logisland-framework/logisland-agent \
         -l jaxrs \
-        --template-dir logisland-framework/logisland-agent/src/main/raml/templates \
-        -i logisland-framework/logisland-agent/src/main/raml/api-swagger.yaml
+        --template-dir logisland-framework/logisland-agent/src/main/swagger/templates \
+        -i logisland-framework/logisland-agent/src/main/swagger/api-swagger.yaml
 
 
 

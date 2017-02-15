@@ -98,6 +98,12 @@
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
         <elasticsearch.version>2.3.3</elasticsearch.version>
+
+        <swagger-core-version>1.5.9</swagger-core-version>
+        <jetty-version>9.2.9.v20150224</jetty-version>
+        <jersey2-version>2.25</jersey2-version>
+        <servlet-api-version>2.5</servlet-api-version>
+
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
     </properties>
@@ -146,6 +152,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
         <repository>
             <id>confluent</id>
             <name>Confluent</name>
@@ -423,6 +430,37 @@
                 <groupId>com.esotericsoftware.kryo</groupId>
                 <artifactId>kryo</artifactId>
                 <version>2.21</version>
+            </dependency>
+
+
+            <!--
+                  Swagger & jax-rs stuff
+            -->
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-jersey2-jaxrs</artifactId>
+                <scope>compile</scope>
+                <version>${swagger-core-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${servlet-api-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet-core</artifactId>
+                <version>${jersey2-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey2-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${jersey2-version}</version>
             </dependency>
 
             <!--
@@ -879,6 +917,12 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.9.1</version>
+
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -967,52 +1011,7 @@
                 <artifactId>antlr3-maven-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
-            <!-- <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-checkstyle-plugin</artifactId>
-                 <version>2.15</version>
-                 <dependencies>
-                     <dependency>
-                         <groupId>com.puppycrawl.tools</groupId>
-                         <artifactId>checkstyle</artifactId>
-                         <version>6.5</version>
-                     </dependency>
-                 </dependencies>
-             </plugin>
 
-
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-compiler-plugin</artifactId>
-                 <executions>
-
-                     <execution>
-                         <id>groovy-tests</id>
-                         <goals>
-                             <goal>testCompile</goal>
-                         </goals>
-                         <configuration>
-                             <compilerId>groovy-eclipse-compiler</compilerId>
-                         </configuration>
-                     </execution>
-                 </executions>
-                 <configuration>
-                     <source>${maven.compiler.source}</source>
-                     <target>${maven.compiler.source}</target>
-                 </configuration>
-                 <dependencies>
-                     <dependency>
-                         <groupId>org.codehaus.groovy</groupId>
-                         <artifactId>groovy-eclipse-compiler</artifactId>
-                         <version>2.9.2-01</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.codehaus.groovy</groupId>
-                         <artifactId>groovy-eclipse-batch</artifactId>
-                         <version>2.4.3-01</version>
-                     </dependency>
-                 </dependencies>
-             </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1065,7 +1064,7 @@
                                 </module>-->
                                 <module name="OuterTypeFilename"/>
                                 <module name="LineLength">
-                                    <!-- needs extra, because Eclipse com.hurence.logisland.kafka.formatter ignores the ending left
+                                    <!-- needs extra, because Eclipse io.confluent.kafka.schemaregistry.formatter ignores the ending left
                                     brace -->
                                     <property name="max" value="200"/>
                                     <property name="ignorePattern"

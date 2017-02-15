@@ -73,3 +73,17 @@ Reference: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metad
 ##Tutorial
 
 [http://wurstmeister.github.io/kafka-docker/](http://wurstmeister.github.io/kafka-docker/)
+
+
+
+## Troubleshootings
+
+
+bash-3.2$ docker-machine ip
+Error getting IP address: machine does not exist
+
+
+
+bash-3.2$ docker-machine rm default
+bash-3.2$ docker-machine create --driver virtualbox default
+

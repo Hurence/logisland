@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # Copyright 2014 Confluent Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-listeners=http://0.0.0.0:8081
-kafkastore.connection.url=sandbox:2181
-kafkastore.topic=_schemas
-debug=false
+exec $(dirname $0)/logisland-agent-run-class com.hurence.logisland.agent.LogislandAgentMain "$@"

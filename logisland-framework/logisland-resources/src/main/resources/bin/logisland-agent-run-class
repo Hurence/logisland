@@ -21,31 +21,34 @@ for dir in $base_dir/lib; do
 done
 
 # logj4 settings
-if [ "x$SCHEMA_REGISTRY_LOG4J_OPTS" = "x" ]; then
+if [ "x$LOGISLAND_AGENT_LOG4J_OPTS" = "x" ]; then
   # Test for files from dev -> packages so this will work as expected in dev if you have packages
   # installed
   if [ -e "$base_dir/conf/log4j.properties" ]; then # Dev environment
-    SCHEMA_REGISTRY_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/config/log4j.properties"
+    LOGISLAND_AGENT_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/conf/log4j.properties"
   elif [ -e "$base_dir/etc/schema-registry/log4j.properties" ]; then # Simple zip file layout
-    SCHEMA_REGISTRY_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/etc/schema-registry/log4j.properties"
+    LOGISLAND_AGENT_LOG4J_OPTS="-Dlog4j.configuration=file:$base_dir/etc/schema-registry/log4j.properties"
   elif [ -e "/etc/schema-registry/log4j.properties" ]; then # Normal install layout
-    SCHEMA_REGISTRY_LOG4J_OPTS="-Dlog4j.configuration=file:/etc/schema-registry/log4j.properties"
+    LOGISLAND_AGENT_LOG4J_OPTS="-Dlog4j.configuration=file:/etc/schema-registry/log4j.properties"
   fi
 fi
 
+
+echo $LOGISLAND_AGENT_LOG4J_OPTS
+
 # JMX settings
-if [ -z "$SCHEMA_REGISTRY_JMX_OPTS" ]; then
-  SCHEMA_REGISTRY_JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false "
+if [ -z "$LOGISLAND_AGENT_JMX_OPTS" ]; then
+  LOGISLAND_AGENT_JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false "
 fi
 
 # JMX port to use
 if [  $JMX_PORT ]; then
-  SCHEMA_REGISTRY_JMX_OPTS="$SCHEMA_REGISTRY_JMX_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT "
+  LOGISLAND_AGENT_JMX_OPTS="$LOGISLAND_AGENT_JMX_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT "
 fi
 
 # Generic jvm settings you want to add
-if [ -z "$SCHEMA_REGISTRY_OPTS" ]; then
-  SCHEMA_REGISTRY_OPTS=""
+if [ -z "$LOGISLAND_AGENT_OPTS" ]; then
+  LOGISLAND_AGENT_OPTS=""
 fi
 
 # Which java to use
@@ -56,13 +59,13 @@ else
 fi
 
 # Memory options
-if [ -z "$SCHEMA_REGISTRY_HEAP_OPTS" ]; then
-  SCHEMA_REGISTRY_HEAP_OPTS="-Xmx512M"
+if [ -z "$LOGISLAND_AGENT_HEAP_OPTS" ]; then
+  LOGISLAND_AGENT_HEAP_OPTS="-Xmx512M"
 fi
 
 # JVM performance options
-if [ -z "$SCHEMA_REGISTRY_JVM_PERFORMANCE_OPTS" ]; then
-  SCHEMA_REGISTRY_JVM_PERFORMANCE_OPTS="-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
+if [ -z "$LOGISLAND_AGENT_JVM_PERFORMANCE_OPTS" ]; then
+  LOGISLAND_AGENT_JVM_PERFORMANCE_OPTS="-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
 fi
 
 MAIN=$1
@@ -92,7 +95,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $SCHEMA_REGISTRY_HEAP_OPTS $SCHEMA_REGISTRY_JVM_PERFORMANCE_OPTS $SCHEMA_REGISTRY_JMX_OPTS $SCHEMA_REGISTRY_LOG4J_OPTS -cp $CLASSPATH $SCHEMA_REGISTRY_OPTS "$MAIN" "$@" 2>&1 < /dev/null &
+  nohup $JAVA $LOGISLAND_AGENT_HEAP_OPTS $LOGISLAND_AGENT_JVM_PERFORMANCE_OPTS $LOGISLAND_AGENT_JMX_OPTS $LOGISLAND_AGENT_LOG4J_OPTS -cp $CLASSPATH $LOGISLAND_AGENT_OPTS "$MAIN" "$@" 2>&1 < /dev/null &
 else
-  exec $JAVA $SCHEMA_REGISTRY_HEAP_OPTS $SCHEMA_REGISTRY_JVM_PERFORMANCE_OPTS $SCHEMA_REGISTRY_JMX_OPTS $SCHEMA_REGISTRY_LOG4J_OPTS -cp $CLASSPATH $SCHEMA_REGISTRY_OPTS "$MAIN" "$@"
+  exec $JAVA $LOGISLAND_AGENT_HEAP_OPTS $LOGISLAND_AGENT_JVM_PERFORMANCE_OPTS $LOGISLAND_AGENT_JMX_OPTS $LOGISLAND_AGENT_LOG4J_OPTS -cp $CLASSPATH $LOGISLAND_AGENT_OPTS "$MAIN" "$@"
 fi
