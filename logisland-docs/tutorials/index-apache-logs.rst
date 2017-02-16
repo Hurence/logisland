@@ -240,7 +240,7 @@ If you don't have your own httpd logs available, you can use some freely availab
 - `Jul 01 to Jul 31, ASCII format, 20.7 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz>`_
 - `Aug 04 to Aug 31, ASCII format, 21.8 MB gzip compressed <ftp://ita.ee.lbl.gov/traces/NASA_access_logAug95.gz>`_
 
-Let's send the first 500000 lines of NASA hhtp access over July 1995 to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
+Let's send the first 500000 lines of NASA http access over July 1995 to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 
 .. code-block:: sh
 
@@ -248,7 +248,7 @@ Let's send the first 500000 lines of NASA hhtp access over July 1995 to LogIslan
     cd /tmp
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz
-    head 500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
+    head -500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
 
 
 4. Monitor your spark jobs and Kafka topics
