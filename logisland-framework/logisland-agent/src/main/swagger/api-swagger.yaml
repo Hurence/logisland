@@ -17,6 +17,16 @@ produces:
   - application/json
 paths:
 
+  /:
+    get:
+      summary: the root resource
+      description: / entrypoint
+      responses:
+        200:
+          description: OK
+
+
+
   # Job API
   /jobs:
     get:
@@ -131,18 +141,10 @@ paths:
           schema:
             $ref: '#/definitions/Job'
       responses:
-        "404":
-          description: Job not found
-        "400":
-          description: Invalid ID supplied
         "200":
           description: Job successfuly created
           schema:
             $ref: '#/definitions/Job'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
     post:
       tags:
        - job
@@ -581,6 +583,14 @@ definitions:
       - schema
       - serializer
     properties:
+      id:
+        description: a unique identifier for the topic
+        type: integer
+        format: int64
+      version:
+        description: the version of the topic configuration
+        type: integer
+        format: int32
       name:
         description: the name of the topic
         type: string
@@ -606,14 +616,23 @@ definitions:
       - streams
       - version
     properties:
+      id:
+        description: a unique identifier for the job
+        type: integer
+        format: int64
       version:
-        type: string
-        default: "v1"
+        description: the version of the job configuration
+        type: integer
+        format: int32
       name:
+        description: the job name
         type: string
       dateModified:
+        description: latest date of modification
         type: string
+        format: date-time
       documentation:
+        description: write here what the job is doing
         type: string
       engine:
         $ref: '#/definitions/Engine'

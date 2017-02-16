@@ -22,18 +22,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
 
-import com.hurence.logisland.kakfa.registry.LogislandKafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 @Path("/topics")
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the topics API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-15T12:36:09.930+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
 public class TopicsApi {
 
     private final TopicsApiService delegate;
 
-    public TopicsApi(LogislandKafkaRegistry kafkaRegistry) {
+    public TopicsApi(KafkaRegistry kafkaRegistry) {
         this.delegate = TopicsApiServiceFactory.getTopicsApi(kafkaRegistry);
     }
 

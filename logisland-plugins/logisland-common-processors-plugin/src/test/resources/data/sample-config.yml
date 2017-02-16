@@ -6,7 +6,7 @@ components:
   - component: com.hurence.logisland.engine.EventProcessorJob
     type: engine
     version: 0.1.0
-    documentation: Main Logisland job entry point
+    documentation: Main Logisland topic entry point
     configuration:
       spark.master: local[8]
       spark.executorMemory: 4g

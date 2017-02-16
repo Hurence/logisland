@@ -15,16 +15,16 @@ import java.io.InputStream;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import com.hurence.logisland.kakfa.registry.LogislandKafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-15T12:36:09.930+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
 public abstract class TopicsApiService {
 
-    protected final LogislandKafkaRegistry kafkaRegistry;
+    protected final KafkaRegistry kafkaRegistry;
 
-    public TopicsApiService(LogislandKafkaRegistry kafkaRegistry) {
+    public TopicsApiService(KafkaRegistry kafkaRegistry) {
         this.kafkaRegistry = kafkaRegistry;
     }
         public abstract Response addNewTopic(Topic body,SecurityContext securityContext)

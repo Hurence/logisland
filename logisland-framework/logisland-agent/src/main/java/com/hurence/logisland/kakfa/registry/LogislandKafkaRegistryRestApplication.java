@@ -17,10 +17,10 @@ package com.hurence.logisland.kakfa.registry;
 
 import com.hurence.logisland.agent.rest.api.JobsApi;
 import com.hurence.logisland.agent.rest.api.TopicsApi;
-import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryException;
+import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
+import com.hurence.logisland.kakfa.serialization.RegistrySerializer;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
-import io.confluent.kafka.schemaregistry.rest.resources.*;
-import io.confluent.kafka.schemaregistry.storage.serialization.SchemaRegistrySerializer;
+import io.confluent.kafka.schemaregistry.rest.resources.RootResource;
 import io.confluent.rest.Application;
 import io.confluent.rest.RestConfigException;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import java.util.Properties;
 public class LogislandKafkaRegistryRestApplication extends Application<SchemaRegistryConfig> {
 
     private static final Logger log = LoggerFactory.getLogger(LogislandKafkaRegistryRestApplication.class);
-    private LogislandKafkaRegistry kafkaRegistry = null;
+    private KafkaRegistry kafkaRegistry = null;
 
     public LogislandKafkaRegistryRestApplication(Properties props) throws RestConfigException {
         this(new SchemaRegistryConfig(props));
@@ -45,10 +45,9 @@ public class LogislandKafkaRegistryRestApplication extends Application<SchemaReg
     @Override
     public void setupResources(Configurable<?> config, SchemaRegistryConfig schemaRegistryConfig) {
         try {
-            kafkaRegistry = new LogislandKafkaRegistry(schemaRegistryConfig,
-                    new SchemaRegistrySerializer());
+            kafkaRegistry = new KafkaRegistry(schemaRegistryConfig,  new RegistrySerializer());
             kafkaRegistry.init();
-        } catch (SchemaRegistryException e) {
+        } catch (RegistryException e) {
             log.error("Error starting the schema registry", e);
             System.exit(1);
         }
@@ -63,7 +62,7 @@ public class LogislandKafkaRegistryRestApplication extends Application<SchemaReg
     }
 
     // for testing purpose only
-    public LogislandKafkaRegistry schemaRegistry() {
+    public KafkaRegistry schemaRegistry() {
         return kafkaRegistry;
     }
 }

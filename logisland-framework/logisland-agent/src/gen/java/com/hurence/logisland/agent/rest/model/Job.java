@@ -8,6 +8,7 @@ import com.hurence.logisland.agent.rest.model.Stream;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -16,13 +17,15 @@ import java.util.List;
 /**
  * Job
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-15T12:36:09.930+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
 public class Job   {
-  private String version = "v1";
+  private Long id = null;
+
+  private Integer version = null;
 
   private String name = null;
 
-  private String dateModified = null;
+  private Date dateModified = null;
 
   private String documentation = null;
 
@@ -30,21 +33,39 @@ public class Job   {
 
   private List<Stream> streams = new ArrayList<Stream>();
 
-  public Job version(String version) {
+  public Job id(Long id) {
+    this.id = id;
+    return this;
+  }
+
+   /**
+   * a unique identifier for the job
+   * @return id
+  **/
+  @ApiModelProperty(value = "a unique identifier for the job")
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Job version(Integer version) {
     this.version = version;
     return this;
   }
 
    /**
-   * Get version
+   * the version of the job configuration
    * @return version
   **/
-  @ApiModelProperty(required = true, value = "")
-  public String getVersion() {
+  @ApiModelProperty(required = true, value = "the version of the job configuration")
+  public Integer getVersion() {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(Integer version) {
     this.version = version;
   }
 
@@ -54,10 +75,10 @@ public class Job   {
   }
 
    /**
-   * Get name
+   * the job name
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(required = true, value = "the job name")
   public String getName() {
     return name;
   }
@@ -66,21 +87,21 @@ public class Job   {
     this.name = name;
   }
 
-  public Job dateModified(String dateModified) {
+  public Job dateModified(Date dateModified) {
     this.dateModified = dateModified;
     return this;
   }
 
    /**
-   * Get dateModified
+   * latest date of modification
    * @return dateModified
   **/
-  @ApiModelProperty(value = "")
-  public String getDateModified() {
+  @ApiModelProperty(value = "latest date of modification")
+  public Date getDateModified() {
     return dateModified;
   }
 
-  public void setDateModified(String dateModified) {
+  public void setDateModified(Date dateModified) {
     this.dateModified = dateModified;
   }
 
@@ -90,10 +111,10 @@ public class Job   {
   }
 
    /**
-   * Get documentation
+   * write here what the job is doing
    * @return documentation
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(value = "write here what the job is doing")
   public String getDocumentation() {
     return documentation;
   }
@@ -153,7 +174,8 @@ public class Job   {
       return false;
     }
     Job job = (Job) o;
-    return Objects.equals(this.version, job.version) &&
+    return Objects.equals(this.id, job.id) &&
+        Objects.equals(this.version, job.version) &&
         Objects.equals(this.name, job.name) &&
         Objects.equals(this.dateModified, job.dateModified) &&
         Objects.equals(this.documentation, job.documentation) &&
@@ -163,7 +185,7 @@ public class Job   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(version, name, dateModified, documentation, engine, streams);
+    return Objects.hash(id, version, name, dateModified, documentation, engine, streams);
   }
 
   @Override
@@ -171,6 +193,7 @@ public class Job   {
     StringBuilder sb = new StringBuilder();
     sb.append("class Job {\n");
     
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    dateModified: ").append(toIndentedString(dateModified)).append("\n");

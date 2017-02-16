@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
 
-import com.hurence.logisland.kakfa.registry.LogislandKafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 @Path("/{{baseName}}")
 {{#hasConsumes}}@Consumes({ {{#consumes}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/consumes}} }){{/hasConsumes}}
@@ -37,7 +37,7 @@ public class {{classname}} {
 
     private final {{classname}}Service delegate;
 
-    public {{classname}}(LogislandKafkaRegistry kafkaRegistry) {
+    public {{classname}}(KafkaRegistry kafkaRegistry) {
         this.delegate = {{classname}}ServiceFactory.get{{classname}}(kafkaRegistry);
     }
 

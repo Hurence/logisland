@@ -22,18 +22,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
 
-import com.hurence.logisland.kakfa.registry.LogislandKafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 @Path("/jobs")
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-15T12:36:09.930+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
 
-    public JobsApi(LogislandKafkaRegistry kafkaRegistry) {
+    public JobsApi(KafkaRegistry kafkaRegistry) {
         this.delegate = JobsApiServiceFactory.getJobsApi(kafkaRegistry);
     }
 
@@ -214,10 +214,7 @@ public class JobsApi {
     @Produces({ "application/json" })
     @io.swagger.annotations.ApiOperation(value = "update job", notes = "update an existing job configuration if valid", response = Job.class, tags={ "job" })
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Job successfuly created", response = Job.class),
-        @io.swagger.annotations.ApiResponse(code = 400, message = "Invalid ID supplied", response = Job.class),
-        @io.swagger.annotations.ApiResponse(code = 404, message = "Job not found", response = Job.class),
-        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class) })
+        @io.swagger.annotations.ApiResponse(code = 200, message = "Job successfuly created", response = Job.class) })
     public Response updateJob(
     @ApiParam(value = "Job to add to the store",required=true) @PathParam("jobId") String jobId
 ,
