@@ -49,7 +49,7 @@ engine:
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -63,7 +63,6 @@ engine:
           component: com.hurence.logisland.processor.bro.BroProcessor
           type: parser
           documentation: A processor that transforms Bro events into LogIsland events
-          configuration:
 
     # Indexing
     - stream: indexing_stream
@@ -74,7 +73,7 @@ engine:
         kafka.input.topics: logisland_events
         kafka.output.topics: none
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
@@ -97,5 +96,5 @@ engine:
             batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
-            es.type.field: record_type
+            es.type.field: record_es_type
 
