@@ -15,8 +15,10 @@
  */
 package com.hurence.logisland.kakfa.registry;
 
+import com.hurence.logisland.agent.rest.api.DefaultApi;
 import com.hurence.logisland.agent.rest.api.JobsApi;
 import com.hurence.logisland.agent.rest.api.TopicsApi;
+import com.hurence.logisland.agent.rest.api.factories.DefaultApiServiceFactory;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import com.hurence.logisland.kakfa.serialization.RegistrySerializer;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
@@ -51,7 +53,8 @@ public class LogislandKafkaRegistryRestApplication extends Application<SchemaReg
             log.error("Error starting the schema registry", e);
             System.exit(1);
         }
-        config.register(RootResource.class);
+
+        config.register(new DefaultApi(kafkaRegistry));
         config.register(new JobsApi(kafkaRegistry));
         config.register(new TopicsApi(kafkaRegistry));
     }

@@ -3,6 +3,7 @@ package com.hurence.logisland.agent.rest.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.hurence.logisland.agent.rest.model.Record;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -12,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Topic
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
 public class Topic   {
   private Long id = null;
 
@@ -22,7 +23,9 @@ public class Topic   {
 
   private String serializer = null;
 
-  private String schema = null;
+  private Record valueSchema = null;
+
+  private Record keySchema = null;
 
   private Long partitions = null;
 
@@ -100,22 +103,40 @@ public class Topic   {
     this.serializer = serializer;
   }
 
-  public Topic schema(String schema) {
-    this.schema = schema;
+  public Topic valueSchema(Record valueSchema) {
+    this.valueSchema = valueSchema;
     return this;
   }
 
    /**
-   * Avro schema as a json string
-   * @return schema
+   * Get valueSchema
+   * @return valueSchema
   **/
-  @ApiModelProperty(required = true, value = "Avro schema as a json string")
-  public String getSchema() {
-    return schema;
+  @ApiModelProperty(required = true, value = "")
+  public Record getValueSchema() {
+    return valueSchema;
   }
 
-  public void setSchema(String schema) {
-    this.schema = schema;
+  public void setValueSchema(Record valueSchema) {
+    this.valueSchema = valueSchema;
+  }
+
+  public Topic keySchema(Record keySchema) {
+    this.keySchema = keySchema;
+    return this;
+  }
+
+   /**
+   * Get keySchema
+   * @return keySchema
+  **/
+  @ApiModelProperty(value = "")
+  public Record getKeySchema() {
+    return keySchema;
+  }
+
+  public void setKeySchema(Record keySchema) {
+    this.keySchema = keySchema;
   }
 
   public Topic partitions(Long partitions) {
@@ -168,14 +189,15 @@ public class Topic   {
         Objects.equals(this.version, topic.version) &&
         Objects.equals(this.name, topic.name) &&
         Objects.equals(this.serializer, topic.serializer) &&
-        Objects.equals(this.schema, topic.schema) &&
+        Objects.equals(this.valueSchema, topic.valueSchema) &&
+        Objects.equals(this.keySchema, topic.keySchema) &&
         Objects.equals(this.partitions, topic.partitions) &&
         Objects.equals(this.replicationFactor, topic.replicationFactor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, version, name, serializer, schema, partitions, replicationFactor);
+    return Objects.hash(id, version, name, serializer, valueSchema, keySchema, partitions, replicationFactor);
   }
 
   @Override
@@ -187,7 +209,8 @@ public class Topic   {
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    serializer: ").append(toIndentedString(serializer)).append("\n");
-    sb.append("    schema: ").append(toIndentedString(schema)).append("\n");
+    sb.append("    valueSchema: ").append(toIndentedString(valueSchema)).append("\n");
+    sb.append("    keySchema: ").append(toIndentedString(keySchema)).append("\n");
     sb.append("    partitions: ").append(toIndentedString(partitions)).append("\n");
     sb.append("    replicationFactor: ").append(toIndentedString(replicationFactor)).append("\n");
     sb.append("}");

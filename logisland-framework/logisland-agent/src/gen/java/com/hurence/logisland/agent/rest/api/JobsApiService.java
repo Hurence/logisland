@@ -7,6 +7,8 @@ import com.hurence.logisland.agent.rest.model.*;
 
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Job;
+import com.hurence.logisland.agent.rest.model.Record;
+import com.hurence.logisland.agent.rest.model.Metrics;
 
 import java.util.List;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
@@ -19,7 +21,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
 public abstract class JobsApiService {
 
     protected final KafkaRegistry kafkaRegistry;
@@ -37,9 +39,11 @@ public abstract class JobsApiService {
         throws NotFoundException;
         public abstract Response getJob(String jobId,SecurityContext securityContext)
         throws NotFoundException;
-        public abstract Response getJobErrors(String jobId,SecurityContext securityContext)
+        public abstract Response getJobAlerts(Integer count,SecurityContext securityContext)
         throws NotFoundException;
-        public abstract Response getJobMetrics(String jobId,SecurityContext securityContext)
+        public abstract Response getJobErrors(Integer count,SecurityContext securityContext)
+        throws NotFoundException;
+        public abstract Response getJobMetrics(Integer count,SecurityContext securityContext)
         throws NotFoundException;
         public abstract Response getJobStatus(String jobId,SecurityContext securityContext)
         throws NotFoundException;

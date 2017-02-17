@@ -4,11 +4,11 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.hurence.logisland.agent.rest.model.Engine;
+import com.hurence.logisland.agent.rest.model.JobSummary;
 import com.hurence.logisland.agent.rest.model.Stream;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Job
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
 public class Job   {
   private Long id = null;
 
@@ -25,13 +25,11 @@ public class Job   {
 
   private String name = null;
 
-  private Date dateModified = null;
-
-  private String documentation = null;
-
   private Engine engine = null;
 
   private List<Stream> streams = new ArrayList<Stream>();
+
+  private JobSummary summary = null;
 
   public Job id(Long id) {
     this.id = id;
@@ -87,42 +85,6 @@ public class Job   {
     this.name = name;
   }
 
-  public Job dateModified(Date dateModified) {
-    this.dateModified = dateModified;
-    return this;
-  }
-
-   /**
-   * latest date of modification
-   * @return dateModified
-  **/
-  @ApiModelProperty(value = "latest date of modification")
-  public Date getDateModified() {
-    return dateModified;
-  }
-
-  public void setDateModified(Date dateModified) {
-    this.dateModified = dateModified;
-  }
-
-  public Job documentation(String documentation) {
-    this.documentation = documentation;
-    return this;
-  }
-
-   /**
-   * write here what the job is doing
-   * @return documentation
-  **/
-  @ApiModelProperty(value = "write here what the job is doing")
-  public String getDocumentation() {
-    return documentation;
-  }
-
-  public void setDocumentation(String documentation) {
-    this.documentation = documentation;
-  }
-
   public Job engine(Engine engine) {
     this.engine = engine;
     return this;
@@ -164,6 +126,24 @@ public class Job   {
     this.streams = streams;
   }
 
+  public Job summary(JobSummary summary) {
+    this.summary = summary;
+    return this;
+  }
+
+   /**
+   * Get summary
+   * @return summary
+  **/
+  @ApiModelProperty(value = "")
+  public JobSummary getSummary() {
+    return summary;
+  }
+
+  public void setSummary(JobSummary summary) {
+    this.summary = summary;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -177,15 +157,14 @@ public class Job   {
     return Objects.equals(this.id, job.id) &&
         Objects.equals(this.version, job.version) &&
         Objects.equals(this.name, job.name) &&
-        Objects.equals(this.dateModified, job.dateModified) &&
-        Objects.equals(this.documentation, job.documentation) &&
         Objects.equals(this.engine, job.engine) &&
-        Objects.equals(this.streams, job.streams);
+        Objects.equals(this.streams, job.streams) &&
+        Objects.equals(this.summary, job.summary);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, version, name, dateModified, documentation, engine, streams);
+    return Objects.hash(id, version, name, engine, streams, summary);
   }
 
   @Override
@@ -196,10 +175,9 @@ public class Job   {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    dateModified: ").append(toIndentedString(dateModified)).append("\n");
-    sb.append("    documentation: ").append(toIndentedString(documentation)).append("\n");
     sb.append("    engine: ").append(toIndentedString(engine)).append("\n");
     sb.append("    streams: ").append(toIndentedString(streams)).append("\n");
+    sb.append("    summary: ").append(toIndentedString(summary)).append("\n");
     sb.append("}");
     return sb.toString();
   }

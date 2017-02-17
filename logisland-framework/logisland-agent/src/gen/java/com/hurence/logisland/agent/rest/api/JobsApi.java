@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiParam;
 
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Job;
+import com.hurence.logisland.agent.rest.model.Record;
+import com.hurence.logisland.agent.rest.model.Metrics;
 
 import java.util.List;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
@@ -28,7 +30,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -119,34 +121,49 @@ public class JobsApi {
     return delegate.getJob(jobId,securityContext);
     }
     @GET
-    @Path("/{jobId}/errors")
+    @Path("/alerts")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "get last job errors", notes = "get the metrics of corresponding Job", response = Job.class, tags={ "job",  })
+    @io.swagger.annotations.ApiOperation(value = "get job alerts", notes = "get the alerts", response = Record.class, responseContainer = "List", tags={ "job",  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job metrics", response = Record.class, responseContainer = "List"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Record.class, responseContainer = "List") })
+    public Response getJobAlerts(
+    @ApiParam(value = "max number of ites to retrieve", defaultValue="20") @DefaultValue("20") @QueryParam("count") Integer count
+,
+    @Context SecurityContext securityContext)
+    throws NotFoundException {
+    return delegate.getJobAlerts(count,securityContext);
+    }
+    @GET
+    @Path("/errors")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "get last job errors", notes = "get the errors", response = Job.class, tags={ "job",  })
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "job errors", response = Job.class),
         @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class) })
     public Response getJobErrors(
-    @ApiParam(value = "id of the job to return",required=true) @PathParam("jobId") String jobId
+    @ApiParam(value = "max number of ites to retrieve", defaultValue="20") @DefaultValue("20") @QueryParam("count") Integer count
 ,
     @Context SecurityContext securityContext)
     throws NotFoundException {
-    return delegate.getJobErrors(jobId,securityContext);
+    return delegate.getJobErrors(count,securityContext);
     }
     @GET
-    @Path("/{jobId}/metrics")
+    @Path("/metrics")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "get job metrics", notes = "get the metrics of corresponding Job", response = Job.class, tags={ "job",  })
+    @io.swagger.annotations.ApiOperation(value = "get job metrics", notes = "get the metrics of corresponding Job", response = Metrics.class, responseContainer = "List", tags={ "job",  })
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "job metrics", response = Job.class),
-        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class) })
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job metrics", response = Metrics.class, responseContainer = "List"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Metrics.class, responseContainer = "List") })
     public Response getJobMetrics(
-    @ApiParam(value = "id of the job to return",required=true) @PathParam("jobId") String jobId
+    @ApiParam(value = "max number of ites to retrieve", defaultValue="20") @DefaultValue("20") @QueryParam("count") Integer count
 ,
     @Context SecurityContext securityContext)
     throws NotFoundException {
-    return delegate.getJobMetrics(jobId,securityContext);
+    return delegate.getJobMetrics(count,securityContext);
     }
     @GET
     @Path("/{jobId}/status")

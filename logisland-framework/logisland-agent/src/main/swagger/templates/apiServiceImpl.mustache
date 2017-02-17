@@ -23,8 +23,8 @@ import javax.ws.rs.core.SecurityContext;
 {{#operations}}
     public class {{classname}}ServiceImpl extends {{classname}}Service {
 
-    public {{classname}}ServiceImpl(KafkaSchemaRegistry schemaRegistry) {
-        super(schemaRegistry);
+    public {{classname}}ServiceImpl(KafkaRegistry kafkaRegistry) {
+        super(kafkaRegistry);
     }
 
     {{#operation}}

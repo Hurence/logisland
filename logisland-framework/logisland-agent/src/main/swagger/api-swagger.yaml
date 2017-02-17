@@ -72,6 +72,84 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
+  /jobs/metrics:
+     get:
+      tags:
+        - job
+      summary: get job metrics
+      description: get the metrics of corresponding Job
+      operationId: getJobMetrics
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job metrics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Metrics'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /jobs/alerts:
+     get:
+      tags:
+        - job
+      summary: get job alerts
+      description: get the alerts
+      operationId: getJobAlerts
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job metrics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Record'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /jobs/errors:
+     get:
+      tags:
+        - job
+      summary: get last job errors
+      description: get the errors
+      operationId: getJobErrors
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job errors
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+
   /jobs/{jobId}:
     get:
       tags:
@@ -264,50 +342,7 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /jobs/{jobId}/metrics:
-     get:
-      tags:
-        - job
-      summary: get job metrics
-      description: get the metrics of corresponding Job
-      operationId: getJobMetrics
-      parameters:
-        - name: jobId
-          in: path
-          description: id of the job to return
-          required: true
-          type: string
-      responses:
-        "200":
-          description: job metrics
-          schema:
-            $ref: '#/definitions/Job'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /jobs/{jobId}/errors:
-     get:
-      tags:
-        - job
-      summary: get last job errors
-      description: get the metrics of corresponding Job
-      operationId: getJobErrors
-      parameters:
-        - name: jobId
-          in: path
-          description: id of the job to return
-          required: true
-          type: string
-      responses:
-        "200":
-          description: job errors
-          schema:
-            $ref: '#/definitions/Job'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+
 
   # Topics API
   /topics:
@@ -564,23 +599,131 @@ paths:
             $ref: '#/definitions/Error'
 
 definitions:
-  Property:
+
+
+  Field:
     type: object
     required:
-      - key
-      - value
+      - name
+      - type
     properties:
-      key:
+      name:
+        description: a unique identifier for the topic
         type: string
+      encrypted:
+        description: is the field need to be encrypted
+        type: boolean
+      indexed:
+        description: is the field need to be indexed to search store
+        type: boolean
+      persistent:
+        description: is the field need to be persisted to data store
+        type: boolean
+      type:
+        description: the type of the field
+        type: string
+        default: string
+        enum:
+        - null
+        - string
+        - long
+        - array
+        - float
+        - double
+        - bytes
+        - record
+        - map
+        - enum
+        - boolean
       value:
+        description: a unique identifier for the topic
+        type: object
+
+
+  Record:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        description: a unique identifier for the topic
+        type: integer
+        format: int64
+      name:
+        description: the name of the topic
         type: string
+      multiline:
+        description: is the record multiline
+        type: boolean
+      timestampField:
+        description: the record_time field
+        type: string
+        default: "record_time"
+      rowkeyField:
+        description: the record_id field
+        type: string
+        default: "record_id"
+      fields:
+        type: array
+        items:
+          $ref: '#/definitions/Field'
+
+  Metrics:
+    type: object
+    properties:
+      spark_app_name:
+        type: string
+      spark_partition_id:
+        type: integer
+      component_name:
+        type: string
+      input_topics:
+        type: string
+      output_topics:
+        type: string
+      topic_offset_from:
+        type: integer
+        format: int64
+      topic_offset_until:
+        type: integer
+        format: int64
+      num_incoming_messages:
+        type: integer
+      num_incoming_records:
+        type: integer
+      num_outgoing_records:
+        type: integer
+      num_errors_records:
+        type: integer
+        format: int64
+      error_percentage:
+        type: number
+        format: float
+      average_bytes_per_field:
+        type: integer
+      average_bytes_per_second:
+        type: integer
+      average_num_records_per_second:
+        type: integer
+      average_fields_per_record:
+        type: integer
+      average_bytes_per_record:
+        type: integer
+      total_bytes:
+        type: integer
+      total_fields:
+        type: integer
+      total_processing_time_in_ms:
+        type: integer
+        format: int64
+
   Topic:
     type: object
     required:
       - name
       - partitions
       - replicationFactor
-      - schema
+      - valueSchema
       - serializer
     properties:
       id:
@@ -597,9 +740,10 @@ definitions:
       serializer:
         description: the class of the Serializer
         type: string
-      schema:
-        description: Avro schema as a json string
-        type: string
+      valueSchema:
+        $ref: '#/definitions/Record'
+      keySchema:
+        $ref: '#/definitions/Record'
       partitions:
         description: default number of partitions
         type: integer
@@ -608,6 +752,34 @@ definitions:
         description: default replication factor
         type: integer
         format: int64
+
+  JobSummary:
+    type: object
+    properties:
+      usedCores:
+        description: the number of used cores
+        type: integer
+        format: int32
+      usedMemory:
+        description: the total memory allocated for this job
+        type: integer
+        format: int32
+      status:
+        description: the job status
+        type: string
+        default: stopped
+        enum:
+        - stopped
+        - running
+        - failed
+      dateModified:
+        description: latest date of modification
+        type: string
+        format: date-time
+      documentation:
+        description: write here what the job is doing
+        type: string
+
   Job:
     type: object
     required:
@@ -627,19 +799,15 @@ definitions:
       name:
         description: the job name
         type: string
-      dateModified:
-        description: latest date of modification
-        type: string
-        format: date-time
-      documentation:
-        description: write here what the job is doing
-        type: string
       engine:
         $ref: '#/definitions/Engine'
       streams:
         type: array
         items:
           $ref: '#/definitions/Stream'
+      summary:
+        $ref: '#/definitions/JobSummary'
+
   Engine:
     type: object
     required:
@@ -657,6 +825,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Property'
+
   Stream:
     type: object
     required:
@@ -689,6 +858,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Processor'
+
   Processor:
     type: object
     required:
@@ -706,6 +876,20 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Property'
+
+  Property:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+
   Error:
     required:
       - code

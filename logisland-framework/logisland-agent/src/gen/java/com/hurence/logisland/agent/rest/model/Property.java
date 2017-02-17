@@ -12,9 +12,11 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Property
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-16T15:07:25.192+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
 public class Property   {
   private String key = null;
+
+  private String type = null;
 
   private String value = null;
 
@@ -34,6 +36,24 @@ public class Property   {
 
   public void setKey(String key) {
     this.key = key;
+  }
+
+  public Property type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @ApiModelProperty(value = "")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   public Property value(String value) {
@@ -65,12 +85,13 @@ public class Property   {
     }
     Property property = (Property) o;
     return Objects.equals(this.key, property.key) &&
+        Objects.equals(this.type, property.type) &&
         Objects.equals(this.value, property.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, value);
+    return Objects.hash(key, type, value);
   }
 
   @Override
@@ -79,6 +100,7 @@ public class Property   {
     sb.append("class Property {\n");
     
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("}");
     return sb.toString();

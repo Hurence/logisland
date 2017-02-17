@@ -18,13 +18,13 @@ package com.hurence.logisland.kakfa.registry;
  */
 
 import com.hurence.logisland.agent.rest.model.Job;
+import com.hurence.logisland.agent.rest.model.JobSummary;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryInitializationException;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryStoreException;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryTimeoutException;
 import com.hurence.logisland.kakfa.serialization.Serializer;
 import com.hurence.logisland.kakfa.store.*;
-import com.hurence.logisland.kakfa.store.exceptions.StoreException;
 import com.hurence.logisland.kakfa.zookeeper.RegistryIdentity;
 import com.hurence.logisland.kakfa.zookeeper.ZookeeperMasterElector;
 import io.confluent.common.metrics.*;
@@ -47,10 +47,8 @@ import scala.Tuple2;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 
 public class KafkaRegistry {
@@ -146,7 +144,9 @@ public class KafkaRegistry {
             idBatchInclusiveUpperBound = getInclusiveUpperBound(nextSchemaIdCounterBatch());
         }
 
-        job.dateModified(new Date());
+        if(job.getSummary() == null)
+            job.setSummary(new JobSummary());
+        job.getSummary().dateModified(new Date());
 
 
         JobKey key = new JobKey(job.getName(), 1);
@@ -160,7 +160,11 @@ public class KafkaRegistry {
 
 
         Integer version = job.getVersion() + 1;
-        job.version(version).dateModified(new Date());
+        job.version(version);
+
+        if(job.getSummary() == null)
+            job.setSummary(new JobSummary());
+        job.getSummary().dateModified(new Date());
 
         JobKey key = new JobKey(job.getName(), 1);
         JobValue value = new JobValue(job.getName(), job.getVersion(), job.getId(), job);
@@ -183,12 +187,12 @@ public class KafkaRegistry {
     }
 
     public List<Job> getAllJobs() throws RegistryException {
-            return IteratorUtils.toList(
-                    jobsKafkaStore.getAll()
-                            .stream()
-                            .map(value -> ((JobValue) value).getJob())
-                            .iterator()
-            );
+        return IteratorUtils.toList(
+                jobsKafkaStore.getAll()
+                        .stream()
+                        .map(value -> ((JobValue) value).getJob())
+                        .iterator()
+        );
     }
 
     /**
