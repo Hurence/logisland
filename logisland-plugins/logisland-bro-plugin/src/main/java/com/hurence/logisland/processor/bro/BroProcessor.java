@@ -50,12 +50,6 @@ public class BroProcessor extends AbstractProcessor {
     
     private Map<String, String> broFieldToLogislandField = new HashMap<String, String>();
     
-    // Record field name for the destination ES index type
-    private static final String ES_TYPE_FIELD = "record_es_type"; 
-    
-    // JSON Field name for the bro event type
-    private static final String BRO_EVENT_TYPE = "bro_event_type";
-    
     // Bro conn fields
     private static final String BRO_CONN_ID_ORIG_H = "id.orig_h";
     private static final String BRO_CONN_ID_RESP_H = "id.resp_h";
@@ -137,15 +131,13 @@ public class BroProcessor extends AbstractProcessor {
             
             finalBroEvent = replaceKeys(finalBroEvent, broFieldToLogislandField);
             
-            // Add bro event type in event payload
-            finalBroEvent.put(BRO_EVENT_TYPE, broEventType);
-            
             String newRecordValue = JsonUtil.convertToJson(finalBroEvent);
              
             logger.debug("newRecordValue: " + newRecordValue);
             record.setStringField(FieldDictionary.RECORD_VALUE, newRecordValue);
-            // Add special record field to indicate to ES processor which index type to use (index type is the bro event type)
-            record.setStringField(ES_TYPE_FIELD, broEventType);
+            // Overwrite default reord_type field to indicate to ES processor which index type to use 
+            // (index type is the bro event type)
+            record.setStringField(FieldDictionary.RECORD_TYPE, broEventType);
             
             logger.debug("new Bro record: " + record);
         }
@@ -155,7 +147,8 @@ public class BroProcessor extends AbstractProcessor {
     }
     
     /**
-     * Given a key mapping, replaces a key with another one, in a json object
+     * Given a key mapping, replaces a key with another one, in a json object.
+     * Also remove ES unwanted characters in JSON field keys
      * @param json
      * @param oldToNewKey
      */
@@ -172,7 +165,6 @@ public class BroProcessor extends AbstractProcessor {
             if (oldToNewKeys.containsKey(key))
             {
                 String newKey = oldToNewKeys.get(key);
-                logger.debug("Replacing special " + key + " key with " + newKey);
                 newJson.put(newKey, value);
             } else
             {

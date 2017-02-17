@@ -96,5 +96,5 @@ engine:
             batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
-            es.type.field: record_es_type
+            es.type.field: record_type
 
