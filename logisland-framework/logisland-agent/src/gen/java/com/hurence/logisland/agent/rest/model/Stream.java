@@ -4,6 +4,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.hurence.logisland.agent.rest.model.Processor;
+import com.hurence.logisland.agent.rest.model.Property;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Stream
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T18:31:14.122+01:00")
 public class Stream   {
   private String name = null;
 
@@ -23,11 +24,7 @@ public class Stream   {
 
   private String documentation = null;
 
-  private List<String> kafkaInputTopics = new ArrayList<String>();
-
-  private List<String> kafkaOutputTopics = new ArrayList<String>();
-
-  private List<String> kafkaErrorTopics = new ArrayList<String>();
+  private List<Property> config = new ArrayList<Property>();
 
   private List<Processor> processors = new ArrayList<Processor>();
 
@@ -76,7 +73,7 @@ public class Stream   {
    * Get documentation
    * @return documentation
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(value = "")
   public String getDocumentation() {
     return documentation;
   }
@@ -85,73 +82,27 @@ public class Stream   {
     this.documentation = documentation;
   }
 
-  public Stream kafkaInputTopics(List<String> kafkaInputTopics) {
-    this.kafkaInputTopics = kafkaInputTopics;
+  public Stream config(List<Property> config) {
+    this.config = config;
     return this;
   }
 
-  public Stream addKafkaInputTopicsItem(String kafkaInputTopicsItem) {
-    this.kafkaInputTopics.add(kafkaInputTopicsItem);
-    return this;
-  }
-
-   /**
-   * Get kafkaInputTopics
-   * @return kafkaInputTopics
-  **/
-  @ApiModelProperty(required = true, value = "")
-  public List<String> getKafkaInputTopics() {
-    return kafkaInputTopics;
-  }
-
-  public void setKafkaInputTopics(List<String> kafkaInputTopics) {
-    this.kafkaInputTopics = kafkaInputTopics;
-  }
-
-  public Stream kafkaOutputTopics(List<String> kafkaOutputTopics) {
-    this.kafkaOutputTopics = kafkaOutputTopics;
-    return this;
-  }
-
-  public Stream addKafkaOutputTopicsItem(String kafkaOutputTopicsItem) {
-    this.kafkaOutputTopics.add(kafkaOutputTopicsItem);
+  public Stream addConfigItem(Property configItem) {
+    this.config.add(configItem);
     return this;
   }
 
    /**
-   * Get kafkaOutputTopics
-   * @return kafkaOutputTopics
-  **/
-  @ApiModelProperty(required = true, value = "")
-  public List<String> getKafkaOutputTopics() {
-    return kafkaOutputTopics;
-  }
-
-  public void setKafkaOutputTopics(List<String> kafkaOutputTopics) {
-    this.kafkaOutputTopics = kafkaOutputTopics;
-  }
-
-  public Stream kafkaErrorTopics(List<String> kafkaErrorTopics) {
-    this.kafkaErrorTopics = kafkaErrorTopics;
-    return this;
-  }
-
-  public Stream addKafkaErrorTopicsItem(String kafkaErrorTopicsItem) {
-    this.kafkaErrorTopics.add(kafkaErrorTopicsItem);
-    return this;
-  }
-
-   /**
-   * Get kafkaErrorTopics
-   * @return kafkaErrorTopics
+   * Get config
+   * @return config
   **/
   @ApiModelProperty(value = "")
-  public List<String> getKafkaErrorTopics() {
-    return kafkaErrorTopics;
+  public List<Property> getConfig() {
+    return config;
   }
 
-  public void setKafkaErrorTopics(List<String> kafkaErrorTopics) {
-    this.kafkaErrorTopics = kafkaErrorTopics;
+  public void setConfig(List<Property> config) {
+    this.config = config;
   }
 
   public Stream processors(List<Processor> processors) {
@@ -168,7 +119,7 @@ public class Stream   {
    * Get processors
    * @return processors
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(value = "")
   public List<Processor> getProcessors() {
     return processors;
   }
@@ -190,15 +141,13 @@ public class Stream   {
     return Objects.equals(this.name, stream.name) &&
         Objects.equals(this.component, stream.component) &&
         Objects.equals(this.documentation, stream.documentation) &&
-        Objects.equals(this.kafkaInputTopics, stream.kafkaInputTopics) &&
-        Objects.equals(this.kafkaOutputTopics, stream.kafkaOutputTopics) &&
-        Objects.equals(this.kafkaErrorTopics, stream.kafkaErrorTopics) &&
+        Objects.equals(this.config, stream.config) &&
         Objects.equals(this.processors, stream.processors);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, component, documentation, kafkaInputTopics, kafkaOutputTopics, kafkaErrorTopics, processors);
+    return Objects.hash(name, component, documentation, config, processors);
   }
 
   @Override
@@ -209,9 +158,7 @@ public class Stream   {
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    component: ").append(toIndentedString(component)).append("\n");
     sb.append("    documentation: ").append(toIndentedString(documentation)).append("\n");
-    sb.append("    kafkaInputTopics: ").append(toIndentedString(kafkaInputTopics)).append("\n");
-    sb.append("    kafkaOutputTopics: ").append(toIndentedString(kafkaOutputTopics)).append("\n");
-    sb.append("    kafkaErrorTopics: ").append(toIndentedString(kafkaErrorTopics)).append("\n");
+    sb.append("    config: ").append(toIndentedString(config)).append("\n");
     sb.append("    processors: ").append(toIndentedString(processors)).append("\n");
     sb.append("}");
     return sb.toString();

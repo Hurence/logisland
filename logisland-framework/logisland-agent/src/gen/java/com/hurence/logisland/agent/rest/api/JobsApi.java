@@ -30,7 +30,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:15:05.350+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T18:31:14.122+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -96,10 +96,10 @@ public class JobsApi {
     
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "get all jobs", notes = "retrieve all job configurations", response = String.class, responseContainer = "List", tags={ "job",  })
+    @io.swagger.annotations.ApiOperation(value = "get all jobs", notes = "retrieve all jobs (retrieve only summary fields)", response = Job.class, responseContainer = "List", tags={ "job",  })
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "job configuration list", response = String.class, responseContainer = "List"),
-        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = String.class, responseContainer = "List") })
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job configuration list", response = Job.class, responseContainer = "List"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class, responseContainer = "List") })
     public Response getAllJobs(
     @Context SecurityContext securityContext)
     throws NotFoundException {

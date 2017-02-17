@@ -6,8 +6,8 @@ info:
   contact:
     name: Thomas Bailet
     email: bailet.thomas@gmail.com
-host: localhost:8080
-basePath: /logisland/api/v1
+host: localhost:8081
+basePath: /
 schemes:
   - http
   - https
@@ -34,14 +34,14 @@ paths:
        - job
       operationId: getAllJobs
       summary:  get all jobs
-      description:  retrieve all job configurations
+      description: retrieve all jobs (retrieve only summary fields)
       responses:
         "200":
           description: job configuration list
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/Job'
         default:
           description: unexpected error
           schema:
@@ -830,11 +830,7 @@ definitions:
     type: object
     required:
       - component
-      - documentation
-      - kafka.input.topics
-      - kafka.output.topics
       - name
-      - processors
     properties:
       name:
         type: string
@@ -842,18 +838,10 @@ definitions:
         type: string
       documentation:
         type: string
-      kafka.input.topics:
+      config:
         type: array
         items:
-          type: string
-      kafka.output.topics:
-        type: array
-        items:
-          type: string
-      kafka.error.topics:
-        type: array
-        items:
-          type: string
+          $ref: '#/definitions/Property'
       processors:
         type: array
         items:
