@@ -20,15 +20,13 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.string.JsonUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,7 @@ public class BroProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(BroProcessor.class);
     
-    private Map<String, String> broFieldToLogislandField = new HashMap<String, String>();
+    private static Map<String, String> broFieldToLogislandField = new HashMap<String, String>();
     
     // Bro conn fields
     private static final String BRO_CONN_ID_ORIG_H = "id.orig_h";
@@ -62,21 +60,22 @@ public class BroProcessor extends AbstractProcessor {
     private static final String LOGISLAND_CONN_DEST_IP = "dest_ip";
     private static final String LOGISLAND_CONN_SOURCE_PORT = "source_port";
     private static final String LOGISLAND_CONN_DEST_PORT = "dest_port";
+    
+    static {
+        // Bro conn fields mapping
+        broFieldToLogislandField.put(BRO_CONN_ID_ORIG_H, LOGISLAND_CONN_SOURCE_IP);
+        broFieldToLogislandField.put(BRO_CONN_ID_RESP_H, LOGISLAND_CONN_DEST_IP);
+        broFieldToLogislandField.put(BRO_CONN_ID_ORIG_P, LOGISLAND_CONN_SOURCE_PORT);
+        broFieldToLogislandField.put(BRO_CONN_ID_RESP_P, LOGISLAND_CONN_DEST_PORT);
+    }
 
     @Override
     public void init(final ProcessContext context)
     {
         logger.debug("Initializing Bro Processor");
         
-        // TODO add a config property to allow changing thids default bro fields mapping
-
-        // Bro conn fields mapping
-        broFieldToLogislandField.put(BRO_CONN_ID_ORIG_H, LOGISLAND_CONN_SOURCE_IP);
-        broFieldToLogislandField.put(BRO_CONN_ID_RESP_H, LOGISLAND_CONN_DEST_IP);
-        broFieldToLogislandField.put(BRO_CONN_ID_ORIG_P, LOGISLAND_CONN_SOURCE_PORT);
-        broFieldToLogislandField.put(BRO_CONN_ID_RESP_P, LOGISLAND_CONN_DEST_PORT);
-        
-        logger.debug("################################### " + broFieldToLogislandField);
+        // TODO add a config property to allow changing default bro fields mapping
+        // Be sure that Issue https://github.com/Hurence/logisland/issues/135 is fixed for that
     }
     
     @Override
@@ -129,9 +128,12 @@ public class BroProcessor extends AbstractProcessor {
                 continue;
             }
             
-            finalBroEvent = replaceKeys(finalBroEvent, broFieldToLogislandField);
+            //finalBroEvent = replaceKeys(finalBroEvent, broFieldToLogislandField);
+            normalizeFields(finalBroEvent, broFieldToLogislandField);                       
             
             String newRecordValue = JsonUtil.convertToJson(finalBroEvent);
+            
+            setBroEventFieldsAsFirstLevelFields(finalBroEvent, record);
              
             logger.debug("newRecordValue: " + newRecordValue);
             record.setStringField(FieldDictionary.RECORD_VALUE, newRecordValue);
@@ -147,34 +149,76 @@ public class BroProcessor extends AbstractProcessor {
     }
     
     /**
-     * Given a key mapping, replaces a key with another one, in a json object.
-     * Also remove ES unwanted characters in JSON field keys
-     * @param json
-     * @param oldToNewKey
+     * Gets the JSON content 
+     * @param record
      */
-    private static Map<String, Object> replaceKeys(Map<String, Object> json, Map<String, String> oldToNewKeys)
-    {        
-        // Now replace any forbidden character in a key name. For the moment only the '.' character is identified as
-        // a forbidden key name (for ES indexing)
-        Map<String, Object> newJson = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> jsonEntry : json.entrySet())
+    private static void setBroEventFieldsAsFirstLevelFields(Map<String, Object> broEvent, Record record)
+    {
+        for (Map.Entry<String, Object> jsonEntry : broEvent.entrySet())
         {
             String key = jsonEntry.getKey();
             Object value = jsonEntry.getValue();
+            if (value instanceof String)
+            {
+                record.setStringField(key, value.toString());
+            } else
+            {
+                if (!(value instanceof Map))
+                {
+                    logger.debug(key + " value type -> " + value.getClass().getName());
+                }
+                record.setStringField(key, JsonUtil.convertToJson(value));
+            }
+        }
+    }
+    
+    /**
+     * Normalize keys in the JSON
+     * Change special keys or remove ES unwanted characters in JSON field keys
+     * @param broEvent
+     */
+    private static void normalizeFields(Map<String, Object> broEvent, Map<String, String> oldToNewKeys)
+    {
+        List<String> keys = new ArrayList<String>(); // Do not modify the map while iterating over it
+        for (String key : broEvent.keySet())
+        {
+            keys.add(key);
+        }
+        for (String key : keys)
+        {
+            Object value = broEvent.get(key);
             // Is it a key to replace ?
+            String newKey = null;
             if (oldToNewKeys.containsKey(key))
             {
-                String newKey = oldToNewKeys.get(key);
-                newJson.put(newKey, value);
+                newKey = oldToNewKeys.get(key);
             } else
             {
                 // Not a special key to replace but we must at least remove unwanted characters
-                String newKey = key.replaceAll("\\.", "_");
-                newJson.put(newKey, value);
+                if (key.contains("."))
+                {
+                    newKey = key.replaceAll("\\.", "_");
+                }
+            }            
+            
+            // Compute new value
+            Object newValue = null;
+            if (value instanceof Map)
+            {
+                Map<String, Object> map = (Map<String, Object>)value;
+                normalizeFields(map, oldToNewKeys);
+                newValue = map;
+            } else
+            {
+                newValue = value;
             }
+            
+            if (newKey != null)
+            {
+                broEvent.remove(key);
+                broEvent.put(newKey, newValue);
+            }   
         }
-        
-        return newJson;
     }
     
     @Override
