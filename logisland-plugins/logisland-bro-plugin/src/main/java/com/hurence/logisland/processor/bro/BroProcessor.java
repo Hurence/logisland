@@ -279,7 +279,7 @@ public class BroProcessor extends AbstractProcessor {
     
     /**
      * Normalize keys in the JSON Bro event. For the moment, the only mandatory thing to do is to replace any '.'
-     * character in the field names with an acceptable character for ES indexing (curretnly '_' so for instance
+     * character in the field names with an acceptable character for ES indexing (currently '_' so for instance
      * id.orig_h becomes id_orig_h). This must be done up to the highest depth of the event (event may contain sub maps).
      * @param broEvent Bro event to normalize.
      * @param oldToNew Potential mapping of keys to change into another key (old key -> new key). May be null.
