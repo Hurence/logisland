@@ -58,6 +58,11 @@ public class MockRecord extends StandardRecord {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());
 		assertedFields.add(fieldName);
 	}
+    
+    public void assertFieldEquals(final String fieldName, final boolean expectedValue) {
+        Assert.assertEquals(new Boolean(expectedValue), getField(fieldName).asBoolean());
+        assertedFields.add(fieldName);
+    }
 
     public void assertFieldEquals(final String fieldName, final int expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asInteger().intValue());
