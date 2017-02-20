@@ -19,15 +19,19 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.string.JsonUtil;
+import com.hurence.logisland.validator.StandardValidators;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,19 +73,30 @@ public class BroProcessor extends AbstractProcessor {
         broFieldToLogislandField.put(BRO_CONN_ID_RESP_P, LOGISLAND_CONN_DEST_PORT);
     }
 
+    private boolean debug = false;
+    
+    private static final String KEY_DEBUG = "debug";
+    
+    public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
+            .name(KEY_DEBUG)
+            .description("Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .required(false)
+            .build();
+
     @Override
     public void init(final ProcessContext context)
     {
         logger.debug("Initializing Bro Processor");
-        
-        // TODO add a config property to allow changing default bro fields mapping
-        // Be sure that Issue https://github.com/Hurence/logisland/issues/135 is fixed for that
     }
     
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        // TODO Auto-generated method stub
-        return null;
+        
+        final List<PropertyDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(DEBUG);
+
+        return Collections.unmodifiableList(descriptors);
     }
   
     @Override
@@ -128,15 +143,23 @@ public class BroProcessor extends AbstractProcessor {
                 continue;
             }
             
-            //finalBroEvent = replaceKeys(finalBroEvent, broFieldToLogislandField);
+            if (debug)    
+            {
+                // Log original JSON string in record_value for debug purpose
+                // Clone the map so that even if we change keys in the map, the original key values are kept
+                // in the record_value field
+                Map<String, Object> normalizedMap = cloneMap(finalBroEvent);
+                normalizeFields(normalizedMap, null);   
+                record.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.MAP, normalizedMap));
+            } else
+            {
+                record.removeField(FieldDictionary.RECORD_VALUE);
+            }
+
             normalizeFields(finalBroEvent, broFieldToLogislandField);                       
             
-            String newRecordValue = JsonUtil.convertToJson(finalBroEvent);
-            
             setBroEventFieldsAsFirstLevelFields(finalBroEvent, record);
-             
-            logger.debug("newRecordValue: " + newRecordValue);
-            record.setStringField(FieldDictionary.RECORD_VALUE, newRecordValue);
+
             // Overwrite default reord_type field to indicate to ES processor which index type to use 
             // (index type is the bro event type)
             record.setStringField(FieldDictionary.RECORD_TYPE, broEventType);
@@ -161,15 +184,52 @@ public class BroProcessor extends AbstractProcessor {
             if (value instanceof String)
             {
                 record.setStringField(key, value.toString());
+            } else if (value instanceof Integer)
+            {
+                record.setField(new Field(key, FieldType.INT, value));
+            } else if (value instanceof Long)
+            {
+                record.setField(new Field(key, FieldType.LONG, value));
+            } else if (value instanceof ArrayList)
+            {
+                record.setField(new Field(key, FieldType.ARRAY, value));
+            } else if (value instanceof Float)
+            {
+                record.setField(new Field(key, FieldType.FLOAT, value));
+            } else if (value instanceof Double)
+            {
+                record.setField(new Field(key, FieldType.DOUBLE, value));
+            } else if (value instanceof Map)
+            {
+                record.setField(new Field(key, FieldType.MAP, value));
+            } else if (value instanceof Boolean)
+            {
+                record.setField(new Field(key, FieldType.BOOLEAN, value));
             } else
             {
-                if (!(value instanceof Map))
-                {
-                    logger.debug(key + " value type -> " + value.getClass().getName());
-                }
+                // Unrecognized value type, use string
                 record.setStringField(key, JsonUtil.convertToJson(value));
             }
         }
+    }
+    
+    /**
+     * Deeply clones the passed map regarding keys
+     */
+    private static Map<String, Object> cloneMap(Map<String, Object> origMap)
+    {
+        Map<String, Object> finalMap = new HashMap<String, Object>();
+        origMap.forEach( (key, value) -> {
+            if (value instanceof Map)
+            {
+                Map<String, Object> map = (Map<String, Object>)value;
+                finalMap.put(key, (Object)cloneMap(map)); 
+            } else
+            {
+                finalMap.put(key, value);
+            }
+        });
+        return finalMap;
     }
     
     /**
@@ -189,7 +249,7 @@ public class BroProcessor extends AbstractProcessor {
             Object value = broEvent.get(key);
             // Is it a key to replace ?
             String newKey = null;
-            if (oldToNewKeys.containsKey(key))
+            if ( (oldToNewKeys != null) && oldToNewKeys.containsKey(key) )
             {
                 newKey = oldToNewKeys.get(key);
             } else
@@ -224,6 +284,20 @@ public class BroProcessor extends AbstractProcessor {
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
 
-        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);              
+        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+        
+        if (descriptor.getName().equals(KEY_DEBUG))
+        {
+          if (newValue != null)
+          {
+              if (newValue.equalsIgnoreCase("true"))
+              {
+                  debug = true;
+              }
+          } else
+          {
+              debug = false;
+          }
+        }
     }   
 }
