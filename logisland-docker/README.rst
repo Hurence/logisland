@@ -30,17 +30,12 @@ Building the image
 
 .. code-block:: sh
 
-    # build logisland
+    # build logisland (from the root directory of the workspace)
     mvn clean install
     cp logisland-assembly/target/logisland-0.9.8-bin.tar.gz logisland-docker
-
-The archive is generated under dist directory, 
-you have to copy this file into your Dockerfile directory you can now issue
-
-.. code-block:: sh
-
+    # go into the docker directory and build the docker image
+    cd logisland-docker
     docker build --rm -t hurence/logisland:0.9.8 .
-
 
 Running the image
 -----------------
