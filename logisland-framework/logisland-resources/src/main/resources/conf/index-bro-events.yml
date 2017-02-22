@@ -12,7 +12,7 @@ engine:
   type: engine
   documentation: Index Bro events with LogIsland
   configuration:
-    spark.app.name: IndexApacheLogsDemo
+    spark.app.name: IndexBroEventsDemo
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -43,7 +43,7 @@ engine:
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: A processor chain that transforms Bro events into Logisland records
       configuration:
         kafka.input.topics: bro
         kafka.output.topics: logisland_events
@@ -58,7 +58,7 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Transform Bro events into Logisland events
+        # Transform Bro events into Logisland records
         - processor: Bro adaptor
           component: com.hurence.logisland.processor.bro.BroProcessor
           type: parser

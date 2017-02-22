@@ -128,19 +128,25 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
 
 .. code-block:: yaml
 
+
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
       type: engine
-      documentation: Main Logisland job entry point
+      documentation: Index Bro events with LogIsland
       configuration:
-        spark.app.name: LogislandTutorial
+        spark.app.name: IndexBroEventsDemo
         spark.master: local[4]
         spark.driver.memory: 1G
         spark.driver.cores: 1
-        spark.executor.memory: 3G
+        spark.executor.memory: 2G
         spark.executor.instances: 4
         spark.executor.cores: 2
         spark.yarn.queue: default
+        spark.yarn.maxAppAttempts: 4
+        spark.yarn.am.attemptFailuresValidityInterval: 1h
+        spark.yarn.max.executor.failures: 20
+        spark.yarn.executor.failuresValidityInterval: 1h
+        spark.task.maxFailures: 8
         spark.serializer: org.apache.spark.serializer.KryoSerializer
         spark.streaming.batchDuration: 4000
         spark.streaming.backpressure.enabled: false
@@ -155,93 +161,25 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
         spark.ui.port: 4050
       streamConfigurations:
 
+Stream 1: Parse incoming Bro events
+___________________________________
 
-Stream 1 : parse incoming apache log lines
-__________________________________________
 Inside this engine you will run a Kafka stream of processing, so we setup input/output topics and Kafka/Zookeeper hosts.
-Here the stream will read all the logs sent in ``logisland_raw`` topic and push the processing output into ``logisland_events`` topic.
-
-.. note::
-
-    We want to specify an Avro output schema to validate our ouput records (and force their types accordingly).
-    It's really for other streams to rely on a schema when processing records from a topic.
-
-We can define some serializers to marshall all records from and to a topic.
+Here the stream will read all the Bro events and notices sent in the ``bro`` topic and push the processing output into the ``logisland_events`` topic.
 
 .. code-block:: yaml
 
-    # parsing
+    # Parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: A processor chain that transforms Bro events into Logisland records
       configuration:
-        kafka.input.topics: logisland_raw
+        kafka.input.topics: bro
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.apache_log",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "src_ip",      "type": ["string","null"] },
-               { "name": "http_method", "type": ["string","null"] },
-               { "name": "bytes_out",   "type": ["long","null"] },
-               { "name": "http_query",  "type": ["string","null"] },
-               { "name": "http_version","type": ["string","null"] },
-               { "name": "http_status", "type": ["string","null"] },
-               { "name": "identd",      "type": ["string","null"] },
-               { "name": "user",        "type": ["string","null"] }    ]}
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 4
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
-
-Within this stream a ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
-
-.. code-block:: yaml
-
-    # parse apache logs
-    - processor: apache_parser
-      component: com.hurence.logisland.processor.SplitText
-      type: parser
-      documentation: a parser that produce events from an apache log REGEX
-      configuration:
-        value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
-        value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
-
-This stream will process log entries as soon as they will be queued into `logisland_raw` Kafka topics, each log will
-be parsed as an event which will be pushed back to Kafka in the ``logisland_events`` topic.
-
-
-Stream 2 :Index the processed records to Elasticsearch
-______________________________________________________
-The second Kafka stream will handle ``Records`` pushed into ``logisland_events`` topic to index them into elasticsearch
-
-.. code-block:: yaml
-
-    - stream: indexing_stream
-      component: com.hurence.logisland.processor.chain.KafkaRecordStream
-      type: processor
-      documentation: a processor that push events to ES
-      configuration:
-        kafka.input.topics: logisland_events
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -250,25 +188,148 @@ The second Kafka stream will handle ``Records`` pushed into ``logisland_events``
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # put to elasticsearch
-        - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
-          type: processor
-          documentation: a processor that trace the processed events
-          configuration:
-            default.index: logisland
-            default.type: event
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+Within this stream there is a single processor in the processor chain: the ``Bro`` processor. It takes an incoming Bro event/notice JSON document computes a Logisland ``Record`` as a sequence of fields
+that were contained in the JSON document.
 
+.. code-block:: yaml
 
+    # Transform Bro events into Logisland records
+    - processor: Bro adaptor
+      component: com.hurence.logisland.processor.bro.BroProcessor
+      type: parser
+      documentation: A processor that transforms Bro events into LogIsland events
+          
+This stream will process Bro events as soon as they will be queued into the ``bro`` Kafka topic. Each log will
+be parsed as an event which will be pushed back to Kafka in the ``logisland_events`` topic.
+
+Stream 2 :Index the processed records into Elasticsearch
+________________________________________________________
+
+The second Kafka stream will handle ``Records`` pushed into the ``logisland_events`` topic to index them into ElasticSearch.
+So there is no need to define an output topic. The input topic is enough:
+
+.. code-block:: yaml
+
+    # Indexing
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: A processor chain that pushes bro events to ES
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+      
+The only processor in the processor chain of this stream is the ``PutElasticsearch`` processor.
+
+.. code-block:: yaml
+
+    # Put into ElasticSearch
+    - processor: ES Publisher
+      component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+      type: processor
+      documentation: A processor that pushes Bro events into ES
+      configuration:
+        default.index: bro
+        default.type: events
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 2000
+        timebased.index: yesterday
+        es.index.field: search_index
+        es.type.field: record_type
+
+The ``default.index: bro`` configuration parameter tells the processor to index events into an index starting with the ``bro`` string.
+The ``timebased.index: yesterday`` configuration parameter tells the processor to use a date after the index prefix. Thus the index name
+is of the form ``/bro.2017.02.20``.
+
+Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the 
+record field ``record_type`` of the incoming record to determine the ElasticSearch type to use within the index.
+
+As an example, here is an incoming (JSON) Bro Connection event received in the ``bro`` Kafka topic:
+
+.. code-block:: json
+
+    {
+      "dns": {
+        "AA": false,
+        "TTLs": [599],
+        "id.resp_p": 53,
+        "rejected": false,
+        "query": "www.wikipedia.org",
+        "answers": ["91.198.174.192"],
+        "trans_id": 56307,
+        "rcode": 0,
+        "id.orig_p": 60606,
+        "rcode_name": "NOERROR",
+        "TC": false,
+        "RA": true,
+        "uid": "CJkHd3UABb4W7mx8b",
+        "RD": false,
+        "id.orig_h": "172.17.0.2",
+        "proto": "udp",
+        "id.resp_h": "8.8.8.8",
+        "Z": 0,
+        "ts": 1487785523.12837
+      }
+    }
+    
+Then here is the matching ElasticSearch document indexed in ``/bro.XXXX.XX.XX/dns``:
+    
+.. code-block:: json
+
+    {
+      "@timestamp": "2017-02-22T17:45:36Z",
+      "AA": false,
+      "RA": true,
+      "RD": false,
+      "TC": false,
+      "TTLs": [599],
+      "Z": 0,
+      "answers": ["91.198.174.192"],
+      "id_orig_h": "172.17.0.2",
+      "id_orig_p": 60606,
+      "id_resp_h": "8.8.8.8",
+      "id_resp_p": 53,
+      "proto": "udp",
+      "query": "www.wikipedia.org",
+      "rcode": 0,
+      "rcode_name": "NOERROR",
+      "record_id": "1947d1de-a65e-42aa-982f-33e9c66bfe26"
+      "record_time": 1487785536027,
+      "record_type": "dns",
+      "rejected": false,
+      "trans_id": 56307,
+      "ts": 1487785523.12837,
+      "uid": "CJkHd3UABb4W7mx8b"
+    }
+
+Here, as the Bro event is of type dns, the
+event has been indexed using the ``dns`` ES type in the index. This allows to easily search only among events of a particular
+type. For instance:
+
+.. code-block:: sh
+
+    curl -X GET http://sandbox:9200/bro.2017.02.20/dns/_search -d @query_among_dns_events.json
+    
+You can also query the whole types of events using the index without type like this:
+
+.. code-block:: sh
+
+    curl -X GET http://sandbox:9200/bro.2017.02.20/_search -d @query_among_all_events.json
 
 3. Inject some Apache logs into the system
 ------------------------------------------
+
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 
 We could setup a logstash or flume agent to load some apache logs into a kafka topic
