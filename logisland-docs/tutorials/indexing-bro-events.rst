@@ -44,10 +44,6 @@ tutorial <installing-bro.html>`_ so that you get an idea on how to install Bro a
 
     You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-bro-events.yml>`_ for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory.
 
-.. note::
-
-    Bro is already installed with its Bro-Kafka plugin in the Logisland docker image. But you can use `this tutorial <installing-bro.html>`_ to know how to build and install Bro with Bro-Kafka plugin.
-
 1. Start the Docker container with LogIsland
 --------------------------------------------
 
