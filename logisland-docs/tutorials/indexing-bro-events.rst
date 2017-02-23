@@ -393,7 +393,7 @@ Edit the config file of bro:
     vi $BRO_HOME/share/bro/site/local.bro
 
 At the beginning of the file, add the following section (take care to respect
-indentation like you can see here and in the rest of the file):
+indentation):
 
 .. note::
 
@@ -402,12 +402,12 @@ indentation like you can see here and in the rest of the file):
 .. code-block:: bro
 
     @load Bro/Kafka/logs-to-kafka.bro
-        redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
         redef Kafka::kafka_conf = table(
             ["metadata.broker.list"] = "172.17.0.2:9092",
             ["client.id"] = "bro"
         );
         redef Kafka::topic_name = "bro";
+        redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
         redef Kafka::tag_json = T;
 
 Let's detail a bit what we did:
@@ -417,8 +417,40 @@ This line tells Bro to load the Bro-Kafka plugin at startup (the next lines are 
 .. code-block:: bro
 
     @load Bro/Kafka/logs-to-kafka.bro
+
+These lines make the Bro-Kafka plugin point to the Kafka instance in the Logisland
+container (host, port, client id to use). These are communication settings:
  
-    
+.. code-block:: bro
+
+    redef Kafka::kafka_conf = table(
+        ["metadata.broker.list"] = "172.17.0.2:9092",
+        ["client.id"] = "bro"
+
+This line tells the Kafka topic name to use. It is important that it is the same as the
+input topic of the Bro processor in Logisland:
+
+.. code-block:: bro    
+        
+    redef Kafka::topic_name = "bro";
+        
+This line tells the Bro-Kafka plugin what type of events should be intercepted and sent to Kafka. For this tutorial we
+send connections, HTTP and DNS events. We are also interested in any notice (alarm) that Bro can generate.
+For a complete list of possibilities, see the Bro documentation for `events <https://www.bro.org/sphinx/script-reference/log-files.html>`_
+and `notices <https://www.bro.org/sphinx/bro-noticeindex.html>`_:
+ 
+.. code-block:: bro
+
+    redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
+
+This line tells the Bro-Kafka plugin to add the event type in the Bro JSON document it sends.
+This is required and expected by the Bro Processor as it uses this field to tag the record with his type.
+This also tells Logisland which ElasticSearch index type to use for storing the event:
+ 
+.. code-block:: bro
+
+    redef Kafka::tag_json = T;
+
 broctl
    install
    start
