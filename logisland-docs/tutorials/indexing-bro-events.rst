@@ -48,19 +48,15 @@ tutorial <installing-bro.html>`_ so that you get an idea on how to install Bro a
 
     Bro is already installed with its Bro-Kafka plugin in the Logisland docker image. But you can use `this tutorial <installing-bro.html>`_ to know how to build and install Bro with Bro-Kafka plugin.
 
-1. Start LogIsland as a Docker container
-----------------------------------------
+1. Start the Docker container with LogIsland
+--------------------------------------------
 
 LogIsland is packaged as a Docker container that you can `build yourself <https://github.com/Hurence/logisland/tree/master/logisland-docker#build-your-own>`_ or pull from Docker Hub.
-The docker container is built from a CentOs image with the following tools enabled
+The docker container is built from a CentOs image with the following tools already installed (among some others not useful for this tutorial):
 
 - Kafka
 - Spark
 - Elasticsearch
-- Kibana
-- Logstash
-- Flume
-- Nginx
 - Bro
 - LogIsland
 
@@ -119,6 +115,11 @@ Connect a shell to your Logisland container to launch a Logisland instance with 
     docker exec -ti logisland bash
     cd $LOGISLAND_HOME
     bin/logisland.sh --conf conf/index-bro-events.yml
+    
+.. note::
+
+    Logisland is now started. If you want to go straight forward and do not care for the moment about the configuration file details, you can now skip the
+    following sections and directly go to the :ref:`ConfigureBro` section.   
 
 Setup Spark/Kafka streaming engine
 __________________________________
@@ -202,7 +203,7 @@ that were contained in the JSON document.
 This stream will process Bro events as soon as they will be queued into the ``bro`` Kafka topic. Each log will
 be parsed as an event which will be pushed back to Kafka in the ``logisland_events`` topic.
 
-Stream 2 :Index the processed records into Elasticsearch
+Stream 2: Index the processed records into Elasticsearch
 ________________________________________________________
 
 The second Kafka stream will handle ``Records`` pushed into the ``logisland_events`` topic to index them into ElasticSearch.
@@ -255,6 +256,8 @@ is of the form ``/bro.2017.02.20``.
 Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the 
 record field ``record_type`` of the incoming record to determine the ElasticSearch type to use within the index.
 
+We will come back to these settings and what they do in the section where we see examples of events to illustrate the workflow.
+
 As an example, here is an incoming (JSON) Bro Connection event received in the ``bro`` Kafka topic:
 
 .. code-block:: json
@@ -304,7 +307,7 @@ Then here is the matching ElasticSearch document indexed in ``/bro.XXXX.XX.XX/dn
       "query": "www.wikipedia.org",
       "rcode": 0,
       "rcode_name": "NOERROR",
-      "record_id": "1947d1de-a65e-42aa-982f-33e9c66bfe26"
+      "record_id": "1947d1de-a65e-42aa-982f-33e9c66bfe26",
       "record_time": 1487785536027,
       "record_type": "dns",
       "rejected": false,
@@ -326,9 +329,14 @@ You can also query the whole types of events using the index without type like t
 .. code-block:: sh
 
     curl -X GET http://sandbox:9200/bro.2017.02.20/_search -d @query_among_all_events.json
+    
+TODO TODO TODO parler de part from @timestamp, ils sont c'est le format du record. aussi parler des notifications
+ajouter une note qui dit qu'on peut plugger les processeurs qu on veut en utilisant ce formt parler aussi du renommage des . en _
 
-3. Inject some Apache logs into the system
-------------------------------------------
+ .. _ConfigureBro:
+
+3. Configure Bro to send events to Kafka
+----------------------------------------
 
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 
@@ -354,36 +362,8 @@ Let's send the first 500000 lines of NASA hhtp access over July 1995 to LogIslan
     head 500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
 
 
-4. Monitor your spark jobs and Kafka topics
--------------------------------------------
-Now go to `http://sandbox:4050/streaming/ <http://sandbox:4050/streaming/>`_ to see how fast Spark can process
-your data
+5. Generate some Bro events and notices
+---------------------------------------
 
-.. image:: /_static/spark-job-monitoring.png
-
-
-Another tool can help you to tweak and monitor your processing `http://sandbox:9000/ <http://sandbox:9000>`_
-
-.. image:: /_static/kafka-mgr.png
-
-
-5. Use Kibana to inspect the logs
----------------------------------
-Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
-
-
-Configure a new index pattern with ``logisland.*`` as the pattern name and ``@timestamp`` as the time value field.
-
-.. image:: /_static/kibana-configure-index.png
-
-Then if you go to Explore panel for the latest 15' time window you'll only see logisland process_metrics events which give you
-insights about the processing bandwidth of your streams.
-
-.. image:: /_static/kibana-logisland-metrics.png
-
-As we explore data logs from july 1995 we'll have to select an absolute time filter from 1995-06-30 to 1995-07-08 to see the events.
-
-.. image:: /_static/kibana-apache-logs.png
-
-
-
+6. Mine your events in ElasticSearch
+------------------------------------
