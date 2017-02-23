@@ -1,8 +1,8 @@
 Bro/Logisland integration - Indexing Bro events
 ===============================================
 
-Important context
------------------
+Bro an Logisland
+----------------
 
 `Bro <https://www.bro.org>`_ is a Network IDS
 (`Intrusion Detection System <https://en.wikipedia.org/wiki/Intrusion_detection_system>`_) that
@@ -25,35 +25,37 @@ your own monitoring system or any other application based on Bro events and noti
 Tutorial environment
 --------------------
 
-We will start a Docker container hosting all the LogIsland services as well as Bro, launch two streaming processes
-and configure Bro to send events and notices to the system so that they are indexed in ElasticSearch.
+This tutorial will give you a better understanding of how Bro and Logisland integrate together.
+
+We will start two Docker containers:
+
+- 1 container hosting all the LogIsland services
+- 1 container hosting Bro pre-loaded with Bro-Kafka plugin
+
+We will launch two streaming processes and configure Bro to send events and notices to the Logisland system so that they
+are indexed in ElasticSearch.
 
 It is important to understand that in a production environment Bro would be installed on machines where he is relevant for
-your infrastructure and will be configured to remotely point to the Logisland service (Kafka). But for easiness of this tutorial, the
-Logisland docker image already comes with an already compiled and usable version of Bro.
+your infrastructure and will be configured to remotely point to the Logisland service (Kafka). But for easiness of this tutorial, we
+provide you with an easy mean of generating Bro events through our Bro Docker image.
 
 This tutorial will guide you through the process of configuring Logisland for treating Bro events, and configuring Bro of the
-container to send the events and notices to the local Logisland service.
-
-Due to the fact that Bro requires a Kafka plugin to be able to send events to Kafka and that building the Bro-Kafka plugin requires
-some substantial steps, for this tutorial, we are only focusing on configuring Bro, and consider it already compiled and installed
-with its Bro-Kafka plugin (this is the case in the Logisland docker image). But we however provide you with `this
-tutorial <installing-bro.html>`_ so that you get an idea on how to install Bro and Bro-Kafka plugin binaries on your own system.  
+second container to send the events and notices to the Logisland service in the first container.
 
 .. note::
 
-    You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-bro-events.yml>`_ for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory.
+    You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-bro-events.yml>`_
+    for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory in the Logsiland container.
 
 1. Start the Docker container with LogIsland
 --------------------------------------------
 
-LogIsland is packaged as a Docker container that you can `build yourself <https://github.com/Hurence/logisland/tree/master/logisland-docker#build-your-own>`_ or pull from Docker Hub.
-The docker container is built from a CentOs image with the following tools already installed (among some others not useful for this tutorial):
+LogIsland is packaged as a Docker image that you can `build yourself <https://github.com/Hurence/logisland/tree/master/logisland-docker#build-your-own>`_ or pull from Docker Hub.
+The docker image is built from a CentOs image with the following components already installed (among some others not useful for this tutorial):
 
 - Kafka
 - Spark
 - Elasticsearch
-- Bro
 - LogIsland
 
 Pull the image from Docker Repository (it may take some time)
@@ -115,7 +117,7 @@ Connect a shell to your Logisland container to launch a Logisland instance with 
 .. note::
 
     Logisland is now started. If you want to go straight forward and do not care for the moment about the configuration file details, you can now skip the
-    following sections and directly go to the :ref:`ConfigureBro` section.   
+    following sections and directly go to the :ref:`StartBroContainer` section.   
 
 Setup Spark/Kafka streaming engine
 __________________________________
@@ -329,28 +331,99 @@ You can also query the whole types of events using the index without type like t
 TODO TODO TODO parler de part from @timestamp, ils sont c'est le format du record. aussi parler des notifications
 ajouter une note qui dit qu'on peut plugger les processeurs qu on veut en utilisant ce formt parler aussi du renommage des . en _
 
- .. _ConfigureBro:
+ .. _StartBroContainer:
 
-3. Configure Bro to send events to Kafka
+3. Start the Docker container with Bro
+--------------------------------------
+
+For this tutorial, we provide Bro as a Docker image that you can `build yourself <https://github.com/Hurence/logisland/tree/master/logisland-docker/bro>`_ or pull from Docker Hub.
+The docker image is built from an Ubuntu image with the following components already installed:
+
+- Bro
+- Bro-Kafka plugin
+
+.. note::
+
+    Due to the fact that Bro requires a Kafka plugin to be able to send events to Kafka and that building the Bro-Kafka plugin requires
+    some substantial steps (need Bro sources), for this tutorial, we are only focusing on configuring Bro, and consider it already compiled and installed
+    with its Bro-Kafka plugin (this is the case in our Bro docker image). But looking at the Dockerfile we made to build the Bro Docker
+    image and which is located `here <https://github.com/Hurence/logisland/tree/master/logisland-docker/bro/Dockerfile>`_,
+    you will have an idea on how to install Bro and Bro-Kafka plugin binaries on your own systems.
+
+Pull the Bro image from Docker Repository:
+
+**WARNING: The Bro image is not yet available in the Docker Hub: please build our Bro Docker image yourself as described in the link above for the moment.**
+
+.. code-block:: sh
+
+    docker pull hurence/bro
+    
+Start a Bro container from the Bro image:
+
+.. code-block:: sh
+
+    # run container
+    docker run -it --name bro -h bro hurence/bro:0.9.8
+
+    # get container ip
+    docker inspect bro | grep IPAddress
+
+    # or if your are on mac os
+    docker-machine ip default
+
+4. Configure Bro to send events to Kafka
 ----------------------------------------
 
-vi $BRO_HOME/share/bro/site/local.bro
+In the following steps, if you want a new shell to your running bro container, do as necessary:
 
+.. code-block:: sh
 
-@load Bro/Kafka/logs-to-kafka.bro
-    redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
-    redef Kafka::kafka_conf = table(
-        ["metadata.broker.list"] = "172.17.0.3:9092",
-        ["client.id"] = "bro"
-    );
-    redef Kafka::topic_name = "bro";
-    redef Kafka::tag_json = T;
+    docker exec -ti bro bash
+
+Edit the Bro config file
+________________________
+
+We will configure Bro so that it loads the Bro-Kafka plugin at startup. We will also point to Kafka of the Logisland container
+and define the event types we want to push to Logisland.
+
+Edit the config file of bro: 
+
+.. code-block:: sh
+
+    vi $BRO_HOME/share/bro/site/local.bro
+
+At the beginning of the file, add the following section (take care to respect
+indentation like you can see here and in the rest of the file):
+
+.. note::
+
+    WARNING: replace the ``172.17.0.2`` IP address with the address of the Logisland container if different.
+
+.. code-block:: bro
+
+    @load Bro/Kafka/logs-to-kafka.bro
+        redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
+        redef Kafka::kafka_conf = table(
+            ["metadata.broker.list"] = "172.17.0.2:9092",
+            ["client.id"] = "bro"
+        );
+        redef Kafka::topic_name = "bro";
+        redef Kafka::tag_json = T;
+
+Let's detail a bit what we did:
+ 
+This line tells Bro to load the Bro-Kafka plugin at startup (the next lines are configuration for the Bro-Kafka plugin):
+ 
+.. code-block:: bro
+
+    @load Bro/Kafka/logs-to-kafka.bro
+ 
     
 broctl
    install
    start
    
-docker exec -ti bro bash
+
 
 ls $BRO_HOME/logs/current
 
@@ -383,7 +456,6 @@ Let's send the first 500000 lines of NASA hhtp access over July 1995 to LogIslan
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz
     head 500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
-
 
 5. Generate some Bro events and notices
 ---------------------------------------
