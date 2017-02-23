@@ -1,3 +1,8 @@
+#
+# Docker file to build a Bro image pre loeaded with Bro and Bro-Kafka plugin.
+# This is used in the Bro/Logisland tutorial: Indexing Bro events.
+#
+
 FROM ubuntu:16.04
 MAINTAINER Hurence version: 0.1
 
