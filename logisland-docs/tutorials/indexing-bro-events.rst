@@ -338,6 +338,33 @@ ajouter une note qui dit qu'on peut plugger les processeurs qu on veut en utilis
 3. Configure Bro to send events to Kafka
 ----------------------------------------
 
+vi $BRO_HOME/share/bro/site/local.bro
+
+
+@load Bro/Kafka/logs-to-kafka.bro
+    redef Kafka::logs_to_send = set(Conn::LOG, HTTP::LOG, DNS::LOG, Notice::LOG);
+    redef Kafka::kafka_conf = table(
+        ["metadata.broker.list"] = "172.17.0.3:9092",
+        ["client.id"] = "bro"
+    );
+    redef Kafka::topic_name = "bro";
+    redef Kafka::tag_json = T;
+    
+broctl
+   install
+   start
+   
+docker exec -ti bro bash
+
+ls $BRO_HOME/logs/current
+
+curl http://172.17.0.3:9200
+
+kafkacat -b localhost:9092 -t bro -o end
+
+cd $PCAP_HOME
+bro -r ssh.pcap local
+
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 
 We could setup a logstash or flume agent to load some apache logs into a kafka topic
