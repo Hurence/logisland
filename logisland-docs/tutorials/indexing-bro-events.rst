@@ -550,6 +550,11 @@ The Bro processor has used the first level field ``dns`` of the incoming JSON ev
 a ``record_type`` field to the record he has created. This field has been used by the PutElasicsearch processor
 to determine the index type to use for storing the record.
 
+The ``@timestamp`` field is added by the PutElasticsearch processor before pushing the record into ES. Its value is
+derived from the ``record_time`` field which has been added with also the ``record_id`` field by Logisland
+when the event entered Logisland. The ``ts`` field is the Bro timestamp which is the time when the event
+was generated in the Bro system.
+
 Other second level fields of the incoming JSON event from Bro have been set as first level fields in the record
 created by the Bro Processor. Also any field that had a "." chacracter has been transformed to use a "_" character.
 For instance the ``id.orig_h`` field has been renamed into ``id_orig_h``.
