@@ -16,7 +16,7 @@ Download the `latest release build <https://github.com/Hurence/logisland/release
 
 **LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.**
 
-.. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png
+.. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-workflow.png
     :alt: architecture
 
 You can start right now playing with **logisland** through the Docker image, by getting started with `apache log indexing tutorial <http://logisland.readthedocs.io/en/latest/tutorials/index-apache-logs.html>`_ guide.
