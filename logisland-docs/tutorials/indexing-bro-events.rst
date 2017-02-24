@@ -277,7 +277,9 @@ The docker image is built from an Ubuntu image with the following components alr
 
 Pull the Bro image from Docker Repository:
 
-**WARNING: The Bro image is not yet available in the Docker Hub: please build our Bro Docker image yourself as described in the link above for the moment.**
+.. warning::
+
+   If the Bro image is not yet available in the Docker Hub: please build our Bro Docker image yourself as described in the link above for the moment.
 
 .. code-block:: sh
 
@@ -322,7 +324,7 @@ indentation):
 
 .. note::
 
-    WARNING: replace the ``172.17.0.2`` IP address with the address of the Logisland container if different.
+    Replace the ``172.17.0.2`` IP address with the address of the Logisland container if different.
 
 .. code-block:: bro
 
