@@ -94,7 +94,7 @@ engine:
             hosts: sandbox:9300
             cluster.name: elasticsearch
             batch.size: 2000
-            timebased.index: yesterday
+            timebased.index: today
             es.index.field: search_index
             es.type.field: record_type
 
