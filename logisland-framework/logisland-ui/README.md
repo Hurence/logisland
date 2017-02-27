@@ -12,4 +12,10 @@ $ live-server --open=app
 
 ### Prerequisites
 
+Install nodejs
+
+then install jspm and live-server
+```
+$ npm install jspm live-server -g
+```
 
