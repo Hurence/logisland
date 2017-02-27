@@ -4,10 +4,10 @@ export default {
   config : {
     bindings         : {  selected: '<' },
     templateUrl      : 'src/jobs/components/details/StreamDetails.html',
-    controller       : [ 'ListService', 'ProcessorsDataService', '$log', '$scope', '$rootScope', '$mdDialog', StreamDetailsController ]}
+    controller       : [ 'ListService', 'ProcessorsDataService', '$log', '$scope', '$rootScope', StreamDetailsController ]}
 };
 
-function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope, $mdDialog) {
+function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope) {
     var vm = $scope;
 
     vm.stdProcessors = ProcessorsDataService.getAllProcessors();
@@ -48,5 +48,5 @@ function StreamDetailsController(ListService, ProcessorsDataService, $log, $scop
     function deleteProcessor(index) {
         vm.$ctrl.selected.processors.splice(index, 1);
     }
-
 }
+
