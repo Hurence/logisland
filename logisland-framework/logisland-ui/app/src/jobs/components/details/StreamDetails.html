@@ -3,17 +3,12 @@
      layout-padding>
     <!--<div flex>Stream: {{ $ctrl.selected.name }}</div>-->
     <md-content>
-        <h3>Input topics</h3>
-        <div flex ng-if="$ctrl.selected.kafkaInputTopics">Input topics: {{ $ctrl.selected.kafkaInputTopics }}</div>
-    </md-content>
-
-    <md-content>
         <div flex layout="row">
-            <h3 flex="30">Processors</h3>
-            <md-button class="md-raised md-primary"
+            <h3>Processors</h3>
+            <md-button class="md-fab md-mini"
                        ng-click="toggleList('right_processors')"
                        aria-label="Add Processor">
-                Add Processor
+                <md-icon md-svg-icon="add"></md-icon>
             </md-button>
         </div>
         <div layout="row">
@@ -26,22 +21,35 @@
                         {{ processor.name }}
                         <!--<input type="text" value="{{processor.name}}" ng-readonly='!($index == editingIndex)' ng-dblclick="editingIndex = $index"/>-->
                     </div>
-                    <md_button ng-disabled="$first" ng-click="moveProcessorUp($index);">up</md_button>
-                    <md_button ng-disabled="$last" ng-click="moveProcessorDown($index);">down</md_button>
-                    <md_button ng-click="editProcessor($index);">edit</md_button>
-                    <md_button ng-click="deleteProcessor($index);">delete</md_button>
+                    <md-button class="md-mini"
+                               ng-disabled="$first"
+                               ng-click="moveProcessorUp($index);"
+                               aria-label="Move Processor Up">
+                        <md-icon md-svg-icon="up"></md-icon>
+                    </md-button>
+                    <md-button class="md-mini"
+                               ng-disabled="$last"
+                               ng-click="moveProcessorDown($index);"
+                               aria-label="Move Processor Down">
+                        <md-icon md-svg-icon="down"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini"
+                               ng-click="editProcessor($index)"
+                               aria-label="Edit Processor">
+                        <md-icon md-svg-icon="settings"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini"
+                               ng-click="deleteProcessor($index)"
+                               aria-label="Delete Processor">
+                        <md-icon md-svg-icon="delete"></md-icon>
+                    </md-button>
                 </div>
             </div>
         </div>
     </md-content>
-    <md-content>
-        <h3>Output topics</h3>
-        <div flex ng-if="$ctrl.selected.kafkaOutputTopics">Output topics: {{ $ctrl.selected.kafkaOutputTopics }}</div>
-    </md-content>
-    <md-content>
-        <h3>Error topics</h3>
-        <span flex ng-if="$ctrl.selected.kafkaErrorTopics">Error topics: {{ $ctrl.selected.kafkaErrorTopics }}</span>
-    </md-content>
+
+    <config configuration="$ctrl.selected.config">Config</config>
+
     <md-content>
         <h3>Documentation</h3>
         <div style="margin: 6px; padding: 6px; border: 1px solid black;">

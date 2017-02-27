@@ -18,6 +18,7 @@ System.config({
     "angular-messages": "github:angular/bower-angular-messages@1.5.8",
     "angular-mocks": "github:angular/bower-angular-mocks@1.5.8",
     "angular-resource": "github:angular/bower-angular-resource@1.6.2",
+    "angular-ui-grid": "github:angular-ui/bower-ui-grid@4.0.2",
     "css": "github:systemjs/plugin-css@0.1.32",
     "json": "github:systemjs/plugin-json@0.1.2",
     "text": "github:systemjs/plugin-text@0.0.4",

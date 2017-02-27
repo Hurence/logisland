@@ -15,8 +15,13 @@ function EditProcessController($log, $scope)  {
     vm.done = done;
 
     vm.$on('editProcessor', function(event, processor) {
-        $log.debug("Editing processor: " + processor.name);
-        vm.processor = processor;
+        if(vm.processor) {
+            done();
+        }
+        else {
+            $log.debug("Editing processor: " + processor.name);
+            vm.processor = processor;
+        }
     });
 
     function done() {

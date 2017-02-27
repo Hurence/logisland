@@ -26,7 +26,7 @@ function JobDetailsController(JobsDataService, $log, $scope)  {
     }
 
     function addStream() {
-        vm.$ctrl.selected.streams.push({"name": "deafultaStreamName", "component": "comp1", "config": [], "processors": []});
+        vm.$ctrl.selected.streams.push({"name": "[Stream name]", "component": "comp1", "config": [], "processors": []});
     }
 
     function deleteStream() {

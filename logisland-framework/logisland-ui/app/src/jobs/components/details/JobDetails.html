@@ -1,26 +1,43 @@
-<div flex layout="row">
-    <div flex><h2>{{ $ctrl.selected.name }}</h2></div>
-    <div flex><md-button ng-click="saveJob($ctrl.selected)">Save Job</md-button></div>
+<div flex="100" layout="row" layout-align="center center">
+    <div flex layout-align="left center">
+        <h2>{{ $ctrl.selected.name }}</h2>
+    </div>
+    <div flex layout="row" layout-align="end center">
+        <md-button class="md-fab md-mini md-raised md-primary"
+                   ng-click="saveJob($ctrl.selected)"
+                   aria-label="Save Job">
+            <md-icon md-svg-icon="save"></md-icon>
+        </md-button>
+    </div>
 </div>
 <!--<div>{{$ctrl.selected.summary}}</div>-->
 <!--Selected: {{ $ctrl.selected.selected }}-->
 
 <div flex layout="column">
-    <div layout="row" style="border: 1px solid black">
+    <div flex="100" layout="row" style="border: 1px solid black">
+    <div flex layout="row" layout-align="left center">
         <md-button id="stream_{{ stream.name }}"
                    ng-repeat="stream in $ctrl.selected.streams | filter:query | orderBy:name "
                    ng-click="$ctrl.selectedStream = stream"
                    ng-dblclick="edit(stream)"
+                   ng-class="$ctrl.selectedStream == stream ? 'md-raised md-primary' : 'md-raised'"
                    aria-label="Stream menu item {{ stream.name }}">
             <span ng-hide="stream.editing">{{stream.name}}</span>
             <input ng-show="stream.editing" ng-submit="" ng-model="stream.name" ng-blur="doneEditing(stream)" autofocus />
         </md-button>
-        <md-button  class="md-raised md-primary"
-                    ng-click="addStream()"
-        >Add Stream</md-button>
-        <md-button  class="md-raised md-primary"
-                    ng-click="deleteStream()"
-        >Delete Stream</md-button>
+    </div>
+    <div flex layout="row" layout-align="end center">
+        <md-button class="md-fab md-mini"
+                   ng-click="addStream()"
+                   aria-label="Add Stream">
+            <md-icon md-svg-icon="add"></md-icon>
+        </md-button>
+        <md-button class="md-fab md-mini"
+                   ng-click="deleteStream()"
+                   aria-label="Delete Stream">
+            <md-icon md-svg-icon="delete"></md-icon>
+        </md-button>
+    </div>
     </div>
 
     <stream-details selected="$ctrl.selectedStream" style="border: 1px solid black">Stream</stream-details>

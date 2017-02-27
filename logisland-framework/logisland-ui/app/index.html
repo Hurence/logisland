@@ -26,7 +26,7 @@
 </md-toolbar>
 
 <!-- Container #2 -->
-<div layout="row" layout-fill>
+<div layout="row" layout-align="center center" layout-fill>
 
     <md-sidenav class="md-sidenav-left md-whiteframe-4dp" style="border: 2px solid orange"
                 md-component-id="left_jobs"
@@ -39,12 +39,12 @@
         </jobs-list>
     </md-sidenav>
 
-    <md-content flex layout="row" layout-fill flex id="content">
+    <md-content flex layout="row" layout-fill id="content">
         <!-- Custom JobDetails component -->
         <job-details flex="70"
                      selected="app.selectedJob">
         </job-details>
-        <edit-process flex="30"></edit-process>
+        <edit-process flex></edit-process>
     </md-content>
 
 </div>
