@@ -96,6 +96,7 @@
         </dependency>
 
 
+
         <!-- CXF Client -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -161,7 +162,10 @@
             <version>1.54</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+        </dependency>
 
     </dependencies>
     <build>

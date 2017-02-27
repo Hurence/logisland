@@ -30,7 +30,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T18:31:14.122+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -134,6 +134,21 @@ public class JobsApi {
     @Context SecurityContext securityContext)
     throws NotFoundException {
     return delegate.getJobAlerts(count,securityContext);
+    }
+    @GET
+    @Path("/{jobId}/engine")
+    @Consumes({ "application/json" })
+    @Produces({ "text/plain" })
+    @io.swagger.annotations.ApiOperation(value = "get job engine configuration", notes = "this is usefull when you want to launch a spark app within YARN to retrieve the launching config before submitting the job itself", response = String.class, tags={ "job", "engine",  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job status", response = String.class),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = String.class) })
+    public Response getJobEngine(
+    @ApiParam(value = "id of the job to return",required=true) @PathParam("jobId") String jobId
+,
+    @Context SecurityContext securityContext)
+    throws NotFoundException {
+    return delegate.getJobEngine(jobId,securityContext);
     }
     @GET
     @Path("/errors")

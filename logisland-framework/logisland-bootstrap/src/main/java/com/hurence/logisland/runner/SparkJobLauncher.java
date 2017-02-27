@@ -15,12 +15,7 @@
  */
 package com.hurence.logisland.runner;
 
-import com.hurence.logisland.agent.rest.client.JopApiClient;
-import com.hurence.logisland.agent.rest.model.Job;
-import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.RESTComponentFactory;
-import com.hurence.logisland.config.ConfigReader;
-import com.hurence.logisland.config.LogislandConfiguration;
 import com.hurence.logisland.engine.EngineContext;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -94,7 +89,7 @@ public class SparkJobLauncher {
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 
-            logger.info("starting Logisland session version {}", engineInstance);
+            logger.info("starting Logisland session version {}", engineInstance.get());
         } catch (Exception e) {
             logger.error("unable to launch runner : {}", e);
         }
