@@ -342,7 +342,31 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
-
+  /jobs/{jobId}/engine:
+     get:
+      tags:
+        - job
+        - engine
+      summary: get job engine configuration
+      description: this is usefull when you want to launch a spark app within YARN to retrieve the launching config before submitting the job itself
+      produces:
+        - text/plain
+      operationId: getJobEngine
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job status
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
   # Topics API
   /topics:

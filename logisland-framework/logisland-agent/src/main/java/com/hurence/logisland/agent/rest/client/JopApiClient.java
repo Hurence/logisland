@@ -36,16 +36,18 @@ public class JopApiClient {
     private static String REST_SERVICE_URL = "http://localhost:8081/jobs";
 
     public Job addJob(Job job){
-        return client
-                .target(REST_SERVICE_URL)
+        return client.target(REST_SERVICE_URL)
                 .request()
                 .post(Entity.entity(job, MediaType.APPLICATION_JSON), Job.class);
 
     }
 
     public Job getJob(String name){
-        return client.target(REST_SERVICE_URL).path("/{jobId}")
-                .resolveTemplate("jobId", name).request().get(Job.class);
+        return client.target(REST_SERVICE_URL)
+                .path("/{jobId}")
+                .resolveTemplate("jobId", name)
+                .request()
+                .get(Job.class);
 
     }
 

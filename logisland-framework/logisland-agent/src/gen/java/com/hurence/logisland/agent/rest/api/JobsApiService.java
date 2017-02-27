@@ -21,7 +21,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T18:31:14.122+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
 public abstract class JobsApiService {
 
     protected final KafkaRegistry kafkaRegistry;
@@ -40,6 +40,8 @@ public abstract class JobsApiService {
         public abstract Response getJob(String jobId,SecurityContext securityContext)
         throws NotFoundException;
         public abstract Response getJobAlerts(Integer count,SecurityContext securityContext)
+        throws NotFoundException;
+        public abstract Response getJobEngine(String jobId,SecurityContext securityContext)
         throws NotFoundException;
         public abstract Response getJobErrors(Integer count,SecurityContext securityContext)
         throws NotFoundException;

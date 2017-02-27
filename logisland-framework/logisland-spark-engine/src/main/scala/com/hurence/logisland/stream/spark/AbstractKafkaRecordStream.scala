@@ -274,7 +274,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 "value.deserializer" -> classOf[ByteArrayDeserializer],
                 "group.id" -> appName,
                 "refresh.leader.backoff.ms" -> "5000",
-                "auto.offset.reset" -> "largest",
+                "auto.offset.reset" -> "latest",
                 "enable.auto.commit" -> (false: java.lang.Boolean)
             )
 
