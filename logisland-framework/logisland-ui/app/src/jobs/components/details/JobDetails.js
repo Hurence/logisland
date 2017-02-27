@@ -39,6 +39,7 @@ function JobDetailsController(JobsDataService, $log, $scope)  {
     }
 
     function saveJob(job) {
+        $log.debug(job.streams);
         JobsDataService.save(job);
     }
 };

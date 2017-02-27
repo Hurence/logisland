@@ -11,15 +11,16 @@
                 <md-icon md-svg-icon="add"></md-icon>
             </md-button>
         </div>
-        <div id="processors" layout="row">
+        <div id="processors" layout="column">
             <!--<md-button ng-click="showPopup($event)"-->
 
-            <div id="processor_{{ processor.name }}" layout="row" layout-align="center center"
+            <div id="processor_{{ processor.name }}" layout="row"
                  ng-repeat="processor in $ctrl.selected.processors"
                  ng-dblclick="edit(processor)"
-                 style="border-bottom: 1px solid black"
-            >
+                 style="border-bottom: 1px solid black">
+
                 <span>{{processor.name}}</span>
+
                 <md-button class="md-mini"
                            ng-disabled="$first"
                            ng-click="moveProcessorUp($index);"
@@ -51,7 +52,7 @@
     <md-content>
         <h3>Documentation</h3>
         <div style="margin: 6px; padding: 6px; border: 1px solid black;">
-            <pre>{{ $ctrl.selected.documentation }}<pre>
+            <pre>{{ $ctrl.selected.documentation }}</pre>
         </div>
     </md-content>
 
