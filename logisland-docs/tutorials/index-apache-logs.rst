@@ -13,7 +13,7 @@ to the system in order to analyze them in a dashboard.
 
 
 1. Start LogIsland as a Docker container
--------------------------------------
+----------------------------------------
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 The docker container is built from a Centos 6.4 image with the following tools enabled
 
@@ -82,7 +82,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 Setup Spark/Kafka streaming engine
 __________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-apache-logs.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <plugins.html#kafkastreamprocessingengine>`_
+The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_
 
 .. code-block:: yaml
 
