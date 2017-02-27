@@ -1,8 +1,8 @@
-<div flex id="stream_details_{{ $ctrl.selected.name }}"
+<div flex id="stream_details_{{ $ctrl.selected.name }}" layout-align="center center"
      ng-show="$ctrl.selected"
      layout-padding>
-    <!--<div flex>Stream: {{ $ctrl.selected.name }}</div>-->
     <md-content>
+        <!--<div flex>Stream: {{ $ctrl.selected.name }}</div>-->
         <div flex layout="row">
             <h3>Processors</h3>
             <md-button class="md-fab md-mini"
@@ -11,39 +11,37 @@
                 <md-icon md-svg-icon="add"></md-icon>
             </md-button>
         </div>
-        <div layout="row">
-            <div id="processors">
-                <!--<md-button ng-click="showPopup($event)"-->
+        <div id="processors" layout="row">
+            <!--<md-button ng-click="showPopup($event)"-->
 
-                <div id="processor_{{ processor.name }}" layout="row"
-                     ng-repeat="processor in $ctrl.selected.processors">
-                    <div flex>
-                        {{ processor.name }}
-                        <!--<input type="text" value="{{processor.name}}" ng-readonly='!($index == editingIndex)' ng-dblclick="editingIndex = $index"/>-->
-                    </div>
-                    <md-button class="md-mini"
-                               ng-disabled="$first"
-                               ng-click="moveProcessorUp($index);"
-                               aria-label="Move Processor Up">
-                        <md-icon md-svg-icon="up"></md-icon>
-                    </md-button>
-                    <md-button class="md-mini"
-                               ng-disabled="$last"
-                               ng-click="moveProcessorDown($index);"
-                               aria-label="Move Processor Down">
-                        <md-icon md-svg-icon="down"></md-icon>
-                    </md-button>
-                    <md-button class="md-fab md-mini"
-                               ng-click="editProcessor($index)"
-                               aria-label="Edit Processor">
-                        <md-icon md-svg-icon="settings"></md-icon>
-                    </md-button>
-                    <md-button class="md-fab md-mini"
-                               ng-click="deleteProcessor($index)"
-                               aria-label="Delete Processor">
-                        <md-icon md-svg-icon="delete"></md-icon>
-                    </md-button>
-                </div>
+            <div id="processor_{{ processor.name }}" layout="row" layout-align="center center"
+                 ng-repeat="processor in $ctrl.selected.processors"
+                 ng-dblclick="edit(processor)"
+                 style="border-bottom: 1px solid black"
+            >
+                <span>{{processor.name}}</span>
+                <md-button class="md-mini"
+                           ng-disabled="$first"
+                           ng-click="moveProcessorUp($index);"
+                           aria-label="Move Processor Up">
+                    <md-icon md-svg-icon="up"></md-icon>
+                </md-button>
+                <md-button class="md-mini"
+                           ng-disabled="$last"
+                           ng-click="moveProcessorDown($index);"
+                           aria-label="Move Processor Down">
+                    <md-icon md-svg-icon="down"></md-icon>
+                </md-button>
+                <md-button class="md-fab md-mini"
+                           ng-click="editProcessor($index)"
+                           aria-label="Edit Processor">
+                    <md-icon md-svg-icon="settings"></md-icon>
+                </md-button>
+                <md-button class="md-fab md-mini"
+                           ng-click="deleteProcessor($index)"
+                           aria-label="Delete Processor">
+                    <md-icon md-svg-icon="delete"></md-icon>
+                </md-button>
             </div>
         </div>
     </md-content>
