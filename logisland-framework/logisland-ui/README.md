@@ -12,9 +12,4 @@ $ live-server --open=app
 
 ### Prerequisites
 
-You need to have a logisland-agent up and running and it has to be configured in the config file.
-
-```
-Give examples
-```
 
