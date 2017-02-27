@@ -1,0 +1,21 @@
+<div flex layout="row">
+    <div flex><h2>{{ $ctrl.selected.name }}</h2></div>
+    <div flex><md-button ng-click="saveJob($ctrl.selected)">Save Job</md-button></div>
+</div>
+<!--<div>{{$ctrl.selected.summary}}</div>-->
+<!--Selected: {{ $ctrl.selected.selected }}-->
+
+<div flex layout="column">
+    <div layout="row" style="border: 1px solid black">
+        <div id="stream_{{ stream.name }}"
+             ng-repeat="stream in $ctrl.selected.streams | filter:query | orderBy:name "
+             ng-click="$ctrl.selectedStream = stream"
+             aria-label="Stream menu item {{ stream.name }}">
+            <md-button>{{ stream.name }}</md-button>
+        </div>
+    </div>
+
+    <stream-details selected="$ctrl.selectedStream" style="border: 1px solid black">Stream</stream-details>
+    <!--<topic-schema selected="$ctrl.selected.selectedTopic"></topic-schema>-->
+
+</div>

@@ -1,0 +1,60 @@
+<div flex id="stream_details_{{ $ctrl.selected.name }}"
+     ng-show="$ctrl.selected"
+     layout-padding>
+    <!--<div flex>Stream: {{ $ctrl.selected.name }}</div>-->
+    <md-content>
+        <h3>Input topics</h3>
+        <div flex ng-if="$ctrl.selected.kafkaInputTopics">Input topics: {{ $ctrl.selected.kafkaInputTopics }}</div>
+    </md-content>
+
+    <md-content>
+        <div flex layout="row">
+            <h3 flex="30">Processors</h3>
+            <md-button class="md-raised md-primary" ng-click="toggleList('right_processors')"
+                       aria-label="Show Processors List">
+                Add Processor
+            </md-button>
+        </div>
+        <div layout="row">
+            <div id="processors">
+                <!--<md-button ng-click="showPopup($event)"-->
+
+                <div id="processor_{{ processor.name }}" layout="row"
+                     ng-repeat="processor in $ctrl.selected.processors">
+                    <div flex>
+                        {{ processor.name }}
+                        <!--<input type="text" value="{{processor.name}}" ng-readonly='!($index == editingIndex)' ng-dblclick="editingIndex = $index"/>-->
+                    </div>
+                    <md_button ng-disabled="$first" ng-click="moveProcessorUp($index);">up</md_button>
+                    <md_button ng-disabled="$last" ng-click="moveProcessorDown($index);">down</md_button>
+                    <md_button ng-click="editProcessor($index);">edit</md_button>
+                    <md_button ng-click="deleteProcessor($index);">delete</md_button>
+                </div>
+            </div>
+        </div>
+    </md-content>
+    <md-content>
+        <h3>Output topics</h3>
+        <div flex ng-if="$ctrl.selected.kafkaOutputTopics">Output topics: {{ $ctrl.selected.kafkaOutputTopics }}</div>
+    </md-content>
+    <md-content>
+        <h3>Error topics</h3>
+        <span flex ng-if="$ctrl.selected.kafkaErrorTopics">Error topics: {{ $ctrl.selected.kafkaErrorTopics }}</span>
+    </md-content>
+    <md-content>
+        <h3>Documentation</h3>
+        <div style="margin: 6px; padding: 6px; border: 1px solid black;">
+            <pre>{{ $ctrl.selected.documentation }}<pre>
+        </div>
+    </md-content>
+
+    <md-sidenav class="md-sidenav-right md-whiteframe-4dp" style="border: 3px solid orange;"
+                md-component-id="right_processors"
+                md-whiteframe="4">
+        <processors-list
+                processors="stdProcessors"
+                selected="selectedStdProcessor"
+                on-selected="selectStdProcessor(processor)">
+        </processors-list>
+    </md-sidenav>
+</div>

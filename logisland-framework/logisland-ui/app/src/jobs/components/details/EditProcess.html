@@ -1,0 +1,19 @@
+<md-content flex ng-show="processor" layout-padding>
+    <h2>Processor</h2>
+    <label>
+        Name:
+        <input type="text" name="processorName" ng-model="processor.name" required />
+        <br/>
+    </label>
+    <label>
+        Component:
+        <input type="text" name="processorComponent" ng-model="processor.component" required />
+        <br/>
+    </label>
+    <label>
+        Documentation:
+        <textarea type="text" name="processorDocumentation" ng-model="processor.documentation" required></textarea>
+    </label>
+    <br/>
+    <md-button class="md-raised md-primary" ng-click="done()">Done</md-button>
+</md-content>
