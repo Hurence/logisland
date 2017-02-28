@@ -13,7 +13,7 @@
 
 <!-- STREAMS -->
 <div flex layout="column">
-    <div flex="100" layout="row" style="border: 1px solid black">
+    <div id="stream_list" flex="100" layout="row">
         <div flex layout="row" layout-align="start center">
             <md-button id="stream_{{ stream.name }}"
                        ng-repeat="stream in $ctrl.selected.streams | filter:query | orderBy:name "
@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    <stream-details selected="$ctrl.selectedStream" style="border: 1px solid black">Stream</stream-details>
+    <stream-details id="selectedStream" selected="$ctrl.selectedStream">Stream</stream-details>
     <!--<topic-schema selected="$ctrl.selected.selectedTopic"></topic-schema>-->
 
 </div>

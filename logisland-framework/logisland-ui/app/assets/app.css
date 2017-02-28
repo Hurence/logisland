@@ -134,6 +134,7 @@ span.name {
 
 .li-menu {
 background-color: #00ff00;
+}
 
 .odd {
   background-color: red;
@@ -141,4 +142,8 @@ background-color: #00ff00;
 
 .even {
   background-color: orange;
+}
+
+#stream_list {
+    border-bottom: 1px solid black;
 }

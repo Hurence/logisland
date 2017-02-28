@@ -15,7 +15,7 @@ function EditProcessController($log, $scope)  {
     vm.done = done;
 
     vm.$on('editProcessor', function(event, processor) {
-        if(vm.processor) {
+        if(vm.processor == processor) {
             done();
         }
         else {

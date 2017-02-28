@@ -7,19 +7,21 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, job-scalable=no"/>
 
     <title>LogIsland Dashboard</title>
+
     <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
     <link rel="stylesheet" href="./jspm_packages/github/angular/bower-material@master/angular-material.css"/>
     <link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0\release\dataTable.css"/>
     <link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0\release\material.css"/>
     <link rel="stylesheet" href="./assets/app.css"/>
 </head>
-
 <body layout="column"
       layout-align="start top"
       ng-controller="AppController as app"
       ng-cloak>
 
-<md-toolbar flex layout="row" class="md-toolbar-tools">
+
+<md-toolbar layout="row"
+            class="md-toolbar-tools">
     <md-button class="menu md-icon-button" ng-click="app.toggleList('left_jobs')"
                aria-label="Show Job List">
         <md-icon md-svg-icon="menu"></md-icon>
@@ -27,7 +29,8 @@
     <h1>LogIsland Dashboard - v{{ app.version }}</h1>
 </md-toolbar>
 
-<md-sidenav flex class="md-sidenav-left md-whiteframe-4dp"
+
+<md-sidenav class="md-sidenav-left md-whiteframe-4dp"
             md-component-id="left_jobs"
             ng-click="app.toggleList('left_jobs')"
 >
@@ -38,15 +41,16 @@
     </jobs-list>
 </md-sidenav>
 
-<md-content flex id="content"
-            ng-show="app.selectedJob"
-            layout="row">
+<div flex
+     ng-show="app.selectedJob"
+     layout="row">
+
     <job-details flex="70"
                  selected="app.selectedJob">
     </job-details>
 
     <edit-process flex></edit-process>
-</md-content>
+</div>
 
 <script src="./jspm_packages/system.js" type="text/javascript"></script>
 <script src="config.js" type="text/javascript"></script>
