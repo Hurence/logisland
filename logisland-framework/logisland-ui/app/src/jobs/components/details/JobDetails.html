@@ -20,6 +20,7 @@
                        ng-click="$ctrl.selectedStream = stream"
                        ng-dblclick="edit(stream)"
                        ng-class="$ctrl.selectedStream == stream ? 'md-raised md-primary' : 'md-raised'"
+                       style="text-transform: none;"
                        aria-label="Stream menu item {{ stream.name }}">
                 <span ng-hide="stream.editing">{{stream.name}}</span>
                 <input ng-show="stream.editing" ng-submit="" ng-model="stream.name" ng-blur="doneEditing(stream)" autofocus/>
