@@ -9,16 +9,16 @@
     <title>LogIsland Dashboard</title>
     <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
     <link rel="stylesheet" href="./jspm_packages/github/angular/bower-material@master/angular-material.css"/>
+    <link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0\release\dataTable.css"/>
+    <link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0\release\material.css"/>
     <link rel="stylesheet" href="./assets/app.css"/>
 </head>
 
 <body layout="column"
-      layout-align="left top"
-      layout-fill
+      layout-align="start top"
       ng-controller="AppController as app"
       ng-cloak>
 
-<!-- Container #1 (see wireframe) -->
 <md-toolbar flex layout="row" class="md-toolbar-tools">
     <md-button class="menu md-icon-button" ng-click="app.toggleList('left_jobs')"
                aria-label="Show Job List">

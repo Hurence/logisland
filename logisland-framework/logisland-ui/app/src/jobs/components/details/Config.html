@@ -1,36 +1,44 @@
 <!--Config: {{ $ctrl.configuration }}-->
 <div>
-    <table flex>
-        <thead>
-        <tr>
-            <th>Key</th>
-            <th>Type</th>
-            <th>Value</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="conf in $ctrl.configuration"
-            ng-class-odd="'odd'"
-            ng-class-even="'even'">
-            <td>{{ conf.key }}</td>
-            <td>{{ conf.type }}</td>
-            <td>{{ conf.value }}</td>
-            <td>
-                <md-button class="md-fab md-mini"
-                           ng-click="editConfig($index)"
-                           aria-label="Edit Line">
-                    <md-icon md-svg-icon="settings"></md-icon>
-                </md-button>
-                <md-button class="md-fab md-mini"
-                           ng-click="showConfirm($event, $index)"
-                           aria-label="Delete Line">
-                    <md-icon md-svg-icon="delete"></md-icon>
-                </md-button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <dtable options="table_options"
+            rows="$ctrl.configuration"
+            class="material dt">
+        <column name="Key" flex-grow="2"></column>
+        <column name="Value"></column>
+        <column name="Type"></column>
+    </dtable>
+
+    <!--<table flex>-->
+    <!--<thead>-->
+    <!--<tr>-->
+    <!--<th>Key</th>-->
+    <!--<th>Type</th>-->
+    <!--<th>Value</th>-->
+    <!--<th>Actions</th>-->
+    <!--</tr>-->
+    <!--</thead>-->
+    <!--<tbody>-->
+    <!--<tr ng-repeat="conf in $ctrl.configuration"-->
+    <!--ng-class-odd="'odd'"-->
+    <!--ng-class-even="'even'">-->
+    <!--<td>{{ conf.key }}</td>-->
+    <!--<td>{{ conf.type }}</td>-->
+    <!--<td>{{ conf.value }}</td>-->
+    <!--<td>-->
+    <!--<md-button class="md-fab md-mini"-->
+    <!--ng-click="editConfig($index)"-->
+    <!--aria-label="Edit Line">-->
+    <!--<md-icon md-svg-icon="settings"></md-icon>-->
+    <!--</md-button>-->
+    <!--<md-button class="md-fab md-mini"-->
+    <!--ng-click="showConfirm($event, $index)"-->
+    <!--aria-label="Delete Line">-->
+    <!--<md-icon md-svg-icon="delete"></md-icon>-->
+    <!--</md-button>-->
+    <!--</td>-->
+    <!--</tr>-->
+    <!--</tbody>-->
+    <!--</table>-->
 
     <h3>Add a config</h3>
     <div flex layout="row">

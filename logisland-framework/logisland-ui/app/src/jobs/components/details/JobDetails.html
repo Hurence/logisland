@@ -14,7 +14,7 @@
 <!-- STREAMS -->
 <div flex layout="column">
     <div flex="100" layout="row" style="border: 1px solid black">
-        <div flex layout="row" layout-align="left center">
+        <div flex layout="row" layout-align="start center">
             <md-button id="stream_{{ stream.name }}"
                        ng-repeat="stream in $ctrl.selected.streams | filter:query | orderBy:name "
                        ng-click="$ctrl.selectedStream = stream"

@@ -6,7 +6,7 @@ import 'angular-aria';
 import 'angular-material';
 import 'angular-messages';
 import 'angular-resource';
-import 'angular-ui-grid';
+import 'swimlane/angular-data-table';
 
 import AppJobsController from 'src/AppJobsController';
 import Jobs from 'src/jobs/Jobs';
