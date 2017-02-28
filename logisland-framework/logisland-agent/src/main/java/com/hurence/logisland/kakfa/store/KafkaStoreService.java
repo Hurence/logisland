@@ -3,10 +3,10 @@ package com.hurence.logisland.kakfa.store;
 
 
 import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistryConfig;
 import com.hurence.logisland.kakfa.serialization.Serializer;
 import com.hurence.logisland.kakfa.registry.exceptions.*;
 import com.hurence.logisland.kakfa.store.exceptions.*;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import org.apache.commons.collections.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +36,11 @@ public class KafkaStoreService {
 
 
     public KafkaStoreService(KafkaRegistry kafkaRegistry,
-                             SchemaRegistryConfig config,
+                             String kafkaStoreTopicConfig,
+                             KafkaRegistryConfig config,
                              Serializer<RegistryKey, RegistryValue> serializer) throws RegistryException {
 
-        this.kafkaStoreTimeoutMs = config.getInt(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG);
+        this.kafkaStoreTimeoutMs = config.getInt(KafkaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG);
         this.kafkaRegistry = kafkaRegistry;
         this.serializer = serializer;
         this.guidToSchemaKey = new HashMap<>();
@@ -47,6 +48,7 @@ public class KafkaStoreService {
 
         kafkaStore =
                 new KafkaStore<>(
+                        kafkaStoreTopicConfig,
                         config,
                         (key, value) -> {
 

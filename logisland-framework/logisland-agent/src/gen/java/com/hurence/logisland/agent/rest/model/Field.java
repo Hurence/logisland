@@ -13,15 +13,17 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Field
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-28T16:28:07.083+01:00")
 public class Field   {
   private String name = null;
 
-  private Boolean encrypted = null;
+  private Boolean encrypted = false;
 
-  private Boolean indexed = null;
+  private Boolean indexed = true;
 
-  private Boolean persistent = null;
+  private Boolean persistent = true;
+
+  private Boolean optional = true;
 
   /**
    * the type of the field
@@ -60,8 +62,6 @@ public class Field   {
   }
 
   private TypeEnum type = TypeEnum.STRING;
-
-  private Object value = null;
 
   public Field name(String name) {
     this.name = name;
@@ -135,6 +135,24 @@ public class Field   {
     this.persistent = persistent;
   }
 
+  public Field optional(Boolean optional) {
+    this.optional = optional;
+    return this;
+  }
+
+   /**
+   * is the field mandatory
+   * @return optional
+  **/
+  @ApiModelProperty(value = "is the field mandatory")
+  public Boolean getOptional() {
+    return optional;
+  }
+
+  public void setOptional(Boolean optional) {
+    this.optional = optional;
+  }
+
   public Field type(TypeEnum type) {
     this.type = type;
     return this;
@@ -153,24 +171,6 @@ public class Field   {
     this.type = type;
   }
 
-  public Field value(Object value) {
-    this.value = value;
-    return this;
-  }
-
-   /**
-   * a unique identifier for the topic
-   * @return value
-  **/
-  @ApiModelProperty(value = "a unique identifier for the topic")
-  public Object getValue() {
-    return value;
-  }
-
-  public void setValue(Object value) {
-    this.value = value;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -185,13 +185,13 @@ public class Field   {
         Objects.equals(this.encrypted, field.encrypted) &&
         Objects.equals(this.indexed, field.indexed) &&
         Objects.equals(this.persistent, field.persistent) &&
-        Objects.equals(this.type, field.type) &&
-        Objects.equals(this.value, field.value);
+        Objects.equals(this.optional, field.optional) &&
+        Objects.equals(this.type, field.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, encrypted, indexed, persistent, type, value);
+    return Objects.hash(name, encrypted, indexed, persistent, optional, type);
   }
 
   @Override
@@ -203,8 +203,8 @@ public class Field   {
     sb.append("    encrypted: ").append(toIndentedString(encrypted)).append("\n");
     sb.append("    indexed: ").append(toIndentedString(indexed)).append("\n");
     sb.append("    persistent: ").append(toIndentedString(persistent)).append("\n");
+    sb.append("    optional: ").append(toIndentedString(optional)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("}");
     return sb.toString();
   }

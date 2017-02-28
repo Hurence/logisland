@@ -15,9 +15,9 @@
  */
 package com.hurence.logisland.kakfa.store;
 
+import com.hurence.logisland.kakfa.registry.KafkaRegistryConfig;
 import com.hurence.logisland.kakfa.serialization.Serializer;
 import com.hurence.logisland.kakfa.store.exceptions.*;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import kafka.utils.ShutdownableThread;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.PartitionInfo;
@@ -68,7 +68,7 @@ public class KafkaStoreReaderThread<K, V> extends ShutdownableThread {
                                 Serializer<K, V> serializer,
                                 Store<K, V> localStore,
                                 K noopKey,
-                                SchemaRegistryConfig config) {
+                                KafkaRegistryConfig config) {
     super("kafka-store-reader-thread-" + topic, false);  // this thread is not interruptible
     offsetUpdateLock = new ReentrantLock();
     offsetReachedThreshold = offsetUpdateLock.newCondition();

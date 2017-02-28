@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import static com.hurence.logisland.agent.rest.model.JobSummary.StatusEnum.*;
+
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-15T10:15:35.873+01:00")
 public class JobsApiServiceImpl extends JobsApiService {
 
@@ -49,7 +51,9 @@ public class JobsApiServiceImpl extends JobsApiService {
         } catch (RegistryException e) {
             String error = "unable to add job into kafkastore " + e;
             logger.error(error);
-            return Response.serverError().entity(error).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, error))
+                    .build();
         }
 
 
@@ -60,12 +64,16 @@ public class JobsApiServiceImpl extends JobsApiService {
         logger.debug("update job " + job);
 
         try {
+            // update date modified
+            updateJobStatus(job, job.getSummary().getStatus());
             Job job0 = kafkaRegistry.updateJob(job);
             return Response.ok().entity(job0).build();
         } catch (RegistryException e) {
             String error = "unable to update job into kafkastore " + e;
             logger.error(error);
-            return Response.serverError().entity(error).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, error))
+                    .build();
         }
     }
 
@@ -79,7 +87,9 @@ public class JobsApiServiceImpl extends JobsApiService {
         } catch (RegistryException e) {
             String error = "unable to get alls job from kafkastore " + e;
             logger.error(error);
-            return Response.serverError().entity(error).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, error))
+                    .build();
         }
     }
 
@@ -93,7 +103,9 @@ public class JobsApiServiceImpl extends JobsApiService {
         } catch (RegistryException e) {
             String error = "unable to get alls job from kafkastore " + e;
             logger.error(error);
-            return Response.serverError().entity(error).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, error))
+                    .build();
         }
 
     }
@@ -120,10 +132,6 @@ public class JobsApiServiceImpl extends JobsApiService {
             return Response.ok().entity(job).build();
     }
 
-    @Override
-    public Response getJobAlerts(Integer count, SecurityContext securityContext) throws NotFoundException {
-        return null;
-    }
 
     @Override
     public Response getJobEngine(String jobId, SecurityContext securityContext) throws NotFoundException {
@@ -140,11 +148,22 @@ public class JobsApiServiceImpl extends JobsApiService {
                 builder.append("\n");
             });
         } catch (RegistryException e) {
-            return Response.serverError().entity(e).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to find job " + jobId))
+                    .build();
         }
 
 
         return Response.ok().entity(builder.toString()).build();
+    }
+
+
+    //------------------------
+    //  Jobs metrology
+    //------------------------
+    @Override
+    public Response getJobAlerts(Integer count, SecurityContext securityContext) throws NotFoundException {
+        return null;
     }
 
     @Override
@@ -159,30 +178,66 @@ public class JobsApiServiceImpl extends JobsApiService {
 
 
     //------------------------
-    //  Jobs metrology
-    //------------------------
-
-
-    //------------------------
     // Jobs scheduling
     //------------------------
-
     @Override
     public Response getJobStatus(String jobId, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        Job job = null;
+        try {
+            job = kafkaRegistry.getJob(jobId);
+            if (job == null)
+                throw new RegistryException("job " + jobId + "not found !");
+        } catch (RegistryException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to find job " + jobId))
+                    .build();
+        }
+
+        return Response.ok().entity(job.getSummary().getStatus()).build();
     }
 
     @Override
     public Response pauseJob(String jobId, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        Job job = null;
+        try {
+            job = kafkaRegistry.getJob(jobId);
+            if (job == null)
+                throw new RegistryException("job " + jobId + "not found !");
+        } catch (RegistryException e) {
+            return Response.serverError().entity(e).build();
+        }
+
+        switch (job.getSummary().getStatus()) {
+            case PAUSED:
+                updateJobStatus(job, RUNNING);
+                return updateJob(jobId, job, securityContext);
+            case RUNNING:
+                updateJobStatus(job, PAUSED);
+                return updateJob(jobId, job, securityContext);
+            default:
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to pause a " + job.getSummary().getStatus() + " job " + jobId))
+                        .build();
+        }
     }
 
     @Override
     public Response shutdownJob(String jobId, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        Job job = null;
+        try {
+            job = kafkaRegistry.getJob(jobId);
+            if (job == null)
+                throw new RegistryException("job " + jobId + "not found !");
+        } catch (RegistryException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to shutdown job " + jobId))
+                    .build();
+        }
+
+        updateJobStatus(job, STOPPED);
+        return updateJob(jobId, job, securityContext);
     }
 
     @Override
@@ -191,13 +246,12 @@ public class JobsApiServiceImpl extends JobsApiService {
         Job job = null;
         try {
             job = kafkaRegistry.getJob(jobId);
+            if (job == null)
+                throw new RegistryException("job " + jobId + "not found !");
         } catch (RegistryException e) {
-            return Response.serverError().entity(e).build();
-        }
-
-
-        if (job == null) {
-            return Response.serverError().entity("job not found").build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to start job " + jobId))
+                    .build();
         }
 
         CommandLine cmdLine = new CommandLine("bin/logisland-launch-spark-job");
@@ -218,24 +272,18 @@ public class JobsApiServiceImpl extends JobsApiService {
             e.printStackTrace();
         }
 
+        updateJobStatus(job, RUNNING);
+
+
+        return updateJob(jobId, job, securityContext);
+    }
+
+    private void updateJobStatus(Job job, JobSummary.StatusEnum newStatus) {
         JobSummary summary = job.getSummary();
         summary.dateModified(new Date())
-                .status(JobSummary.StatusEnum.RUNNING);
+                .status(newStatus);
+        job.version(job.getVersion() + 1);
         job.setSummary(summary);
-
-
-
-        // some time later the result handler callback was invoked so we
-        // can safely request the exit value
-       /* try {
-            resultHandler.waitFor();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-
-
-        // do some magic!
-        return updateJob(jobId, job, securityContext);
     }
 
 }

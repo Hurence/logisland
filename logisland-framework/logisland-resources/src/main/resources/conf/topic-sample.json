@@ -1,0 +1,33 @@
+{
+  "id": 1402,
+  "version": 2,
+  "name": "apache_record",
+  "partitions": 20,
+  "replicationFactor": 3,
+  "dateModified": 1488296475480,
+  "documentation": "structured apache access logs",
+  "serializer": "com.hurence.logisland.serializer.KryoSerializer",
+  "businessTimeField": "record_time",
+  "rowkeyField": "record_id",
+  "recordTypeField": "record_type",
+  "keySchema": [
+    { "name": "host",             "type": "STRING", "optional": false  },
+    { "name": "nifi_guid",        "type": "STRING" }
+  ],
+  "valueSchema": [
+    { "name": "record_errors",    "type": "ARRAY",  "persistent": false },
+    { "name": "record_raw_key",   "type": "STRING" },
+    { "name": "record_raw_value", "type": "STRING" },
+    { "name": "record_id",        "type": "STRING", "optional": false },
+    { "name": "record_time",      "type": "LONG",   "optional": false },
+    { "name": "record_type",      "type": "STRING", "optional": false },
+    { "name": "src_ip",           "type": "STRING" },
+    { "name": "http_method",      "type": "STRING" },
+    { "name": "bytes_out",        "type": "LONG" },
+    { "name": "http_query",       "type": "STRING" },
+    { "name": "http_version",     "type": "STRING" },
+    { "name": "http_status",      "type": "STRING" },
+    { "name": "identd",           "type": "STRING", "indexed": false, "persistent": false },
+    { "name": "user",             "type": "STRING" }
+  ]
+}

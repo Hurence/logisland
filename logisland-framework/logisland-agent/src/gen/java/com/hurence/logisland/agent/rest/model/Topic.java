@@ -3,9 +3,12 @@ package com.hurence.logisland.agent.rest.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.hurence.logisland.agent.rest.model.Record;
+import com.hurence.logisland.agent.rest.model.FieldType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 
@@ -13,7 +16,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Topic
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-28T17:23:24.850+01:00")
 public class Topic   {
   private Long id = null;
 
@@ -21,15 +24,25 @@ public class Topic   {
 
   private String name = null;
 
-  private String serializer = null;
-
-  private Record valueSchema = null;
-
-  private Record keySchema = null;
-
   private Long partitions = null;
 
   private Long replicationFactor = null;
+
+  private Date dateModified = null;
+
+  private String documentation = null;
+
+  private String serializer = "com.hurence.logisland.serializer.KryoSerializer";
+
+  private String businessTimeField = "record_time";
+
+  private String rowkeyField = "record_id";
+
+  private String recordTypeField = "record_type";
+
+  private List<FieldType> keySchema = new ArrayList<FieldType>();
+
+  private List<FieldType> valueSchema = new ArrayList<FieldType>();
 
   public Topic id(Long id) {
     this.id = id;
@@ -85,60 +98,6 @@ public class Topic   {
     this.name = name;
   }
 
-  public Topic serializer(String serializer) {
-    this.serializer = serializer;
-    return this;
-  }
-
-   /**
-   * the class of the Serializer
-   * @return serializer
-  **/
-  @ApiModelProperty(required = true, value = "the class of the Serializer")
-  public String getSerializer() {
-    return serializer;
-  }
-
-  public void setSerializer(String serializer) {
-    this.serializer = serializer;
-  }
-
-  public Topic valueSchema(Record valueSchema) {
-    this.valueSchema = valueSchema;
-    return this;
-  }
-
-   /**
-   * Get valueSchema
-   * @return valueSchema
-  **/
-  @ApiModelProperty(required = true, value = "")
-  public Record getValueSchema() {
-    return valueSchema;
-  }
-
-  public void setValueSchema(Record valueSchema) {
-    this.valueSchema = valueSchema;
-  }
-
-  public Topic keySchema(Record keySchema) {
-    this.keySchema = keySchema;
-    return this;
-  }
-
-   /**
-   * Get keySchema
-   * @return keySchema
-  **/
-  @ApiModelProperty(value = "")
-  public Record getKeySchema() {
-    return keySchema;
-  }
-
-  public void setKeySchema(Record keySchema) {
-    this.keySchema = keySchema;
-  }
-
   public Topic partitions(Long partitions) {
     this.partitions = partitions;
     return this;
@@ -175,6 +134,160 @@ public class Topic   {
     this.replicationFactor = replicationFactor;
   }
 
+  public Topic dateModified(Date dateModified) {
+    this.dateModified = dateModified;
+    return this;
+  }
+
+   /**
+   * latest date of modification
+   * @return dateModified
+  **/
+  @ApiModelProperty(value = "latest date of modification")
+  public Date getDateModified() {
+    return dateModified;
+  }
+
+  public void setDateModified(Date dateModified) {
+    this.dateModified = dateModified;
+  }
+
+  public Topic documentation(String documentation) {
+    this.documentation = documentation;
+    return this;
+  }
+
+   /**
+   * the description of the topic
+   * @return documentation
+  **/
+  @ApiModelProperty(value = "the description of the topic")
+  public String getDocumentation() {
+    return documentation;
+  }
+
+  public void setDocumentation(String documentation) {
+    this.documentation = documentation;
+  }
+
+  public Topic serializer(String serializer) {
+    this.serializer = serializer;
+    return this;
+  }
+
+   /**
+   * the class of the Serializer
+   * @return serializer
+  **/
+  @ApiModelProperty(required = true, value = "the class of the Serializer")
+  public String getSerializer() {
+    return serializer;
+  }
+
+  public void setSerializer(String serializer) {
+    this.serializer = serializer;
+  }
+
+  public Topic businessTimeField(String businessTimeField) {
+    this.businessTimeField = businessTimeField;
+    return this;
+  }
+
+   /**
+   * the record_time field
+   * @return businessTimeField
+  **/
+  @ApiModelProperty(value = "the record_time field")
+  public String getBusinessTimeField() {
+    return businessTimeField;
+  }
+
+  public void setBusinessTimeField(String businessTimeField) {
+    this.businessTimeField = businessTimeField;
+  }
+
+  public Topic rowkeyField(String rowkeyField) {
+    this.rowkeyField = rowkeyField;
+    return this;
+  }
+
+   /**
+   * the record_id field
+   * @return rowkeyField
+  **/
+  @ApiModelProperty(value = "the record_id field")
+  public String getRowkeyField() {
+    return rowkeyField;
+  }
+
+  public void setRowkeyField(String rowkeyField) {
+    this.rowkeyField = rowkeyField;
+  }
+
+  public Topic recordTypeField(String recordTypeField) {
+    this.recordTypeField = recordTypeField;
+    return this;
+  }
+
+   /**
+   * the record type field
+   * @return recordTypeField
+  **/
+  @ApiModelProperty(value = "the record type field")
+  public String getRecordTypeField() {
+    return recordTypeField;
+  }
+
+  public void setRecordTypeField(String recordTypeField) {
+    this.recordTypeField = recordTypeField;
+  }
+
+  public Topic keySchema(List<FieldType> keySchema) {
+    this.keySchema = keySchema;
+    return this;
+  }
+
+  public Topic addKeySchemaItem(FieldType keySchemaItem) {
+    this.keySchema.add(keySchemaItem);
+    return this;
+  }
+
+   /**
+   * Get keySchema
+   * @return keySchema
+  **/
+  @ApiModelProperty(value = "")
+  public List<FieldType> getKeySchema() {
+    return keySchema;
+  }
+
+  public void setKeySchema(List<FieldType> keySchema) {
+    this.keySchema = keySchema;
+  }
+
+  public Topic valueSchema(List<FieldType> valueSchema) {
+    this.valueSchema = valueSchema;
+    return this;
+  }
+
+  public Topic addValueSchemaItem(FieldType valueSchemaItem) {
+    this.valueSchema.add(valueSchemaItem);
+    return this;
+  }
+
+   /**
+   * Get valueSchema
+   * @return valueSchema
+  **/
+  @ApiModelProperty(required = true, value = "")
+  public List<FieldType> getValueSchema() {
+    return valueSchema;
+  }
+
+  public void setValueSchema(List<FieldType> valueSchema) {
+    this.valueSchema = valueSchema;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -188,16 +301,21 @@ public class Topic   {
     return Objects.equals(this.id, topic.id) &&
         Objects.equals(this.version, topic.version) &&
         Objects.equals(this.name, topic.name) &&
-        Objects.equals(this.serializer, topic.serializer) &&
-        Objects.equals(this.valueSchema, topic.valueSchema) &&
-        Objects.equals(this.keySchema, topic.keySchema) &&
         Objects.equals(this.partitions, topic.partitions) &&
-        Objects.equals(this.replicationFactor, topic.replicationFactor);
+        Objects.equals(this.replicationFactor, topic.replicationFactor) &&
+        Objects.equals(this.dateModified, topic.dateModified) &&
+        Objects.equals(this.documentation, topic.documentation) &&
+        Objects.equals(this.serializer, topic.serializer) &&
+        Objects.equals(this.businessTimeField, topic.businessTimeField) &&
+        Objects.equals(this.rowkeyField, topic.rowkeyField) &&
+        Objects.equals(this.recordTypeField, topic.recordTypeField) &&
+        Objects.equals(this.keySchema, topic.keySchema) &&
+        Objects.equals(this.valueSchema, topic.valueSchema);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, version, name, serializer, valueSchema, keySchema, partitions, replicationFactor);
+    return Objects.hash(id, version, name, partitions, replicationFactor, dateModified, documentation, serializer, businessTimeField, rowkeyField, recordTypeField, keySchema, valueSchema);
   }
 
   @Override
@@ -208,11 +326,16 @@ public class Topic   {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    serializer: ").append(toIndentedString(serializer)).append("\n");
-    sb.append("    valueSchema: ").append(toIndentedString(valueSchema)).append("\n");
-    sb.append("    keySchema: ").append(toIndentedString(keySchema)).append("\n");
     sb.append("    partitions: ").append(toIndentedString(partitions)).append("\n");
     sb.append("    replicationFactor: ").append(toIndentedString(replicationFactor)).append("\n");
+    sb.append("    dateModified: ").append(toIndentedString(dateModified)).append("\n");
+    sb.append("    documentation: ").append(toIndentedString(documentation)).append("\n");
+    sb.append("    serializer: ").append(toIndentedString(serializer)).append("\n");
+    sb.append("    businessTimeField: ").append(toIndentedString(businessTimeField)).append("\n");
+    sb.append("    rowkeyField: ").append(toIndentedString(rowkeyField)).append("\n");
+    sb.append("    recordTypeField: ").append(toIndentedString(recordTypeField)).append("\n");
+    sb.append("    keySchema: ").append(toIndentedString(keySchema)).append("\n");
+    sb.append("    valueSchema: ").append(toIndentedString(valueSchema)).append("\n");
     sb.append("}");
     return sb.toString();
   }

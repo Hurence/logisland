@@ -19,6 +19,7 @@ package com.hurence.logisland.kakfa.registry;
 
 import com.hurence.logisland.agent.rest.model.Job;
 import com.hurence.logisland.agent.rest.model.JobSummary;
+import com.hurence.logisland.agent.rest.model.Topic;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryInitializationException;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryStoreException;
@@ -31,7 +32,6 @@ import io.confluent.common.metrics.*;
 import io.confluent.common.metrics.stats.Gauge;
 import io.confluent.common.utils.SystemTime;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import io.confluent.rest.Application;
 import io.confluent.rest.RestConfig;
 import kafka.utils.ZkUtils;
@@ -62,6 +62,7 @@ public class KafkaRegistry {
     private static final Logger log = LoggerFactory.getLogger(KafkaRegistry.class);
 
     private final RegistryIdentity myIdentity;
+    private final KafkaRegistryConfig config;
     private final Object masterLock = new Object();
     private final String schemaRegistryZkNamespace;
     private final String kafkaClusterZkUrl;
@@ -76,6 +77,7 @@ public class KafkaRegistry {
     private Sensor masterNodeSensor;
 
     private final KafkaStoreService jobsKafkaStore;
+    private final KafkaStoreService topicsKafkaStore;
 
 
     // Hand out this id during the next schema registration. Indexed from 1.
@@ -90,22 +92,30 @@ public class KafkaRegistry {
     // data is already in the kafkastore.
     private int maxIdInKafkaStore = -1;
 
-    public KafkaRegistry(SchemaRegistryConfig config,
+    public KafkaRegistry(KafkaRegistryConfig config,
                          Serializer<RegistryKey, RegistryValue> serializer)
             throws RegistryException {
 
-        String host = config.getString(SchemaRegistryConfig.HOST_NAME_CONFIG);
+        this.config = config;
+
+        String host = config.getString(KafkaRegistryConfig.HOST_NAME_CONFIG);
         int port = getPortForIdentity(
-                config.getInt(SchemaRegistryConfig.PORT_CONFIG),
+                config.getInt(KafkaRegistryConfig.PORT_CONFIG),
                 config.getList(RestConfig.LISTENERS_CONFIG));
-        this.schemaRegistryZkNamespace = config.getString(SchemaRegistryConfig.SCHEMAREGISTRY_ZK_NAMESPACE);
-        this.isEligibleForMasterElector = config.getBoolean(SchemaRegistryConfig.MASTER_ELIGIBILITY);
+        this.schemaRegistryZkNamespace = config.getString(KafkaRegistryConfig.SCHEMAREGISTRY_ZK_NAMESPACE);
+        this.isEligibleForMasterElector = config.getBoolean(KafkaRegistryConfig.MASTER_ELIGIBILITY);
         this.myIdentity = new RegistryIdentity(host, port, isEligibleForMasterElector);
-        this.kafkaClusterZkUrl = config.getString(SchemaRegistryConfig.KAFKASTORE_CONNECTION_URL_CONFIG);
-        this.zkSessionTimeoutMs = config.getInt(SchemaRegistryConfig.KAFKASTORE_ZK_SESSION_TIMEOUT_MS_CONFIG);
+        this.kafkaClusterZkUrl = config.getString(KafkaRegistryConfig.KAFKASTORE_CONNECTION_URL_CONFIG);
+        this.zkSessionTimeoutMs = config.getInt(KafkaRegistryConfig.KAFKASTORE_ZK_SESSION_TIMEOUT_MS_CONFIG);
 
 
-        jobsKafkaStore = new KafkaStoreService(this, config, serializer);
+        /**
+         * setup 2 stores for jobs and topics
+         */
+        jobsKafkaStore =
+                new KafkaStoreService(this, KafkaRegistryConfig.KAFKASTORE_TOPIC_JOBS_CONFIG, config, serializer);
+        topicsKafkaStore =
+                new KafkaStoreService(this, KafkaRegistryConfig.KAFKASTORE_TOPIC_TOPICS_CONFIG, config, serializer);
 
 
         /**
@@ -130,6 +140,78 @@ public class KafkaRegistry {
     }
 
 
+    ////////////////////////////////////////////////////
+    // Topics management
+    ////////////////////////////////////////////////////
+    public Topic addTopic(Topic topic) throws RegistryException {
+
+
+        Long topicId = topic.getId();
+        if (topicId != null && topicId >= 0) {
+            topic.setId(topicId);
+        } else {
+            topic.setId((long) nextAvailableSchemaId);
+            topic.setVersion(1);
+            nextAvailableSchemaId++;
+        }
+        if (reachedEndOfIdBatch()) {
+            idBatchInclusiveUpperBound = getInclusiveUpperBound(nextSchemaIdCounterBatch());
+        }
+
+        topic.dateModified(new Date());
+
+
+        TopicKey key = new TopicKey(topic.getName(), 1);
+        TopicValue value = new TopicValue(topic.getName(), 1, topic.getId(), topic);
+
+        TopicValue topicValue = (TopicValue) topicsKafkaStore.create(key, value);
+        if (topicValue == null)
+            throw new RegistryException("unbale to create Topic " + topic);
+
+        return topicValue.getTopic();
+    }
+
+    public Topic updateTopic(Topic topic) throws RegistryException {
+        topic.version(topic.getVersion() + 1).dateModified(new Date());
+
+        TopicKey key = new TopicKey(topic.getName(), 1);
+        TopicValue value = new TopicValue(topic.getName(), topic.getVersion(), topic.getId(), topic);
+
+        TopicValue topicValue = (TopicValue) topicsKafkaStore.update(key, value);
+        if (topicValue == null)
+            throw new RegistryException("unable to update Topic " + topic);
+
+        return topicValue.getTopic();
+    }
+
+    public Topic getTopic(String topicId) throws RegistryException {
+
+        TopicKey key = new TopicKey(topicId, 1);
+        TopicValue value = (TopicValue) topicsKafkaStore.get(key);
+        if (value == null)
+            throw new RegistryException("Topic " + topicId + " not found");
+        return value.getTopic();
+    }
+
+    public void deleteTopic(String topicId) throws RegistryException {
+
+        TopicKey key = new TopicKey(topicId, 1);
+        topicsKafkaStore.delete(key);
+    }
+
+    public List<Topic> getAllTopics() throws RegistryException {
+        return IteratorUtils.toList(
+                topicsKafkaStore.getAll()
+                        .stream()
+                        .map(value -> ((TopicValue) value).getTopic())
+                        .iterator()
+        );
+    }
+
+
+    ////////////////////////////////////////////////////
+    // Job management
+    ////////////////////////////////////////////////////
     public Job addJob(Job job) throws RegistryException {
 
 
@@ -138,13 +220,14 @@ public class KafkaRegistry {
             job.setId(jobId);
         } else {
             job.setId((long) nextAvailableSchemaId);
+            job.setVersion(1);
             nextAvailableSchemaId++;
         }
         if (reachedEndOfIdBatch()) {
             idBatchInclusiveUpperBound = getInclusiveUpperBound(nextSchemaIdCounterBatch());
         }
 
-        if(job.getSummary() == null)
+        if (job.getSummary() == null)
             job.setSummary(new JobSummary());
         job.getSummary().dateModified(new Date());
 
@@ -153,16 +236,16 @@ public class KafkaRegistry {
         JobValue value = new JobValue(job.getName(), job.getVersion(), job.getId(), job);
 
         JobValue jobAdded = (JobValue) jobsKafkaStore.create(key, value);
+        if (jobAdded == null)
+            throw new RegistryException("unbale to create Job " + job);
+
         return jobAdded.getJob();
     }
 
     public Job updateJob(Job job) throws RegistryException {
+        job.version(job.getVersion() + 1);
 
-
-        Integer version = job.getVersion() + 1;
-        job.version(version);
-
-        if(job.getSummary() == null)
+        if (job.getSummary() == null)
             job.setSummary(new JobSummary());
         job.getSummary().dateModified(new Date());
 
@@ -170,6 +253,9 @@ public class KafkaRegistry {
         JobValue value = new JobValue(job.getName(), job.getVersion(), job.getId(), job);
 
         JobValue jobAdded = (JobValue) jobsKafkaStore.update(key, value);
+        if (jobAdded == null)
+            throw new RegistryException("unable to update Job " + job);
+
         return jobAdded.getJob();
     }
 
@@ -177,6 +263,8 @@ public class KafkaRegistry {
 
         JobKey key = new JobKey(jobId, 1);
         JobValue value = (JobValue) jobsKafkaStore.get(key);
+        if (value == null)
+            throw new RegistryException("Job " + jobId + " not found");
         return value.getJob();
     }
 
@@ -217,6 +305,7 @@ public class KafkaRegistry {
     public void init() throws RegistryInitializationException {
         try {
             jobsKafkaStore.init();
+            topicsKafkaStore.init();
         } catch (Exception e) {
             throw new RegistryInitializationException(
                     "Error initializing kafka store while initializing schema registry", e);
@@ -338,6 +427,7 @@ public class KafkaRegistry {
     public void close() {
         log.info("Shutting down schema registry");
         jobsKafkaStore.close();
+        topicsKafkaStore.close();
         if (masterElector != null) {
             masterElector.close();
         }
@@ -480,4 +570,8 @@ public class KafkaRegistry {
         return 1 + nextBatchLowerBound * ZOOKEEPER_SCHEMA_ID_COUNTER_BATCH_SIZE;
     }
 
+
+    public KafkaRegistryConfig getConfig() {
+        return config;
+    }
 }
