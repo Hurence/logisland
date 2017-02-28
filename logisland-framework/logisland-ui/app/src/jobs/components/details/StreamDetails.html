@@ -1,5 +1,6 @@
 
-<div flex id="stream_details_{{ $ctrl.selected.name }}" layout-align="center center"
+<div flex id="stream_details_{{ $ctrl.selected.name }}"
+     layout-align="center center"
      ng-show="$ctrl.selected"
      layout-padding>
     <md-content>
@@ -18,6 +19,7 @@
             <div id="processor_{{ processor.name }}" layout="row"
                  ng-repeat="processor in $ctrl.selected.processors"
                  ng-dblclick="edit(processor)"
+                 layout-align="left center"
                  style="border-bottom: 1px solid black">
 
                 <span>{{processor.name}}</span>

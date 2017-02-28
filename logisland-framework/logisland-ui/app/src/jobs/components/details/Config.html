@@ -1,5 +1,5 @@
 <!--Config: {{ $ctrl.configuration }}-->
-<div style="border: 2px solid red;">
+<div>
     <table flex>
         <thead>
         <tr>
@@ -10,7 +10,9 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="conf in $ctrl.configuration">
+        <tr ng-repeat="conf in $ctrl.configuration"
+            ng-class-odd="'odd'"
+            ng-class-even="'even'">
             <td>{{ conf.key }}</td>
             <td>{{ conf.type }}</td>
             <td>{{ conf.value }}</td>

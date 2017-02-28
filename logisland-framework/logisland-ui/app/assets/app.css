@@ -135,7 +135,10 @@ span.name {
 .li-menu {
 background-color: #00ff00;
 
-.myGrid {
-    width: 500px;
-    height: 250px;
- }
+.odd {
+  background-color: red;
+}
+
+.even {
+  background-color: orange;
+}
