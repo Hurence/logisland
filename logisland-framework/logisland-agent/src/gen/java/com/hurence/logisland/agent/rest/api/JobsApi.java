@@ -29,7 +29,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -208,6 +208,21 @@ public class JobsApi {
     @Context SecurityContext securityContext)
     throws NotFoundException {
     return delegate.pauseJob(jobId,securityContext);
+    }
+    @POST
+    @Path("/{jobId}/restart")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "start job", notes = "start the corresponding Job definition", response = Job.class, tags={ "job",  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job successfuly started", response = Job.class),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class) })
+    public Response reStartJob(
+    @ApiParam(value = "id of the job to restart",required=true) @PathParam("jobId") String jobId
+,
+    @Context SecurityContext securityContext)
+    throws NotFoundException {
+    return delegate.reStartJob(jobId,securityContext);
     }
     @POST
     @Path("/{jobId}/shutdown")

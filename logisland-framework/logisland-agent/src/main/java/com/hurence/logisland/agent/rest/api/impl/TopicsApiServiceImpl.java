@@ -7,19 +7,33 @@ import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Topic;
 import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
+import kafka.admin.AdminUtils;
+import kafka.admin.RackAwareMode;
+import kafka.utils.ZkUtils;
+import org.apache.kafka.common.security.JaasUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T11:14:18.946+01:00")
 public class TopicsApiServiceImpl extends TopicsApiService {
 
+    private final ZkUtils zkUtils;
+    private static final int DEFAULT_ZK_SESSION_TIMEOUT_MS = 10 * 1000;
+    private static final int DEFAULT_ZK_CONNECTION_TIMEOUT_MS = 8 * 1000;
+
     public TopicsApiServiceImpl(KafkaRegistry kafkaRegistry) {
         super(kafkaRegistry);
+
+        zkUtils = ZkUtils.apply(
+                kafkaRegistry.getConfig().DEFAULT_KAFKA_ZOOKEEPER_QUORUM,
+                DEFAULT_ZK_SESSION_TIMEOUT_MS,
+                DEFAULT_ZK_CONNECTION_TIMEOUT_MS,
+                JaasUtils.isZkSecurityEnabled());
     }
 
     private static Logger logger = LoggerFactory.getLogger(TopicsApiServiceImpl.class);
@@ -32,6 +46,7 @@ public class TopicsApiServiceImpl extends TopicsApiService {
 
         try {
             Topic newTopic = kafkaRegistry.addTopic(body);
+            createTopic(newTopic.getName(), newTopic.getPartitions(), newTopic.getReplicationFactor());
             return Response.ok().entity(newTopic).build();
         } catch (RegistryException e) {
             String error = "unable to add topic into kafkastore " + e;
@@ -47,7 +62,7 @@ public class TopicsApiServiceImpl extends TopicsApiService {
         logger.debug("delete topic");
         try {
             kafkaRegistry.deleteTopic(topicId);
-            //TODO delete the topic in Kafka
+            deleteTopic(topicId);
 
             return Response.ok().build();
         } catch (RegistryException e) {
@@ -100,8 +115,10 @@ public class TopicsApiServiceImpl extends TopicsApiService {
         logger.debug("update topic " + body);
 
         try {
-            Topic topic = kafkaRegistry.updateTopic(body);
-            return Response.ok().entity(topic).build();
+            Topic newTopic = kafkaRegistry.updateTopic(body);
+
+            createTopic(newTopic.getName(), newTopic.getPartitions(), newTopic.getReplicationFactor());
+            return Response.ok().entity(newTopic).build();
         } catch (RegistryException e) {
             String error = "unable to update topic into kafkastore " + e;
             logger.error(error);
@@ -138,7 +155,6 @@ public class TopicsApiServiceImpl extends TopicsApiService {
     }
 
 
-
     @Override
     public Response updateTopicKeySchema(String body, String topicId, SecurityContext securityContext) throws NotFoundException {
         // do some magic!
@@ -149,6 +165,39 @@ public class TopicsApiServiceImpl extends TopicsApiService {
     public Response updateTopicValueSchema(String body, String topicId, SecurityContext securityContext) throws NotFoundException {
         // do some magic!
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    }
+
+
+    private void deleteTopic(String topic) {
+        if (!AdminUtils.topicExists(zkUtils, topic)) {
+            AdminUtils.deleteTopic(zkUtils, topic);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            logger.info("deleted topic");
+        }
+    }
+
+    private void createTopic(String topic, int partitions, int replicationFactor) {
+        if (!AdminUtils.topicExists(zkUtils, topic)) {
+            AdminUtils.createTopic(
+                    zkUtils,
+                    topic,
+                    partitions,
+                    replicationFactor,
+                    new Properties(),
+                    RackAwareMode.Enforced$.MODULE$);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            logger.info("created topic $topic with " + partitions +
+                    " partitions and " + replicationFactor +
+                    " replicas");
+        }
     }
 
 }

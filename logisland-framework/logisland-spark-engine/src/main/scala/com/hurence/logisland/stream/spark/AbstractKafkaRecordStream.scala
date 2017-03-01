@@ -45,10 +45,10 @@ import org.slf4j.LoggerFactory
 
 object AbstractKafkaRecordStream {
 
-    val DEFAULT_RAW_TOPIC = new AllowableValue("logisland_raw", "default raw topic", "the incoming non structured topic")
-    val DEFAULT_EVENTS_TOPIC = new AllowableValue("logisland_events", "default events topic", "the outgoing structured topic")
-    val DEFAULT_ERRORS_TOPIC = new AllowableValue("logisland_errors", "default raw topic", "the outgoing structured error topic")
-    val DEFAULT_METRICS_TOPIC = new AllowableValue("logisland_metrics", "default metrics topic", "the topic to place processing metrics")
+    val DEFAULT_RAW_TOPIC = new AllowableValue("_raw", "default raw topic", "the incoming non structured topic")
+    val DEFAULT_RECORDS_TOPIC = new AllowableValue("_records", "default events topic", "the outgoing structured topic")
+    val DEFAULT_ERRORS_TOPIC = new AllowableValue("_errors", "default raw topic", "the outgoing structured error topic")
+    val DEFAULT_METRICS_TOPIC = new AllowableValue("_metrics", "default metrics topic", "the topic to place processing metrics")
 
     val INPUT_TOPICS = new PropertyDescriptor.Builder()
         .name("kafka.input.topics")
@@ -63,7 +63,7 @@ object AbstractKafkaRecordStream {
         .description("Sets the output Kafka topic name")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue(DEFAULT_EVENTS_TOPIC.getValue)
+        .defaultValue(DEFAULT_RECORDS_TOPIC.getValue)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
@@ -73,6 +73,22 @@ object AbstractKafkaRecordStream {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(DEFAULT_ERRORS_TOPIC.getValue)
+        .build
+
+    val INPUT_TOPICS_PARTITIONS = new PropertyDescriptor.Builder()
+        .name("kafka.input.topics.partitions")
+        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("20")
+        .build
+
+    val OUTPUT_TOPICS_PARTITIONS = new PropertyDescriptor.Builder()
+        .name("kafka.output.topics.partitions")
+        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("20")
         .build
 
     val AVRO_INPUT_SCHEMA = new PropertyDescriptor.Builder()
@@ -89,9 +105,12 @@ object AbstractKafkaRecordStream {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
-    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName, "avro serialization", "serialize events as avro blocs")
-    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName, "avro serialization", "serialize events as json blocs")
-    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName, "kryo serialization", "serialize events as json blocs")
+    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
+        "avro serialization", "serialize events as avro blocs")
+    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
+        "avro serialization", "serialize events as json blocs")
+    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
+        "kryo serialization", "serialize events as json blocs")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
 
@@ -220,7 +239,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         this.ssc = ssc
         this.streamContext = streamContext
         SparkUtils.customizeLogLevels
-        logger.info("setup");
+        logger.info("setup")
     }
 
     override def start() = {
@@ -254,17 +273,17 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
 
+            // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {
                 createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                if (streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).isSet) {
-                    createTopicsIfNeeded(
+                createTopicsIfNeeded(
                         zkUtils,
                         Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
                         topicDefaultPartitions,
                         topicDefaultReplicationFactor)
-                }
+
             }
 
 
@@ -311,6 +330,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             // do the parallel processing
             kafkaStream.foreachRDD(rdd => {
+
+
                 val offsetRanges = process(rdd)
                 // some time later, after outputs have completed
                 if (offsetRanges.isDefined)
@@ -381,16 +402,16 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       * Topic creation
       *
       * @param zkUtils
-      * @param inputTopics
+      * @param topics
       * @param topicDefaultPartitions
       * @param topicDefaultReplicationFactor
       */
     def createTopicsIfNeeded(zkUtils: ZkUtils,
-                             inputTopics: Set[String],
+                             topics: Set[String],
                              topicDefaultPartitions: Int,
                              topicDefaultReplicationFactor: Int): Unit = {
 
-        inputTopics.foreach(topic => {
+        topics.foreach(topic => {
             if (!AdminUtils.topicExists(zkUtils, topic)) {
                 AdminUtils.createTopic(zkUtils, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)

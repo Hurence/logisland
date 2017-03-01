@@ -15,7 +15,7 @@
  */
 package com.hurence.logisland.runner;
 
-import com.hurence.logisland.component.RESTComponentFactory;
+import com.hurence.logisland.component.RestComponentFactory;
 import com.hurence.logisland.engine.EngineContext;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -85,7 +85,7 @@ public class SparkJobLauncher {
 
 
             // instanciate engine and all the processor from the config
-            engineInstance = new RESTComponentFactory(agentQuorum).getEngineContext(jobName);
+            engineInstance = new RestComponentFactory(agentQuorum).getEngineContext(jobName);
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
 

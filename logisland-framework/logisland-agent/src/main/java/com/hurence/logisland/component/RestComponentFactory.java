@@ -15,10 +15,8 @@
  */
 package com.hurence.logisland.component;
 
-import com.hurence.logisland.agent.rest.client.JopApiClient;
-import com.hurence.logisland.agent.rest.model.Job;
-import com.hurence.logisland.agent.rest.model.Processor;
-import com.hurence.logisland.agent.rest.model.Stream;
+import com.hurence.logisland.agent.rest.client.*;
+import com.hurence.logisland.agent.rest.model.*;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.engine.StandardEngineContext;
@@ -30,26 +28,37 @@ import com.hurence.logisland.stream.StreamContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 
 
-public final class RESTComponentFactory {
+public final class RestComponentFactory {
 
-    private String agentQuorum;
+    private final JobsApiClient restJobsApiClient;
+    private final TopicsApiClient topicsApiClient;
+    private final ConfigsApiClient configsApiClient;
 
 
-    public RESTComponentFactory(String agentQuorum) {
-        this.agentQuorum = agentQuorum;
+    public RestComponentFactory(String agentQuorum) {
+        this.restJobsApiClient = new RestJobsApiClient(agentQuorum);
+        this.topicsApiClient = new RestTopicsApiClient(agentQuorum);
+        this.configsApiClient = new RestConfigsApiClient(agentQuorum);
     }
 
-    private Logger logger = LoggerFactory.getLogger(RESTComponentFactory.class);
+    public RestComponentFactory(JobsApiClient jobsApiClient, TopicsApiClient topicsApiClient, ConfigsApiClient configsApiClient) {
+        this.restJobsApiClient = jobsApiClient;
+        this.topicsApiClient = topicsApiClient;
+        this.configsApiClient = configsApiClient;
+    }
+
+    private Logger logger = LoggerFactory.getLogger(RestComponentFactory.class);
 
 
     public Optional<EngineContext> getEngineContext(String jobName) {
         try {
 
             // get job from api
-            Job job = new JopApiClient().getJob(jobName);
+            Job job = restJobsApiClient.getJob(jobName);
             if (job != null) {
 
 
@@ -102,7 +111,29 @@ public final class RESTComponentFactory {
             });
 
             // set the config properties
-            stream.getConfig().forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
+            stream.getConfig().forEach(e -> {
+
+                String key = e.getKey();
+                String value = e.getValue();
+                switch (key) {
+                    case "kafka.input.topics": {
+                        Topic topic = topicsApiClient.getTopic(value);
+                        instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
+                        instance.setProperty(key, value);
+                        break;
+                    }
+                    case "kafka.output.topics": {
+                        Topic topic = topicsApiClient.getTopic(value);
+                        instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
+                        instance.setProperty(key, value);
+                        break;
+                    }
+                }
+                List<Property> configs = configsApiClient.getConfigs();
+                configs.forEach(conf -> instance.setProperty(conf.getKey(), conf.getValue()));
+
+
+            });
             logger.info("created stream {}", stream);
             return Optional.of(instance);
 

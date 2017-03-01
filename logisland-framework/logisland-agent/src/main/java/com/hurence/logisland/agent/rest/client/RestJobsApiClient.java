@@ -16,7 +16,6 @@
  */
 package com.hurence.logisland.agent.rest.client;
 
-import com.hurence.logisland.agent.rest.api.JobsApi;
 import com.hurence.logisland.agent.rest.model.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
@@ -30,20 +29,30 @@ import java.util.Date;
 /**
  * http://www.hascode.com/2013/12/jax-rs-2-0-rest-client-features-by-example/
  */
-public class JopApiClient {
+public class RestJobsApiClient implements JobsApiClient {
 
     Client client = ClientBuilder.newClient().register(JacksonFeature.class);
-    private static String REST_SERVICE_URL = "http://localhost:8081/jobs";
+    private final String restServiceUrl;
 
-    public Job addJob(Job job){
-        return client.target(REST_SERVICE_URL)
+    public RestJobsApiClient() {
+        this("http://localhost:8081");
+    }
+
+    public RestJobsApiClient(String baseUrl) {
+        this.restServiceUrl = baseUrl + "/jobs";
+    }
+
+    @Override
+    public Job addJob(Job job) {
+        return client.target(restServiceUrl)
                 .request()
                 .post(Entity.entity(job, MediaType.APPLICATION_JSON), Job.class);
 
     }
 
-    public Job getJob(String name){
-        return client.target(REST_SERVICE_URL)
+    @Override
+    public Job getJob(String name) {
+        return client.target(restServiceUrl)
                 .path("/{jobId}")
                 .resolveTemplate("jobId", name)
                 .request()
@@ -75,7 +84,6 @@ public class JopApiClient {
                 .addConfigItem(new Property().key("value.fields").value("src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out"));
 
 
-
         Stream stream = new Stream()
                 .name("apacheStream")
                 .component("com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing")
@@ -96,8 +104,8 @@ public class JopApiClient {
                 .summary(summary);
 
 
-        new JopApiClient().addJob(job);
-        Job jobadded = new JopApiClient().getJob("testJob3");
+        new RestJobsApiClient().addJob(job);
+        Job jobadded = new RestJobsApiClient().getJob("testJob3");
 
         System.out.println("jobPersisted = " + jobadded);
     }

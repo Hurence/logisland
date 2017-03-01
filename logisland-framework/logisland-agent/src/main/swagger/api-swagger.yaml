@@ -273,6 +273,28 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /jobs/{jobId}/restart:
+     post:
+      tags:
+        - job
+      summary: start job
+      description: start the corresponding Job definition
+      operationId: reStartJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to restart
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /jobs/{jobId}/start:
      post:
       tags:
@@ -762,11 +784,11 @@ definitions:
       partitions:
         description: default number of partitions
         type: integer
-        format: int64
+        format: int32
       replicationFactor:
         description: default replication factor
         type: integer
-        format: int64
+        format: int32
       dateModified:
         description: latest date of modification
         type: string

@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * FieldType
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
 public class FieldType   {
   private String name = null;
 

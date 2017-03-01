@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Topic
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
 public class Topic   {
   private Long id = null;
 
@@ -24,9 +24,9 @@ public class Topic   {
 
   private String name = null;
 
-  private Long partitions = null;
+  private Integer partitions = null;
 
-  private Long replicationFactor = null;
+  private Integer replicationFactor = null;
 
   private Date dateModified = null;
 
@@ -98,7 +98,7 @@ public class Topic   {
     this.name = name;
   }
 
-  public Topic partitions(Long partitions) {
+  public Topic partitions(Integer partitions) {
     this.partitions = partitions;
     return this;
   }
@@ -108,15 +108,15 @@ public class Topic   {
    * @return partitions
   **/
   @ApiModelProperty(required = true, value = "default number of partitions")
-  public Long getPartitions() {
+  public Integer getPartitions() {
     return partitions;
   }
 
-  public void setPartitions(Long partitions) {
+  public void setPartitions(Integer partitions) {
     this.partitions = partitions;
   }
 
-  public Topic replicationFactor(Long replicationFactor) {
+  public Topic replicationFactor(Integer replicationFactor) {
     this.replicationFactor = replicationFactor;
     return this;
   }
@@ -126,11 +126,11 @@ public class Topic   {
    * @return replicationFactor
   **/
   @ApiModelProperty(required = true, value = "default replication factor")
-  public Long getReplicationFactor() {
+  public Integer getReplicationFactor() {
     return replicationFactor;
   }
 
-  public void setReplicationFactor(Long replicationFactor) {
+  public void setReplicationFactor(Integer replicationFactor) {
     this.replicationFactor = replicationFactor;
   }
 
