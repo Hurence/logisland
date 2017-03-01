@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * FieldType
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-28T17:23:24.850+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public class FieldType   {
   private String name = null;
 
@@ -30,6 +30,8 @@ public class FieldType   {
    */
   public enum TypeEnum {
     STRING("string"),
+    
+    INT("int"),
     
     LONG("long"),
     

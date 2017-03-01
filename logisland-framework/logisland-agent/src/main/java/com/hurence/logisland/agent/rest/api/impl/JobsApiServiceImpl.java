@@ -282,7 +282,6 @@ public class JobsApiServiceImpl extends JobsApiService {
         JobSummary summary = job.getSummary();
         summary.dateModified(new Date())
                 .status(newStatus);
-        job.version(job.getVersion() + 1);
         job.setSummary(summary);
     }
 

@@ -138,7 +138,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Record'
+              $ref: '#/definitions/Metrics'
         default:
           description: unexpected error
           schema:
@@ -675,6 +675,7 @@ definitions:
         default: string
         enum:
         - string
+        - int
         - long
         - array
         - float
@@ -846,14 +847,14 @@ definitions:
       name:
         description: the job name
         type: string
+      summary:
+        $ref: '#/definitions/JobSummary'
       engine:
         $ref: '#/definitions/Engine'
       streams:
         type: array
         items:
           $ref: '#/definitions/Stream'
-      summary:
-        $ref: '#/definitions/JobSummary'
 
   Engine:
     type: object
@@ -865,8 +866,6 @@ definitions:
       name:
         type: string
       component:
-        type: string
-      documentation:
         type: string
       config:
         type: array

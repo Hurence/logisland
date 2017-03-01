@@ -39,9 +39,9 @@
       "component": "com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing",
       "documentation": "a stream which parses all incoming raw logs",
       "config": [
-        { "key": "kafka.input.topics", "value": "apache_raw" } ,
+        { "key": "kafka.input.topics", "value": "apache_logs" } ,
         { "key": "kafka.output.topics", "value": "apache_records" },
-        { "key": "kafka.error.topics", "value": "apache_errors" }
+        { "key": "kafka.error.topics", "value": "_errors" }
       ],
       "processors": [
         {
