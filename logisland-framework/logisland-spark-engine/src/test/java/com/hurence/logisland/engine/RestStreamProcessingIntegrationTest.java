@@ -22,6 +22,7 @@ import com.hurence.logisland.component.RestComponentFactory;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ public class RestStreamProcessingIntegrationTest extends AbstractStreamProcessin
 
 
     @Test
+    @Ignore
     public void validateIntegration() throws NoSuchFieldException, IllegalAccessException, InterruptedException, IOException {
 
         final List<Record> records = new ArrayList<>();

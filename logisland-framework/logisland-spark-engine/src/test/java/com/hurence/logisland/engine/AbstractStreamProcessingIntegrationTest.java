@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -52,7 +54,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
 
     protected static final String ZKHOST = "127.0.0.1";
     protected static final String BROKERHOST = "127.0.0.1";
-    protected static final String BROKERPORT = "9093";
+    protected static final int BROKERPORT = choosePorts(2)[0];
     protected static final String INPUT_TOPIC = "SparkRecordStreamProcessingTest_in";
     protected static final String OUTPUT_TOPIC = "SparkRecordStreamProcessingTest_out";
     protected static final String MAGIC_STRING = "the world is so big";
@@ -67,6 +69,25 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     protected EmbeddedZookeeper zkServer;
     private  KafkaServer kafkaServer;
 
+
+    /**
+     * Choose a number of random available ports
+     */
+    public static int[] choosePorts(int count) {
+        try {
+            ServerSocket[] sockets = new ServerSocket[count];
+            int[] ports = new int[count];
+            for (int i = 0; i < count; i++) {
+                sockets[i] = new ServerSocket(0, 0, InetAddress.getByName("0.0.0.0"));
+                ports[i] = sockets[i].getLocalPort();
+            }
+            for (int i = 0; i < count; i++)
+                sockets[i].close();
+            return ports;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @Before
     public void setUp() throws InterruptedException, IOException {
         SparkUtils.customizeLogLevels();
