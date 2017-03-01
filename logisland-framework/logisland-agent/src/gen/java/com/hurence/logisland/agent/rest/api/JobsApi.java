@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiParam;
 
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Job;
-import com.hurence.logisland.agent.rest.model.Record;
 import com.hurence.logisland.agent.rest.model.Metrics;
 
 import java.util.List;
@@ -30,7 +29,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -124,10 +123,10 @@ public class JobsApi {
     @Path("/alerts")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "get job alerts", notes = "get the alerts", response = Record.class, responseContainer = "List", tags={ "job",  })
+    @io.swagger.annotations.ApiOperation(value = "get job alerts", notes = "get the alerts", response = Metrics.class, responseContainer = "List", tags={ "job",  })
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "job metrics", response = Record.class, responseContainer = "List"),
-        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Record.class, responseContainer = "List") })
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job metrics", response = Metrics.class, responseContainer = "List"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Metrics.class, responseContainer = "List") })
     public Response getJobAlerts(
     @ApiParam(value = "max number of ites to retrieve", defaultValue="20") @DefaultValue("20") @QueryParam("count") Integer count
 ,

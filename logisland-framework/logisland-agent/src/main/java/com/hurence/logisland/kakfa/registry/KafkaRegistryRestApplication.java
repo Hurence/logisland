@@ -15,14 +15,12 @@
  */
 package com.hurence.logisland.kakfa.registry;
 
+import com.hurence.logisland.agent.rest.api.ConfigsApi;
 import com.hurence.logisland.agent.rest.api.DefaultApi;
 import com.hurence.logisland.agent.rest.api.JobsApi;
 import com.hurence.logisland.agent.rest.api.TopicsApi;
-import com.hurence.logisland.agent.rest.api.factories.DefaultApiServiceFactory;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import com.hurence.logisland.kakfa.serialization.RegistrySerializer;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
-import io.confluent.kafka.schemaregistry.rest.resources.RootResource;
 import io.confluent.rest.Application;
 import io.confluent.rest.RestConfigException;
 import org.slf4j.Logger;
@@ -31,21 +29,21 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Configurable;
 import java.util.Properties;
 
-public class LogislandKafkaRegistryRestApplication extends Application<SchemaRegistryConfig> {
+public class KafkaRegistryRestApplication extends Application<KafkaRegistryConfig> {
 
-    private static final Logger log = LoggerFactory.getLogger(LogislandKafkaRegistryRestApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(KafkaRegistryRestApplication.class);
     private KafkaRegistry kafkaRegistry = null;
 
-    public LogislandKafkaRegistryRestApplication(Properties props) throws RestConfigException {
-        this(new SchemaRegistryConfig(props));
+    public KafkaRegistryRestApplication(Properties props) throws RestConfigException {
+        this(new KafkaRegistryConfig(props));
     }
 
-    public LogislandKafkaRegistryRestApplication(SchemaRegistryConfig config) {
+    public KafkaRegistryRestApplication(KafkaRegistryConfig config) {
         super(config);
     }
 
     @Override
-    public void setupResources(Configurable<?> config, SchemaRegistryConfig schemaRegistryConfig) {
+    public void setupResources(Configurable<?> config, KafkaRegistryConfig schemaRegistryConfig) {
         try {
             kafkaRegistry = new KafkaRegistry(schemaRegistryConfig,  new RegistrySerializer());
             kafkaRegistry.init();
@@ -57,6 +55,7 @@ public class LogislandKafkaRegistryRestApplication extends Application<SchemaReg
         config.register(new DefaultApi(kafkaRegistry));
         config.register(new JobsApi(kafkaRegistry));
         config.register(new TopicsApi(kafkaRegistry));
+        config.register(new ConfigsApi(kafkaRegistry));
     }
 
     @Override

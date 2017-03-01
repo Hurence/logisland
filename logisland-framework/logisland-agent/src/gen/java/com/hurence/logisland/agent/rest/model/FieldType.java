@@ -11,10 +11,10 @@ import io.swagger.annotations.ApiModelProperty;
 
 
 /**
- * Field
+ * FieldType
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-28T16:28:07.083+01:00")
-public class Field   {
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
+public class FieldType   {
   private String name = null;
 
   private Boolean encrypted = false;
@@ -30,6 +30,8 @@ public class Field   {
    */
   public enum TypeEnum {
     STRING("string"),
+    
+    INT("int"),
     
     LONG("long"),
     
@@ -63,7 +65,7 @@ public class Field   {
 
   private TypeEnum type = TypeEnum.STRING;
 
-  public Field name(String name) {
+  public FieldType name(String name) {
     this.name = name;
     return this;
   }
@@ -81,7 +83,7 @@ public class Field   {
     this.name = name;
   }
 
-  public Field encrypted(Boolean encrypted) {
+  public FieldType encrypted(Boolean encrypted) {
     this.encrypted = encrypted;
     return this;
   }
@@ -99,7 +101,7 @@ public class Field   {
     this.encrypted = encrypted;
   }
 
-  public Field indexed(Boolean indexed) {
+  public FieldType indexed(Boolean indexed) {
     this.indexed = indexed;
     return this;
   }
@@ -117,7 +119,7 @@ public class Field   {
     this.indexed = indexed;
   }
 
-  public Field persistent(Boolean persistent) {
+  public FieldType persistent(Boolean persistent) {
     this.persistent = persistent;
     return this;
   }
@@ -135,7 +137,7 @@ public class Field   {
     this.persistent = persistent;
   }
 
-  public Field optional(Boolean optional) {
+  public FieldType optional(Boolean optional) {
     this.optional = optional;
     return this;
   }
@@ -153,7 +155,7 @@ public class Field   {
     this.optional = optional;
   }
 
-  public Field type(TypeEnum type) {
+  public FieldType type(TypeEnum type) {
     this.type = type;
     return this;
   }
@@ -180,13 +182,13 @@ public class Field   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Field field = (Field) o;
-    return Objects.equals(this.name, field.name) &&
-        Objects.equals(this.encrypted, field.encrypted) &&
-        Objects.equals(this.indexed, field.indexed) &&
-        Objects.equals(this.persistent, field.persistent) &&
-        Objects.equals(this.optional, field.optional) &&
-        Objects.equals(this.type, field.type);
+    FieldType fieldType = (FieldType) o;
+    return Objects.equals(this.name, fieldType.name) &&
+        Objects.equals(this.encrypted, fieldType.encrypted) &&
+        Objects.equals(this.indexed, fieldType.indexed) &&
+        Objects.equals(this.persistent, fieldType.persistent) &&
+        Objects.equals(this.optional, fieldType.optional) &&
+        Objects.equals(this.type, fieldType.type);
   }
 
   @Override
@@ -197,7 +199,7 @@ public class Field   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Field {\n");
+    sb.append("class FieldType {\n");
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    encrypted: ").append(toIndentedString(encrypted)).append("\n");

@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * JobSummary
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public class JobSummary   {
   private Integer usedCores = null;
 
@@ -28,7 +28,9 @@ public class JobSummary   {
     
     RUNNING("running"),
     
-    FAILED("failed");
+    FAILED("failed"),
+    
+    PAUSED("paused");
 
     private String value;
 

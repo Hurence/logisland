@@ -34,7 +34,7 @@ public class TopicKey extends RegistryKey {
 
   public TopicKey(@JsonProperty("name") String name,
                   @JsonProperty("version") int version) {
-    super(RegistryKeyType.JOB);
+    super(RegistryKeyType.TOPIC);
     this.magicByte = MAGIC_BYTE;
     this.name = name;
     this.version = version;

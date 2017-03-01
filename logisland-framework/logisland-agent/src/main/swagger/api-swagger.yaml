@@ -26,6 +26,25 @@ paths:
           description: OK
 
 
+  # Job API
+  /configs:
+    get:
+      tags:
+       - config
+      operationId: getConfig
+      summary:  global config
+      description: get all global configuration properties
+      responses:
+        "200":
+          description: global configuration
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Property'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
   # Job API
   /jobs:
@@ -119,7 +138,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Record'
+              $ref: '#/definitions/Metrics'
         default:
           description: unexpected error
           schema:
@@ -625,7 +644,7 @@ paths:
 definitions:
 
 
-  Field:
+  FieldType:
     type: object
     required:
       - name
@@ -637,19 +656,26 @@ definitions:
       encrypted:
         description: is the field need to be encrypted
         type: boolean
+        default: false
       indexed:
         description: is the field need to be indexed to search store
         type: boolean
+        default: true
       persistent:
         description: is the field need to be persisted to data store
         type: boolean
+        default: true
+      optional:
+        description: is the field mandatory
+        type: boolean
+        default: true
       type:
         description: the type of the field
         type: string
         default: string
         enum:
-        - null
         - string
+        - int
         - long
         - array
         - float
@@ -659,38 +685,9 @@ definitions:
         - map
         - enum
         - boolean
-      value:
-        description: a unique identifier for the topic
-        type: object
 
 
-  Record:
-    type: object
-    required:
-      - name
-    properties:
-      id:
-        description: a unique identifier for the topic
-        type: integer
-        format: int64
-      name:
-        description: the name of the topic
-        type: string
-      multiline:
-        description: is the record multiline
-        type: boolean
-      timestampField:
-        description: the record_time field
-        type: string
-        default: "record_time"
-      rowkeyField:
-        description: the record_id field
-        type: string
-        default: "record_id"
-      fields:
-        type: array
-        items:
-          $ref: '#/definitions/Field'
+
 
   Metrics:
     type: object
@@ -741,6 +738,7 @@ definitions:
         type: integer
         format: int64
 
+
   Topic:
     type: object
     required:
@@ -761,13 +759,6 @@ definitions:
       name:
         description: the name of the topic
         type: string
-      serializer:
-        description: the class of the Serializer
-        type: string
-      valueSchema:
-        $ref: '#/definitions/Record'
-      keySchema:
-        $ref: '#/definitions/Record'
       partitions:
         description: default number of partitions
         type: integer
@@ -776,6 +767,38 @@ definitions:
         description: default replication factor
         type: integer
         format: int64
+      dateModified:
+        description: latest date of modification
+        type: string
+        format: date-time
+      documentation:
+        description: the description of the topic
+        type: string
+      serializer:
+        description: the class of the Serializer
+        type: string
+        default: "com.hurence.logisland.serializer.KryoSerializer"
+      businessTimeField:
+        description: the record_time field
+        type: string
+        default: "record_time"
+      rowkeyField:
+        description: the record_id field
+        type: string
+        default: "record_id"
+      recordTypeField:
+        description: the record type field
+        type: string
+        default: "record_type"
+      keySchema:
+        type: array
+        items:
+          $ref: '#/definitions/FieldType'
+      valueSchema:
+        type: array
+        items:
+          $ref: '#/definitions/FieldType'
+
 
   JobSummary:
     type: object
@@ -796,6 +819,7 @@ definitions:
         - stopped
         - running
         - failed
+        - paused
       dateModified:
         description: latest date of modification
         type: string
@@ -823,14 +847,14 @@ definitions:
       name:
         description: the job name
         type: string
+      summary:
+        $ref: '#/definitions/JobSummary'
       engine:
         $ref: '#/definitions/Engine'
       streams:
         type: array
         items:
           $ref: '#/definitions/Stream'
-      summary:
-        $ref: '#/definitions/JobSummary'
 
   Engine:
     type: object
@@ -842,8 +866,6 @@ definitions:
       name:
         type: string
       component:
-        type: string
-      documentation:
         type: string
       config:
         type: array
@@ -899,6 +921,7 @@ definitions:
         type: string
       type:
         type: string
+        default: "string"
       value:
         type: string
 

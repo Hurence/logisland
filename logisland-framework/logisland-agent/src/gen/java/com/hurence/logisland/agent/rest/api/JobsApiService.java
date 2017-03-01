@@ -7,7 +7,6 @@ import com.hurence.logisland.agent.rest.model.*;
 
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Job;
-import com.hurence.logisland.agent.rest.model.Record;
 import com.hurence.logisland.agent.rest.model.Metrics;
 
 import java.util.List;
@@ -21,7 +20,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public abstract class JobsApiService {
 
     protected final KafkaRegistry kafkaRegistry;

@@ -15,13 +15,11 @@ import java.util.List;
 /**
  * Record
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-28T16:28:07.083+01:00")
 public class Record   {
-  private Long id = null;
+  private String id = null;
 
-  private String name = null;
-
-  private Boolean multiline = null;
+  private String type = null;
 
   private String timestampField = "record_time";
 
@@ -29,58 +27,40 @@ public class Record   {
 
   private List<Field> fields = new ArrayList<Field>();
 
-  public Record id(Long id) {
+  public Record id(String id) {
     this.id = id;
     return this;
   }
 
    /**
-   * a unique identifier for the topic
+   * a unique identifier
    * @return id
   **/
-  @ApiModelProperty(value = "a unique identifier for the topic")
-  public Long getId() {
+  @ApiModelProperty(value = "a unique identifier")
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
-  public Record name(String name) {
-    this.name = name;
+  public Record type(String type) {
+    this.type = type;
     return this;
   }
 
    /**
-   * the name of the topic
-   * @return name
+   * the type of the record
+   * @return type
   **/
-  @ApiModelProperty(required = true, value = "the name of the topic")
-  public String getName() {
-    return name;
+  @ApiModelProperty(required = true, value = "the type of the record")
+  public String getType() {
+    return type;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Record multiline(Boolean multiline) {
-    this.multiline = multiline;
-    return this;
-  }
-
-   /**
-   * is the record multiline
-   * @return multiline
-  **/
-  @ApiModelProperty(value = "is the record multiline")
-  public Boolean getMultiline() {
-    return multiline;
-  }
-
-  public void setMultiline(Boolean multiline) {
-    this.multiline = multiline;
+  public void setType(String type) {
+    this.type = type;
   }
 
   public Record timestampField(String timestampField) {
@@ -153,8 +133,7 @@ public class Record   {
     }
     Record record = (Record) o;
     return Objects.equals(this.id, record.id) &&
-        Objects.equals(this.name, record.name) &&
-        Objects.equals(this.multiline, record.multiline) &&
+        Objects.equals(this.type, record.type) &&
         Objects.equals(this.timestampField, record.timestampField) &&
         Objects.equals(this.rowkeyField, record.rowkeyField) &&
         Objects.equals(this.fields, record.fields);
@@ -162,7 +141,7 @@ public class Record   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, multiline, timestampField, rowkeyField, fields);
+    return Objects.hash(id, type, timestampField, rowkeyField, fields);
   }
 
   @Override
@@ -171,8 +150,7 @@ public class Record   {
     sb.append("class Record {\n");
     
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    multiline: ").append(toIndentedString(multiline)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    timestampField: ").append(toIndentedString(timestampField)).append("\n");
     sb.append("    rowkeyField: ").append(toIndentedString(rowkeyField)).append("\n");
     sb.append("    fields: ").append(toIndentedString(fields)).append("\n");

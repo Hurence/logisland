@@ -15,13 +15,11 @@ import java.util.List;
 /**
  * Engine
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public class Engine   {
   private String name = null;
 
   private String component = null;
-
-  private String documentation = null;
 
   private List<Property> config = new ArrayList<Property>();
 
@@ -61,24 +59,6 @@ public class Engine   {
     this.component = component;
   }
 
-  public Engine documentation(String documentation) {
-    this.documentation = documentation;
-    return this;
-  }
-
-   /**
-   * Get documentation
-   * @return documentation
-  **/
-  @ApiModelProperty(value = "")
-  public String getDocumentation() {
-    return documentation;
-  }
-
-  public void setDocumentation(String documentation) {
-    this.documentation = documentation;
-  }
-
   public Engine config(List<Property> config) {
     this.config = config;
     return this;
@@ -114,13 +94,12 @@ public class Engine   {
     Engine engine = (Engine) o;
     return Objects.equals(this.name, engine.name) &&
         Objects.equals(this.component, engine.component) &&
-        Objects.equals(this.documentation, engine.documentation) &&
         Objects.equals(this.config, engine.config);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, component, documentation, config);
+    return Objects.hash(name, component, config);
   }
 
   @Override
@@ -130,7 +109,6 @@ public class Engine   {
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    component: ").append(toIndentedString(component)).append("\n");
-    sb.append("    documentation: ").append(toIndentedString(documentation)).append("\n");
     sb.append("    config: ").append(toIndentedString(config)).append("\n");
     sb.append("}");
     return sb.toString();

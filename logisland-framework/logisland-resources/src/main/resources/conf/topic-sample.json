@@ -1,0 +1,103 @@
+[
+  {
+  "name": "apache_records",
+  "partitions": 20,
+  "replicationFactor": 3,
+  "dateModified": 1488296475480,
+  "documentation": "structured apache access logs",
+  "serializer": "com.hurence.logisland.serializer.KryoSerializer",
+  "businessTimeField": "record_time",
+  "rowkeyField": "record_id",
+  "recordTypeField": "record_type",
+  "keySchema": [
+    { "name": "host",             "type": "STRING", "optional": false  },
+    { "name": "nifi_guid",        "type": "STRING" }
+  ],
+  "valueSchema": [
+    { "name": "record_errors",    "type": "ARRAY",  "persistent": false },
+    { "name": "record_raw_key",   "type": "STRING" },
+    { "name": "record_raw_value", "type": "STRING" },
+    { "name": "record_id",        "type": "STRING", "optional": false },
+    { "name": "record_time",      "type": "LONG",   "optional": false },
+    { "name": "record_type",      "type": "STRING", "optional": false },
+    { "name": "src_ip",           "type": "STRING" },
+    { "name": "http_method",      "type": "STRING" },
+    { "name": "bytes_out",        "type": "LONG" },
+    { "name": "http_query",       "type": "STRING" },
+    { "name": "http_version",     "type": "STRING" },
+    { "name": "http_status",      "type": "STRING" },
+    { "name": "identd",           "type": "STRING", "indexed": false, "persistent": false },
+    { "name": "user",             "type": "STRING" }
+  ]
+  },
+  {
+    "name": "apache_logs",
+    "partitions": 20,
+    "replicationFactor": 3,
+    "dateModified": 1488296475480,
+    "documentation": "raw apache access logs",
+    "serializer": "none",
+    "businessTimeField": "record_time",
+    "rowkeyField": "record_id",
+    "recordTypeField": "record_type",
+    "keySchema":   [ { "name": "record_raw_key",   "type": "STRING", "optional": false  }  ],
+    "valueSchema": [ { "name": "record_raw_value", "type": "STRING", "optional": false  }  ]
+  },
+  {
+    "name": "_errors",
+    "partitions": 20,
+    "replicationFactor": 3,
+    "dateModified": 1488296475480,
+    "documentation": "catch all errors topic",
+    "serializer": "com.hurence.logisland.serializer.KryoSerializer",
+    "businessTimeField": "record_time",
+    "rowkeyField": "record_id",
+    "recordTypeField": "record_type",
+    "keySchema":   [ { "name": "record_raw_key",   "type": "STRING", "optional": false  }  ],
+    "valueSchema": [
+      { "name": "record_raw_value", "type": "STRING", "optional": false  },
+      { "name": "record_id",        "type": "STRING", "optional": false },
+      { "name": "record_time",      "type": "LONG",   "optional": false },
+      { "name": "record_type",      "type": "STRING", "optional": false },
+      { "name": "record_errors",    "type": "ARRAY",  "optional": false }
+    ]
+  },
+  {
+    "name": "_metrics",
+    "partitions": 4,
+    "replicationFactor": 3,
+    "dateModified": 1488296475480,
+    "documentation": "metrics topic",
+    "serializer": "com.hurence.logisland.serializer.KryoSerializer",
+    "businessTimeField": "record_time",
+    "rowkeyField": "record_id",
+    "recordTypeField": "record_type",
+    "keySchema":   [ { "name": "record_raw_key",   "type": "STRING", "optional": false  }  ],
+    "valueSchema": [
+      { "name": "record_raw_value",               "type": "STRING", "optional": false  },
+      { "name": "record_id",                      "type": "STRING", "optional": false },
+      { "name": "record_time",                    "type": "LONG",   "optional": false },
+      { "name": "record_type",                    "type": "STRING", "optional": false },
+      { "name": "spark_app_name",                 "type": "STRING" },
+      { "name": "spark_partition_id",             "type": "INT" },
+      { "name": "component_name",                 "type": "STRING" },
+      { "name": "input_topics",                   "type": "STRING" },
+      { "name": "output_topics",                  "type": "STRING" },
+      { "name": "topic_offset_from",              "type": "LONG" },
+      { "name": "topic_offset_until",             "type": "LONG" },
+      { "name": "num_incoming_messages",          "type": "INT" },
+      { "name": "num_incoming_records",           "type": "INT" },
+      { "name": "num_outgoing_records",           "type": "INT" },
+      { "name": "num_errors_records",             "type": "LONG" },
+      { "name": "error_percentage",               "type": "FLOAT" },
+      { "name": "average_bytes_per_field",        "type": "INT" },
+      { "name": "average_bytes_per_second",       "type": "INT" },
+      { "name": "average_num_records_per_second", "type": "INT" },
+      { "name": "average_fields_per_record",      "type": "INT" },
+      { "name": "average_bytes_per_record",       "type": "INT" },
+      { "name": "total_bytes",                    "type": "INT" },
+      { "name": "total_fields",                   "type": "INT" },
+      { "name": "total_processing_time_in_ms",    "type": "LONG" }
+    ]
+  }
+]

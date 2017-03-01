@@ -74,7 +74,7 @@ public class RegistrySerializer   implements Serializer<RegistryKey, RegistryVal
           registryKey = new ObjectMapper().readValue(key, JobKey.class);
         } else if (keyType == RegistryKeyType.NOOP) {
           registryKey = new ObjectMapper().readValue(key, NoopKey.class);
-        } else {
+        } else if (keyType == RegistryKeyType.TOPIC) {
           registryKey = new ObjectMapper().readValue(key, TopicKey.class);
         }
       } catch (JsonProcessingException e) {

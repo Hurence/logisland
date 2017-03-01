@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Job
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-27T15:35:58.847+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T10:52:58.937+01:00")
 public class Job   {
   private Long id = null;
 
@@ -25,11 +25,11 @@ public class Job   {
 
   private String name = null;
 
+  private JobSummary summary = null;
+
   private Engine engine = null;
 
   private List<Stream> streams = new ArrayList<Stream>();
-
-  private JobSummary summary = null;
 
   public Job id(Long id) {
     this.id = id;
@@ -85,6 +85,24 @@ public class Job   {
     this.name = name;
   }
 
+  public Job summary(JobSummary summary) {
+    this.summary = summary;
+    return this;
+  }
+
+   /**
+   * Get summary
+   * @return summary
+  **/
+  @ApiModelProperty(value = "")
+  public JobSummary getSummary() {
+    return summary;
+  }
+
+  public void setSummary(JobSummary summary) {
+    this.summary = summary;
+  }
+
   public Job engine(Engine engine) {
     this.engine = engine;
     return this;
@@ -126,24 +144,6 @@ public class Job   {
     this.streams = streams;
   }
 
-  public Job summary(JobSummary summary) {
-    this.summary = summary;
-    return this;
-  }
-
-   /**
-   * Get summary
-   * @return summary
-  **/
-  @ApiModelProperty(value = "")
-  public JobSummary getSummary() {
-    return summary;
-  }
-
-  public void setSummary(JobSummary summary) {
-    this.summary = summary;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -157,14 +157,14 @@ public class Job   {
     return Objects.equals(this.id, job.id) &&
         Objects.equals(this.version, job.version) &&
         Objects.equals(this.name, job.name) &&
+        Objects.equals(this.summary, job.summary) &&
         Objects.equals(this.engine, job.engine) &&
-        Objects.equals(this.streams, job.streams) &&
-        Objects.equals(this.summary, job.summary);
+        Objects.equals(this.streams, job.streams);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, version, name, engine, streams, summary);
+    return Objects.hash(id, version, name, summary, engine, streams);
   }
 
   @Override
@@ -175,9 +175,9 @@ public class Job   {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    summary: ").append(toIndentedString(summary)).append("\n");
     sb.append("    engine: ").append(toIndentedString(engine)).append("\n");
     sb.append("    streams: ").append(toIndentedString(streams)).append("\n");
-    sb.append("    summary: ").append(toIndentedString(summary)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -112,8 +112,6 @@ fi
 CONF_FILE="${CONF_DIR}/${JOB_NAME}_agent.properties"
 `curl -X GET "${AGENT_QUORUM}/jobs/${JOB_NAME}/engine" > ${CONF_FILE}`
 
-echo ${CONF_FILE}
-
 
 MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
 case ${MODE} in
@@ -258,7 +256,9 @@ java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIO
     --job ${JOB_NAME}"
 
 
-echo ${java_cmd}
+echo "Removing temp configuration file : ${CONF_FILE}"
+rm -f ${CONF_FILE}
+
 
 if [ ! -z "${VERBOSE_OPTIONS}" ]
 then
