@@ -37,10 +37,9 @@ import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySe
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
+import org.apache.spark.streaming.kafka010.ConsumerStrategies.{Assign, Subscribe}
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.Assign
-import org.apache.spark.streaming.kafka010.KafkaUtils
+import org.apache.spark.streaming.kafka010.{CanCommitOffsets, KafkaUtils, OffsetRange}
 import org.slf4j.LoggerFactory
 
 
@@ -221,6 +220,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         this.ssc = ssc
         this.streamContext = streamContext
         SparkUtils.customizeLogLevels
+        logger.info("setup");
     }
 
     override def start() = {
@@ -310,10 +310,16 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
 
             // do the parallel processing
-            kafkaStream.foreachRDD(rdd => process(rdd))
+            kafkaStream.foreachRDD(rdd => {
+                val offsetRanges = process(rdd)
+                // some time later, after outputs have completed
+                if (offsetRanges.isDefined)
+                    kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+            })
         } catch {
-            case ex: Throwable => logger.error("something bad happened, please check Kafka or Zookeeper health : {}",
-                ex.toString)
+            case ex: Throwable =>
+                ex.printStackTrace()
+                logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
         }
     }
 
@@ -323,7 +329,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       *
       * @param rdd
       */
-    def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]])
+    def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]]
 
 
     /**

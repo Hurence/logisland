@@ -5,7 +5,6 @@
   "engine": {
     "name": "main_engine",
     "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
-    "documentation": "Index some apache logs with logisland",
     "config": [
       { "key": "spark.app.name", "value": "IndexApacheLogsDemo"},
       { "key": "spark.master", "value":  "local[4]"},
@@ -63,7 +62,7 @@
     "usedMemory": 512,
     "status": "STOPPED",
     "dateModified": 1487331314955,
-    "documentation": null
+    "documentation": "Index some apache logs with logisland"
   }
 
 

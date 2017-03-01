@@ -28,7 +28,7 @@ import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges}
+import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -85,7 +85,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
       *
       * @param rdd
       */
-    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]) = {
+    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
@@ -222,9 +222,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                 }
             })
 
-            // some time later, after outputs have completed
-            rdd.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
+            return Some(offsetRanges)
         }
+        None
     }
 }
 

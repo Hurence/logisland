@@ -41,7 +41,7 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.apache.spark.streaming.kafka010.HasOffsetRanges
+import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
 
@@ -124,7 +124,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         Collections.unmodifiableList(descriptors)
     }
 
-    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]) = {
+    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
@@ -228,7 +228,10 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                 }
 
             }
+
+            return Some(offsetRanges)
         }
+        None
     }
 }
 

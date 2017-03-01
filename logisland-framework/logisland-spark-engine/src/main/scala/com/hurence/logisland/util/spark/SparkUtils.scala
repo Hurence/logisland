@@ -77,11 +77,13 @@ object SparkUtils extends LazyLogging {
        // log4j.logger.org.apache.spark.deploy.yarn.Client=DEBUG
 
         Logger.getLogger("org.spark_project").setLevel(Level.ERROR)
+        Logger.getLogger("org.spark_project.jetty").setLevel(Level.OFF)
         Logger.getLogger("org.eclipse.jetty").setLevel(Level.ERROR)
         Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
         Logger.getLogger("org.apache.kafka").setLevel(Level.ERROR)
+        Logger.getLogger("org.apache.kafka.common.metrics.Metrics").setLevel(Level.OFF)
         Logger.getLogger("org.elasticsearch").setLevel(Level.WARN)
         Logger.getLogger("kafka").setLevel(Level.WARN)
         Logger.getLogger("kafka.utils").setLevel(Level.WARN)
