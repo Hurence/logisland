@@ -3,9 +3,9 @@ import JobsList from 'src/jobs/components/list/JobsList';
 import ProcessorsList from 'src/jobs/components/list/ProcessorsList';
 import JobDetails from 'src/jobs/components/details/JobDetails';
 import StreamDetails from 'src/jobs/components/details/StreamDetails';
-import EditProcess from 'src/jobs/components/details/EditProcess';
+import EditProcessor from 'src/jobs/components/details/EditProcessor';
+import EditRow from 'src/jobs/components/details/EditRow';
 import Config from 'src/jobs/components/details/Config';
-//import EditRowController from 'src/jobs/components/details/EditRowController';
 //import TopicSchema from 'src/jobs/components/details/TopicSchema';
 
 import JobsDataService from 'src/jobs/services/JobsDataService';
@@ -22,9 +22,9 @@ export default angular
   .component(ProcessorsList.name, ProcessorsList.config)
   .component(JobDetails.name, JobDetails.config)
   .component(StreamDetails.name, StreamDetails.config)
-  .component(EditProcess.name, EditProcess.config)
+  .component(EditProcessor.name, EditProcessor.config)
+  .component(EditRow.name, EditRow.config)
   .component(Config.name, Config.config)
-  //.component(EditRowController.name, EditRowController.config)
   //.component(TopicSchema.name, TopicSchema.config)
 
   .service("JobsDataService", JobsDataService)

@@ -8,6 +8,7 @@ export default {
   }
 };
 
+
 function ConfigController($http, $log, $scope, $mdDialog)  {
     var vm = $scope;
 
@@ -19,12 +20,28 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
 
     vm.table_options = {
         columns: [
-            { name: 'Key', prop: 'key', sort: 'asc'},
-            { name: 'Value', prop: 'value' },
-            { name: 'Type', prop: 'type' }
+            {
+                name: 'Key',
+                prop: 'key',
+                sort: 'asc',
+            },
+            {
+                name: 'Value',
+                prop: 'value'
+            },
+            {
+                name: 'Type',
+                prop: 'type'
+            }
+//            ,{
+//                name: 'Action',
+//                cellRenderer: function(scope, elem, row) {
+//                    scope.clicker = vm.clicker;
+//                    return '<a href="#" class="util-col delete-btn" ng-click="clicker($index)" style="font-size:10px;">Delete</a>';
+//                }}
         ],
-        cellDataGetter: function() {return "DGDGDG"},
-        scrollbarV: true,
+        scrollbarV: false,
+        forceFillColumns: true,
         columnMode: 'force',
         paging: {
             externalPaging: false
@@ -32,18 +49,23 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
     };
 
     function addConfig() {
+        var conf = {
+            key: vm.newKey,
+            value: vm.newValue,
+            type: vm.newType
+            };
+
+        // Check if the key is already in the list
         var index = vm.$ctrl.configuration.findIndex(function(el) {
             return el.key == vm.newKey;
         });
         if(index >= 0) {
             $log.debug("updating conf for: " + vm.newKey);
-            vm.$ctrl.configuration[index].key = vm.newKey;
-            vm.$ctrl.configuration[index].type = vm.newType;
-            vm.$ctrl.configuration[index].value = vm.newValue;
+            vm.$ctrl.configuration[index] = conf;
         }
         else {
             $log.debug("adding conf for: " + vm.newKey);
-            vm.$ctrl.configuration.push({"key": vm.newKey, "type": vm.newType, "value": vm.newValue});
+            vm.$ctrl.configuration.push(conf);
         }
     }
 
@@ -56,46 +78,6 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
         vm.newType = vm.$ctrl.configuration[index].type;
         vm.newValue = vm.$ctrl.configuration[index].value;
     }
-
-    function editRow(ev, index) {
-        $log.debug("Edit row: " + index);
-        $log.debug("Edit row: " + vm.$ctrl.configuration[index]);
-        $mdDialog.show({
-            controller: editRowController(vm.$ctrl.configuration[index]),
-            templateUrl: 'src/jobs/components/details/EditRow.html',
-            parent: angular.element(document.body),
-            targetEvent: ev,
-            clickOutsideToClose: true,
-            fullscreen: vm.customFullscreen // Only for -xs, -sm breakpoints.
-        })
-        .then(function(answer) {
-            vm.status = 'You said the information was "' + answer + '".';
-        }, function() {
-            vm.status = 'You cancelled the dialog.';
-        });
-    }
-
-    function editRowController(row) {
-        $log.debug("row: " + row);
-        function done() {
-            $log.debug("done editing row");
-        }
-    }
-//
-//    function paging(offset, size) {
-//        $log.debug("paging: " + offset + " - " + size);
-//        vm.table_options.paging.count = vm.$ctrl.configuration.length;
-//        var set = vm.$ctrl.configuration.splice(offset, size);
-//        if (!vm.table_data) {
-//            vm.table_data = set;
-//        } else {
-//            // only insert items i don't already have
-//            set.forEach(function(r, i) {
-//              var idx = i + (offset * size);
-//              vm.table_data[idx] = r;
-//            });
-//        }
-//    }
 
     function showConfirm(ev, index) {
         // Appending dialog to document.body to cover sidenav in docs app
@@ -113,4 +95,36 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
             }
         );
     };
+
+    function editRow(row, parentElement) {
+        $mdDialog.show({
+            controller: DialogController,
+            templateUrl: 'src/jobs/components/details/EditRow.html',
+            locals: {
+                row: row
+            },
+            parent: parentElement,
+            //targetEvent: ev,
+            clickOutsideToClose: true,
+            disableParentScroll: true,
+            fullscreen: false
+        })
+        .then(function(editedRow) {
+             row.key = editedRow.key;
+             row.value = editedRow.value;
+             row.type = editedRow.type;
+         }, function() {
+            //Cancelled
+        });
+    }
+
+    function DialogController($scope, $mdDialog, row) {
+        $scope.row = JSON.parse(JSON.stringify(row));
+        $scope.done = function(row) {
+            $mdDialog.hide($scope.row);
+        }
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        }
+    }
 };
