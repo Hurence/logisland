@@ -4,10 +4,10 @@ export default {
   config : {
     bindings         : {  selected: '<' },
     templateUrl      : 'src/jobs/components/details/StreamDetails.html',
-    controller       : [ 'ListService', 'ProcessorsDataService', '$log', '$scope', '$rootScope', StreamDetailsController ]}
+    controller       : [ 'ListService', 'ProcessorsDataService', '$log', '$scope', '$rootScope', '$mdDialog', StreamDetailsController ]}
 };
 
-function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope) {
+function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope, $mdDialog) {
     var vm = $scope;
 
     vm.stdProcessors = ProcessorsDataService.getAllProcessors();
@@ -40,9 +40,39 @@ function StreamDetailsController(ListService, ProcessorsDataService, $log, $scop
         processors[index+1] = tmp;
     }
 
-    function editProcessor(index) {
+    function editProcessor2(index) {
         var processor = $scope.$ctrl.selected.processors[index];
         $rootScope.$broadcast('editProcessor', processor);
+    }
+
+    function editProcessor(index) {
+        var processor = vm.$ctrl.selected.processors[index];
+        $mdDialog.show({
+            controller: DialogController,
+            templateUrl: 'src/jobs/components/details/EditProcessor.html',
+            locals: {
+                processor: processor
+            },
+            parent: angular.element(document.body),
+            //targetEvent: ev,
+            clickOutsideToClose: false,
+            disableParentScroll: true,
+            fullscreen: false
+        })
+        .then(function(editedProcessor) {
+            vm.$ctrl.selected.processors[index] = editedProcessor;
+        }, function() {
+        });
+    }
+
+    function DialogController($scope, $mdDialog, processor) {
+        $scope.processor = JSON.parse(JSON.stringify(processor));
+        $scope.done = function(processor) {
+            $mdDialog.hide($scope.processor);
+        }
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        }
     }
 
     function deleteProcessor(index) {

@@ -147,3 +147,7 @@ background-color: #00ff00;
 #stream_list {
     border-bottom: 1px solid black;
 }
+
+.config_header {
+background: red;
+}
