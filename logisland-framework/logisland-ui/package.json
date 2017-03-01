@@ -19,6 +19,7 @@
       "angular-resource": "github:angular/bower-angular-resource@^1.6.2",
       "css": "github:systemjs/plugin-css@^0.1.20",
       "json": "github:systemjs/plugin-json@^0.1.0",
+      "swimlane/angular-data-table": "github:swimlane/angular-data-table@^0.7.0",
       "text": "github:systemjs/plugin-text@^0.0.4"
     },
     "devDependencies": {
