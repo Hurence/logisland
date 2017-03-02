@@ -60,53 +60,8 @@ public class RestJobsApiClient implements JobsApiClient {
 
     }
 
-    public static void main(String[] args) {
-
-        Engine engine = new Engine()
-                .name("apache parser engine")
-                .component("com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine")
-                .addConfigItem(new Property().key("spark.master").value("local[4]"))
-                .addConfigItem(new Property().key("spark.streaming.batchDuration").value("4000"));
-
-        JobSummary summary = new JobSummary()
-                .dateModified(new Date())
-                .documentation("sample job")
-                .status(JobSummary.StatusEnum.RUNNING)
-                .usedCores(2)
-                .usedMemory(24);
-
-
-        Processor processor = new Processor()
-                .name("apacheParser")
-                .component("com.hurence.logisland.processor.SplitText")
-                .addConfigItem(new Property().key("record_type").value("apache_log"))
-                .addConfigItem(new Property().key("value.regex").value("(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\[([\\w:\\/]+\\s[+\\-]\\d{4})\\]\\s+\"(\\S+)\\s+(\\S+)\\s*(\\S*)\"\\s+(\\S+)\\s+(\\S+)"))
-                .addConfigItem(new Property().key("value.fields").value("src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out"));
-
-
-        Stream stream = new Stream()
-                .name("apacheStream")
-                .component("com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing")
-                .addConfigItem(new Property().key("kafka.input.topics").value("apache_raw"))
-                .addConfigItem(new Property().key("kafka.output.topics").value("_records"))
-                .addConfigItem(new Property().key("kafka.error.topics").value("_errors"))
-                .addConfigItem(new Property().key("kafka.input.topics.serializer").value("none"))
-                .addConfigItem(new Property().key("kafka.output.topics.serializer").value("com.hurence.logisland.serializer.KryoSerializer"))
-                .addConfigItem(new Property().key(" kafka.error.topics.serializer").value("com.hurence.logisland.serializer.JsonSerializer"))
-                .addProcessorsItem(processor);
-
-
-        Job job = new Job()
-                .name("testJob3")
-                .version(2)
-                .engine(engine)
-                .addStreamsItem(stream)
-                .summary(summary);
-
-
-        new RestJobsApiClient().addJob(job);
-        Job jobadded = new RestJobsApiClient().getJob("testJob3");
-
-        System.out.println("jobPersisted = " + jobadded);
+    @Override
+    public Integer getJobVersion(String name) {
+        return getJob(name).getVersion();
     }
 }

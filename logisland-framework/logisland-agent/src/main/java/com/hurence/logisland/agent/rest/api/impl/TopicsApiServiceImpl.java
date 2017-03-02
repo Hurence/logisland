@@ -169,7 +169,7 @@ public class TopicsApiServiceImpl extends TopicsApiService {
 
 
     private void deleteTopic(String topic) {
-        if (!AdminUtils.topicExists(zkUtils, topic)) {
+        if (AdminUtils.topicExists(zkUtils, topic)) {
             AdminUtils.deleteTopic(zkUtils, topic);
             try {
                 Thread.sleep(1000);

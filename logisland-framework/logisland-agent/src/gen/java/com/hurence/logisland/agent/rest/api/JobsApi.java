@@ -29,7 +29,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
 @io.swagger.annotations.Api(description = "the jobs API")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-02T15:08:39.722+01:00")
 public class JobsApi {
 
     private final JobsApiService delegate;
@@ -183,16 +183,31 @@ public class JobsApi {
     @Path("/{jobId}/status")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "get job status", notes = "get the status of corresponding Job", response = Job.class, tags={ "job",  })
+    @io.swagger.annotations.ApiOperation(value = "get job status", notes = "get the status of corresponding Job", response = String.class, tags={ "job",  })
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "job status", response = Job.class),
-        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = Job.class) })
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job status", response = String.class),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = String.class) })
     public Response getJobStatus(
     @ApiParam(value = "id of the job to return",required=true) @PathParam("jobId") String jobId
 ,
     @Context SecurityContext securityContext)
     throws NotFoundException {
     return delegate.getJobStatus(jobId,securityContext);
+    }
+    @GET
+    @Path("/{jobId}/version")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "get job version", notes = "get the version of corresponding Job", response = String.class, tags={ "job",  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "job version", response = String.class),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "unexpected error", response = String.class) })
+    public Response getJobVersion(
+    @ApiParam(value = "id of the job to return",required=true) @PathParam("jobId") String jobId
+,
+    @Context SecurityContext securityContext)
+    throws NotFoundException {
+    return delegate.getJobVersion(jobId,securityContext);
     }
     @POST
     @Path("/{jobId}/pause")

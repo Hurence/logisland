@@ -37,18 +37,21 @@ public final class RestComponentFactory {
     private final JobsApiClient restJobsApiClient;
     private final TopicsApiClient topicsApiClient;
     private final ConfigsApiClient configsApiClient;
+    private final String agentQuorum;
 
 
     public RestComponentFactory(String agentQuorum) {
         this.restJobsApiClient = new RestJobsApiClient(agentQuorum);
         this.topicsApiClient = new RestTopicsApiClient(agentQuorum);
         this.configsApiClient = new RestConfigsApiClient(agentQuorum);
+        this.agentQuorum = agentQuorum;
     }
 
     public RestComponentFactory(JobsApiClient jobsApiClient, TopicsApiClient topicsApiClient, ConfigsApiClient configsApiClient) {
         this.restJobsApiClient = jobsApiClient;
         this.topicsApiClient = topicsApiClient;
         this.configsApiClient = configsApiClient;
+        this.agentQuorum = "localhost:8081";
     }
 
     private Logger logger = LoggerFactory.getLogger(RestComponentFactory.class);
@@ -118,12 +121,16 @@ public final class RestComponentFactory {
                 switch (key) {
                     case "kafka.input.topics": {
                         Topic topic = topicsApiClient.getTopic(value);
+                        if(topic == null)
+                            logger.error("{} topic was not found", value);
                         instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
                         instance.setProperty(key, value);
                         break;
                     }
                     case "kafka.output.topics": {
                         Topic topic = topicsApiClient.getTopic(value);
+                        if(topic == null)
+                            logger.error("{} topic was not found", value);
                         instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
                         instance.setProperty(key, value);
                         break;
@@ -132,6 +139,7 @@ public final class RestComponentFactory {
                 List<Property> configs = configsApiClient.getConfigs();
                 configs.forEach(conf -> instance.setProperty(conf.getKey(), conf.getValue()));
 
+                instance.setProperty("logisland.agent.quorum", this.agentQuorum);
 
             });
             logger.info("created stream {}", stream);

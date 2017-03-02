@@ -22,7 +22,6 @@ import com.hurence.logisland.component.RestComponentFactory;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,15 +44,20 @@ public class RestStreamProcessingIntegrationTest extends AbstractStreamProcessin
 
 
     Optional<EngineContext> getEngineContext() {
-        RestComponentFactory componentFactory =
-                new RestComponentFactory(new MockJobsApiClient(), new MockTopicsApiClient(), new MockConfigsApiClient());
 
-        return componentFactory.getEngineContext(MockJobsApiClient.BASIC_JOB);
+        String zkPort = String.valueOf(zkServer.port());
+        String kafkaPort = String.valueOf(BROKERPORT);
+        RestComponentFactory componentFactory =
+                new RestComponentFactory(
+                        new MockJobsApiClient(),
+                        new MockTopicsApiClient(),
+                        new MockConfigsApiClient(zkPort, kafkaPort));
+
+        return componentFactory.getEngineContext(MockJobsApiClient.MOCK_PROCESSING_JOB);
     }
 
 
     @Test
-    @Ignore
     public void validateIntegration() throws NoSuchFieldException, IllegalAccessException, InterruptedException, IOException {
 
         final List<Record> records = new ArrayList<>();

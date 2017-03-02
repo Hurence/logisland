@@ -29,7 +29,8 @@ public class MockTopicsApiClient implements TopicsApiClient {
     public static final String APACHE_RECORDS = "apache_records";
     public static final String ERRORS = "_errors";
     public static final String METRICS = "_metrics";
-
+    public static final String MOCK_IN = "mock_in";
+    public static final String MOCK_OUT = "mock_out";
 
     public MockTopicsApiClient() {
 
@@ -63,6 +64,23 @@ public class MockTopicsApiClient implements TopicsApiClient {
                 .documentation("metrics")
                 .dateModified(new Date())
                 .name(METRICS)
+                .serializer("com.hurence.logisland.serializer.KryoSerializer"));
+
+
+        addTopic(new Topic().id(1237L)
+                .partitions(1)
+                .replicationFactor(0)
+                .documentation(MOCK_IN)
+                .dateModified(new Date())
+                .name(MOCK_IN)
+                .serializer("com.hurence.logisland.serializer.KryoSerializer"));
+
+        addTopic(new Topic().id(1237L)
+                .partitions(1)
+                .replicationFactor(0)
+                .documentation(MOCK_OUT)
+                .dateModified(new Date())
+                .name(MOCK_OUT)
                 .serializer("com.hurence.logisland.serializer.KryoSerializer"));
     }
 

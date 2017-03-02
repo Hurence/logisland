@@ -210,10 +210,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -225,6 +225,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset : the offset to the largest offset, smallest offset : the offset to the smallest offset, ", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
 
 ----------
 
@@ -251,10 +253,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -297,10 +299,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -340,10 +342,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization : serialize events as json blocs, avro serialization : serialize events as json blocs, avro serialization : serialize events as avro blocs, no serialization : send events as bytes, ", "com.hurence.logisland.serializer.KryoSerializer", "", ""

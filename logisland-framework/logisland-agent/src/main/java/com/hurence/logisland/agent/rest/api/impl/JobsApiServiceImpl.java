@@ -204,6 +204,22 @@ public class JobsApiServiceImpl extends JobsApiService {
     }
 
     @Override
+    public Response getJobVersion(String jobId, SecurityContext securityContext) throws NotFoundException {
+        Job job = null;
+        try {
+            job = kafkaRegistry.getJob(jobId);
+            if (job == null)
+                throw new RegistryException("job " + jobId + "not found !");
+        } catch (RegistryException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to find job " + jobId))
+                    .build();
+        }
+
+        return Response.ok().entity(job.getVersion()).build();
+    }
+
+    @Override
     public Response pauseJob(String jobId, SecurityContext securityContext) throws NotFoundException {
         Job job = null;
         try {
