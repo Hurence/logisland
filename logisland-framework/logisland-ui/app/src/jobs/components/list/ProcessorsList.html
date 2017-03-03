@@ -1,8 +1,8 @@
 <md-list>
     <md-list-item ng-repeat="processor in $ctrl.processors">
-        <md-button ng-click="$ctrl.addProcessor({ processor: processor })"
+        <md-button class="noTransform"
+                   ng-click="$ctrl.addProcessor({ processor: processor })"
                    ng-class="{'selected' : processor === $ctrl.selectedProcessor }">
-
             {{ processor.component }}
         </md-button>
     </md-list-item>

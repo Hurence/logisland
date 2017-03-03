@@ -103,7 +103,6 @@ function JobsListController(JobsDataService, $log, $scope, $templateCache) {
           $log.info('Text changed to ' + text);
     }
 
-
     function selectedItemChange(job) {
         selectJob(job);
     }

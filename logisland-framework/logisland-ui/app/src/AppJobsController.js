@@ -12,8 +12,14 @@ function AppJobsController(JobsDataService, ProcessorsDataService, ListService, 
     self.selectedJob          = null;
     self.selectedProcessor    = null;
     self.addJob               = addJob;
+    self.expandJobs           = false;
+
+    self.menuItems            = [   {name: "Start", direction: "right", icon: "play"},
+                                    {name: "Stop", direction: "right", icon: "stop"}];
+    self.isOpen = true;
 
     self.toggleList       = ListService.toggle;
+    self.closeList        = ListService.close;
     self.selectJob        = selectJob;
 
     self.querySearch      = querySearch;
