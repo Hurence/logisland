@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,9 @@
  */
 package com.hurence.logisland.documentation.json;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
@@ -24,6 +27,9 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.documentation.DocumentationWriter;
+import com.hurence.logisland.engine.ProcessingEngine;
+import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.stream.RecordStream;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
@@ -50,21 +56,28 @@ public class JsonDocumentationWriter implements DocumentationWriter {
     public void write(final ConfigurableComponent configurableComponent, final OutputStream streamToWriteTo) throws IOException {
 
         try {
-            final JsonPrintWriter rstWriter = new JsonPrintWriter(streamToWriteTo, true);
 
-            rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
-            writeDescription(configurableComponent, rstWriter);
-            writeTags(configurableComponent, rstWriter);
-            writeProperties(configurableComponent, rstWriter);
-            writeDynamicProperties(configurableComponent, rstWriter);
-            writeAdditionalBodyInfo(configurableComponent, rstWriter);
-            writeSeeAlso(configurableComponent, rstWriter);
+            JsonFactory factory = new JsonFactory();
+            JsonGenerator generator = factory.createGenerator(streamToWriteTo, JsonEncoding.UTF8);
 
-            rstWriter.writeTransition();
-            rstWriter.close();
+
+            generator.writeStartObject();
+
+            writeDescription(configurableComponent, generator);
+            writeTags(configurableComponent, generator);
+            writeProperties(configurableComponent, generator);
+            writeDynamicProperties(configurableComponent, generator);
+            writeAdditionalBodyInfo(configurableComponent, generator);
+            writeSeeAlso(configurableComponent, generator);
+
+            generator.writeEndObject();
+
+            generator.close();
         } catch (XMLStreamException | FactoryConfigurationError e) {
             throw new IOException("Unable to create XMLOutputStream", e);
         }
+
+
     }
 
 
@@ -83,23 +96,20 @@ public class JsonDocumentationWriter implements DocumentationWriter {
      * Writes the list of components that may be linked from this component.
      *
      * @param configurableComponent the component to describe
-     * @param rstWriter             the stream writer to use
      */
-    private void writeSeeAlso(ConfigurableComponent configurableComponent, JsonPrintWriter rstWriter){
+    private void writeSeeAlso(ConfigurableComponent configurableComponent, JsonGenerator generator) throws IOException {
         final SeeAlso seeAlso = configurableComponent.getClass().getAnnotation(SeeAlso.class);
         if (seeAlso != null) {
-            rstWriter.writeSectionTitle(3, "See Also:");
+            generator.writeArrayFieldStart("seeAlso");
+
             int index = 0;
             for (final Class<? extends ConfigurableComponent> linkedComponent : seeAlso.value()) {
-                if (index != 0) {
-                    rstWriter.print(", ");
-                }
-
-                writeLinkForComponent(rstWriter, linkedComponent);
-
+                generator.writeStartObject();
+                generator.writeString(linkedComponent.getCanonicalName());
+                generator.writeEndObject();
                 ++index;
             }
-            rstWriter.println();
+            generator.writeEndArray();
         }
     }
 
@@ -108,51 +118,44 @@ public class JsonDocumentationWriter implements DocumentationWriter {
      * information to the body of the documentation.
      *
      * @param configurableComponent the component to describe
-     * @param rstWriter             the stream writer
      * @throws XMLStreamException thrown if there was a problem writing to the
      *                            XML stream
      */
     protected void writeAdditionalBodyInfo(final ConfigurableComponent configurableComponent,
-                                           final JsonPrintWriter rstWriter) throws XMLStreamException {
+                                           final JsonGenerator generator) throws XMLStreamException {
 
     }
 
     private void writeTags(final ConfigurableComponent configurableComponent,
-                           final JsonPrintWriter rstWriter) throws XMLStreamException {
+                           final JsonGenerator generator) throws XMLStreamException, IOException {
         final Tags tags = configurableComponent.getClass().getAnnotation(Tags.class);
-        rstWriter.writeSectionTitle(3, "Tags");
         if (tags != null) {
-            final String tagString = join(tags.value(), ", ");
-            rstWriter.println(tagString);
-        } else {
-            rstWriter.println("None.");
+            generator.writeArrayFieldStart("tags");
+            for (String tag:tags.value()       ) {
+                generator.writeString(tag);
+            }
+            generator.writeEndArray();
         }
     }
 
-    static String join(final String[] toJoin, final String delimiter) {
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < toJoin.length; i++) {
-            sb.append(toJoin[i]);
-            if (i < toJoin.length - 1) {
-                sb.append(delimiter);
-            }
-        }
-        return sb.toString();
-    }
 
     /**
      * Writes a description of the configurable component.
      *
-     * @param configurableComponent the component to describe
-     * @param rstWriter             the stream writer
      */
     protected void writeDescription(final ConfigurableComponent configurableComponent,
-                                    final JsonPrintWriter rstWriter) {
-        rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
-        rstWriter.println(getDescription(configurableComponent));
+                                    final JsonGenerator generator) throws IOException {
 
-        rstWriter.writeSectionTitle(3, "Class");
-        rstWriter.println(configurableComponent.getClass().getCanonicalName());
+        generator.writeStringField("name", getTitle(configurableComponent));
+        generator.writeStringField("description", getDescription(configurableComponent));
+        generator.writeStringField("component", configurableComponent.getClass().getCanonicalName());
+        if(Processor.class.isAssignableFrom(configurableComponent.getClass())){
+            generator.writeStringField("type", "processor");
+        }else if (ProcessingEngine.class.isAssignableFrom(configurableComponent.getClass())){
+            generator.writeStringField("type", "engine");
+        }else if (RecordStream.class.isAssignableFrom(configurableComponent.getClass())){
+            generator.writeStringField("type", "stream");
+        }
     }
 
 
@@ -181,101 +184,57 @@ public class JsonDocumentationWriter implements DocumentationWriter {
      * Writes the PropertyDescriptors out as a table.
      *
      * @param configurableComponent the component to describe
-     * @param rstWriter             the stream writer
+
      */
     protected void writeProperties(final ConfigurableComponent configurableComponent,
-                                   final JsonPrintWriter rstWriter) {
+                                   final JsonGenerator generator) throws IOException {
 
         final List<PropertyDescriptor> properties = configurableComponent.getPropertyDescriptors();
-        rstWriter.writeSectionTitle(3, "Properties");
+
 
         if (properties.size() > 0) {
-            final boolean containsExpressionLanguage = containsExpressionLanguage(configurableComponent);
-            final boolean containsSensitiveProperties = containsSensitiveProperties(configurableComponent);
-            rstWriter.print("In the list below, the names of required properties appear in ");
-            rstWriter.printStrong("bold");
-            rstWriter.println(". Any other properties (not in bold) are considered optional. " +
-                    "The table also indicates any default values");
-            if (containsExpressionLanguage) {
-                if (!containsSensitiveProperties) {
-                    rstWriter.print(", and ");
-                } else {
-                    rstWriter.print(", ");
-                }
-                rstWriter.print("whether a property supports the ");
-                rstWriter.writeLink("Expression Language", "expression-language.html");
-            }
-            if (containsSensitiveProperties) {
-                rstWriter.print(", and whether a property is considered " + "\"sensitive\", meaning that its value will be encrypted. Before entering a "
-                        + "value in a sensitive property, ensure that the ");
-
-                rstWriter.printStrong("logisland.properties");
-                rstWriter.print(" file has " + "an entry for the property ");
-                rstWriter.printStrong("logisland.sensitive.props.key");
-            }
-            rstWriter.println(".");
-
-            rstWriter.printCsvTable("allowable-values",
-                    new String[]{"Name", "Description","Allowable Values" , "Default Value", "Sensitive", "EL"},
-                    new int[]{20, 60, 30, 20, 10, 10});
+            generator.writeArrayFieldStart("properties");
 
 
             // write the individual properties
             for (PropertyDescriptor property : properties) {
 
-                rstWriter.print("   \"");
-                if (property.isRequired()) {
-                    rstWriter.printStrong(property.getDisplayName());
-                } else {
-                    rstWriter.print(property.getDisplayName());
-                }
-                rstWriter.print("\", ");
+                generator.writeStartObject();
+                generator.writeStringField("name", property.getName());
 
-                rstWriter.print("\"");
+               /* if (property.getValidators() != null && property.getValidators().size() >0 ){
+
+                    generator.writeArrayFieldStart("validators");
+
+                    property.getValidators().forEach(validator -> {
+                        try {
+                            generator.writeString(validator.getClass().);
+                        } catch (IOException e) {
+                           // do nothing
+                        }
+                    });
+
+                    generator.writeEndArray();
+
+                }*/
+
+                generator.writeBooleanField("isRequired", property.isRequired());
                 if (property.getDescription() != null && property.getDescription().trim().length() > 0) {
-                    rstWriter.print(property.getDescription());
+                    generator.writeStringField("description", property.getDescription());
                 } else {
-                    rstWriter.print("No Description Provided.");
-                }
-                rstWriter.print("\", ");
-
-                rstWriter.print("\"");
-                writeValidValues(rstWriter, property);
-                rstWriter.print("\", ");
-
-
-
-                rstWriter.print("\"");
-                rstWriter.print(property.getDefaultValue());
-                rstWriter.print("\", ");
-
-
-
-                rstWriter.print("\"");
-                if (property.isSensitive()) {
-                    rstWriter.printStrong( "true");
-                }else {
-                    rstWriter.print("");
-                }
-                rstWriter.print("\", ");
-
-
-
-                rstWriter.print("\"");
-                if (property.isExpressionLanguageSupported()) {
-                    rstWriter.printStrong( "true");
-                }else {
-                    rstWriter.print("");
+                    generator.writeStringField("description", "No Description Provided.");
                 }
 
-
-                rstWriter.println("\"");
-
+                writeValidValues(generator, property);
+                generator.writeStringField("defaultValue", property.getDefaultValue());
+                generator.writeBooleanField("isDynamic", property.isDynamic());
+                generator.writeBooleanField("isSensitive", property.isSensitive());
+                generator.writeBooleanField("isExpressionLanguageSupported", property.isExpressionLanguageSupported());
+                generator.writeEndObject();
             }
 
+            generator.writeEndArray();
 
-        } else {
-            rstWriter.println("This component has no required or optional properties.");
         }
     }
 
@@ -310,37 +269,23 @@ public class JsonDocumentationWriter implements DocumentationWriter {
     }
 
     private void writeDynamicProperties(final ConfigurableComponent configurableComponent,
-                                        final JsonPrintWriter rstWriter) {
+                                        final JsonGenerator generator) throws IOException {
 
         final List<DynamicProperty> dynamicProperties = getDynamicProperties(configurableComponent);
 
         if (dynamicProperties != null && dynamicProperties.size() > 0) {
-            rstWriter.writeSectionTitle(3, "Dynamic Properties");
-            rstWriter.println("Dynamic Properties allow the user to specify both the name and value of a property.");
-            rstWriter.printCsvTable("dynamic-properties",
-                    new String[]{"Name", "Value", "Description", "EL"},
-                    new int[]{20, 20, 40, 10});
+
+            generator.writeArrayFieldStart("dynamicProperties");
 
             for (final DynamicProperty dynamicProperty : dynamicProperties) {
-
-                rstWriter.print("   \"");
-                rstWriter.print(dynamicProperty.name());
-                rstWriter.print("\", ");
-
-                rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.value());
-                rstWriter.print("\", ");
-
-                rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.description());
-                rstWriter.print("\", ");
-
-                if (dynamicProperty.supportsExpressionLanguage()) {
-                    rstWriter.printStrong("true");
-                } else
-                    rstWriter.printStrong("");
-                rstWriter.println();
+                generator.writeStartObject();
+                generator.writeStringField("name", dynamicProperty.name());
+                generator.writeStringField("value", dynamicProperty.value());
+                generator.writeStringField("description", dynamicProperty.description());
+                generator.writeBooleanField("isExpressionLanguageSupported", dynamicProperty.supportsExpressionLanguage());
+               generator.writeEndObject();
             }
+            generator.writeEndArray();
 
         }
     }
@@ -362,11 +307,11 @@ public class JsonDocumentationWriter implements DocumentationWriter {
         return dynamicProperties;
     }
 
-    private void writeValidValueDescription(JsonPrintWriter rstWriter, String description) {
+    private void writeValidValueDescription(JsonGenerator generator, String description) throws IOException {
 
-        rstWriter.print(description);
+        generator.writeStringField("description", description);
 
-     //   rstWriter.writeImage("_static/iconInfo.png", description, null, null, null, null);
+        //   rstWriter.writeImage("_static/iconInfo.png", description, null, null, null, null);
 
     }
 
@@ -374,34 +319,19 @@ public class JsonDocumentationWriter implements DocumentationWriter {
      * Interrogates a PropertyDescriptor to get a list of AllowableValues, if
      * there are none, nothing is written to the stream.
      *
-     * @param rstWriter the stream writer to use
      * @param property  the property to describe
      * @throws XMLStreamException thrown if there was a problem writing to the
      *                            XML Stream
      */
-    protected void writeValidValues(JsonPrintWriter rstWriter, PropertyDescriptor property){
+    protected void writeValidValues(JsonGenerator generator, PropertyDescriptor property) throws IOException {
         if (property.getAllowableValues() != null && property.getAllowableValues().size() > 0) {
 
             for (AllowableValue value : property.getAllowableValues()) {
-                rstWriter.print(value.getDisplayName());
-                rstWriter.print(" : ");
-                if (value.getDescription() != null) {
-                    writeValidValueDescription(rstWriter, value.getDescription());
-                }
-                rstWriter.print(", ");
+                generator.writeStringField(value.getDisplayName(), value.getDescription());
             }
         }
     }
 
 
-    /**
-     * Writes a link to another configurable component
-     *
-     * @param rstWriter the xml stream writer
-     * @param clazz     the configurable component to link to
-     */
-    protected void writeLinkForComponent(final JsonPrintWriter rstWriter, final Class<?> clazz) {
-        rstWriter.writeInternalReferenceLink(clazz.getCanonicalName());
-    }
 
 }

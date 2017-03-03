@@ -25,6 +25,22 @@ paths:
         200:
           description: OK
 
+  /plugins:
+    get:
+      tags:
+       - config
+      operationId: getPlugins
+      summary:  get all plugins
+      description: get all plugins
+      responses:
+        "200":
+          description: plugins
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
   # Job API
   /configs:
@@ -968,6 +984,7 @@ definitions:
         default: "string"
       value:
         type: string
+
 
   Error:
     required:

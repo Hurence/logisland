@@ -15,10 +15,7 @@
  */
 package com.hurence.logisland.kakfa.registry;
 
-import com.hurence.logisland.agent.rest.api.ConfigsApi;
-import com.hurence.logisland.agent.rest.api.DefaultApi;
-import com.hurence.logisland.agent.rest.api.JobsApi;
-import com.hurence.logisland.agent.rest.api.TopicsApi;
+import com.hurence.logisland.agent.rest.api.*;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import com.hurence.logisland.kakfa.serialization.RegistrySerializer;
 import io.confluent.rest.Application;
@@ -56,6 +53,7 @@ public class KafkaRegistryRestApplication extends Application<KafkaRegistryConfi
         config.register(new JobsApi(kafkaRegistry));
         config.register(new TopicsApi(kafkaRegistry));
         config.register(new ConfigsApi(kafkaRegistry));
+        config.register(new PluginsApi(kafkaRegistry));
     }
 
     @Override

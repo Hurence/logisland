@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * JobSummary
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-02T15:08:39.722+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-03T16:47:02.913+01:00")
 public class JobSummary   {
   private Integer usedCores = null;
 

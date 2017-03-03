@@ -20,7 +20,7 @@ import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-02T15:08:39.722+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-03T16:47:02.913+01:00")
 public abstract class JobsApiService {
 
     protected final KafkaRegistry kafkaRegistry;

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import com.hurence.logisland.documentation.html.HtmlProcessorDocumentationWriter
 import com.hurence.logisland.documentation.init.EngineInitializer;
 import com.hurence.logisland.documentation.init.ProcessorInitializer;
 import com.hurence.logisland.documentation.init.RecordStreamInitializer;
+import com.hurence.logisland.documentation.json.JsonDocumentationWriter;
 import com.hurence.logisland.documentation.rst.RstDocumentationWriter;
 import com.hurence.logisland.documentation.util.ClassFinder;
 import com.hurence.logisland.documentation.util.Visitor;
@@ -117,6 +118,16 @@ public class DocGenerator {
             } catch (FileNotFoundException e) {
                 logger.warn(e.getMessage());
             }
+        } else if (writerType.equals("json")) {
+            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+            if (baseDocumenationFile.exists())
+                baseDocumenationFile.delete();
+
+            try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                writer.println("[");
+            } catch (FileNotFoundException e) {
+                logger.warn(e.getMessage());
+            }
         }
 
         Class[] sortedExtensionsClasses = new Class[extensionClasses.size()];
@@ -150,10 +161,27 @@ public class DocGenerator {
                     final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
                     try {
                         document(docsDirectory, componentClass, writerType);
+                        if (writerType.equals("json")) {
+                            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+                            try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                                writer.println(",");
+                            }
+                        }
                     } catch (Exception e) {
                         // nothing to do
                     }
+
                 });
+
+
+        if (writerType.equals("json")) {
+            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+            try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                writer.println("]");
+            } catch (FileNotFoundException e) {
+                logger.warn(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -182,7 +210,7 @@ public class DocGenerator {
 
         try (final OutputStream output = new BufferedOutputStream(new FileOutputStream(baseDocumenationFile, true))) {
             writer.write(component, output);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
 
@@ -211,6 +239,11 @@ public class DocGenerator {
                 return new RstDocumentationWriter();
             }
             return null;
+        } else if (writerType.equals("json")) {
+            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
+                return new JsonDocumentationWriter();
+            }
+            return null;
         } else {
             return null;
         }
@@ -231,7 +264,7 @@ public class DocGenerator {
             return new ProcessorInitializer();
         } else if (ProcessingEngine.class.isAssignableFrom(componentClass)) {
             return new EngineInitializer();
-        }else if (RecordStream.class.isAssignableFrom(componentClass)) {
+        } else if (RecordStream.class.isAssignableFrom(componentClass)) {
             return new RecordStreamInitializer();
         }
 
@@ -260,7 +293,7 @@ public class DocGenerator {
 
 
         DocGenerator.generate(new File("../../logisland-docs"), "rst");
-
+        DocGenerator.generate(new File("../../logisland-docs"), "json");
 
     }
 }
