@@ -22,7 +22,12 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ngMessages'
       .icon("down", "./assets/svg/down-arrow.svg", 12)
       .icon("ellipsis", "./assets/svg/ellipsis.svg.svg", 12)
       .icon("menu", "./assets/svg/menu.svg", 24)
+      .icon("pause", "./assets/svg/rounded-pause-button.svg", 12)
+      .icon("restart", "./assets/svg/refresh-button-1.svg", 12)
+      .icon("play", "./assets/svg/play-button-inside-a-circle.svg", 12)
       .icon("save", "./assets/svg/save-button.svg", 12)
+      .icon("stop", "./assets/svg/stop-button.svg", 12)
+      .icon("search", "./assets/svg/searching-magnifying-glass.svg", 12)
       .icon("settings", "./assets/svg/settings-cogwheel-button.svg", 12)
       .icon("up", "./assets/svg/up-arrow.svg", 12);
 

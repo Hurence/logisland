@@ -6,7 +6,7 @@
     <meta name="description" content="LogIsland Dashboard">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, job-scalable=no"/>
 
-    <title>LogIsland Dashboard</title>
+    <title>LogIsland UI</title>
 
     <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
     <link rel="stylesheet" href="./jspm_packages/github/angular/bower-material@master/angular-material.css"/>
@@ -22,11 +22,42 @@
 
 <md-toolbar layout="row"
             class="md-toolbar-tools">
-    <md-button class="menu md-icon-button" ng-click="app.toggleList('left_jobs')"
-               aria-label="Show Job List">
-        <md-icon md-svg-icon="menu"></md-icon>
-    </md-button>
-    <h1>LogIsland Dashboard - v{{ app.version }}</h1>
+    <div flex layout="row" layout-align="start center">
+        <md-button class="menu md-icon-button"
+                   ng-click="app.toggleList('left_jobs')"
+                   aria-label="Show Job List">
+            <md-icon md-svg-icon="menu"></md-icon>
+        </md-button>
+        <h1>LogIsland UI - v{{ app.version }}</h1>
+    </div>
+    <div flex layout="row" layout-align="end center">
+
+        <md-autocomplete flex
+                         ng-show="app.showSearch"
+                         ng-blur="app.showSearch = false"
+                         md-selected-item=""
+                         md-search-text-change="app.searchTextChange(app.searchText)"
+                         md-search-text="app.searchText"
+                         md-selected-item-change="app.selectedItemChange(job)"
+                         md-items="job in app.querySearch(app.searchText)"
+                         md-item-text="job.name"
+                         md-min-length="0"
+                         placeholder="Look for a job here">
+            <md-item-template>
+                <span md-highlight-text="app.searchText" md-highlight-flags="^i">{{job.name}}</span>
+            </md-item-template>
+            <md-not-found>
+                No job name matching the search string "{{app.searchText}}".
+                <a ng-click="app.addJob(app.searchText)">Create a new one!</a>
+            </md-not-found>
+        </md-autocomplete>
+        <md-button class="menu md-icon-button"
+                   ng-click="app.showSearch = !app.showSearch"
+                   aria-label="Search Jobs"
+                   layout-align="end center">
+            <md-icon md-svg-icon="search"></md-icon>
+        </md-button>
+    </div>
 </md-toolbar>
 
 
@@ -35,24 +66,68 @@
             ng-click="app.toggleList('left_jobs')"
             layout-padding>
     <h2 flex class="md-toolbar-tools">Jobs List</h2>
-    <jobs-list
+    <jobs-list-simple
             jobs="app.jobs"
             selected="app.selectedJob"
             on-selected="app.selectJob(job)">
-    </jobs-list>
+    </jobs-list-simple>
 </md-sidenav>
 
-<job-details flex="70"
-             selected="app.selectedJob">
-</job-details>
+<md-tabs md-dynamic-height md-border-bottom>
+    <md-tab label="Jobs">
+        <md-tab-body>
+            <jobs-list
+                    jobs="app.jobs">
+            </jobs-list>
+        </md-tab-body>
+    </md-tab>
+    <md-tab ng-repeat="job in app.jobs" label="{{ job.name }}">
+        <md-tab-body>
+            <job-details flex
+                         selected="job">
+            </job-details>
+        </md-tab-body>
+    </md-tab>
+    <md-tab>
+        <md-tab-label>
+            <md-icon md-svg-icon="add">
+        </md-tab-label>
+        <md-tab-body>
+        <job-details flex
+                     selected="app.newJobTemplate">
+        </job-details>
+        </md-tab-body>
+    </md-tab>
+</md-tabs>
 
 <script src="./jspm_packages/system.js" type="text/javascript"></script>
 <script src="config.js" type="text/javascript"></script>
 <script type="text/javascript">
     System
         .import('src/boot/boot')
-        .catch( console.error.bind(console) ); // make sure any errors print to console
+        .catch( console.error.bind(console) ); /* make sure any errors print to console*/
+
+
 </script>
+<script type="text/ng-template" id="actions.html">
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="startJob($index)"
+               ng-class=" { 'md-primary': job.summary.status == 'RUNNING' }"
+               aria-label="Start Job">
+        <md-icon md-svg-icon="play"></md-icon>
+    </md-button>
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="pauseJob($index)"
+               ng-class="{ 'md-primary': job.summary.status == 'PAUSED' }"
+               aria-label="Pause Job">
+        <md-icon md-svg-icon="pause"></md-icon>
+    </md-button>
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="shutdownJob($index)"
+               ng-class="{ 'md-primary': job.summary.status == 'STOPPED' }"
+               aria-label="Stop Job">
+        <md-icon md-svg-icon="stop"></md-icon>
+    </md-button></script>
 
 </body>
 </html>

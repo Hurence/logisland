@@ -29,10 +29,10 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
                 name: 'Value',
                 prop: 'value'
             },
-            {
-                name: 'Type',
-                prop: 'type'
-            }
+//            {
+//                name: 'Type',
+//                prop: 'type'
+//            }
 //            ,{
 //                name: 'Action',
 //                cellRenderer: function(scope, elem, row) {
