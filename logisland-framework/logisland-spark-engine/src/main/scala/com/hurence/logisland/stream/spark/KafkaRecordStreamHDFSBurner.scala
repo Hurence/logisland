@@ -13,21 +13,6 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
 package com.hurence.logisland.stream.spark
 
 import java.text.SimpleDateFormat
@@ -100,21 +85,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-        descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.ERROR_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_AUTOCREATE)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+
+        descriptors.addAll(super.getSupportedPropertyDescriptors())
 
         descriptors.add(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH)
         descriptors.add(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT)

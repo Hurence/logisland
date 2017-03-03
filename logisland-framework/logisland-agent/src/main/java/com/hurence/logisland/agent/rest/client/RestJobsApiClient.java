@@ -16,14 +16,15 @@
  */
 package com.hurence.logisland.agent.rest.client;
 
-import com.hurence.logisland.agent.rest.model.*;
+import com.hurence.logisland.agent.rest.model.Job;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
-import java.util.Date;
 
 
 /**
@@ -33,6 +34,7 @@ public class RestJobsApiClient implements JobsApiClient {
 
     Client client = ClientBuilder.newClient().register(JacksonFeature.class);
     private final String restServiceUrl;
+    private static Logger logger = LoggerFactory.getLogger(RestJobsApiClient.class);
 
     public RestJobsApiClient() {
         this("http://localhost:8081");
@@ -52,16 +54,27 @@ public class RestJobsApiClient implements JobsApiClient {
 
     @Override
     public Job getJob(String name) {
-        return client.target(restServiceUrl)
-                .path("/{jobId}")
-                .resolveTemplate("jobId", name)
-                .request()
-                .get(Job.class);
+
+        Job job = null;
+        try {
+            job = client.target(restServiceUrl)
+                    .path("/{jobId}")
+                    .resolveTemplate("jobId", name)
+                    .request()
+                    .get(Job.class);
+        } catch (Exception ex) {
+            logger.error("unable to get Job {}, :{}", name, ex);
+        }
+        return job;
 
     }
 
     @Override
     public Integer getJobVersion(String name) {
-        return getJob(name).getVersion();
+        Job job = getJob(name);
+        if (job == null)
+            return -1;
+        else
+            return job.getVersion();
     }
 }

@@ -80,6 +80,7 @@ public final class RestComponentFactory {
 
                 job.getEngine().getConfig().forEach(e -> engineContext.setProperty(e.getKey(), e.getValue()));
 
+                engineContext.setName(jobName);
                 logger.info("created engine {}", job.getEngine());
 
                 return Optional.of(engineContext);

@@ -35,12 +35,6 @@ public class MockJobsApiClient implements JobsApiClient {
     public static final String MOCK_PROCESSING_JOB = "mock_processing_job";
 
     public MockJobsApiClient() {
-        Engine engine = new Engine()
-                .name("apache parser engine")
-                .component("com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine")
-                .addConfigItem(new Property().key("spark.master").value("local[4]"))
-                .addConfigItem(new Property().key("spark.streaming.batchDuration").value("500"))
-                .addConfigItem(new Property().key("spark.streaming.timeout").value("12000"));
 
         JobSummary summary = new JobSummary()
                 .dateModified(new Date())
@@ -68,7 +62,13 @@ public class MockJobsApiClient implements JobsApiClient {
                 .id(1234L)
                 .name(APACHE_PARSING_JOB)
                 .version(1)
-                .engine(engine)
+                .engine(new Engine()
+                        .name("apache parser engine")
+                        .component("com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine")
+                        .addConfigItem(new Property().key("spark.app.name").value(APACHE_PARSING_JOB))
+                        .addConfigItem(new Property().key("spark.master").value("local[4]"))
+                        .addConfigItem(new Property().key("spark.streaming.batchDuration").value("500"))
+                        .addConfigItem(new Property().key("spark.streaming.timeout").value("12000")))
                 .addStreamsItem(new Stream()
                         .name("apacheStream")
                         .component("com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing")
@@ -82,7 +82,13 @@ public class MockJobsApiClient implements JobsApiClient {
                 .id(1235L)
                 .name(MOCK_PROCESSING_JOB)
                 .version(1)
-                .engine(engine)
+                .engine(new Engine()
+                        .name("apache parser engine")
+                        .component("com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine")
+                        .addConfigItem(new Property().key("spark.app.name").value(MOCK_PROCESSING_JOB))
+                        .addConfigItem(new Property().key("spark.master").value("local[4]"))
+                        .addConfigItem(new Property().key("spark.streaming.batchDuration").value("500"))
+                        .addConfigItem(new Property().key("spark.streaming.timeout").value("12000")))
                 .addStreamsItem(new Stream()
                         .name("mockStream")
                         .component("com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing")

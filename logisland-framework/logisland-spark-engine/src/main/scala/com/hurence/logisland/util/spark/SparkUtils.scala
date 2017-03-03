@@ -67,6 +67,8 @@ object SparkUtils extends LazyLogging {
 
 
     def customizeLogLevels: Unit = {
+
+
         // Logging verbosity lowered
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.scheduler").setLevel(Level.WARN)

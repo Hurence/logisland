@@ -6,6 +6,7 @@ import com.hurence.logisland.agent.rest.api.TopicsApiService;
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Topic;
 import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import com.hurence.logisland.kakfa.registry.KafkaRegistryConfig;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
@@ -30,7 +31,7 @@ public class TopicsApiServiceImpl extends TopicsApiService {
         super(kafkaRegistry);
 
         zkUtils = ZkUtils.apply(
-                kafkaRegistry.getConfig().DEFAULT_KAFKA_ZOOKEEPER_QUORUM,
+                kafkaRegistry.getConfig().getString(KafkaRegistryConfig.KAFKASTORE_CONNECTION_URL_CONFIG),
                 DEFAULT_ZK_SESSION_TIMEOUT_MS,
                 DEFAULT_ZK_CONNECTION_TIMEOUT_MS,
                 JaasUtils.isZkSecurityEnabled());

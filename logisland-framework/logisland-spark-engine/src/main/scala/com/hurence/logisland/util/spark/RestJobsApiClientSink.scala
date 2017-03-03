@@ -37,7 +37,7 @@ object RestJobsApiClientSink {
 
     def apply(agentQuorum: String): RestJobsApiClientSink = {
         val f = () => {
-            logger.info("creating Zk client")
+            logger.info("creating REST API client with agentQuorum {}", agentQuorum)
             new RestJobsApiClient(agentQuorum)
         }
         new RestJobsApiClientSink(f)
