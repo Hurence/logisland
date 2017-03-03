@@ -12,6 +12,7 @@ function AppJobsController(JobsDataService, ProcessorsDataService, ListService, 
     self.selectedJob          = null;
     self.selectedProcessor    = null;
     self.addJob               = addJob;
+    self.expandJobs           = false;
 
     self.menuItems            = [   {name: "Start", direction: "right", icon: "play"},
                                     {name: "Stop", direction: "right", icon: "stop"}];

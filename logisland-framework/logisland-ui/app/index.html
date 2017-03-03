@@ -92,9 +92,11 @@
             <md-subheader class="md-no-sticky"><md-icon class="material-icons md-light md-48">subject</md-icon>Topics</md-subheader>
             <md-divider></md-divider>
             <md-subheader class="md-no-sticky">
-                <md-icon class="material-icons md-light md-48">directions_run</md-icon>Jobs <i style="font-size:24px" class="fa">&#xf107;</i>
-            </md-subheader>
-            <md-list-item ng-repeat="job in app.jobs" ng-show="true">
+                <md-icon class="material-icons md-light md-48">directions_run</md-icon>Jobs
+                <md-icon ng-show="expandJobs"  ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_down</md-icon>
+                <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_right</md-icon>
+                </md-subheader>
+            <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs" >
                 <md-button class="noTransform" ng-click="app.selectedJob=job; app.toggleList('left');">{{ job.name }}</md-button>
             </md-list-item>
             <md-divider></md-divider>
