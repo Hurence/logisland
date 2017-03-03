@@ -39,6 +39,7 @@ function JobDetailsController(JobsDataService, $log, $scope, $mdDialog)  {
         vm.previousJobName = job.name;
         vm.editingJobName = true;
     }
+
     function doneEditingJobName(job) {
         vm.editingJobName = false;
         if(vm.previousJobName !== job.name) {
@@ -70,7 +71,7 @@ function JobDetailsController(JobsDataService, $log, $scope, $mdDialog)  {
         item.editing = true;
     }
 
-    function doneEditing(stream) {
+    function doneEditing(item) {
         item.editing = false;
     }
 

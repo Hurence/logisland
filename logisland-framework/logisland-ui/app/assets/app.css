@@ -165,3 +165,24 @@ background-color: #00ff00;
 
 .jobcell {
 }
+
+.fabSpeedDialdemoLI .text-capitalize {
+  text-transform: capitalize; }
+
+.fabSpeedDialdemoLI .md-fab:hover, .fabSpeedDialdemoBasicUsage .md-fab.md-focused {
+  background-color: #000 !important; }
+
+.fabSpeedDialdemoLI p.note {
+  font-size: 1.2rem; }
+
+.fabSpeedDialdemoLI .lock-size {
+  min-width: 300px;
+  min-height: 300px;
+  width: 300px;
+  height: 300px;
+  margin-left: auto;
+  margin-right: auto; }
+
+.noTransform {
+  text-transform: none;
+}
