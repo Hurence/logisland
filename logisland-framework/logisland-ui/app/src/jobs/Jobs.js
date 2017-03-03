@@ -1,4 +1,5 @@
 
+import JobsListSimple from 'src/jobs/components/list/JobsListSimple';
 import JobsList from 'src/jobs/components/list/JobsList';
 import ProcessorsList from 'src/jobs/components/list/ProcessorsList';
 import JobDetails from 'src/jobs/components/details/JobDetails';
@@ -18,6 +19,7 @@ import AppSettings from 'src/jobs/services/AppSettings';
 export default angular
   .module("jobs", ['ngMaterial', 'ngResource', 'data-table' ])
 
+  .component(JobsListSimple.name, JobsListSimple.config)
   .component(JobsList.name, JobsList.config)
   .component(ProcessorsList.name, ProcessorsList.config)
   .component(JobDetails.name, JobDetails.config)

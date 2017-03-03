@@ -1,12 +1,88 @@
-<md-list>
-    <md-list-item ng-repeat="job in $ctrl.jobs">
-        <md-button
-                ng-click="$ctrl.showDetails({job:job})"
-                ng-class="{'selected' : job === $ctrl.selectedJob }">
-            <md-tooltip md-direction="right" ng-if="job.version">{{ job.version }}</md-tooltip>
-            <div class="md-list-item-text">
-                {{job.name}}
+<div flex>
+    <!--<md-autocomplete flex-->
+                     <!--ng-blur="app.showSearch = false"-->
+                     <!--md-selected-item=""-->
+                     <!--md-search-text-change="app.searchTextChange(app.searchText)"-->
+                     <!--md-search-text="app.searchText"-->
+                     <!--md-selected-item-change=""-->
+                     <!--md-items="job in app.querySearch(app.searchText)"-->
+                     <!--md-item-text="job.name"-->
+                     <!--md-min-length="0"-->
+                     <!--placeholder="Look for a job here">-->
+        <!--<md-item-template>-->
+            <!--<span md-highlight-text="app.searchText" md-highlight-flags="^i">{{job.name}}</span>-->
+        <!--</md-item-template>-->
+        <!--<md-not-found>-->
+            <!--No job name matching the search string "{{app.searchText}}".-->
+            <!--<a ng-click="app.addJob(app.searchText)">Create a new one!</a>-->
+        <!--</md-not-found>-->
+    <!--</md-autocomplete>-->
+    <!--<md-button class="menu md-icon-button"-->
+               <!--ng-click="app.showSearch = !app.showSearch"-->
+               <!--aria-label="Search Jobs"-->
+               <!--layout-align="end center">-->
+        <!--<md-icon md-svg-icon="search"></md-icon>-->
+    <!--</md-button>-->
+
+    <md-list>
+
+        <!--<dtable options="table_options"-->
+        <!--rows="$ctrl.jobs"-->
+        <!--class="material dt">-->
+        <!--</dtable>-->
+
+        <md-list-item layout-align="center center">
+            <div flex class="jobsrowheader" layout="row" layout-align="start center">
+                <div flex="20" class="md-primary md-list-item-text jobcell" layout-padding>
+                    Name
+                </div>
+                <div flex="15" class="jobcell">
+                    Status
+                </div>
+                <div flex class="md-list-item-text jobcell">
+                    Actions
+                </div>
             </div>
-        </md-button>
-    </md-list-item>
-</md-list>
+        </md-list-item>
+        <md-list-item ng-repeat="job in $ctrl.filteredJobs" layout-align="center center">
+            <div flex
+                 ng-dbl-click="editJob(job)"
+                 class="jobsrow"
+                 layout="row"
+                 layout-align="start center">
+                <div flex="20" class="md-list-item-text jobcell" layout-padding>
+                    {{ job.name }}
+                </div>
+                <div flex="15" class="jobcell">
+                    {{ job.summary.status }}
+                </div>
+                <div flex class="md-list-item-text jobcell">
+                    <md-button class="md-fab md-mini md-raised"
+                               ng-click="startJob($index)"
+                               ng-class="{ 'md-primary': job.summary.status == 'RUNNING' }"
+                               aria-label="Start Job">
+                        <md-icon md-svg-icon="play"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-raised"
+                               ng-click="pauseJob($index)"
+                               ng-class="{ 'md-primary': job.summary.status == 'PAUSED' }"
+                               aria-label="Pause Job">
+                        <md-icon md-svg-icon="pause"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-raised"
+                               ng-click="shutdownJob($index)"
+                               ng-class="{ 'md-primary': job.summary.status == 'STOPPED' }"
+                               aria-label="Stop Job">
+                        <md-icon md-svg-icon="stop"></md-icon>
+                    </md-button>
+                    <!--<md-button class="md-fab md-mini md-raised"-->
+                    <!--ng-click="restartJob($index)"-->
+                    <!--ng-class=""-->
+                    <!--aria-label="Restart Job">-->
+                    <!--<md-icon md-svg-icon="restart"></md-icon>-->
+                    <!--</md-button>-->
+                </div>
+            </div>
+        </md-list-item>
+    </md-list>
+</div>
