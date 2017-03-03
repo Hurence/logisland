@@ -11,6 +11,13 @@ function ListService($mdSidenav, $log) {
                 .then(function() {
                     $log.debug("toggleList(" + id + ")");
                 });
+        },
+        close: function(id) {
+            $mdSidenav(id, true)
+                .close()
+                .then(function() {
+                    $log.debug("close(" + id + ")");
+                 });
         }
     }
 }

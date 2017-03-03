@@ -1,13 +1,11 @@
 <md-sidenav class="md-sidenav-right md-whiteframe-4dp"
             md-component-id="right_processors"
-            md-is-locked-open>]
-    <md-content>
+            md-is-locked-open>
     <processors-list
             processors="stdProcessors"
             selected="selectedStdProcessor"
             on-selected="selectStdProcessor(processor)">
     </processors-list>
-    </md-content>
 </md-sidenav>
 
 <div flex id="stream_details_{{ $ctrl.selected.name }}"

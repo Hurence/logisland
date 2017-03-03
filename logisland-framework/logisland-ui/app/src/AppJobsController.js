@@ -18,6 +18,7 @@ function AppJobsController(JobsDataService, ProcessorsDataService, ListService, 
     self.isOpen = true;
 
     self.toggleList       = ListService.toggle;
+    self.closeList        = ListService.close;
     self.selectJob        = selectJob;
 
     self.querySearch      = querySearch;

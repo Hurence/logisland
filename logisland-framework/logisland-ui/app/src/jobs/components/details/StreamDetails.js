@@ -10,6 +10,10 @@ export default {
 function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope, $mdDialog) {
     var vm = $scope;
 
+    vm.stdProcessors = ProcessorsDataService.getAllProcessors();
+    vm.selectedStrProcessor = processors[0];
+    vm.selectStdProcessor = selectStdProcessor;
+
     vm.toggleList = ListService.toggle;
     vm.moveProcessorUp = moveProcessorUp;
     vm.moveProcessorDown = moveProcessorDown;

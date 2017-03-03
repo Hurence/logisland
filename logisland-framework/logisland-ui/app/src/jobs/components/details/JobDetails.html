@@ -1,7 +1,6 @@
 <div flex="100" ng-show="$ctrl.selected" layout="row" layout-align="center center" layout-padding>
     <div flex layout-align="start center">
         <h2 style="margin: 0; padding: 0;" >
-            Job Name:
             <span ng-click="startEditingJobName($ctrl.selected)" ng-hide="editingJobName">{{ $ctrl.selected.name }}</span>
                 <input ng-show="editingJobName" ng-submit="" ng-model="$ctrl.selected.name" ng-blur="doneEditingJobName($ctrl.selected)" autofocus/>
         </h2>
