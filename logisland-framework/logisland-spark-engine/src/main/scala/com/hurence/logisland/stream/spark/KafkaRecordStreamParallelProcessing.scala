@@ -59,21 +59,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-        descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
-        descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.OUTPUT_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.ERROR_SERIALIZER)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_AUTOCREATE)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
-        descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+
+        descriptors.addAll(super.getSupportedPropertyDescriptors())
 
         descriptors.add(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT)
         descriptors.add(KafkaRecordStreamSQLAggregator.SQL_QUERY)

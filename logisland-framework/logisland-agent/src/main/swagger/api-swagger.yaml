@@ -378,7 +378,29 @@ paths:
         "200":
           description: job status
           schema:
-            $ref: '#/definitions/Job'
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/version:
+     get:
+      tags:
+        - job
+      summary: get job version
+      description: get the version of corresponding Job
+      operationId: getJobVersion
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job version
+          schema:
+            type: string
         default:
           description: unexpected error
           schema:

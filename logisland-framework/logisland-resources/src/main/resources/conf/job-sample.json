@@ -1,4 +1,4 @@
-{
+[{
   "id": 841,
   "version": 2,
   "name": "IndexApacheLogsDemo",
@@ -66,4 +66,75 @@
   }
 
 
-}
+},
+  {
+    "name": "FirewallLogsCollect-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "PAUSED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "SysLogsCollect-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STARTED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "SecurityRulesAnalytics-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STARTED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "BotsearchModelBuilder-batch",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 20,
+      "usedMemory": 512,
+      "status": "STOPPED",
+      "dateModified": 1487331314955,
+      "documentation": "build each day "
+    }
+  },
+  {
+    "name": "UserBehaviorModelBuilder-batch",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STOPPED",
+      "dateModified": 1487331314955,
+      "documentation": "build each day "
+    }
+  }
+]

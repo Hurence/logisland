@@ -25,12 +25,12 @@ import java.util.List;
 public class MockConfigsApiClient implements ConfigsApiClient {
 
 
-    public MockConfigsApiClient() {
+    public MockConfigsApiClient(String zkPort, String kafkaPort) {
 
-        properties.add(new Property().key("kafka.metadata.broker.list").value("localhost:9092"));
-        properties.add(new Property().key("kafka.zookeeper.quorum").value("localhost:2181"));
+        properties.add(new Property().key("kafka.metadata.broker.list").value("localhost:" + kafkaPort));
+        properties.add(new Property().key("kafka.zookeeper.quorum").value("localhost:" + zkPort));
         properties.add(new Property().key("kafka.topic.autoCreate").value("true"));
-        properties.add(new Property().key("kafka.topic.default.partition").value("1"));
+        properties.add(new Property().key("kafka.topic.default.partitions").value("1"));
         properties.add(new Property().key("kafka.topic.default.replicationFactor").value("1"));
     }
 

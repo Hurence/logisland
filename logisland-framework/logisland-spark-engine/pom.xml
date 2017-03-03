@@ -28,10 +28,13 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <artifactId>logisland-spark-engine</artifactId>
     <packaging>jar</packaging>
     <dependencies>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-agent</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -101,11 +104,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>kafka-clients</artifactId>
             <version>${kafka.version}</version>
             <classifier>test</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-agent</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

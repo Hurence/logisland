@@ -60,13 +60,13 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
         conf.setComponent(KafkaStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
-        conf.addProcessorChainConfigurations(createProcessorChainConfiguration());
+        conf.addProcessorChainConfigurations(createStreamConfig());
 
         return ComponentFactory.getEngineContext(conf);
     }
 
 
-    private StreamConfiguration createProcessorChainConfiguration() {
+    private StreamConfiguration createStreamConfig() {
         Map<String, String> properties = new HashMap<>();
         properties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(), BROKERHOST + ":" + BROKERPORT);
         properties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(), ZKHOST + ":" + zkServer.port());

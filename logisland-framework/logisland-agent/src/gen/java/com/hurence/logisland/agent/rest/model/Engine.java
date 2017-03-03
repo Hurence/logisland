@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Engine
  */
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-02T15:08:39.722+01:00")
 public class Engine   {
   private String name = null;
 

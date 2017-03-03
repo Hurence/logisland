@@ -33,8 +33,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,19 +56,20 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     protected static final String ZKHOST = "127.0.0.1";
     protected static final String BROKERHOST = "127.0.0.1";
     protected static final int BROKERPORT = choosePorts(2)[0];
-    protected static final String INPUT_TOPIC = "SparkRecordStreamProcessingTest_in";
-    protected static final String OUTPUT_TOPIC = "SparkRecordStreamProcessingTest_out";
+    protected static final String INPUT_TOPIC = "mock_in";
+    protected static final String OUTPUT_TOPIC = "mock_out";
     protected static final String MAGIC_STRING = "the world is so big";
 
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
+    private static Logger logger = (Logger)LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
 
     private static KafkaProducer<byte[], byte[]> producer;
     private static KafkaConsumer<byte[], byte[]> consumer;
     private static ProcessingEngine engine;
     private static EngineContext engineContext;
     protected EmbeddedZookeeper zkServer;
-    private  KafkaServer kafkaServer;
+    private KafkaServer kafkaServer;
+    protected ZkUtils zkUtils;
 
 
     /**
@@ -88,14 +90,19 @@ public abstract class AbstractStreamProcessingIntegrationTest {
             throw new RuntimeException(e);
         }
     }
+
     @Before
     public void setUp() throws InterruptedException, IOException {
+
+        Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.WARN);
+
         SparkUtils.customizeLogLevels();
         // setup Zookeeper
         zkServer = new EmbeddedZookeeper();
         String zkConnect = ZKHOST + ":" + zkServer.port();
         ZkClient zkClient = new ZkClient(zkConnect, 30000, 30000, ZKStringSerializer$.MODULE$);
-        ZkUtils zkUtils = ZkUtils.apply(zkClient, false);
+        zkUtils = ZkUtils.apply(zkClient, false);
 
         // setup Broker
         Properties brokerProps = new Properties();
@@ -105,7 +112,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         brokerProps.setProperty("listeners", "PLAINTEXT://" + BROKERHOST + ":" + BROKERPORT);
         KafkaConfig config = new KafkaConfig(brokerProps);
         Time mock = new MockTime();
-         kafkaServer = TestUtils.createServer(config, mock);
+        kafkaServer = TestUtils.createServer(config, mock);
 
         // create topics
         AdminUtils.createTopic(zkUtils,
@@ -119,23 +126,8 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
 
 
-        // setup producer
-        Properties producerProps = new Properties();
-        producerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
-        producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-        producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-        producer = new KafkaProducer<byte[], byte[]>(producerProps);
 
-        // setup consumer
-        Properties consumerProps = new Properties();
-        consumerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
-        consumerProps.setProperty("group.id", "group0");
-        consumerProps.setProperty("client.id", "consumer0");
-        consumerProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
-        consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(Arrays.asList(OUTPUT_TOPIC));
+
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
         zkClient.delete("/consumers/group0");
@@ -168,11 +160,23 @@ public abstract class AbstractStreamProcessingIntegrationTest {
 
     @After
     public void tearDown() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        producer.close();
-        consumer.close();
-        kafkaServer.shutdown();
-       // zkClient.close();
-        zkServer.shutdown();
+
+        engine.shutdown(engineContext);
+        Thread.sleep(2000);
+
+        if (kafkaServer != null) {
+            kafkaServer.shutdown();
+            // Remove any persistent data
+            CoreUtils.delete(kafkaServer.config().logDirs());
+        }
+
+        if (zkUtils != null) {
+            zkUtils.close();
+        }
+
+        if (zkServer != null) {
+            zkServer.shutdown();
+        }
     }
 
 
@@ -181,6 +185,12 @@ public abstract class AbstractStreamProcessingIntegrationTest {
 
     protected static void sendRecord(String topic, Record record) throws IOException {
 
+        // setup producer
+        Properties producerProps = new Properties();
+        producerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        producer = new KafkaProducer<byte[], byte[]>(producerProps);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final KryoSerializer kryoSerializer = new KryoSerializer(true);
@@ -190,9 +200,23 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         baos.close();
 
         logger.info("sent record : " + record + " to topic " + topic);
+        producer.close();
     }
 
     protected static List<Record> readRecords(String topic) {
+
+
+        // setup consumer
+        Properties consumerProps = new Properties();
+        consumerProps.setProperty("bootstrap.servers", BROKERHOST + ":" + BROKERPORT);
+        consumerProps.setProperty("group.id", "group0");
+        consumerProps.setProperty("client.id", "consumer0");
+        consumerProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
+        consumer = new KafkaConsumer<>(consumerProps);
+        consumer.subscribe(Arrays.asList(OUTPUT_TOPIC));
+
 
         List<Record> outputRecords = new ArrayList<>();
 
@@ -213,6 +237,9 @@ public abstract class AbstractStreamProcessingIntegrationTest {
                 e.printStackTrace();
             }
         }
+
+        consumer.close();
+
         return outputRecords;
     }
 

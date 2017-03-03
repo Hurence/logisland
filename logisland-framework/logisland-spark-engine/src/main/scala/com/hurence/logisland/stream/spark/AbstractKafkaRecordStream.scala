@@ -19,12 +19,12 @@ import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
+import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.kafka.util.KafkaSink
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark.{RestJobsApiClientSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -201,6 +201,22 @@ object AbstractKafkaRecordStream {
         .required(false)
         .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
         .build
+
+    val LOGISLAND_AGENT_QUORUM = new PropertyDescriptor.Builder()
+        .name("logisland.agent.quorum")
+        .description("the stream needs to know how to reach Agent REST api in order to live update its processors")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("sandbox:8081")
+        .build
+
+    val LOGISLAND_AGENT_PULL_THROTTLING = new PropertyDescriptor.Builder()
+        .name("logisland.agent.pull.throttling")
+        .description("wait every x batch to pull agent for new conf")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("10")
+        .build
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -212,6 +228,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
+    protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
+    protected var currentJobVersion: Int = 0
+    protected var lastCheckCount: Int = 0
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -230,6 +249,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM)
+        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -258,6 +279,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
             val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
+            val agentQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM).asString
+            val throttling = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
@@ -272,6 +295,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
+            restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
 
             // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {
@@ -279,10 +303,10 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(
-                        zkUtils,
-                        Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
-                        topicDefaultPartitions,
-                        topicDefaultReplicationFactor)
+                    zkUtils,
+                    Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
+                    topicDefaultPartitions,
+                    topicDefaultReplicationFactor)
 
             }
 
@@ -318,8 +342,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                     (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
 
                 logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $fromOffsets")
-
-
                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
                     ssc,
                     PreferConsistent,
@@ -327,9 +349,45 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 )
             }
 
+            // store current configuration version
+            currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
 
             // do the parallel processing
             kafkaStream.foreachRDD(rdd => {
+
+                /**
+                  * check if conf needs to be refreshed
+                  */
+                if (lastCheckCount < throttling) {
+                    lastCheckCount = 0
+                    val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
+                    if (currentJobVersion != version) {
+                        logger.info("Job version change detected from {} to {}, proceeding to update",
+                            currentJobVersion,
+                            version)
+
+                        val componentFactory = new RestComponentFactory(agentQuorum)
+                        val updatedEngineContext = componentFactory.getEngineContext(appName)
+                        if (updatedEngineContext.isPresent) {
+
+                            // find the corresponding stream
+                            val it = updatedEngineContext.get().getStreamContexts.iterator()
+                            while (it.hasNext) {
+                                val updatedStreamingContext = it.next()
+
+                                // if we found a streamContext with the same name from the factory
+                                if (updatedStreamingContext.getName == this.streamContext.getName) {
+                                    logger.info("new conf for stream {}", updatedStreamingContext)
+                                    this.streamContext = updatedStreamingContext
+                                }
+                            }
+                        }
+                        currentJobVersion = version
+                    }
+                } else {
+                    lastCheckCount += 1
+                }
+
 
 
                 val offsetRanges = process(rdd)

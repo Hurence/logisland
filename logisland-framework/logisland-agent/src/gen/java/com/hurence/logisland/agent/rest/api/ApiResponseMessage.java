@@ -3,7 +3,7 @@ package com.hurence.logisland.agent.rest.api;
 import javax.xml.bind.annotation.XmlTransient;
 
 @javax.xml.bind.annotation.XmlRootElement
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-01T22:13:54.411+01:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-02T15:08:39.722+01:00")
 public class ApiResponseMessage {
     public static final int ERROR = 1;
     public static final int WARNING = 2;
