@@ -25,7 +25,10 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.string.JsonUtil;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 
+import org.apache.commons.mail.SimpleEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,30 +40,126 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mailer processor
+ * Mailer Processor
  */
-@Tags({"mail", "smtp", "email", "mailer", "message"})
+@Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert"})
 @CapabilityDescription(
-        "The Mailer processor is TODO.")
+        "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
+        + " To generate an email and trigger an email sending, an incoming record must have a mail_msg field with the content of the mail as value."
+        + " Other optional mail_* fields may be used to customize the Mailer processor upon reception of the record.")
 public class MailerProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(MailerProcessor.class);
-
-    private boolean debug = false;
     
+    // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
+    private boolean debug = false;
+
+    private String smtpServer = null;
+    private int smtpPort = 25;
+    private String[] mailTos = new String[]{};
+    private String mailFromAddress = null;
+    private String mailFromName = null;
+    private String mailSubject = null;
+    private boolean allowFieldsOverwriting = true;
+
+    /**
+     * Definitions for the fields of the incoming record
+     */
+    
+    private static final String FIELD_PREFIX = "mail";
+    
+    // Sole mandatory field. This holds the content of the mail to be sent.
+    public static final String FIELD_MAIL_MSG = FIELD_PREFIX + "_msg";
+
+    // May be used to overwrite mail.to configured in processor
+    public static final String FIELD_MAIL_TO = FIELD_PREFIX + "_to";
+    // May be used to overwrite mail.from.address configured in processor 
+    public static final String FIELD_MAIL_FROM_ADDRESS = FIELD_PREFIX + "_from_address";    
+    // May be used to overwrite mail.from.name configured in processor 
+    public static final String FIELD_MAIL_FROM_NAME = FIELD_PREFIX + "_from_name";
+    // May be used to overwrite mail.subject configured in processor 
+    public static final String FIELD_MAIL_SUBJECT = FIELD_PREFIX + "_subject";
+    
+    /**
+     * Configuration keys
+     */
+    
+    // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
     private static final String KEY_DEBUG = "debug";
+
+    private static final String KEY_SMTP_SERVER = "smtp.server";
+    private static final String KEY_SMTP_PORT = "smtp.port";
+
+    private static final String KEY_MAIL_TO = "mail.to";
+    private static final String KEY_MAIL_FROM_ADDRESS = "mail.from.address";
+    private static final String KEY_MAIL_FROM_NAME = "mail.from.name";
+    private static final String KEY_MAIL_SUBJECT = "mail.subject";
+    
+    private static final String KEY_ALLOW_OVERWRITE = "allow_overwrite";
     
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
-            .description("Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.")
+            .description("Enable debug. If enabled, debug information are written into stdout.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
+            .build();
+    
+    public static final PropertyDescriptor SMTP_SERVER = new PropertyDescriptor.Builder()
+            .name(KEY_SMTP_SERVER)
+            .description("Hostname or IP address of the SMTP server to use.")
+            .required(true)
+            .build();
+    
+    public static final PropertyDescriptor SMTP_PORT = new PropertyDescriptor.Builder()
+            .name(KEY_SMTP_PORT)
+            .description("TCP port number of the SMTP server to use.")
+            .addValidator(StandardValidators.PORT_VALIDATOR)
+            .defaultValue("25")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor MAIL_FROM_ADDRESS = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_FROM_ADDRESS)
+            .description("Mail sender email.")
+            .required(false)
+            .defaultValue("logisland@yourdomain.com")
+            .build();
+    
+    public static final PropertyDescriptor MAIL_FROM_NAME = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_FROM_NAME)
+            .description("Mail sender name.")
+            .required(false)
+            .defaultValue("Logisland")
+            .build();
+    
+    public static final PropertyDescriptor MAIL_SUBJECT = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_SUBJECT)
+            .description("Mail subject.")
+            .required(false)
+            .defaultValue("[LOGISLAND] Automatic email.")
+            .build();
+    
+    public static final PropertyDescriptor MAIL_TO = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_TO)
+            .description("Comma separated list of email recipients. If not set, the record must have a "
+            + FIELD_MAIL_TO + " field and " + KEY_ALLOW_OVERWRITE + " configuration key should be true.")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor ALLOW_OVERWRITE = new PropertyDescriptor.Builder()
+            .name(KEY_ALLOW_OVERWRITE)
+            .description("If true, allows to overwrite processor configuration with special record fields (" +
+                    FIELD_MAIL_TO + ", " + FIELD_MAIL_FROM_ADDRESS + ", " + FIELD_MAIL_SUBJECT +" etc). If false, special record fields"
+                    + " are ignored and only processor configuration keys are used.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
             .build();
 
     @Override
     public void init(final ProcessContext context)
     {
-        logger.debug("Initializing Bro Processor");
+        logger.debug("Initializing Mailer Processor");
     }
     
     @Override
@@ -68,6 +167,13 @@ public class MailerProcessor extends AbstractProcessor {
         
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(DEBUG);
+        descriptors.add(SMTP_SERVER);
+        descriptors.add(SMTP_PORT);
+        descriptors.add(MAIL_FROM_ADDRESS);
+        descriptors.add(MAIL_FROM_NAME);
+        descriptors.add(MAIL_SUBJECT);
+        descriptors.add(MAIL_TO);
+        descriptors.add(ALLOW_OVERWRITE);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -77,252 +183,77 @@ public class MailerProcessor extends AbstractProcessor {
     {
         if (debug)
         {
-            logger.debug("Bro Processor records input: " + records);
+            logger.info("Mailer Processor records input: " + records);
         }
 
         /**
-         * Get the original Bro event as a JSON string and do some adaptation:
-         * - Bro field names with '.' are not acceptable for indexing into ES. Replace them with '_'.
-         * - set the first level fields of the JSON Bro event as first level fields in the Logisland matching record 
+         * Transform the records into mails and send them
          */
         for (Record record : records)
-        {
-            /**
-             * First extract the first level field to get the Bro event type. Here is an example of a conn bro event:
-             * 
-             * {
-             *   "conn": {
-             *     "id.resp_p": 9092,
-             *     "resp_pkts": 0,
-             *     "resp_ip_bytes": 0,
-             *     "local_orig": true,
-             *     "orig_ip_bytes": 0,
-             *     "orig_pkts": 0,
-             *     "missed_bytes": 0,
-             *     "history": "Cc",
-             *     "tunnel_parents": [],
-             *     "id.orig_p": 56762,
-             *     "local_resp": true,
-             *     "uid": "Ct3Ms01I3Yc6pmMZx7",
-             *     "conn_state": "OTH",
-             *     "id.orig_h": "172.17.0.2",
-             *     "proto": "tcp",
-             *     "id.resp_h": "172.17.0.3",
-             *     "ts": 1487596886.953917
-             *   }
-             * }
-             * 
-             * The "conn" first level field states that the event if of type connection.
-             */
-            String recordValue = (String)record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
+        {            
             
-            // Parse as JSON object
-            Map<String, Object> jsonBroEvent = JsonUtil.convertJsonToMap(recordValue);
-
-            if (jsonBroEvent.isEmpty())
+            Field mailMsgField = record.getField(FIELD_MAIL_MSG);
+            if (mailMsgField != null)
             {
-                logger.error("Empty Bro event or error while parsing it: " + record);
-                continue;
+                String mailMsg = mailMsgField.asString();
+                if (mailMsg == null)
+                {
+                    continue;
+                }
+                
+                // Ok, there is a mail_msg field, create the mail and send it
+                
+//                try {
+//                    SimpleEmail email = new SimpleEmail();
+//                    
+//                    recuperer les champs par defaut du record pour overwriter si present
+//                    
+//                    email.setFrom(fromEmailAddress, fromEmailName);
+//                    
+//                    email.addTo(toEmailAddress);
+//                    email.setSubject("Alert");
+//                    email.setMsg(notificationMessage);
+//                   
+//                    email.setHostName(smtpServerAddress);
+//                    email.setSmtpPort(smtpServerPort);
+//                    email.send();
+//                } catch (EmailException ex) {
+//                    TODO
+//                }
             }
-            
-            if (jsonBroEvent.size() != 1)
-            {
-                logger.error("Bro event should have one bro event type field: " + record);
-                continue;
-            }
-            
-            Map.Entry<String, Object> eventTypeAndValue = jsonBroEvent.entrySet().iterator().next();
-            
-            String broEventType = eventTypeAndValue.getKey();
-            Object broEventValue = eventTypeAndValue.getValue();
-            
-            Map<String, Object> finalBroEvent = null; 
-            try {
-                finalBroEvent = (Map<String, Object>)broEventValue;
-            } catch(Throwable t)
-            {
-                logger.error("Cannot understand bro event content: " + record);
-                continue;
-            }
-            
-            // If debug is enabled, we keep the original content of the bro event in the record_value field. Otherwise
-            // we remove the record_value field.
-            if (debug)    
-            {
-                // Log original JSON string in record_value for debug purpose
-                // Clone the map so that even if we change keys in the map, the original key values are kept
-                // in the record_value field
-                Map<String, Object> normalizedMap = cloneMap(jsonBroEvent);
-                normalizeFields(normalizedMap, null); // Must change '.' characters anyway if want to be able to index in ES  
-                record.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.STRING, "bro_event_raw"));
-                record.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.MAP, normalizedMap));
-            } else
-            {
-                record.removeField(FieldDictionary.RECORD_KEY);
-                record.removeField(FieldDictionary.RECORD_VALUE);
-            }
-            
-            /**
-             * Normalize Bro fields and set first level fields of the record.
-             * Our previous Bro event exemple will give the following Logisland record:
-             * 
-             * "@timestamp": "2017-02-20T13:36:32Z"
-             * "record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
-             * "record_time": 1487597792782
-             * "record_type": "conn"
-             * "id_resp_p": 9092
-             * "resp_pkts": 0
-             * "resp_ip_bytes": 0
-             * "local_orig": true
-             * "orig_ip_bytes": 0
-             * "orig_pkts": 0
-             * "missed_bytes": 0
-             * "history": "Cc"
-             * "tunnel_parents": []
-             * "id_orig_p": 56762
-             * "local_resp": true
-             * "uid": "Ct3Ms01I3Yc6pmMZx7"
-             * "conn_state": "OTH"
-             * "id_orig_h": "172.17.0.2"
-             * "proto": "tcp"
-             * "id_resp_h": "172.17.0.3"
-             * "ts": 1487596886.953917 
-             */
-
-            // Normalize the map key values (Some special characters like '.' are not possible when indexing ion ES)
-            normalizeFields(finalBroEvent, null);                       
-            
-            // Set every first level fields of the Bro event as first level fields of the record for easier processing
-            // in processors following in the current processors stream.
-            setBroEventFieldsAsFirstLevelFields(finalBroEvent, record);
-
-            // Overwrite default reord_type field to indicate to ES processor which index type to use 
-            // (index type is the bro event type)
-            record.setStringField(FieldDictionary.RECORD_TYPE, broEventType);
         }
 
         if (debug)
         {
-            logger.debug("Bro Processor records output: " + records);
+            logger.info("Mailer Processor records output: " + records);
         }
         return records;
     }
     
-    /**
-     * Sets the first level fields of the passed Bro event as first level fields in the passed Logisland record.
-     * @param broEvent Bro event.
-     * @param record Record for which first level fields should be set. 
-     */
-    private static void setBroEventFieldsAsFirstLevelFields(Map<String, Object> broEvent, Record record)
-    {
-        for (Map.Entry<String, Object> jsonEntry : broEvent.entrySet())
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+
+        logger.debug("customValidate");
+
+        /**
+         * If the mail.to configuration key is not set, allow_overwrite should be true so that we know to who we must
+         * send the mail (record must then hold a mail_to field)
+         */
+        if (!context.getPropertyValue(MAIL_TO).isSet())
         {
-            String key = jsonEntry.getKey();
-            Object value = jsonEntry.getValue();
-            if (value instanceof String)
-            {
-                record.setStringField(key, value.toString());
-            } else if (value instanceof Integer)
-            {
-                record.setField(new Field(key, FieldType.INT, value));
-            } else if (value instanceof Long)
-            {
-                record.setField(new Field(key, FieldType.LONG, value));
-            } else if (value instanceof ArrayList)
-            {
-                record.setField(new Field(key, FieldType.ARRAY, value));
-            } else if (value instanceof Float)
-            {
-                record.setField(new Field(key, FieldType.FLOAT, value));
-            } else if (value instanceof Double)
-            {
-                record.setField(new Field(key, FieldType.DOUBLE, value));
-            } else if (value instanceof Map)
-            {
-                record.setField(new Field(key, FieldType.MAP, value));
-            } else if (value instanceof Boolean)
-            {
-                record.setField(new Field(key, FieldType.BOOLEAN, value));
-            } else
-            {
-                // Unrecognized value type, use string
-                record.setStringField(key, JsonUtil.convertToJson(value));
+            if (context.getPropertyValue(ALLOW_OVERWRITE).isSet()) {
+                validationResults.add(
+                        new ValidationResult.Builder()
+                            .explanation("If  " + MAIL_TO.getName() + " is not set,  " + ALLOW_OVERWRITE.getName() + " must be true"
+                                    + " so that the record holds a " + FIELD_MAIL_TO + " field that is used")
+                            .valid(false)
+                            .build());
             }
         }
-    }
-    
-    /**
-     * Deeply clones the passed map regarding keys (so that one can modify keys of the original map without changing
-     * the clone).
-     * @param origMap Map to clone.
-     * @return Cloned map.
-     */
-    private static Map<String, Object> cloneMap(Map<String, Object> origMap)
-    {
-        Map<String, Object> finalMap = new HashMap<String, Object>();
-        origMap.forEach( (key, value) -> {
-            if (value instanceof Map)
-            {
-                Map<String, Object> map = (Map<String, Object>)value;
-                finalMap.put(key, (Object)cloneMap(map)); 
-            } else
-            {
-                finalMap.put(key, value);
-            }
-        });
-        return finalMap;
-    }
-    
-    /**
-     * Normalize keys in the JSON Bro event. For the moment, the only mandatory thing to do is to replace any '.'
-     * character in the field names with an acceptable character for ES indexing (currently '_' so for instance
-     * id.orig_h becomes id_orig_h). This must be done up to the highest depth of the event (event may contain sub maps).
-     * @param broEvent Bro event to normalize.
-     * @param oldToNew Potential mapping of keys to change into another key (old key -> new key). May be null.
-     */
-    private static void normalizeFields(Map<String, Object> broEvent, Map<String, String> oldToNewKeys)
-    {
-        List<String> keys = new ArrayList<String>(); // Do not modify the map while iterating over it
-        for (String key : broEvent.keySet())
-        {
-            keys.add(key);
-        }
-        for (String key : keys)
-        {
-            Object value = broEvent.get(key);
-            // Is it a key to replace ?
-            String newKey = null;
-            if ( (oldToNewKeys != null) && oldToNewKeys.containsKey(key) ) // If the oldToNewKeys map is null, do nothing
-            {
-                newKey = oldToNewKeys.get(key);
-            } else
-            {
-                // Not a special key to replace but we must at least remove unwanted characters
-                if (key.contains("."))
-                {
-                    newKey = key.replaceAll("\\.", "_");
-                }
-            }            
-            
-            // Compute new value
-            Object newValue = null;
-            if (value instanceof Map)
-            {
-                Map<String, Object> map = (Map<String, Object>)value;
-                normalizeFields(map, oldToNewKeys);
-                newValue = map;
-            } else
-            {
-                newValue = value;
-            }
-            
-            if (newKey != null)
-            {
-                broEvent.remove(key);
-                broEvent.put(newKey, newValue);
-            }   
-        }
-    }
+      
+        return validationResults;
+    }    
     
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
@@ -330,9 +261,9 @@ public class MailerProcessor extends AbstractProcessor {
         logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
         
         /**
-         * Handle the debug property
+         * Handle the DEBUG property
          */
-        if (descriptor.getName().equals(KEY_DEBUG))
+        if (descriptor.equals(DEBUG))
         {
           if (newValue != null)
           {
@@ -345,5 +276,118 @@ public class MailerProcessor extends AbstractProcessor {
               debug = false;
           }
         }
-    }   
+        
+        /**
+         * Handle the SMTP_SERVER property
+         */
+        if (descriptor.equals(SMTP_SERVER))
+        {
+            smtpServer = newValue;
+        }
+        
+        /**
+         * Handle the SMTP_PORT property
+         */
+        if (descriptor.equals(SMTP_PORT))
+        {
+            int port = -1;
+            try 
+            {
+                port = new Integer(newValue);
+            } catch (NumberFormatException e)
+            {
+                // TODO something to do?
+            }
+
+            smtpPort = port;
+        }
+        
+        /**
+         * Handle the MAIL_FROM_ADDRESS property
+         */
+        if (descriptor.equals(MAIL_FROM_ADDRESS))
+        {
+            mailFromAddress = newValue;
+        }
+        
+        /**
+         * Handle the MAIL_FROM_NAME property
+         */
+        if (descriptor.equals(MAIL_FROM_NAME))
+        {
+            mailFromName = newValue;
+        }
+        
+        /**
+         * Handle the MAIL_SUBJECT property
+         */
+        if (descriptor.equals(MAIL_SUBJECT))
+        {
+            mailSubject = newValue;
+        }
+        
+        /**
+         * Handle the MAIL_TO property
+         */
+        if (descriptor.equals(MAIL_TO))
+        {
+            mailTos = parseMailTo(newValue);
+        }
+        
+        /**
+         * Handle the ALLOW_OVERWRITE property
+         */
+        if (descriptor.equals(ALLOW_OVERWRITE))
+        {
+          if (newValue != null)
+          {
+              if (newValue.equalsIgnoreCase("true"))
+              {
+                  allowFieldsOverwriting = true;
+              }
+          } else
+          {
+              allowFieldsOverwriting = false;
+          }
+        }
+        
+        if (debug)
+        {
+            displayConfig();
+        }
+    }
+    
+    /**
+     * Parses content of the MAIL_TO configuration property
+     */
+    private String[] parseMailTo(String mailToStr)
+    {
+        String[] localMaiTos = mailToStr.split(",");
+        String[] result = new String[localMaiTos.length];
+        for (int i=0 ; i<localMaiTos.length ; i++)
+        {
+            result[i] =  localMaiTos[i].trim();
+        }
+        return result;
+    }
+    
+    /**
+     * Displays processor configuration
+     */
+    private void displayConfig()
+    {
+        StringBuilder sb = new StringBuilder("Mailer Processor configuration:");
+        sb.append("\n" + SMTP_SERVER.getName() + ": " + smtpServer);
+        sb.append("\n" + SMTP_PORT.getName() + ": " + smtpPort);
+        sb.append("\n" + MAIL_FROM_ADDRESS.getName() + ": " + mailFromAddress);
+        sb.append("\n" + MAIL_FROM_NAME.getName() + ": " + mailFromName);
+        sb.append("\n" + MAIL_SUBJECT.getName() + ": " + mailSubject);
+        sb.append("\n" + MAIL_TO.getName() + ":");
+        for (String mailTo : mailTos)
+        {
+            sb.append(" " + mailTo);
+        }
+        sb.append("\n" + ALLOW_OVERWRITE.getName() + ": " + allowFieldsOverwriting);
+        logger.info(sb.toString());
+    }
 }
