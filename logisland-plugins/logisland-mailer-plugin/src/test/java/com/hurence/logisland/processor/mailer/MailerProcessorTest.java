@@ -22,90 +22,80 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test simple Mailer processor.
+ * Test Mailer processor.
+ * WARNING: These tests require a real SMTP server so for not having credentials hardcoded here,
+ * there are not filled. To run this test:
+ * - enable the tests by uncommenting //@Test into @Test for each method
+ * - Fill the parameters marked with // <----- FILL ME
+ * - For the test to be successful, you should receive in the configured mailbox one mail per test method
+ *   (test method is in the mail body). 
  */
 public class MailerProcessorTest {
     
     private static Logger logger = LoggerFactory.getLogger(MailerProcessorTest.class);
-    
+
+    /**
+     * WARNING: Those values need to be filled so that the test can be run
+     */
+    private static final String TEST_SMTP_SERVER = "smtp.fillme.com"; // <----- FILL ME
+    private static final String TEST_SMTP_PORT = "465"; // <----- FILL ME
+    private static final String TEST_SMTP_SECURITY_USERNAME = "fill.me"; // <----- FILL ME
+    private static final String TEST_SMTP_SECURITY_PASSWORD = "fillMePassword"; // <----- FILL ME
+    private static final String TEST_SMTP_SECURITY_SSL = "true"; // <----- FILL ME
+    private static final String TEST_MAIL_FROM_ADDRESS = "tester@logisland.net (must be a valid address!)"; // <----- FILL ME
+    private static final String TEST_MAIL_FROM_NAME = "Mailer Processor Tester";
+    private static final String TEST_MAIL_SUBJECT = "Logisland Mailer Processor Test";
+    private static final String TEST_MAIL_TO = "tester@logisland.net (must be a valid address where you will receive mails!)"; // <----- FILL ME
+
     //@Test
-    public void testBroConnEvent() {
+    public void testBasicFromConfig() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        testRunner.setProperty(MailerProcessor.MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        testRunner.setProperty(MailerProcessor.MAIL_TO, TEST_MAIL_TO);
         testRunner.assertValid();
-        Record record = new StandardRecord("bro_event");
-        record.setStringField(FieldDictionary.RECORD_VALUE, "TODO");
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_MSG, "testBasicFromConfig:\nThis is the record message.");
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
-
-        MockRecord out = testRunner.getOutputRecords().get(0);
-        
-        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
-        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "conn");
-        
-        out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1487603366.277002);
-        
-        out.assertFieldExists("uid");
-        out.assertFieldEquals("uid", "Coo3g71UUMM2AyxWB");
-
-        out.assertFieldExists("id_orig_h");
-        out.assertFieldEquals("id_orig_h", "172.17.0.3");
-        
-        out.assertFieldExists("id_orig_p");
-        out.assertFieldEquals("id_orig_p", (int)9200);
-        
-        out.assertFieldExists("id_resp_h");
-        out.assertFieldEquals("id_resp_h", "172.17.0.2");
-        
-        out.assertFieldExists("id_resp_p");
-        out.assertFieldEquals("id_resp_p", (int)42770);
-        
-        out.assertFieldExists("proto");
-        out.assertFieldEquals("proto", "tcp");
-        
-        out.assertFieldExists("conn_state");
-        out.assertFieldEquals("conn_state", "OTH");
-        
-        out.assertFieldExists("local_orig");
-        out.assertFieldEquals("local_orig", true);
-        
-        out.assertFieldExists("local_resp");
-        out.assertFieldEquals("local_resp", true);
-        
-        out.assertFieldExists("missed_bytes");
-        out.assertFieldEquals("missed_bytes", (int)0);
-        
-        out.assertFieldExists("history");
-        out.assertFieldEquals("history", "Cc");
-        
-        out.assertFieldExists("orig_pkts");
-        out.assertFieldEquals("orig_pkts", (int)0);
-        
-        out.assertFieldExists("orig_ip_bytes");
-        out.assertFieldEquals("orig_ip_bytes", (int)0);
-        
-        out.assertFieldExists("resp_pkts");
-        out.assertFieldEquals("resp_pkts", (int)0);
-
-        out.assertFieldExists("resp_ip_bytes");
-        out.assertFieldEquals("resp_ip_bytes", (int)0);
-        
-        out.assertFieldExists("tunnel_parents");
-        List<String> tunnelParents = (List<String>)out.getField("tunnel_parents").getRawValue();
-        assertEquals(0, tunnelParents.size());       
+        testRunner.assertOutputRecordsCount(0);
+    }
+    
+    //@Test
+    public void testBasicFromRecord() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.assertValid();
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_MSG, "testBasicFromRecord:\nThis is the record message.");
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
     }
 }

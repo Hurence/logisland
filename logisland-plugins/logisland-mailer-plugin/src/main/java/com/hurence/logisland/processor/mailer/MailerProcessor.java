@@ -28,6 +28,7 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
+import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +57,17 @@ public class MailerProcessor extends AbstractProcessor {
 
     private String smtpServer = null;
     private int smtpPort = 25;
+    private String smtpSecurityUsername = null;
+    private String smtpSecurityPassword = null;
+    private boolean smtpSecuritySsl = false;
+
+    private static final String DEFAULT_FROM_NAME = "Logisland";
+    private static final String DEFAULT_SUBJECT = "[LOGISLAND] Automatic email";
+
     private String[] mailTos = new String[]{};
     private String mailFromAddress = null;
-    private String mailFromName = null;
-    private String mailSubject = null;
+    private String mailFromName = DEFAULT_FROM_NAME;
+    private String mailSubject = DEFAULT_SUBJECT;
     private boolean allowFieldsOverwriting = true;
 
     /**
@@ -89,6 +97,9 @@ public class MailerProcessor extends AbstractProcessor {
 
     private static final String KEY_SMTP_SERVER = "smtp.server";
     private static final String KEY_SMTP_PORT = "smtp.port";
+    private static final String KEY_SMTP_SECURITY_USERNAME = "smtp.security.username";
+    private static final String KEY_SMTP_SECURITY_PASSWORD = "smtp.security.password";
+    private static final String KEY_SMTP_SECURITY_SSL = "smtp.security.ssl";
 
     private static final String KEY_MAIL_TO = "mail.to";
     private static final String KEY_MAIL_FROM_ADDRESS = "mail.from.address";
@@ -102,6 +113,7 @@ public class MailerProcessor extends AbstractProcessor {
             .description("Enable debug. If enabled, debug information are written into stdout.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
+            .defaultValue("false")
             .build();
     
     public static final PropertyDescriptor SMTP_SERVER = new PropertyDescriptor.Builder()
@@ -118,25 +130,43 @@ public class MailerProcessor extends AbstractProcessor {
             .required(false)
             .build();
     
+    public static final PropertyDescriptor SMTP_SECURITY_USERNAME = new PropertyDescriptor.Builder()
+            .name(KEY_SMTP_SECURITY_USERNAME)
+            .description("SMTP username.")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor SMTP_SECURITY_PASSWORD = new PropertyDescriptor.Builder()
+            .name(KEY_SMTP_SECURITY_PASSWORD)
+            .description("SMTP password.")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor SMTP_SECURITY_SSL = new PropertyDescriptor.Builder()
+            .name(KEY_SMTP_SECURITY_SSL)
+            .description("Use SSL under SMPT or not. Default is false.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+    
     public static final PropertyDescriptor MAIL_FROM_ADDRESS = new PropertyDescriptor.Builder()
             .name(KEY_MAIL_FROM_ADDRESS)
             .description("Mail sender email.")
-            .required(false)
-            .defaultValue("logisland@yourdomain.com")
+            .required(true)
             .build();
     
     public static final PropertyDescriptor MAIL_FROM_NAME = new PropertyDescriptor.Builder()
             .name(KEY_MAIL_FROM_NAME)
             .description("Mail sender name.")
             .required(false)
-            .defaultValue("Logisland")
             .build();
     
     public static final PropertyDescriptor MAIL_SUBJECT = new PropertyDescriptor.Builder()
             .name(KEY_MAIL_SUBJECT)
             .description("Mail subject.")
             .required(false)
-            .defaultValue("[LOGISLAND] Automatic email.")
+            .defaultValue(DEFAULT_SUBJECT)
             .build();
     
     public static final PropertyDescriptor MAIL_TO = new PropertyDescriptor.Builder()
@@ -169,6 +199,9 @@ public class MailerProcessor extends AbstractProcessor {
         descriptors.add(DEBUG);
         descriptors.add(SMTP_SERVER);
         descriptors.add(SMTP_PORT);
+        descriptors.add(SMTP_SECURITY_USERNAME);
+        descriptors.add(SMTP_SECURITY_PASSWORD);
+        descriptors.add(SMTP_SECURITY_SSL);
         descriptors.add(MAIL_FROM_ADDRESS);
         descriptors.add(MAIL_FROM_NAME);
         descriptors.add(MAIL_SUBJECT);
@@ -185,41 +218,110 @@ public class MailerProcessor extends AbstractProcessor {
         {
             logger.info("Mailer Processor records input: " + records);
         }
+        
+        final Collection<Record> failedRecords = new ArrayList<>();
 
         /**
          * Transform the records into mails and send them
          */
         for (Record record : records)
         {            
-            
-            Field mailMsgField = record.getField(FIELD_MAIL_MSG);
-            if (mailMsgField != null)
+            String mailMsg = getStringField(record, FIELD_MAIL_MSG);
+            if (mailMsg != null)
             {
-                String mailMsg = mailMsgField.asString();
-                if (mailMsg == null)
-                {
-                    continue;
-                }
                 
                 // Ok, there is a mail_msg field, create the mail and send it
-                
-//                try {
-//                    SimpleEmail email = new SimpleEmail();
-//                    
-//                    recuperer les champs par defaut du record pour overwriter si present
-//                    
-//                    email.setFrom(fromEmailAddress, fromEmailName);
-//                    
-//                    email.addTo(toEmailAddress);
-//                    email.setSubject("Alert");
-//                    email.setMsg(notificationMessage);
-//                   
-//                    email.setHostName(smtpServerAddress);
-//                    email.setSmtpPort(smtpServerPort);
-//                    email.send();
-//                } catch (EmailException ex) {
-//                    TODO
-//                }
+                try {
+                    String[] finalMailTos = mailTos;
+                    String finalMailFromAddress = mailFromAddress;
+                    String finalMailFromName = mailFromName;
+                    String finalMailSubject = mailSubject;
+                    
+                    /**
+                     * Overwrite some variables with special fields in the record if any and this is allowed
+                     */
+                    if (allowFieldsOverwriting)
+                    {
+                        String recordMailFromAddress = getStringField(record, FIELD_MAIL_FROM_ADDRESS);
+                        if (recordMailFromAddress != null)
+                        {
+                            finalMailFromAddress = recordMailFromAddress;
+                        }
+
+                        String recordMailFromName = getStringField(record, FIELD_MAIL_FROM_NAME);
+                        if (recordMailFromName != null)
+                        {
+                            finalMailFromName = recordMailFromName;
+                        }
+                        
+                        String recordMailSubject = getStringField(record, FIELD_MAIL_SUBJECT);
+                        if (recordMailSubject != null)
+                        {
+                            finalMailSubject = recordMailSubject;
+                        }
+                        
+                        String recordMailTo = getStringField(record, FIELD_MAIL_TO);
+                        if (recordMailTo != null)
+                        {
+                            finalMailTos = parseMailTo(recordMailTo);
+                        }
+                    }
+                    
+                    /**
+                     * Create an fill the mail
+                     */
+                    
+                    SimpleEmail email = new SimpleEmail();
+                    
+                    // Set From info
+                    if (finalMailFromAddress == null)
+                    {
+                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No From address defined");
+                        failedRecords.add(record);
+                        continue;
+                    }
+                    if (finalMailFromName != null)
+                    {
+                        email.setFrom(finalMailFromAddress, finalMailFromName);
+                    }
+                    else
+                    {
+                        email.setFrom(finalMailFromAddress);
+                    }
+                    
+                    email.setSubject(finalMailSubject);
+                    email.setMsg(mailMsg);
+
+                    // Set To info
+                    if (finalMailTos.length == 0)
+                    {
+                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No mail recipient.");
+                        failedRecords.add(record);
+                        continue;
+                    }
+                    for(String mailTo : finalMailTos)
+                    {
+                        email.addTo(mailTo);
+                    }
+                    
+                    /**
+                     * Set sending parameters
+                     */
+                   
+                    email.setHostName(smtpServer);
+                    email.setSmtpPort(smtpPort);
+                    if ( (smtpSecurityUsername != null) && (smtpSecurityPassword != null) )
+                    {
+                        email.setAuthentication(smtpSecurityUsername, smtpSecurityPassword);
+                    }
+                    email.setSSLOnConnect(smtpSecuritySsl);
+                    
+                    // Send the mail
+                    email.send();
+                } catch (EmailException ex) {
+                    record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Unable to send email: " + ex.getMessage());
+                    failedRecords.add(record);
+                }
             }
         }
 
@@ -227,7 +329,25 @@ public class MailerProcessor extends AbstractProcessor {
         {
             logger.info("Mailer Processor records output: " + records);
         }
-        return records;
+        return failedRecords;
+    }
+    
+    /**
+     * Retrieve the record field value
+     * @param fieldName The name of the string field
+     * @return The value of the field or null if the field is not present in the record
+     */
+    private String getStringField(Record record, String fieldName)
+    {
+        Field field = record.getField(fieldName);
+        if (field != null)
+        {
+            return field.asString();
+        }
+        else
+        {
+            return null;
+        }
     }
     
     @Override
@@ -242,14 +362,29 @@ public class MailerProcessor extends AbstractProcessor {
          */
         if (!context.getPropertyValue(MAIL_TO).isSet())
         {
-            if (context.getPropertyValue(ALLOW_OVERWRITE).isSet()) {
+            
+            if (!context.getPropertyValue(ALLOW_OVERWRITE).asBoolean()) {
                 validationResults.add(
                         new ValidationResult.Builder()
-                            .explanation("If  " + MAIL_TO.getName() + " is not set,  " + ALLOW_OVERWRITE.getName() + " must be true"
-                                    + " so that the record holds a " + FIELD_MAIL_TO + " field that is used")
+                            .explanation("if " + MAIL_TO.getName() + " is not set, " + ALLOW_OVERWRITE.getName() + " must be true"
+                                    + " so that the record holds a " + FIELD_MAIL_TO + " field that is used.")
                             .valid(false)
                             .build());
             }
+        }
+        
+        /**
+         * Both username and password must be set or none of them
+         */
+        if ( (context.getPropertyValue(SMTP_SECURITY_USERNAME).isSet() && !context.getPropertyValue(SMTP_SECURITY_PASSWORD).isSet())
+                || (!context.getPropertyValue(SMTP_SECURITY_USERNAME).isSet() && context.getPropertyValue(SMTP_SECURITY_PASSWORD).isSet()))
+        {
+            validationResults.add(
+                    new ValidationResult.Builder()
+                        .explanation("Both " + SMTP_SECURITY_USERNAME.getName() + " and " + SMTP_SECURITY_PASSWORD.getName() + " should be set"
+                                + " or none of them.")
+                        .valid(false)
+                        .build());
         }
       
         return validationResults;
@@ -300,6 +435,39 @@ public class MailerProcessor extends AbstractProcessor {
             }
 
             smtpPort = port;
+        }
+        
+        /**
+         * Handle the SMTP_SECURITY_USERNAME property
+         */
+        if (descriptor.equals(SMTP_SECURITY_USERNAME))
+        {
+            smtpSecurityUsername = newValue;
+        }
+        
+        /**
+         * Handle the SMTP_SECURITY_PASSWORD property
+         */
+        if (descriptor.equals(SMTP_SECURITY_PASSWORD))
+        {
+            smtpSecurityPassword = newValue;
+        }
+        
+        /**
+         * Handle the SMTP_SECURITY_SSL property
+         */
+        if (descriptor.equals(SMTP_SECURITY_SSL))
+        {
+          if (newValue != null)
+          {
+              if (newValue.equalsIgnoreCase("true"))
+              {
+                  smtpSecuritySsl = true;
+              }
+          } else
+          {
+              smtpSecuritySsl = false;
+          }
         }
         
         /**
@@ -379,6 +547,9 @@ public class MailerProcessor extends AbstractProcessor {
         StringBuilder sb = new StringBuilder("Mailer Processor configuration:");
         sb.append("\n" + SMTP_SERVER.getName() + ": " + smtpServer);
         sb.append("\n" + SMTP_PORT.getName() + ": " + smtpPort);
+        sb.append("\n" + SMTP_SECURITY_USERNAME.getName() + ": " + smtpSecurityUsername);
+        sb.append("\n" + SMTP_SECURITY_PASSWORD.getName() + ": " + smtpSecurityPassword);
+        sb.append("\n" + SMTP_SECURITY_SSL.getName() + ": " + smtpSecuritySsl);
         sb.append("\n" + MAIL_FROM_ADDRESS.getName() + ": " + mailFromAddress);
         sb.append("\n" + MAIL_FROM_NAME.getName() + ": " + mailFromName);
         sb.append("\n" + MAIL_SUBJECT.getName() + ": " + mailSubject);
