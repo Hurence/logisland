@@ -46,7 +46,7 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 
 # Spark
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.2-bin-hadoop2.6.tgz | tar -xz -C /usr/local/
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-1.6.2-bin-hadoop2.6 spark
 ENV SPARK_HOME /usr/local/spark
 ENV PATH $PATH:$SPARK_HOME/bin
