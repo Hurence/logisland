@@ -587,6 +587,42 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.scripting.python.PythonProcessor: 
+
+PythonProcessor
+---------------
+ !!!! WARNING !!!!
+
+The python processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings.
+
+This processor allows to implement and run a processor written in python.This can be done in 2 ways. Either defining init and process method codes as configuration property values or poiting to a python module script file with another configuration property value. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both methods are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use a configuration property to give their location.
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.PythonProcessor
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "script.code.imports", "For inline mode, this is the pyhton code that should hold the import statements if required", "", "null", "", ""
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if script.code.process is defined", "", "null", "", ""
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the script.code.init property", "", "null", "", ""
+   "script.path", "The path to the user's python processor script. Use this property for file mode.", "", "null", "", ""
+   "dependencies.path", "The path to the dependencies for the user's python code, whether in inline or file mode. This is optional as your code may not have additional dependencies. If you definedscript.path (so using file mode) and if dependencies.path is not defined, Logisland will scan a potential directory named dependencies in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "", ""
+   "**logisland.dependencies.path**", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this.", "", "src/main/resources/python", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.RemoveFields: 
 
 RemoveFields

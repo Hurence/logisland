@@ -68,7 +68,7 @@ public class JsonDocumentationWriter implements DocumentationWriter {
             writeProperties(configurableComponent, generator);
             writeDynamicProperties(configurableComponent, generator);
             writeAdditionalBodyInfo(configurableComponent, generator);
-            writeSeeAlso(configurableComponent, generator);
+        //    writeSeeAlso(configurableComponent, generator);
 
             generator.writeEndObject();
 

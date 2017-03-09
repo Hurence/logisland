@@ -161,12 +161,7 @@ public class DocGenerator {
                     final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
                     try {
                         document(docsDirectory, componentClass, writerType);
-                        if (writerType.equals("json")) {
-                            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
-                            try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
-                                writer.println(",");
-                            }
-                        }
+
                     } catch (Exception e) {
                         // nothing to do
                     }
@@ -199,7 +194,7 @@ public class DocGenerator {
     private static void document(final File docsDir, final Class<? extends ConfigurableComponent> componentClass, final String writerType)
             throws InstantiationException, IllegalAccessException, IOException, InitializationException {
 
-        logger.debug("Documenting: " + componentClass);
+        logger.info("Documenting: " + componentClass);
         final ConfigurableComponent component = componentClass.newInstance();
         final ConfigurableComponentInitializer initializer = getComponentInitializer(componentClass);
         initializer.initialize(component);
@@ -212,9 +207,16 @@ public class DocGenerator {
             writer.write(component, output);
         } catch (Exception e) {
             logger.error(e.getMessage());
+        } finally {
+            initializer.teardown(component);
+            if (writerType.equals("json")) {
+                try (final PrintWriter commaWriter = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
+                    commaWriter.println(",");
+                }
+            }
         }
 
-        initializer.teardown(component);
+
     }
 
     /**
