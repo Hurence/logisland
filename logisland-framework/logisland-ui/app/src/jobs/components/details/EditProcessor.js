@@ -9,7 +9,5 @@ export default {
 };
 
 function EditProcessorController($log, $scope)  {
-    var vm = $scope;
-
-    vm.processor = null;
+    var self = this;
 };
