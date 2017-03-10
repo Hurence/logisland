@@ -22,14 +22,15 @@ public class PluginsApiServiceImpl extends PluginsApiService {
         super(kafkaRegistry);
     }
 
-    private static String JSON_PLUGINS_FILE = "/plugins.json";
+    private static String JSON_PLUGINS_FILE = "plugins.json";
     /**
      * load logs from ressource as a string or return null if an error occurs
      */
     public static String loadFileContentAsString(String path, String encoding) {
         try {
-            final URL url = PluginsApiServiceImpl.class.getResource(path);
+            final URL url = PluginsApiServiceImpl.class.getClassLoader().getResource(path);
             assert url != null;
+            logger.debug("try to load plugins definition from file {} ", url);
             byte[] encoded = Files.readAllBytes(Paths.get(new File(url.toURI()).getAbsolutePath()));
             return new String(encoded, encoding);
         } catch (Exception e) {
