@@ -15,10 +15,8 @@
  */
 package com.hurence.logisland.processor.mailer;
 
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
@@ -51,6 +49,8 @@ public class MailerProcessorTest {
     private static final String TEST_SMTP_SECURITY_SSL = "true"; // <----- FILL ME
     private static final String TEST_MAIL_FROM_ADDRESS = "tester@logisland.net (must be a valid address!)"; // <----- FILL ME
     private static final String TEST_MAIL_FROM_NAME = "Mailer Processor Tester";
+    private static final String TEST_MAIL_BOUNCE_ADDRESS = "bounce@logisland.net (must be a valid address!)"; // <----- FILL ME
+    private static final String TEST_MAIL_REPLYTO_ADDRESS = "replyto@logisland.net (must be a valid address!)"; // <----- FILL ME
     private static final String TEST_MAIL_SUBJECT = "Logisland Mailer Processor Test";
     private static final String TEST_MAIL_TO = "tester@logisland.net (must be a valid address where you will receive mails!)"; // <----- FILL ME
 
@@ -64,6 +64,8 @@ public class MailerProcessorTest {
         testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
         testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
         testRunner.setProperty(MailerProcessor.MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
         testRunner.setProperty(MailerProcessor.MAIL_SUBJECT, TEST_MAIL_SUBJECT);
         testRunner.setProperty(MailerProcessor.MAIL_TO, TEST_MAIL_TO);
         testRunner.assertValid();
@@ -85,11 +87,13 @@ public class MailerProcessorTest {
         testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
         testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
         testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
         testRunner.assertValid();
         Record record = new StandardRecord("mail_record");
         record.setStringField(MailerProcessor.FIELD_MAIL_MSG, "testBasicFromRecord:\nThis is the record message.");
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
         record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
         testRunner.enqueue(record);

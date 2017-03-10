@@ -67,6 +67,8 @@ public class MailerProcessor extends AbstractProcessor {
     private String[] mailTos = new String[]{};
     private String mailFromAddress = null;
     private String mailFromName = DEFAULT_FROM_NAME;
+    private String mailBounceAddress = null;
+    private String mailReplyToAddress = null;
     private String mailSubject = DEFAULT_SUBJECT;
     private boolean allowFieldsOverwriting = true;
 
@@ -83,8 +85,12 @@ public class MailerProcessor extends AbstractProcessor {
     public static final String FIELD_MAIL_TO = FIELD_PREFIX + "_to";
     // May be used to overwrite mail.from.address configured in processor 
     public static final String FIELD_MAIL_FROM_ADDRESS = FIELD_PREFIX + "_from_address";    
-    // May be used to overwrite mail.from.name configured in processor 
+    // May be used to overwrite mail.from.name configured in processor
     public static final String FIELD_MAIL_FROM_NAME = FIELD_PREFIX + "_from_name";
+    // May be used to overwrite mail.bounce.address configured in processor 
+    public static final String FIELD_MAIL_BOUNCE_ADDRESS = FIELD_PREFIX + "_bounce_address"; 
+    // May be used to overwrite mail.replyto.address configured in processor 
+    public static final String FIELD_MAIL_REPLYTO_ADDRESS = FIELD_PREFIX + "_replyto_address";
     // May be used to overwrite mail.subject configured in processor 
     public static final String FIELD_MAIL_SUBJECT = FIELD_PREFIX + "_subject";
     
@@ -104,6 +110,8 @@ public class MailerProcessor extends AbstractProcessor {
     private static final String KEY_MAIL_TO = "mail.to";
     private static final String KEY_MAIL_FROM_ADDRESS = "mail.from.address";
     private static final String KEY_MAIL_FROM_NAME = "mail.from.name";
+    private static final String KEY_MAIL_BOUNCE_ADDRESS = "mail.bounce.address";
+    private static final String KEY_MAIL_REPLYTO_ADDRESS = "mail.replyto.address";
     private static final String KEY_MAIL_SUBJECT = "mail.subject";
     
     private static final String KEY_ALLOW_OVERWRITE = "allow_overwrite";
@@ -152,13 +160,26 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor MAIL_FROM_ADDRESS = new PropertyDescriptor.Builder()
             .name(KEY_MAIL_FROM_ADDRESS)
-            .description("Mail sender email.")
+            .description("Valid mail sender email address.")
             .required(true)
             .build();
     
     public static final PropertyDescriptor MAIL_FROM_NAME = new PropertyDescriptor.Builder()
             .name(KEY_MAIL_FROM_NAME)
             .description("Mail sender name.")
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor MAIL_BOUNCE_ADDRESS = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_BOUNCE_ADDRESS)
+            .description("Valid bounce email address (where error mail is sent if the mail is refused by the recipient"
+                    + " server).")
+            .required(true)
+            .build();
+    
+    public static final PropertyDescriptor MAIL_REPLYTO_ADDRESS = new PropertyDescriptor.Builder()
+            .name(KEY_MAIL_REPLYTO_ADDRESS)
+            .description("Reply to email address.")
             .required(false)
             .build();
     
@@ -204,6 +225,8 @@ public class MailerProcessor extends AbstractProcessor {
         descriptors.add(SMTP_SECURITY_SSL);
         descriptors.add(MAIL_FROM_ADDRESS);
         descriptors.add(MAIL_FROM_NAME);
+        descriptors.add(MAIL_BOUNCE_ADDRESS);
+        descriptors.add(MAIL_REPLYTO_ADDRESS);
         descriptors.add(MAIL_SUBJECT);
         descriptors.add(MAIL_TO);
         descriptors.add(ALLOW_OVERWRITE);
@@ -235,8 +258,10 @@ public class MailerProcessor extends AbstractProcessor {
                     String[] finalMailTos = mailTos;
                     String finalMailFromAddress = mailFromAddress;
                     String finalMailFromName = mailFromName;
+                    String finalMailBounceAddress = mailBounceAddress;
+                    String finalMailReplyToAddress = mailReplyToAddress;
                     String finalMailSubject = mailSubject;
-                    
+
                     /**
                      * Overwrite some variables with special fields in the record if any and this is allowed
                      */
@@ -252,6 +277,18 @@ public class MailerProcessor extends AbstractProcessor {
                         if (recordMailFromName != null)
                         {
                             finalMailFromName = recordMailFromName;
+                        }
+                        
+                        String recordMailBounceAddress = getStringField(record, FIELD_MAIL_BOUNCE_ADDRESS);
+                        if (recordMailBounceAddress != null)
+                        {
+                            finalMailBounceAddress = recordMailBounceAddress;
+                        }
+                        
+                        String recordMailReplyToAddress = getStringField(record, FIELD_MAIL_REPLYTO_ADDRESS);
+                        if (recordMailReplyToAddress != null)
+                        {
+                            finalMailReplyToAddress = recordMailReplyToAddress;
                         }
                         
                         String recordMailSubject = getStringField(record, FIELD_MAIL_SUBJECT);
@@ -287,6 +324,12 @@ public class MailerProcessor extends AbstractProcessor {
                     else
                     {
                         email.setFrom(finalMailFromAddress);
+                    }
+                    
+                    email.setBounceAddress(finalMailBounceAddress);
+                    if (finalMailReplyToAddress != null)
+                    {
+                        email.addReplyTo(finalMailReplyToAddress);
                     }
                     
                     email.setSubject(finalMailSubject);
@@ -487,6 +530,22 @@ public class MailerProcessor extends AbstractProcessor {
         }
         
         /**
+         * Handle the MAIL_BOUNCE_ADDRESS property
+         */
+        if (descriptor.equals(MAIL_BOUNCE_ADDRESS))
+        {
+            mailBounceAddress = newValue;
+        }
+        
+        /**
+         * Handle the MAIL_REPLYTO_ADDRESS property
+         */
+        if (descriptor.equals(MAIL_REPLYTO_ADDRESS))
+        {
+            mailReplyToAddress = newValue;
+        }
+        
+        /**
          * Handle the MAIL_SUBJECT property
          */
         if (descriptor.equals(MAIL_SUBJECT))
@@ -552,6 +611,8 @@ public class MailerProcessor extends AbstractProcessor {
         sb.append("\n" + SMTP_SECURITY_SSL.getName() + ": " + smtpSecuritySsl);
         sb.append("\n" + MAIL_FROM_ADDRESS.getName() + ": " + mailFromAddress);
         sb.append("\n" + MAIL_FROM_NAME.getName() + ": " + mailFromName);
+        sb.append("\n" + MAIL_BOUNCE_ADDRESS.getName() + ": " + mailBounceAddress);
+        sb.append("\n" + MAIL_REPLYTO_ADDRESS.getName() + ": " + mailReplyToAddress);
         sb.append("\n" + MAIL_SUBJECT.getName() + ": " + mailSubject);
         sb.append("\n" + MAIL_TO.getName() + ":");
         for (String mailTo : mailTos)
