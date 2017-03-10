@@ -18,6 +18,7 @@ System.config({
     "angular-messages": "github:angular/bower-angular-messages@1.5.8",
     "angular-mocks": "github:angular/bower-angular-mocks@1.5.8",
     "angular-resource": "github:angular/bower-angular-resource@1.5.8",
+    "angular-xeditable": "github:vitalets/angular-xeditable@0.6.0",
     "babel": "npm:babel-core@5.8.38",
     "babel-runtime": "npm:babel-runtime@5.8.38",
     "core-js": "npm:core-js@1.2.7",

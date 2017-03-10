@@ -6,12 +6,12 @@ import 'angular-aria';
 import 'angular-material';
 import 'angular-messages';
 import 'angular-resource';
-import 'swimlane/angular-data-table';
-
+//import 'swimlane/angular-data-table';
+import 'angular-xeditable';
 import AppJobsController from 'src/AppJobsController';
 import Jobs from 'src/jobs/Jobs';
 
-export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ngMessages', Jobs.name ] )
+export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ngMessages', 'xeditable', Jobs.name ] )
   .config(($mdIconProvider, $mdThemingProvider) => {
     // Register the `avatar` icons
     $mdIconProvider
