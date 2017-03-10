@@ -4,12 +4,14 @@ import com.hurence.logisland.agent.rest.api.ApiResponseMessage;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
 import com.hurence.logisland.agent.rest.api.PluginsApiService;
 import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,10 +30,10 @@ public class PluginsApiServiceImpl extends PluginsApiService {
      */
     public static String loadFileContentAsString(String path, String encoding) {
         try {
-            final URL url = PluginsApiServiceImpl.class.getClassLoader().getResource(path);
-            assert url != null;
-            logger.debug("try to load plugins definition from file {} ", url);
-            byte[] encoded = Files.readAllBytes(Paths.get(new File(url.toURI()).getAbsolutePath()));
+            final InputStream is = PluginsApiServiceImpl.class.getClassLoader().getResourceAsStream(path);
+            assert is != null;
+            byte[] encoded = IOUtils.toByteArray(is);
+            is.close();
             return new String(encoded, encoding);
         } catch (Exception e) {
             logger.error(String.format("Could not load json file %s and convert to string", path), e);
