@@ -29,21 +29,40 @@ import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.ImageHtmlEmail;
 import org.apache.commons.mail.SimpleEmail;
+import org.apache.commons.mail.resolver.DataSourceClassPathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Mailer Processor
+ * Mailer Processor.
+ * This processor is able to send mails from the incoming records.
+ * A minimum processor configuration is required (mainly smtp server info and some mails)
+ * Only records with either FIELD_MAIL_TEXT or FIELD_MAIL_HTML fields set will generate a mail.
+ * - If FIELD_MAIL_TEXT is set, it holds the text content of the mail to be sent
+ * - If FIELD_MAIL_HTML is set, it informs the processor to use the HTML template of its configuration for sending the
+ *   mail. Any parameter defined in the template will be retrieved from the fields with the same name embedded in the
+ *   record.
+ * 
+ * If it is enabled in processor configuration, it is possible to overwrite some config properties directly in the
+ * record with some specific fields (FIELD_MAIL_TO, FIELD_MAIL_SUBJECT...)
+ * 
+ * Note: you can use an html template using embedded image. Images should then be in the class path (in a jar file)
+ * and the format of src attribute in the img html tag should be like:
+ * <img src="path/in/classpath/spectacular_image.gif" alt="Spectacular Image">
  */
-@Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert"})
+@Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert", "html"})
 @CapabilityDescription(
         "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
         + " To generate an email and trigger an email sending, an incoming record must have a mail_msg field with the content of the mail as value."
@@ -71,6 +90,15 @@ public class MailerProcessor extends AbstractProcessor {
     private String mailReplyToAddress = null;
     private String mailSubject = DEFAULT_SUBJECT;
     private boolean allowFieldsOverwriting = true;
+    
+    // HTML template as stated in the configuration
+    private String htmlTemplate = null;
+    
+    // HTML form derived from htmlTemplate, ready for parameters injection
+    private MessageFormat htmlForm = null;
+    
+    // List of parameters for the HTML template. They must be present in the record as fields.
+    private List<String> parameterNames = new ArrayList<String>();
 
     /**
      * Definitions for the fields of the incoming record
@@ -78,8 +106,14 @@ public class MailerProcessor extends AbstractProcessor {
     
     private static final String FIELD_PREFIX = "mail";
     
-    // Sole mandatory field. This holds the content of the mail to be sent.
-    public static final String FIELD_MAIL_MSG = FIELD_PREFIX + "_msg";
+    /**
+     * Either FIELD_MAIL_TEXT or FIELD_MAIL_HTML is mandatory for a mail to be sent.
+     * If both fields are present, HTML mode is used and FIELD_MAIL_TEXT content is used as alternative text message.
+     */
+    // This holds the content of the mail to be sent as text.
+    public static final String FIELD_MAIL_TEXT = FIELD_PREFIX + "_text";
+    // If this (boolean) field is present and set to true, the HTML template is used to send the mail instead of the text.
+    public static final String FIELD_MAIL_HTML = FIELD_PREFIX + "_html";
 
     // May be used to overwrite mail.to configured in processor
     public static final String FIELD_MAIL_TO = FIELD_PREFIX + "_to";
@@ -93,11 +127,11 @@ public class MailerProcessor extends AbstractProcessor {
     public static final String FIELD_MAIL_REPLYTO_ADDRESS = FIELD_PREFIX + "_replyto_address";
     // May be used to overwrite mail.subject configured in processor 
     public static final String FIELD_MAIL_SUBJECT = FIELD_PREFIX + "_subject";
-    
+
     /**
      * Configuration keys
      */
-    
+
     // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
     private static final String KEY_DEBUG = "debug";
 
@@ -115,6 +149,8 @@ public class MailerProcessor extends AbstractProcessor {
     private static final String KEY_MAIL_SUBJECT = "mail.subject";
     
     private static final String KEY_ALLOW_OVERWRITE = "allow_overwrite";
+    
+    private static final String KEY_HTML_TEMPLATE = "html.template";
     
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
@@ -206,6 +242,12 @@ public class MailerProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .defaultValue("true")
             .build();
+    
+    public static final PropertyDescriptor HTML_TEMPLATE = new PropertyDescriptor.Builder()
+            .name(KEY_HTML_TEMPLATE)
+            .description("HTML template to use.")
+            .required(false)
+            .build();
 
     @Override
     public void init(final ProcessContext context)
@@ -230,6 +272,7 @@ public class MailerProcessor extends AbstractProcessor {
         descriptors.add(MAIL_SUBJECT);
         descriptors.add(MAIL_TO);
         descriptors.add(ALLOW_OVERWRITE);
+        descriptors.add(HTML_TEMPLATE);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -249,121 +292,218 @@ public class MailerProcessor extends AbstractProcessor {
          */
         for (Record record : records)
         {            
-            String mailMsg = getStringField(record, FIELD_MAIL_MSG);
-            if (mailMsg != null)
+            String mailText = getStringField(record, FIELD_MAIL_TEXT);
+            boolean text = (mailText != null);
+            Boolean mailHtml = getBooleanField(record, FIELD_MAIL_HTML);
+            boolean html = ((mailHtml != null) && mailHtml.booleanValue());
+
+            if (html || text)
             {
+                // Ok, there is a mail to send. First retrieve some potential embedded overwritten configuration fields 
+               
+                String[] finalMailTos = mailTos;
+                String finalMailFromAddress = mailFromAddress;
+                String finalMailFromName = mailFromName;
+                String finalMailBounceAddress = mailBounceAddress;
+                String finalMailReplyToAddress = mailReplyToAddress;
+                String finalMailSubject = mailSubject;
+
+                /**
+                 * Overwrite some variables with special fields in the record if any and this is allowed
+                 */
+                if (allowFieldsOverwriting)
+                {
+                    String recordMailFromAddress = getStringField(record, FIELD_MAIL_FROM_ADDRESS);
+                    if (recordMailFromAddress != null)
+                    {
+                        finalMailFromAddress = recordMailFromAddress;
+                    }
+
+                    String recordMailFromName = getStringField(record, FIELD_MAIL_FROM_NAME);
+                    if (recordMailFromName != null)
+                    {
+                        finalMailFromName = recordMailFromName;
+                    }
+                    
+                    String recordMailBounceAddress = getStringField(record, FIELD_MAIL_BOUNCE_ADDRESS);
+                    if (recordMailBounceAddress != null)
+                    {
+                        finalMailBounceAddress = recordMailBounceAddress;
+                    }
+                    
+                    String recordMailReplyToAddress = getStringField(record, FIELD_MAIL_REPLYTO_ADDRESS);
+                    if (recordMailReplyToAddress != null)
+                    {
+                        finalMailReplyToAddress = recordMailReplyToAddress;
+                    }
+                    
+                    String recordMailSubject = getStringField(record, FIELD_MAIL_SUBJECT);
+                    if (recordMailSubject != null)
+                    {
+                        finalMailSubject = recordMailSubject;
+                    }
+                    
+                    String recordMailTo = getStringField(record, FIELD_MAIL_TO);
+                    if (recordMailTo != null)
+                    {
+                        finalMailTos = parseMailTo(recordMailTo);
+                    }
+                }
                 
-                // Ok, there is a mail_msg field, create the mail and send it
-                try {
-                    String[] finalMailTos = mailTos;
-                    String finalMailFromAddress = mailFromAddress;
-                    String finalMailFromName = mailFromName;
-                    String finalMailBounceAddress = mailBounceAddress;
-                    String finalMailReplyToAddress = mailReplyToAddress;
-                    String finalMailSubject = mailSubject;
-
-                    /**
-                     * Overwrite some variables with special fields in the record if any and this is allowed
-                     */
-                    if (allowFieldsOverwriting)
-                    {
-                        String recordMailFromAddress = getStringField(record, FIELD_MAIL_FROM_ADDRESS);
-                        if (recordMailFromAddress != null)
-                        {
-                            finalMailFromAddress = recordMailFromAddress;
-                        }
-
-                        String recordMailFromName = getStringField(record, FIELD_MAIL_FROM_NAME);
-                        if (recordMailFromName != null)
-                        {
-                            finalMailFromName = recordMailFromName;
-                        }
-                        
-                        String recordMailBounceAddress = getStringField(record, FIELD_MAIL_BOUNCE_ADDRESS);
-                        if (recordMailBounceAddress != null)
-                        {
-                            finalMailBounceAddress = recordMailBounceAddress;
-                        }
-                        
-                        String recordMailReplyToAddress = getStringField(record, FIELD_MAIL_REPLYTO_ADDRESS);
-                        if (recordMailReplyToAddress != null)
-                        {
-                            finalMailReplyToAddress = recordMailReplyToAddress;
-                        }
-                        
-                        String recordMailSubject = getStringField(record, FIELD_MAIL_SUBJECT);
-                        if (recordMailSubject != null)
-                        {
-                            finalMailSubject = recordMailSubject;
-                        }
-                        
-                        String recordMailTo = getStringField(record, FIELD_MAIL_TO);
-                        if (recordMailTo != null)
-                        {
-                            finalMailTos = parseMailTo(recordMailTo);
-                        }
-                    }
-                    
-                    /**
-                     * Create an fill the mail
-                     */
-                    
-                    SimpleEmail email = new SimpleEmail();
-                    
-                    // Set From info
-                    if (finalMailFromAddress == null)
-                    {
-                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No From address defined");
-                        failedRecords.add(record);
-                        continue;
-                    }
-                    if (finalMailFromName != null)
-                    {
-                        email.setFrom(finalMailFromAddress, finalMailFromName);
-                    }
-                    else
-                    {
-                        email.setFrom(finalMailFromAddress);
-                    }
-                    
-                    email.setBounceAddress(finalMailBounceAddress);
-                    if (finalMailReplyToAddress != null)
-                    {
-                        email.addReplyTo(finalMailReplyToAddress);
-                    }
-                    
-                    email.setSubject(finalMailSubject);
-                    email.setMsg(mailMsg);
-
-                    // Set To info
-                    if (finalMailTos.length == 0)
-                    {
-                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No mail recipient.");
-                        failedRecords.add(record);
-                        continue;
-                    }
-                    for(String mailTo : finalMailTos)
-                    {
-                        email.addTo(mailTo);
-                    }
-                    
-                    /**
-                     * Set sending parameters
-                     */
-                   
-                    email.setHostName(smtpServer);
-                    email.setSmtpPort(smtpPort);
-                    if ( (smtpSecurityUsername != null) && (smtpSecurityPassword != null) )
-                    {
-                        email.setAuthentication(smtpSecurityUsername, smtpSecurityPassword);
-                    }
-                    email.setSSLOnConnect(smtpSecuritySsl);
-                    
-                    // Send the mail
-                    email.send();
-                } catch (EmailException ex) {
-                    record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Unable to send email: " + ex.getMessage());
+                if (finalMailFromAddress == null)
+                {
+                    record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No From address defined");
                     failedRecords.add(record);
+                    continue;
+                }
+
+                if (finalMailBounceAddress == null)
+                {
+                    record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No Bounce address defined");
+                    failedRecords.add(record);
+                    continue;
+                }
+                
+                if (html)
+                {
+                    // HTML mail
+                    try {
+                        
+                        /**
+                         * Create and fill the mail
+                         */
+                        
+                        ImageHtmlEmail htmlEmail = new ImageHtmlEmail();
+
+                        // Set From info
+                        if (finalMailFromName != null)
+                        {
+                            htmlEmail.setFrom(finalMailFromAddress, finalMailFromName);
+                        }
+                        else
+                        {
+                            htmlEmail.setFrom(finalMailFromAddress);
+                        }
+
+                        htmlEmail.setBounceAddress(finalMailBounceAddress);
+
+                        if (finalMailReplyToAddress != null)
+                        {
+                            htmlEmail.addReplyTo(finalMailReplyToAddress);
+                        }
+                        
+                        htmlEmail.setSubject(finalMailSubject);
+                        
+                        // Allow to retrieve embedded images of the html template from the classpath (jar files)
+                        htmlEmail.setDataSourceResolver(new DataSourceClassPathResolver());
+
+                        // Compute final HTML body from template and record fields
+                        String htmlBody = createHtml(record);
+                        if (htmlBody == null)
+                        {
+                            // Error. Already set message in createHtml: just add to failed record and continue with
+                            // next record
+                            failedRecords.add(record);
+                            continue;
+                        }
+                        htmlEmail.setHtmlMsg(htmlBody);
+                        
+                        // Add alternative text mail if any defined
+                        if (text)
+                        {
+                            htmlEmail.setMsg(mailText);
+                        }
+
+                        // Set To info
+                        if (finalMailTos.length == 0)
+                        {
+                            record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No mail recipient.");
+                            failedRecords.add(record);
+                            continue;
+                        }
+                        for(String mailTo : finalMailTos)
+                        {
+                            htmlEmail.addTo(mailTo);
+                        }
+                        
+                        /**
+                         * Set sending parameters
+                         */
+                       
+                        htmlEmail.setHostName(smtpServer);
+                        htmlEmail.setSmtpPort(smtpPort);
+                        if ( (smtpSecurityUsername != null) && (smtpSecurityPassword != null) )
+                        {
+                            htmlEmail.setAuthentication(smtpSecurityUsername, smtpSecurityPassword);
+                        }
+                        htmlEmail.setSSLOnConnect(smtpSecuritySsl);
+                        
+                        // Send the mail
+                        htmlEmail.send();
+                    } catch (EmailException ex) {
+                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Unable to send email: " + ex.getMessage());
+                        failedRecords.add(record);
+                    }
+                } else
+                {
+                    // Only text mail
+                    try {
+                        
+                        /**
+                         * Create and fill the mail
+                         */
+                        
+                        SimpleEmail textEmail = new SimpleEmail();
+                        
+                        // Set From info
+                        if (finalMailFromName != null)
+                        {
+                            textEmail.setFrom(finalMailFromAddress, finalMailFromName);
+                        }
+                        else
+                        {
+                            textEmail.setFrom(finalMailFromAddress);
+                        }
+                        
+                        textEmail.setBounceAddress(finalMailBounceAddress);
+                        if (finalMailReplyToAddress != null)
+                        {
+                            textEmail.addReplyTo(finalMailReplyToAddress);
+                        }
+                        
+                        textEmail.setSubject(finalMailSubject);
+                        textEmail.setMsg(mailText);
+
+                        // Set To info
+                        if (finalMailTos.length == 0)
+                        {
+                            record.addError(ProcessError.UNKNOWN_ERROR.getName(), "No mail recipient.");
+                            failedRecords.add(record);
+                            continue;
+                        }
+                        for(String mailTo : finalMailTos)
+                        {
+                            textEmail.addTo(mailTo);
+                        }
+                        
+                        /**
+                         * Set sending parameters
+                         */
+                       
+                        textEmail.setHostName(smtpServer);
+                        textEmail.setSmtpPort(smtpPort);
+                        if ( (smtpSecurityUsername != null) && (smtpSecurityPassword != null) )
+                        {
+                            textEmail.setAuthentication(smtpSecurityUsername, smtpSecurityPassword);
+                        }
+                        textEmail.setSSLOnConnect(smtpSecuritySsl);
+                        
+                        // Send the mail
+                        textEmail.send();
+                    } catch (EmailException ex) {
+                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Unable to send email: " + ex.getMessage());
+                        failedRecords.add(record);
+                    }
                 }
             }
         }
@@ -373,6 +513,45 @@ public class MailerProcessor extends AbstractProcessor {
             logger.info("Mailer Processor records output: " + records);
         }
         return failedRecords;
+    }
+    
+    /**
+     * Create the HTML message from the html template and the potential parameters in the record
+     * @param record The record to inspect to retrieve the parameters of the template (from the record fields)
+     * @return The filled HTML template or null if an error occurred
+     */
+    private String createHtml(Record record)
+    {
+        // Special case if no parameters are expected, just return the template
+        int nParams = parameterNames.size();
+        if (nParams == 0)
+        {
+            // Template expects no args, just return it as message body.
+            // For instance may be used if body is always the same but some mail things change like subject or mailto...
+            return htmlTemplate;
+        }
+        
+        Object[] templateParams = new Object[nParams];
+        int index = 0;
+        for(String parameter : parameterNames)
+        {
+            // Find the parameter as a field in the record
+            Field field = record.getField(parameter);
+            if (field == null)
+            {
+                // Field not found, error
+                record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Could not find expected HTML template parameter <"
+                        + parameter + "> as field in the record.");
+                return null;
+            }
+            
+            templateParams[index] = field.getRawValue();
+            
+            index++;
+        }
+        
+        // Now we have the parameters, fill the form and return matching HTML body
+        return htmlForm.format(templateParams);
     }
     
     /**
@@ -386,6 +565,24 @@ public class MailerProcessor extends AbstractProcessor {
         if (field != null)
         {
             return field.asString();
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
+     * Retrieve the record field value
+     * @param fieldName The name of the boolean field
+     * @return The value of the field or null if the field is not present in the record
+     */
+    private Boolean getBooleanField(Record record, String fieldName)
+    {
+        Field field = record.getField(fieldName);
+        if (field != null)
+        {
+            return field.asBoolean();
         }
         else
         {
@@ -578,10 +775,61 @@ public class MailerProcessor extends AbstractProcessor {
           }
         }
         
+        /**
+         * Handle the HTML_TEMPLATE property
+         */
+        if (descriptor.equals(HTML_TEMPLATE))
+        {
+            htmlTemplate = newValue;
+            prepareTemplateAndParameters(htmlTemplate);
+        }
+        
         if (debug)
         {
             displayConfig();
         }
+    }
+    
+    /**
+     * This parses the HTML template to
+     * - get the list of needed parameters (${xxx} parameters in the template, so get the foo, bar etc variables)
+     * - create a usable template using the MessageFormat system (have strings with ${0}, ${1} instead of ${foo}, ${bar})
+     * @param htmlTemplate
+     */
+    private void prepareTemplateAndParameters(String htmlTemplate)
+    {   
+        Pattern pattern = Pattern.compile("\\$\\{(.+?)}"); // Detect ${...} sequences
+        Matcher matcher = pattern.matcher(htmlTemplate);
+        
+        // To construct a new template with ${0}, ${1} fields ..
+        StringBuilder buffer = new StringBuilder();
+        int previousStart = 0;
+        int currentParameterIndex = 0;
+        
+        // Loop through the parameters in the template
+        while (matcher.find()) {
+            String parameter = matcher.group(1);
+
+            String stringBeforeCurrentParam = htmlTemplate.substring(previousStart, matcher.start());
+            
+            // Add string before parameter
+            buffer.append(stringBeforeCurrentParam);
+            // Replace parameter with parameter index
+            buffer.append("{" + currentParameterIndex + "}");
+            
+            // Save current parameter name in the list
+            parameterNames.add(parameter);
+            
+            previousStart = matcher.end();
+            currentParameterIndex++;
+        }
+        
+        // Add string after the last parameter
+        String stringAfterLastParam = htmlTemplate.substring(previousStart);
+        buffer.append(stringAfterLastParam);
+        
+        // Create the HTML form
+        htmlForm = new MessageFormat(buffer.toString());
     }
     
     /**
@@ -620,6 +868,7 @@ public class MailerProcessor extends AbstractProcessor {
             sb.append(" " + mailTo);
         }
         sb.append("\n" + ALLOW_OVERWRITE.getName() + ": " + allowFieldsOverwriting);
+        sb.append("\n" + HTML_TEMPLATE.getName() + ": " + htmlTemplate);
         logger.info(sb.toString());
     }
 }

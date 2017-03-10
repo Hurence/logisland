@@ -55,7 +55,7 @@ public class MailerProcessorTest {
     private static final String TEST_MAIL_TO = "tester@logisland.net (must be a valid address where you will receive mails!)"; // <----- FILL ME
 
     //@Test
-    public void testBasicFromConfig() {
+    public void testTextMailFromConfig() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
         testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
         testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
@@ -70,7 +70,7 @@ public class MailerProcessorTest {
         testRunner.setProperty(MailerProcessor.MAIL_TO, TEST_MAIL_TO);
         testRunner.assertValid();
         Record record = new StandardRecord("mail_record");
-        record.setStringField(MailerProcessor.FIELD_MAIL_MSG, "testBasicFromConfig:\nThis is the record message.");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testBasicFromConfig:\nThis is the record message.");
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
@@ -79,7 +79,7 @@ public class MailerProcessorTest {
     }
     
     //@Test
-    public void testBasicFromRecord() {
+    public void testTextMailFromRecord() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
         testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
         testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
@@ -90,7 +90,7 @@ public class MailerProcessorTest {
         testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
         testRunner.assertValid();
         Record record = new StandardRecord("mail_record");
-        record.setStringField(MailerProcessor.FIELD_MAIL_MSG, "testBasicFromRecord:\nThis is the record message.");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testBasicFromRecord:\nThis is the record message.");
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
         record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
