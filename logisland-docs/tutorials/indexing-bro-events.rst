@@ -1,8 +1,8 @@
 Bro/Logisland integration - Indexing Bro events
 ===============================================
 
-Bro an Logisland
-----------------
+Bro and Logisland
+-----------------
 
 `Bro <https://www.bro.org>`_ is a Network IDS
 (`Intrusion Detection System <https://en.wikipedia.org/wiki/Intrusion_detection_system>`_) that
