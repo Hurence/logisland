@@ -63,7 +63,7 @@ public class RestJobsApiClient implements JobsApiClient {
                     .request()
                     .get(Job.class);
         } catch (Exception ex) {
-            logger.error("unable to get Job {}, :{}", name, ex);
+            logger.debug("unable to get Job {} from REST agent", name);
         }
         return job;
 
