@@ -24,6 +24,8 @@ import com.hurence.logisland.util.runner.TestRunners;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,10 @@ public class MailerProcessorTest {
     private static final String TEST_MAIL_REPLYTO_ADDRESS = "replyto@logisland.net (must be a valid address!)"; // <----- FILL ME
     private static final String TEST_MAIL_SUBJECT = "Logisland Mailer Processor Test";
     private static final String TEST_MAIL_TO = "tester@logisland.net (must be a valid address where you will receive mails!)"; // <----- FILL ME
+    
+    // Parameters for the HTML template
+    private static final String PARAM_USER = "param_user";
+    private static final String PARAM_DATE = "param_date";
 
     //@Test
     public void testTextMailFromConfig() {
@@ -104,7 +110,7 @@ public class MailerProcessorTest {
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(0);
     }
-    
+
     //@Test
     public void testHtmlMailFromConfig() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
@@ -124,8 +130,8 @@ public class MailerProcessorTest {
         sb.append("<!DOCTYPE html>");
         sb.append("<html>");
         sb.append("<body>");
-        sb.append("Here is a...");
-        sb.append("<h2>Spectacular Image!</h2>");
+        sb.append("${" + PARAM_USER + "}, here is a...");
+        sb.append("<h2>Spectacular Image for you (${" + PARAM_DATE + "})!</h2>");
         sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
         sb.append("</body>");
         sb.append("</html>");
@@ -135,7 +141,14 @@ public class MailerProcessorTest {
         Record record = new StandardRecord("mail_record");
         record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromConfig:\nThis is the text message which"
                 + " is an alternative to HTML one.");
+        
+        // Tells to use the configured template
         record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
+        
+        // Set parameters for the template
+        record.setStringField(PARAM_USER, "Bob");
+        record.setStringField(PARAM_DATE, (new Date()).toString());
+
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
@@ -158,8 +171,8 @@ public class MailerProcessorTest {
         sb.append("<!DOCTYPE html>");
         sb.append("<html>");
         sb.append("<body>");
-        sb.append("Here is a...");
-        sb.append("<h2>Spectacular Image!</h2>");
+        sb.append("${" + PARAM_USER + "}, here is a...");
+        sb.append("<h2>Spectacular Image for you (${" + PARAM_DATE + "})!</h2>");
         sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
         sb.append("</body>");
         sb.append("</html>");
@@ -174,7 +187,14 @@ public class MailerProcessorTest {
         record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
         record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        
+        // Tells to use the configured template
         record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
+
+        // Set parameters for the template
+        record.setStringField(PARAM_USER, "Bob");
+        record.setStringField(PARAM_DATE, (new Date()).toString());
+        
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
