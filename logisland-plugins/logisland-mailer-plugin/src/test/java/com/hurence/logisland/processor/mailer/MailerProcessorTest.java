@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.processor.mailer;
 
+import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -96,6 +98,83 @@ public class MailerProcessorTest {
         record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
         record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+    }
+    
+    //@Test
+    public void testHtmlMailFromConfig() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        testRunner.setProperty(MailerProcessor.MAIL_TO, TEST_MAIL_TO);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html>");
+        sb.append("<body>");
+        sb.append("Here is a...");
+        sb.append("<h2>Spectacular Image!</h2>");
+        sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("</body>");
+        sb.append("</html>");
+        testRunner.setProperty(MailerProcessor.HTML_TEMPLATE, sb.toString());
+
+        testRunner.assertValid();
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromConfig:\nThis is the text message which"
+                + " is an alternative to HTML one.");
+        record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+    }
+    
+    //@Test
+    public void testHtmlMailFromRecord() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html>");
+        sb.append("<body>");
+        sb.append("Here is a...");
+        sb.append("<h2>Spectacular Image!</h2>");
+        sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("</body>");
+        sb.append("</html>");
+        testRunner.setProperty(MailerProcessor.HTML_TEMPLATE, sb.toString());
+
+        testRunner.assertValid();
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromRecord:\nThis is the text message which"
+                + " is an alternative to HTML one.");
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
+        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
