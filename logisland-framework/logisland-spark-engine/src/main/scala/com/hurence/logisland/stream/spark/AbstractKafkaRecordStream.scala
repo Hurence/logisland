@@ -20,11 +20,10 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
-import com.hurence.logisland.kafka.util.KafkaSink
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata

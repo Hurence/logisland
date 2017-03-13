@@ -42,11 +42,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-kafka-0-10-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
