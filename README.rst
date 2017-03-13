@@ -7,6 +7,9 @@ Log Island
 .. image:: https://codeclimate.com/github/Hurence/logisland/badges/gpa.svg
    :target: https://codeclimate.com/github/Hurence/logisland
 
+.. image:: https://coveralls.io/repos/github/Hurence/logisland/badge.svg?branch=master
+   :target: https://coveralls.io/github/Hurence/logisland?branch=master
+
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and chat with us on gitter
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
