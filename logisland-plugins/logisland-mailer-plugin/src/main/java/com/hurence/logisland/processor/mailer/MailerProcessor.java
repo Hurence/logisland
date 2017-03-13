@@ -65,7 +65,8 @@ import java.util.regex.Pattern;
 @Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert", "html"})
 @CapabilityDescription(
         "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
-        + " To generate an email and trigger an email sending, an incoming record must have a mail_msg field with the content of the mail as value."
+        + " To generate an email and trigger an email sending, an incoming record must have a mail_text field with the"
+        + " content of the mail as value or a mail_html field to send an emaile from an HTML template."
         + " Other optional mail_* fields may be used to customize the Mailer processor upon reception of the record.")
 public class MailerProcessor extends AbstractProcessor {
 
@@ -294,9 +295,8 @@ public class MailerProcessor extends AbstractProcessor {
         {            
             String mailText = getStringField(record, FIELD_MAIL_TEXT);
             boolean text = (mailText != null);
-            Boolean mailHtml = getBooleanField(record, FIELD_MAIL_HTML);
-            boolean html = ((mailHtml != null) && mailHtml.booleanValue());
-
+            Field mailHtml = record.getField(FIELD_MAIL_HTML);
+            boolean html = (mailHtml != null);
             if (html || text)
             {
                 // Ok, there is a mail to send. First retrieve some potential embedded overwritten configuration fields 
@@ -565,24 +565,6 @@ public class MailerProcessor extends AbstractProcessor {
         if (field != null)
         {
             return field.asString();
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
-    /**
-     * Retrieve the record field value
-     * @param fieldName The name of the boolean field
-     * @return The value of the field or null if the field is not present in the record
-     */
-    private Boolean getBooleanField(Record record, String fieldName)
-    {
-        Field field = record.getField(fieldName);
-        if (field != null)
-        {
-            return field.asBoolean();
         }
         else
         {
