@@ -48,15 +48,16 @@ import java.util.regex.Pattern;
 /**
  * Mailer Processor.
  * This processor is able to send mails from the incoming records.
- * A minimum processor configuration is required (mainly smtp server info and some mails)
+ * A minimum processor configuration is required (mainly smtp server info and some mail sender info)
  * Only records with either FIELD_MAIL_TEXT or FIELD_MAIL_HTML fields set will generate a mail.
  * - If FIELD_MAIL_TEXT is set, it holds the text content of the mail to be sent
  * - If FIELD_MAIL_HTML is set, it informs the processor to use the HTML template of its configuration for sending the
  *   mail. Any parameter defined in the template will be retrieved from the fields with the same name embedded in the
- *   record.
+ *   record. Every parameters defined in the template with the form ${xxx} must be present in the record (the record
+ *   must hold a xxx field).
  * 
- * If it is enabled in processor configuration, it is possible to overwrite some config properties directly in the
- * record with some specific fields (FIELD_MAIL_TO, FIELD_MAIL_SUBJECT...)
+ * If it is enabled in processor configuration (allow_overwrite), it is possible to overwrite some config properties
+ * directly in the record with some specific fields (FIELD_MAIL_TO, FIELD_MAIL_SUBJECT...)
  * 
  * Note: you can use an html template using embedded image. Images should then be in the class path (in a jar file)
  * and the format of src attribute in the img html tag should be like:
@@ -66,8 +67,10 @@ import java.util.regex.Pattern;
 @CapabilityDescription(
         "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
         + " To generate an email and trigger an email sending, an incoming record must have a mail_text field with the"
-        + " content of the mail as value or a mail_html field to send an emaile from an HTML template."
-        + " Other optional mail_* fields may be used to customize the Mailer processor upon reception of the record.")
+        + " content of the mail as value or a mail_html field to send an email from the HTML template of the configuration."
+        + " Other optional mail_* fields may be used to customize the Mailer processor upon reception of the record."
+        + " Part from error records when he is enabled to process the incoming record or to send the mail, this processor"
+        + " is not expected to produce any output records.")
 public class MailerProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(MailerProcessor.class);
@@ -237,8 +240,8 @@ public class MailerProcessor extends AbstractProcessor {
     public static final PropertyDescriptor ALLOW_OVERWRITE = new PropertyDescriptor.Builder()
             .name(KEY_ALLOW_OVERWRITE)
             .description("If true, allows to overwrite processor configuration with special record fields (" +
-                    FIELD_MAIL_TO + ", " + FIELD_MAIL_FROM_ADDRESS + ", " + FIELD_MAIL_SUBJECT +" etc). If false, special record fields"
-                    + " are ignored and only processor configuration keys are used.")
+                    FIELD_MAIL_TO + ", " + FIELD_MAIL_FROM_ADDRESS + ", " + FIELD_MAIL_SUBJECT +" etc). If false,"
+                            + " special record fields are ignored and only processor configuration keys are used.")
             .required(false)
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .defaultValue("true")
@@ -246,7 +249,16 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor HTML_TEMPLATE = new PropertyDescriptor.Builder()
             .name(KEY_HTML_TEMPLATE)
-            .description("HTML template to use.")
+            .description("HTML template to use. It is used when the incoming record contains a " + FIELD_MAIL_HTML
+                    + " field. The template may contain some parameters. The parameter format in the template is of the"
+                    + " form ${xxx}. For instance ${param_user} in the template means that a field named"
+                    + " param_user must be present in the record and its value will replace the ${param_user} string"
+                    + " in the HTML template when the mail will be sent. If some parameters are declared in the template"
+                    + ", everyone of them must be present in the record as fields, otherwise the record will generate"
+                    + " an error record. If an incoming record contains a " + FIELD_MAIL_HTML + " field, a template"
+                    + " must be present in the configuration and the HTML mail format will be preferred. If the record"
+                    + " also contains a " + FIELD_MAIL_TEXT + " field, its content will be used as an alternative text"
+                    + " message to be used in the mail reader program of the recipient if it does not supports HTML.")
             .required(false)
             .build();
 
