@@ -411,7 +411,7 @@ public class MailerProcessor extends AbstractProcessor {
                         // Add alternative text mail if any defined
                         if (text)
                         {
-                            htmlEmail.setMsg(mailText);
+                            htmlEmail.setTextMsg(mailText);
                         }
 
                         // Set To info
