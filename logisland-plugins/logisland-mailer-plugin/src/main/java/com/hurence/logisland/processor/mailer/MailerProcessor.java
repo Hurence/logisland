@@ -67,9 +67,10 @@ import java.util.regex.Pattern;
 @CapabilityDescription(
         "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
         + " To generate an email and trigger an email sending, an incoming record must have a mail_text field with the"
-        + " content of the mail as value or a mail_html field to send an email from the HTML template of the configuration."
-        + " Other optional mail_* fields may be used to customize the Mailer processor upon reception of the record."
-        + " Part from error records when he is enabled to process the incoming record or to send the mail, this processor"
+        + " content of the mail as value. Alternatively, a mail_html field to send an email from the HTML template of the configuration."
+        + " Any mail_* configuration property may also be used as field to customize the email upon reception of"
+        + " the record. The mail_* fields value will overwrite those in the configuration if allow_overwrite is true."
+        + " Apart from error records, when he is enabled to process the incoming record or to send the mail, this processor"
         + " is not expected to produce any output records.")
 public class MailerProcessor extends AbstractProcessor {
 
@@ -158,7 +159,7 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
-            .description("Enable debug. If enabled, debug information are written into stdout.")
+            .description("Enable debug. If enabled, debug information are written to stdout.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
             .defaultValue("false")
