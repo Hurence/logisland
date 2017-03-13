@@ -4,7 +4,8 @@ Log Island
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
    :target: https://travis-ci.org/Hurence/logisland
 
-
+.. image:: https://codeclimate.com/github/Hurence/logisland/badges/gpa.svg
+   :target: https://codeclimate.com/github/Hurence/logisland
 
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and chat with us on gitter
 
