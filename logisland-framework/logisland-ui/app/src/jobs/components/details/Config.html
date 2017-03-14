@@ -1,85 +1,56 @@
 <!--Config: {{ $ctrl.configuration }}-->
 <div flex>
-    <div>
-        <table class="table table-bordered table-hover table-condensed">
-            <tr style="font-weight: bold">
-                <td style="width:35%">Name</td>
-                <td style="width:20%">Status</td>
-            </tr>
-            <tr ng-repeat="conf in $ctrl.configuration">
-                <td>
-                    <!-- editable username (text with validation) -->
-                    <span editable-text="conf.key"
-                          e-name="key"
-                          onbeforesave="checkKey($data, conf.key)"
-                          buttons=right>
+    <table class="table table-bordered table-hover table-condensed">
+        <tr style="font-weight: bold">
+            <td style="width:35%">Name</td>
+            <td style="width:20%">Status</td>
+        </tr>
+        <tr ng-repeat="conf in $ctrl.configuration">
+            <td>
+                <!-- editable username (text with validation) -->
+                <span editable-text="conf.key"
+                      e-name="key"
+                      onbeforesave="checkKey($data, conf.key)"
+                      buttons=right>
                       {{ conf.key || 'empty' }}
                     </span>
-                </td>
-                <td>
-                    <!-- editable username (text with validation) -->
-                    <span editable-textarea="conf.value"
-                          e-name="value"
-                          e-rows="7" e-cols="40"
-                          onbeforesave="checkValue($data, conf.value)">
+            </td>
+            <td>
+                <!-- editable username (text with validation) -->
+                <span editable-textarea="conf.value"
+                      e-name="value"
+                      e-rows="7" e-cols="40"
+                      onbeforesave="checkValue($data, conf.value)">
                       {{ conf.value || 'empty' | cut:true:100:'...' }}
                     </span>
-                </td>
-                <td style="white-space: nowrap">
-                    <!-- form -->
-                    <!--<form editable-form-->
-                          <!--name="rowform"-->
-                          <!--onbeforesave="saveUser($data, conf.key)"-->
-                          <!--ng-show="rowform.$visible"-->
-                          <!--class="form-buttons form-inline"-->
-                          <!--shown="inserted == conf">-->
-                        <!--<button type="submit"-->
-                                <!--ng-disabled="rowform.$waiting"-->
-                                <!--class="btn btn-primary">-->
-                            <!--save-->
-                        <!--</button>-->
-                        <!--<button type="button"-->
-                                <!--ng-disabled="rowform.$waiting"-->
-                                <!--ng-click="rowform.$cancel()"-->
-                                <!--class="btn btn-default">-->
-                            <!--cancel-->
-                        <!--</button>-->
-                    <!--</form>-->
-                    <div class="buttons" ng-show="!rowform.$visible">
-                        <!--<button class="btn btn-primary" ng-click="rowform.$show()">edit</button>-->
-                        <button class="btn btn-danger" ng-click="deleteConfig($index)">X</button>
-                    </div>
-                </td>
-            </tr>
-        </table>
+            </td>
+            <td style="white-space: nowrap">
+                <!-- form -->
+                <!--<form editable-form-->
+                <!--name="rowform"-->
+                <!--onbeforesave="saveUser($data, conf.key)"-->
+                <!--ng-show="rowform.$visible"-->
+                <!--class="form-buttons form-inline"-->
+                <!--shown="inserted == conf">-->
+                <!--<button type="submit"-->
+                <!--ng-disabled="rowform.$waiting"-->
+                <!--class="btn btn-primary">-->
+                <!--save-->
+                <!--</button>-->
+                <!--<button type="button"-->
+                <!--ng-disabled="rowform.$waiting"-->
+                <!--ng-click="rowform.$cancel()"-->
+                <!--class="btn btn-default">-->
+                <!--cancel-->
+                <!--</button>-->
+                <!--</form>-->
+                <div class="buttons" ng-show="!rowform.$visible">
+                    <!--<button class="btn btn-primary" ng-click="rowform.$show()">edit</button>-->
+                    <button class="btn btn-danger" ng-click="deleteConfig($index)">X</button>
+                </div>
+            </td>
+        </tr>
+    </table>
 
-        <button type="button" class="btn btn-default" ng-click="addConfig()">Add row</button>
-    </div>
-
-    <!--<dtable options="table_options"-->
-            <!--rows="$ctrl.configuration"-->
-            <!--on-row-dbl-click="editRow(row, angular.element(document.body))"-->
-            <!--class="material dt">-->
-    <!--</dtable>-->
-
-    <!--<h3>Add a config</h3>-->
-    <!--<form flex layout="row">-->
-        <!--<md-input-container>-->
-            <!--<label>Key</label>-->
-            <!--<input type="text" name="newKey" ng-model="newKey" required/>-->
-        <!--</md-input-container>-->
-        <!--<md-input-container>-->
-            <!--<label>Type</label>-->
-            <!--<input type="text" name="newType" ng-model="newType" required/>-->
-        <!--</md-input-container>-->
-        <!--<md-input-container>-->
-            <!--<label>Value</label>-->
-            <!--<input type="text" name="newValue" ng-model="newValue" required/>-->
-        <!--</md-input-container>-->
-        <!--<md-button class="md-fab md-mini"-->
-                   <!--ng-click="addConfig()"-->
-                   <!--aria-label="Add Line">-->
-            <!--<md-icon md-svg-icon="add"></md-icon>-->
-        <!--</md-button>-->
-    <!--</form>-->
+    <button type="button" class="btn btn-default" ng-click="addConfig()">Add row</button>
 </div>

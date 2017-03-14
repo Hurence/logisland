@@ -1,0 +1,26 @@
+<div flex ng-show="$ctrl.selected" layout="row" layout-align="center center" layout-margin>
+        <table class="table table-bordered table-hover table-condensed">
+            <tr style="font-weight: bold">
+                <td style="width:35%">Name</td>
+                <td style="width:20%">Version</td>
+            </tr>
+            <tr ng-repeat="conf in $ctrl.selected">
+                <td>
+                    <!-- editable username (text with validation) -->
+                    <span editable-text="conf.key"
+                          e-name="key"
+                          onbeforesave="checkKey($data, conf.key)"
+                          buttons=right>
+                      {{ conf.key || 'empty' }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+    DGDGDG
+    {{ $ctrl.selected }}
+    <span>{{ selected.name }}</span>
+    <span>{{ selected.version }}</span>
+    <span>{{ selected.replication }}</span>
+    <span>{{ selected.replicationFactor }}</span>
+</div>

@@ -11,7 +11,7 @@ function StreamDetailsController(ListService, ProcessorsDataService, $log, $scop
     var vm = $scope;
 
     vm.stdProcessors = ProcessorsDataService.getAllProcessors();
-    vm.selectedStrProcessor = processors[0];
+    vm.selectedStrProcessor = vm.processors;
     vm.selectStdProcessor = selectStdProcessor;
 
     vm.toggleList = ListService.toggle;

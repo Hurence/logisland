@@ -32,14 +32,14 @@
         <!--</dtable>-->
 
         <md-list-item layout-align="center center">
-            <div flex class="jobsrowheader" layout="row" layout-align="start center">
-                <div flex="20" class="md-primary md-list-item-text jobcell" layout-padding>
+            <div flex class="listrowheader" layout="row" layout-align="start center">
+                <div flex="20" class="md-primary md-list-item-text listcell" layout-padding>
                     Name
                 </div>
-                <div flex="15" class="jobcell">
+                <div flex="15" class="listcell">
                     Status
                 </div>
-                <div flex class="md-list-item-text jobcell">
+                <div flex class="md-list-item-text listcell">
                     Actions
                 </div>
             </div>
@@ -47,16 +47,16 @@
         <md-list-item ng-repeat="job in $ctrl.filteredJobs" layout-align="center center">
             <div flex
                  ng-dbl-click="editJob(job)"
-                 class="jobsrow"
+                 class="listrow"
                  layout="row"
                  layout-align="start center">
-                <div flex="20" class="md-list-item-text jobcell" layout-padding>
+                <div flex="20" class="md-list-item-text listcell" layout-padding>
                     {{ job.name }}
                 </div>
-                <div flex="15" class="jobcell">
+                <div flex="15" class="listcell">
                     {{ job.summary.status }}
                 </div>
-                <div flex class="md-list-item-text jobcell">
+                <div flex class="md-list-item-text listcell">
                     <md-button class="md-fab md-mini md-raised"
                                ng-click="startJob($index)"
                                ng-class="{ 'md-primary': job.summary.status == 'RUNNING' }"

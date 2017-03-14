@@ -1,22 +1,25 @@
 /**
- * Job App Controller for the LogIsland UI
+ * App Controller for the LogIsland UI
  */
 
-export default [ 'JobsDataService', 'ProcessorsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', AppJobsController ];
+export default [ 'JobsDataService', 'TopicsDataService', 'ProcessorsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', AppController ];
 
-function AppJobsController(JobsDataService, ProcessorsDataService, ListService, AppSettings, $mdSidenav, $log) {
+function AppController(JobsDataService, TopicsDataService, ProcessorsDataService, ListService, AppSettings, $mdSidenav, $log) {
     var self = this;
 
     self.version              = AppSettings.version;
+
     self.jobs                 = JobsDataService.query(function() { (self.jobs.length>0) ? self.selectedJob = self.jobs[0] : self.selectedJob = null   });
     self.selectedJob          = null;
     self.selectedProcessor    = null;
     self.addJob               = addJob;
     self.expandJobs           = false;
+    self.newJobTemplate = {name: "newJobTemplate", streams: [{"name": "[Stream name]", "component": "comp1", "config": [], "processors": []}]};
+
+    self.topics               = TopicsDataService.query(function() {$log.debug("Topics: " + JSON.stringify(self.topics)); });
 
     self.menuItems            = [   {name: "Start", direction: "right", icon: "play"},
                                     {name: "Stop", direction: "right", icon: "stop"}];
-    self.isOpen = true;
 
     self.toggleList       = ListService.toggle;
     self.closeList        = ListService.close;
@@ -25,8 +28,6 @@ function AppJobsController(JobsDataService, ProcessorsDataService, ListService, 
     self.querySearch      = querySearch;
     self.selectedItemChange = selectedItemChange;
     self.searchTextChange = searchTextChange;
-
-    self.newJobTemplate = {name: "newJobTemplate", streams: [{"name": "[Stream name]", "component": "comp1", "config": [], "processors": []}]};
 
     function selectJob ( job ) {
         self.selectedJob = angular.isNumber(job) ? self.jobs[job] : job;
