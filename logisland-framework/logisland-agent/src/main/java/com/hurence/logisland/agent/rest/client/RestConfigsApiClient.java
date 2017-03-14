@@ -16,15 +16,14 @@
  */
 package com.hurence.logisland.agent.rest.client;
 
-import com.hurence.logisland.agent.rest.model.*;
+import com.hurence.logisland.agent.rest.model.Property;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -44,12 +43,16 @@ public class RestConfigsApiClient implements ConfigsApiClient {
     }
 
 
-
-
     @Override
     public List<Property> getConfigs() {
-        return client.target(restServiceUrl)
+        List<HashMap<String, String>> props = client.target(restServiceUrl)
                 .request()
                 .get(List.class);
+
+        if (props != null)
+            return props.stream()
+                    .map(prop -> new Property().key(prop.get("key")).value(prop.get("value")).type(prop.get("type")))
+                    .collect(Collectors.toList());
+        else return null;
     }
 }

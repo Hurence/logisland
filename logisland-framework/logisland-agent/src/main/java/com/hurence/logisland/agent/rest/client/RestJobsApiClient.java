@@ -41,6 +41,7 @@ public class RestJobsApiClient implements JobsApiClient {
     }
 
     public RestJobsApiClient(String baseUrl) {
+
         this.restServiceUrl = baseUrl + "/jobs";
     }
 
