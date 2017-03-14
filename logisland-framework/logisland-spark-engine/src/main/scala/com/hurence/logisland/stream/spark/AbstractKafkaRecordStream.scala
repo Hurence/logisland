@@ -383,9 +383,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                         }
                         currentJobVersion = version
                     }
-                } else {
-                    lastCheckCount += 1
                 }
+
+                lastCheckCount += 1
 
 
 
