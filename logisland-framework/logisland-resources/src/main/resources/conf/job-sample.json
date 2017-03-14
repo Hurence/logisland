@@ -40,7 +40,8 @@
       "config": [
         { "key": "kafka.input.topics", "value": "apache_logs" } ,
         { "key": "kafka.output.topics", "value": "apache_records" },
-        { "key": "kafka.error.topics", "value": "_errors" }
+        { "key": "kafka.error.topics", "value": "_errors" },
+        { "key": "logisland.agent.pull.throttling", "value": 20}
       ],
       "processors": [
         {

@@ -376,7 +376,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
                                 // if we found a streamContext with the same name from the factory
                                 if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                    logger.info("new conf for stream {}", updatedStreamingContext)
+                                    logger.info("new conf for stream {}", updatedStreamingContext.getName)
                                     this.streamContext = updatedStreamingContext
                                 }
                             }
