@@ -24,62 +24,34 @@ function JobsListController(JobsDataService, $log, $scope, $templateCache) {
     vm.selectedItemChange = selectedItemChange;
     vm.searchTextChange   = searchTextChange;
 
-
-//    vm.table_options = {
-//        columns: [
-//            {
-//                name: 'Name',
-//                prop: 'name',
-//                sort: 'asc',
-//            },
-//            {
-//                name: 'Status',
-//                prop: 'summary.status'
-//            },
-//            {
-//                name: 'Actions',
-//                cellRenderer: function(scope, elem, row) {
-//                    return $templateCache.get('actions.html');
-//                }
-//            }
-//        ],
-//        scrollbarV: false,
-//        forceFillColumns: true,
-//        columnMode: 'force',
-//        paging: {
-//            externalPaging: false
-//        }
-//    };
-
     function editJob(job) {
-
     }
 
     function startJob(index) {
-        var job = vm.$ctrl.jobs[index];
+        var job = self.filteredJobs[index];
         JobsDataService.start({id: job.name}, function(updatedJob, getResponseHeaders) {
-            vm.$ctrl.jobs[index] = updatedJob;
+            self.filteredJobs[index] = updatedJob;
         });
     }
 
     function restartJob(index) {
-        var job = vm.$ctrl.jobs[index];
+        var job = self.filteredJobs[index];
         JobsDataService.restart({id: job.name}, function(updatedJob, getResponseHeaders) {
-            vm.$ctrl.jobs[index] = updatedJob;
+            self.filteredJobs[index] = updatedJob;
         });
     }
 
     function pauseJob(index) {
-        var job = vm.$ctrl.jobs[index];
+        var job = self.filteredJobs[index];
         JobsDataService.pause({id: job.name}, function(updatedJob, getResponseHeaders) {
-            vm.$ctrl.jobs[index] = updatedJob;
+            self.filteredJobs[index] = updatedJob;
         });
     }
 
     function shutdownJob(index) {
-        var job = vm.$ctrl.jobs[index];
+        var job = self.filteredJobs[index];
         JobsDataService.shutdown({id: job.name}, function(updatedJob, getResponseHeaders) {
-            vm.$ctrl.jobs[index] = updatedJob;
+            self.filteredJobs[index] = updatedJob;
         });
     }
 
