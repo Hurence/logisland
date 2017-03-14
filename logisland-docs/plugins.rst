@@ -412,6 +412,56 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.mailer.MailerProcessor: 
+
+MailerProcessor
+---------------
+The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record. There are three ways an incoming record can generate an email according to the special fields it must embed. Here is a list of the record fields that generate a mail and how they work:
+
+- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value) as the payload of the mail to send. The mail is sent in text format if there is only this special field in the record. Otherwise, used with either mail_html or mail_use_template, the content of mail_text is the aletrnative text to the HTML mail that is generated.
+
+- **mail_html**: this field specifies that the mail should be sent as HTML and the value of the field is mail payload. If mail_text is also present, its value is used as the alternative text for the mail. mail_html cannot be used with mail_use_template: only one of those two fields should be present in the record.
+
+- **mail_use_template**: If present, this field specifies that the mail should be sent as HTML and the HTML content is to be generated from the template in the processor configuration key **html.template**. The template can contain parameters which must also be present in the record as fields. See documentation of html.template for further explanations. mail_use_template cannot be used with mail_html: only one of those two fields should be present in the record.
+
+ If **allow_overwrite** configuration key is true, any mail.* (dot format) configuration key may be overwritten with a matching field in the record of the form mail_* (underscore format). For instance if allow_overwrite is true and mail.to is set to config_address@domain.com, a record generating a mail with a mail_to field set to record_address@domain.com will send a mail to record_address@domain.com.
+
+ Apart from error records (when he is unable to process the incoming record or to send the mail), this processor is not expected to produce any output records.
+
+Class
+_____
+com.hurence.logisland.processor.mailer.MailerProcessor
+
+Tags
+____
+smtp, email, e-mail, mail, mailer, message, alert, html
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are written to stdout.", "", "false", "", ""
+   "**smtp.server**", "FQDN, hostname or IP address of the SMTP server to use.", "", "null", "", ""
+   "smtp.port", "TCP port number of the SMTP server to use.", "", "25", "", ""
+   "smtp.security.username", "SMTP username.", "", "null", "", ""
+   "smtp.security.password", "SMTP password.", "", "null", "", ""
+   "smtp.security.ssl", "Use SSL under SMTP or not (SMTPS). Default is false.", "", "false", "", ""
+   "**mail.from.address**", "Valid mail sender email address.", "", "null", "", ""
+   "mail.from.name", "Mail sender name.", "", "null", "", ""
+   "**mail.bounce.address**", "Valid bounce email address (where error mail is sent if the mail is refused by the recipient server).", "", "null", "", ""
+   "mail.replyto.address", "Reply to email address.", "", "null", "", ""
+   "mail.subject", "Mail subject.", "", "[LOGISLAND] Automatic email", "", ""
+   "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
+   "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
+   "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery

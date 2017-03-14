@@ -66,11 +66,25 @@ import java.util.regex.Pattern;
 @Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert", "html"})
 @CapabilityDescription(
         "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
-        + " To generate an email and trigger an email sending, an incoming record must have a mail_text field with the"
-        + " content of the mail as value. Alternatively, a mail_html field to send an email from the HTML template of the configuration."
-        + " Any mail_* configuration property may also be used as field to customize the email upon reception of"
-        + " the record. The mail_* fields value will overwrite those in the configuration if allow_overwrite is true."
-        + " Apart from error records, when he is enabled to process the incoming record or to send the mail, this processor"
+        + " There are three ways an incoming record can generate an email according to the special fields it must embed."
+        + " Here is a list of the record fields that generate a mail and how they work:\n\n"
+        + "- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value)"
+        + " as the payload of the mail to send. The mail is sent in text format if there is only this special field in the"
+        + " record. Otherwise, used with either mail_html or mail_use_template, the content of mail_text is the aletrnative"
+        + " text to the HTML mail that is generated.\n\n"
+        + "- **mail_html**: this field specifies that the mail should be sent as HTML and the value of the field is mail"
+        + " payload. If mail_text is also present, its value is used as the alternative text for the mail. mail_html"
+        + " cannot be used with mail_use_template: only one of those two fields should be present in the record.\n\n"
+        + "- **mail_use_template**: If present, this field specifies that the mail should be sent as HTML and the HTML content"
+        + " is to be generated from the template in the processor configuration key **html.template**. The template can contain"
+        + " parameters which must also be present in the record as fields. See documentation of html.template for further"
+        + " explanations. mail_use_template cannot be used with mail_html: only one of those two fields should be present"
+        + " in the record.\n\n"
+        + " If **allow_overwrite** configuration key is true, any mail.* (dot format) configuration key may be overwritten with a matching"
+        + " field in the record of the form mail_* (underscore format). For instance if allow_overwrite is true and mail.to is"
+        + " set to config_address@domain.com, a record generating a mail with a mail_to field set to record_address@domain.com"
+        + " will send a mail to record_address@domain.com.\n\n"
+        + " Apart from error records (when he is unable to process the incoming record or to send the mail), this processor"
         + " is not expected to produce any output records.")
 public class MailerProcessor extends AbstractProcessor {
 
@@ -171,7 +185,7 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor SMTP_SERVER = new PropertyDescriptor.Builder()
             .name(KEY_SMTP_SERVER)
-            .description("Hostname or IP address of the SMTP server to use.")
+            .description("FQDN, hostname or IP address of the SMTP server to use.")
             .required(true)
             .build();
     
@@ -197,7 +211,7 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor SMTP_SECURITY_SSL = new PropertyDescriptor.Builder()
             .name(KEY_SMTP_SECURITY_SSL)
-            .description("Use SSL under SMPT or not. Default is false.")
+            .description("Use SSL under SMTP or not (SMTPS). Default is false.")
             .required(false)
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .defaultValue("false")
@@ -245,8 +259,9 @@ public class MailerProcessor extends AbstractProcessor {
     public static final PropertyDescriptor ALLOW_OVERWRITE = new PropertyDescriptor.Builder()
             .name(KEY_ALLOW_OVERWRITE)
             .description("If true, allows to overwrite processor configuration with special record fields (" +
-                    FIELD_MAIL_TO + ", " + FIELD_MAIL_FROM_ADDRESS + ", " + FIELD_MAIL_SUBJECT +" etc). If false,"
-                            + " special record fields are ignored and only processor configuration keys are used.")
+                    FIELD_MAIL_TO + ", " + FIELD_MAIL_FROM_ADDRESS  + ", " + FIELD_MAIL_FROM_NAME
+                    + ", " + FIELD_MAIL_BOUNCE_ADDRESS + ", " + FIELD_MAIL_REPLYTO_ADDRESS + ", " + FIELD_MAIL_SUBJECT
+                    +"). If false, special record fields are ignored and only processor configuration keys are used.")
             .required(false)
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .defaultValue("true")
@@ -254,14 +269,14 @@ public class MailerProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor HTML_TEMPLATE = new PropertyDescriptor.Builder()
             .name(KEY_HTML_TEMPLATE)
-            .description("HTML template to use. It is used when the incoming record contains a " + FIELD_MAIL_HTML
+            .description("HTML template to use. It is used when the incoming record contains a " + FIELD_MAIL_USE_TEMPLATE
                     + " field. The template may contain some parameters. The parameter format in the template is of the"
                     + " form ${xxx}. For instance ${param_user} in the template means that a field named"
                     + " param_user must be present in the record and its value will replace the ${param_user} string"
                     + " in the HTML template when the mail will be sent. If some parameters are declared in the template"
                     + ", everyone of them must be present in the record as fields, otherwise the record will generate"
-                    + " an error record. If an incoming record contains a " + FIELD_MAIL_HTML + " field, a template"
-                    + " must be present in the configuration and the HTML mail format will be preferred. If the record"
+                    + " an error record. If an incoming record contains a " + FIELD_MAIL_USE_TEMPLATE + " field, a template"
+                    + " must be present in the configuration and the HTML mail format will be used. If the record"
                     + " also contains a " + FIELD_MAIL_TEXT + " field, its content will be used as an alternative text"
                     + " message to be used in the mail reader program of the recipient if it does not supports HTML.")
             .required(false)
@@ -386,6 +401,14 @@ public class MailerProcessor extends AbstractProcessor {
                 
                 if (html || useTemplate)
                 {
+                    if (html && useTemplate)
+                    {
+                        record.addError(ProcessError.UNKNOWN_ERROR.getName(), "Record has both " + FIELD_MAIL_USE_TEMPLATE 
+                                + " and " + FIELD_MAIL_HTML + " fields. Only one of them is expected.");
+                        failedRecords.add(record);
+                        continue;
+                    }
+
                     // HTML mail
                     try {
                         
