@@ -41,6 +41,12 @@ Starting the Logisland Agent is simple once its dependencies are running.
     bin/logisland-agent-start conf/logisland.properties
 
 
+On production environment you'll need to export SPARK_HOME and HADOOP_CONF_DIR variables :
+
+.. code-block:: sh
+
+    export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7
+    export HADOOP_CONF_DIR=/usr/hdp/current/hadoop-client/conf/
 
 Schema registry
 _______________

@@ -18,6 +18,8 @@ package com.hurence.logisland.agent.rest.client;
 
 import com.hurence.logisland.agent.rest.model.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -30,6 +32,8 @@ import java.util.Date;
  * http://www.hascode.com/2013/12/jax-rs-2-0-rest-client-features-by-example/
  */
 public class RestTopicsApiClient implements TopicsApiClient {
+
+    private static Logger logger = LoggerFactory.getLogger(RestTopicsApiClient.class);
 
     Client client = ClientBuilder.newClient().register(JacksonFeature.class);
     private final String restServiceUrl;
@@ -52,11 +56,24 @@ public class RestTopicsApiClient implements TopicsApiClient {
 
     @Override
     public Topic getTopic(String name) {
-        return client.target(restServiceUrl)
-                .path("/{topicId}")
-                .resolveTemplate("topicId", name)
-                .request()
-                .get(Topic.class);
+        Topic t = null;
+        try{
+            t = client.target(restServiceUrl)
+                    .path("/{topicId}")
+                    .resolveTemplate("topicId", name)
+                    .request()
+                    .get(Topic.class);
+        }catch (Exception e){
+            logger.error("topic {} not found : {}", name, e.toString());
+        }
+        return t;
+
+    }
+
+    public static void main(String[] args) {
+        RestTopicsApiClient client = new RestTopicsApiClient();
+
+        Topic t = client.getTopic("aze");
 
     }
 }
