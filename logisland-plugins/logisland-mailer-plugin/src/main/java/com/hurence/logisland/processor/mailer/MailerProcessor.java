@@ -112,14 +112,18 @@ public class MailerProcessor extends AbstractProcessor {
     private static final String FIELD_PREFIX = "mail";
     
     /**
-     * Either FIELD_MAIL_TEXT or FIELD_MAIL_HTML is mandatory for a mail to be sent.
-     * If both fields are present, HTML mode is used and FIELD_MAIL_TEXT content is used as alternative text message.
+     *     Fields that trigger an email
      */
     // This holds the content of the mail to be sent as text.
     public static final String FIELD_MAIL_TEXT = FIELD_PREFIX + "_text";
-    // If this (boolean) field is present and set to true, the HTML template is used to send the mail instead of the text.
+    // This holds the content of the mail to be sent as html.
     public static final String FIELD_MAIL_HTML = FIELD_PREFIX + "_html";
-
+    // If this field is present (no matter his content), the HTML template is used to send the mail.
+    public static final String FIELD_MAIL_USE_TEMPLATE = FIELD_PREFIX + "_use_template";
+    
+    /**
+     *     Optional fields that overwrite behavior from configuration
+     */
     // May be used to overwrite mail.to configured in processor
     public static final String FIELD_MAIL_TO = FIELD_PREFIX + "_to";
     // May be used to overwrite mail.from.address configured in processor 
@@ -308,9 +312,12 @@ public class MailerProcessor extends AbstractProcessor {
         {            
             String mailText = getStringField(record, FIELD_MAIL_TEXT);
             boolean text = (mailText != null);
-            Field mailHtml = record.getField(FIELD_MAIL_HTML);
+            String mailHtml = getStringField(record, FIELD_MAIL_HTML);
             boolean html = (mailHtml != null);
-            if (html || text)
+            Field mailUseTemplate = record.getField(FIELD_MAIL_USE_TEMPLATE);
+            boolean useTemplate = (mailUseTemplate != null);
+
+            if (html || text || useTemplate)
             {
                 // Ok, there is a mail to send. First retrieve some potential embedded overwritten configuration fields 
                
@@ -377,7 +384,7 @@ public class MailerProcessor extends AbstractProcessor {
                     continue;
                 }
                 
-                if (html)
+                if (html || useTemplate)
                 {
                     // HTML mail
                     try {
@@ -411,14 +418,23 @@ public class MailerProcessor extends AbstractProcessor {
                         htmlEmail.setDataSourceResolver(new DataSourceClassPathResolver());
 
                         // Compute final HTML body from template and record fields
-                        String htmlBody = createHtml(record);
-                        if (htmlBody == null)
+                        String htmlBody = null;                        
+                        if (useTemplate)
                         {
-                            // Error. Already set message in createHtml: just add to failed record and continue with
-                            // next record
-                            failedRecords.add(record);
-                            continue;
+                            htmlBody = createHtml(record);  
+                            if (htmlBody == null)
+                            {
+                                // Error. Error message has already been set in createHtml: just add to failed record and
+                                // continue with next record
+                                failedRecords.add(record);
+                                continue;
+                            }
+                        } else
+                        {
+                            // html
+                            htmlBody = mailHtml;
                         }
+
                         htmlEmail.setHtmlMsg(htmlBody);
                         
                         // Add alternative text mail if any defined

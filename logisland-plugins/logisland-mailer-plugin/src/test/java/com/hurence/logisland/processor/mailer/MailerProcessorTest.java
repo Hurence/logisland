@@ -60,7 +60,7 @@ public class MailerProcessorTest {
     
     // Parameters for the HTML template
     private static final String PARAM_USER = "param_user";
-    private static final String PARAM_DATE = "param_date";
+    private static final String PARAM_DATE = "param_date";    
 
     //@Test
     public void testTextMailFromConfig() {
@@ -102,8 +102,87 @@ public class MailerProcessorTest {
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
         record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
-        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT + " (from record)");
         record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+    }
+    
+    //@Test
+    public void testHtmlMailFromConfig() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        testRunner.setProperty(MailerProcessor.MAIL_TO, TEST_MAIL_TO);
+
+        testRunner.assertValid();
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromConfig:\nThis is the text message which"
+                + " is an alternative to HTML one.");
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html>");
+        sb.append("<body>");
+        sb.append("Here is a...");
+        sb.append("<h2>Spectacular Image for you!</h2>");
+        sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("<br>[mail_html]");
+        sb.append("</body>");
+        sb.append("</html>");
+        record.setStringField(MailerProcessor.FIELD_MAIL_HTML, sb.toString());
+
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(0);
+    }
+    
+    //@Test
+    public void testHtmlMailFromRecord() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
+        testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
+        testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_USERNAME, TEST_SMTP_SECURITY_USERNAME);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_PASSWORD, TEST_SMTP_SECURITY_PASSWORD);
+        testRunner.setProperty(MailerProcessor.SMTP_SECURITY_SSL, TEST_SMTP_SECURITY_SSL);
+        testRunner.setProperty(MailerProcessor.MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        testRunner.setProperty(MailerProcessor.MAIL_BOUNCE_ADDRESS, TEST_MAIL_BOUNCE_ADDRESS);
+
+        testRunner.assertValid();
+        Record record = new StandardRecord("mail_record");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromRecord:\nThis is the text message which"
+                + " is an alternative to HTML one.");
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
+        record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
+        record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
+        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT + " (from record)");
+        record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html>");
+        sb.append("<body>");
+        sb.append("Here is a...");
+        sb.append("<h2>Spectacular Image for you!</h2>");
+        sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("<br>[mail_html]");
+        sb.append("</body>");
+        sb.append("</html>");
+        record.setStringField(MailerProcessor.FIELD_MAIL_HTML, sb.toString());
+        
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
@@ -112,7 +191,7 @@ public class MailerProcessorTest {
     }
 
     //@Test
-    public void testHtmlMailFromConfig() {
+    public void testUseTemplateMailFromConfig() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
         testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
         testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
@@ -133,17 +212,18 @@ public class MailerProcessorTest {
         sb.append("${" + PARAM_USER + "}, here is a...");
         sb.append("<h2>Spectacular Image for you (${" + PARAM_DATE + "})!</h2>");
         sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("<br>[template]");
         sb.append("</body>");
         sb.append("</html>");
         testRunner.setProperty(MailerProcessor.HTML_TEMPLATE, sb.toString());
 
         testRunner.assertValid();
         Record record = new StandardRecord("mail_record");
-        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromConfig:\nThis is the text message which"
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testUseTemplateMailFromConfig:\nThis is the text message which"
                 + " is an alternative to HTML one.");
         
         // Tells to use the configured template
-        record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
+        record.setField(new Field(MailerProcessor.FIELD_MAIL_USE_TEMPLATE, FieldType.BOOLEAN, true));
         
         // Set parameters for the template
         record.setStringField(PARAM_USER, "Bob");
@@ -157,7 +237,7 @@ public class MailerProcessorTest {
     }
     
     //@Test
-    public void testHtmlMailFromRecord() {
+    public void testUseTemplateMailFromRecord() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MailerProcessor());
         testRunner.setProperty(MailerProcessor.SMTP_SERVER, TEST_SMTP_SERVER);
         testRunner.setProperty(MailerProcessor.SMTP_PORT, TEST_SMTP_PORT);
@@ -174,22 +254,23 @@ public class MailerProcessorTest {
         sb.append("${" + PARAM_USER + "}, here is a...");
         sb.append("<h2>Spectacular Image for you (${" + PARAM_DATE + "})!</h2>");
         sb.append("<img src=\"http://www.apache.org/images/feather.gif\" alt=\"Spectacular Image\">");
+        sb.append("<br>[template]");
         sb.append("</body>");
         sb.append("</html>");
         testRunner.setProperty(MailerProcessor.HTML_TEMPLATE, sb.toString());
 
         testRunner.assertValid();
         Record record = new StandardRecord("mail_record");
-        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testHtmlMailFromRecord:\nThis is the text message which"
+        record.setStringField(MailerProcessor.FIELD_MAIL_TEXT, "testUseTemplateMailFromRecord:\nThis is the text message which"
                 + " is an alternative to HTML one.");
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_ADDRESS, TEST_MAIL_FROM_ADDRESS);
         record.setStringField(MailerProcessor.FIELD_MAIL_FROM_NAME, TEST_MAIL_FROM_NAME);
         record.setStringField(MailerProcessor.FIELD_MAIL_REPLYTO_ADDRESS, TEST_MAIL_REPLYTO_ADDRESS);
-        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT);
+        record.setStringField(MailerProcessor.FIELD_MAIL_SUBJECT, TEST_MAIL_SUBJECT + " (from record)");
         record.setStringField(MailerProcessor.FIELD_MAIL_TO, TEST_MAIL_TO);
         
         // Tells to use the configured template
-        record.setField(new Field(MailerProcessor.FIELD_MAIL_HTML, FieldType.BOOLEAN, true));
+        record.setField(new Field(MailerProcessor.FIELD_MAIL_USE_TEMPLATE, FieldType.BOOLEAN, true));
 
         // Set parameters for the template
         record.setStringField(PARAM_USER, "Bob");
