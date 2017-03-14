@@ -1,8 +1,8 @@
 Bro/Logisland integration - Indexing Bro events
 ===============================================
 
-Bro an Logisland
-----------------
+Bro and Logisland
+-----------------
 
 `Bro <https://www.bro.org>`_ is a Network IDS
 (`Intrusion Detection System <https://en.wikipedia.org/wiki/Intrusion_detection_system>`_) that
@@ -290,7 +290,7 @@ Start a Bro container from the Bro image:
 .. code-block:: sh
 
     # run container
-    docker run -it --name bro -h bro hurence/bro:0.9.8
+    docker run -it --name bro -h bro hurence/bro
 
     # get container ip
     docker inspect bro | grep IPAddress
@@ -307,6 +307,23 @@ In the following steps, if you want a new shell to your running bro container, d
 
     docker exec -ti bro bash
 
+Make the sandbox hostname reachable
+___________________________________
+
+Kafka in the Logisland container broadcasts his hostname which we have set up being ``sandbox``. For this hostname to be reachable from the Bro container, we must declare the IP address of the Logisland container. In the Bro container, edit the ``/etc/hosts`` file and add the following line at the end of the file, using the right IP address:
+
+.. code-block:: text
+
+    172.17.0.2  sandbox
+
+.. note::
+
+   Be sure to use the IP address of your Logisland container.
+    
+.. note::
+
+   Any potential communication problem of the Bro-Kafka plugin will be displayed in the ``/usr/local/bro/spool/bro/stderr.log`` log file. Also, you should not need this, but the advertised name used by Kafka is declared in the ``/usr/local/kafka/config/server.properties`` file (in the Logisland container), in the ``advertised.host.name`` property. Any modification to this property requires a Kafka server restart.
+
 Edit the Bro config file
 ________________________
 
@@ -322,15 +339,11 @@ Edit the config file of bro:
 At the beginning of the file, add the following section (take care to respect
 indentation):
 
-.. note::
-
-    Replace the ``172.17.0.2`` IP address with the address of the Logisland container if different.
-
 .. code-block:: bro
 
     @load Bro/Kafka/logs-to-kafka.bro
         redef Kafka::kafka_conf = table(
-            ["metadata.broker.list"] = "172.17.0.2:9092",
+            ["metadata.broker.list"] = "sandbox:9092",
             ["client.id"] = "bro"
         );
         redef Kafka::topic_name = "bro";
@@ -351,7 +364,7 @@ container (host, port, client id to use). These are communication settings:
 .. code-block:: bro
 
     redef Kafka::kafka_conf = table(
-        ["metadata.broker.list"] = "172.17.0.2:9092",
+        ["metadata.broker.list"] = "sandbox:9092",
         ["client.id"] = "bro"
 
 This line tells the Kafka topic name to use. It is important that it is the same as the
