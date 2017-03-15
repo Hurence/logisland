@@ -2,9 +2,9 @@
  * App Controller for the LogIsland UI
  */
 
-export default [ 'JobsDataService', 'TopicsDataService', 'ProcessorsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', '$scope', AppController ];
+export default [ 'JobsDataService', 'TopicsDataService', 'ProcessorsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', '$scope', '$state', AppController ];
 
-function AppController(JobsDataService, TopicsDataService, ProcessorsDataService, ListService, AppSettings, $mdSidenav, $log, $scope) {
+function AppController(JobsDataService, TopicsDataService, ProcessorsDataService, ListService, AppSettings, $mdSidenav, $log, $scope, $state) {
     var self = this;
     var vm = $scope;
 
@@ -37,9 +37,7 @@ function AppController(JobsDataService, TopicsDataService, ProcessorsDataService
 
     function selectJob ( job ) {
         vm.selectedJob = angular.isNumber(job) ? self.jobs[job] : job;
-        if(vm.selectedJob.streams.length > 0) {
-            self.selectedStream = vm.selectedJob.streams[0];
-        }
+        $state.go("jobs.details");
     }
 
     function querySearch (query) {

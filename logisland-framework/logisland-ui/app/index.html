@@ -23,9 +23,11 @@
       ng-cloak>
 
 <!-- Header / Top bar -->
-<md-toolbar layout="row"
-            class="md-toolbar-tools fabSpeedDialdemoLI">
-    <div flex layout="row" layout-align="start center">
+<md-toolbar layout="row">
+    <div flex
+         class="md-toolbar-tools"
+         layout="row"
+         layout-align="start center">
         <md-button class="menu md-icon-button"
                    ng-click="app.toggleList('left')"
                    aria-label="Show Job List">
@@ -33,87 +35,77 @@
         </md-button>
         <h1>LogIsland UI</h1>
     </div>
-    <div flex layout="row" layout-align="end center">
-
-        <md-autocomplete flex
-                         ng-show="app.showSearch"
-                         ng-blur="app.showSearch = false"
-                         md-selected-item=""
-                         md-search-text-change="app.searchTextChange(app.searchText)"
-                         md-search-text="app.searchText"
-                         md-selected-item-change="app.selectedItemChange(job)"
-                         md-items="job in app.querySearch(app.searchText)"
-                         md-item-text="job.name"
-                         md-min-length="0"
-                         placeholder="Look for a job here">
-            <md-item-template>
-                <span md-highlight-text="app.searchText" md-highlight-flags="^i">{{job.name}}</span>
-            </md-item-template>
-            <md-not-found>
-                No job name matching the search string "{{app.searchText}}".
-                <a ng-click="app.addJob(app.searchText)">Create a new one!</a>
-            </md-not-found>
-        </md-autocomplete>
-        <md-button class="menu md-icon-button"
-                   ng-click="app.showSearch = !app.showSearch"
-                   aria-label="Search Jobs"
-                   layout-align="end center">
-            <md-icon md-svg-icon="search"></md-icon>
-        </md-button>
-    </div>
 </md-toolbar>
 
-<!-- Menu -->
-<md-sidenav class="md-sidenav-left md-whiteframe-z2"
-            md-component-id="left">
-    <md-toolbar layout="row">
-        <div class="md-toolbar-tools">
-            <h2>
-                <span>Menu</span>
-            </h2>
-            <span flex></span>
-            <md-button class="md-icon-button" aria-label="Close Side Panel" ng-click="app.toggleList('left')">
+<md-content layout="row" flex>
+
+    <md-sidenav
+            class="md-sidenav-left"
+            md-component-id="left"
+            md-is-locked-open="$mdMedia('gt-sm')"
+            md-whiteframe="4">
+
+        <md-toolbar class="md-toolbar-tools">
+            <h2 class="md-toolbar-tools">Menu</h2>
+            <md-button class="md-icon-button"
+                       aria-label="Close Side Panel"
+                       hide-gt-sm=""
+                       ng-click="app.toggleList('left')">
                 <md-tooltip>Close Side Panel</md-tooltip>
                 <md-icon md-svg-icon="close"></md-icon>
             </md-button>
-        </div>
-    </md-toolbar>
-    <md-content layout-padding>
-        <md-list layout-align="start center">
-            <md-subheader class="md-no-sticky">
-                <md-icon class="material-icons md-light md-48">subject</md-icon>
-                <a ui-sref="topics" ui-sref-active="active" ng-click="app.toggleList('left')">Topics</a>
-            </md-subheader>
-            <md-divider></md-divider>
-            <md-subheader class="md-no-sticky">
-                <md-icon class="material-icons md-light md-48">directions_run</md-icon>
-                <!--<a ui-sref="jobs.list" ui-sref-active="active" ng-click="app.toggleList('left')">Jobs</a>-->
-                <span ng-click="expandJobs = !expandJobs">Jobs</span>
-                <md-icon ng-show="expandJobs"  ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_down</md-icon>
-                <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_right</md-icon>
-                </md-subheader>
-            <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs" >
-                <a ui-sref="jobs.details" ui-sref-active="active" ng-click="app.selectedJob=job; app.toggleList('left')">{{ job.name }}</a>
-            </md-list-item>
-            <md-divider></md-divider>
-            <md-subheader class="md-no-sticky"><md-icon class="material-icons md-light md-48">warning</md-icon>Alerts</md-subheader>
-            <md-divider></md-divider>
-            <md-subheader class="md-no-sticky"><md-icon class="material-icons md-light md-48">info</md-icon>Metrology</md-subheader>
-            <md-divider></md-divider>
-            <md-subheader class="md-no-sticky"><md-icon class="material-icons md-light md-48">error</md-icon>Errors</md-subheader>
-            <md-divider></md-divider>
-            <md-subheader flex class="md-no-sticky"><md-icon class="material-icons md-light md-48">settings</md-icon>Config</md-subheader>
-            <md-divider></md-divider>
-        </md-list>
-    </md-content>
-</md-sidenav>
+        </md-toolbar>
 
-<div flex ui-view>
-    No state selected
-            <!--<job-details flex-->
-                         <!--selected="app.selectedJob">-->
-            <!--</job-details>-->
-</div>
+        <md-content flex layout-padding>
+            <md-list layout-align="start center">
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">subject</md-icon>
+                    <a ui-sref="topics" ui-sref-active="active" ng-click="app.toggleList('left')">Topics</a>
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">directions_run</md-icon>
+                    <!--<a ui-sref="jobs.list" ui-sref-active="active" ng-click="app.toggleList('left')">Jobs</a>-->
+                    <span ng-click="expandJobs = !expandJobs">Jobs</span>
+                    <md-icon ng-show="expandJobs" ng-click="expandJobs = !expandJobs"
+                             class="material-icons md-light md-48">keyboard_arrow_down
+                    </md-icon>
+                    <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs"
+                             class="material-icons md-light md-48">keyboard_arrow_right
+                    </md-icon>
+                </md-subheader>
+                <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs">
+                    <a ui-sref="jobs.details" ui-sref-active="active"
+                       ng-click="app.selectedJob=job; app.toggleList('left')">{{ job.name }}</a>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">warning</md-icon>
+                    Alerts
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">info</md-icon>
+                    Metrology
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">error</md-icon>
+                    Errors
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader flex class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">settings</md-icon>
+                    Config
+                </md-subheader>
+                <md-divider></md-divider>
+            </md-list>
+        </md-content>
+    </md-sidenav>
+
+    <div flex layout-padding ui-view>No state selected</div>
+
+</md-content>
 
 <script src="./jspm_packages/system.js" type="text/javascript"></script>
 <script src="config.js" type="text/javascript"></script>
@@ -121,6 +113,11 @@
     System
         .import('src/boot/boot')
         .catch( console.error.bind(console) ); /* make sure any errors print to console*/
+
+
+
+
+
 </script>
 <script type="text/ng-template" id="actions.html">
     <md-button class="md-fab md-mini md-raised"

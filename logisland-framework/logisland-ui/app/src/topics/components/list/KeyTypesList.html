@@ -1,24 +1,31 @@
-<table>
-    <tr>
+<table cellspacing="0">
+    <tr class="table-headers">
         <td>Name</td>
         <td>Type</td>
         <td>Encrypted</td>
         <td>Indexed</td>
         <td>Persistent</td>
         <td>Optional</td>
-        <td>Actions</td>
+        <td>&nbsp;</td>
     </tr>
-    <tr ng-repeat="key in $ctrl.selected">
+    <tr>
+        <td colspan="7">
+            <md-divider></md-divider>
+        </td>
+    </tr>
+    <tr class="table-content" ng-repeat="key in $ctrl.selected">
         <td><span editable-text="key.name" e-name="name" buttons="right">{{ key.name }}</span></td>
         <td><span editable-text="key.type" e-name="type" buttons="right">{{ key.type }}</span></td>
         <td><span editable-text="key.encrypted" e-name="encrypted" buttons="right">{{ key.encrypted }}</span></td>
         <td><span editable-text="key.indexed" e-name="indexed" buttons="right">{{ key.indexed }}</span></td>
         <td><span editable-text="key.persistent" e-name="persistent" buttons="right">{{ key.persistent }}</span></td>
         <td><span editable-text="key.optional" e-name="optional" buttons="right">{{ key.optional }}</span></td>
-        <td><md-button ng-click="deleteKey($index)">X</md-button></td>
+        <td>
+            <md-button ng-click="deleteKey($index)">X</md-button>
+        </td>
     </tr>
     <tr>
-        <td colspan="6">
+        <td colspan="7">
             <md-button class="md-raised md-secondary" ng-click="addKey()">Add Key</md-button>
         </td>
     </tr>

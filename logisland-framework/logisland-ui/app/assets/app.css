@@ -198,3 +198,15 @@ background-color: #00ff00;
     border: 1px solid black;
     background-color: grey;
 }
+
+.table-headers {
+    font-weight: bold;
+}
+
+.table-headers td {
+    text-align: center;
+}
+
+.table-content td {
+    text-align: center;
+}
