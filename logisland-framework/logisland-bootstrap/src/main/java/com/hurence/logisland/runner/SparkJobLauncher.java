@@ -91,7 +91,7 @@ public class SparkJobLauncher {
 
             logger.info("starting Logisland session version {}", engineInstance.get());
         } catch (Exception e) {
-            logger.error("unable to launch runner : {}", e);
+            logger.error("unable to launch runner : {}", e.toString());
         }
 
         try {

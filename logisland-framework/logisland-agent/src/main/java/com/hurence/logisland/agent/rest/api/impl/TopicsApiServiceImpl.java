@@ -99,7 +99,7 @@ public class TopicsApiServiceImpl extends TopicsApiService {
         try {
             topic = kafkaRegistry.getTopic(topicId);
         } catch (RegistryException e) {
-            return Response.serverError().entity(e).build();
+            logger.error("topic not found {}. {}", topicId, e);
         }
 
         if (topic == null)

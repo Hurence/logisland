@@ -20,11 +20,10 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
-import com.hurence.logisland.kafka.util.KafkaSink
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -358,7 +357,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 /**
                   * check if conf needs to be refreshed
                   */
-                if (lastCheckCount < throttling) {
+                if (lastCheckCount > throttling) {
                     lastCheckCount = 0
                     val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
                     if (currentJobVersion != version) {
@@ -377,16 +376,16 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
                                 // if we found a streamContext with the same name from the factory
                                 if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                    logger.info("new conf for stream {}", updatedStreamingContext)
+                                    logger.info("new conf for stream {}", updatedStreamingContext.getName)
                                     this.streamContext = updatedStreamingContext
                                 }
                             }
                         }
                         currentJobVersion = version
                     }
-                } else {
-                    lastCheckCount += 1
                 }
+
+                lastCheckCount += 1
 
 
 

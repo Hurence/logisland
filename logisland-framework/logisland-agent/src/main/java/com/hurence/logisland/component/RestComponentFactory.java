@@ -51,7 +51,7 @@ public final class RestComponentFactory {
         this.restJobsApiClient = jobsApiClient;
         this.topicsApiClient = topicsApiClient;
         this.configsApiClient = configsApiClient;
-        this.agentQuorum = "localhost:8081";
+        this.agentQuorum = "http://localhost:8081";
     }
 
     private Logger logger = LoggerFactory.getLogger(RestComponentFactory.class);
@@ -122,23 +122,29 @@ public final class RestComponentFactory {
                 switch (key) {
                     case "kafka.input.topics": {
                         Topic topic = topicsApiClient.getTopic(value);
-                        if(topic == null)
+                        if(topic == null){
                             logger.error("{} topic was not found", value);
-                        instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
-                        instance.setProperty(key, value);
+                        }else {
+                            instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
+                            instance.setProperty(key, value);
+                        }
                         break;
                     }
                     case "kafka.output.topics": {
                         Topic topic = topicsApiClient.getTopic(value);
-                        if(topic == null)
+                        if(topic == null) {
                             logger.error("{} topic was not found", value);
-                        instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
-                        instance.setProperty(key, value);
+                        }else {
+                            instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
+                            instance.setProperty(key, value);
+                        }
                         break;
                     }
                 }
                 List<Property> configs = configsApiClient.getConfigs();
-                configs.forEach(conf -> instance.setProperty(conf.getKey(), conf.getValue()));
+                configs.forEach(conf -> {
+                    instance.setProperty(conf.getKey(), conf.getValue());
+                });
 
                 instance.setProperty("logisland.agent.quorum", this.agentQuorum);
 
@@ -171,5 +177,11 @@ public final class RestComponentFactory {
         return Optional.empty();
     }
 
+
+    public static void main(String[] args) {
+        RestComponentFactory factory =  new RestComponentFactory("http://localhost:8081");
+
+        factory.getEngineContext("IndexApacheLogsDemo");
+    }
 
 }

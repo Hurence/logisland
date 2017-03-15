@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.kafka.util
+package com.hurence.logisland.util.spark
 
 import java.io.ByteArrayOutputStream
 
 import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.RecordSerializer
-import kafka.producer.KeyedMessage
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 import scala.collection.JavaConversions._

@@ -156,7 +156,7 @@ object SparkUtils extends LazyLogging {
         val dataFrame = sqlContext.createDataFrame(rawRDD, parsedSchema)
 
         // Register the DataFrames as a table.
-        dataFrame.registerTempTable(tableName)
+        dataFrame.createOrReplaceTempView(tableName)
         dataFrame
     }
 
