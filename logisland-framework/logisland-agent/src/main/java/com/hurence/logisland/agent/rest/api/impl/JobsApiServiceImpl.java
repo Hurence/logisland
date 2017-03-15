@@ -7,6 +7,8 @@ import com.hurence.logisland.agent.rest.model.Engine;
 import com.hurence.logisland.agent.rest.model.Error;
 import com.hurence.logisland.agent.rest.model.Job;
 import com.hurence.logisland.agent.rest.model.JobSummary;
+import com.hurence.logisland.agent.utils.YarnApplication;
+import com.hurence.logisland.agent.utils.YarnApplicationWrapper;
 import com.hurence.logisland.kakfa.registry.KafkaRegistry;
 import com.hurence.logisland.kakfa.registry.exceptions.RegistryException;
 import org.apache.commons.exec.*;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -255,11 +258,66 @@ public class JobsApiServiceImpl extends JobsApiService {
     @Override
     public Response shutdownJob(String jobId, SecurityContext securityContext) throws NotFoundException {
 
+
         Job job = null;
         try {
+
             job = kafkaRegistry.getJob(jobId);
+
+
             if (job == null)
                 throw new RegistryException("job " + jobId + "not found !");
+
+
+            // find the scheduler type
+            final String[] scheduler = {"local"};
+            job.getEngine().getConfig().forEach(prop -> {
+                if (prop.getKey().equals("spark.master")) {
+                    if (prop.getValue().contains("yarn"))
+                        scheduler[0] = "yarn";
+                    else if (prop.getValue().contains("mesos"))
+                        scheduler[0] = "mesos";
+                    else
+                        scheduler[0] = "local";
+                }
+            });
+
+            if (scheduler[0].equals("yarn")) {
+                logger.info("retrieving yarn application");
+                CommandLine cmdLine = new CommandLine("yarn application -list");
+                ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+                PumpStreamHandler psh = new PumpStreamHandler(stdout);
+                Executor executor = new DefaultExecutor();
+                executor.setExitValue(0);
+                executor.setStreamHandler(psh);
+                try {
+                    executor.execute(cmdLine);
+                } catch (IOException e) {
+                    logger.error(e.toString());
+                }
+                YarnApplicationWrapper wrapper = new YarnApplicationWrapper(stdout.toString());
+                YarnApplication app = wrapper.getApplication(job.getName());
+                if (app != null) {
+                    logger.info("Killing Yarn application {}", app.getId());
+                    CommandLine killCmdLine = new CommandLine("yarn application -kill " + app.getId());
+                    Executor killExecutor = new DefaultExecutor();
+                    killExecutor.setExitValue(0);
+                    try {
+                        killExecutor.execute(killCmdLine);
+                    } catch (IOException e) {
+                        logger.error(e.toString());
+                    }
+                } else
+                    logger.error("Yarn application {} not found, may it wasn't running", job.getName());
+
+                try {
+                    stdout.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         } catch (RegistryException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Unable to shutdown job " + jobId))
