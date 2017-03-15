@@ -5,7 +5,7 @@ ng-show="$ctrl.selected">
         <td>Name</td>
         <td>
             <span editable-text="$ctrl.selected.name" e-name="name" buttons="right">{{ $ctrl.selected.name }}</span>
-            <span>(version: {{ $ctrl.selected.version }})</span>
+            <span ng-show="$ctrl.selected.version">(version: {{ $ctrl.selected.version }})</span>
         </td>
     </tr>
     <tr layout-padding>
