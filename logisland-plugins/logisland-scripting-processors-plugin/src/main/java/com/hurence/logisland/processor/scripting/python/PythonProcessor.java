@@ -44,16 +44,11 @@ import static java.util.stream.Collectors.joining;
  * 
  * So far identified list of things still to be done:
  * - see TODOs here
- * - test usage in real situation (.yml config file usage). To also validate logsiland dependencies delivered. 
- * - both modes: configuration parameters of the python processor (with customvalidation possibilities?)
+ * - init code is always called! Remove this!
  * - inline mode: default imports list
  * - inline mode: user imports  usage, init usage (access context?))
- * - inline mode: real process code
  * - onPropertyModified up to python code (test)
- * - online doc (complete tags here (@Tags, @CapabilityDescription), add some? ),
- * - more tests
  * - doc for tutorial (inline?, file? , both?)
- * - validate thread safe behaviour !!!
  */
 
 @Tags({"scripting", "python"})
@@ -62,12 +57,13 @@ import static java.util.stream.Collectors.joining;
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
         + " without warnings.\n\n"
         + "This processor allows to implement and run a processor written in python."
-        + "This can be done in 2 ways. Either defining init and process method codes as configuration property values or"
-        + " poiting to a python module script file with another configuration property value. Directly defining methods is"
-        + " called the inline mode whereas using a script file is called the file mode. Both methods are mutually"
-        + " exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies."
-        + " If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can"
-        + " use a configuration property to give their location.")
+        + " This can be done in 2 ways. Either directly defining the process method code in the **script.code.process**"
+        + " configuration property or poiting to an external python module script file in the **script.path**"
+        + " configuration property. Directly defining methods is called the inline mode whereas using a script file is"
+        + " called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your"
+        + " python code may depend on some python dependencies. If the set of python dependencies already delivered with"
+        + " the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to"
+        + " give their location. Currently only the nltk python library is delivered with Logisland.")
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
@@ -118,7 +114,7 @@ public class PythonProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor SCRIPT_CODE_IMPORTS = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_CODE_IMPORTS)
-            .description("For inline mode, this is the pyhton code that should hold the import statements if required")
+            .description("For inline mode only. This is the pyhton code that should hold the import statements if required.")
             .required(false)
             .build();
 
@@ -126,7 +122,7 @@ public class PythonProcessor extends AbstractProcessor {
             .name(KEY_SCRIPT_CODE_INIT)
             .description("The python code to be called when the processor is initialized. This is the python"
                     + " equivalent of the init method code for a java processor. This is not mandatory but can only"
-                    + " be used if " + KEY_SCRIPT_CODE_PROCESS + " is defined")
+                    + " be used if **" + KEY_SCRIPT_CODE_PROCESS + "** is defined (inline mode).")
             .required(false)
             .build();
     
@@ -134,14 +130,19 @@ public class PythonProcessor extends AbstractProcessor {
             .name(KEY_SCRIPT_CODE_PROCESS)
             .description("The python code to be called to process the records. This is the pyhton equivalent"
                     + " of the process method code for a java processor. For inline mode, this is the only minimum"
-                    + " required configuration property. Using this property, you may also optionally define the "
-                    + KEY_SCRIPT_CODE_INIT + " property")
+                    + " required configuration property. Using this property, you may also optionally define the **"
+                    + KEY_SCRIPT_CODE_INIT + "** and **" + KEY_SCRIPT_CODE_IMPORTS + "** properties.")
             .required(false)
             .build();
 
     public static final PropertyDescriptor SCRIPT_PATH = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_PATH)
-            .description("The path to the user's python processor script. Use this property for file mode." )
+            .description("The path to the user's python processor script. Use this property for file mode. Your python"
+                    + " code must be in a python file with the following constraints: let's say your pyhton script is"
+                    + " named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class"
+                    + " named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor."
+                    + " You can then define your code in the process method and in the other traditional methods (init...)"
+                    + " as you would do in java in a class inheriting from the AbstractProcessor java class.")
             .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
@@ -151,11 +152,11 @@ public class PythonProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
             .name(KEY_DEPENDENCIES_PATH)
-            .description("The path to the dependencies for the user's python code, whether in inline or file mode."
-                    + " This is optional as your code may not have additional dependencies. If you defined"
-                    + KEY_SCRIPT_PATH + " (so using file mode) and if " + KEY_DEPENDENCIES_PATH + " is not defined,"
-                    + " Logisland will scan a potential directory named " + DEFAULT_DEPENDENCIES_DIRNAME
-                    + " in the same directory where the script file resides and if it exists, any python code located"
+            .description("The path to the additional dependencies for the user's python code, whether using inline or"
+                    + " file mode. This is optional as your code may not have additional dependencies. If you defined **"
+                    + KEY_SCRIPT_PATH + "** (so using file mode) and if **" + KEY_DEPENDENCIES_PATH + "** is not defined,"
+                    + " Logisland will scan a potential directory named **" + DEFAULT_DEPENDENCIES_DIRNAME
+                    + "** in the same directory where the script file resides and if it exists, any python code located"
                     + " there will be loaded as dependency as needed.")
             .required(false)
             .addValidator(StandardValidators.createDirectoryExistsValidator(false, false))
