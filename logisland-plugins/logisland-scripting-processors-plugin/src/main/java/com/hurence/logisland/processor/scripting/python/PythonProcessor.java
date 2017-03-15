@@ -94,7 +94,7 @@ public class PythonProcessor extends AbstractProcessor {
     // True if one must load dependencies in the dependencies path
     private boolean hasDependencies = false;
 
-    // Path of the directory containing the logisland pyhton dependnecies (shipped with logisland)
+    // Path of the directory containing the logisland pyhton dependencies (shipped with logisland)
     private String logislandDependenciesPath = null;
     
     // Python interpreter
@@ -164,8 +164,8 @@ public class PythonProcessor extends AbstractProcessor {
     public static final PropertyDescriptor LOGISLAND_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
             .name(KEY_LOGISLAND_DEPENDENCIES_PATH)
             .description("The path to the directory containing the python dependencies shipped with logisland. You"
-                    + " should not have to tune this.")
-            .required(true)
+                    + " should not have to tune this parameter.")
+            .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     
@@ -224,7 +224,7 @@ public class PythonProcessor extends AbstractProcessor {
         {
             // File mode
             
-            logger.info("Initializing python processor (script file mode): " + scriptPath);
+            logger.debug("Initializing python processor (script file mode): " + scriptPath);
 
             // Load processor script
             pythonInterpreter.execfile(scriptPath);
@@ -468,7 +468,7 @@ public class PythonProcessor extends AbstractProcessor {
     {
         // TODO: can this be found with correct default value pointing to resources in jar file? 
         logislandDependenciesPath = context.getPropertyValue(LOGISLAND_DEPENDENCIES_PATH).asString();
-        logger.info("Using python logisland dependencies path: " + logislandDependenciesPath);
+        logger.debug("Using python logisland dependencies path: " + logislandDependenciesPath);
     }
     
     /**

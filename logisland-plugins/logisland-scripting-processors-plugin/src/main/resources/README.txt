@@ -1,3 +1,17 @@
+This jar file holds dependencies needed to allow running scripting processors.
+Currently, only python is supported thus this jar file only includes python dependencies
+and some libraries delivered with Logisland that can be used from python processors.
+As of today, only the nltk library is delivered. The modifications done to it are
+explained here after:
+
+- AbstractProcessor.py:
+
+This is the mother class a python processor must inherit from (like in java, a processor must inherit from AbstractProcessor).
+The name of the python processor script (file mode) must be the name of the class it contains and this class must inherit
+from AbstractProcessor.
+
+- nltk:
+
 This is the copy of the nltk v3.2.1 library with the following modidifications:
 
 Workaround as we cannot use sqlite dependency from Jython env
