@@ -304,7 +304,7 @@ public class JobsApiServiceImpl extends JobsApiService {
                     CommandLine killCmdLine = new CommandLine("yarn" );
                     killCmdLine.addArgument("application");
                     killCmdLine.addArgument("-kill");
-                    killCmdLine.addArgument(jobId);
+                    killCmdLine.addArgument(app.getId());
                     Executor killExecutor = new DefaultExecutor();
                     killExecutor.setExitValue(0);
                     try {
