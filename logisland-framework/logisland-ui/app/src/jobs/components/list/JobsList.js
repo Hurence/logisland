@@ -8,7 +8,7 @@ export default {
   }
 };
 
-function JobsListController(JobsDataService, $log, $scope, $templateCache) {
+function JobsListController(JobsDataService, $log, $scope) {
     var vm = $scope;
     var self = this;
 
