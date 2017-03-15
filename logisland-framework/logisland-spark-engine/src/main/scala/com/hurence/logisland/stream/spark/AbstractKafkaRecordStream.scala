@@ -357,7 +357,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 /**
                   * check if conf needs to be refreshed
                   */
-                if (lastCheckCount < throttling) {
+                if (lastCheckCount > throttling) {
                     lastCheckCount = 0
                     val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
                     if (currentJobVersion != version) {
