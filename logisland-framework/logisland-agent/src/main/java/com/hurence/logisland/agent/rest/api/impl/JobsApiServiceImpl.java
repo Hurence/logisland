@@ -351,7 +351,7 @@ public class JobsApiServiceImpl extends JobsApiService {
 
         CommandLine cmdLine = new CommandLine("bin/logisland-launch-spark-job");
         cmdLine.addArgument("--agent");
-        cmdLine.addArgument("localhost:8081");
+        cmdLine.addArgument("http://0.0.0.0:8081");
         cmdLine.addArgument("--job");
         cmdLine.addArgument(jobId);
 
