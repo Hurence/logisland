@@ -11,6 +11,7 @@ angular
   .ready( function() {
     angular
       .module( 'logisland-ui', [ App.name ] )
+      // allow DI for use in controllers, unit tests
       .run(()=>{
         console.log(`Running the 'logisland-ui'`);
       });

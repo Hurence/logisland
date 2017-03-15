@@ -1,54 +1,20 @@
-<div flex>
+<div flex layout-align="start center" layout-padding>
     <h2>Topics</h2>
-    <table class="table table-bordered table-hover table-condensed">
-        <tr class="listrowheader">
-            <td>Name</td>
-            <td>Version</td>
-            <td>Partition</td>
-            <td>Replication</td>
-            <td>Serializer</td>
-            <td>Time Field</td>
-            <td>rowkey</td>
-            <td>recordType</td>
-            <td>keySchema</td>
-            <td>valueSchema</td>
-        </tr>
-        <tr ng-repeat="topic in $ctrl.topics">
-            <td><span editable-text="topic.name" e-name="name" buttons=no>{{ topic.name }}</span></td>
-            <td><span>{{ topic.version }}</span></td>
-            <td><span editable-text="topic.partitions" e-name="partitions" buttons=no>{{ topic.partitions }}</span></td>
-            <td><span editable-text="topic.replicationFactor" e-name="replicationFactor" buttons=no>{{ topic.replicationFactor }}</span>
-            </td>
-            <td><span editable-text="topic.serializer" e-name="serializer" buttons=no>{{ topic.serializer }}</span></td>
-            <td><span editable-text="topic.businessTimeField" e-name="businessTimeField" buttons=no>{{ topic.businessTimeField }}</span>
-            </td>
-            <td><span editable-text="topic.rowkeyField" e-name="rowkeyField" buttons=no>{{ topic.rowkeyField }}</span>
-            </td>
-            <td><span editable-text="topic.recordTypeField" e-name="recordTypeField" buttons=no>{{ topic.recordTypeField }}</span>
-            </td>
-            <td><span editable-text="topic.keySchema" e-name="keySchema" buttons=no>{{ topic.keySchema }}</span></td>
-            <td><span editable-text="topic.valueSchema" e-name="valueSchema" buttons=no>{{ topic.valueSchema }}</span>
-            </td>
-        </tr>
-    </table>
-</div>
-<!--<md-list flex="50">-->
-<!--<md-list-item layout-align="center center">-->
-<!--<div flex class="listrowheader" layout="row" layout-align="start center">-->
-<!--<div flex="20" layout-margin>Name</div>-->
-<!--<div flex="10" layout-padding>Version</div>-->
-<!--<div flex="10" layout-margin>Part / Rep</div>-->
-<!--<div flex="60" layout-margin>Serializer</div>-->
-<!--</div>-->
-<!--</md-list-item>-->
-<!--<md-list-item flex ng-repeat="topic in $ctrl.topics" ng-click="selectTopic(topic)">-->
-<!--<div flex class="listrow" layout="row" layout-align="start center">-->
-<!--<div flex="20" class="md-list-item-text listcell" layout-margin>{{ topic.name }}</div>-->
-<!--<div flex="10" class="md-list-item-text listcell" layout-margin>{{ topic.version }}</div>-->
-<!--<div flex="10" class="md-list-item-text listcell" layout-margin>{{ topic.partitions }} / {{ topic.replicationFactor }}</div>-->
-<!--<div flex="60" class="md-list-item-text listcell" layout-margin>{{ topic.serializer }}</div>-->
-<!--</div>-->
-<!--</md-list-item>-->
-<!--</md-list>-->
-<!--<topic-details flex="50" selected="$ctrl.selectedTopic"></topic-details>-->
+    <md-list
+            class="topcisList">
+        <md-list-item
+                class="listheader"
+                layout-align="center center"
+                layout="row">
+            <div flex="60" layout-margin>Name</div>
+            <div flex="40" layout-padding>Version</div>
+        </md-list-item>
+        <md-list-item ng-repeat="topic in $ctrl.topics" ng-click="selectTopic(topic)" layout="row">
+            <div flex="60" class="md-list-item-text" layout-margin>{{ topic.name }}</div>
+            <div flex="60" class="md-list-item-text" layout-margin>{{ topic.version }}</div>
+        </md-list-item>
+    </md-list>
+    <topic-details
+            selected="$ctrl.selectedTopic">
+    </topic-details>
 </div>

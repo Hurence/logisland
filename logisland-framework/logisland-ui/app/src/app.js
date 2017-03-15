@@ -8,13 +8,15 @@ import 'angular-messages';
 import 'angular-resource';
 import 'angular-ui-router';
 import 'angular-xeditable';
+import moment from 'moment';
+
 
 import AppController from 'src/AppController';
 import Jobs from 'src/jobs/Jobs';
 import Topics from 'src/topics/Topics';
 
-export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router', 'ngMessages', 'xeditable', Jobs.name ] )
-    .config(($mdIconProvider, $mdThemingProvider, $stateProvider) => {
+export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router', 'ngMessages', 'xeditable', Jobs.name, Topics.name ] )
+    .config(($mdIconProvider, $mdDateLocaleProvider, $mdThemingProvider, $urlRouterProvider, $stateProvider) => {
         // Register the icons
         $mdIconProvider
             .defaultIconSet("./assets/svg/avatars.svg", 128)
@@ -37,28 +39,45 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router',
         //    .primaryPalette('brown')
         //    .accentPalette('red');
 
-        var topicsState = {
-            name: 'topics',
-            url: '/topics',
-            template: '<topics-list flex topics="app.topics"></topics-list>'
-//            ,
-//            component: 'topicsList'
-//            resolve: {
-//                topics: function(TopicsDataService) {
-//                  return TopicsDataService.query();
-//                }
-//            }
-        }
+//        $mdDateLocaleProvider.formatDate = function(date) {
+//            var m = moment(date);
+//            return m.isValid() ? m.format('L') : '';
+//        };
 
-        var jobsState = {
-            name: 'jobs',
-            url: '/jobs',
-            template: '<job-details flex selected="app.selectedJob"> </job-details>'
-        }
+        $urlRouterProvider.otherwise('/topics');
 
-        $stateProvider.state(topicsState);
-        $stateProvider.state(jobsState);
+        $stateProvider
+            .state({
+                abstract: true,
+                name: 'jobs',
+                url: '/jobs',
+                template: '<ui-view/>'
+            })
+//            .state({
+//                name: 'jobs.list',
+//                url: '/list',
+//                template: '<jobs-list></jobs-list>'
+//            })
+            .state({
+                name: 'jobs.details',
+                url: '/details',
+                    template: '<job-details flex selected="app.selectedJob"> </job-details>',
+                    controller: 'JobsController'
+             })
+            .state({
+                name: 'topics',
+                url: '/topics',
+                template: '<topics-list flex topics="app.topics"></topics-list>'
+                //,
+                //  component: 'topicsList'
+                //  resolve: {
+                //      topics: function(TopicsDataService) {
+                //      return TopicsDataService.query();
+                //  }
+                //}
+                });
 
   })
+
   .controller('AppController', AppController)
   ;

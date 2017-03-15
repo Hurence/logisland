@@ -17,7 +17,7 @@ function TopicsListController(TopicsDataService, $log, $scope) {
     vm.selectTopic = selectTopic;
 
     function selectTopic(topic) {
-        $log.debug("topic selected: " + JSON.stringify(topic));
+        //$log.debug("topic selected: " + JSON.stringify(topic));
         self.selectedTopic = topic;
     }
 }

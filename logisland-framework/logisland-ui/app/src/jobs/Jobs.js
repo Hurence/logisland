@@ -1,7 +1,6 @@
 
 import JobsListSimple from 'src/jobs/components/list/JobsListSimple';
 import JobsList from 'src/jobs/components/list/JobsList';
-import TopicsList from 'src/topics/components/list/TopicsList';
 import ProcessorsList from 'src/jobs/components/list/ProcessorsList';
 import JobDetails from 'src/jobs/components/details/JobDetails';
 import TopicDetails from 'src/topics/components/details/TopicDetails';
@@ -9,18 +8,16 @@ import StreamDetails from 'src/jobs/components/details/StreamDetails';
 import EditProcessor from 'src/jobs/components/details/EditProcessor';
 import EditRow from 'src/jobs/components/details/EditRow';
 import Config from 'src/jobs/components/details/Config';
-//import TopicSchema from 'src/jobs/components/details/TopicSchema';
 
 import JobsDataService from 'src/jobs/services/JobsDataService';
-import TopicsDataService from 'src/topics/services/TopicsDataService';
 import ProcessorsDataService from 'src/jobs/services/ProcessorsDataService';
 import ListService from 'src/jobs/services/ListService';
 import AppSettings from 'src/jobs/services/AppSettings';
 
+import JobsController from 'src/jobs/JobsController';
 
 // Define the Angular 'jobs' module
-export default angular
-  .module("jobs", ['ngMaterial', 'ngResource', 'xeditable' ])
+export default angular.module('jobs', ['ngMaterial', 'ngResource', 'xeditable' ])
 
   .filter('cut', function () {
             return function (value, wordwise, max, tail) {
@@ -48,7 +45,6 @@ export default angular
 
   .component(JobsListSimple.name, JobsListSimple.config)
   .component(JobsList.name, JobsList.config)
-  .component(TopicsList.name, TopicsList.config)
   .component(ProcessorsList.name, ProcessorsList.config)
   .component(JobDetails.name, JobDetails.config)
   .component(TopicDetails.name, TopicDetails.config)
@@ -56,13 +52,13 @@ export default angular
   .component(EditProcessor.name, EditProcessor.config)
   .component(EditRow.name, EditRow.config)
   .component(Config.name, Config.config)
-  //.component(TopicSchema.name, TopicSchema.config)
 
   .service("JobsDataService", JobsDataService)
-  .service("TopicsDataService", TopicsDataService)
   .service("ProcessorsDataService", ProcessorsDataService)
   .service("ListService", ListService)
 
   .factory("AppSettings", AppSettings)
+
+  .controller('JobsController', JobsController)
   ;
 

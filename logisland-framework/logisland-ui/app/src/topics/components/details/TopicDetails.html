@@ -1,26 +1,144 @@
-<div flex ng-show="$ctrl.selected" layout="row" layout-align="center center" layout-margin>
-        <table class="table table-bordered table-hover table-condensed">
-            <tr style="font-weight: bold">
-                <td style="width:35%">Name</td>
-                <td style="width:20%">Version</td>
-            </tr>
-            <tr ng-repeat="conf in $ctrl.selected">
-                <td>
-                    <!-- editable username (text with validation) -->
-                    <span editable-text="conf.key"
-                          e-name="key"
-                          onbeforesave="checkKey($data, conf.key)"
-                          buttons=right>
-                      {{ conf.key || 'empty' }}
-                    </span>
-                </td>
-            </tr>
-        </table>
-
-    DGDGDG
-    {{ $ctrl.selected }}
-    <span>{{ selected.name }}</span>
-    <span>{{ selected.version }}</span>
-    <span>{{ selected.replication }}</span>
-    <span>{{ selected.replicationFactor }}</span>
+<div layout-padding"
+ng-show="$ctrl.selected">
+<table class="table table-bordered table-hover table-condensed">
+    <tr>
+        <td>Name</td>
+        <td>
+            <span editable-text="$ctrl.selected.name" e-name="name" buttons="right">{{ $ctrl.selected.name }}</span>
+            <span>(version: {{ $ctrl.selected.version }})</span>
+        </td>
+    </tr>
+    <tr>
+        <td>Last modified</td>
+        <td>{{ formatDate($ctrl.selected.dateModified) }}</td>
+    </tr>
+    <tr>
+        <td>Partitinos</td>
+        <td>
+            <a editable-range="$ctrl.selected.partitions"
+               e-step="1" e-max="10"
+               buttons="right">
+                {{ $ctrl.selected.partitions }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>Replication Factor</td>
+        <td>
+            <a editable-range="$ctrl.selected.replicationFactor"
+               e-step="1" e-max="10"
+               buttons="right">
+                {{ $ctrl.selected.replicationFactor }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>Serializer</td>
+        <td>
+            <span editable-text="$ctrl.selected.serializer" e-name="serializer" buttons="right">{{ $ctrl.selected.serializer }}</span>
+        </td>
+    </tr>
+    <tr>
+        <td>Row key</td>
+        <td>
+            <span editable-text="$ctrl.selected.rowkeyField" e-name="rowkeyField" buttons="right">{{ $ctrl.selected.rowkeyField }}</span>
+        </td>
+    </tr>
+    <tr>
+        <td>Record Type</td>
+        <td>
+            <span editable-text="$ctrl.selected.recordTypeField" e-name="recordTypeField" buttons="right">{{ $ctrl.selected.recordTypeField }}</span>
+        </td>
+    </tr>
+    <tr valign="top">
+        <td>Key Schema</td>
+        <td>
+            <key-types-list selected="$ctrl.selected.keySchema"></key-types-list>
+            <!--<div ng-repeat="key in $ctrl.selected.keySchema track by $index">-->
+            <!--<span editable-text="$ctrl.selected.keySchema[$index]">{{key}}</span>-->
+            <!--</div>-->
+            <!--<div>-->
+            <!--<span editable-text="$ctrl.selected.keySchema[$ctrl.selected.keySchema.length]">[New Key]</span>-->
+            <!--</div>-->
+            <!--<table>-->
+                <!--<tr>-->
+                    <!--<td>Name</td>-->
+                    <!--<td>Encrypted</td>-->
+                    <!--<td>Indexed</td>-->
+                    <!--<td>Persistent</td>-->
+                    <!--<td>Optional</td>-->
+                    <!--<td>Type *</td>-->
+                <!--</tr>-->
+                <!--<tr ng-repeat="key in $ctrl.selected.keySchema">-->
+                    <!--<td><span editable-text="key.name" e-name="name" buttons="right">{{ key.name }}</span></td>-->
+                    <!--<td><span editable-text="key.encrypted" e-name="encrypted" buttons="right">{{ key.encrypted }}</span></td>-->
+                    <!--<td><span editable-text="key.indexed" e-name="indexed" buttons="right">{{ key.indexed }}</span></td>-->
+                    <!--<td><span editable-text="key.persistent" e-name="persistent" buttons="right">{{ key.persistent }}</span></td>-->
+                    <!--<td><span editable-text="key.optional" e-name="optional" buttons="right">{{ key.optional }}</span></td>-->
+                    <!--<td><span editable-text="key.type" e-name="type" buttons="right">{{ key.type }}</span></td>-->
+                <!--</tr>-->
+            <!--</table>-->
+            <!--<span editable-text="convertToString($ctrl.selected.keySchema)"-->
+                  <!--onbeforesave="convertToJson($data)"-->
+                  <!--e-name="keySchema" buttons="right">{{ convertToString($ctrl.selected.keySchema) }}</span>-->
+        </td>
+    </tr>
+    <tr valign="top">
+        <td>Value Schema</td>
+        <td>
+            <span editable-text="$ctrl.selected.valueSchema" e-name="valueSchema" buttons="right">{{ $ctrl.selected.valueSchema }}</span>
+        </td>
+    </tr>
+    <tr>
+        <td>Documentation</td>
+        <td>
+                <span editable-textarea="$ctrl.selected.documentation"
+                      e-rows="7" e-cols="40"
+                      e-name="documentation" buttons="right"><pre>{{ $ctrl.selected.documentation }}</pre></span>
+        </td>
+    </tr>
+    <td>&nbsp;  </td>
+    <td>
+        <md-button class="md-raised" ng-click="saveTopic($ctrl.selected)">Save Topic</md-button>
+    </td>
+</table>
 </div>
+<!--<div flex-->
+<!--ng-show="$ctrl.selected"-->
+<!--layout="column"-->
+<!--layout-align="center center"-->
+<!--layout-margin>-->
+
+<!--<md-input-container class="md-block">-->
+<!--<label>Name</label>-->
+<!--<input ng-model="$ctrl.selected.name"/>-->
+<!--</md-input-container>-->
+<!--<md-input-container class="md-block">-->
+<!--<label>Version</label>-->
+<!--<input ng-model="$ctrl.selected.version" disabled/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Partitions</label>-->
+<!--<input ng-model="$ctrl.selected.partitions "/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Replication Factor</label>-->
+<!--<input ng-model="$ctrl.selected.replicationFactor "/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Replication Factor</label>-->
+<!--<input ng-model="$ctrl.selected.replicationFactor "/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Serializer</label>-->
+<!--<input ng-model="$ctrl.selected.serializer "/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Business Time Field</label>-->
+<!--<input ng-model="$ctrl.selected.businessTimeField "/>-->
+<!--</md-input-container>-->
+<!--<md-input-container>-->
+<!--<label>Row Key Field</label>-->
+<!--<input ng-model="$ctrl.selected.rowkeyField "/>-->
+<!--</md-input-container>-->
+<!--</div>-->

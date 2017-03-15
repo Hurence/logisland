@@ -22,6 +22,7 @@
       ng-controller="AppController as app"
       ng-cloak>
 
+<!-- Header / Top bar -->
 <md-toolbar layout="row"
             class="md-toolbar-tools fabSpeedDialdemoLI">
     <div flex layout="row" layout-align="start center">
@@ -62,18 +63,7 @@
     </div>
 </md-toolbar>
 
-<!--<md-sidenav class="md-sidenav-left fabSpeedDialLI"-->
-<!--md-component-id="left_jobs"-->
-<!--ng-click="app.toggleList('left_jobs')"-->
-<!--layout-padding>-->
-<!--<h2 flex class="md-toolbar-tools">Jobs List</h2>-->
-<!--<jobs-list-simple-->
-<!--jobs="app.jobs"-->
-<!--selected="app.selectedJob"-->
-<!--on-selected="app.selectJob(job)">-->
-<!--</jobs-list-simple>-->
-<!--</md-sidenav>-->
-
+<!-- Menu -->
 <md-sidenav class="md-sidenav-left md-whiteframe-z2"
             md-component-id="left">
     <md-toolbar layout="row">
@@ -97,13 +87,13 @@
             <md-divider></md-divider>
             <md-subheader class="md-no-sticky">
                 <md-icon class="material-icons md-light md-48">directions_run</md-icon>
-                <a ui-sref="jobs" ui-sref-active="active" ng-click="app.toggleList('left')">Jobs</a>
-
+                <!--<a ui-sref="jobs.list" ui-sref-active="active" ng-click="app.toggleList('left')">Jobs</a>-->
+                <span ng-click="expandJobs = !expandJobs">Jobs</span>
                 <md-icon ng-show="expandJobs"  ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_down</md-icon>
                 <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_right</md-icon>
                 </md-subheader>
             <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs" >
-                <md-button class="noTransform" ng-click="app.selectedJob=job; app.toggleList('left');">{{ job.name }}</md-button>
+                <a ui-sref="jobs.details" ui-sref-active="active" ng-click="app.selectedJob=job; app.toggleList('left')">{{ job.name }}</a>
             </md-list-item>
             <md-divider></md-divider>
             <md-subheader class="md-no-sticky"><md-icon class="material-icons md-light md-48">warning</md-icon>Alerts</md-subheader>
@@ -131,10 +121,6 @@
     System
         .import('src/boot/boot')
         .catch( console.error.bind(console) ); /* make sure any errors print to console*/
-
-
-
-
 </script>
 <script type="text/ng-template" id="actions.html">
     <md-button class="md-fab md-mini md-raised"
