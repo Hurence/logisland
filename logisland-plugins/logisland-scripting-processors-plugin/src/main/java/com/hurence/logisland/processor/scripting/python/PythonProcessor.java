@@ -165,12 +165,11 @@ public class PythonProcessor extends AbstractProcessor {
             .name(KEY_LOGISLAND_DEPENDENCIES_PATH)
             .description("The path to the directory containing the python dependencies shipped with logisland. You"
                     + " should not have to tune this.")
-            .defaultValue("src/main/resources/python") // Default path
             .required(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     
-    // Default import statements automatically done in inle mode, before potential user ones are done.
+    // Default import statements automatically done in inline mode, before potential user ones are done.
     // TODO Also import StandardProcessContext, Processor (see when using/testing init method)
     private static final String DEFAULT_INLINE_MODE_IMPORTS =
             "from AbstractProcessor import AbstractProcessor\n" +
@@ -225,7 +224,7 @@ public class PythonProcessor extends AbstractProcessor {
         {
             // File mode
             
-            logger.info("Initializing python processor: " + scriptPath);
+            logger.info("Initializing python processor (script file mode): " + scriptPath);
 
             // Load processor script
             pythonInterpreter.execfile(scriptPath);
@@ -300,7 +299,6 @@ public class PythonProcessor extends AbstractProcessor {
                     .stream()
                     .map( t -> String.format("  %s", t))
                     .collect(joining("\n"));
-            System.out.println(statement);
             pythonInterpreter.exec("def process(context, records):\n" + statement);
         }
         
@@ -322,7 +320,7 @@ public class PythonProcessor extends AbstractProcessor {
      */
     private void loadPythonProcessorDependencies()
     {
-        logger.info("Using python processor dependencies under: " + dependenciesPath);
+        logger.debug("Using python processor dependencies under: " + dependenciesPath);
         // 'import sys' has already been called in loadLogislandPythonModules, so just add the path to sys.path
         pythonInterpreter.exec("sys.path.append('" + dependenciesPath + "')");
     }
@@ -413,7 +411,7 @@ public class PythonProcessor extends AbstractProcessor {
             if (useScriptFile)
             {
                 this.dependenciesPath = this.scriptDirectory + File.separator + DEFAULT_DEPENDENCIES_DIRNAME;
-                logger.info("No python processor dependencies path specified, using default one: " + dependenciesPath);
+                logger.debug("No python processor dependencies path specified, using default one: " + dependenciesPath);
                 
                 File dependenciesDir = null;
                 try {
@@ -491,8 +489,6 @@ public class PythonProcessor extends AbstractProcessor {
         if(pythonInterpreter == null)
             init(context);
 
-
-
         Collection<Record> outputRecords = null;
         
         if (useScriptFile)
@@ -556,7 +552,7 @@ public class PythonProcessor extends AbstractProcessor {
     protected Collection<ValidationResult> customValidate(ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
 
-        logger.info("customValidate");
+        logger.debug("customValidate");
 
         /**
          * Either script file mode or inline mode, not both

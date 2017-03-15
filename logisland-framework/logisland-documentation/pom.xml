@@ -66,6 +66,11 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-scripting-processors-plugin</artifactId>
+            <version>0.9.8</version>
+		</dependency>
     </dependencies>
     <build>
         <plugins>
