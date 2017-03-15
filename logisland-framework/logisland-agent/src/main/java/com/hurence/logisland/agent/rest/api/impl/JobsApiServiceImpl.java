@@ -284,7 +284,9 @@ public class JobsApiServiceImpl extends JobsApiService {
 
             if (scheduler[0].equals("yarn")) {
                 logger.info("retrieving yarn application");
-                CommandLine cmdLine = new CommandLine("yarn application -list");
+                CommandLine cmdLine = new CommandLine("yarn");
+                cmdLine.addArgument("application");
+                cmdLine.addArgument("-list");
                 ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                 PumpStreamHandler psh = new PumpStreamHandler(stdout);
                 Executor executor = new DefaultExecutor();
@@ -299,7 +301,10 @@ public class JobsApiServiceImpl extends JobsApiService {
                 YarnApplication app = wrapper.getApplication(job.getName());
                 if (app != null) {
                     logger.info("Killing Yarn application {}", app.getId());
-                    CommandLine killCmdLine = new CommandLine("yarn application -kill " + app.getId());
+                    CommandLine killCmdLine = new CommandLine("yarn" );
+                    killCmdLine.addArgument("application");
+                    killCmdLine.addArgument("-kill");
+                    killCmdLine.addArgument(jobId);
                     Executor killExecutor = new DefaultExecutor();
                     killExecutor.setExitValue(0);
                     try {
@@ -315,6 +320,9 @@ public class JobsApiServiceImpl extends JobsApiService {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                updateJobStatus(job, STOPPED);
+                return updateJob(jobId, job, securityContext);
             }
 
 
@@ -324,8 +332,7 @@ public class JobsApiServiceImpl extends JobsApiService {
                     .build();
         }
 
-        updateJobStatus(job, STOPPED);
-        return updateJob(jobId, job, securityContext);
+        return Response.ok().entity("done nothing").build();
     }
 
     @Override
