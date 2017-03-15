@@ -301,7 +301,7 @@ public class JobsApiServiceImpl extends JobsApiService {
                 YarnApplication app = wrapper.getApplication(job.getName());
                 if (app != null) {
                     logger.info("Killing Yarn application {}", app.getId());
-                    CommandLine killCmdLine = new CommandLine("yarn" );
+                    CommandLine killCmdLine = new CommandLine("yarn");
                     killCmdLine.addArgument("application");
                     killCmdLine.addArgument("-kill");
                     killCmdLine.addArgument(app.getId());
@@ -357,10 +357,16 @@ public class JobsApiServiceImpl extends JobsApiService {
 
         DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
 
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(60 * 1000);
+
+        // kill launching after 5'
+        ExecuteWatchdog watchdog = new ExecuteWatchdog(5 * 60 * 1000);
         Executor executor = new DaemonExecutor();
-        executor.setExitValue(1);
-        // executor.setWatchdog(watchdog);
+        executor.setWatchdog(watchdog);
+
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        PumpStreamHandler psh = new PumpStreamHandler(stdout);
+        executor.setExitValue(0);
+        executor.setStreamHandler(psh);
         try {
             executor.execute(cmdLine, resultHandler);
         } catch (IOException e) {
