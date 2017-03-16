@@ -28,6 +28,7 @@
     <artifactId>logisland-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>logisland-mailer-plugin</module>
         <module>logisland-bro-plugin</module>
         <module>logisland-scripting-processors-plugin</module>
         <module>logisland-querymatcher-plugin</module>
