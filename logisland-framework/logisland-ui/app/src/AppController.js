@@ -11,8 +11,8 @@ function AppController(JobsDataService, TopicsDataService, ProcessorsDataService
     self.version              = AppSettings.version;
     self.appPath              = 'TITLE';
 
-    self.jobs                 = JobsDataService.query(function() { (self.jobs.length>0) ? vm.selectedJob = self.jobs[0] : vm.selectedJob = null; });
-    vm.selectedJob            = null;
+    self.jobs                 = JobsDataService.query(function() { (self.jobs.length>0) ? self.selectedJob = self.jobs[0] : self.selectedJob = null; });
+    self.selectedJob            = null;
     self.selectedProcessor    = null;
     self.addJob               = addJob;
     vm.expandJobs             = true;
