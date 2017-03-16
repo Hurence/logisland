@@ -45,6 +45,7 @@ import java.util.*;
 @Stateful
 @Tags({"analytic", "outlier", "record", "iot", "timeseries"})
 @CapabilityDescription("Outlier Analysis: A Hybrid Approach\n" +
+        "\n" +
         "In order to function at scale, a two-phase approach is taken\n" +
         "\n" +
         "For every data point\n" +
@@ -171,7 +172,7 @@ public class DetectOutliers extends AbstractProcessor {
 
     public static final PropertyDescriptor ZSCORE_CUTOFFS_NORMAL = new PropertyDescriptor.Builder()
             .name("zscore.cutoffs.normal")
-            .description("zscoreCutoffs levele for normal outlier")
+            .description("zscoreCutoffs level for normal outlier")
             .required(true)
             .addValidator(StandardValidators.DOUBLE_VALIDATOR)
             .defaultValue("0.000000000000001")
@@ -179,7 +180,7 @@ public class DetectOutliers extends AbstractProcessor {
 
     public static final PropertyDescriptor ZSCORE_CUTOFFS_MODERATE = new PropertyDescriptor.Builder()
             .name("zscore.cutoffs.moderate")
-            .description("zscoreCutoffs levele for moderate outlier")
+            .description("zscoreCutoffs level for moderate outlier")
             .required(true)
             .addValidator(StandardValidators.DOUBLE_VALIDATOR)
             .defaultValue("1.5")
@@ -187,7 +188,7 @@ public class DetectOutliers extends AbstractProcessor {
 
     public static final PropertyDescriptor ZSCORE_CUTOFFS_SEVERE = new PropertyDescriptor.Builder()
             .name("zscore.cutoffs.severe")
-            .description("zscoreCutoffs levele for severe outlier")
+            .description("zscoreCutoffs level for severe outlier")
             .required(true)
             .addValidator(StandardValidators.DOUBLE_VALIDATOR)
             .defaultValue("10.0")
@@ -195,7 +196,7 @@ public class DetectOutliers extends AbstractProcessor {
 
     public static final PropertyDescriptor ZSCORE_CUTOFFS_NOT_ENOUGH_DATA = new PropertyDescriptor.Builder()
             .name("zscore.cutoffs.notEnoughData")
-            .description("zscoreCutoffs levele for notEnoughData outlier")
+            .description("zscoreCutoffs level for notEnoughData outlier")
             .required(false)
             .addValidator(StandardValidators.DOUBLE_VALIDATOR)
             .defaultValue("100")

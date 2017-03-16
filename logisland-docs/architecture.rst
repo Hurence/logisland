@@ -5,7 +5,7 @@ Architecture
 Is there something clever out there ?
 
 Most of the systems in this data world can be observables through their **events**.
-You just have to look at the 'event sourcing pattern <https://msdn.microsoft.com/en-us/library/dn589792.aspx>'_ to get an idea of how we could define any system state as a sequence of temporal events. The main source of events are the **logs** files, application logs, transaction logs, sensor data, etc.
+You just have to look at the `event sourcing pattern <https://msdn.microsoft.com/en-us/library/dn589792.aspx>`_ to get an idea of how we could define any system state as a sequence of temporal events. The main source of events are the **logs** files, application logs, transaction logs, sensor data, etc.
 
 Large and complex systems, made of number of heterogeneous components are not easy to monitor, especially when have to deal with distributed computing. Most of the time of IT resources is spent in maintenance tasks, so there's a real need for tools to help achieving them.
 
@@ -30,4 +30,4 @@ Kafka acts a the distributed message queue middleware while Spark is the core of
 LogIsland glue those technologies to simplify log complex event processing at scale.
 
 
-.. image:: /_static/logisland-architecture.png
+.. image:: /_static/logisland-workflow.png

@@ -1,5 +1,5 @@
 Welcome to the LogIsland documentation!
-====
+=======================================
 
 This readme will walk you through navigating and building the LogIsland documentation, which is included
 here with the  source code. 
@@ -9,7 +9,7 @@ documentation yourself. Why build it yourself? So that you have the docs that co
 whichever version of LogIsland you currently have checked out of revision control.
 
 Prerequisites
-----
+-------------
 The LogIsland documentation build uses `Sphinx <ttp://www.sphinx-doc.org/en/1.5.1/>`_
 To get started you can run the following commands
 

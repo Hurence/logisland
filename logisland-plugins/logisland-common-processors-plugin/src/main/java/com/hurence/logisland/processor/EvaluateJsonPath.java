@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Tags({"JSON", "evaluate", "JsonPath"})
 @CapabilityDescription("Evaluates one or more JsonPath expressions against the content of a FlowFile. "
-        + "The results of those expressions are assigned to Records Fields"
+        + "The results of those expressions are assigned to Records Fields "
         + "depending on configuration of the Processor. "
         + "JsonPaths are entered by adding user-defined properties; the name of the property maps to the Field Name "
         + "into which the result will be placed. "

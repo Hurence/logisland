@@ -1,6 +1,6 @@
 
 Developer Guide
-============
+===============
 
 Here is a set of information which you should read if you want to contribute to the project.
 
@@ -17,7 +17,7 @@ For example TimeZone "America/Cancun" may not give the same date in your environ
 Before request a pull request
 -----------------------------
 
-    You should do a "mvn install". It can generate some docs depending on the modifications you did.
+You should do a "mvn install". It can generate some docs depending on the modifications you did.
 If this generates new documents, add them before you do your pull request.
 
 

@@ -72,7 +72,7 @@ public class ModifyId extends AbstractProcessor {
      */
     public static final PropertyDescriptor CHARSET_TO_USE_FOR_HASH = new PropertyDescriptor.Builder()
             .name("hash.charset")
-            .description("the charset to use to hash id string (e.g. \"UTF-8\"")
+            .description("the charset to use to hash id string (e.g. 'UTF-8')")
             .required(true)
             .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
             .defaultValue("UTF-8")
@@ -83,7 +83,7 @@ public class ModifyId extends AbstractProcessor {
      */
     public static final PropertyDescriptor JAVA_FORMAT_STRING = new PropertyDescriptor.Builder()
             .name("java.formatter.string")
-            .description("the format to use to build id string (e.g. \"%4$2s %3$2s %2$2s %1$2s\" (see java Formatter)")
+            .description("the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -103,7 +103,7 @@ public class ModifyId extends AbstractProcessor {
      */
     public static final PropertyDescriptor FIELDS_TO_USE = new PropertyDescriptor.Builder()
             .name("fields.to.hash")
-            .description("the comma separated list of field names (e.g. \"policyid,date_raw\"")
+            .description("the comma separated list of field names (e.g. : 'policyid,date_raw'")
             .required(true)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -130,7 +130,7 @@ public class ModifyId extends AbstractProcessor {
 
     public static final PropertyDescriptor HASH_ALGORITHM = new PropertyDescriptor.Builder()
             .name("hash.algorithm")
-            .description("the algorithme to use to hash id string (e.g. \"SHA-256\"")
+            .description("the algorithme to use to hash id string (e.g. 'SHA-256'")
             .required(true)
             .allowableValues(HASH_ALGORITHMS)
             .addValidator(StandardValidators.HASH_ALGORITHM_VALIDATOR)
