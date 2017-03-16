@@ -44,16 +44,11 @@ import static java.util.stream.Collectors.joining;
  * 
  * So far identified list of things still to be done:
  * - see TODOs here
- * - test usage in real situation (.yml config file usage). To also validate logsiland dependencies delivered. 
- * - both modes: configuration parameters of the python processor (with customvalidation possibilities?)
+ * - init code is always called! Remove this!
  * - inline mode: default imports list
  * - inline mode: user imports  usage, init usage (access context?))
- * - inline mode: real process code
  * - onPropertyModified up to python code (test)
- * - online doc (complete tags here (@Tags, @CapabilityDescription), add some? ),
- * - more tests
  * - doc for tutorial (inline?, file? , both?)
- * - validate thread safe behaviour !!!
  */
 
 @Tags({"scripting", "python"})
@@ -62,12 +57,13 @@ import static java.util.stream.Collectors.joining;
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
         + " without warnings.\n\n"
         + "This processor allows to implement and run a processor written in python."
-        + "This can be done in 2 ways. Either defining init and process method codes as configuration property values or"
-        + " poiting to a python module script file with another configuration property value. Directly defining methods is"
-        + " called the inline mode whereas using a script file is called the file mode. Both methods are mutually"
-        + " exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies."
-        + " If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can"
-        + " use a configuration property to give their location.")
+        + " This can be done in 2 ways. Either directly defining the process method code in the **script.code.process**"
+        + " configuration property or poiting to an external python module script file in the **script.path**"
+        + " configuration property. Directly defining methods is called the inline mode whereas using a script file is"
+        + " called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your"
+        + " python code may depend on some python dependencies. If the set of python dependencies already delivered with"
+        + " the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to"
+        + " give their location. Currently only the nltk python library is delivered with Logisland.")
 public class PythonProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
@@ -94,7 +90,7 @@ public class PythonProcessor extends AbstractProcessor {
     // True if one must load dependencies in the dependencies path
     private boolean hasDependencies = false;
 
-    // Path of the directory containing the logisland pyhton dependnecies (shipped with logisland)
+    // Path of the directory containing the logisland pyhton dependencies (shipped with logisland)
     private String logislandDependenciesPath = null;
     
     // Python interpreter
@@ -118,7 +114,7 @@ public class PythonProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor SCRIPT_CODE_IMPORTS = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_CODE_IMPORTS)
-            .description("For inline mode, this is the pyhton code that should hold the import statements if required")
+            .description("For inline mode only. This is the pyhton code that should hold the import statements if required.")
             .required(false)
             .build();
 
@@ -126,7 +122,7 @@ public class PythonProcessor extends AbstractProcessor {
             .name(KEY_SCRIPT_CODE_INIT)
             .description("The python code to be called when the processor is initialized. This is the python"
                     + " equivalent of the init method code for a java processor. This is not mandatory but can only"
-                    + " be used if " + KEY_SCRIPT_CODE_PROCESS + " is defined")
+                    + " be used if **" + KEY_SCRIPT_CODE_PROCESS + "** is defined (inline mode).")
             .required(false)
             .build();
     
@@ -134,14 +130,19 @@ public class PythonProcessor extends AbstractProcessor {
             .name(KEY_SCRIPT_CODE_PROCESS)
             .description("The python code to be called to process the records. This is the pyhton equivalent"
                     + " of the process method code for a java processor. For inline mode, this is the only minimum"
-                    + " required configuration property. Using this property, you may also optionally define the "
-                    + KEY_SCRIPT_CODE_INIT + " property")
+                    + " required configuration property. Using this property, you may also optionally define the **"
+                    + KEY_SCRIPT_CODE_INIT + "** and **" + KEY_SCRIPT_CODE_IMPORTS + "** properties.")
             .required(false)
             .build();
 
     public static final PropertyDescriptor SCRIPT_PATH = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_PATH)
-            .description("The path to the user's python processor script. Use this property for file mode." )
+            .description("The path to the user's python processor script. Use this property for file mode. Your python"
+                    + " code must be in a python file with the following constraints: let's say your pyhton script is"
+                    + " named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class"
+                    + " named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor."
+                    + " You can then define your code in the process method and in the other traditional methods (init...)"
+                    + " as you would do in java in a class inheriting from the AbstractProcessor java class.")
             .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
@@ -151,11 +152,11 @@ public class PythonProcessor extends AbstractProcessor {
     
     public static final PropertyDescriptor DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
             .name(KEY_DEPENDENCIES_PATH)
-            .description("The path to the dependencies for the user's python code, whether in inline or file mode."
-                    + " This is optional as your code may not have additional dependencies. If you defined"
-                    + KEY_SCRIPT_PATH + " (so using file mode) and if " + KEY_DEPENDENCIES_PATH + " is not defined,"
-                    + " Logisland will scan a potential directory named " + DEFAULT_DEPENDENCIES_DIRNAME
-                    + " in the same directory where the script file resides and if it exists, any python code located"
+            .description("The path to the additional dependencies for the user's python code, whether using inline or"
+                    + " file mode. This is optional as your code may not have additional dependencies. If you defined **"
+                    + KEY_SCRIPT_PATH + "** (so using file mode) and if **" + KEY_DEPENDENCIES_PATH + "** is not defined,"
+                    + " Logisland will scan a potential directory named **" + DEFAULT_DEPENDENCIES_DIRNAME
+                    + "** in the same directory where the script file resides and if it exists, any python code located"
                     + " there will be loaded as dependency as needed.")
             .required(false)
             .addValidator(StandardValidators.createDirectoryExistsValidator(false, false))
@@ -164,13 +165,12 @@ public class PythonProcessor extends AbstractProcessor {
     public static final PropertyDescriptor LOGISLAND_DEPENDENCIES_PATH = new PropertyDescriptor.Builder()
             .name(KEY_LOGISLAND_DEPENDENCIES_PATH)
             .description("The path to the directory containing the python dependencies shipped with logisland. You"
-                    + " should not have to tune this.")
-            .defaultValue("src/main/resources/python") // Default path
-            .required(true)
+                    + " should not have to tune this parameter.")
+            .required(false)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     
-    // Default import statements automatically done in inle mode, before potential user ones are done.
+    // Default import statements automatically done in inline mode, before potential user ones are done.
     // TODO Also import StandardProcessContext, Processor (see when using/testing init method)
     private static final String DEFAULT_INLINE_MODE_IMPORTS =
             "from AbstractProcessor import AbstractProcessor\n" +
@@ -225,7 +225,7 @@ public class PythonProcessor extends AbstractProcessor {
         {
             // File mode
             
-            logger.info("Initializing python processor: " + scriptPath);
+            logger.debug("Initializing python processor (script file mode): " + scriptPath);
 
             // Load processor script
             pythonInterpreter.execfile(scriptPath);
@@ -300,7 +300,6 @@ public class PythonProcessor extends AbstractProcessor {
                     .stream()
                     .map( t -> String.format("  %s", t))
                     .collect(joining("\n"));
-            System.out.println(statement);
             pythonInterpreter.exec("def process(context, records):\n" + statement);
         }
         
@@ -322,7 +321,7 @@ public class PythonProcessor extends AbstractProcessor {
      */
     private void loadPythonProcessorDependencies()
     {
-        logger.info("Using python processor dependencies under: " + dependenciesPath);
+        logger.debug("Using python processor dependencies under: " + dependenciesPath);
         // 'import sys' has already been called in loadLogislandPythonModules, so just add the path to sys.path
         pythonInterpreter.exec("sys.path.append('" + dependenciesPath + "')");
     }
@@ -413,7 +412,7 @@ public class PythonProcessor extends AbstractProcessor {
             if (useScriptFile)
             {
                 this.dependenciesPath = this.scriptDirectory + File.separator + DEFAULT_DEPENDENCIES_DIRNAME;
-                logger.info("No python processor dependencies path specified, using default one: " + dependenciesPath);
+                logger.debug("No python processor dependencies path specified, using default one: " + dependenciesPath);
                 
                 File dependenciesDir = null;
                 try {
@@ -470,7 +469,7 @@ public class PythonProcessor extends AbstractProcessor {
     {
         // TODO: can this be found with correct default value pointing to resources in jar file? 
         logislandDependenciesPath = context.getPropertyValue(LOGISLAND_DEPENDENCIES_PATH).asString();
-        logger.info("Using python logisland dependencies path: " + logislandDependenciesPath);
+        logger.debug("Using python logisland dependencies path: " + logislandDependenciesPath);
     }
     
     /**
@@ -490,8 +489,6 @@ public class PythonProcessor extends AbstractProcessor {
     {
         if(pythonInterpreter == null)
             init(context);
-
-
 
         Collection<Record> outputRecords = null;
         
@@ -556,7 +553,7 @@ public class PythonProcessor extends AbstractProcessor {
     protected Collection<ValidationResult> customValidate(ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
 
-        logger.info("customValidate");
+        logger.debug("customValidate");
 
         /**
          * Either script file mode or inline mode, not both

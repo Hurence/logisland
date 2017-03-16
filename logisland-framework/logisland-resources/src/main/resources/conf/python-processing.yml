@@ -93,7 +93,6 @@ engine:
           type: parser
           documentation: a parser that add a new field if a threshold has been crossed
           configuration:
-            dependencies.path: logisland-assembly/target/logisland-0.9.8-bin/logisland-0.9.8/python
             script.code.process: >
                 outputRecords = []
 
