@@ -59,8 +59,7 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router',
             .state({
                 name: 'jobs.details',
                 url: '/details',
-                    template: '<job-details flex selected="app.selectedJob"> </job-details>',
-                    controller: 'JobsController'
+                    template: '<job-details flex selected="app.selectedJob"> </job-details>'
              })
             .state({
                 name: 'topics',

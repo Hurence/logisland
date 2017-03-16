@@ -26,22 +26,22 @@ function ConfigController($http, $log, $scope, $mdDialog)  {
             };
 
         // Check if the key is already in the list
-        var index = vm.$ctrl.configuration.findIndex(function(el) {
+        var index = self.configuration.findIndex(function(el) {
             return el.key == vm.newKey;
         });
         if(index >= 0) {
             $log.debug("updating conf for: " + vm.newKey);
-            vm.$ctrl.configuration[index] = conf;
+            self.configuration[index] = conf;
         }
         else {
             $log.debug("adding conf for: " + vm.newKey);
-            vm.$ctrl.configuration.push(conf);
+            self.configuration.push(conf);
         }
         $show();
     }
 
     function deleteConfig(index) {
-        vm.$ctrl.configuration.splice(index, 1);
+        self.configuration.splice(index, 1);
     }
 
     function checkKey() {
