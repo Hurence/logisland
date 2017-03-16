@@ -214,3 +214,7 @@ background-color: #00ff00;
 .borderedselected {
     border: 1px solid black;
 }
+
+.table-content:hover {
+    background-color: #d3d3d3;
+}

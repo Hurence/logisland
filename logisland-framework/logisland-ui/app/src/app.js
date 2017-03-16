@@ -8,8 +8,6 @@ import 'angular-messages';
 import 'angular-resource';
 import 'angular-ui-router';
 import 'angular-xeditable';
-import moment from 'moment';
-
 
 import AppController from 'src/AppController';
 import Jobs from 'src/jobs/Jobs';
@@ -78,6 +76,6 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router',
                 });
 
   })
-
+  .constant('_', window._)
   .controller('AppController', AppController)
   ;

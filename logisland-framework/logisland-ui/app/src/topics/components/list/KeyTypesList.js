@@ -15,13 +15,30 @@ function KeyTypesListController($log, $scope)  {
     vm.addKey = addKey;
     vm.deleteKey = deleteKey;
 
+    vm.booleanOptions = [
+        {value: true, text: 'true'},
+        {value: false, text: 'false'}
+    ];
+
+    vm.typeOptions = [
+        {value: 'STRING', text: 'string'},
+        {value: 'INT', text: 'int'},
+        {value: 'LONG', text: 'long'},
+        {value: 'ARRAY', text: 'array'},
+        {value: 'FLOAT', text: 'float'},
+        {value: 'DOUBLE', text: 'double'},
+        {value: 'BYTES', text: 'bytes'},
+        {value: 'RECORD', text: 'record'},
+        {value: 'MAP', text: 'map'},
+        {value: 'ENUM', text: 'enum'},
+        {value: 'BOOLEAN', text: 'boolean'},
+    ];
+
     function addKey() {
-        $log.debug("DGDGDG: " + JSON.stringify(self.selected));
         self.selected[self.selected.length] = {"name":"newKey","encrypted":false,"indexed":true,"persistent":true,"optional":true,"type":"STRING"};
     }
 
     function deleteKey(index) {
-        $log.debug("Delete: " + index);
         self.selected.splice(index,1);
     }
 };
