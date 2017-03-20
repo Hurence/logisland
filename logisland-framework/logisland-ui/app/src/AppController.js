@@ -2,9 +2,9 @@
  * App Controller for the LogIsland UI
  */
 
-export default [ 'JobsDataService', 'TopicsDataService', 'ProcessorsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', '$scope', '$state', AppController ];
+export default [ 'JobsDataService', 'TopicsDataService', 'ListService', 'AppSettings', '$mdSidenav', '$log', '$scope', '$state', AppController ];
 
-function AppController(JobsDataService, TopicsDataService, ProcessorsDataService, ListService, AppSettings, $mdSidenav, $log, $scope, $state) {
+function AppController(JobsDataService, TopicsDataService, ListService, AppSettings, $mdSidenav, $log, $scope, $state) {
     var self = this;
     var vm = $scope;
 

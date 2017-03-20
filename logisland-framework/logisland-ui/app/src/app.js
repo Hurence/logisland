@@ -15,7 +15,7 @@ import Topics from 'src/topics/Topics';
 
 export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router', 'ngMessages', 'xeditable', Jobs.name, Topics.name ] )
     .config(($mdIconProvider, $mdDateLocaleProvider, $mdThemingProvider, $urlRouterProvider, $stateProvider) => {
-        // Register the icons
+
         $mdIconProvider
             .defaultIconSet("./assets/svg/avatars.svg", 128)
             .icon("add", "./assets/svg/round-add-button.svg", 12)
@@ -36,11 +36,6 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router',
         //$mdThemingProvider.theme('default')
         //    .primaryPalette('brown')
         //    .accentPalette('red');
-
-//        $mdDateLocaleProvider.formatDate = function(date) {
-//            var m = moment(date);
-//            return m.isValid() ? m.format('L') : '';
-//        };
 
         $urlRouterProvider.otherwise('/topics');
 
@@ -65,14 +60,7 @@ export default angular.module( 'app', [ 'ngMaterial', 'ngResource', 'ui.router',
                 name: 'topics',
                 url: '/topics',
                 template: '<topics-list flex topics="app.topics"></topics-list>'
-                //,
-                //  component: 'topicsList'
-                //  resolve: {
-                //      topics: function(TopicsDataService) {
-                //      return TopicsDataService.query();
-                //  }
-                //}
-                });
+            });
 
   })
   .constant('_', window._)

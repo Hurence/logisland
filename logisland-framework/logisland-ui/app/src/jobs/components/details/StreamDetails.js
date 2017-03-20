@@ -40,15 +40,10 @@ function StreamDetailsController(ListService, ProcessorsDataService, $log, $scop
         processors[index+1] = tmp;
     }
 
-    function editProcessor2(index) {
-        var processor = $scope.$ctrl.selected.processors[index];
-        $rootScope.$broadcast('editProcessor', processor);
-    }
-
     function editProcessor(index) {
         var processor = vm.$ctrl.selected.processors[index];
         $mdDialog.show({
-            controller: DialogController,
+            controller: EditProcessorDialogController,
             templateUrl: 'src/jobs/components/details/EditProcessor.html',
             locals: {
                 processor: processor
@@ -65,7 +60,7 @@ function StreamDetailsController(ListService, ProcessorsDataService, $log, $scop
         });
     }
 
-    function DialogController($scope, $mdDialog, processor) {
+    function EditProcessorDialogController($scope, $mdDialog, processor) {
         $scope.processor = JSON.parse(JSON.stringify(processor));
         $scope.done = function(processor) {
             $mdDialog.hide($scope.processor);
