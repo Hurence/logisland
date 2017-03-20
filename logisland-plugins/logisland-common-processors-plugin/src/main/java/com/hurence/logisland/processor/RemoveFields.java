@@ -40,7 +40,7 @@ public class RemoveFields extends AbstractProcessor {
 
     public static final PropertyDescriptor FIELDS_TO_REMOVE = new PropertyDescriptor.Builder()
             .name("fields.to.remove")
-            .description("the comma separated list of field names (e.g. \"policyid,date_raw\"")
+            .description("the comma separated list of field names (e.g. 'policyid,date_raw'")
             .required(true)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();

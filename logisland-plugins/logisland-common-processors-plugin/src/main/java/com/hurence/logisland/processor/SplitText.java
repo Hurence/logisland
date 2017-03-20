@@ -44,8 +44,8 @@ import java.util.stream.Collectors;
 @DynamicProperty(name = "alternative regex & mapping",
         supportsExpressionLanguage = true,
         value = "another regex that could match",
-        description = "this regex will be tried if the main one has'nt matched " +
-                "must be in the form alt.value.regex.1 and alt.value.fields.1")
+        description = "this regex will be tried if the main one has not matched. " +
+                "It must be in the form alt.value.regex.1 and alt.value.fields.1")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;

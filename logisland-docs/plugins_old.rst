@@ -1,11 +1,11 @@
 How to extend LogIsland ?
-=======
+=========================
 
 In this new tutorial we will learn how to create a custom log parser and how to run it inside logisland Docker container
 
 
 Maven setup
-----
+-----------
 
 Create a folder for your ``super-plugin`` project :
 
@@ -161,14 +161,14 @@ Our parser will analyze some Proxy Log String in the following form :
     }
 
 Test your parser with JUnit
-----
+---------------------------
 
 
 which can be tested (not really deeply ...) with a small unit test
 
 
 Deploy the custom component to Docker container
-----
+-----------------------------------------------
 
 Now you have a fully functionnal plugin and you can build it with maven by running
 
@@ -200,10 +200,7 @@ It's time to deploy our splendid little plugin to logisland. We'll get the Docke
 
 
 Start a log parser 
-----
-
-
-
+------------------
 
 A `Log` parser takes a log line as a String and computes an Event as a sequence of fields. 
 Let's start a `LogParser` streaming job with a custom `ApacheLogParser`. 

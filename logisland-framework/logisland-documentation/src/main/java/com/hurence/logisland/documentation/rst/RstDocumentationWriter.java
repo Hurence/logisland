@@ -52,6 +52,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
         try {
             final RstPrintWriter rstWriter = new RstPrintWriter(streamToWriteTo, true);
 
+            rstWriter.writeTransition();
             rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
             writeDescription(configurableComponent, rstWriter);
             writeTags(configurableComponent, rstWriter);
@@ -60,7 +61,6 @@ public class RstDocumentationWriter implements DocumentationWriter {
             writeAdditionalBodyInfo(configurableComponent, rstWriter);
             writeSeeAlso(configurableComponent, rstWriter);
 
-            rstWriter.writeTransition();
             rstWriter.close();
         } catch (XMLStreamException | FactoryConfigurationError e) {
             throw new IOException("Unable to create XMLOutputStream", e);
@@ -338,7 +338,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
                 if (dynamicProperty.supportsExpressionLanguage()) {
                     rstWriter.printStrong("true");
                 } else
-                    rstWriter.printStrong("");
+                    rstWriter.print("\"\"");
                 rstWriter.println();
             }
 
@@ -382,13 +382,17 @@ public class RstDocumentationWriter implements DocumentationWriter {
     protected void writeValidValues(RstPrintWriter rstWriter, PropertyDescriptor property){
         if (property.getAllowableValues() != null && property.getAllowableValues().size() > 0) {
 
+            boolean first = true;
             for (AllowableValue value : property.getAllowableValues()) {
-                rstWriter.print(value.getDisplayName());
-                rstWriter.print(" : ");
-                if (value.getDescription() != null) {
-                    writeValidValueDescription(rstWriter, value.getDescription());
+                if (!first) {
+                    rstWriter.print(", ");
+                } else {
+                    first = false;
                 }
-                rstWriter.print(", ");
+                rstWriter.print(value.getDisplayName());
+                if (value.getDescription() != null) {
+                    writeValidValueDescription(rstWriter, " (" + value.getDescription() + ")");
+                }
             }
         }
     }

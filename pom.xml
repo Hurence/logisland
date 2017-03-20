@@ -214,6 +214,12 @@
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
             </dependency>
+            <!-- Provides data-provider for junit 4 -->
+            <dependency>
+                <groupId>com.tngtech.java</groupId>
+                <artifactId>junit-dataprovider</artifactId>
+                <version>1.12.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -632,6 +638,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-mailer-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1284,5 +1295,23 @@
                 </pluginManagement>
             </build>
         </profile>
-    </profiles>
+
+
+
+
+    <profile>
+      <id>hadoop-2.6</id>
+      <properties>
+	<hadoop.version>2.6.5</hadoop.version>
+      </properties>
+    </profile>
+
+
+    <profile>
+      <id>hadoop-2.7</id>
+      <properties>
+        <hadoop.version>2.7.1</hadoop.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
