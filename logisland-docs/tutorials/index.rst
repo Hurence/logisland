@@ -25,5 +25,5 @@ Contents:
    index-apache-logs
    query-matching
    outlier-detection
-
+   indexing-bro-events
 

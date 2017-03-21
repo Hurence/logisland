@@ -1,5 +1,5 @@
 Welcome to the LogIsland documentation!
-====
+=======================================
 
 This readme will walk you through navigating and building the LogIsland documentation, which is included
 here with the  source code. 

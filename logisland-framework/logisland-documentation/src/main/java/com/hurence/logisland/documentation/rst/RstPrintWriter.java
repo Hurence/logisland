@@ -35,6 +35,9 @@ public class RstPrintWriter extends PrintWriter {
      */
     public void writeSectionTitle(final int sectionLevel, final String title) {
         assert sectionLevel < SECTION_DELIMITERS.length;
+        assert title != null;
+        assert !title.isEmpty();
+
         char[] charArray = new char[title.length()];
         Arrays.fill(charArray, SECTION_DELIMITERS[sectionLevel - 1]);
         String delimiter = new String(charArray);

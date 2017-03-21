@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Tags({"type", "fields", "update", "convert"})
-@CapabilityDescription("Converts a field value into the given type. does nothing if converison is not possible")
+@CapabilityDescription("Converts a field value into the given type. does nothing if conversion is not possible")
 @DynamicProperty(name = "field",
         supportsExpressionLanguage = true,
         value = "the new type",

@@ -42,7 +42,8 @@ import java.util.*;
         "you can use this processor to handle custom events defined by lucene queries\n" +
         "a new record is added to output each time a registered query is matched\n\n" +
         "A query is expressed as a lucene query against a field like for example: \n\n" +
-        ".. code-block::\n\n" +
+        ".. code::\n" +
+        "\n" +
         "\tmessage:'bad exception'\n" +
         "\terror_count:[10 TO *]\n" +
         "\tbytes_out:5000\n" +
@@ -124,6 +125,7 @@ public class MatchQuery extends AbstractProcessor {
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
 
+            // TODO infer numeric type here
             if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
                 final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
                 for (String numericField : numericFields) {

@@ -113,7 +113,7 @@ public class DocGenerator {
                 writer.println("Extension plugins");
                 writer.println("=================");
                 writer.println("You'll find here the list of all usable Processors, Engines and other components " +
-                        "taht can be usable out of the box in your analytics streams");
+                        "that can be usable out of the box in your analytics streams");
                 writer.println();
             } catch (FileNotFoundException e) {
                 logger.warn(e.getMessage());

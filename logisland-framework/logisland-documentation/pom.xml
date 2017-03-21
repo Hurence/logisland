@@ -63,11 +63,20 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-bro-plugin</artifactId>
+            <version>0.9.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-outlier-detection-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-kafka-0-8-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -80,6 +89,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-scripting-processors-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-mailer-plugin</artifactId>
         </dependency>
     </dependencies>
     <build>

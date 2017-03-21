@@ -166,12 +166,95 @@ public class DateUtilTest {
 
         for (String strDate : strDates) {
             logger.info("parsing " + strDate);
-
             Date date = DateUtil.parse(strDate);
             assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
 
         }
 
     }
+
+    @Test
+    public void testParsing2() throws ParseException {
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
+        DateTime expectedDate = f.parseDateTime(currentYear);
+
+        Date date = DateUtil.parse(currentYear);
+        assertTrue(date + " should be equal to " + expectedDate.toDate(), expectedDate.getMillis() == date.getTime());
+    }
+
+    @Test
+    public void testParsingWithTimeZone() throws ParseException {
+
+        /**
+         * WARNING ! Oracle is playing with timeZones object between minor version changes...
+         * For exemple that caused this test to fail with "America/Cancun" timeZone if the jvm
+         * version was inferior to 8u45... So I replaced it by "Canada/Atlantic" that should be more stable
+         * and put it as a variable so we can easily change it
+         */
+        TimeZone testTimeZone = TimeZone.getTimeZone("Canada/Atlantic");
+        // Date expectedDate = new Date(1388648629000L);
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forTimeZone(tz));
+        DateTime expectedEuropeDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
+
+        Date dateAsEuropeanDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", tz);
+
+
+        assertTrue(dateAsEuropeanDate + " should be equal to " + expectedEuropeDate.toDate(),
+               dateAsEuropeanDate.getTime() == expectedEuropeDate.getMillis());
+
+        Date dateAsUtcDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedEuropeDate.toDate() + " plus 1 hour",
+                dateAsUtcDate.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60);
+
+        Date dateAsTest = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss", testTimeZone);
+
+        assertTrue(dateAsTest + " should be equal to " + expectedEuropeDate.toDate() + " plus 6 hour",
+                dateAsTest.getTime() == expectedEuropeDate.getMillis() + 1000 * 60 * 60 * 5 );
+
+        /**
+         * should not use set timezone when timezone on pattern
+         */
+        f = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").withZone(DateTimeZone.forTimeZone(tz));
+        DateTime expectedDate = f.parseDateTime("2001-07-04T12:08:56.235-0700");
+
+        dateAsEuropeanDate = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", tz);
+
+
+        assertTrue(dateAsEuropeanDate + " should be equal to " + expectedDate.toDate(),
+                dateAsEuropeanDate.getTime() == expectedDate.getMillis());
+
+        dateAsUtcDate = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedDate.toDate(),
+                dateAsUtcDate.getTime() == expectedDate.getMillis());
+
+        dateAsTest = DateUtil.parse("2001-07-04T12:08:56.235-0700", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", testTimeZone);
+
+        assertTrue(dateAsTest + " should be equal to " + expectedDate.toDate(),
+                dateAsTest.getTime() == expectedDate.getMillis());
+
+    }
+    @Test
+    public void testParsingWithoutTimeZone() throws ParseException {
+        // Date expectedDate = new Date(1388648629000L);
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        String currentYear = today.year().getAsString();
+
+        DateTimeFormatter f = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
+        DateTime expectedUtcDate = f.parseDateTime(currentYear + "-01-02 07:43:49");
+
+        Date dateAsUtcDate = DateUtil.parse(currentYear + "-01-02 07:43:49", "yyyy-MM-dd HH:mm:ss");
+
+        assertTrue(dateAsUtcDate + " should be equal to " + expectedUtcDate.toDate(), expectedUtcDate.getMillis() == dateAsUtcDate.getTime());
+
+    }
+
 
 }

@@ -41,7 +41,8 @@ import java.util.stream.Collectors;
         "you can use this processor to handle custom events defined by lucene queries\n" +
         "a new record is added to output each time a registered query is matched\n\n" +
         "A query is expressed as a lucene query against a field like for example: \n\n" +
-        ".. code-block::\n" +
+        ".. code::\n" +
+        "\n" +
         "   message:'bad exception'\n" +
         "   error_count:[10 TO *]\n" +
         "   bytes_out:5000\n" +

@@ -4,7 +4,11 @@ Log Island
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
    :target: https://travis-ci.org/Hurence/logisland
 
+.. image:: https://codeclimate.com/github/Hurence/logisland/badges/gpa.svg
+   :target: https://codeclimate.com/github/Hurence/logisland
 
+.. image:: https://coveralls.io/repos/github/Hurence/logisland/badge.svg?branch=master
+   :target: https://coveralls.io/github/Hurence/logisland?branch=master
 
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and chat with us on gitter
 
@@ -16,7 +20,7 @@ Download the `latest release build <https://github.com/Hurence/logisland/release
 
 **LogIsland is an event mining platform based on Spark and Kafka to handle a huge amount of log files.**
 
-.. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-architecture.png
+.. image:: https://raw.githubusercontent.com/Hurence/logisland/master/logisland-docs/_static/logisland-workflow.png
     :alt: architecture
 
 You can start right now playing with **logisland** through the Docker image, by getting started with `apache log indexing tutorial <http://logisland.readthedocs.io/en/latest/tutorials/index-apache-logs.html>`_ guide.
