@@ -16,6 +16,8 @@ script:
 jdk:
   - oraclejdk8
 
+install: true
+
 notifications:
   email:
     - bailet.thomas@gmail.com
