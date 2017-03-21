@@ -33,7 +33,8 @@ public enum FieldType {
     RECORD,
     MAP,
     ENUM,
-    BOOLEAN;
+    BOOLEAN,
+    UNION;
 
     public String toString() {
         return name;
