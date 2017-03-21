@@ -66,6 +66,13 @@
         "type": "array",
         "items": "string"
       }
+    },
+    {
+      "name": "type",
+      "type": {
+         "type": "array",
+         "items": "string"
+      }
     }
   ]
 }

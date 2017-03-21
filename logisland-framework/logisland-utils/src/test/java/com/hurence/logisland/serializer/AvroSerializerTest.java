@@ -61,6 +61,7 @@ public class AvroSerializerTest {
 		record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
 		record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
 		record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+		record.setField("type", FieldType.UNION,  new ArrayList<>(Arrays.asList("null", "string")));
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		serializer.serialize(baos, record);
