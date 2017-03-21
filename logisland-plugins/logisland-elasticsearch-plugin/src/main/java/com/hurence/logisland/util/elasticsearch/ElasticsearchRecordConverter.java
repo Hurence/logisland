@@ -61,7 +61,7 @@ public class ElasticsearchRecordConverter {
             record.getAllFieldsSorted().forEach(field -> {
                 try {
                     // cleanup invalid es fields characters like '.'
-                    String fieldName = field.getName().toLowerCase().replaceAll("\\.", "_");
+                    String fieldName = field.getName().replaceAll("\\.", "_");
 
                     switch (field.getType()) {
 
