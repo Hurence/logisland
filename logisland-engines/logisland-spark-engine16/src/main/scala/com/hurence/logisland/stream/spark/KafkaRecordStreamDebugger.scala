@@ -1,18 +1,18 @@
 /**
-  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.stream.spark
 
 import java.util
@@ -22,10 +22,9 @@ import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import org.apache.avro.Schema
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
+import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -40,7 +39,7 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
       *
       * @param rdd
       */
-    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
+    override def process(rdd: RDD[(Array[Byte], Array[Byte])]) = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
@@ -98,8 +97,8 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                                     == AbstractKafkaRecordStream.NO_SERIALIZER.getValue) {
                                 // parser
                                 partition.map(rawMessage => {
-                                    val key = if (rawMessage.key() != null) new String(rawMessage.key()) else ""
-                                    val value = if (rawMessage.value() != null) new String(rawMessage.value()) else ""
+                                    val key = if (rawMessage._1 != null) new String(rawMessage._1) else ""
+                                    val value = if (rawMessage._2 != null) new String(rawMessage._2) else ""
                                     RecordUtils.getKeyValueRecord(key, value)
                                 }).toList
                             } else {
@@ -185,10 +184,7 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                     logger.info("processed " + outgoingEvents.size() + " messages")
                 }
             })
-
-            return Some(offsetRanges)
         }
-        None
     }
 }
 

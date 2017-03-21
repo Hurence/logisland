@@ -16,5 +16,26 @@
  */
 package com.hurence.logisland.component;
 
+
+import com.hurence.logisland.engine.EngineContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+
+/**
+ * Fake class for build compatibility in hdp2.4 profile
+ * this class is implemented in logisland-agent which is not available in hdp2.4 profile
+ */
 public class RestComponentFactory {
+
+    private static Logger logger = LoggerFactory.getLogger(RestComponentFactory.class);
+    public RestComponentFactory(String fakeArg) {
+        logger.error("you should not use this class with this maven profile");
+    }
+
+    public Optional<EngineContext> getEngineContext(String jobName) {
+        logger.error("you should not use this class with this maven profile");
+        return Optional.empty();
+    }
 }

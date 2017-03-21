@@ -1,4 +1,19 @@
 /**
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
   * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,10 +38,9 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, FieldType}
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.slf4j.LoggerFactory
 
 
@@ -85,8 +99,21 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
-        descriptors.addAll(super.getSupportedPropertyDescriptors())
+        descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
+        descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
+        descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
+        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
+        descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
+        descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
+        descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
+        descriptors.add(AbstractKafkaRecordStream.OUTPUT_SERIALIZER)
+        descriptors.add(AbstractKafkaRecordStream.ERROR_SERIALIZER)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_AUTOCREATE)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
 
         descriptors.add(KafkaRecordStreamHDFSBurner.OUTPUT_FOLDER_PATH)
         descriptors.add(KafkaRecordStreamHDFSBurner.OUTPUT_FORMAT)
@@ -96,19 +123,13 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         Collections.unmodifiableList(descriptors)
     }
 
-    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
+    override def process(rdd: RDD[(Array[Byte], Array[Byte])]) = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
             // Get the singleton instance of SQLContext
-            val sqlContext = SparkSession
-                .builder()
-                .appName("KafkaRecordStreamHDFSBurner")
-                .config("spark.some.config.option", "some-value")
-                .getOrCreate()
-
-
+            val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
             // this is used to implicitly convert an RDD to a DataFrame.
 
             val deserializer = getSerializer(
@@ -200,10 +221,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                 }
 
             }
-
-            return Some(offsetRanges)
         }
-        None
     }
 }
 

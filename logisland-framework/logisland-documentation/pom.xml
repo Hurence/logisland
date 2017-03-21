@@ -39,10 +39,6 @@
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
@@ -64,7 +60,6 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-bro-plugin</artifactId>
-            <version>0.9.8</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -73,14 +68,6 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-kafka-0-8-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-spark-engine</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -131,4 +118,32 @@
         </plugins>
 
     </build>
+
+    <profiles>
+        <profile>
+            <id>hdp-2.4</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-spark-engine16</artifactId>
+                </dependency>
+            </dependencies>
+
+        </profile>
+
+        <profile>
+            <id>hdp-2.5</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-spark-engine21</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-agent</artifactId>
+                </dependency>
+            </dependencies>
+
+        </profile>
+    </profiles>
 </project>

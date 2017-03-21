@@ -1,53 +1,55 @@
 /**
-  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.stream.spark
 
 import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
+import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.kafka.KafkaSink
+import com.hurence.logisland.util.processor.ProcessorMetrics
+import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
-import kafka.utils.ZkUtils
+import kafka.serializer.DefaultDecoder
+import kafka.utils.ZKStringSerializer
+import org.I0Itec.zkclient.ZkClient
 import org.apache.avro.Schema.Parser
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.security.JaasUtils
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
+import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.{Assign, Subscribe}
-import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
-import org.apache.spark.streaming.kafka010.{CanCommitOffsets, KafkaUtils, OffsetRange}
+import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConversions._
 
 
 object AbstractKafkaRecordStream {
 
-    val DEFAULT_RAW_TOPIC = new AllowableValue("_raw", "default raw topic", "the incoming non structured topic")
-    val DEFAULT_RECORDS_TOPIC = new AllowableValue("_records", "default events topic", "the outgoing structured topic")
-    val DEFAULT_ERRORS_TOPIC = new AllowableValue("_errors", "default raw topic", "the outgoing structured error topic")
-    val DEFAULT_METRICS_TOPIC = new AllowableValue("_metrics", "default metrics topic", "the topic to place processing metrics")
+    val DEFAULT_RAW_TOPIC = new AllowableValue("logisland_raw", "default raw topic", "the incoming non structured topic")
+    val DEFAULT_EVENTS_TOPIC = new AllowableValue("logisland_events", "default events topic", "the outgoing structured topic")
+    val DEFAULT_ERRORS_TOPIC = new AllowableValue("logisland_errors", "default raw topic", "the outgoing structured error topic")
+    val DEFAULT_METRICS_TOPIC = new AllowableValue("logisland_metrics", "default metrics topic", "the topic to place processing metrics")
 
     val INPUT_TOPICS = new PropertyDescriptor.Builder()
         .name("kafka.input.topics")
@@ -62,7 +64,7 @@ object AbstractKafkaRecordStream {
         .description("Sets the output Kafka topic name")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue(DEFAULT_RECORDS_TOPIC.getValue)
+        .defaultValue(DEFAULT_EVENTS_TOPIC.getValue)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
@@ -72,22 +74,6 @@ object AbstractKafkaRecordStream {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(DEFAULT_ERRORS_TOPIC.getValue)
-        .build
-
-    val INPUT_TOPICS_PARTITIONS = new PropertyDescriptor.Builder()
-        .name("kafka.input.topics.partitions")
-        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("20")
-        .build
-
-    val OUTPUT_TOPICS_PARTITIONS = new PropertyDescriptor.Builder()
-        .name("kafka.output.topics.partitions")
-        .description("if autoCreate is set to true, this will set the number of partition at topic creation time")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("20")
         .build
 
     val AVRO_INPUT_SCHEMA = new PropertyDescriptor.Builder()
@@ -104,12 +90,9 @@ object AbstractKafkaRecordStream {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
-    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
-        "avro serialization", "serialize events as avro blocs")
-    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
-        "avro serialization", "serialize events as json blocs")
-    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
-        "kryo serialization", "serialize events as json blocs")
+    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName, "avro serialization", "serialize events as avro blocs")
+    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName, "avro serialization", "serialize events as json blocs")
+    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName, "kryo serialization", "serialize events as json blocs")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
 
@@ -200,22 +183,6 @@ object AbstractKafkaRecordStream {
         .required(false)
         .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
         .build
-
-    val LOGISLAND_AGENT_QUORUM = new PropertyDescriptor.Builder()
-        .name("logisland.agent.quorum")
-        .description("the stream needs to know how to reach Agent REST api in order to live update its processors")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("sandbox:8081")
-        .build
-
-    val LOGISLAND_AGENT_PULL_THROTTLING = new PropertyDescriptor.Builder()
-        .name("logisland.agent.pull.throttling")
-        .description("wait every x batch to pull agent for new conf")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("10")
-        .build
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -227,9 +194,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
-    protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
-    protected var currentJobVersion: Int = 0
-    protected var lastCheckCount: Int = 0
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -248,8 +212,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
-        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM)
-        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -259,7 +221,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         this.ssc = ssc
         this.streamContext = streamContext
         SparkUtils.customizeLogLevels
-        logger.info("setup")
     }
 
     override def start() = {
@@ -277,9 +238,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
-            val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
-            val agentQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM).asString
-            val throttling = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
+            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
@@ -294,110 +253,64 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
-            restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
 
-            // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {
-                createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(
-                    zkUtils,
-                    Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
-                    topicDefaultPartitions,
-                    topicDefaultReplicationFactor)
-
+                createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                if (streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).isSet) {
+                    createTopicsIfNeeded(
+                        zkClient,
+                        Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
+                        topicDefaultPartitions,
+                        topicDefaultReplicationFactor)
+                }
             }
 
-
-            val kafkaParams = Map[String, Object](
+            /**
+              * create streams from latest zk offsets
+              *
+              * previous values :
+              *    refresh.leader.backoff.ms -> 1000
+              */
+            val kafkaStreamsParams = Map(
+                "metadata.broker.list" -> brokerList,
                 "bootstrap.servers" -> brokerList,
-                "key.deserializer" -> classOf[ByteArrayDeserializer],
-                "value.deserializer" -> classOf[ByteArrayDeserializer],
                 "group.id" -> appName,
                 "refresh.leader.backoff.ms" -> "5000",
-                "auto.offset.reset" -> "latest",
-                "enable.auto.commit" -> (false: java.lang.Boolean)
+                "auto.offset.reset" -> "largest"
             )
 
-
-
-
-
-            val fromOffsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
+            val offsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
-                    || fromOffsets.isEmpty) {
+                    || offsets.isEmpty) {
 
                 logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
-                KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
+                KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
                     ssc,
-                    PreferConsistent,
-                    Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
+                    kafkaStreamsParams,
+                    inputTopics
                 )
             }
             else {
                 val messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => (Array[Byte], Array[Byte]) =
                     (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
 
-                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $fromOffsets")
-                KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
+                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $offsets")
+                KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder, (Array[Byte], Array[Byte])](
                     ssc,
-                    PreferConsistent,
-                    Assign[Array[Byte], Array[Byte]](fromOffsets.keys.toList, kafkaParams, fromOffsets)
-                )
+                    kafkaStreamsParams,
+                    offsets,
+                    messageHandler)
             }
 
-            // store current configuration version
-            currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
 
             // do the parallel processing
-            kafkaStream.foreachRDD(rdd => {
-
-                /**
-                  * check if conf needs to be refreshed
-                  */
-                if (lastCheckCount > throttling) {
-                    lastCheckCount = 0
-                    val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
-                    if (currentJobVersion != version) {
-                        logger.info("Job version change detected from {} to {}, proceeding to update",
-                            currentJobVersion,
-                            version)
-
-                        val componentFactory = new RestComponentFactory(agentQuorum)
-                        val updatedEngineContext = componentFactory.getEngineContext(appName)
-                        if (updatedEngineContext.isPresent) {
-
-                            // find the corresponding stream
-                            val it = updatedEngineContext.get().getStreamContexts.iterator()
-                            while (it.hasNext) {
-                                val updatedStreamingContext = it.next()
-
-                                // if we found a streamContext with the same name from the factory
-                                if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                    logger.info("new conf for stream {}", updatedStreamingContext.getName)
-                                    this.streamContext = updatedStreamingContext
-                                }
-                            }
-                        }
-                        currentJobVersion = version
-                    }
-                }
-
-                lastCheckCount += 1
-
-
-
-                val offsetRanges = process(rdd)
-                // some time later, after outputs have completed
-                if (offsetRanges.isDefined)
-                    kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
-            })
+            kafkaStream.foreachRDD(rdd => process(rdd))
         } catch {
-            case ex: Throwable =>
-                ex.printStackTrace()
-                logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
+            case ex: Throwable => logger.error("something bad happened, please check Kafka or Zookeeper health : {}",
+                ex.toString)
         }
     }
 
@@ -407,7 +320,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       *
       * @param rdd
       */
-    def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]]
+    def process(rdd: RDD[(Array[Byte], Array[Byte])])
 
 
     /**
@@ -435,12 +348,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       * @param serializer
       * @return
       */
-    def deserializeRecords(partition: Iterator[ConsumerRecord[Array[Byte], Array[Byte]]], serializer: RecordSerializer): List[Record] = {
+    def deserializeRecords(partition: Iterator[(Array[Byte], Array[Byte])], serializer: RecordSerializer): List[Record] = {
         partition.flatMap(rawEvent => {
 
-            // TODO handle key also
             try {
-                val bais = new ByteArrayInputStream(rawEvent.value())
+                val bais = new ByteArrayInputStream(rawEvent._2)
                 val deserialized = serializer.deserialize(bais)
                 bais.close()
 
@@ -455,22 +367,23 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     }
 
 
+
     /**
       * Topic creation
       *
-      * @param zkUtils
-      * @param topics
+      * @param zkClient
+      * @param inputTopics
       * @param topicDefaultPartitions
       * @param topicDefaultReplicationFactor
       */
-    def createTopicsIfNeeded(zkUtils: ZkUtils,
-                             topics: Set[String],
+    def createTopicsIfNeeded(zkClient: ZkClient,
+                             inputTopics: Set[String],
                              topicDefaultPartitions: Int,
                              topicDefaultReplicationFactor: Int): Unit = {
 
-        topics.foreach(topic => {
-            if (!AdminUtils.topicExists(zkUtils, topic)) {
-                AdminUtils.createTopic(zkUtils, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
+        inputTopics.foreach(topic => {
+            if (!AdminUtils.topicExists(zkClient, topic)) {
+                AdminUtils.createTopic(zkClient, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with" +
                     s" $topicDefaultPartitions partitions and" +

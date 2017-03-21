@@ -29,9 +29,7 @@
     <modules>
         <module>logisland-resources</module>
         <module>logisland-utils</module>
-        <module>logisland-spark-engine</module>
         <module>logisland-bootstrap</module>
         <module>logisland-documentation</module>
-        <module>logisland-agent</module>
     </modules>
 </project>

@@ -67,8 +67,6 @@ object SparkUtils extends LazyLogging {
 
 
     def customizeLogLevels: Unit = {
-
-
         // Logging verbosity lowered
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
         Logger.getLogger("org.apache.spark.scheduler").setLevel(Level.WARN)
@@ -78,14 +76,12 @@ object SparkUtils extends LazyLogging {
 
        // log4j.logger.org.apache.spark.deploy.yarn.Client=DEBUG
 
-        Logger.getLogger("org.spark_project").setLevel(Level.ERROR)
-        Logger.getLogger("org.spark_project.jetty").setLevel(Level.OFF)
-        Logger.getLogger("org.eclipse.jetty").setLevel(Level.ERROR)
+
+        Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
         Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop.ipc.Client").setLevel(Level.WARN)
         Logger.getLogger("org.apache.hadoop").setLevel(Level.WARN)
         Logger.getLogger("org.apache.kafka").setLevel(Level.ERROR)
-        Logger.getLogger("org.apache.kafka.common.metrics.Metrics").setLevel(Level.OFF)
         Logger.getLogger("org.elasticsearch").setLevel(Level.WARN)
         Logger.getLogger("kafka").setLevel(Level.WARN)
         Logger.getLogger("kafka.utils").setLevel(Level.WARN)
@@ -93,7 +89,6 @@ object SparkUtils extends LazyLogging {
         Logger.getLogger("org.apache.hadoop.ipc.ProtobufRpcEngine").setLevel(Level.WARN)
         Logger.getLogger("parquet.hadoop").setLevel(Level.WARN)
         Logger.getLogger("com.hurence").setLevel(Level.DEBUG)
-
     }
 
     def initContext(appName: String,
@@ -156,7 +151,7 @@ object SparkUtils extends LazyLogging {
         val dataFrame = sqlContext.createDataFrame(rawRDD, parsedSchema)
 
         // Register the DataFrames as a table.
-        dataFrame.createOrReplaceTempView(tableName)
+        dataFrame.registerTempTable(tableName)
         dataFrame
     }
 
