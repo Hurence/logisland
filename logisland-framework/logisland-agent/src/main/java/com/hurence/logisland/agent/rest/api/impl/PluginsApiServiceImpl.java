@@ -1,20 +1,15 @@
 package com.hurence.logisland.agent.rest.api.impl;
 
-import com.hurence.logisland.agent.rest.api.ApiResponseMessage;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
 import com.hurence.logisland.agent.rest.api.PluginsApiService;
-import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-03-03T16:47:02.913+01:00")
 public class PluginsApiServiceImpl extends PluginsApiService {

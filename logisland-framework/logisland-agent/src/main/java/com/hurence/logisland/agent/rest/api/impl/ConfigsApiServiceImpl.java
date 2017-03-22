@@ -3,8 +3,8 @@ package com.hurence.logisland.agent.rest.api.impl;
 import com.hurence.logisland.agent.rest.api.ConfigsApiService;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
 import com.hurence.logisland.agent.rest.model.Property;
-import com.hurence.logisland.kakfa.registry.KafkaRegistry;
-import com.hurence.logisland.kakfa.registry.KafkaRegistryConfig;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
+import com.hurence.logisland.kafka.registry.KafkaRegistryConfig;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;

@@ -1,19 +1,7 @@
 // hola
 package com.hurence.logisland.agent.rest.api;
 
-import com.hurence.logisland.agent.rest.model.*;
-import com.hurence.logisland.agent.rest.api.PluginsApiService;
 import com.hurence.logisland.agent.rest.api.factories.PluginsApiServiceFactory;
-
-import io.swagger.annotations.ApiParam;
-
-
-import com.hurence.logisland.agent.rest.model.Error;
-
-import java.util.List;
-import com.hurence.logisland.agent.rest.api.NotFoundException;
-
-import java.io.InputStream;
 
 
 import javax.ws.rs.core.Context;
@@ -21,7 +9,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
 
-import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
 
 @Path("/plugins")
 @Consumes({ "application/json" })

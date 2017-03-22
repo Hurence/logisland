@@ -16,6 +16,7 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.agent.rest.client.*;
+import com.hurence.logisland.agent.rest.client.exceptions.RestClientException;
 import com.hurence.logisland.agent.rest.model.*;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.ProcessingEngine;
@@ -88,7 +89,7 @@ public final class RestComponentFactory {
                 return Optional.empty();
 
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | RestClientException e) {
             logger.error("unable to instanciate job {} : {}", jobName, e);
         }
         return Optional.empty();
@@ -121,30 +122,44 @@ public final class RestComponentFactory {
                 String value = e.getValue();
                 switch (key) {
                     case "kafka.input.topics": {
-                        Topic topic = topicsApiClient.getTopic(value);
-                        if(topic == null){
-                            logger.error("{} topic was not found", value);
-                        }else {
-                            instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
-                            instance.setProperty(key, value);
+                        Topic topic = null;
+                        try {
+                            topic = topicsApiClient.getTopic(value);
+                            if (topic == null) {
+                                logger.error("{} topic was not found", value);
+                            } else {
+                                instance.setProperty("kafka.input.topics.serializer", topic.getSerializer());
+                                instance.setProperty(key, value);
+                            }
+                        } catch (RestClientException e1) {
+                            logger.error("{} topic was not found", e1.toString());
                         }
+
                         break;
                     }
                     case "kafka.output.topics": {
-                        Topic topic = topicsApiClient.getTopic(value);
-                        if(topic == null) {
-                            logger.error("{} topic was not found", value);
-                        }else {
-                            instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
-                            instance.setProperty(key, value);
+                        try {
+                            Topic topic = topicsApiClient.getTopic(value);
+                            if (topic == null) {
+                                logger.error("{} topic was not found", value);
+                            } else {
+                                instance.setProperty("kafka.output.topics.serializer", topic.getSerializer());
+                                instance.setProperty(key, value);
+                            }
+                        } catch (RestClientException e1) {
+                            logger.error("{} topic was not found", e1.toString());
                         }
                         break;
                     }
                 }
-                List<Property> configs = configsApiClient.getConfigs();
-                configs.forEach(conf -> {
-                    instance.setProperty(conf.getKey(), conf.getValue());
-                });
+                try {
+                    List<Property> configs = configsApiClient.getConfigs();
+                    configs.forEach(conf -> {
+                        instance.setProperty(conf.getKey(), conf.getValue());
+                    });
+                } catch (RestClientException e1) {
+                    logger.error("{} topic was not found", e1.toString());
+                }
 
                 instance.setProperty("logisland.agent.quorum", this.agentQuorum);
 
@@ -152,7 +167,7 @@ public final class RestComponentFactory {
             logger.info("created stream {}", stream);
             return Optional.of(instance);
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException  e) {
             logger.error("unable to instanciate stream {} : {}", stream, e.toString());
         }
         return Optional.empty();
@@ -179,7 +194,7 @@ public final class RestComponentFactory {
 
 
     public static void main(String[] args) {
-        RestComponentFactory factory =  new RestComponentFactory("http://localhost:8081");
+        RestComponentFactory factory = new RestComponentFactory("http://localhost:8081");
 
         factory.getEngineContext("IndexApacheLogsDemo");
     }

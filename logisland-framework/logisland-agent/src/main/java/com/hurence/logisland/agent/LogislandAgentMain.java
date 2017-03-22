@@ -1,7 +1,7 @@
 package com.hurence.logisland.agent;
 
-import com.hurence.logisland.kakfa.registry.KafkaRegistryConfig;
-import com.hurence.logisland.kakfa.registry.KafkaRegistryRestApplication;
+import com.hurence.logisland.kafka.registry.KafkaRegistryConfig;
+import com.hurence.logisland.kafka.registry.KafkaRegistryRestApplication;
 import io.confluent.rest.RestConfigException;
 import org.eclipse.jetty.server.Server;
 import org.slf4j.LoggerFactory;

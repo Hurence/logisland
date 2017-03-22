@@ -331,10 +331,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -346,6 +346,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
 
 ----------
 
@@ -372,10 +374,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -387,6 +389,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
    "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
    "**record.type**", "the type of event to filter", "", "null", "", ""
@@ -418,10 +422,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -433,6 +437,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
    "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
 
@@ -461,10 +467,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
@@ -476,6 +482,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
    "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
    "output.record.type", "the output type of the record", "", "aggregation", "", ""
@@ -791,7 +799,7 @@ PythonProcessor
 ---------------
  !!!! WARNING !!!!
 
-The python processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings.
+The python processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
 
 This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
 

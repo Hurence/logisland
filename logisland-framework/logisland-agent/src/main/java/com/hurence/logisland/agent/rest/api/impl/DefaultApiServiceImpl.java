@@ -1,16 +1,11 @@
 package com.hurence.logisland.agent.rest.api.impl;
 
 import com.hurence.logisland.agent.rest.api.*;
-import com.hurence.logisland.agent.rest.model.*;
 
 
-import java.util.List;
 import com.hurence.logisland.agent.rest.api.NotFoundException;
 
-import java.io.InputStream;
-import com.hurence.logisland.kakfa.registry.KafkaRegistry;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;

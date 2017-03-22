@@ -16,10 +16,11 @@
  */
 package com.hurence.logisland.agent.rest.client;
 
+import com.hurence.logisland.agent.rest.client.exceptions.RestClientException;
 import com.hurence.logisland.agent.rest.model.Topic;
 
 public interface TopicsApiClient {
-    Topic addTopic(Topic topic);
+    Topic addTopic(Topic topic) throws RestClientException;
 
-    Topic getTopic(String name);
+    Topic getTopic(String name) throws RestClientException;
 }
