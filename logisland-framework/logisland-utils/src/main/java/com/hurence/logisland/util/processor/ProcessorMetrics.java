@@ -51,7 +51,7 @@ public class ProcessorMetrics {
             final long processingDurationInMillis) {
 
 
-        if (outgoingEvents.size() != 0) {
+        if ( (outgoingEvents != null) && (outgoingEvents.size() != 0) ) {
             Record metrics = new StandardRecord(METRICS_EVENT_TYPE);
 
             metrics.setField("spark_app_name", FieldType.STRING, appName);

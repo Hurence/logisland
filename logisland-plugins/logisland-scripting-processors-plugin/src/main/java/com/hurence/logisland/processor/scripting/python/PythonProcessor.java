@@ -21,12 +21,14 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.python.core.PyException;
 import org.python.core.PyInteger;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
@@ -45,8 +47,7 @@ import static java.util.stream.Collectors.joining;
  * So far identified list of things still to be done:
  * - see TODOs here
  * - init code is always called! Remove this!
- * - inline mode: default imports list
- * - inline mode: user imports  usage, init usage (access context?))
+ * - inline mode: init usage (access context?))
  * - onPropertyModified up to python code (test)
  * - doc for tutorial (inline?, file? , both?)
  */
@@ -55,7 +56,9 @@ import static java.util.stream.Collectors.joining;
 @CapabilityDescription(
         " !!!! WARNING !!!!\n\nThe python processor is currently an experimental feature : it is delivered as is, with the"
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
-        + " without warnings.\n\n"
+        + " without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml"
+        + " example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end"
+        + " of the stream should output events in stderr file of the executors from the spark console.\n\n"
         + "This processor allows to implement and run a processor written in python."
         + " This can be done in 2 ways. Either directly defining the process method code in the **script.code.process**"
         + " configuration property or poiting to an external python module script file in the **script.path**"
@@ -492,30 +495,56 @@ public class PythonProcessor extends AbstractProcessor {
 
         Collection<Record> outputRecords = null;
         
-        if (useScriptFile)
+        try {
+        
+            if (useScriptFile)
+            {
+                // File mode
+                 
+                /**
+                 * Call process method of python processor script with the records we received
+                 */
+                pythonInterpreter.set("context", context);
+                pythonInterpreter.set("records", records);
+                pythonInterpreter.exec("outputRecords = pyProcessor.process(context, records)");
+                outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+            } else
+            {
+                // Inline mode
+    
+                /**
+                 * Call process method of python processor script with the records we received
+                 */
+                pythonInterpreter.set("context", context);
+                pythonInterpreter.set("records", records);
+                pythonInterpreter.exec("outputRecords = process(context, records)");
+                outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+            }
+        } catch(Throwable t)
         {
-            // File mode
-             
             /**
-             * Call process method of python processor script with the records we received
+             * Error, return an error record
              */
-            pythonInterpreter.set("context", context);
-            pythonInterpreter.set("records", records);
-            pythonInterpreter.exec("outputRecords = pyProcessor.process(context, records)");
-            outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
-        } else
-        {
-            // Inline mode
-
-            /**
-             * Call process method of python processor script with the records we received
-             */
-            pythonInterpreter.set("context", context);
-            pythonInterpreter.set("records", records);
-            pythonInterpreter.exec("outputRecords = process(context, records)");
-            outputRecords = pythonInterpreter.get("outputRecords", Collection.class);
+            String errorMsg = t.getMessage();
+            if (t instanceof PyException)
+            {
+                // Error inside the python code, prepare an error message explaining the error
+                StringBuilder sb = new StringBuilder();
+                PyException pyException = (PyException)t;
+                String errorType = pyException.type.toString();
+                String errorMesage = pyException.value.toString();
+                sb.append("Error in pyhton code:\nType: ").append(errorType);
+                sb.append("\nMessage: ").append(errorMesage);
+                sb.append("\nStack:\n");
+                pyException.traceback.dumpStack(sb);
+                errorMsg = sb.toString();
+            }
+            Record errorRecord = new StandardRecord("error");
+            errorRecord.addError(ProcessError.UNKNOWN_ERROR.getName(), errorMsg);
+            List<Record> errorRecords = new ArrayList<Record>();
+            errorRecords.add(errorRecord);
+            return errorRecords;
         }
-        logger.debug("Processed records ");
 
         return outputRecords;
     }
