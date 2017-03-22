@@ -56,7 +56,9 @@ import static java.util.stream.Collectors.joining;
 @CapabilityDescription(
         " !!!! WARNING !!!!\n\nThe python processor is currently an experimental feature : it is delivered as is, with the"
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
-        + " without warnings.\n\n"
+        + " without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml"
+        + " example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end"
+        + " of the stream should output events in stderr file of the executors from the spark console.\n\n"
         + "This processor allows to implement and run a processor written in python."
         + " This can be done in 2 ways. Either directly defining the process method code in the **script.code.process**"
         + " configuration property or poiting to an external python module script file in the **script.path**"
