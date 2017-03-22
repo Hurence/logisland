@@ -1,0 +1,38 @@
+<div flex layout-align="start center" layout-padding>
+    <div flex layout="row">
+        <h2>Topics</h2>
+        <md-button class="md-fab md-mini"
+                   ng-click="addTopic()"
+                   aria-label="Add Topic">
+            <md-icon md-svg-icon="add"></md-icon>
+        </md-button>
+    </div>
+    <md-list class="topcisList">
+        <md-list-item
+                class="listheader"
+                layout-align="center center"
+                layout="row">
+            <div flex="60" layout-margin>Name</div>
+            <div flex="30" layout-margin>Version</div>
+            <div flex="10" layout-margin>&nbsp;</div>
+        </md-list-item>
+        <md-list-item ng-repeat="topic in $ctrl.topics"
+                      ng-click="selectTopic(topic)"
+                      ng-class="{borderedselected: ($ctrl.selectedTopic == topic)}"
+                      layout="row">
+            <div flex="60" class="md-list-item-text" layout-margin>{{ topic.name }}</div>
+            <div flex="30" class="md-list-item-text" layout-margin>{{ topic.version }}</div>
+            <div flex="10" class="md-list-item-text" layout-margin>
+                <md-button class="md-fab md-mini"
+                           ng-click="deleteTopic($index)"
+                           aria-label="Delete Topic">
+                    <md-icon md-svg-icon="delete"></md-icon>
+                </md-button>
+            </div>
+        </md-list-item>
+    </md-list>
+    <md-divider></md-divider>
+    <topic-details
+            selected="$ctrl.selectedTopic">
+    </topic-details>
+</div>

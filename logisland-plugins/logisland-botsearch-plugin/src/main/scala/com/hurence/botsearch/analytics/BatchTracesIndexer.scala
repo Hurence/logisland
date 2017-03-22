@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.hurence.logisland.botsearch.{HttpFlow, Trace}
-import com.hurence.logisland.util.kafka.KafkaOffsetUtils
 import com.hurence.logisland.util.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import kafka.serializer.StringDecoder

@@ -30,3 +30,7 @@
 *.versionsBackup
 checkpoints/
 logs/
+**/node_modules/*
+**/app/jspm_packages/*
+
+**/log/
