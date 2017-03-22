@@ -68,9 +68,10 @@ public class StandardRecordTest {
                 .setField("response_size", FieldType.INT, 452)
                 .setField("is_outside_office_hours", FieldType.BOOLEAN, false)
                 .setField("is_host_blacklisted", FieldType.BOOLEAN, false)
-                .setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+                .setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")))
+                .setField("type", FieldType.UNION, new ArrayList<>(Arrays.asList("null", "string")));
 
-        assertEquals(record.size(), 13);  // 13 + 3
+        assertEquals(record.size(), 14);  // 14 + 3
 
         assertFalse(record.hasField("unkown_field"));
         assertTrue(record.hasField("method"));
@@ -78,10 +79,11 @@ public class StandardRecordTest {
         assertTrue(record.getField("response_size").asInteger() - 452 == 0);
 
         record.removeField("is_host_blacklisted");
-        assertEquals(record.size(), 12);
+        assertEquals(record.size(), 13);
 
         record.setField("is_outside_office_hours", record.getField("is_outside_office_hours").getType(), !record.getField("is_outside_office_hours").asBoolean());
         assertTrue(record.getField("is_outside_office_hours").asBoolean());
+        assertTrue(record.hasField("type"));
     }
 
 

@@ -50,7 +50,7 @@
     },
     {
       "name": "response_size",
-      "type": "int"
+      "type": ["null", "int"], "default": null
     },
     {
       "name": "is_outside_office_hours",
