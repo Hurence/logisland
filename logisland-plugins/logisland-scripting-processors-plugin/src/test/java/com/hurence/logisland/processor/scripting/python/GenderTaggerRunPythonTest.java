@@ -30,9 +30,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenderTaggerPythonProcessorTest {
+public class GenderTaggerRunPythonTest {
     
-    private static Logger logger = LoggerFactory.getLogger(GenderTaggerPythonProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(GenderTaggerRunPythonTest.class);
     
     private static final String PYTHON_PROCESSOR = "./src/main/python/processors/gendertagger/GenderTaggerProcessor.py";
     
@@ -72,8 +72,8 @@ public class GenderTaggerPythonProcessorTest {
     @Test
     public void testGenderTagger() {
         
-        final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
-        testRunner.setProperty(PythonProcessor.SCRIPT_PATH, PYTHON_PROCESSOR);
+        final TestRunner testRunner = TestRunners.newTestRunner(new RunPython());
+        testRunner.setProperty(RunPython.SCRIPT_PATH, PYTHON_PROCESSOR);
         testRunner.assertValid();
         int nRecords = recordAuthorsToGender.size();
         /**
