@@ -366,6 +366,7 @@ container (host, port, client id to use). These are communication settings:
     redef Kafka::kafka_conf = table(
         ["metadata.broker.list"] = "sandbox:9092",
         ["client.id"] = "bro"
+        );
 
 This line tells the Kafka topic name to use. It is important that it is the same as the
 input topic of the Bro processor in Logisland:
@@ -599,8 +600,8 @@ Let's launch the following command to make Bro analyze the packets in the ``ssh.
  
    bro -r ssh.pcap local
    
-In your the previous ``kafkacat`` shell, you should see some ``ssh`` events that represent the SSH traffic. You shoul also see
-a ``notice`` event event like this one:
+In your previous ``kafkacat`` shell, you should see some ``ssh`` events that represent the SSH traffic. You should also see
+a ``notice`` event like this one:
 
 .. code-block:: json
 
