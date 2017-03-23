@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cyber-secuirty-plugin</artifactId>
+            <artifactId>logisland-cyber-security-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -76,10 +76,6 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-scripting-processors-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-mailer-plugin</artifactId>
         </dependency>
     </dependencies>
     <build>
