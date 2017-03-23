@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.mailer;
+package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -86,9 +86,9 @@ import java.util.regex.Pattern;
         + " will send a mail to record_address@domain.com.\n\n"
         + " Apart from error records (when he is unable to process the incoming record or to send the mail), this processor"
         + " is not expected to produce any output records.")
-public class MailerProcessor extends AbstractProcessor {
+public class SendMail extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(MailerProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(SendMail.class);
     
     // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
     private boolean debug = false;
