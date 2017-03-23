@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-bro-plugin</artifactId>
+            <artifactId>logisland-cyber-secuirty-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
