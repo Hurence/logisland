@@ -72,6 +72,9 @@
         </profile>
         <profile>
             <id>hdp-2.5</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
