@@ -1,5 +1,5 @@
-Components's library
-===================
+Processors
+==========
 You'll find here the list of all usable Processors, Engines and other components that can be usable out of the box in your analytics streams
 
 
@@ -308,29 +308,19 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.mailer.MailerProcessor: 
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
 
-MailerProcessor
----------------
-The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record. There are three ways an incoming record can generate an email according to the special fields it must embed. Here is a list of the record fields that generate a mail and how they work:
-
-- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value) as the payload of the mail to send. The mail is sent in text format if there is only this special field in the record. Otherwise, used with either mail_html or mail_use_template, the content of mail_text is the aletrnative text to the HTML mail that is generated.
-
-- **mail_html**: this field specifies that the mail should be sent as HTML and the value of the field is mail payload. If mail_text is also present, its value is used as the alternative text for the mail. mail_html cannot be used with mail_use_template: only one of those two fields should be present in the record.
-
-- **mail_use_template**: If present, this field specifies that the mail should be sent as HTML and the HTML content is to be generated from the template in the processor configuration key **html.template**. The template can contain parameters which must also be present in the record as fields. See documentation of html.template for further explanations. mail_use_template cannot be used with mail_html: only one of those two fields should be present in the record.
-
- If **allow_overwrite** configuration key is true, any mail.* (dot format) configuration key may be overwritten with a matching field in the record of the form mail_* (underscore format). For instance if allow_overwrite is true and mail.to is set to config_address@domain.com, a record generating a mail with a mail_to field set to record_address@domain.com will send a mail to record_address@domain.com.
-
- Apart from error records (when he is unable to process the incoming record or to send the mail), this processor is not expected to produce any output records.
+KafkaRecordStreamDebugger
+-------------------------
+No description provided.
 
 Class
 _____
-com.hurence.logisland.processor.mailer.MailerProcessor
+com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger
 
 Tags
 ____
-smtp, email, e-mail, mail, mailer, message, alert, html
+None.
 
 Properties
 __________
@@ -341,20 +331,213 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, debug information are written to stdout.", "", "false", "", ""
-   "**smtp.server**", "FQDN, hostname or IP address of the SMTP server to use.", "", "null", "", ""
-   "smtp.port", "TCP port number of the SMTP server to use.", "", "25", "", ""
-   "smtp.security.username", "SMTP username.", "", "null", "", ""
-   "smtp.security.password", "SMTP password.", "", "null", "", ""
-   "smtp.security.ssl", "Use SSL under SMTP or not (SMTPS). Default is false.", "", "false", "", ""
-   "**mail.from.address**", "Valid mail sender email address.", "", "null", "", ""
-   "mail.from.name", "Mail sender name.", "", "null", "", ""
-   "**mail.bounce.address**", "Valid bounce email address (where error mail is sent if the mail is refused by the recipient server).", "", "null", "", ""
-   "mail.replyto.address", "Reply to email address.", "", "null", "", ""
-   "mail.subject", "Mail subject.", "", "[LOGISLAND] Automatic email", "", ""
-   "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
-   "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
-   "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner: 
+
+KafkaRecordStreamHDFSBurner
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+   "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
+   "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
+   "**record.type**", "the type of event to filter", "", "null", "", ""
+   "num.partitions", "the numbers of physical files on HDFS", "", "4", "", ""
+   "exclude.errors", "do we include records with errors ?", "", "true", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing: 
+
+KafkaRecordStreamParallelProcessing
+-----------------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator: 
+
+KafkaRecordStreamSQLAggregator
+------------------------------
+This is a stream capable of SQL query interpretations
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
+
+Tags
+____
+stream, SQL, query, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "aggregation", "", ""
+
+----------
+
+.. _com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine: 
+
+KafkaStreamProcessingEngine
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**spark.app.name**", "Tha application name", "", "logisland", "", ""
+   "**spark.master**", "The url to Spark Master", "", "local[2]", "", ""
+   "spark.yarn.deploy-mode", "The yarn deploy mode", "", "null", "", ""
+   "spark.yarn.queue", "The name of the YARN queue", "", "default", "", ""
+   "spark.driver.memory", "The memory size for Spark driver", "", "512m", "", ""
+   "spark.executor.memory", "The memory size for Spark executors", "", "1g", "", ""
+   "spark.driver.cores", "The number of cores for Spark driver", "", "4", "", ""
+   "spark.executor.cores", "The number of cores for Spark driver", "", "1", "", ""
+   "spark.executor.instances", "The number of instances for Spark app", "", "null", "", ""
+   "spark.serializer", "Class to use for serializing objects that will be sent over the network or need to be cached in serialized form", "", "org.apache.spark.serializer.KryoSerializer", "", ""
+   "spark.streaming.blockInterval", "Interval at which data received by Spark Streaming receivers is chunked into blocks of data before storing them in Spark. Minimum recommended - 50 ms", "", "350", "", ""
+   "spark.streaming.kafka.maxRatePerPartition", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "5000", "", ""
+   "**spark.streaming.batchDuration**", "No Description Provided.", "", "2000", "", ""
+   "spark.streaming.backpressure.enabled", "This enables the Spark Streaming to control the receiving rate based on the current batch scheduling delays and processing times so that the system receives only as fast as the system can process.", "", "false", "", ""
+   "spark.streaming.unpersist", "Force RDDs generated and persisted by Spark Streaming to be automatically unpersisted from Spark's memory. The raw input data received by Spark Streaming is also automatically cleared. Setting this to false will allow the raw data and persisted RDDs to be accessible outside the streaming application as they will not be cleared automatically. But it comes at the cost of higher memory usage in Spark.", "", "false", "", ""
+   "spark.ui.port", "No Description Provided.", "", "4050", "", ""
+   "spark.streaming.timeout", "No Description Provided.", "", "-1", "", ""
+   "spark.streaming.kafka.maxRetries", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "3", "", ""
+   "spark.streaming.ui.retainedBatches", "How many batches the Spark Streaming UI and status APIs remember before garbage collecting.", "", "200", "", ""
+   "spark.streaming.receiver.writeAheadLog.enable", "Enable write ahead logs for receivers. All the input data received through receivers will be saved to write ahead logs that will allow it to be recovered after driver failures.", "", "false", "", ""
+   "spark.yarn.maxAppAttempts", "Because Spark driver and Application Master share a single JVM, any error in Spark driver stops our long-running job. Fortunately it is possible to configure maximum number of attempts that will be made to re-run the application. It is reasonable to set higher value than default 2 (derived from YARN cluster property yarn.resourcemanager.am.max-attempts). 4 works quite well, higher value may cause unnecessary restarts even if the reason of the failure is permanent.", "", "4", "", ""
+   "spark.yarn.am.attemptFailuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, 4 attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.yarn.max.executor.failures", "a maximum number of executor failures before the application fails. By default it is max(2 * num executors, 3), well suited for batch jobs but not for long-running jobs. The property comes with corresponding validity interval which also should be set.8 * num_executors", "", "20", "", ""
+   "spark.yarn.executor.failuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, x attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.task.maxFailures", "For long-running jobs you could also consider to boost maximum number of task failures before giving up the job. By default tasks will be retried 4 times and then job fails.", "", "8", "", ""
 
 ----------
 
@@ -667,6 +850,56 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.time.field", "the name of the time field to sample", "", "record_time", "", ""
    "**sampling.algorithm**", "the implementation of the algorithm", "none, lttb, average, first_item, min_max, mode_median", "null", "", ""
    "**sampling.parameter**", "the parmater of the algorithm", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SendMail: 
+
+SendMail
+--------
+The SendMail processor is aimed at sending an email (like for instance an alert email) from an incoming record. There are three ways an incoming record can generate an email according to the special fields it must embed. Here is a list of the record fields that generate a mail and how they work:
+
+- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value) as the payload of the mail to send. The mail is sent in text format if there is only this special field in the record. Otherwise, used with either mail_html or mail_use_template, the content of mail_text is the aletrnative text to the HTML mail that is generated.
+
+- **mail_html**: this field specifies that the mail should be sent as HTML and the value of the field is mail payload. If mail_text is also present, its value is used as the alternative text for the mail. mail_html cannot be used with mail_use_template: only one of those two fields should be present in the record.
+
+- **mail_use_template**: If present, this field specifies that the mail should be sent as HTML and the HTML content is to be generated from the template in the processor configuration key **html.template**. The template can contain parameters which must also be present in the record as fields. See documentation of html.template for further explanations. mail_use_template cannot be used with mail_html: only one of those two fields should be present in the record.
+
+ If **allow_overwrite** configuration key is true, any mail.* (dot format) configuration key may be overwritten with a matching field in the record of the form mail_* (underscore format). For instance if allow_overwrite is true and mail.to is set to config_address@domain.com, a record generating a mail with a mail_to field set to record_address@domain.com will send a mail to record_address@domain.com.
+
+ Apart from error records (when he is unable to process the incoming record or to send the mail), this processor is not expected to produce any output records.
+
+Class
+_____
+com.hurence.logisland.processor.SendMail
+
+Tags
+____
+smtp, email, e-mail, mail, mailer, sendmail, message, alert, html
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are written to stdout.", "", "false", "", ""
+   "**smtp.server**", "FQDN, hostname or IP address of the SMTP server to use.", "", "null", "", ""
+   "smtp.port", "TCP port number of the SMTP server to use.", "", "25", "", ""
+   "smtp.security.username", "SMTP username.", "", "null", "", ""
+   "smtp.security.password", "SMTP password.", "", "null", "", ""
+   "smtp.security.ssl", "Use SSL under SMTP or not (SMTPS). Default is false.", "", "false", "", ""
+   "**mail.from.address**", "Valid mail sender email address.", "", "null", "", ""
+   "mail.from.name", "Mail sender name.", "", "null", "", ""
+   "**mail.bounce.address**", "Valid bounce email address (where error mail is sent if the mail is refused by the recipient server).", "", "null", "", ""
+   "mail.replyto.address", "Reply to email address.", "", "null", "", ""
+   "mail.subject", "Mail subject.", "", "[LOGISLAND] Automatic email", "", ""
+   "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
+   "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
+   "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
 
 ----------
 
