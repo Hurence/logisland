@@ -46,6 +46,7 @@ import java.util.TreeMap;
 public class DocGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(DocGenerator.class);
+    public static final String OUTPUT_FILE = "processors";
 
     /**
      * Generates documentation into the work/docs dir specified
@@ -105,13 +106,13 @@ public class DocGenerator {
 
         // write headers for single rst file
         if (writerType.equals("rst")) {
-            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+            final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             if (baseDocumenationFile.exists())
                 baseDocumenationFile.delete();
 
             try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
-                writer.println("Extension plugins");
-                writer.println("=================");
+                writer.println("Components's library");
+                writer.println("===================");
                 writer.println("You'll find here the list of all usable Processors, Engines and other components " +
                         "that can be usable out of the box in your analytics streams");
                 writer.println();
@@ -119,7 +120,7 @@ public class DocGenerator {
                 logger.warn(e.getMessage());
             }
         } else if (writerType.equals("json")) {
-            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+            final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             if (baseDocumenationFile.exists())
                 baseDocumenationFile.delete();
 
@@ -170,7 +171,7 @@ public class DocGenerator {
 
 
         if (writerType.equals("json")) {
-            final File baseDocumenationFile = new File(docsDirectory, "plugins." + writerType);
+            final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
                 writer.println("]");
             } catch (FileNotFoundException e) {
@@ -201,7 +202,7 @@ public class DocGenerator {
 
         final DocumentationWriter writer = getDocumentWriter(componentClass, writerType);
 
-        final File baseDocumenationFile = new File(docsDir, "plugins" + "." + writerType);
+        final File baseDocumenationFile = new File(docsDir, OUTPUT_FILE + "." + writerType);
 
         try (final OutputStream output = new BufferedOutputStream(new FileOutputStream(baseDocumenationFile, true))) {
             writer.write(component, output);
@@ -295,7 +296,7 @@ public class DocGenerator {
 
 
         DocGenerator.generate(new File("../../logisland-docs"), "rst");
-        DocGenerator.generate(new File("../../logisland-docs"), "json");
+        DocGenerator.generate(new File("../../logisland-framework/logisland-agent/src/main/resources"), "json");
 
     }
 }

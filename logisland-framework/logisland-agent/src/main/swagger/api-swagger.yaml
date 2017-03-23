@@ -25,16 +25,16 @@ paths:
         200:
           description: OK
 
-  /plugins:
+  /processors:
     get:
       tags:
        - config
-      operationId: getPlugins
-      summary:  get all plugins
-      description: get all plugins
+      operationId: getProcessors
+      summary:  get all processors
+      description: get all processors
       responses:
         "200":
-          description: plugins
+          description: processors
           schema:
             type: string
         default:

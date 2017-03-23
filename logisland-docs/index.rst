@@ -27,7 +27,7 @@ Contents:
    architecture
    tutorials/index
    api
-   plugins
+   processors
    changes
    faq
 

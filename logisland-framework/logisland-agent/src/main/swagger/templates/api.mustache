@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
 
-import com.hurence.logisland.kakfa.registry.KafkaRegistry;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
 
 @Path("/{{baseName}}")
 {{#hasConsumes}}@Consumes({ {{#consumes}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/consumes}} }){{/hasConsumes}}
