@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test Mailer processor.
+ * Test SendMail processor.
  * WARNING: These tests require a real SMTP server so for not having credentials hardcoded here,
  * there are not filled. To run this test:
  * - enable the tests by uncommenting //@Test into @Test for each method
@@ -52,10 +52,10 @@ public class SendMailTest {
     private static final String TEST_SMTP_SECURITY_PASSWORD = "fillMePassword"; // <----- FILL ME
     private static final String TEST_SMTP_SECURITY_SSL = "true"; // <----- FILL ME
     private static final String TEST_MAIL_FROM_ADDRESS = "tester@logisland.net (must be a valid address!)"; // <----- FILL ME
-    private static final String TEST_MAIL_FROM_NAME = "Mailer Processor Tester";
+    private static final String TEST_MAIL_FROM_NAME = "SendMail Processor Tester";
     private static final String TEST_MAIL_BOUNCE_ADDRESS = "bounce@logisland.net (must be a valid address!)"; // <----- FILL ME
     private static final String TEST_MAIL_REPLYTO_ADDRESS = "replyto@logisland.net (must be a valid address!)"; // <----- FILL ME
-    private static final String TEST_MAIL_SUBJECT = "Logisland Mailer Processor Test";
+    private static final String TEST_MAIL_SUBJECT = "Logisland SendMail Processor Test";
     private static final String TEST_MAIL_TO = "tester@logisland.net (must be a valid address where you will receive mails!)"; // <----- FILL ME
     
     // Parameters for the HTML template

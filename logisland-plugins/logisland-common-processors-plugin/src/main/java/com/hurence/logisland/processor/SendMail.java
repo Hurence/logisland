@@ -46,7 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Mailer Processor.
+ * SendMail Processor.
  * This processor is able to send mails from the incoming records.
  * A minimum processor configuration is required (mainly smtp server info and some mail sender info)
  * Only records with either FIELD_MAIL_TEXT or FIELD_MAIL_HTML fields set will generate a mail.
@@ -63,9 +63,9 @@ import java.util.regex.Pattern;
  * and the format of src attribute in the img html tag should be like:
  * <img src="path/in/classpath/spectacular_image.gif" alt="Spectacular Image">
  */
-@Tags({"smtp", "email", "e-mail", "mail", "mailer", "message", "alert", "html"})
+@Tags({"smtp", "email", "e-mail", "mail", "mailer", "sendmail", "message", "alert", "html"})
 @CapabilityDescription(
-        "The Mailer processor is aimed at sending an email (like for instance an alert email) from an incoming record."
+        "The SendMail processor is aimed at sending an email (like for instance an alert email) from an incoming record."
         + " There are three ways an incoming record can generate an email according to the special fields it must embed."
         + " Here is a list of the record fields that generate a mail and how they work:\n\n"
         + "- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value)"
@@ -285,7 +285,7 @@ public class SendMail extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
-        logger.debug("Initializing Mailer Processor");
+        logger.debug("Initializing SendMail Processor");
     }
     
     @Override
@@ -315,7 +315,7 @@ public class SendMail extends AbstractProcessor {
     {
         if (debug)
         {
-            logger.info("Mailer Processor records input: " + records);
+            logger.info("SendMail Processor records input: " + records);
         }
         
         final Collection<Record> failedRecords = new ArrayList<>();
@@ -562,7 +562,7 @@ public class SendMail extends AbstractProcessor {
 
         if (debug)
         {
-            logger.info("Mailer Processor records output: " + records);
+            logger.info("SendMail Processor records output: " + records);
         }
         return failedRecords;
     }
@@ -885,7 +885,7 @@ public class SendMail extends AbstractProcessor {
      */
     private void displayConfig()
     {
-        StringBuilder sb = new StringBuilder("Mailer Processor configuration:");
+        StringBuilder sb = new StringBuilder("SendMail Processor configuration:");
         sb.append("\n" + SMTP_SERVER.getName() + ": " + smtpServer);
         sb.append("\n" + SMTP_PORT.getName() + ": " + smtpPort);
         sb.append("\n" + SMTP_SECURITY_USERNAME.getName() + ": " + smtpSecurityUsername);
