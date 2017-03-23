@@ -111,8 +111,8 @@ public class DocGenerator {
                 baseDocumenationFile.delete();
 
             try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
-                writer.println("Components's library");
-                writer.println("===================");
+                writer.println("Processors");
+                writer.println("==========");
                 writer.println("You'll find here the list of all usable Processors, Engines and other components " +
                         "that can be usable out of the box in your analytics streams");
                 writer.println();
