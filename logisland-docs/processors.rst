@@ -1,5 +1,5 @@
-Components's library
-===================
+Processors
+==========
 You'll find here the list of all usable Processors, Engines and other components that can be usable out of the box in your analytics streams
 
 

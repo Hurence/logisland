@@ -6,11 +6,11 @@ function ProcessorsDataService(AppSettings, $resource) {
     var processors = [];
 
     var res = $resource(AppSettings.plugins_api + '/', {}, {
-            'query':  { method: 'GET',    cache: false, isArray: false }
+            'query':  { method: 'GET',    cache: false, isArray: true }
         });
 
     res.query( function(plugins) {
-        plugins.plugins.forEach( function(plugin) {
+        plugins.forEach( function(plugin) {
             if(plugin.type === 'processor') {
                 //console.log("plugin: " + JSON.stringify(plugin));
 

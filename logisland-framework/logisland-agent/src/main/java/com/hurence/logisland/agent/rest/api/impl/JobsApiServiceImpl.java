@@ -260,6 +260,8 @@ public class JobsApiServiceImpl extends JobsApiService {
 
 
         Job job = null;
+        // find the scheduler type
+        final String[] scheduler = {"local"};
         try {
 
             job = kafkaRegistry.getJob(jobId);
@@ -269,8 +271,7 @@ public class JobsApiServiceImpl extends JobsApiService {
                 throw new RegistryException("job " + jobId + "not found !");
 
 
-            // find the scheduler type
-            final String[] scheduler = {"local"};
+
             job.getEngine().getConfig().forEach(prop -> {
                 if (prop.getKey().equals("spark.master")) {
                     if (prop.getValue().contains("yarn"))
@@ -332,7 +333,10 @@ public class JobsApiServiceImpl extends JobsApiService {
                     .build();
         }
 
-        return Response.ok().entity("done nothing").build();
+        return Response.ok()
+                .entity(new ApiResponseMessage(ApiResponseMessage.ERROR,
+                        "Unable to shutdown job " + jobId + " with " + scheduler[0] + " scheduler"))
+                .build();
     }
 
     @Override

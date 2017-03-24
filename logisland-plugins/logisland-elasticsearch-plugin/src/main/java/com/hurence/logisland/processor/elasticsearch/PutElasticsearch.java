@@ -235,7 +235,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             /**
              * Verify there is no duplicate ids
              */
-            {
+            /*{
                 Set<String> ids = new HashSet<>();
                 Iterator<Record> it = records.iterator();
                 while (it.hasNext()) {
@@ -248,7 +248,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         ids.add(record.getId());
                     }
                 }
-            }
+            }*/
             final Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
             /**
              * create the bulk processor
