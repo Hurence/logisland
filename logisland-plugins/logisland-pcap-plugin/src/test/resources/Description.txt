@@ -1,10 +1,13 @@
-smallFlows.pcap (Size: 9.4 MB, Packets: 14261, Flows: 1209, Average packet size: 646 bytes, Duration: 5 minutes, Number Applications: 28):
+mediumFlows.pcap (Size: 9.4 MB, Packets: 14261, Flows: 1209, Average packet size: 646 bytes, Duration: 5 minutes, Number Applications: 28):
 This is a synthetic capture which is a combination of several captures containing a few different applications. It is designed to create large number of flows utilizing various protocols at relatively low network traffic rate. If you want to have many flows in a small file and are not concerned about how realistic the combination of flows is, select this capture
 
 bigFlows.pcap (Size: 368 MB, Packets: 791615, Flows: 40686, Average packet size: 449 bytes, Duration: 5 minutes, Number Applications: 132):
 This is a capture of real network traffic on a busy private network’s access point to the Internet. The capture is much larger and has a smaller average packet size than the previous capture. It also has many more flows and different applications. If the large size of this file isn’t a problem, you may want to select it for your tests.
 
-test.pcap (Size: 0.07 MB, Packets: 141, Flows: 37, Average packet size: 445 bytes, Duration: 3 seconds, Number Applications: 1):
+smallFlows.pcap (Size: 0.07 MB, Packets: 141, Flows: 37, Average packet size: 445 bytes, Duration: 3 seconds, Number Applications: 1):
 This is a small capture that is included in the source tarball and is used to test accuracy of tcpreplay results during sudo make test. It is also good for demonstrating tcpprep capbablilites
+
+
+
 
 (source : http://tcpreplay.appneta.com/wiki/captures.html#smallflows-pcap)

@@ -53,13 +53,13 @@ public class PCapProcessorTest {
 
     
     @Test
-    public void testPCapEvent() {
+    public void testSmallPCapRecordProcessing() {
         final TestRunner testRunner = TestRunners.newTestRunner(new PCapProcessor());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
         System.out.println(System.getProperty("user.dir"));
-        Path pcapFile = Paths.get("./src/test/resources/connection_termination.cap");
+        Path pcapFile = Paths.get("./src/test/resources/verySmallFlows.pcap");
         try {
             byte[] pcapbytes = Files.readAllBytes(pcapFile);
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
@@ -98,6 +98,33 @@ public class PCapProcessorTest {
         
         out.assertFieldExists(DST_PORT.getName());
         out.assertFieldEquals(DST_PORT.getName(), (int)23);
+
+    }
+
+    @Test
+    public void testMediumPCapRecordProcessing() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new PCapProcessor());
+        testRunner.assertValid();
+        Record record = new StandardRecord("pcap_event");
+
+        System.out.println(System.getProperty("user.dir"));
+        Path pcapFile = Paths.get("./src/test/resources/mediumFlows.pcap");
+        try {
+            byte[] pcapbytes = Files.readAllBytes(pcapFile);
+            record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
+            record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(14261);
+
 
     }
 }
