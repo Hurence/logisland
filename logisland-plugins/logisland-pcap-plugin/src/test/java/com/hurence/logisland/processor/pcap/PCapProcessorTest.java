@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hurence.logisland.processor.pcap;
 
 import com.hurence.logisland.record.FieldDictionary;
@@ -28,16 +29,10 @@ import com.hurence.logisland.agent.rest.api.impl.ProcessorsApiServiceImpl;
 import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
 //import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
 
 /**
  * Test PCap processor.
@@ -55,7 +50,7 @@ public class PCapProcessorTest {
 
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("verySmallFlows.pcap");
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
@@ -103,7 +98,7 @@ public class PCapProcessorTest {
         Record record2 = new StandardRecord("pcap_event");
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("verySmallFlows.pcap");
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
             record1.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record1.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
             record2.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
@@ -153,7 +148,7 @@ public class PCapProcessorTest {
 
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("mediumFlows.pcap");
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/mediumFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
