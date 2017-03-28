@@ -196,27 +196,45 @@ public class PcapHelper {
   }
   public static EnumMap<PCapConstants.Fields, Object> packetToFields(PacketInfo pi) {
     EnumMap<PCapConstants.Fields, Object> ret = new EnumMap(PCapConstants.Fields.class);
-    if(pi.getTcpPacket() != null) {
-      if(pi.getTcpPacket().getSourceAddress() != null) {
-        ret.put(PCapConstants.Fields.SRC_IP, pi.getTcpPacket().getSourceAddress().getHostAddress());
-      }
-      if(pi.getTcpPacket().getSource() != null ) {
-        ret.put(PCapConstants.Fields.SRC_PORT, pi.getTcpPacket().getSource().getPort());
-      }
-      if(pi.getTcpPacket().getDestinationAddress() != null ) {
-        ret.put(PCapConstants.Fields.DST_IP, pi.getTcpPacket().getDestinationAddress().getHostAddress());
-      }
-      if(pi.getTcpPacket().getDestination() != null ) {
-        ret.put(PCapConstants.Fields.DST_PORT, pi.getTcpPacket().getDestination().getPort());
-      }
-      if(pi.getIpv4Packet() != null) {
+
+    if(pi != null) {
+
+      /* Global Header Data : */
+      ret.put(PCapConstants.Fields.TIMESTAMP, pi.getPacketTimeInNanos());
+
+      /* IP Header Data : */
+      if (pi.getIpv4Packet() != null) {
         ret.put(PCapConstants.Fields.PROTOCOL, pi.getIpv4Packet().getProtocol());
+        ret.put(PCapConstants.Fields.IPDATAGRAMTOTALLENGTH, pi.getIpv4Packet().getTotalLength());
+        ret.put(PCapConstants.Fields.IPFLAGS, pi.getIpv4Packet().getFlags());
+        ret.put(PCapConstants.Fields.IPFRAGMENTOFFSET, pi.getIpv4Packet().getFragmentOffset());
+        ret.put(PCapConstants.Fields.IPHEADERCHECKSUM, pi.getIpv4Packet().getHeaderChecksum());
+        ret.put(PCapConstants.Fields.INTERNETHEADERLENGTH, pi.getIpv4Packet().getIhl());
+        ret.put(PCapConstants.Fields.IPHEADERIDENTIFICATION, pi.getIpv4Packet().getId());
+        ret.put(PCapConstants.Fields.TIMETOLIVE, pi.getIpv4Packet().getTtl());
+        ret.put(PCapConstants.Fields.IPVERSION, pi.getIpv4Packet().getVersion());
+        if (pi.getIpv4Packet().getOptions() != null) {
+          ret.put(PCapConstants.Fields.IPHEADEROPTIONS, pi.getIpv4Packet().getOptions());
+        }
+        if (pi.getIpv4Packet().getPadding() != null) {
+          ret.put(PCapConstants.Fields.IPHEADERPADDING, pi.getIpv4Packet().getPadding());
+        }
       }
-      if(pi.getPacketTimeInNanos() != 0L ) {
-        ret.put(PCapConstants.Fields.TIMESTAMP, pi.getPacketTimeInNanos());
-      }
-      if(pi.getPacketTimeInNanos() != 0L ) {
-        ret.put(PCapConstants.Fields.TIMESTAMP, pi.getPacketTimeInNanos());
+
+      /* TCP Header Data : */
+      if (pi.getTcpPacket() != null) {
+        if (pi.getTcpPacket().getSourceAddress() != null) {
+          ret.put(PCapConstants.Fields.SRC_IP, pi.getTcpPacket().getSourceAddress().getHostAddress());
+        }
+        if (pi.getTcpPacket().getSource() != null) {
+          ret.put(PCapConstants.Fields.SRC_PORT, pi.getTcpPacket().getSource().getPort());
+        }
+        if (pi.getTcpPacket().getDestinationAddress() != null) {
+          ret.put(PCapConstants.Fields.DST_IP, pi.getTcpPacket().getDestinationAddress().getHostAddress());
+        }
+        if (pi.getTcpPacket().getDestination() != null) {
+          ret.put(PCapConstants.Fields.DST_PORT, pi.getTcpPacket().getDestination().getPort());
+        }
       }
     }
     return ret;
@@ -276,6 +294,9 @@ public class PcapHelper {
           tcpPacket = TcpPacket.parse(ipv4Packet);
 
         }
+
+        int totalLengthOfIPDatagram = ipv4Packet.getTotalLength();
+
 
         if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
 
