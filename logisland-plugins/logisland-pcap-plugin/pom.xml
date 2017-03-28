@@ -94,6 +94,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-agent</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 </project>

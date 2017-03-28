@@ -48,9 +48,9 @@ import java.util.EnumMap;
         + "- destination ip : \n"
         + "encapsulation")
 
-public class PCapProcessor extends AbstractProcessor {
+public class ParsePCap extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(PCapProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(ParsePCap.class);
 
     private boolean debug = false;
     
@@ -109,7 +109,7 @@ public class PCapProcessor extends AbstractProcessor {
                             outputRecord.setField(new Field(field.getName(), FieldType.STRING, result.get(field)));
                         }
                     }
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network packet"));
+                    outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
                     outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
                     outputRecords.add(outputRecord);
                 }

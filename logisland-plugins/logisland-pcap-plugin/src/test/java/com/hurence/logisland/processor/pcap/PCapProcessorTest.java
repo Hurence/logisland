@@ -15,8 +15,6 @@
  */
 package com.hurence.logisland.processor.pcap;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -25,15 +23,12 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
+import com.hurence.logisland.agent.rest.api.impl.ProcessorsApiServiceImpl;
+
 import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 //import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -54,18 +49,17 @@ public class PCapProcessorTest {
     
     @Test
     public void testSmallPCapRecordProcessing() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new PCapProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
         System.out.println(System.getProperty("user.dir"));
-        Path pcapFile = Paths.get("./src/test/resources/verySmallFlows.pcap");
         try {
-            byte[] pcapbytes = Files.readAllBytes(pcapFile);
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("verySmallFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -79,7 +73,7 @@ public class PCapProcessorTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
         
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
-        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "network packet");
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "network_packet");
         
         out.assertFieldExists(TIMESTAMP.getName());
         out.assertFieldEquals(TIMESTAMP.getName(), 1338882754996790000L);
@@ -102,19 +96,68 @@ public class PCapProcessorTest {
     }
 
     @Test
+    public void testTwoSmallPCapRecordsProcessing() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
+        testRunner.assertValid();
+        Record record1 = new StandardRecord("pcap_event");
+        Record record2 = new StandardRecord("pcap_event");
+        System.out.println(System.getProperty("user.dir"));
+        try {
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("verySmallFlows.pcap");
+            record1.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
+            record1.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
+            record2.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
+            record2.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        testRunner.enqueue(record1);
+        testRunner.enqueue(record2);
+        testRunner.clearQueues();
+        testRunner.run();
+
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(8);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "network_packet");
+
+        out.assertFieldExists(TIMESTAMP.getName());
+        out.assertFieldEquals(TIMESTAMP.getName(), 1338882754996790000L);
+
+        out.assertFieldExists(PROTOCOL.getName());
+        out.assertFieldEquals(PROTOCOL.getName(), "6");
+
+        out.assertFieldExists(SRC_ADDR.getName());
+        out.assertFieldEquals(SRC_ADDR.getName(), "192.168.10.226");
+
+        out.assertFieldExists(SRC_PORT.getName());
+        out.assertFieldEquals(SRC_PORT.getName(), (int)19707);
+
+        out.assertFieldExists(DST_ADDR.getName());
+        out.assertFieldEquals(DST_ADDR.getName(), "192.168.11.12");
+
+        out.assertFieldExists(DST_PORT.getName());
+        out.assertFieldEquals(DST_PORT.getName(), (int)23);
+
+    }
+
+    @Test
     public void testMediumPCapRecordProcessing() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new PCapProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
         System.out.println(System.getProperty("user.dir"));
-        Path pcapFile = Paths.get("./src/test/resources/mediumFlows.pcap");
         try {
-            byte[] pcapbytes = Files.readAllBytes(pcapFile);
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("mediumFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

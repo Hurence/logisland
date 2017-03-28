@@ -32,7 +32,7 @@ public class ProcessorsApiServiceImpl extends ProcessorsApiService {
     private static String JSON_PLUGINS_FILE = "processors.json";
 
     /**
-     * load logs from ressource as a string or return null if an error occurs
+     * load logs from resources as a string or return null if an error occurs
      */
     public static String loadFileContentAsString(String path, String encoding) {
         try {
@@ -47,5 +47,19 @@ public class ProcessorsApiServiceImpl extends ProcessorsApiService {
         }
     }
 
-
+    /**
+     * load file from resources as a bytes array or return null if an error occurs
+     */
+    public static byte[] loadFileContentAsBytes(String path) {
+        try {
+            final InputStream is = ProcessorsApiServiceImpl.class.getClassLoader().getResourceAsStream(path);
+            assert is != null;
+            byte[] encoded = IOUtils.toByteArray(is);
+            is.close();
+            return encoded;
+        } catch (Exception e) {
+            logger.error(String.format("Could not load file %s and convert it to a bytes array", path), e);
+            return null;
+        }
+    }
 }
