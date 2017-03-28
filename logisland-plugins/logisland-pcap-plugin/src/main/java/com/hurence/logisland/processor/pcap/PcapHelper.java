@@ -198,13 +198,13 @@ public class PcapHelper {
     EnumMap<PCapConstants.Fields, Object> ret = new EnumMap(PCapConstants.Fields.class);
     if(pi.getTcpPacket() != null) {
       if(pi.getTcpPacket().getSourceAddress() != null) {
-        ret.put(PCapConstants.Fields.SRC_ADDR, pi.getTcpPacket().getSourceAddress().getHostAddress());
+        ret.put(PCapConstants.Fields.SRC_IP, pi.getTcpPacket().getSourceAddress().getHostAddress());
       }
       if(pi.getTcpPacket().getSource() != null ) {
         ret.put(PCapConstants.Fields.SRC_PORT, pi.getTcpPacket().getSource().getPort());
       }
       if(pi.getTcpPacket().getDestinationAddress() != null ) {
-        ret.put(PCapConstants.Fields.DST_ADDR, pi.getTcpPacket().getDestinationAddress().getHostAddress());
+        ret.put(PCapConstants.Fields.DST_IP, pi.getTcpPacket().getDestinationAddress().getHostAddress());
       }
       if(pi.getTcpPacket().getDestination() != null ) {
         ret.put(PCapConstants.Fields.DST_PORT, pi.getTcpPacket().getDestination().getPort());

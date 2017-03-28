@@ -76,14 +76,14 @@ public class PCapProcessorTest {
         out.assertFieldExists(PROTOCOL.getName());
         out.assertFieldEquals(PROTOCOL.getName(), "6");
 
-        out.assertFieldExists(SRC_ADDR.getName());
-        out.assertFieldEquals(SRC_ADDR.getName(), "192.168.10.226");
+        out.assertFieldExists(SRC_IP.getName());
+        out.assertFieldEquals(SRC_IP.getName(), "192.168.10.226");
         
         out.assertFieldExists(SRC_PORT.getName());
         out.assertFieldEquals(SRC_PORT.getName(), (int)19707);
         
-        out.assertFieldExists(DST_ADDR.getName());
-        out.assertFieldEquals(DST_ADDR.getName(), "192.168.11.12");
+        out.assertFieldExists(DST_IP.getName());
+        out.assertFieldEquals(DST_IP.getName(), "192.168.11.12");
         
         out.assertFieldExists(DST_PORT.getName());
         out.assertFieldEquals(DST_PORT.getName(), (int)23);
@@ -126,14 +126,14 @@ public class PCapProcessorTest {
         out.assertFieldExists(PROTOCOL.getName());
         out.assertFieldEquals(PROTOCOL.getName(), "6");
 
-        out.assertFieldExists(SRC_ADDR.getName());
-        out.assertFieldEquals(SRC_ADDR.getName(), "192.168.10.226");
+        out.assertFieldExists(SRC_IP.getName());
+        out.assertFieldEquals(SRC_IP.getName(), "192.168.10.226");
 
         out.assertFieldExists(SRC_PORT.getName());
         out.assertFieldEquals(SRC_PORT.getName(), (int)19707);
 
-        out.assertFieldExists(DST_ADDR.getName());
-        out.assertFieldEquals(DST_ADDR.getName(), "192.168.11.12");
+        out.assertFieldExists(DST_IP.getName());
+        out.assertFieldEquals(DST_IP.getName(), "192.168.11.12");
 
         out.assertFieldExists(DST_PORT.getName());
         out.assertFieldEquals(DST_PORT.getName(), (int)23);

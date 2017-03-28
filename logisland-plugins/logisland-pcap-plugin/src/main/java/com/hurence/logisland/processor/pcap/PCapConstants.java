@@ -24,14 +24,14 @@ import java.util.Map;
 public class PCapConstants {
 
   public static enum Fields {
-     SRC_ADDR("ip_src_addr")
-    ,SRC_PORT("ip_src_port")
-    ,DST_ADDR("ip_dst_addr")
-    ,DST_PORT("ip_dst_port")
+     SRC_IP("src_ip")
+    ,SRC_PORT("src_port")
+    ,DST_IP("dest_ip")
+    ,DST_PORT("dest_port")
     ,PROTOCOL("protocol")
     ,TIMESTAMP("timestamp")
-    ,ORIGINAL("original_string")
-    ,INCLUDES_REVERSE_TRAFFIC("includes_reverse_traffic")
+    //,ORIGINAL("original_string")
+    //,INCLUDES_REVERSE_TRAFFIC("includes_reverse_traffic")
     ;
 
     private String name;
