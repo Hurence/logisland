@@ -1,0 +1,150 @@
+<md-content layout-padding layout="column">
+    <form ng-submit="$event.preventDefault()">
+        <md-autocomplete id="Auto" ng-disabled="$ctrl.isDisabled" ng-enter="$ctrl.pressEnter()" md-no-cache="$ctrl.noCache" md-selected-item="$ctrl.selectedItem" md-search-text-change="$ctrl.searchTextChange($ctrl.searchText)"
+            md-search-text="$ctrl.searchText" md-selected-item-change="$ctrl.selectedItemChange(item)" md-items="item in $ctrl.querySearch($ctrl.searchText)"
+            md-item-text="item.name" md-min-length="0" placeholder="Pick one or more topics" md-menu-class="autocomplete-custom-template">
+            <md-item-template>
+                <span class="item-title">
+            <md-icon md-svg-icon="database"></md-icon>
+            <span> {{item.name}} </span>
+                </span>
+                <span class="item-metadata">
+            <span>
+              <strong>{{item.partitions}}</strong> partitions
+            </span>
+                <span>
+              <strong>{{item.replicationFactor}}</strong> replicas
+            </span>
+                </span>
+            </md-item-template>
+        </md-autocomplete>
+    </form>
+</md-content>
+
+
+<md-list class="topcisList">
+
+    <md-list-item ng-repeat="topic in $ctrl.filteredTopics">
+        <md-card>
+            <md-card-title>
+                <md-card-title-text>
+
+
+                    <span class="md-headline">{{ topic.name }} (v{{ topic.version }}) </span>
+                    <span class="md-subhead">
+                                    <p>
+                            {{ topic.documentation }} (last modified on {{ formatDate(topic.dateModified) }})
+                        </p>
+
+                                    </span>
+
+                </md-card-title-text>
+            </md-card-title>
+
+
+            <md-card-content>
+                <div layout="column" ng-cloak class="md-inline-form">
+
+                    <md-content layout-padding>
+                        <div>
+                            <form name="topicForm">
+
+
+                                <md-tabs md-dynamic-height md-border-bottom>
+
+
+                                    <!-- Topic configuration tab -->
+                                    <md-tab label="summary">
+                                        <md-content md-theme="docs-dark" layout-gt-sm="row" layout-padding>
+                                            <div>
+                                                <md-input-container>
+                                                    <label>Name</label>
+                                                    <input ng-model="topic.name">
+                                                </md-input-container>
+                                                <md-input-container>
+                                                    <label>Num partitions</label>
+                                                    <input ng-model="topic.partitions" type="number" step="any" min="1" max="4999">
+                                                </md-input-container>
+                                                <md-input-container>
+                                                    <label>Replication factor</label>
+                                                    <input ng-model="topic.replicationFactor" type="number" step="any" min="1" max="10">
+                                                </md-input-container>
+
+                                            </div>
+                                        </md-content>
+                                    </md-tab>
+                                    <!-- Topic configuration tab -->
+                                    <md-tab label="config">
+                                        <md-content class="md-padding">
+                                            <div layout-gt-xs="row">
+                                                <md-input-container class="md-block" flex-gt-xs>
+                                                    <label>Row key field</label>
+                                                    <input ng-model="topic.rowkeyField">
+                                                </md-input-container>
+                                                <md-input-container>
+                                                    <label>Record type field</label>
+                                                    <input ng-model="topic.recordTypeField">
+                                                </md-input-container>
+                                                <md-input-container>
+                                                    <label>Serializer</label>
+                                                    <md-select ng-model="topic.serializer">
+                                                        <md-option ng-value="serializer.id" ng-repeat="serializer in serializers">{{ serializer.name }}</md-option>
+                                                    </md-select>
+                                                </md-input-container>
+                                            </div>
+                                            <md-input-container class="md-block">
+                                                <label>Documentation</label>
+                                                <textarea ng-model="topic.documentation" md-maxlength="258" rows="2" md-select-on-focus></textarea>
+                                            </md-input-container>
+
+                                        </md-content>
+                                    </md-tab>
+
+
+                                    <!-- Topic configuration tab -->
+                                    <md-tab label="schema">
+                                        <md-content class="md-padding">
+
+                                            <div class="md-title" layout-gt-xs="row">
+                                                Key schema definition
+                                            </div>
+                                            <div layout-gt-xs="row">
+                                                <fieldtype-list selected="topic.keySchema"></fieldtype-list>
+                                            </div>
+                                            <div class="md-title" layout-gt-xs="row">
+                                                Value schema definition
+                                            </div>
+                                            <div layout-gt-xs="row">
+                                                <fieldtype-list selected="topic.valueSchema"></fieldtype-list>
+                                            </div>
+
+                                        </md-content>
+                                    </md-tab>
+                                </md-tabs>
+                            </form>
+                        </div>
+                    </md-content>
+
+
+
+                </div>
+
+
+
+            </md-card-content>
+            <md-card-actions layout="row" layout-align="start center">
+                <md-divider md-inset></md-divider>
+                <md-card-icon-actions>
+                    <md-button class="md-icon-button" ng-click="deleteTopic($index)" aria-label="Delete Topic">
+                        <md-icon md-svg-icon="delete"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" ng-click="saveTopic($index)" aria-label="Save Topic">
+                        <md-icon md-svg-icon="save"></md-icon>
+                    </md-button>
+                </md-card-icon-actions>
+                <md-button>Cancel</md-button>
+                <md-button>Export</md-button>
+            </md-card-actions>
+        </md-card>
+    </md-list-item>
+</md-list>

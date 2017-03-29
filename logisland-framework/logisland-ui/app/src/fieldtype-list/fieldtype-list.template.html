@@ -1,0 +1,31 @@
+<div ng-repeat="key in $ctrl.selected">
+    <div layout-gt-xs="row">
+        <md-input-container class="md-block" flex-gt-xs>
+            <input ng-model="key.name" aria-label="Key name">
+        </md-input-container>
+        <md-input-container>
+            <input ng-model="key.type" aria-label="Key type">
+        </md-input-container>
+
+        <md-input-container class="md-block">
+            <md-checkbox name="tos" ng-model="key.encrypted" required>
+                encrypted
+            </md-checkbox>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <md-checkbox name="tos" ng-model="key.persistent" required>
+                persistent
+            </md-checkbox>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <md-checkbox name="tos" ng-model="key.indexed" required>
+                indexed
+            </md-checkbox>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <md-checkbox name="tos" ng-model="key.optional" required>
+                optional
+            </md-checkbox>
+        </md-input-container>
+    </div>
+</div>

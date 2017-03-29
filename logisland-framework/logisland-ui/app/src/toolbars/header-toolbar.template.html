@@ -1,0 +1,88 @@
+<!--<md-toolbar ng-show="!showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="toggleSidenav('left')" hide-gt-md aria-label="Menu">
+            <ng-md-icon icon="menu"></ng-md-icon>menu
+          </md-button>
+          
+          <span flex></span>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <md-icon class="material-icons md-light md-48">search</md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+        
+      </md-toolbar>
+      <md-toolbar class="md-hue-1" ng-show="showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="showSearch = !showSearch" aria-label="Back">
+            <ng-md-icon icon="arrow_back"></ng-md-icon>
+          </md-button>
+          <h3 flex="10">
+            Back
+          </h3>
+          <md-input-container md-theme="input" flex>
+            <label>&nbsp;</label>
+            <input ng-model="search.who" placeholder="enter search">
+          </md-input-container>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+           <md-icon class="material-icons md-light md-48">search</md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+       
+      </md-toolbar>-->
+
+
+<!-- Header / Top bar -->
+
+
+
+
+<md-toolbar layout="row" layout-align="start top">
+
+
+  <div flex="20" class="md-toolbar-tools" layout="row" layout-align="start center">
+    <md-button class="menu md-icon-button" ng-click="app.toggleList('left')" aria-label="Show Job List">
+      <md-icon md-svg-icon="menu"></md-icon>
+    </md-button>
+    <h1>LogIsland</h1>
+
+
+  </div>
+
+
+  <!-- shortcuts speed dialog-->
+  <div flex>
+
+    <md-fab-speed-dial md-direction="down" class="md-fling md-fab-top-right" ng-class="{ 'md-hover-full': demo.hover }" ng-mouseenter="app.isFabOpen=true"
+      ng-mouseleave="app.isFabOpen=false" ng-cloak md-open="app.isFabOpen">
+      <md-fab-trigger>
+        <md-button class="md-fab">
+          <md-tooltip md-direction="left" md-visible="tooltipVisible">Menu</md-tooltip>
+          <md-icon md-svg-icon="menu" aria-label="menu"></md-icon>
+        </md-button>
+      </md-fab-trigger>
+      <md-fab-actions>
+        <md-button class="md-fab  md-mini" ng-click="app.addJob()">
+          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Job</md-tooltip>
+          <md-icon md-svg-icon="job"></md-icon>
+        </md-button>
+        </md-button>
+        <md-button class="md-fab md-mini" ng-click="app.addTopic()">
+          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Topic</md-tooltip>
+          <md-icon md-svg-icon="database"></md-icon>
+        </md-button>
+        <md-button class="md-fab  md-mini" href="{{ vm.serviceLocationProvider.getEsHost() + '/api/v0.1/values/' + vm.selected.esId + '?format=csv&pageSize=10000' }}">
+          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">export config</md-tooltip>
+          <md-icon md-svg-icon="export"></md-icon>
+        </md-button>
+
+      </md-fab-actions>
+    </md-fab-speed-dial>
+  </div>
+
+</md-toolbar>
