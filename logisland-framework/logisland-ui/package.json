@@ -16,6 +16,7 @@
       "angular-aria": "github:angular/bower-angular-aria@1.6.2",
       "angular-datetime": "npm:angular-datetime@^3.0.4",
       "angular-material": "github:angular/bower-material@master",
+      "angular-material-icons": "npm:angular-material-icons@^0.7.1",
       "angular-messages": "github:angular/bower-angular-messages@1.6.2",
       "angular-resource": "github:angular/bower-angular-resource@1.6.2",
       "angular-route": "github:angular/bower-angular-route@1.6.2",

@@ -1,30 +1,78 @@
-[ng-cloak] {
-  display: none;
+.fabSpeedDialdemoBasicUsage .text-capitalize {
+  text-transform: capitalize; }
+
+.fabSpeedDialdemoBasicUsage .md-fab:hover, .fabSpeedDialdemoBasicUsage .md-fab.md-focused {
+  background-color: #000 !important; }
+
+.fabSpeedDialdemoBasicUsage p.note {
+  font-size: 1.2rem; }
+
+.fabSpeedDialdemoBasicUsage .lock-size {
+  min-width: 300px;
+  min-height: 300px;
+  width: 300px;
+  height: 300px;
+  margin-left: auto;
+  margin-right: auto; }
+
+
+.autocomplete-custom-template li {
+  border-bottom: 1px solid #ccc;
+  height: auto;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: normal;
+}
+.autocomplete-custom-template li:last-child {
+  border-bottom-width: 0;
+}
+.autocomplete-custom-template .item-title,
+.autocomplete-custom-template .item-metadata {
+  display: block;
+  line-height: 2;
+}
+.autocomplete-custom-template .item-title md-icon {
+  height: 18px;
+  width: 18px;
+}
+/* -----
+SVG Icons - svgicons.sparkk.fr
+----- */
+
+.svg-icon {
+  width: 1em;
+  height: 1em;
+}
+
+.svg-icon path,
+.svg-icon polygon,
+.svg-icon rect {
+  fill: #4691f6;
+}
+
+.svg-icon circle {
+  stroke: #4691f6;
+  stroke-width: 1;
 }
 
 html, body {
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  height: 100%;
+  font-size:14px;
+  height:100%;
   margin: 0px;
   padding: 0px;
 }
 
-/* Toolbar area */
-
-.menu {
-  background-color: transparent;
-  border: none;
-  height: 38px;
-  margin: 16px;
-  width: 36px;
-}
-
 md-toolbar h1 {
-  margin: auto;
+  font-size: 1.250em;
+  font-weight: 400;
+  margin: auto
 }
 
-/* Sidenav area */
+md-toolbar .md-toolbar-tools h1 {
+  font-size: 1.250em;
+  font-weight: 400;  
+}
 
 md-list .md-button {
   color: inherit;
@@ -32,82 +80,22 @@ md-list .md-button {
   text-align: left;
   width: 100%;
 }
+  md-list .md-button.selected {
+    color: #03a9f4;
+  }
 
-md-list .md-button.selected {
-  color: #03a9f4;
-}
+  md-sidenav  md-list {
+    padding: 0px 0px 8px 0px;
+  }
 
-md-sidenav md-list {
-  padding: 0px 0px 8px 0px;
-}
-
- .md-select-placeholder {
-  margin-top:-16px;
-}
-
-/* Primary content area */
-
-#content {
-  overflow: hidden;
-}
-
-#content {
+#content  {
   padding-left: 40px;
   padding-right: 40px;
   padding-top: 5px;
 }
 
-#content .md-button.share {
-  background-color: transparent;
-  border: none;
-  width: 48px;
-  height: 48px;
-  margin: 8px auto 16px 0;
-  position: absolute;
-  top: 10px;
-  right: 25px;
-}
-
 #content md-icon.avatar {
   margin-top: 10px;
-}
-
-#content .md-button.share > md-icon {
-  fill: black;
-  width: 36px;
-  height: 36px;
-}
-
-md-button.menuBtn > md-icon {
-  fill: white;
-  width: 24px;
-  height: 24px;
-}
-
-#content .md-button.share:active > md-icon {
-  background-color: #dadada;
-  border-radius: 75%;
-  padding: 4px;
-  transition: all 100ms ease-out 30ms;
-}
-
-#content img {
-  display: block;
-  height: auto;
-  max-width: 500px;
-}
-
-/* Utils */
-
-.content-wrapper {
-  position: relative;
-}
-
-/* Typography support coming in 0.8.0 */
-
-md-toolbar h1 {
-  font-size: 1.250em;
-  font-weight: 400;
 }
 
 .avatar {
@@ -120,105 +108,31 @@ md-toolbar h1 {
   overflow: hidden;
   margin: 0px;
   vertical-align: middle;
-  zoom: 0.70;
+  zoom:0.70;
   transform: translateZ(0);
   -webkit-transform: scale(0.70);
-  -moz-transform: scale(0.70);
+  -moz-transform:scale(0.70);
 }
+/*
+.scrollable-nav-content {
+  position: absolute;
+  top: 136px;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  overflow: auto;
+}*/
 
-md-bottom-sheet md-icon {
-  margin-right: 20px;
+md-bottom-sheet  md-icon {
+  margin-right:20px;
 }
 
 span.name {
   font-weight: bold;
-  font-size: 1.1em;
-  padding-left: 5px;
+  font-size:1.1em;
+  padding-left:5px;
 }
 
-.li-menu {
-background-color: #00ff00;
-}
-
-.odd {
-  background-color: red;
-}
-
-.even {
-  background-color: orange;
-}
-
-#stream_list {
-    border-bottom: 1px solid black;
-}
-
-.listrowheader {
-    background-color: #d3d3d3;
-    font-weight: bold;
-    font-size: 120%;
-}
-
-.listrowheader td {
-    border-bottom: 1px solid black;
-}
-
-.listrow {
-    border: 1px solid black;
-    padding: 6px;
-    margin: 6px;
-}
-
-.listcell {
-    padding: 6px;
-    margin: 6px;
-}
-
-.list-bordered {
-    border: 1px solid black;
-}
-
-.fabSpeedDialdemoLI .text-capitalize {
-  text-transform: capitalize; }
-
-.fabSpeedDialdemoLI .md-fab:hover, .fabSpeedDialdemoBasicUsage .md-fab.md-focused {
-  background-color: #000 !important; }
-
-.fabSpeedDialdemoLI p.note {
-  font-size: 1.2rem; }
-
-.fabSpeedDialdemoLI .lock-size {
-  min-width: 300px;
-  min-height: 300px;
-  width: 300px;
-  height: 300px;
-  margin-left: auto;
-  margin-right: auto; }
-
-.noTransform {
-  text-transform: none;
-}
-
-.listheader {
-    border: 1px solid black;
-    background-color: grey;
-}
-
-.table-headers {
-    font-weight: bold;
-}
-
-.table-headers td {
-    text-align: center;
-}
-
-.table-content td {
-    text-align: center;
-}
-
-.borderedselected {
-    border: 1px solid black;
-}
-
-.table-content:hover {
-    background-color: #d3d3d3;
+.date-row {
+ margin: 16px 0px;
 }

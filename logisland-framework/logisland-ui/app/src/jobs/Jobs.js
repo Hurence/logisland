@@ -3,7 +3,6 @@ import JobsListSimple from 'src/jobs/components/list/JobsListSimple';
 import JobsList from 'src/jobs/components/list/JobsList';
 import ProcessorsList from 'src/jobs/components/list/ProcessorsList';
 import JobDetails from 'src/jobs/components/details/JobDetails';
-import TopicDetails from 'src/topics/components/details/TopicDetails';
 import StreamDetails from 'src/jobs/components/details/StreamDetails';
 import EditProcessor from 'src/jobs/components/details/EditProcessor';
 import EditRow from 'src/jobs/components/details/EditRow';
@@ -14,7 +13,7 @@ import ProcessorsDataService from 'src/jobs/services/ProcessorsDataService';
 import ListService from 'src/jobs/services/ListService';
 import AppSettings from 'src/jobs/services/AppSettings';
 
-import JobsController from 'src/jobs/JobsController';
+import JobsController from 'src/controllers/JobsController';
 
 // Define the Angular 'jobs' module
 export default angular.module('jobs', ['ngMaterial', 'ngResource', 'xeditable' ])
@@ -47,7 +46,6 @@ export default angular.module('jobs', ['ngMaterial', 'ngResource', 'xeditable' ]
   .component(JobsList.name, JobsList.config)
   .component(ProcessorsList.name, ProcessorsList.config)
   .component(JobDetails.name, JobDetails.config)
-  .component(TopicDetails.name, TopicDetails.config)
   .component(StreamDetails.name, StreamDetails.config)
   .component(EditProcessor.name, EditProcessor.config)
   .component(EditRow.name, EditRow.config)
