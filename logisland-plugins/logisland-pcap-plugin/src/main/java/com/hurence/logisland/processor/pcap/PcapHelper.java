@@ -199,42 +199,93 @@ public class PcapHelper {
 
     if(pi != null) {
 
-      /* Global Header Data : */
+      /* Global Header data : */
       ret.put(PCapConstants.Fields.TIMESTAMP, pi.getPacketTimeInNanos());
 
-      /* IP Header Data : */
+      /* IP Header data : */
       if (pi.getIpv4Packet() != null) {
-        ret.put(PCapConstants.Fields.PROTOCOL, pi.getIpv4Packet().getProtocol());
-        ret.put(PCapConstants.Fields.IPDATAGRAMTOTALLENGTH, pi.getIpv4Packet().getTotalLength());
-        ret.put(PCapConstants.Fields.IPFLAGS, pi.getIpv4Packet().getFlags());
-        ret.put(PCapConstants.Fields.IPFRAGMENTOFFSET, pi.getIpv4Packet().getFragmentOffset());
-        ret.put(PCapConstants.Fields.IPHEADERCHECKSUM, pi.getIpv4Packet().getHeaderChecksum());
-        ret.put(PCapConstants.Fields.INTERNETHEADERLENGTH, pi.getIpv4Packet().getIhl());
-        ret.put(PCapConstants.Fields.IPHEADERIDENTIFICATION, pi.getIpv4Packet().getId());
-        ret.put(PCapConstants.Fields.TIMETOLIVE, pi.getIpv4Packet().getTtl());
-        ret.put(PCapConstants.Fields.IPVERSION, pi.getIpv4Packet().getVersion());
+        /* IP Header's 1st 32-bits word : */
+        ret.put(PCapConstants.Fields.IP_VERSION, pi.getIpv4Packet().getVersion());
+        ret.put(PCapConstants.Fields.IP_INTERNETHEADERLENGTH, pi.getIpv4Packet().getIhl());
+        ret.put(PCapConstants.Fields.IP_TYPEOFSERVICE, pi.getIpv4Packet().getTos());
+        ret.put(PCapConstants.Fields.IP_DATAGRAMTOTALLENGTH, pi.getIpv4Packet().getTotalLength());
+
+        /* IP Headers's 2nd 32-bits word : */
+        ret.put(PCapConstants.Fields.IP_IDENTIFICATION, pi.getIpv4Packet().getId());
+        ret.put(PCapConstants.Fields.IP_FLAGS, pi.getIpv4Packet().getFlags());
+        ret.put(PCapConstants.Fields.IP_FRAGMENTOFFSET, pi.getIpv4Packet().getFragmentOffset());
+
+        /* IP Headers's 3rd 32-bits word : */
+        ret.put(PCapConstants.Fields.IP_TIMETOLIVE, pi.getIpv4Packet().getTtl());
+        ret.put(PCapConstants.Fields.IP_PROTOCOL, pi.getIpv4Packet().getProtocol());
+        ret.put(PCapConstants.Fields.IP_CHECKSUM, pi.getIpv4Packet().getHeaderChecksum());
+
+        /* IP Headers's 4th 32-bits word : */
+        if (pi.getIpv4Packet().getSourceAddress().getHostAddress() != null) {
+          ret.put(PCapConstants.Fields.IP_SRCIPADDRESS, pi.getIpv4Packet().getSourceAddress().getHostAddress());
+        }
+
+        /* IP Headers's 5th 32-bits word : */
+        if (pi.getIpv4Packet().getDestinationAddress().getHostAddress() != null) {
+          ret.put(PCapConstants.Fields.IP_DSTIPADDRESS, pi.getIpv4Packet().getDestinationAddress().getHostAddress());
+        }
+
+        /* IP Headers's following 32-bits word(s) : */
         if (pi.getIpv4Packet().getOptions() != null) {
-          ret.put(PCapConstants.Fields.IPHEADEROPTIONS, pi.getIpv4Packet().getOptions());
+          ret.put(PCapConstants.Fields.IP_OPTIONS, pi.getIpv4Packet().getOptions());
         }
         if (pi.getIpv4Packet().getPadding() != null) {
-          ret.put(PCapConstants.Fields.IPHEADERPADDING, pi.getIpv4Packet().getPadding());
+          ret.put(PCapConstants.Fields.IP_PADDING, pi.getIpv4Packet().getPadding());
         }
       }
 
-      /* TCP Header Data : */
+      /* TCP Header data : */
       if (pi.getTcpPacket() != null) {
-        if (pi.getTcpPacket().getSourceAddress() != null) {
-          ret.put(PCapConstants.Fields.SRC_IP, pi.getTcpPacket().getSourceAddress().getHostAddress());
-        }
+
+        /* TCP Header's 1st 32-bits word : */
         if (pi.getTcpPacket().getSource() != null) {
-          ret.put(PCapConstants.Fields.SRC_PORT, pi.getTcpPacket().getSource().getPort());
-        }
-        if (pi.getTcpPacket().getDestinationAddress() != null) {
-          ret.put(PCapConstants.Fields.DST_IP, pi.getTcpPacket().getDestinationAddress().getHostAddress());
+          ret.put(PCapConstants.Fields.TCP_SRCPORT, pi.getTcpPacket().getSource().getPort());
         }
         if (pi.getTcpPacket().getDestination() != null) {
-          ret.put(PCapConstants.Fields.DST_PORT, pi.getTcpPacket().getDestination().getPort());
+          ret.put(PCapConstants.Fields.TCP_DSTPORT, pi.getTcpPacket().getDestination().getPort());
         }
+
+        /* TCP Header's 2nd 32-bits word : */
+        ret.put(PCapConstants.Fields.TCP_SEQUENCENUMBER, pi.getTcpPacket().getSeq());
+
+        /* TCP Header's 3rd 32-bits word : */
+        ret.put(PCapConstants.Fields.TCP_ACKNOWLEDGMENTNUMBER, pi.getTcpPacket().getAck());
+
+        /* TCP Header's 4th 32-bits word : */
+        ret.put(PCapConstants.Fields.TCP_DATAOFFSET, pi.getTcpPacket().getDataOffset());
+        ret.put(PCapConstants.Fields.TCP_FLAGS, pi.getTcpPacket().getFlags());
+        ret.put(PCapConstants.Fields.TCP_WINDOWSIZE, pi.getTcpPacket().getWindow());
+
+        /* TCP Header's 5th 32-bits word : */
+        ret.put(PCapConstants.Fields.TCP_CHECKSUM, pi.getTcpPacket().getChecksum());
+        ret.put(PCapConstants.Fields.TCP_URGENTPOINTER, pi.getTcpPacket().getUrgentPointer());
+
+        /* TCP Headers's following 32-bits word(s) : */
+        if (pi.getTcpPacket().getOptions() != null) {
+            ret.put(PCapConstants.Fields.TCP_OPTIONS, pi.getTcpPacket().getOptions());
+        }
+        if (pi.getTcpPacket().getPadding() != null) {
+            ret.put(PCapConstants.Fields.TCP_PADDING, pi.getTcpPacket().getPadding());
+        }
+
+        /* TCP Headers's other computed information : */
+        if (pi.getTcpPacket().getSourceAddress() != null) {
+            ret.put(PCapConstants.Fields.TCP_COMPUTED_SRCIP, pi.getTcpPacket().getSourceAddress().getHostAddress());
+        }
+        if (pi.getTcpPacket().getDestinationAddress() != null) {
+            ret.put(PCapConstants.Fields.TCP_COMPUTED_DSTIP, pi.getTcpPacket().getDestinationAddress().getHostAddress());
+        }
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_SEGMENTTOTALLENGTH, pi.getTcpPacket().getTotalLength());
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_DATALENGTH, pi.getTcpPacket().getDataLength());
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_REASSEMBLEDLENGTH, pi.getTcpPacket().getReassembledLength());
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_TRAFFICDIRECTION, pi.getTcpPacket().getDirection());
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVEACK, pi.getTcpPacket().getRelativeAck());
+        ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVESEQ, pi.getTcpPacket().getRelativeSeq());
       }
     }
     return ret;
@@ -294,9 +345,6 @@ public class PcapHelper {
           tcpPacket = TcpPacket.parse(ipv4Packet);
 
         }
-
-        int totalLengthOfIPDatagram = ipv4Packet.getTotalLength();
-
 
         if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
 
