@@ -27,7 +27,6 @@ import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.agent.rest.api.impl.ProcessorsApiServiceImpl;
 
 import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
-import static org.junit.Assert.assertEquals;
 
 //import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -75,12 +74,15 @@ public class PCapProcessorTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "network_packet");
 
+        out.assertFieldExists(FieldDictionary.PROCESSOR_NAME);
+        out.assertFieldEquals(FieldDictionary.PROCESSOR_NAME, "ParsePCap");
+
         //////////////////////////
         // Global Header Fields //
         //////////////////////////
 
-        out.assertFieldExists(TIMESTAMP.getName());
-        out.assertFieldEquals(TIMESTAMP.getName(), 1338882754996790000L);
+        out.assertFieldExists(PCKT_TIMESTAMP_IN_NANOS.getName());
+        out.assertFieldEquals(PCKT_TIMESTAMP_IN_NANOS.getName(), 1338882754996790000L);
 
         //////////////////////
         // IP Header Fields //
@@ -88,36 +90,36 @@ public class PCapProcessorTest {
 
         /* IP Header's 1st 32-bits word : */
         out.assertFieldExists(IP_VERSION.getName());
-        out.assertFieldEquals(IP_VERSION.getName(), "4");
+        out.assertFieldEquals(IP_VERSION.getName(), 4);
 
         out.assertFieldExists(IP_INTERNETHEADERLENGTH.getName());
-        out.assertFieldEquals(IP_INTERNETHEADERLENGTH.getName(), "20");
+        out.assertFieldEquals(IP_INTERNETHEADERLENGTH.getName(), 20);
 
         out.assertFieldExists(IP_TYPEOFSERVICE.getName());
-        out.assertFieldEquals(IP_TYPEOFSERVICE.getName(), "0");
+        out.assertFieldEquals(IP_TYPEOFSERVICE.getName(), 0);
 
         out.assertFieldExists(IP_DATAGRAMTOTALLENGTH.getName());
-        out.assertFieldEquals(IP_DATAGRAMTOTALLENGTH.getName(), "40");
+        out.assertFieldEquals(IP_DATAGRAMTOTALLENGTH.getName(), 40);
 
         /* IP Header's 2nd 32-bits word : */
         out.assertFieldExists(IP_IDENTIFICATION.getName());
-        out.assertFieldEquals(IP_IDENTIFICATION.getName(), "19110");
+        out.assertFieldEquals(IP_IDENTIFICATION.getName(), 19110);
 
         out.assertFieldExists(IP_FLAGS.getName());
-        out.assertFieldEquals(IP_FLAGS.getName(), "2");
+        out.assertFieldEquals(IP_FLAGS.getName(), 2);
 
         out.assertFieldExists(IP_FRAGMENTOFFSET.getName());
-        out.assertFieldEquals(IP_FRAGMENTOFFSET.getName(), "0");
+        out.assertFieldEquals(IP_FRAGMENTOFFSET.getName(), 0);
 
         /* IP Header's 3rd 32-bits word : */
         out.assertFieldExists(IP_TIMETOLIVE.getName());
-        out.assertFieldEquals(IP_TIMETOLIVE.getName(), "64");
+        out.assertFieldEquals(IP_TIMETOLIVE.getName(), 64);
 
         out.assertFieldExists(IP_PROTOCOL.getName());
-        out.assertFieldEquals(IP_PROTOCOL.getName(), "6");
+        out.assertFieldEquals(IP_PROTOCOL.getName(), 6);
 
         out.assertFieldExists(IP_CHECKSUM.getName());
-        out.assertFieldEquals(IP_CHECKSUM.getName(), "22763");
+        out.assertFieldEquals(IP_CHECKSUM.getName(), 22763);
 
         /* IP Header's 4th 32-bits word : */
         out.assertFieldExists(IP_SRCIPADDRESS.getName());
@@ -138,35 +140,35 @@ public class PCapProcessorTest {
 
         /* TCP Header's 1st 32-bits word : */
         out.assertFieldExists(TCP_SRCPORT.getName());
-        out.assertFieldEquals(TCP_SRCPORT.getName(), (int)19707);
+        out.assertFieldEquals(TCP_SRCPORT.getName(), 19707);
 
         out.assertFieldExists(TCP_DSTPORT.getName());
-        out.assertFieldEquals(TCP_DSTPORT.getName(), (int)23);
+        out.assertFieldEquals(TCP_DSTPORT.getName(), 23);
 
         /* TCP Header's 2nd 32-bits word : */
         out.assertFieldExists(TCP_SEQUENCENUMBER.getName());
-        out.assertFieldEquals(TCP_SEQUENCENUMBER.getName(), (int)-406128552);
+        out.assertFieldEquals(TCP_SEQUENCENUMBER.getName(), -406128552);
 
         /* TCP Header's 3rd 32-bits word : */
         out.assertFieldExists(TCP_ACKNOWLEDGMENTNUMBER.getName());
-        out.assertFieldEquals(TCP_ACKNOWLEDGMENTNUMBER.getName(), "638797278");
+        out.assertFieldEquals(TCP_ACKNOWLEDGMENTNUMBER.getName(), 638797278);
 
         /* TCP Header's 4th 32-bits word : */
         out.assertFieldExists(TCP_DATAOFFSET.getName());
-        out.assertFieldEquals(TCP_DATAOFFSET.getName(), "5");
+        out.assertFieldEquals(TCP_DATAOFFSET.getName(), 5);
 
         out.assertFieldExists(TCP_FLAGS.getName());
-        out.assertFieldEquals(TCP_FLAGS.getName(), "17");
+        out.assertFieldEquals(TCP_FLAGS.getName(), 17);
 
         out.assertFieldExists(TCP_WINDOWSIZE.getName());
-        out.assertFieldEquals(TCP_WINDOWSIZE.getName(), "16583");
+        out.assertFieldEquals(TCP_WINDOWSIZE.getName(), 16583);
 
         /* TCP Header's 5th 32-bits word : */
         out.assertFieldExists(TCP_CHECKSUM.getName());
-        out.assertFieldEquals(TCP_CHECKSUM.getName(), "16038");
+        out.assertFieldEquals(TCP_CHECKSUM.getName(), 16038);
 
         out.assertFieldExists(TCP_URGENTPOINTER.getName());
-        out.assertFieldEquals(TCP_URGENTPOINTER.getName(), "0");
+        out.assertFieldEquals(TCP_URGENTPOINTER.getName(), 0);
 
         /* TCP Headers's following 32-bits word(s) : */
         out.assertFieldNotExists(TCP_OPTIONS.getName());
@@ -182,15 +184,15 @@ public class PCapProcessorTest {
 
         /* TODO */
         out.assertFieldExists(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName());
-        out.assertFieldEquals(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName(), "20");
+        out.assertFieldEquals(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName(), 20);
 
         /* TODO */
         out.assertFieldExists(TCP_COMPUTED_DATALENGTH.getName());
-        out.assertFieldEquals(TCP_COMPUTED_DATALENGTH.getName(), "0");
+        out.assertFieldEquals(TCP_COMPUTED_DATALENGTH.getName(), 0);
 
         /* TODO */
         out.assertFieldExists(TCP_COMPUTED_REASSEMBLEDLENGTH.getName());
-        out.assertFieldEquals(TCP_COMPUTED_REASSEMBLEDLENGTH.getName(), "0");
+        out.assertFieldEquals(TCP_COMPUTED_REASSEMBLEDLENGTH.getName(), 0);
 
         /* TODO */
         //out.assertFieldExists(TCP_COMPUTED_TRAFFICDIRECTION.getName());
@@ -198,11 +200,11 @@ public class PCapProcessorTest {
 
         /* TODO */
         out.assertFieldExists(TCP_COMPUTED_RELATIVEACK.getName());
-        out.assertFieldEquals(TCP_COMPUTED_RELATIVEACK.getName(), "0");
+        out.assertFieldEquals(TCP_COMPUTED_RELATIVEACK.getName(), 0);
 
         /* TODO */
         out.assertFieldExists(TCP_COMPUTED_RELATIVESEQ.getName());
-        out.assertFieldEquals(TCP_COMPUTED_RELATIVESEQ.getName(), "0");
+        out.assertFieldEquals(TCP_COMPUTED_RELATIVESEQ.getName(), 0);
     }
 
 

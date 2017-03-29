@@ -94,28 +94,28 @@ public class ParsePCap extends AbstractProcessor {
         records.forEach(record -> {
             try {
                 final Long pcapTimestamp = record.getField(FieldDictionary.RECORD_KEY).asLong();
-                //final byte[] value = record.getField(FieldDictionary.RECORD_VALUE).asBytes();
                 final byte[] packetRawValue = (byte[])record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
 
                 List<PacketInfo> info = PcapHelper.toPacketInfo(packetRawValue);
                 for (PacketInfo pi : info) {
-                    StandardRecord outputRecord = new StandardRecord();
-
                     EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
 
+                    StandardRecord outputRecord = new StandardRecord();
+
                     outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
+                    outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
+                    outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
+                    outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
 
                     for (PCapConstants.Fields field : PCapConstants.Fields.values()) {
                         if (result.containsKey(field)) {
-                            outputRecord.setField(new Field(field.getName(), FieldType.STRING, result.get(field)));
+                            outputRecord.setField(new Field(field.getName(), field.getFieldType(), result.get(field)));
                         }
                     }
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
                     outputRecords.add(outputRecord);
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
 
             }

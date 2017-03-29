@@ -18,6 +18,8 @@
 
 package com.hurence.logisland.processor.pcap;
 
+import com.hurence.logisland.record.FieldType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,10 +28,10 @@ public class PCapConstants {
   public static enum Fields {
 
     ////////////////////////
-    // Global Header data //
+    // Packet Header data //
     ////////////////////////
 
-    TIMESTAMP("timestamp")
+    PCKT_TIMESTAMP_IN_NANOS("packet_timestamp_in_nanos", FieldType.LONG)
 
 
     ////////////////////
@@ -37,30 +39,30 @@ public class PCapConstants {
     ////////////////////
 
     /* IP Header's 1st 32-bits word : */
-    , IP_VERSION("ip_version")                                        /*  4 bits */
-    , IP_INTERNETHEADERLENGTH("ip_internet_header_length")            /*  4 bits */
-    , IP_TYPEOFSERVICE("ip_type_of_service")                          /*  8 bits */
-    , IP_DATAGRAMTOTALLENGTH("ip_datagram_total_length")              /* 16 bits */
+    , IP_VERSION("ip_version", FieldType.INT)                                        /*  4 bits */
+    , IP_INTERNETHEADERLENGTH("ip_internet_header_length", FieldType.INT)            /*  4 bits */
+    , IP_TYPEOFSERVICE("ip_type_of_service", FieldType.INT)                          /*  8 bits */
+    , IP_DATAGRAMTOTALLENGTH("ip_datagram_total_length", FieldType.INT)              /* 16 bits */
 
     /* IP Headers's 2nd 32-bits word : */
-    , IP_IDENTIFICATION("ip_identification")                          /* 16 bits */
-    , IP_FLAGS("ip_flags")                                            /*  3 bits */
-    , IP_FRAGMENTOFFSET("ip_fragment_offset")                         /* 13 bits */
+    , IP_IDENTIFICATION("ip_identification", FieldType.INT)                          /* 16 bits */
+    , IP_FLAGS("ip_flags", FieldType.INT)                                            /*  3 bits */
+    , IP_FRAGMENTOFFSET("ip_fragment_offset", FieldType.INT)                         /* 13 bits */
 
     /* IP Headers's 3rd 32-bits word : */
-    , IP_TIMETOLIVE("ip_time_to_live")                                /*  8 bits */
-    , IP_PROTOCOL("protocol")                                         /*  8 bits */
-    , IP_CHECKSUM("ip_checksum")                                      /* 16 bits */
+    , IP_TIMETOLIVE("ip_time_to_live", FieldType.INT)                                /*  8 bits */
+    , IP_PROTOCOL("protocol", FieldType.INT)                                         /*  8 bits */
+    , IP_CHECKSUM("ip_checksum", FieldType.INT)                                      /* 16 bits */
 
     /* IP Headers's 4th 32-bits word : */
-    , IP_SRCIPADDRESS("src_ip")                                       /* 32 bits */
+    , IP_SRCIPADDRESS("src_ip", FieldType.STRING)                                    /* 32 bits */
 
     /* IP Headers's 5th 32-bits word : */
-    , IP_DSTIPADDRESS("dst_ip")                                       /* 32 bits */
+    , IP_DSTIPADDRESS("dst_ip", FieldType.STRING)                                    /* 32 bits */
 
     /* IP Headers's following 32-bits word(s) : */
-    , IP_OPTIONS("ip_options")                                        /* variable size */
-    , IP_PADDING("ip_padding")                                        /* variable size */
+    , IP_OPTIONS("ip_options", FieldType.BYTES)                                      /* variable size */
+    , IP_PADDING("ip_padding", FieldType.BYTES)                                      /* variable size */
 
 
 
@@ -69,37 +71,37 @@ public class PCapConstants {
     /////////////////////
 
     /* TCP Header's 1st 32-bits word : */
-    , TCP_SRCPORT("src_port")                                         /* 16 bits */
-    , TCP_DSTPORT("dest_port")                                        /* 16 bits */
+    , TCP_SRCPORT("src_port", FieldType.INT)                                         /* 16 bits */
+    , TCP_DSTPORT("dest_port", FieldType.INT)                                        /* 16 bits */
 
     /* TCP Header's 2nd 32-bits word : */
-    , TCP_SEQUENCENUMBER("tcp_sequence_number")                       /* 32 bits */
+    , TCP_SEQUENCENUMBER("tcp_sequence_number", FieldType.INT)                       /* 32 bits */
 
     /* TCP Header's 3rd 32-bits word : */
-    , TCP_ACKNOWLEDGMENTNUMBER("tcp_acknowledgment_number")           /* 32 bits */
+    , TCP_ACKNOWLEDGMENTNUMBER("tcp_acknowledgment_number", FieldType.INT)           /* 32 bits */
 
     /* TCP Header's 4th 32-bits word : */
-    , TCP_DATAOFFSET("tcp_data_offset")                               /*  4 bits */
-    , TCP_FLAGS("tcp_flags")                                          /*  9 bits */
-    , TCP_WINDOWSIZE("tcp_window_size")                               /* 16 bits */
+    , TCP_DATAOFFSET("tcp_data_offset", FieldType.INT)                               /*  4 bits */
+    , TCP_FLAGS("tcp_flags", FieldType.INT)                                          /*  9 bits */
+    , TCP_WINDOWSIZE("tcp_window_size", FieldType.INT)                               /* 16 bits */
 
     /* TCP Header's 5th 32-bits word : */
-    , TCP_CHECKSUM("tcp_checksum")                                    /* 16 bits */
-    , TCP_URGENTPOINTER("tcp_urgent_pointer")                         /* 16 bits */
+    , TCP_CHECKSUM("tcp_checksum", FieldType.INT)                                    /* 16 bits */
+    , TCP_URGENTPOINTER("tcp_urgent_pointer", FieldType.INT)                         /* 16 bits */
 
     /* TCP Headers's following 32-bits word(s) : */
-    , TCP_OPTIONS("tcp_options")                                      /* variable size */
-    , TCP_PADDING("tcp_padding")                                      /* variable size */
+    , TCP_OPTIONS("tcp_options", FieldType.BYTES)                                    /* variable size */
+    , TCP_PADDING("tcp_padding", FieldType.BYTES)                                    /* variable size */
 
     /* TCP Headers's other computed information : */
-    , TCP_COMPUTED_SRCIP("tcp_computed_src_ip")
-    , TCP_COMPUTED_DSTIP("tcp_computed_dest_ip")
-    , TCP_COMPUTED_SEGMENTTOTALLENGTH("tcp_computed_segment_total_length")
-    , TCP_COMPUTED_DATALENGTH("tcp_computed_data_length")
-    , TCP_COMPUTED_REASSEMBLEDLENGTH("tcp_computed_reassembled_length")
-    , TCP_COMPUTED_TRAFFICDIRECTION("tcp_computed_traffic_direction")
-    , TCP_COMPUTED_RELATIVEACK("tcp_computed_relative_ack")
-    , TCP_COMPUTED_RELATIVESEQ("tcp_computed_relative_seq")
+    , TCP_COMPUTED_SRCIP("tcp_computed_src_ip", FieldType.STRING)
+    , TCP_COMPUTED_DSTIP("tcp_computed_dest_ip", FieldType.STRING)
+    , TCP_COMPUTED_SEGMENTTOTALLENGTH("tcp_computed_segment_total_length", FieldType.INT)
+    , TCP_COMPUTED_DATALENGTH("tcp_computed_data_length", FieldType.INT)
+    , TCP_COMPUTED_REASSEMBLEDLENGTH("tcp_computed_reassembled_length", FieldType.INT)
+    , TCP_COMPUTED_TRAFFICDIRECTION("tcp_computed_traffic_direction", FieldType.STRING)
+    , TCP_COMPUTED_RELATIVEACK("tcp_computed_relative_ack", FieldType.INT)
+    , TCP_COMPUTED_RELATIVESEQ("tcp_computed_relative_seq", FieldType.INT)
 
     ////////////
     // Others //
@@ -111,13 +113,24 @@ public class PCapConstants {
 
 
     private String name;
+    private FieldType fieldType;
 
     Fields(String name) {
       this.name = name;
+      this.fieldType = FieldType.STRING;
+    }
+
+    Fields(String name, FieldType fieldType) {
+      this.name = name;
+      this.fieldType = fieldType;
     }
 
     public String getName() {
       return name;
+    }
+
+    public FieldType getFieldType() {
+      return fieldType;
     }
 
   }

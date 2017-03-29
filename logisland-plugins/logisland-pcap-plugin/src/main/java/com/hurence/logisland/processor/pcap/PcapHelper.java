@@ -200,7 +200,7 @@ public class PcapHelper {
     if(pi != null) {
 
       /* Global Header data : */
-      ret.put(PCapConstants.Fields.TIMESTAMP, pi.getPacketTimeInNanos());
+      ret.put(PCapConstants.Fields.PCKT_TIMESTAMP_IN_NANOS, pi.getPacketTimeInNanos());
 
       /* IP Header data : */
       if (pi.getIpv4Packet() != null) {
@@ -283,7 +283,9 @@ public class PcapHelper {
         ret.put(PCapConstants.Fields.TCP_COMPUTED_SEGMENTTOTALLENGTH, pi.getTcpPacket().getTotalLength());
         ret.put(PCapConstants.Fields.TCP_COMPUTED_DATALENGTH, pi.getTcpPacket().getDataLength());
         ret.put(PCapConstants.Fields.TCP_COMPUTED_REASSEMBLEDLENGTH, pi.getTcpPacket().getReassembledLength());
-        ret.put(PCapConstants.Fields.TCP_COMPUTED_TRAFFICDIRECTION, pi.getTcpPacket().getDirection());
+        if (pi.getTcpPacket().getDirection() != null) {
+            ret.put(PCapConstants.Fields.TCP_COMPUTED_TRAFFICDIRECTION, pi.getTcpPacket().getDirection().name());
+        }
         ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVEACK, pi.getTcpPacket().getRelativeAck());
         ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVESEQ, pi.getTcpPacket().getRelativeSeq());
       }
