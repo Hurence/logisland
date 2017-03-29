@@ -40,35 +40,6 @@ public class PCapProcessorTest {
     
     private static Logger logger = LoggerFactory.getLogger(PCapProcessorTest.class);
 
-    
-    @Test
-    public void testSmallPCapRecordProcessing() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.assertValid();
-        Record record = new StandardRecord("pcap_event");
-
-        System.out.println(System.getProperty("user.dir"));
-        try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
-            record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
-            record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        testRunner.enqueue(record);
-        testRunner.clearQueues();
-        testRunner.run();
-
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(4);
-
-        MockRecord out = testRunner.getOutputRecords().get(0);
-
-        testSampleRecord(out);
-    }
-
     private void testSampleRecord(MockRecord out) {
         /* Standard Fields : */
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
@@ -178,7 +149,7 @@ public class PCapProcessorTest {
         /* TCP Headers's other computed information : */
         out.assertFieldExists(TCP_COMPUTED_SRCIP.getName());
         out.assertFieldEquals(TCP_COMPUTED_SRCIP.getName(), "192.168.10.226");
-        
+
         out.assertFieldExists(TCP_COMPUTED_DSTIP.getName());
         out.assertFieldEquals(TCP_COMPUTED_DSTIP.getName(), "192.168.11.12");
 
@@ -207,10 +178,36 @@ public class PCapProcessorTest {
         out.assertFieldEquals(TCP_COMPUTED_RELATIVESEQ.getName(), 0);
     }
 
+    @Test
+    public void testSmallPCapRecord() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
+        testRunner.assertValid();
+        Record record = new StandardRecord("pcap_event");
 
+        System.out.println(System.getProperty("user.dir"));
+        try {
+            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
+            record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
+            record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(4);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        testSampleRecord(out);
+    }
 
     @Test
-    public void testTwoSmallPCapRecordsProcessing() {
+    public void testTwoSmallPCapRecords() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record1 = new StandardRecord("pcap_event");
@@ -240,7 +237,7 @@ public class PCapProcessorTest {
     }
 
     @Test
-    public void testMediumPCapRecordProcessing() {
+    public void testMediumPCapRecord() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
@@ -262,5 +259,37 @@ public class PCapProcessorTest {
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(14261);
 
+    }
+
+    @Test
+    public void testDummyPCapRecord() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
+        testRunner.assertValid();
+        Record record = new StandardRecord("pcap_event");
+
+        System.out.println(System.getProperty("user.dir"));
+        byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/hurence_lake.pcap");
+        try {
+            record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
+            record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        out.assertFieldExists(FieldDictionary.RECORD_KEY);
+        out.assertFieldEquals(FieldDictionary.RECORD_KEY, 1338882754996790000L);
+
+        out.assertFieldExists(FieldDictionary.RECORD_VALUE);
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, pcapbytes);
     }
 }

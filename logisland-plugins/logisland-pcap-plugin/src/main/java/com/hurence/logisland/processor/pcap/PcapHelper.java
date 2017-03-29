@@ -22,6 +22,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.ExceptionUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.krakenapps.pcap.decoder.ethernet.EthernetType;
@@ -198,8 +199,10 @@ public class PcapHelper {
     EnumMap<PCapConstants.Fields, Object> ret = new EnumMap(PCapConstants.Fields.class);
 
     if(pi != null) {
-
       /* Global Header data : */
+      ret.put(PCapConstants.Fields.GLOBAL_MAGICNUMBER, pi.getGlobalHeader().getMagicNumber());
+
+      /* Packet Header data : */
       ret.put(PCapConstants.Fields.PCKT_TIMESTAMP_IN_NANOS, pi.getPacketTimeInNanos());
 
       /* IP Header data : */
@@ -293,7 +296,7 @@ public class PcapHelper {
     return ret;
   }
 
-  public static List<PacketInfo> toPacketInfo(byte[] packet) throws IOException {
+  public static List<PacketInfo> toPacketInfo(byte[] packet) throws IOException, InvalidPCapFileException {
     return toPacketInfo(ETHERNET_DECODER.get(), packet);
   }
 
@@ -315,62 +318,67 @@ public class PcapHelper {
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public static List<PacketInfo> toPacketInfo(LogIslandEthernetDecoder decoder, byte[] pcap) throws IOException {
+  public static List<PacketInfo> toPacketInfo(LogIslandEthernetDecoder decoder, byte[] pcap) throws IOException, InvalidPCapFileException {
     List<PacketInfo> packetInfoList = new ArrayList<>();
 
     PcapByteInputStream pcapByteInputStream = new PcapByteInputStream(pcap);
 
     GlobalHeader globalHeader = pcapByteInputStream.getGlobalHeader();
-    while (true) {
-      try
 
-      {
-        PcapPacket packet = pcapByteInputStream.getPacket();
-        // int packetCounter = 0;
-        // PacketHeader packetHeader = null;
-        // Ipv4Packet ipv4Packet = null;
-        TcpPacket tcpPacket = null;
-        UdpPacket udpPacket = null;
-        // Buffer packetDataBuffer = null;
-        int sourcePort = 0;
-        int destinationPort = 0;
-
-        // LOG.trace("Got packet # " + ++packetCounter);
-
-        // LOG.trace(packet.getPacketData());
-        decoder.decode(packet);
-
-        PacketHeader packetHeader = packet.getPacketHeader();
-        Ipv4Packet ipv4Packet = Ipv4Packet.parse(packet.getPacketData());
-
-        if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
-          tcpPacket = TcpPacket.parse(ipv4Packet);
-
-        }
-
-        if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
-
-          Buffer packetDataBuffer = ipv4Packet.getData();
-          sourcePort = packetDataBuffer.getUnsignedShort();
-          destinationPort = packetDataBuffer.getUnsignedShort();
-
-          udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
-
-          udpPacket.setLength(packetDataBuffer.getUnsignedShort());
-          udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
-          packetDataBuffer.discardReadBytes();
-          udpPacket.setData(packetDataBuffer);
-        }
-
-        packetInfoList.add(new PacketInfo(globalHeader, packetHeader, packet,
-            ipv4Packet, tcpPacket, udpPacket));
-      } catch (NegativeArraySizeException ignored) {
-        logger.debug("Ignorable exception while parsing packet.", ignored);
-      } catch (EOFException eof) { // $codepro.audit.disable logExceptions
-        // Ignore exception and break
-        break;
-      }
+    if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1)
+    {
+        throw new InvalidPCapFileException("Unable to parse the global header magic number");
     }
+    while (true) {
+        try
+        {
+            PcapPacket packet = pcapByteInputStream.getPacket();
+            // int packetCounter = 0;
+            // PacketHeader packetHeader = null;
+            // Ipv4Packet ipv4Packet = null;
+            TcpPacket tcpPacket = null;
+            UdpPacket udpPacket = null;
+            // Buffer packetDataBuffer = null;
+            int sourcePort = 0;
+            int destinationPort = 0;
+
+            // LOG.trace("Got packet # " + ++packetCounter);
+
+            // LOG.trace(packet.getPacketData());
+            decoder.decode(packet);
+
+            PacketHeader packetHeader = packet.getPacketHeader();
+            Ipv4Packet ipv4Packet = Ipv4Packet.parse(packet.getPacketData());
+
+            if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
+                tcpPacket = TcpPacket.parse(ipv4Packet);
+
+            }
+
+            if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
+
+                Buffer packetDataBuffer = ipv4Packet.getData();
+                sourcePort = packetDataBuffer.getUnsignedShort();
+                destinationPort = packetDataBuffer.getUnsignedShort();
+
+                udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
+
+                udpPacket.setLength(packetDataBuffer.getUnsignedShort());
+                udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
+                packetDataBuffer.discardReadBytes();
+                udpPacket.setData(packetDataBuffer);
+            }
+
+            packetInfoList.add(new PacketInfo(globalHeader, packetHeader, packet,
+                    ipv4Packet, tcpPacket, udpPacket));
+        } catch (NegativeArraySizeException ignored) {
+            logger.debug("Ignorable exception while parsing packet.", ignored);
+        } catch (EOFException eof) { // $codepro.audit.disable logExceptions
+            // Ignore exception and break
+            break;
+        }
+    }
+
     return packetInfoList;
   }
 

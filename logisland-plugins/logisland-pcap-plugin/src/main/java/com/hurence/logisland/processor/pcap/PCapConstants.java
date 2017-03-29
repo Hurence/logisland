@@ -28,10 +28,17 @@ public class PCapConstants {
   public static enum Fields {
 
     ////////////////////////
+    // Global Header data //
+    ////////////////////////
+
+    GLOBAL_MAGICNUMBER("global_magic", FieldType.LONG)
+
+
+    ////////////////////////
     // Packet Header data //
     ////////////////////////
 
-    PCKT_TIMESTAMP_IN_NANOS("packet_timestamp_in_nanos", FieldType.LONG)
+    ,PCKT_TIMESTAMP_IN_NANOS("packet_timestamp_in_nanos", FieldType.LONG)
 
 
     ////////////////////

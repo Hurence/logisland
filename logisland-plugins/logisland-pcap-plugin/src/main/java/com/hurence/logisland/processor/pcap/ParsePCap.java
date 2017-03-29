@@ -94,32 +94,42 @@ public class ParsePCap extends AbstractProcessor {
         records.forEach(record -> {
             try {
                 final Long pcapTimestamp = record.getField(FieldDictionary.RECORD_KEY).asLong();
-                final byte[] packetRawValue = (byte[])record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
+                final byte[] packetRawValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
 
-                List<PacketInfo> info = PcapHelper.toPacketInfo(packetRawValue);
-                for (PacketInfo pi : info) {
-                    EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
+                try {
+                    List<PacketInfo> info = PcapHelper.toPacketInfo(packetRawValue);
 
-                    StandardRecord outputRecord = new StandardRecord();
+                    for (PacketInfo pi : info) {
+                        EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
 
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
-                    outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
+                        StandardRecord outputRecord = new StandardRecord();
 
-                    for (PCapConstants.Fields field : PCapConstants.Fields.values()) {
-                        if (result.containsKey(field)) {
-                            outputRecord.setField(new Field(field.getName(), field.getFieldType(), result.get(field)));
+                        outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
+                        outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
+                        outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
+                        outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
+
+                        for (PCapConstants.Fields field : PCapConstants.Fields.values()) {
+                            if (result.containsKey(field)) {
+                                outputRecord.setField(new Field(field.getName(), field.getFieldType(), result.get(field)));
+                            }
                         }
+                        outputRecords.add(outputRecord);
                     }
+                } catch (InvalidPCapFileException e) {
+                    StandardRecord outputRecord = new StandardRecord();
+                    outputRecord.addError(ProcessError.INVALID_PCAP_FILE_ERROR.getName(), e.getMessage());
+                    outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
+                    outputRecord.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.BYTES, packetRawValue));
                     outputRecords.add(outputRecord);
+                } finally {
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
 
             }
-
         });
         return outputRecords;
     }
