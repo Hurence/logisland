@@ -1,7 +1,7 @@
 
-export default ['AppSettings', '$http', '$q', '$resource', JobsDataService];
+export default ['AppSettings', '$http', '$q', '$resource', JobDataService];
 
-function JobsDataService(AppSettings, $http, $q, $resource) {
+function JobDataService(AppSettings, $http, $q, $resource) {
 
     var jobs = null;
 

@@ -1,8 +1,8 @@
 
 export default {
-  name : 'processorsList',
+  name : 'processorList',
   config : {
     bindings         : {  processors: '<', selected : '<', addProcessor : '&onSelected' },
-    templateUrl      : 'src/jobs/components/list/ProcessorsList.html'
+    templateUrl      : 'src/processor-list/processor-list.template.html'
   }
 };

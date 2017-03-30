@@ -4,9 +4,9 @@ export default {
   config : {
     bindings         : { jobs: '<', mode: '<', selected : '<', showDetails : '&onSelected' },
     templateUrl      : 'src/jobs/components/list/JobsListSimple.html',
-    controller       : [ 'JobsDataService', '$log', '$scope', JobsListController ]
+    controller       : [ 'JobDataService', '$log', '$scope', JobsListController ]
   }
 };
 
-function JobsListController(JobsDataService, $log, $scope) {
+function JobsListController(JobDataService, $log, $scope) {
 }

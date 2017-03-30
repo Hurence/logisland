@@ -4,13 +4,13 @@ export default {
   config : {
     bindings         : {  selected: '<' },
     templateUrl      : 'src/jobs/components/details/StreamDetails.html',
-    controller       : [ 'ListService', 'ProcessorsDataService', '$log', '$scope', '$rootScope', '$mdDialog', StreamDetailsController ]}
+    controller       : [ 'ListService', 'ProcessorDataService', '$log', '$scope', '$rootScope', '$mdDialog', StreamDetailsController ]}
 };
 
-function StreamDetailsController(ListService, ProcessorsDataService, $log, $scope, $rootScope, $mdDialog) {
+function StreamDetailsController(ListService, ProcessorDataService, $log, $scope, $rootScope, $mdDialog) {
     var vm = $scope;
 
-    vm.stdProcessors = ProcessorsDataService.getAllProcessors();
+    vm.stdProcessors = ProcessorDataService.getAllProcessors();
     vm.selectedStrProcessor = vm.processors;
     vm.selectStdProcessor = selectStdProcessor;
 

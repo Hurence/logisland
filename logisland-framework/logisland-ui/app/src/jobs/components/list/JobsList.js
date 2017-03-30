@@ -4,11 +4,11 @@ export default {
   config : {
     bindings         : { jobs: '<', mode: '<', selected : '<', showDetails : '&onSelected' },
     templateUrl      : 'src/jobs/components/list/JobsList.html',
-    controller       : [ 'JobsDataService', '$log', '$scope', JobsListController ]
+    controller       : [ 'JobDataService', '$log', '$scope', JobsListController ]
   }
 };
 
-function JobsListController(JobsDataService, $log, $scope) {
+function JobsListController(JobDataService, $log, $scope) {
     var vm = $scope;
     var self = this;
 
@@ -29,28 +29,28 @@ function JobsListController(JobsDataService, $log, $scope) {
 
     function startJob(index) {
         var job = self.filteredJobs[index];
-        JobsDataService.start({id: job.name}, function(updatedJob, getResponseHeaders) {
+        JobDataService.start({id: job.name}, function(updatedJob, getResponseHeaders) {
             self.filteredJobs[index] = updatedJob;
         });
     }
 
     function restartJob(index) {
         var job = self.filteredJobs[index];
-        JobsDataService.restart({id: job.name}, function(updatedJob, getResponseHeaders) {
+        JobDataService.restart({id: job.name}, function(updatedJob, getResponseHeaders) {
             self.filteredJobs[index] = updatedJob;
         });
     }
 
     function pauseJob(index) {
         var job = self.filteredJobs[index];
-        JobsDataService.pause({id: job.name}, function(updatedJob, getResponseHeaders) {
+        JobDataService.pause({id: job.name}, function(updatedJob, getResponseHeaders) {
             self.filteredJobs[index] = updatedJob;
         });
     }
 
     function shutdownJob(index) {
         var job = self.filteredJobs[index];
-        JobsDataService.shutdown({id: job.name}, function(updatedJob, getResponseHeaders) {
+        JobDataService.shutdown({id: job.name}, function(updatedJob, getResponseHeaders) {
             self.filteredJobs[index] = updatedJob;
         });
     }

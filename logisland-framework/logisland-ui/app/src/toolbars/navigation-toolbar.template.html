@@ -7,24 +7,17 @@
                 <md-icon md-svg-icon="database"></md-icon>
                 Topics
             </md-button>
-            <md-divider></md-divider>
+            
 
-
-            <md-subheader class="md-no-sticky">
+            <md-button ui-sref="jobs" ui-sref-active="active" ng-click="app.toggleList('left')">
                 <md-icon md-svg-icon="job"></md-icon>
-                <span ng-click="expandJobs = !expandJobs">Jobs</span>
-                <md-icon ng-show="expandJobs" ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_down
-                </md-icon>
-                <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs" class="material-icons md-light md-48">keyboard_arrow_right
-                </md-icon>
-            </md-subheader>
-            <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs">
-                <a ui-sref="jobs.details" ui-sref-active="active" ng-click="app.selectedJob=job; app.toggleList('left')">{{ job.name }}</a>
-            </md-list-item>
-            <md-divider></md-divider>
+                Jobs
+            </md-button>
+            
+<md-divider></md-divider>
 
 
-            <md-button ui-sref="topics" ui-sref-active="active" ng-click="app.toggleList('left')">
+            <md-button ui-sref="alerts" ui-sref-active="active" ng-click="app.toggleList('left')">
                 <md-icon md-svg-icon="alert"></md-icon>
                 Alerts
             </md-button>
@@ -36,6 +29,7 @@
                 <md-icon md-svg-icon="flash"></md-icon>
                 Errors
             </md-button>
+            <md-divider></md-divider>
             <md-button ui-sref="settings" ui-sref-active="active" ng-click="app.toggleList('left')">
                 <md-icon md-svg-icon="settings"></md-icon>
                 Settings

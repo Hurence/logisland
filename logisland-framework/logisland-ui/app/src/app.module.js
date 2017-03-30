@@ -10,7 +10,7 @@ import 'angular-ui-router';
 import 'angular-xeditable';
 
 import AppController from 'src/app.controller';
-import Jobs from 'src/jobs/Jobs';
+import Jobs from 'src/job-list/job-list.module';
 import Topics from 'src/topic-list/topic-list.module';
 import NavigationToolbar from 'src/toolbars/navigation-toolbar.component';
 import HeaderToolbar from 'src/toolbars/header-toolbar.component';
@@ -25,6 +25,7 @@ export default angular
             .icon("add", "./assets/svg/round-add-button.svg", 12)
             .icon("close", "./assets/svg/close-button.svg", 12)
             .icon("delete", "./assets/svg/delete.svg", 24)
+            .icon("up", "./assets/svg/up-arrow.svg", 12)
             .icon("down", "./assets/svg/down-arrow.svg", 12)
             .icon("ellipsis", "./assets/svg/ellipsis.svg.svg", 12)
             .icon("menu", "./assets/svg/menu.svg", 24)
@@ -44,6 +45,8 @@ export default angular
             .icon("database", "./assets/svg/database.svg", 24)
             .icon("gauge", "./assets/svg/gauge.svg", 24)
             .icon("alert", "./assets/svg/lightbulb.svg", 24)
+            .icon("link", "./assets/svg/link.svg", 30)
+            .icon("link-off", "./assets/svg/link-off.svg", 24)
             .icon("flash", "./assets/svg/flash.svg", 24);
 
         $mdThemingProvider.theme('default');
@@ -54,16 +57,10 @@ export default angular
 
         $stateProvider
             .state({
-                abstract: true,
                 name: 'jobs',
                 url: '/jobs',
-                template: '<ui-view/>'
+                template: '<job-list flex ></job-list>'
             })
-            //            .state({
-            //                name: 'jobs.list',
-            //                url: '/list',
-            //                template: '<jobs-list></jobs-list>'
-            //            })
             .state({
                 name: 'jobs.details',
                 url: '/details',
@@ -72,7 +69,7 @@ export default angular
             .state({
                 name: 'topics',
                 url: '/topics',
-                template: '<topics-list flex topics="app.topics"></topics-list>'
+                template: '<topic-list flex topics="app.topics"></topic-list>'
             });
 
     })

@@ -1,7 +1,7 @@
 
-export default ['AppSettings', '$resource', ProcessorsDataService];
+export default ['AppSettings', '$resource', ProcessorDataService];
 
-function ProcessorsDataService(AppSettings, $resource) {
+function ProcessorDataService(AppSettings, $resource) {
 
     var processors = [];
 

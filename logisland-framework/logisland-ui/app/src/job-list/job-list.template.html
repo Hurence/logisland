@@ -1,0 +1,76 @@
+<md-content layout-padding layout="column">
+    <form ng-submit="$event.preventDefault()">
+        <md-autocomplete id="Auto" ng-disabled="$ctrl.isDisabled" ng-enter="$ctrl.pressEnter()" md-no-cache="$ctrl.noCache" md-selected-item="$ctrl.selectedItem"
+            md-search-text-change="$ctrl.searchTextChange($ctrl.searchText)" md-search-text="$ctrl.searchText" md-selected-item-change="$ctrl.selectedItemChange(item)"
+            md-items="item in $ctrl.filteredJobs" md-item-text="item.name" md-min-length="0" placeholder="Pick one or more jobs"
+            md-menu-class="autocomplete-custom-template">
+            <md-item-template>
+                <span class="item-title">
+            <md-icon md-svg-icon="database"></md-icon>
+            <span> {{item.name}} </span>
+                </span>
+                <span class="item-metadata">
+            <span>
+              <strong>{{item.summary.status}}</strong>
+            </span>
+                <span>
+              <strong>{{item.summary.usedCores}}</strong> cores / <strong>{{item.summary.usedMemory}}</strong> Mb
+            </span>
+                </span>
+            </md-item-template>
+        </md-autocomplete>
+    </form>
+</md-content>
+
+<md-list class="jobList">
+
+    <md-list-item ng-repeat="job in $ctrl.filteredJobs">
+        <md-card>
+            <md-card-title>
+                <md-card-title-text>
+                    <span class="md-headline">
+                        <md-icon ng-show="job.summary.status == 'RUNNING'" md-svg-icon="link" ng-class="{size:'md-36',padding:6}"></md-icon>
+                        <md-icon ng-show="job.summary.status != 'RUNNING'" md-svg-icon="link-off"></md-icon>
+                        {{ job.name }}  
+                        </span>
+                    <span class="md-subhead">
+
+        <md-input-container class="md-block">
+            <label>Documentation</label>
+            <textarea ng-model="job.summary.documentation" md-maxlength="258" rows="2" md-select-on-focus></textarea>
+        </md-input-container>
+
+                     </span>
+                </md-card-title-text>
+            </md-card-title>
+
+            <md-card-actions layout="row" layout-align="start center" class=" md-whiteframe-4dp" style="background-color: lightsteelblue">
+
+                <md-card-icon-actions>
+                    <md-button class="md-icon-button" ng-click="deleteJob($event,job)" aria-label="Delete Job">
+                        <md-icon md-svg-icon="delete"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" ng-click="saveJob(job)" aria-label="Save Job">
+                        <md-icon md-svg-icon="save"></md-icon>
+                    </md-button>
+                    <md-button class="md-mini md-icon-button" ng-click="startJob(job)" ng-class="{ 'md-primary': job.summary.status != 'RUNNING' }"
+                        aria-label="Start Job" style="color: greenyellow;">
+                        <md-icon md-svg-icon="play"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" ng-click="pauseJob(job)" ng-class="{ 'md-primary': job.summary.status == 'RUNNING' }" aria-label="Pause Job">
+                        <md-icon md-svg-icon="pause"></md-icon>
+                    </md-button>
+                </md-card-icon-actions>
+                <md-button>Cancel</md-button>
+                <md-button>Export</md-button>
+            </md-card-actions>
+            <md-card-content>
+
+                <job-details flex selected="job"> </job-details>
+
+            </md-card-content>
+
+
+        </md-card>
+    </md-list-item>
+</md-list>

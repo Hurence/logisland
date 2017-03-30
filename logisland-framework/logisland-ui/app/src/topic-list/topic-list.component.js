@@ -1,29 +1,43 @@
 
 export default {
-    name: 'topicsList',
+    name: 'topicList',
     config: {
         bindings: { topics: '<', mode: '<', selected: '<', showDetails: '&onSelected' },
         templateUrl: 'src/topic-list/topic-list.template.html',
-        controller: ['TopicsDataService', '$log', '$scope', '$timeout', TopicsListController]
+        controller: ['TopicsDataService', '$log', '$scope', '$timeout', '$mdDialog', TopicListController]
     }
 };
 
-function TopicsListController(TopicsDataService, $log, $scope, $timeout) {
+function TopicListController(TopicsDataService, $log, $scope, $timeout, $mdDialog) {
     var vm = $scope;
     var self = this;
 
     self.selectedTopic = null;
-    self.topics = TopicsDataService.query(function () { (self.topics.length > 0) ? self.selectedTopic = self.topics[0] : self.selectedTopic = null; });
+    self.topics = refreshTopics();
     self.filteredTopics = self.topics;
 
     self.simulateQuery = false;
-    self.isDisabled    = false;
+    self.isDisabled = false;
 
-    self.querySearch   = querySearch;
+    self.querySearch = querySearch;
     self.selectedItemChange = selectedItemChange;
-    self.searchTextChange   = searchTextChange;
-
+    self.searchTextChange = searchTextChange;
+    self.searchText = '';
     self.pressEnter = pressEnter;
+    self.refreshTopics = refreshTopics;
+
+
+    function refreshTopics() {
+
+        return TopicsDataService.query(function(result){
+           if(result.length > 0){
+               $log.debug(result);
+           }
+        });
+
+
+    }
+
 
     // ******************************
     // Internal methods
@@ -33,56 +47,53 @@ function TopicsListController(TopicsDataService, $log, $scope, $timeout) {
      * Search for repos... use $timeout to simulate
      * remote dataservice call.
      */
-    function querySearch (query) {
-
+    function querySearch(query) {
+        self.searchText = query;
         self.filteredTopics = query
             ? self.topics.filter(createFilterFor(query))
             : self.topics;
 
-
-            return self.filteredTopics;
-
-
+        return self.filteredTopics;
     }
-
-
-function pressEnter(){
-    var autoChild = document.getElementById('Auto').firstElementChild;
-    var el = angular.element(autoChild).blur();
-}
-    function searchTextChange(text) {
-      $log.info('Text changed to ' + text);
-    }
-
-    function selectedItemChange(item) {
-        if(item != undefined){
- $log.info('Item changed to ' + JSON.stringify(item));
-      querySearch(item.name);
-        }
-     
-    }
-
-   
 
     /**
      * Create filter function for a query string
      */
     function createFilterFor(query) {
-      var lowercaseQuery = angular.lowercase(query);
+        var lowercaseQuery = angular.lowercase(query);
 
-      return function filterFn(item) {
-        return (item.name.search(lowercaseQuery) != -1) || (item.documentation.search(lowercaseQuery) != -1);
-      };
+        return function filterFn(item) {
+            return (angular.lowercase(item.name).search(lowercaseQuery) != -1) ||
+                (angular.lowercase(item.documentation).search(lowercaseQuery) != -1);
+        };
+
+    }
+
+    function pressEnter() {
+        var autoChild = document.getElementById('Auto').firstElementChild;
+        var el = angular.element(autoChild).blur();
+        querySearch(self.searchText);
+    }
+    function searchTextChange(text) {
+       querySearch(text);
+    }
+
+    function selectedItemChange(item) {
+        if (item != undefined) {
+            $log.info('Item changed to ' + JSON.stringify(item));
+            querySearch(item.name);
+        }
 
     }
 
 
-    self.selectedTopic = null;
+
+
+
+
 
     vm.formatDate = formatDate;
-    vm.addTopic = addTopic;
     vm.deleteTopic = deleteTopic;
-    vm.selectTopic = selectTopic;
 
     vm.serializers = [
         { id: 'none', name: 'none' },
@@ -91,8 +102,8 @@ function pressEnter(){
     ];
     vm.selectedSerializer = { id: 'com.hurence.logisland.serializer.KryoSerializer', name: 'kryo' };
 
-     vm.formatDate = formatDate;
-    vm.saveTopic  = saveTopic;
+    vm.formatDate = formatDate;
+    vm.saveTopic = saveTopic;
     vm.convertToJson = convertToJson;
     vm.convertToString = convertToString;
 
@@ -105,6 +116,7 @@ function pressEnter(){
     function saveTopic(topic) {
         $log.debug("Saving topic");
         TopicsDataService.save(topic);
+        self.topics = refreshTopics();
     }
 
     function convertToJson(val) {
@@ -116,36 +128,36 @@ function pressEnter(){
         return JSON.stringify(val);
     }
 
-    function addTopic() {
-        self.topics[self.topics.length] = DEFAULT_TOPIC_VALUES;
-        self.selectedTopic = self.topics[self.topics.length - 1];
+
+
+    function deleteTopic(ev, topic) {
+
+        // Appending dialog to document.body to cover sidenav in docs app
+        var confirm = $mdDialog.confirm()
+            .title('Would you like to delete topic ' + topic.name + '?')
+            .textContent('The topic will be definitively removed from Kafka with all its messages. \n' +
+            'If this topic is being processed by any stream a crash might occur.')
+            .ariaLabel('confirm delete')
+            .targetEvent(ev)
+            .ok('Delete')
+            .cancel('cancel');
+
+        $mdDialog.show(confirm).then(function () {
+            $log.debug("Deleting topic " + topic.name);
+            TopicsDataService.delete({ id: topic.name }, function () {
+                $log.debug("deleted");
+                self.searchText = '';
+                self.topics = refreshTopics();
+            });
+        }, function () {
+            $scope.status = 'You decided to keep your debt.';
+        });
+
+
+
+        //      self.topics.splice(index, 1);
     }
 
-    function deleteTopic(index) {
-        self.topics.splice(index, 1);
-    }
 
-    function selectTopic(topic) {
-        $log.debug("topic selected: " + JSON.stringify(topic));
-        self.selectedTopic = topic;
-    }
 
-    var DEFAULT_TOPIC_VALUES = {
-        name: "topicName",
-        partitions: 1,
-        replicationFactor: 1,
-        documentation: "describe here the content of the topic",
-        serializer: "com.hurence.logisland.serializer.KryoSerializer",
-        businessTimeField: "record_time",
-        rowkeyField: "record_id",
-        recordTypeField: "record_type",
-        keySchema: [
-            { name: "key1", encrypted: false, indexed: true, persistent: true, optional: true, type: "STRING" },
-            { name: "key2", encrypted: false, indexed: true, persistent: true, optional: true, type: "STRING" }
-        ],
-        valueSchema: [
-            { name: "value1", encrypted: false, indexed: true, persistent: true, optional: true, type: "STRING" },
-            { name: "value2", encrypted: false, indexed: true, persistent: true, optional: true, type: "STRING" }
-        ]
-    };
 }

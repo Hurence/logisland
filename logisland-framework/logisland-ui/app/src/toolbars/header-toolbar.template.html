@@ -57,9 +57,8 @@
 
   <!-- shortcuts speed dialog-->
   <div flex>
-
     <md-fab-speed-dial md-direction="down" class="md-fling md-fab-top-right" ng-class="{ 'md-hover-full': demo.hover }" ng-mouseenter="app.isFabOpen=true"
-      ng-mouseleave="app.isFabOpen=false" ng-cloak md-open="app.isFabOpen">
+      ng-mouseleave="app.isFabOpen=false" md-open="app.isFabOpen">
       <md-fab-trigger>
         <md-button class="md-fab">
           <md-tooltip md-direction="left" md-visible="tooltipVisible">Menu</md-tooltip>
@@ -67,15 +66,15 @@
         </md-button>
       </md-fab-trigger>
       <md-fab-actions>
-        <md-button class="md-fab  md-mini" ng-click="app.addJob()">
-          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Job</md-tooltip>
-          <md-icon md-svg-icon="job"></md-icon>
-        </md-button>
-        </md-button>
-        <md-button class="md-fab md-mini" ng-click="app.addTopic()">
+        <md-button class="md-fab md-mini" ng-click="$ctrl.addTopic()">
           <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Topic</md-tooltip>
           <md-icon md-svg-icon="database"></md-icon>
         </md-button>
+        <md-button class="md-fab  md-mini" ng-click="$ctrl.addJob()">
+          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Job</md-tooltip>
+          <md-icon md-svg-icon="job"></md-icon>
+        </md-button>
+
         <md-button class="md-fab  md-mini" href="{{ vm.serviceLocationProvider.getEsHost() + '/api/v0.1/values/' + vm.selected.esId + '?format=csv&pageSize=10000' }}">
           <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">export config</md-tooltip>
           <md-icon md-svg-icon="export"></md-icon>

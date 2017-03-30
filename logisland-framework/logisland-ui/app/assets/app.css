@@ -1,3 +1,40 @@
+.whiteframedemoDirectiveInterpolation {
+  /* For breakpoint `-xs` */
+  /* For breakpoint `-sm` */
+  /* For breakpoint `-md` */
+  /* For breakpoint `-gt-md` */ }
+  .whiteframedemoDirectiveInterpolation md-whiteframe, .whiteframedemoDirectiveInterpolation div.padded {
+    background: #fff;
+    height: 100px; }
+  .whiteframedemoDirectiveInterpolation md-whiteframe:focus, .whiteframedemoDirectiveInterpolation div.padded:focus {
+    outline: none; }
+  .whiteframedemoDirectiveInterpolation .layout-margin div.padded {
+    margin: 16px 8px; }
+  @media (max-width: 599px) {
+    .whiteframedemoDirectiveInterpolation md-whiteframe, .whiteframedemoDirectiveInterpolation div.padded {
+      margin: 7px;
+      height: 50px;
+      background-color: #c8e4fa; }
+    .whiteframedemoDirectiveInterpolation md-whiteframe > span, .whiteframedemoDirectiveInterpolation div.padded > span {
+      font-size: 0.4em; } }
+  @media (min-width: 600px) and (max-width: 959px) {
+    .whiteframedemoDirectiveInterpolation md-whiteframe, .whiteframedemoDirectiveInterpolation div.padded {
+      height: 75px; }
+    .whiteframedemoDirectiveInterpolation md-whiteframe > span, .whiteframedemoDirectiveInterpolation div.padded > span {
+      font-size: 0.6em; } }
+  @media (min-width: 960px) and (max-width: 1279px) {
+    .whiteframedemoDirectiveInterpolation md-whiteframe, .whiteframedemoDirectiveInterpolation div.padded {
+      height: 90px;
+      background-color: #fcddde; }
+    .whiteframedemoDirectiveInterpolation md-whiteframe > span, .whiteframedemoDirectiveInterpolation div.padded > span {
+      font-size: 0.9em; } }
+  @media (min-width: 1280px) {
+    .whiteframedemoDirectiveInterpolation md-whiteframe, .whiteframedemoDirectiveInterpolation div.padded {
+      height: 100px;
+      background-color: #F2FCE2; }
+    .whiteframedemoDirectiveInterpolation md-whiteframe > span, .whiteframedemoDirectiveInterpolation div.padded > span {
+      font-size: 1.0em; } }
+      
 .fabSpeedDialdemoBasicUsage .text-capitalize {
   text-transform: capitalize; }
 

@@ -1,7 +1,7 @@
 <md-content layout-padding layout="column">
     <form ng-submit="$event.preventDefault()">
         <md-autocomplete id="Auto" ng-disabled="$ctrl.isDisabled" ng-enter="$ctrl.pressEnter()" md-no-cache="$ctrl.noCache" md-selected-item="$ctrl.selectedItem" md-search-text-change="$ctrl.searchTextChange($ctrl.searchText)"
-            md-search-text="$ctrl.searchText" md-selected-item-change="$ctrl.selectedItemChange(item)" md-items="item in $ctrl.querySearch($ctrl.searchText)"
+            md-search-text="$ctrl.searchText" md-selected-item-change="$ctrl.selectedItemChange(item)" md-items="item in $ctrl.filteredTopics"
             md-item-text="item.name" md-min-length="0" placeholder="Pick one or more topics" md-menu-class="autocomplete-custom-template">
             <md-item-template>
                 <span class="item-title">
@@ -135,10 +135,10 @@
             <md-card-actions layout="row" layout-align="start center">
                 <md-divider md-inset></md-divider>
                 <md-card-icon-actions>
-                    <md-button class="md-icon-button" ng-click="deleteTopic($index)" aria-label="Delete Topic">
+                    <md-button class="md-icon-button" ng-click="deleteTopic($event,topic)" aria-label="Delete Topic">
                         <md-icon md-svg-icon="delete"></md-icon>
                     </md-button>
-                    <md-button class="md-icon-button" ng-click="saveTopic($index)" aria-label="Save Topic">
+                    <md-button class="md-icon-button" ng-click="saveTopic(topic)" aria-label="Save Topic">
                         <md-icon md-svg-icon="save"></md-icon>
                     </md-button>
                 </md-card-icon-actions>
