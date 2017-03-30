@@ -23,9 +23,17 @@ import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
 
+import org.krakenapps.pcap.decoder.ip.Ipv4Packet;
+import org.krakenapps.pcap.decoder.tcp.TcpPacket;
+import org.krakenapps.pcap.decoder.udp.UdpPacket;
+import org.krakenapps.pcap.file.GlobalHeader;
+import org.krakenapps.pcap.packet.PacketHeader;
+import org.krakenapps.pcap.packet.PcapPacket;
+import org.krakenapps.pcap.util.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.EnumMap;
+
+import static com.hurence.logisland.processor.pcap.PcapHelper.ETHERNET_DECODER;
 
 /**
  * PCap processor
@@ -80,10 +90,9 @@ public class ParsePCap extends AbstractProcessor {
     }
   
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records)
-    {
-        if (debug)
-        {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+
+        if (debug) {
             logger.debug("PCap Processor records input: " + records);
         }
 
@@ -92,45 +101,100 @@ public class ParsePCap extends AbstractProcessor {
          */
         List<Record> outputRecords = new ArrayList<>();
         records.forEach(record -> {
+            final Long pcapTimestamp = record.getField(FieldDictionary.RECORD_KEY).asLong();
+            final byte[] pcapRawValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
+
             try {
-                final Long pcapTimestamp = record.getField(FieldDictionary.RECORD_KEY).asLong();
-                final byte[] packetRawValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
+                LogIslandEthernetDecoder decoder = ETHERNET_DECODER.get();
 
-                try {
-                    List<PacketInfo> info = PcapHelper.toPacketInfo(packetRawValue);
+                PcapByteInputStream pcapByteInputStream = new PcapByteInputStream(pcapRawValue);
 
-                    for (PacketInfo pi : info) {
-                        EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
+                GlobalHeader globalHeader = pcapByteInputStream.getGlobalHeader();
+
+                if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1) {
+                    throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number");
+                }
+
+                while (true) {
+                    try {
+                        PcapPacket packet = pcapByteInputStream.getPacket();
+                        // int packetCounter = 0;
+                        // PacketHeader packetHeader = null;
+                        // Ipv4Packet ipv4Packet = null;
+                        TcpPacket tcpPacket = null;
+                        UdpPacket udpPacket = null;
+                        // Buffer packetDataBuffer = null;
+                        int sourcePort = 0;
+                        int destinationPort = 0;
+
+                        // LOG.trace("Got packet # " + ++packetCounter);
+                        // LOG.trace(packet.getPacketData());
+
+                        decoder.decode(packet);
+
+                        PacketHeader packetHeader = packet.getPacketHeader();
+                        Ipv4Packet ipv4Packet = Ipv4Packet.parse(packet.getPacketData());
 
                         StandardRecord outputRecord = new StandardRecord();
 
                         outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
                         outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
-                        outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packetRawValue));
+                        outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packet));
                         outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
+
+                        if (ipv4Packet.getVersion() == Constants.PROTOCOL_IPV4) {
+                            if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
+                                tcpPacket = TcpPacket.parse(ipv4Packet);
+
+                            } else if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
+
+                                Buffer packetDataBuffer = ipv4Packet.getData();
+                                sourcePort = packetDataBuffer.getUnsignedShort();
+                                destinationPort = packetDataBuffer.getUnsignedShort();
+
+                                udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
+
+                                udpPacket.setLength(packetDataBuffer.getUnsignedShort());
+                                udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
+                                packetDataBuffer.discardReadBytes();
+                                udpPacket.setData(packetDataBuffer);
+                            } else {
+                                outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far.");
+                            }
+                        } else {
+                            outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far.");
+                        }
+
+                        PacketInfo pi = new PacketInfo(globalHeader, packetHeader, packet, ipv4Packet, tcpPacket, udpPacket);
+                        EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
 
                         for (PCapConstants.Fields field : PCapConstants.Fields.values()) {
                             if (result.containsKey(field)) {
                                 outputRecord.setField(new Field(field.getName(), field.getFieldType(), result.get(field)));
                             }
                         }
-                        outputRecords.add(outputRecord);
-                    }
-                } catch (InvalidPCapFileException e) {
-                    StandardRecord outputRecord = new StandardRecord();
-                    outputRecord.addError(ProcessError.INVALID_PCAP_FILE_ERROR.getName(), e.getMessage());
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
-                    outputRecord.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.BYTES, packetRawValue));
-                    outputRecords.add(outputRecord);
-                } finally {
 
+                        outputRecords.add(outputRecord);
+
+                    } catch (NegativeArraySizeException ignored) {
+                        logger.debug("Ignorable exception while parsing packet.", ignored);
+                    } catch (EOFException eof) {
+                        // Ignore exception and break : the while loop is left when eof is reached
+                        break;
+                    }
                 }
+            }
+            catch (InvalidPCapFileException e) {
+                StandardRecord outputRecord = new StandardRecord();
+                outputRecord.addError(ProcessError.INVALID_FILE_FORMAT_ERROR.getName(), e.getMessage());
+                outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
+                outputRecord.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapRawValue));
+                outputRecords.add(outputRecord);
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-
             }
         });
+
         return outputRecords;
     }
     

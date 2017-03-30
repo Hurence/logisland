@@ -22,26 +22,18 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.ExceptionUtil;
-import org.apache.commons.lang3.NotImplementedException;
-
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.krakenapps.pcap.decoder.ethernet.EthernetType;
 import org.krakenapps.pcap.decoder.ip.IpDecoder;
-import org.krakenapps.pcap.decoder.ip.Ipv4Packet;
-import org.krakenapps.pcap.decoder.tcp.TcpPacket;
-import org.krakenapps.pcap.decoder.udp.UdpPacket;
 import org.krakenapps.pcap.file.GlobalHeader;
 import org.krakenapps.pcap.packet.PacketHeader;
 import org.krakenapps.pcap.packet.PcapPacket;
-import org.krakenapps.pcap.util.Buffer;
 import org.krakenapps.pcap.util.ByteOrderConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.ArrayList;
@@ -197,6 +189,7 @@ public class PcapHelper {
     System.arraycopy(packet, 0, ret, offset, packet.length);
     return ret;
   }
+
   public static EnumMap<PCapConstants.Fields, Object> packetToFields(PacketInfo pi) {
     EnumMap<PCapConstants.Fields, Object> ret = new EnumMap(PCapConstants.Fields.class);
 
@@ -218,7 +211,7 @@ public class PcapHelper {
       // IP Header data //
       ////////////////////
 
-      if (pi.getIpv4Packet() != null) {
+      if (pi.getIpv4Packet() != null && pi.getIpv4Packet().getVersion() == Constants.PROTOCOL_IPV4) {
         /* IP Header's 1st 32-bits word : */
         ret.put(PCapConstants.Fields.IP_VERSION, pi.getIpv4Packet().getVersion());
         ret.put(PCapConstants.Fields.IP_INTERNETHEADERLENGTH, pi.getIpv4Packet().getIhl());
@@ -331,90 +324,11 @@ public class PcapHelper {
     return ret;
   }
 
-  public static List<PacketInfo> toPacketInfo(byte[] packet) throws IOException, InvalidPCapFileException {
-    return toPacketInfo(ETHERNET_DECODER.get(), packet);
-  }
-
   public static LogIslandEthernetDecoder createDecoder() {
     LogIslandEthernetDecoder ethernetDecoder = new LogIslandEthernetDecoder();
     IpDecoder ipDecoder = new IpDecoder();
     ethernetDecoder.register(EthernetType.IPV4, ipDecoder);
     return ethernetDecoder;
-  }
-
-/**
-   * Parses the.
-   *
-   * @param pcap
-   *          the pcap
-   * @return the list * @throws IOException Signals that an I/O exception has
-   *         occurred. * @throws IOException * @throws IOException * @throws
-   *         IOException
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
-   */
-  public static List<PacketInfo> toPacketInfo(LogIslandEthernetDecoder decoder, byte[] pcap) throws IOException, InvalidPCapFileException {
-    List<PacketInfo> packetInfoList = new ArrayList<>();
-
-    PcapByteInputStream pcapByteInputStream = new PcapByteInputStream(pcap);
-
-    GlobalHeader globalHeader = pcapByteInputStream.getGlobalHeader();
-
-    if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1)
-    {
-        throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number");
-    }
-    while (true) {
-        try
-        {
-            PcapPacket packet = pcapByteInputStream.getPacket();
-            // int packetCounter = 0;
-            // PacketHeader packetHeader = null;
-            // Ipv4Packet ipv4Packet = null;
-            TcpPacket tcpPacket = null;
-            UdpPacket udpPacket = null;
-            // Buffer packetDataBuffer = null;
-            int sourcePort = 0;
-            int destinationPort = 0;
-
-            // LOG.trace("Got packet # " + ++packetCounter);
-
-            // LOG.trace(packet.getPacketData());
-            decoder.decode(packet);
-
-            PacketHeader packetHeader = packet.getPacketHeader();
-            Ipv4Packet ipv4Packet = Ipv4Packet.parse(packet.getPacketData());
-
-            if(ipv4Packet.getVersion() == Constants.PROTOCOL_IPV4) {
-                if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
-                    tcpPacket = TcpPacket.parse(ipv4Packet);
-
-                } else if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
-
-                    Buffer packetDataBuffer = ipv4Packet.getData();
-                    sourcePort = packetDataBuffer.getUnsignedShort();
-                    destinationPort = packetDataBuffer.getUnsignedShort();
-
-                    udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
-
-                    udpPacket.setLength(packetDataBuffer.getUnsignedShort());
-                    udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
-                    packetDataBuffer.discardReadBytes();
-                    udpPacket.setData(packetDataBuffer);
-                } else {
-                    logger.warn("Not Implemented protocol");
-                }
-            }
-            packetInfoList.add(new PacketInfo(globalHeader, packetHeader, packet, ipv4Packet, tcpPacket, udpPacket));
-        } catch (NegativeArraySizeException ignored) {
-            logger.debug("Ignorable exception while parsing packet.", ignored);
-        } catch (EOFException eof) {
-            // Ignore exception and break : the while loop is left when eof is reached
-            break;
-        }
-    }
-
-    return packetInfoList;
   }
 
   public static List<JSONObject> toJSON(List<PacketInfo> packetInfoList) {

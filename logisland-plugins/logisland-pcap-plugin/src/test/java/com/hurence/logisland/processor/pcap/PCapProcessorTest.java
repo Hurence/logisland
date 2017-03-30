@@ -42,167 +42,217 @@ public class PCapProcessorTest {
     
     private static Logger logger = LoggerFactory.getLogger(PCapProcessorTest.class);
 
-    private void testPCapFieldsValid(MockRecord out) {
+    private int testPCapFieldsValid(MockRecord out) {
 
-        /////////////////////
-        // Standard Fields //
-        /////////////////////
+        int numberOfValidatedFields = 0;
+
+        ////////////////////////////
+        // Standard Record Fields //
+        ////////////////////////////
 
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldTypeEquals(FieldDictionary.RECORD_TYPE, FieldType.STRING);
+        numberOfValidatedFields++;
 
         out.assertFieldExists(FieldDictionary.PROCESSOR_NAME);
         out.assertFieldTypeEquals(FieldDictionary.PROCESSOR_NAME, FieldType.STRING);
+        numberOfValidatedFields++;
 
         //////////////////////////
         // Global Header Fields //
         //////////////////////////
 
+        out.assertFieldExists(GLOBAL_MAGICNUMBER.getName());
+        out.assertFieldTypeEquals(GLOBAL_MAGICNUMBER.getName(), FieldType.LONG);
+        numberOfValidatedFields++;
+
+        ////////////////////////
+        // Packet Header data //
+        ////////////////////////
+
         out.assertFieldExists(PCKT_TIMESTAMP_IN_NANOS.getName());
         out.assertFieldTypeEquals(PCKT_TIMESTAMP_IN_NANOS.getName(), FieldType.LONG);
+        numberOfValidatedFields++;
 
-        //////////////////////
-        // IP Header Fields //
-        //////////////////////
+        /* Only IPv4 protocol is handled so far : */
+        if(out.getField(IP_PROTOCOL.getName()) != null && out.getField(IP_VERSION.getName()).asInteger().intValue() == PROTOCOL_IPV4) {
 
-        /* IP Header's 1st 32-bits word : */
-        out.assertFieldExists(IP_VERSION.getName());
-        out.assertFieldTypeEquals(IP_VERSION.getName(), FieldType.INT);
+            //////////////////////
+            // IP Header Fields //
+            //////////////////////
 
-        out.assertFieldExists(IP_INTERNETHEADERLENGTH.getName());
-        out.assertFieldTypeEquals(IP_INTERNETHEADERLENGTH.getName(), FieldType.INT);
+            /* IP Header's 1st 32-bits word : */
+            out.assertFieldExists(IP_VERSION.getName());
+            out.assertFieldTypeEquals(IP_VERSION.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_TYPEOFSERVICE.getName());
-        out.assertFieldTypeEquals(IP_TYPEOFSERVICE.getName(), FieldType.INT);
+            out.assertFieldExists(IP_INTERNETHEADERLENGTH.getName());
+            out.assertFieldTypeEquals(IP_INTERNETHEADERLENGTH.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_DATAGRAMTOTALLENGTH.getName());
-        out.assertFieldTypeEquals(IP_DATAGRAMTOTALLENGTH.getName(), FieldType.INT);
+            out.assertFieldExists(IP_TYPEOFSERVICE.getName());
+            out.assertFieldTypeEquals(IP_TYPEOFSERVICE.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        /* IP Header's 2nd 32-bits word : */
-        out.assertFieldExists(IP_IDENTIFICATION.getName());
-        out.assertFieldTypeEquals(IP_IDENTIFICATION.getName(), FieldType.INT);
+            out.assertFieldExists(IP_DATAGRAMTOTALLENGTH.getName());
+            out.assertFieldTypeEquals(IP_DATAGRAMTOTALLENGTH.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_FLAGS.getName());
-        out.assertFieldTypeEquals(IP_FLAGS.getName(), FieldType.INT);
+            /* IP Header's 2nd 32-bits word : */
+            out.assertFieldExists(IP_IDENTIFICATION.getName());
+            out.assertFieldTypeEquals(IP_IDENTIFICATION.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_FRAGMENTOFFSET.getName());
-        out.assertFieldTypeEquals(IP_FRAGMENTOFFSET.getName(), FieldType.INT);
+            out.assertFieldExists(IP_FLAGS.getName());
+            out.assertFieldTypeEquals(IP_FLAGS.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        /* IP Header's 3rd 32-bits word : */
-        out.assertFieldExists(IP_TIMETOLIVE.getName());
-        out.assertFieldTypeEquals(IP_TIMETOLIVE.getName(), FieldType.INT);
+            out.assertFieldExists(IP_FRAGMENTOFFSET.getName());
+            out.assertFieldTypeEquals(IP_FRAGMENTOFFSET.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_PROTOCOL.getName());
-        out.assertFieldTypeEquals(IP_PROTOCOL.getName(), FieldType.INT);
+            /* IP Header's 3rd 32-bits word : */
+            out.assertFieldExists(IP_TIMETOLIVE.getName());
+            out.assertFieldTypeEquals(IP_TIMETOLIVE.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        out.assertFieldExists(IP_CHECKSUM.getName());
-        out.assertFieldTypeEquals(IP_CHECKSUM.getName(), FieldType.INT);
+            out.assertFieldExists(IP_PROTOCOL.getName());
+            out.assertFieldTypeEquals(IP_PROTOCOL.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        /* IP Header's 4th 32-bits word : */
-        out.assertFieldExists(IP_SRCIPADDRESS.getName());
-        out.assertFieldTypeEquals(IP_SRCIPADDRESS.getName(), FieldType.STRING);
+            out.assertFieldExists(IP_CHECKSUM.getName());
+            out.assertFieldTypeEquals(IP_CHECKSUM.getName(), FieldType.INT);
+            numberOfValidatedFields++;
 
-        /* IP Header's 5th 32-bits word : */
-        out.assertFieldExists(IP_DSTIPADDRESS.getName());
-        out.assertFieldTypeEquals(IP_DSTIPADDRESS.getName(), FieldType.STRING);
+            /* IP Header's 4th 32-bits word : */
+            out.assertFieldExists(IP_SRCIPADDRESS.getName());
+            out.assertFieldTypeEquals(IP_SRCIPADDRESS.getName(), FieldType.STRING);
+            numberOfValidatedFields++;
+
+            /* IP Header's 5th 32-bits word : */
+            out.assertFieldExists(IP_DSTIPADDRESS.getName());
+            out.assertFieldTypeEquals(IP_DSTIPADDRESS.getName(), FieldType.STRING);
+            numberOfValidatedFields++;
+
+            /* Only TCP and UDP protocols are handled so far : */
+            if ((out.getField(IP_PROTOCOL.getName()).asInteger().intValue()) == PROTOCOL_TCP) {
+                ///////////////////////
+                // TCP Header Fields //
+                ///////////////////////
+
+                /* TCP Header's 1st 32-bits word : */
+                out.assertFieldExists(TCP_SRCPORT.getName());
+                out.assertFieldTypeEquals(TCP_SRCPORT.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                out.assertFieldExists(TCP_DSTPORT.getName());
+                out.assertFieldTypeEquals(TCP_DSTPORT.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                /* TCP Header's 2nd 32-bits word : */
+                out.assertFieldExists(TCP_SEQUENCENUMBER.getName());
+                out.assertFieldTypeEquals(TCP_SEQUENCENUMBER.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                /* TCP Header's 3rd 32-bits word : */
+                out.assertFieldExists(TCP_ACKNOWLEDGMENTNUMBER.getName());
+                out.assertFieldTypeEquals(TCP_ACKNOWLEDGMENTNUMBER.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                /* TCP Header's 4th 32-bits word : */
+                out.assertFieldExists(TCP_DATAOFFSET.getName());
+                out.assertFieldTypeEquals(TCP_DATAOFFSET.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                out.assertFieldExists(TCP_FLAGS.getName());
+                out.assertFieldTypeEquals(TCP_FLAGS.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                out.assertFieldExists(TCP_WINDOWSIZE.getName());
+                out.assertFieldTypeEquals(TCP_WINDOWSIZE.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                /* TCP Header's 5th 32-bits word : */
+                out.assertFieldExists(TCP_CHECKSUM.getName());
+                out.assertFieldTypeEquals(TCP_CHECKSUM.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                out.assertFieldExists(TCP_URGENTPOINTER.getName());
+                out.assertFieldTypeEquals(TCP_URGENTPOINTER.getName(), FieldType.INT);
+                numberOfValidatedFields++;
+
+                /* TCP Headers's following 32-bits word(s) : */
 
 
-        if((out.getField(IP_PROTOCOL.getName()).asInteger().intValue()) == PROTOCOL_TCP)
-        {
-            ///////////////////////
-            // TCP Header Fields //
-            ///////////////////////
+                /* TCP Headers's other computed information : */
+                out.assertFieldExists(TCP_COMPUTED_SRCIP.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_SRCIP.getName(), FieldType.STRING);
+                numberOfValidatedFields++;
 
-            /* TCP Header's 1st 32-bits word : */
-            out.assertFieldExists(TCP_SRCPORT.getName());
-            out.assertFieldTypeEquals(TCP_SRCPORT.getName(), FieldType.INT);
+                out.assertFieldExists(TCP_COMPUTED_DSTIP.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_DSTIP.getName(), FieldType.STRING);
+                numberOfValidatedFields++;
 
-            out.assertFieldExists(TCP_DSTPORT.getName());
-            out.assertFieldTypeEquals(TCP_DSTPORT.getName(), FieldType.INT);
+                /* TODO */
+                out.assertFieldExists(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Header's 2nd 32-bits word : */
-            out.assertFieldExists(TCP_SEQUENCENUMBER.getName());
-            out.assertFieldTypeEquals(TCP_SEQUENCENUMBER.getName(), FieldType.INT);
+                /* TODO */
+                out.assertFieldExists(TCP_COMPUTED_DATALENGTH.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_DATALENGTH.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Header's 3rd 32-bits word : */
-            out.assertFieldExists(TCP_ACKNOWLEDGMENTNUMBER.getName());
-            out.assertFieldTypeEquals(TCP_ACKNOWLEDGMENTNUMBER.getName(), FieldType.INT);
+                /* TODO */
+                out.assertFieldExists(TCP_COMPUTED_REASSEMBLEDLENGTH.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_REASSEMBLEDLENGTH.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Header's 4th 32-bits word : */
-            out.assertFieldExists(TCP_DATAOFFSET.getName());
-            out.assertFieldTypeEquals(TCP_DATAOFFSET.getName(), FieldType.INT);
+                /* TODO */
+                //out.assertFieldExists(TCP_COMPUTED_TRAFFICDIRECTION.getName());
+                //out.assertFieldTypeEquals(TCP_COMPUTED_TRAFFICDIRECTION.getName(),FieldType.STRING);
+                //numberOfValidatedFields++;
 
-            out.assertFieldExists(TCP_FLAGS.getName());
-            out.assertFieldTypeEquals(TCP_FLAGS.getName(), FieldType.INT);
+                /* TODO */
+                out.assertFieldExists(TCP_COMPUTED_RELATIVEACK.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_RELATIVEACK.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            out.assertFieldExists(TCP_WINDOWSIZE.getName());
-            out.assertFieldTypeEquals(TCP_WINDOWSIZE.getName(), FieldType.INT);
+                /* TODO */
+                out.assertFieldExists(TCP_COMPUTED_RELATIVESEQ.getName());
+                out.assertFieldTypeEquals(TCP_COMPUTED_RELATIVESEQ.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Header's 5th 32-bits word : */
-            out.assertFieldExists(TCP_CHECKSUM.getName());
-            out.assertFieldTypeEquals(TCP_CHECKSUM.getName(), FieldType.INT);
+            } else if ((out.getField(IP_PROTOCOL.getName()).asInteger().intValue()) == PROTOCOL_UDP) {
+                ///////////////////////
+                // UDP Header Fields //
+                ///////////////////////
 
-            out.assertFieldExists(TCP_URGENTPOINTER.getName());
-            out.assertFieldTypeEquals(TCP_URGENTPOINTER.getName(), FieldType.INT);
+                /* UDP Header's 1st 32-bits word : */
+                out.assertFieldExists(UDP_SRCPORT.getName());
+                out.assertFieldTypeEquals(UDP_SRCPORT.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Headers's following 32-bits word(s) : */
+                out.assertFieldExists(UDP_DSTPORT.getName());
+                out.assertFieldTypeEquals(UDP_DSTPORT.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
+                /* UDP Header's 2nd 32-bits word : */
+                out.assertFieldExists(UDP_SEGMENTTOTALLENGTH.getName());
+                out.assertFieldTypeEquals(UDP_SEGMENTTOTALLENGTH.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            /* TCP Headers's other computed information : */
-            out.assertFieldExists(TCP_COMPUTED_SRCIP.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_SRCIP.getName(), FieldType.STRING);
+                out.assertFieldExists(UDP_CHECKSUM.getName());
+                out.assertFieldTypeEquals(UDP_CHECKSUM.getName(), FieldType.INT);
+                numberOfValidatedFields++;
 
-            out.assertFieldExists(TCP_COMPUTED_DSTIP.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_DSTIP.getName(), FieldType.STRING);
-
-            /* TODO */
-            out.assertFieldExists(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_SEGMENTTOTALLENGTH.getName(), FieldType.INT);
-
-            /* TODO */
-            out.assertFieldExists(TCP_COMPUTED_DATALENGTH.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_DATALENGTH.getName(), FieldType.INT);
-
-            /* TODO */
-            out.assertFieldExists(TCP_COMPUTED_REASSEMBLEDLENGTH.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_REASSEMBLEDLENGTH.getName(), FieldType.INT);
-
-            /* TODO */
-            //out.assertFieldExists(TCP_COMPUTED_TRAFFICDIRECTION.getName());
-            //out.assertFieldTypeEquals(TCP_COMPUTED_TRAFFICDIRECTION.getName(),FieldType.STRING);
-
-            /* TODO */
-            out.assertFieldExists(TCP_COMPUTED_RELATIVEACK.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_RELATIVEACK.getName(), FieldType.INT);
-
-            /* TODO */
-            out.assertFieldExists(TCP_COMPUTED_RELATIVESEQ.getName());
-            out.assertFieldTypeEquals(TCP_COMPUTED_RELATIVESEQ.getName(), FieldType.INT);
-
-        } else if((out.getField(IP_PROTOCOL.getName()).asInteger().intValue()) == PROTOCOL_UDP)
-        {
-            ///////////////////////
-            // UDP Header Fields //
-            ///////////////////////
-
-            /* UDP Header's 1st 32-bits word : */
-            out.assertFieldExists(UDP_SRCPORT.getName());
-            out.assertFieldTypeEquals(UDP_SRCPORT.getName(), FieldType.INT);
-
-            out.assertFieldExists(UDP_DSTPORT.getName());
-            out.assertFieldTypeEquals(UDP_DSTPORT.getName(), FieldType.INT);
-
-            /* UDP Header's 2nd 32-bits word : */
-            out.assertFieldExists(UDP_SEGMENTTOTALLENGTH.getName());
-            out.assertFieldTypeEquals(UDP_SEGMENTTOTALLENGTH.getName(), FieldType.INT);
-
-            out.assertFieldExists(UDP_CHECKSUM.getName());
-            out.assertFieldTypeEquals(UDP_CHECKSUM.getName(), FieldType.INT);
+            }
         }
 
+        return numberOfValidatedFields ;
     }
 
-    private void testSampleTCPPacketRecord(MockRecord out) {
+    private void testSampleIPv4TCPPacketRecord(MockRecord out) {
 
         /////////////////////
         // Standard Fields //
@@ -314,7 +364,7 @@ public class PCapProcessorTest {
     }
 
     @Test
-    public void testSmallPCapRecord() {
+    public void testSmallSizePCapRecord() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
@@ -338,8 +388,9 @@ public class PCapProcessorTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
-        testPCapFieldsValid(out);
-        testSampleTCPPacketRecord(out);
+        int numberOfValidatedFields = testPCapFieldsValid(out);
+        Assert.assertEquals(32,numberOfValidatedFields);
+        testSampleIPv4TCPPacketRecord(out);
     }
 
     @Test
@@ -367,12 +418,12 @@ public class PCapProcessorTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
-        testPCapFieldsValid(out);
-        //testSampleTCPPacketRecord(out);
+        int numberOfValidatedFields = testPCapFieldsValid(out);
+        Assert.assertEquals(4,numberOfValidatedFields);
     }
 
     @Test
-    public void testTwoSmallPCapRecords() {
+    public void testTwoSmallSizePCapRecords() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record1 = new StandardRecord("pcap_event");
@@ -399,11 +450,11 @@ public class PCapProcessorTest {
         MockRecord out = testRunner.getOutputRecords().get(0);
 
         testPCapFieldsValid(out);
-        testSampleTCPPacketRecord(out);
+        testSampleIPv4TCPPacketRecord(out);
     }
 
     @Test
-    public void testMediumPCapRecord() {
+    public void testMediumSizePCapRecord() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
@@ -425,18 +476,16 @@ public class PCapProcessorTest {
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(14261);
 
-        int i = 0;
-        //testRunner.getOutputRecords().forEach( mockOutputRecord -> {
+        //int i = 0;
         for(MockRecord mockOutputRecord : testRunner.getOutputRecords() ) {
-            try {
-                i++;
+            //try {
+                //i++;
                 testPCapFieldsValid(mockOutputRecord);
-            } catch (AssertionError e) {
+            /*} catch (AssertionError e) {
                 logger.error("AssertionError raised for packet number " + i + " : " + e.getMessage());
                 Assert.fail();
-            }
+            }*/
         }
-        //});
     }
 
     @Test
