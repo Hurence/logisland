@@ -72,7 +72,6 @@ public class PCapConstants {
     , IP_PADDING("ip_padding", FieldType.BYTES)                                      /* variable size */
 
 
-
     /////////////////////
     // TCP Header data //
     /////////////////////
@@ -110,14 +109,24 @@ public class PCapConstants {
     , TCP_COMPUTED_RELATIVEACK("tcp_computed_relative_ack", FieldType.INT)
     , TCP_COMPUTED_RELATIVESEQ("tcp_computed_relative_seq", FieldType.INT)
 
+
+    /////////////////////
+    // UDP Header data //
+    /////////////////////
+
+    /* UDP Header's 1st 32-bits word : */
+    , UDP_SRCPORT("src_port", FieldType.INT)                                         /* 16 bits */
+    , UDP_DSTPORT("dest_port", FieldType.INT)                                        /* 16 bits */
+
+    /* UDP Header's 2nd 32-bits word : */
+    , UDP_SEGMENTTOTALLENGTH("udp_segment_total_length", FieldType.INT)              /* 16 bits */
+    , UDP_CHECKSUM("udp_checksum", FieldType.INT)                                    /* 16 bits */
+
     ////////////
     // Others //
     ////////////
 
-    //,ORIGINAL("original_string")
-    //,INCLUDES_REVERSE_TRAFFIC("includes_reverse_traffic")
     ;
-
 
     private String name;
     private FieldType fieldType;

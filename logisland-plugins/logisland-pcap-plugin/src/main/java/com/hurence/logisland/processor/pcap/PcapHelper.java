@@ -23,6 +23,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.ExceptionUtil;
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.krakenapps.pcap.decoder.ethernet.EthernetType;
@@ -199,13 +201,23 @@ public class PcapHelper {
     EnumMap<PCapConstants.Fields, Object> ret = new EnumMap(PCapConstants.Fields.class);
 
     if(pi != null) {
-      /* Global Header data : */
+
+      ////////////////////////
+      // Global Header data //
+      ////////////////////////
+
       ret.put(PCapConstants.Fields.GLOBAL_MAGICNUMBER, pi.getGlobalHeader().getMagicNumber());
 
-      /* Packet Header data : */
+      ////////////////////////
+      // Packet Header data //
+      ////////////////////////
+
       ret.put(PCapConstants.Fields.PCKT_TIMESTAMP_IN_NANOS, pi.getPacketTimeInNanos());
 
-      /* IP Header data : */
+      ////////////////////
+      // IP Header data //
+      ////////////////////
+
       if (pi.getIpv4Packet() != null) {
         /* IP Header's 1st 32-bits word : */
         ret.put(PCapConstants.Fields.IP_VERSION, pi.getIpv4Packet().getVersion());
@@ -242,7 +254,10 @@ public class PcapHelper {
         }
       }
 
-      /* TCP Header data : */
+      /////////////////////
+      // TCP Header data //
+      /////////////////////
+
       if (pi.getTcpPacket() != null) {
 
         /* TCP Header's 1st 32-bits word : */
@@ -292,6 +307,26 @@ public class PcapHelper {
         ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVEACK, pi.getTcpPacket().getRelativeAck());
         ret.put(PCapConstants.Fields.TCP_COMPUTED_RELATIVESEQ, pi.getTcpPacket().getRelativeSeq());
       }
+
+      /////////////////////
+      // UDP Header data //
+      /////////////////////
+
+      if (pi.getUdpPacket() != null) {
+
+        /* UDP Header's 1st 32-bits word : */
+        if (pi.getUdpPacket().getSource() != null) {
+            ret.put(PCapConstants.Fields.UDP_SRCPORT, pi.getUdpPacket().getSource().getPort());
+        }
+        if (pi.getUdpPacket().getDestination() != null) {
+            ret.put(PCapConstants.Fields.UDP_DSTPORT, pi.getUdpPacket().getDestination().getPort());
+        }
+
+        /* UDP Header's 2nd 32-bits word : */
+        ret.put(PCapConstants.Fields.UDP_SEGMENTTOTALLENGTH, pi.getUdpPacket().getLength());
+        ret.put(PCapConstants.Fields.UDP_CHECKSUM, pi.getUdpPacket().getChecksum());
+
+      }
     }
     return ret;
   }
@@ -327,7 +362,7 @@ public class PcapHelper {
 
     if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1)
     {
-        throw new InvalidPCapFileException("Unable to parse the global header magic number");
+        throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number");
     }
     while (true) {
         try
@@ -350,31 +385,31 @@ public class PcapHelper {
             PacketHeader packetHeader = packet.getPacketHeader();
             Ipv4Packet ipv4Packet = Ipv4Packet.parse(packet.getPacketData());
 
-            if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
-                tcpPacket = TcpPacket.parse(ipv4Packet);
+            if(ipv4Packet.getVersion() == Constants.PROTOCOL_IPV4) {
+                if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
+                    tcpPacket = TcpPacket.parse(ipv4Packet);
 
+                } else if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
+
+                    Buffer packetDataBuffer = ipv4Packet.getData();
+                    sourcePort = packetDataBuffer.getUnsignedShort();
+                    destinationPort = packetDataBuffer.getUnsignedShort();
+
+                    udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
+
+                    udpPacket.setLength(packetDataBuffer.getUnsignedShort());
+                    udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
+                    packetDataBuffer.discardReadBytes();
+                    udpPacket.setData(packetDataBuffer);
+                } else {
+                    logger.warn("Not Implemented protocol");
+                }
             }
-
-            if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
-
-                Buffer packetDataBuffer = ipv4Packet.getData();
-                sourcePort = packetDataBuffer.getUnsignedShort();
-                destinationPort = packetDataBuffer.getUnsignedShort();
-
-                udpPacket = new UdpPacket(ipv4Packet, sourcePort, destinationPort);
-
-                udpPacket.setLength(packetDataBuffer.getUnsignedShort());
-                udpPacket.setChecksum(packetDataBuffer.getUnsignedShort());
-                packetDataBuffer.discardReadBytes();
-                udpPacket.setData(packetDataBuffer);
-            }
-
-            packetInfoList.add(new PacketInfo(globalHeader, packetHeader, packet,
-                    ipv4Packet, tcpPacket, udpPacket));
+            packetInfoList.add(new PacketInfo(globalHeader, packetHeader, packet, ipv4Packet, tcpPacket, udpPacket));
         } catch (NegativeArraySizeException ignored) {
             logger.debug("Ignorable exception while parsing packet.", ignored);
-        } catch (EOFException eof) { // $codepro.audit.disable logExceptions
-            // Ignore exception and break
+        } catch (EOFException eof) {
+            // Ignore exception and break : the while loop is left when eof is reached
             break;
         }
     }

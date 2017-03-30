@@ -21,6 +21,10 @@ package com.hurence.logisland.processor.pcap;
 
 public interface Constants {
 
+
+/** The protocol ipv4. */
+public static final int PROTOCOL_IPV4 = 4;
+
 /** The protocol tcp. */
 public static final int PROTOCOL_TCP = 6;
 
