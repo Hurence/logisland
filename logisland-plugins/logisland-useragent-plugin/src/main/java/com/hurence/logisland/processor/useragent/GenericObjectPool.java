@@ -33,15 +33,15 @@ public class GenericObjectPool<T> {
 
             T obj = available.poll();
             if (obj == null) {
-                if (inUse.size() < max) {
+                if (size() < max) {
                     obj = factory.getInstance();
                 }
+            }
 
-                if (obj != null) {
-                    inUse.add(obj);
-                } else {
-                    throw new RuntimeException("Reached max pool size of " + max);
-                }
+            if (obj != null) {
+                inUse.add(obj);
+            } else {
+                throw new RuntimeException("Reached max pool size of " + max);
             }
 
             return obj;

@@ -86,10 +86,16 @@ public class UserAgentProcessorTest {
     @Test
     @UseDataProvider("userAgentsWithExpectedResults")
     public void testUserAgents(String userAgent, String device, String os, String agentClass) {
+
+        UserAgentProcessor uap = new UserAgentProcessor();
+
+        final String fieldName = "useragent";
+
         final TestRunner testRunner = TestRunners.newTestRunner(new UserAgentProcessor());
+        testRunner.setProperty("useragent.field", fieldName);
         testRunner.assertValid();
         Record record = new StandardRecord("user_agent_event");
-        record.setStringField("useragent", userAgent);
+        record.setStringField(fieldName, userAgent);
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
