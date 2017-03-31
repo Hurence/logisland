@@ -21,7 +21,6 @@ package com.hurence.logisland.processor.pcap;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.krakenapps.pcap.decoder.ethernet.EthernetType;
@@ -40,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hurence.logisland.processor.pcap.utils.Endianness;
+import com.hurence.logisland.util.bytes.ByteUtil;
 
 public class PcapHelper {
 
@@ -167,22 +167,22 @@ public class PcapHelper {
     byte[] ret = new byte[PACKET_HEADER_SIZE + packet.length];
     int offset = 0;
     {
-      byte[] b = Bytes.toBytes(swapBytes?ByteOrderConverter.swap(secs):secs);
+      byte[] b = ByteUtil.toBytes(swapBytes?ByteOrderConverter.swap(secs):secs);
       System.arraycopy(b, 0, ret, offset, Integer.BYTES);
       offset += Integer.BYTES;
     }
     {
-      byte[] b = Bytes.toBytes(swapBytes?ByteOrderConverter.swap(usec):usec);
+      byte[] b = ByteUtil.toBytes(swapBytes?ByteOrderConverter.swap(usec):usec);
       System.arraycopy(b, 0, ret, offset, Integer.BYTES);
       offset += Integer.BYTES;
     }
     {
-      byte[] b = Bytes.toBytes(swapBytes?ByteOrderConverter.swap(capLen):capLen);
+      byte[] b = ByteUtil.toBytes(swapBytes?ByteOrderConverter.swap(capLen):capLen);
       System.arraycopy(b, 0, ret, offset, Integer.BYTES);
       offset += Integer.BYTES;
     }
     {
-      byte[] b = Bytes.toBytes(swapBytes?ByteOrderConverter.swap(capLen):capLen);
+      byte[] b = ByteUtil.toBytes(swapBytes?ByteOrderConverter.swap(capLen):capLen);
       System.arraycopy(b, 0, ret, offset, Integer.BYTES);
       offset += Integer.BYTES;
     }

@@ -22,7 +22,7 @@ package com.hurence.logisland.processor.pcap.utils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.apache.commons.lang.StringUtils;
+
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The Class PcapUtils.

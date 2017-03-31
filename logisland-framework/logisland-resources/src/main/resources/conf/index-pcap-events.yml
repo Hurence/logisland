@@ -1,5 +1,5 @@
 #########################################################################################################
-# Logisland configuration script example: index Bro events into ElasticSearch
+# Logisland configuration script example: parse pcap files and display them in Kibana
 #########################################################################################################
 
 version: 0.9.8
@@ -10,9 +10,9 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Index Bro events with LogIsland
+  documentation: Parse pcap events with LogIsland
   configuration:
-    spark.app.name: IndexBroEventsDemo
+    spark.app.name: parsePCapEventsDemo
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -43,9 +43,9 @@ engine:
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: A processor chain that transforms Bro events into Logisland records
+      documentation: A processor chain that parses pcap events into Logisland records
       configuration:
-        kafka.input.topics: bro
+        kafka.input.topics: pcaps
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
@@ -58,38 +58,19 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Transform Bro events into Logisland records
-        - processor: Bro processor
-          component: com.hurence.logisland.processor.bro.BroProcessor
+        # Transform pcap events into Logisland packet records
+        - processor: ParsePCap processor
+          component: com.hurence.logisland.processor.pcap.ParsePCap
           type: parser
-          documentation: A processor that transforms Bro events into LogIsland events
-
-    # Indexing
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: A processor chain that pushes bro events to ES
-      configuration:
-        kafka.input.topics: logisland_events
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
+          documentation: A processor that parses pcap events into LogIsland records
 
         # Put into ElasticSearch
         - processor: ES Publisher
           component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
           type: processor
-          documentation: A processor that pushes Bro events into ES
+          documentation: A processor that pushes pcap events into ES
           configuration:
-            default.index: bro
+            default.index: pcap
             default.type: events
             hosts: sandbox:9300
             cluster.name: elasticsearch

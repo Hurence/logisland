@@ -20,16 +20,14 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.file.FileUtil;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
-import com.hurence.logisland.agent.rest.api.impl.ProcessorsApiServiceImpl;
-
 import static com.hurence.logisland.processor.pcap.Constants.*;
 import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
 
-//import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -371,7 +369,7 @@ public class PCapProcessorTest {
 
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
+            byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
@@ -385,6 +383,7 @@ public class PCapProcessorTest {
 
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(4);
+        testRunner.assertOutputErrorCount(0);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
@@ -401,7 +400,7 @@ public class PCapProcessorTest {
 
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/1-ARP+1-TCP-IP.pcap");
+            byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/1-ARP+1-TCP-IP.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
@@ -415,6 +414,7 @@ public class PCapProcessorTest {
 
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(2);
+        testRunner.assertOutputErrorCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
@@ -430,7 +430,7 @@ public class PCapProcessorTest {
         Record record2 = new StandardRecord("pcap_event");
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
+            byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/verySmallFlows.pcap");
             record1.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record1.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
             record2.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
@@ -461,7 +461,7 @@ public class PCapProcessorTest {
 
         System.out.println(System.getProperty("user.dir"));
         try {
-            byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/mediumFlows.pcap");
+            byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/mediumFlows.pcap");
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
 
@@ -475,6 +475,7 @@ public class PCapProcessorTest {
 
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(14261);
+        testRunner.assertOutputErrorCount(52);
 
         //int i = 0;
         for(MockRecord mockOutputRecord : testRunner.getOutputRecords() ) {
@@ -495,7 +496,7 @@ public class PCapProcessorTest {
         Record record = new StandardRecord("pcap_event");
 
         System.out.println(System.getProperty("user.dir"));
-        byte[] pcapbytes = ProcessorsApiServiceImpl.loadFileContentAsBytes("pcapTestFiles/picture.pcap");
+        byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/picture.pcap");
         try {
             record.setField(FieldDictionary.RECORD_KEY, FieldType.LONG, 1338882754996790000L);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapbytes);
@@ -510,6 +511,7 @@ public class PCapProcessorTest {
 
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputErrorCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
 
@@ -518,5 +520,7 @@ public class PCapProcessorTest {
 
         out.assertFieldExists(FieldDictionary.RECORD_VALUE);
         out.assertFieldEquals(FieldDictionary.RECORD_VALUE, pcapbytes);
+
+        out.assertFieldExists(FieldDictionary.RECORD_ERRORS);
     }
 }

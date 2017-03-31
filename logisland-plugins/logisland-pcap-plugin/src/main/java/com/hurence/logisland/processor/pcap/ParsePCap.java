@@ -49,15 +49,10 @@ import static com.hurence.logisland.processor.pcap.PcapHelper.ETHERNET_DECODER;
  */
 @Tags({"PCap", "security", "IDS", "NIDS"})
 @CapabilityDescription(
-        "The PCap processor is the LogIsland entry point to get and process network packets captured in pcap format."
-        +""
-        + "incoming record : record key = timestamp, record_value = raw pcap file in bytes"
-        + "The pcap file contains a global header and a sequence of (packet header, packet data), meaning that several packets are stored in the same file"
-        + "The output is a list of records where each record holds the information regarding one packet. Here is an example of the fields of one given packet extracted by the PCap processor from an incoming pcap record :"
-        + "- timestamp : \n"
-        + "- source ip : \n"
-        + "- destination ip : \n"
-        + "encapsulation")
+        "The PCap processor is the LogIsland entry point to parse network packets captured in pcap format. "
+        +"The PCap processor decodes the bytes of the incoming pcap record, where a Global pcap header followed by a sequence of [packet header, packet data] pairs are stored. "
+        +"Each incoming pcap event is parsed into n packet records where packet headers data is made available in dedicated fields."
+    )
 
 public class ParsePCap extends AbstractProcessor {
 
@@ -65,10 +60,10 @@ public class ParsePCap extends AbstractProcessor {
 
     private boolean debug = false;
     
-    private static final String KEY_DEBUG = "debug";
+    private static final String DEBUG_PROPERTY_NAME = "debug";
     
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
-            .name(KEY_DEBUG)
+            .name(DEBUG_PROPERTY_NAME)
             .description("Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
@@ -220,27 +215,4 @@ public class ParsePCap extends AbstractProcessor {
         return finalMap;
     }
 
-    
-    @Override
-    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-
-        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
-        
-        /**
-         * Handle the debug property
-         */
-        if (descriptor.getName().equals(KEY_DEBUG))
-        {
-          if (newValue != null)
-          {
-              if (newValue.equalsIgnoreCase("true"))
-              {
-                  debug = true;
-              }
-          } else
-          {
-              debug = false;
-          }
-        }
-    }   
 }
