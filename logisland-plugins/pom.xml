@@ -38,5 +38,6 @@
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-kafka-plugin</module>
         <module>logisland-sampling-plugin</module>
+        <module>logisland-useragent-plugin</module>
     </modules>
 </project>

@@ -28,6 +28,10 @@
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-spark-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
@@ -65,10 +69,6 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-spark-engine</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
         <dependency>
@@ -78,6 +78,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-mailer-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-useragent-plugin</artifactId>
         </dependency>
     </dependencies>
     <build>
