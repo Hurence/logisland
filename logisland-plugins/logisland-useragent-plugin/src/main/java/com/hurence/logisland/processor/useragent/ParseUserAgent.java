@@ -45,9 +45,9 @@ import java.util.stream.Collectors;
         "The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest."
         + " There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them."
         + " This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.")
-public class UserAgentProcessor extends AbstractProcessor {
+public class ParseUserAgent extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(UserAgentProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(ParseUserAgent.class);
 
     private boolean debug;
     private String userAgentField;

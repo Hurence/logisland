@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
  * Test simple Bro events processor.
  */
 @RunWith(DataProviderRunner.class)
-public class UserAgentProcessorTest {
+public class ParseUserAgentTest {
     
-    private static Logger logger = LoggerFactory.getLogger(UserAgentProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ParseUserAgentTest.class);
 
     private static final String android6Chrome46 = "Mozilla/5.0 (Linux; Android 6.0; Nexus 6 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36";
     private static final String androidPhone = "Mozilla/5.0 (Linux; Android 5.0.1; ALE-L21 Build/HuaweiALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/37.0.0.0 Mobile Safari/537.36";
@@ -87,11 +87,11 @@ public class UserAgentProcessorTest {
     @UseDataProvider("userAgentsWithExpectedResults")
     public void testUserAgents(String userAgent, String device, String os, String agentClass) {
 
-        UserAgentProcessor uap = new UserAgentProcessor();
+        ParseUserAgent uap = new ParseUserAgent();
 
         final String fieldName = "useragent";
 
-        final TestRunner testRunner = TestRunners.newTestRunner(new UserAgentProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseUserAgent());
         testRunner.setProperty("useragent.field", fieldName);
         testRunner.assertValid();
         Record record = new StandardRecord("user_agent_event");

@@ -160,7 +160,7 @@ The example below shows how to include all of the fields supported by the proces
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out,http_referer,http_user_agent
 
         - processor: user_agent_analyzer
-          component: com.hurence.logisland.processor.useragent.UserAgentProcessor
+          component: com.hurence.logisland.processor.useragent.ParseUserAgent
           type: processor
           documentation: decompose the user_agent field into meaningful attributes
           configuration:
