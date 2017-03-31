@@ -4,11 +4,11 @@ export default {
     config: {
         bindings: { jobs: '<', mode: '<', selected: '<', showDetails: '&onSelected' },
         templateUrl: 'src/job-list/job-list.template.html',
-        controller: ['JobDataService', '$log', '$scope', '$timeout', '$mdDialog', JobListController]
+        controller: ['AppSettings', 'JobDataService', '$log', '$scope', '$timeout', '$mdDialog', JobListController]
     }
 };
 
-function JobListController(JobDataService, $log, $scope, $timeout, $mdDialog) {
+function JobListController(AppSettings, JobDataService, $log, $scope, $timeout, $mdDialog) {
     var vm = $scope;
     var self = this;
 
@@ -18,7 +18,8 @@ function JobListController(JobDataService, $log, $scope, $timeout, $mdDialog) {
     self.filteredJobs = null;
 
 
-    self.newJobTemplate = { name: "newJobTemplate", streams: [{ "name": "[Stream name]", "component": "comp1", "config": [], "processors": [] }] };
+    
+
 
 
 
@@ -38,10 +39,11 @@ function JobListController(JobDataService, $log, $scope, $timeout, $mdDialog) {
     vm.saveJob = saveJob;
     vm.convertToJson = convertToJson;
     vm.convertToString = convertToString;
-    vm.deleteJob    = deleteJob;
-    vm.startJob     = startJob;
-    vm.shutdownJob  = shutdownJob;
-    vm.pauseJob     = pauseJob;
+    vm.deleteJob = deleteJob;
+    vm.startJob = startJob;
+    vm.shutdownJob = shutdownJob;
+    vm.pauseJob = pauseJob;
+    vm.addPipeline = addPipeline;
 
     function refreshJobs() {
         JobDataService.query(function (result) {
@@ -156,28 +158,32 @@ function JobListController(JobDataService, $log, $scope, $timeout, $mdDialog) {
         //      self.jobs.splice(index, 1);
     }
 
- function startJob(job) {
-        JobDataService.start({id: job.name}, function(updatedJob, getResponseHeaders) {
+    function startJob(job) {
+        JobDataService.start({ id: job.name }, function (updatedJob, getResponseHeaders) {
             self.jobs = refreshJobs();
         });
     }
 
     function restartJob(job) {
-        JobDataService.restart({id: job.name}, function(updatedJob, getResponseHeaders) {
-             self.jobs = refreshJobs();
-        });
-    }
-
-    function pauseJob(job) {
-        JobDataService.pause({id: job.name}, function(updatedJob, getResponseHeaders) {
-             self.jobs = refreshJobs();
-        });
-    }
-
-    function shutdownJob(job) {
-        JobDataService.shutdown({id: job.name}, function(updatedJob, getResponseHeaders) {
+        JobDataService.restart({ id: job.name }, function (updatedJob, getResponseHeaders) {
             self.jobs = refreshJobs();
         });
     }
 
+    function pauseJob(job) {
+        JobDataService.pause({ id: job.name }, function (updatedJob, getResponseHeaders) {
+            self.jobs = refreshJobs();
+        });
+    }
+
+    function shutdownJob(job) {
+        JobDataService.shutdown({ id: job.name }, function (updatedJob, getResponseHeaders) {
+            self.jobs = refreshJobs();
+        });
+    }
+
+
+    function addPipeline(job) {
+        job.streams[job.streams.length] = AppSettings.DEFAULT_PIPELINE;
+    }
 }

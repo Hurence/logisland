@@ -1,7 +1,7 @@
 
 import TopicsDataService from 'src/topic-list/topic-list.service';
 import ListService from 'src/jobs/services/ListService';
-import AppSettings from 'src/jobs/services/AppSettings';
+import AppSettings from 'src/app.service';
 
 import TopicsList from 'src/topic-list/topic-list.component';
 import KeyTypesList from 'src/fieldtype-list/fieldtype-list.component';

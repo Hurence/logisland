@@ -3,7 +3,7 @@ export default {
   name : 'streamDetails',
   config : {
     bindings         : {  selected: '<' },
-    templateUrl      : 'src/jobs/components/details/StreamDetails.html',
+    templateUrl      : 'src/job-list/stream-details.template.html',
     controller       : [ 'ListService', 'ProcessorDataService', '$log', '$scope', '$rootScope', '$mdDialog', StreamDetailsController ]}
 };
 

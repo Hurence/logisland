@@ -32,14 +32,12 @@
                         <md-icon ng-show="job.summary.status == 'RUNNING'" md-svg-icon="link" ng-class="{size:'md-36',padding:6}"></md-icon>
                         <md-icon ng-show="job.summary.status != 'RUNNING'" md-svg-icon="link-off"></md-icon>
                         {{ job.name }}  
-                        </span>
+                    </span>
                     <span class="md-subhead">
-
-        <md-input-container class="md-block">
-            <label>Documentation</label>
-            <textarea ng-model="job.summary.documentation" md-maxlength="258" rows="2" md-select-on-focus></textarea>
-        </md-input-container>
-
+                        <md-input-container class="md-block">
+                            <label>Documentation</label>
+                            <textarea ng-model="job.summary.documentation" md-maxlength="258" rows="2" md-select-on-focus></textarea>
+                        </md-input-container>
                      </span>
                 </md-card-title-text>
             </md-card-title>
@@ -47,22 +45,39 @@
             <md-card-actions layout="row" layout-align="start center" class=" md-whiteframe-4dp" style="background-color: lightsteelblue">
 
                 <md-card-icon-actions>
-                    <md-button class="md-icon-button" ng-click="deleteJob($event,job)" aria-label="Delete Job">
+                    <md-button class="md-icon-button" ng-click="deleteJob($event,job)" aria-label="Delete Job" class="md-warn md-raised">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">delete job</md-tooltip>
                         <md-icon md-svg-icon="delete"></md-icon>
                     </md-button>
                     <md-button class="md-icon-button" ng-click="saveJob(job)" aria-label="Save Job">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">save job</md-tooltip>
                         <md-icon md-svg-icon="save"></md-icon>
                     </md-button>
                     <md-button class="md-mini md-icon-button" ng-click="startJob(job)" ng-class="{ 'md-primary': job.summary.status != 'RUNNING' }"
                         aria-label="Start Job" style="color: greenyellow;">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">start job</md-tooltip>
                         <md-icon md-svg-icon="play"></md-icon>
                     </md-button>
                     <md-button class="md-icon-button" ng-click="pauseJob(job)" ng-class="{ 'md-primary': job.summary.status == 'RUNNING' }" aria-label="Pause Job">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">pause job</md-tooltip>
                         <md-icon md-svg-icon="pause"></md-icon>
                     </md-button>
+                    <md-button class="md-icon-button" ng-click="exportJob(job)">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">export config</md-tooltip>
+                        <md-icon md-svg-icon="export"></md-icon>
+                    </md-button>
+
+
+                    <md-button class="md-icon-button" ng-click="addPipeline(job)" aria-label="Add Pipeline">
+                        <md-tooltip md-direction="top" md-visible="tooltipVisible" md-autohide="false">add pipeline</md-tooltip>
+                        <md-icon md-svg-icon="add"></md-icon>
+                    </md-button>
+
                 </md-card-icon-actions>
-                <md-button>Cancel</md-button>
-                <md-button>Export</md-button>
+                <div layout-align="right">
+                    <md-button>Cancel</md-button>
+                </div>
+
             </md-card-actions>
             <md-card-content>
 

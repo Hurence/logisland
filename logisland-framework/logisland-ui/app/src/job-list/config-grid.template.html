@@ -1,0 +1,46 @@
+<!--Config: {{ $ctrl.configuration }}-->
+<div flex>
+    <table class="table table-bordered table-hover table-condensed">
+        <tr class="table-headers">
+            <td style="width:5%">&nbsp;</td>
+            <td style="width:50%">Key</td>
+            <td style="width:45%">Value</td>
+        </tr>
+        <tr ng-repeat="conf in $ctrl.configuration">
+            <td style="white-space: nowrap">
+
+
+                 <md-button ng-show="!rowform.$visible" class="md-icon-button" ng-click="deleteConfig($index)" aria-label="Delete config key">
+                    <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">delete config key</md-tooltip>
+                    <md-icon md-svg-icon="delete"></md-icon>
+                </md-button>
+            </td>
+            <td>
+                <!-- editable username (text with validation) -->
+                <span editable-text="conf.key" e-name="key" onbeforesave="checkKey($data, conf.key)" buttons=right>
+                      {{ conf.key || 'empty' }}
+                    </span>
+            </td>
+            <td>
+                <!-- editable username (text with validation) -->
+                <span editable-textarea="conf.value" e-name="value" e-rows="7" e-cols="40" onbeforesave="checkValue($data, conf.value)">
+                      {{ conf.value || 'empty' | cut:true:100:'...' }}
+                    </span>
+            </td>
+
+        </tr>
+
+        <tr>
+            <td>
+                <md-button class="md-icon-button" ng-click="addConfig()" aria-label="Add config key">
+                    <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">new config key</md-tooltip>
+                    <md-icon md-svg-icon="add"></md-icon>
+                </md-button>
+            </td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+
+
+</div>

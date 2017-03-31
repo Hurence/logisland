@@ -1,0 +1,68 @@
+<md-sidenav class="md-sidenav-right md-whiteframe-4dp" md-component-id="right_processors" md-is-locked-open>
+    <processors-list processors="stdProcessors" selected="selectedStdProcessor" on-selected="selectStdProcessor(processor)">
+    </processors-list>
+</md-sidenav>
+
+<div flex id="stream_details_{{ $ctrl.selected.name }}" layout-align="center center" ng-show="$ctrl.selected" layout-padding>
+
+    <md-content md-theme="docs-dark" layout="row">
+        <md-input-container flex="none">
+            <label>Name</label>
+            <input ng-model="$ctrl.selected.name">
+        </md-input-container>
+        <md-input-container flex="80">
+            <label>Component</label>
+            <input ng-model="$ctrl.selected.component">
+        </md-input-container>
+
+    </md-content>
+    <md-content md-theme="docs-dark" layout="row" layout-padding>
+        <md-input-container flex>
+            <label>Documentation</label>
+            <input ng-model="$ctrl.selected.documentation">
+        </md-input-container>
+    </md-content>
+    <md-content flex layout="column">
+        <div id="config" layout="column">
+            <config-grid configuration="$ctrl.selected.config">Config</config-grid>
+        </div>
+    </md-content>
+
+
+    <md-toolbar class="md-theme-light">
+        <h2 class="md-toolbar-tools">
+            <span>Processors</span>
+            <md-button class="md-fab md-mini" ng-click="toggleList('right_processors')" aria-label="Add Processor">
+                <md-icon md-svg-icon="add"></md-icon>
+            </md-button>
+        </h2>
+    </md-toolbar>
+    <md-content flex layout="column">
+
+
+        <md-list-item ng-repeat="processor in $ctrl.selected.processors">
+
+            <div id="processors" layout="column">
+                <div id="processor_{{ processor.name }}" layout="row" ng-dblclick="edit(processor)" layout-align="start center" style="border-bottom: 1px solid black">
+                    <span>{{processor.name}}</span>
+                    <md-button class="md-mini" ng-disabled="$first" ng-click="moveProcessorUp($index);" aria-label="Move Processor Up">
+                        <md-icon md-svg-icon="up"></md-icon>
+                    </md-button>
+                    <md-button class="md-mini" ng-disabled="$last" ng-click="moveProcessorDown($index);" aria-label="Move Processor Down">
+                        <md-icon md-svg-icon="down"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini" ng-click="deleteProcessor($index)" aria-label="Delete Processor">
+                        <md-icon md-svg-icon="delete"></md-icon>
+                    </md-button>
+                </div>
+                <div id="config" layout="column">
+                    <config-grid configuration="processor.config">Config</config-grid>
+                </div>
+            </div>
+        </md-list-item>
+
+    </md-content>
+
+
+
+</div>

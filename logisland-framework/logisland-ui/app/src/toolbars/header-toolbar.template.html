@@ -66,20 +66,14 @@
         </md-button>
       </md-fab-trigger>
       <md-fab-actions>
-        <md-button class="md-fab md-mini" ng-click="$ctrl.addTopic()">
+        <md-button class="md-fab md-mini" ng-click="$ctrl.addTopic($event)">
           <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Topic</md-tooltip>
           <md-icon md-svg-icon="database"></md-icon>
         </md-button>
-        <md-button class="md-fab  md-mini" ng-click="$ctrl.addJob()">
+        <md-button class="md-fab  md-mini" ng-click="$ctrl.addJob($event)">
           <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">Add Job</md-tooltip>
           <md-icon md-svg-icon="job"></md-icon>
         </md-button>
-
-        <md-button class="md-fab  md-mini" href="{{ vm.serviceLocationProvider.getEsHost() + '/api/v0.1/values/' + vm.selected.esId + '?format=csv&pageSize=10000' }}">
-          <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">export config</md-tooltip>
-          <md-icon md-svg-icon="export"></md-icon>
-        </md-button>
-
       </md-fab-actions>
     </md-fab-speed-dial>
   </div>

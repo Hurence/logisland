@@ -30,10 +30,13 @@ function TopicListController(TopicsDataService, $log, $scope, $timeout, $mdDialo
     function refreshTopics() {
 
         return TopicsDataService.query(function(result){
-           if(result.length > 0){
-               $log.debug(result);
-           }
+          if (result.length > 0) {
+                self.topics = result;
+                self.filteredTopics = querySearch(self.searchText);
+                $log.debug(self.filteredTopics);
+            }
         });
+
 
 
     }

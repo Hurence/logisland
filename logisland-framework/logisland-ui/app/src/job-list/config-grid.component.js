@@ -1,15 +1,15 @@
 
 export default {
-  name : 'config',
+  name : 'configGrid',
   config : {
     bindings         : { configuration: '<' },
-    templateUrl      : 'src/jobs/components/details/Config.html',
-    controller       : [ '$http', '$log', '$scope', '$mdDialog', ConfigController ]
+    templateUrl      : 'src/job-list/config-grid.template.html',
+    controller       : [ '$http', '$log', '$scope', '$mdDialog', ConfigGridController ]
   }
 };
 
 
-function ConfigController($http, $log, $scope, $mdDialog)  {
+function ConfigGridController($http, $log, $scope, $mdDialog)  {
     var vm = $scope;
     var self = this;
 
