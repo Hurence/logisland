@@ -1,0 +1,998 @@
+swagger: '2.0'
+info:
+  description: REST API for logisland agent
+  version: v1
+  title: logisland-agent
+  contact:
+    name: Thomas Bailet
+    email: bailet.thomas@gmail.com
+host: localhost:8081
+basePath: /
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+
+  /:
+    get:
+      summary: the root resource
+      description: / entrypoint
+      responses:
+        200:
+          description: OK
+
+  /processors:
+    get:
+      tags:
+       - config
+      operationId: getProcessors
+      summary:  get all processors
+      description: get all processors
+      responses:
+        "200":
+          description: processors
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  # Job API
+  /configs:
+    get:
+      tags:
+       - config
+      operationId: getConfig
+      summary:  global config
+      description: get all global configuration properties
+      responses:
+        "200":
+          description: global configuration
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Property'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  # Job API
+  /jobs:
+    get:
+      tags:
+       - job
+      operationId: getAllJobs
+      summary:  get all jobs
+      description: retrieve all jobs (retrieve only summary fields)
+      responses:
+        "200":
+          description: job configuration list
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+       - job
+      summary:  create new job
+      description:  store a new job configuration if valid
+      operationId: addJob
+      parameters:
+        - name: job
+          in: body
+          description: Job to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /jobs/metrics:
+     get:
+      tags:
+        - job
+      summary: get job metrics
+      description: get the metrics of corresponding Job
+      operationId: getJobMetrics
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job metrics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Metrics'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /jobs/alerts:
+     get:
+      tags:
+        - job
+      summary: get job alerts
+      description: get the alerts
+      operationId: getJobAlerts
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job metrics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Metrics'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /jobs/errors:
+     get:
+      tags:
+        - job
+      summary: get last job errors
+      description: get the errors
+      operationId: getJobErrors
+      parameters:
+        - name: count
+          in: query
+          description: max number of ites to retrieve
+          required: false
+          type: integer
+          default: 20
+      responses:
+        "200":
+          description: job errors
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+
+  /jobs/{jobId}:
+    get:
+      tags:
+        - job
+      summary: get job
+      description: get the corresponding Job definition
+      operationId: getJob
+      produces:
+        - application/json
+        - text/plain
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job definition
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - job
+      summary: delete job
+      description: remove the corresponding Job definition and stop if its currently running
+      operationId: deleteJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: job successfully removed
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+       - job
+      summary:  update job
+      description: update an existing job configuration if valid
+      operationId: updateJob
+      parameters:
+        - name: jobId
+          in: path
+          description: Job to add to the store
+          required: true
+          type: string
+        - name: job
+          in: body
+          description: Job to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+      responses:
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+    post:
+      tags:
+       - job
+      summary:  create new job
+      description:  store a new job configuration if valid
+      operationId: addJobWithId
+      parameters:
+        - name: body
+          in: body
+          description: Job configuration to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Job'
+        - name: jobId
+          in: path
+          description: JobId to add to the store
+          required: true
+          type: string
+      responses:
+        "404":
+          description: Job not found
+        "400":
+          description: Invalid ID supplied
+        "200":
+          description: Job successfuly created
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/restart:
+     post:
+      tags:
+        - job
+      summary: start job
+      description: start the corresponding Job definition
+      operationId: reStartJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to restart
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/start:
+     post:
+      tags:
+        - job
+      summary: start job
+      description: start the corresponding Job definition
+      operationId: startJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/shutdown:
+     post:
+      tags:
+        - job
+      summary: shutdown job
+      description: shutdown the running Job
+      operationId: shutdownJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/pause:
+     post:
+      tags:
+        - job
+      summary: pause job
+      description: pause the corresponding Job
+      operationId: pauseJob
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly paused
+          schema:
+            $ref: '#/definitions/Job'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/status:
+     get:
+      tags:
+        - job
+      summary: get job status
+      description: get the status of corresponding Job
+      operationId: getJobStatus
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job status
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/version:
+     get:
+      tags:
+        - job
+      summary: get job version
+      description: get the version of corresponding Job
+      operationId: getJobVersion
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job version
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /jobs/{jobId}/engine:
+     get:
+      tags:
+        - job
+        - engine
+      summary: get job engine configuration
+      description: this is usefull when you want to launch a spark app within YARN to retrieve the launching config before submitting the job itself
+      produces:
+        - text/plain
+      operationId: getJobEngine
+      parameters:
+        - name: jobId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job status
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  # Topics API
+  /topics:
+    get:
+      tags:
+        - topic
+      summary: get all topics
+      operationId: getAllTopics
+      parameters: []
+      responses:
+        '200':
+          description: Status 200
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Topic'
+    post:
+      tags:
+          - topic
+      summary: create new topic
+      operationId: addNewTopic
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Topic'
+      responses:
+        '200':
+          description: Status 200
+  /topics/{topicId}:
+    get:
+      tags:
+        - topic
+      summary: get topic
+      operationId: getTopic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Status 200
+          schema:
+            $ref: '#/definitions/Topic'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+          - topic
+      summary: update topic
+      operationId: updateTopic
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Topic'
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: job successfuly started
+          schema:
+            $ref: '#/definitions/Topic'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - topic
+      summary: delete topic
+      description: remove a topic config and remove all content from Kafka
+      operationId: deleteTopic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: topic successfully deleted
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/keySchema:
+    get:
+      tags:
+        - schema
+      summary: get topic key schema
+      operationId: getTopicKeySchema
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          type: string
+        - name: version
+          in: query
+          description: version of the schema ("latest" if not provided)
+          required: false
+          type: string
+          default: latest
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - schema
+      summary: update topic key schema
+      operationId: updateTopicKeySchema
+      parameters:
+        - name: body
+          in: body
+          description: schema to add to the store
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/keySchema/checkCompatibility:
+    post:
+      tags:
+        - schema
+      summary: check topic key schema compatibility
+      operationId: checkTopicKeySchemaCompatibility
+      parameters:
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+      responses:
+        "200":
+          description: compatibility level
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/valueSchema:
+    get:
+      tags:
+        - schema
+      summary: get topic value schema
+      operationId: getTopicValueSchema
+      parameters:
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+        - name: version
+          in: query
+          description: version of the schema ("latest" if not provided)
+          required: false
+          type: string
+          default: latest
+      responses:
+        "200":
+          description: job definition
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - schema
+      summary: update topic value schema
+      operationId: updateTopicValueSchema
+      parameters:
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Avro schema
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /topics/{topicId}/valueSchema/checkCompatibility:
+    post:
+      tags:
+        - schema
+      summary: check topic value schema compatibility
+      operationId: checkTopicValueSchemaCompatibility
+      parameters:
+        - name: topicId
+          in: path
+          description: id of the job to return
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Avro schema as a json string
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: compatibility level
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+
+
+  FieldType:
+    type: object
+    required:
+      - name
+      - type
+    properties:
+      name:
+        description: a unique identifier for the topic
+        type: string
+      encrypted:
+        description: is the field need to be encrypted
+        type: boolean
+        default: false
+      indexed:
+        description: is the field need to be indexed to search store
+        type: boolean
+        default: true
+      persistent:
+        description: is the field need to be persisted to data store
+        type: boolean
+        default: true
+      optional:
+        description: is the field mandatory
+        type: boolean
+        default: true
+      type:
+        description: the type of the field
+        type: string
+        default: string
+        enum:
+        - string
+        - int
+        - long
+        - array
+        - float
+        - double
+        - bytes
+        - record
+        - map
+        - enum
+        - boolean
+
+
+
+
+  Metrics:
+    type: object
+    properties:
+      spark_app_name:
+        type: string
+      spark_partition_id:
+        type: integer
+      component_name:
+        type: string
+      input_topics:
+        type: string
+      output_topics:
+        type: string
+      topic_offset_from:
+        type: integer
+        format: int64
+      topic_offset_until:
+        type: integer
+        format: int64
+      num_incoming_messages:
+        type: integer
+      num_incoming_records:
+        type: integer
+      num_outgoing_records:
+        type: integer
+      num_errors_records:
+        type: integer
+        format: int64
+      error_percentage:
+        type: number
+        format: float
+      average_bytes_per_field:
+        type: integer
+      average_bytes_per_second:
+        type: integer
+      average_num_records_per_second:
+        type: integer
+      average_fields_per_record:
+        type: integer
+      average_bytes_per_record:
+        type: integer
+      total_bytes:
+        type: integer
+      total_fields:
+        type: integer
+      total_processing_time_in_ms:
+        type: integer
+        format: int64
+
+
+  Topic:
+    type: object
+    required:
+      - name
+      - partitions
+      - replicationFactor
+      - valueSchema
+      - serializer
+    properties:
+      id:
+        description: a unique identifier for the topic
+        type: integer
+        format: int64
+      version:
+        description: the version of the topic configuration
+        type: integer
+        format: int32
+      name:
+        description: the name of the topic
+        type: string
+      partitions:
+        description: default number of partitions
+        type: integer
+        format: int32
+      replicationFactor:
+        description: default replication factor
+        type: integer
+        format: int32
+      dateModified:
+        description: latest date of modification
+        type: string
+        format: date-time
+      documentation:
+        description: the description of the topic
+        type: string
+      serializer:
+        description: the class of the Serializer
+        type: string
+        default: "com.hurence.logisland.serializer.KryoSerializer"
+      businessTimeField:
+        description: the record_time field
+        type: string
+        default: "record_time"
+      rowkeyField:
+        description: the record_id field
+        type: string
+        default: "record_id"
+      recordTypeField:
+        description: the record type field
+        type: string
+        default: "record_type"
+      keySchema:
+        type: array
+        items:
+          $ref: '#/definitions/FieldType'
+      valueSchema:
+        type: array
+        items:
+          $ref: '#/definitions/FieldType'
+
+
+  JobSummary:
+    type: object
+    properties:
+      usedCores:
+        description: the number of used cores
+        type: integer
+        format: int32
+      usedMemory:
+        description: the total memory allocated for this job
+        type: integer
+        format: int32
+      status:
+        description: the job status
+        type: string
+        default: stopped
+        enum:
+        - stopped
+        - running
+        - failed
+        - paused
+      dateModified:
+        description: latest date of modification
+        type: string
+        format: date-time
+      documentation:
+        description: write here what the job is doing
+        type: string
+
+  Job:
+    type: object
+    required:
+      - engine
+      - name
+      - streams
+      - version
+    properties:
+      id:
+        description: a unique identifier for the job
+        type: integer
+        format: int64
+      version:
+        description: the version of the job configuration
+        type: integer
+        format: int32
+      name:
+        description: the job name
+        type: string
+      summary:
+        $ref: '#/definitions/JobSummary'
+      engine:
+        $ref: '#/definitions/Engine'
+      streams:
+        type: array
+        items:
+          $ref: '#/definitions/Stream'
+
+  Engine:
+    type: object
+    required:
+      - component
+      - config
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+
+  Stream:
+    type: object
+    required:
+      - component
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+      processors:
+        type: array
+        items:
+          $ref: '#/definitions/Processor'
+
+  Processor:
+    type: object
+    required:
+      - component
+      - config
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+
+  Property:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      type:
+        type: string
+        default: "string"
+      value:
+        type: string
+
+
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

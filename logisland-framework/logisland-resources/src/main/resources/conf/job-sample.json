@@ -1,0 +1,141 @@
+[{
+  "id": 841,
+  "version": 2,
+  "name": "IndexApacheLogsDemo",
+  "engine": {
+    "name": "main_engine",
+    "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    "config": [
+      { "key": "spark.app.name", "value": "IndexApacheLogsDemo"},
+      { "key": "spark.master", "value":  "local[4]"},
+      { "key": "spark.driver.memory", "value":  "1G"},
+      { "key": "spark.driver.cores", "value":  1},
+      { "key": "spark.executor.memory", "value":  "2G"},
+      { "key": "spark.executor.instances", "value":  4},
+      { "key": "spark.executor.cores", "value":  2},
+      { "key": "spark.yarn.queue", "value":  "default"},
+      { "key": "spark.yarn.maxAppAttempts", "value":  4},
+      { "key": "spark.yarn.am.attemptFailuresValidityInterval", "value":  "1h"},
+      { "key": "spark.yarn.max.executor.failures", "value":  20},
+      { "key": "spark.yarn.executor.failuresValidityInterval", "value":  "1h"},
+      { "key": "spark.task.maxFailures", "value":  8},
+      { "key": "spark.serializer", "value":  "org.apache.spark.serializer.KryoSerializer"},
+      { "key": "spark.streaming.batchDuration", "value":  4000},
+      { "key": "spark.streaming.backpressure.enabled", "value":  false},
+      { "key": "spark.streaming.unpersist", "value":  false},
+      { "key": "spark.streaming.blockInterval", "value":  500},
+      { "key": "spark.streaming.kafka.maxRatePerPartition", "value":  3000},
+      { "key": "spark.streaming.timeout", "value":  -1},
+      { "key": "spark.streaming.kafka.maxRetries", "value":  3},
+      { "key": "spark.streaming.ui.retainedBatches", "value":  200},
+      { "key": "spark.streaming.receiver.writeAheadLog.enable", "value":  false},
+      { "key": "spark.ui.port", "value":  4050}
+    ]
+  },
+  "streams": [
+    {
+      "name": "parsing_stream",
+      "component": "com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing",
+      "documentation": "a stream which parses all incoming raw logs",
+      "config": [
+        { "key": "kafka.input.topics", "value": "apache_logs" } ,
+        { "key": "kafka.output.topics", "value": "apache_records" },
+        { "key": "kafka.error.topics", "value": "_errors" },
+        { "key": "logisland.agent.pull.throttling", "value": 20}
+      ],
+      "processors": [
+        {
+          "name": "apache_parser",
+          "component": "com.hurence.logisland.processor.SplitText",
+          "documentation": "a parser that produce events from an apache log REGEX",
+          "config": [
+            { "key": "record.type", "value": "apache_log" },
+            { "key": "value.regex", "value": "(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\[([\\w:\\/]+\\s[+\\-]\\d{4})\\]\\s+\"(\\S+)\\s+(\\S+)\\s*(\\S*)\"\\s+(\\S+)\\s+(\\S+)" },
+            { "key": "value.fields", "value": "src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out" }
+          ]
+        }
+      ]
+    }
+
+  ],
+  "summary": {
+    "usedCores": 4,
+    "usedMemory": 512,
+    "status": "STOPPED",
+    "dateModified": 1487331314955,
+    "documentation": "Index some apache logs with logisland"
+  }
+
+
+},
+  {
+    "name": "FirewallLogsCollect-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "PAUSED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "SysLogsCollect-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STARTED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "SecurityRulesAnalytics-live",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STARTED",
+      "dateModified": 1487331314955,
+      "documentation": "Index some apache logs with logisland"
+    }
+  },
+  {
+    "name": "BotsearchModelBuilder-batch",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 20,
+      "usedMemory": 512,
+      "status": "STOPPED",
+      "dateModified": 1487331314955,
+      "documentation": "build each day "
+    }
+  },
+  {
+    "name": "UserBehaviorModelBuilder-batch",
+    "engine": {
+      "name": "main_engine",
+      "component": "com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine",
+    },
+    "summary": {
+      "usedCores": 4,
+      "usedMemory": 512,
+      "status": "STOPPED",
+      "dateModified": 1487331314955,
+      "documentation": "build each day "
+    }
+  }
+]

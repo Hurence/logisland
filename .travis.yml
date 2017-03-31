@@ -10,10 +10,13 @@ cache:
 language: java
 
 script: 
-  - mvn install
+  - mvn install -Phdp-2.4
+  - mvn install -Phdp-2.5
 
 jdk:
   - oraclejdk8
+
+install: true
 
 notifications:
   email:

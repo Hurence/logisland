@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.9.8
+version: 0.10.0-SNAPSHOT
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -93,18 +93,25 @@ engine:
           type: parser
           documentation: a parser that add a new field if a threshold has been crossed
           configuration:
-            script.code.process: >
+            script.code.process: |
                 outputRecords = []
-
+                # Check that one can read values coming from java:
+                # Go through each record and add a python field with a value from a field coming from java 
                 for record in records:
-                  copyRecord = StandardRecord(record)
-                  # Check that one can read values coming from java
-                  javaFieldValue = copyRecord.getField("bytes_out").asString()
-                  copyRecord.setStringField('python_field', 'loaded bytes_out = ' + javaFieldValue)
+                  try:
+                    copyRecord = StandardRecord(record)
+                    # Get the src_ip field value
+                    javaField = copyRecord.getField("src_ip")
+                    if javaField is not None:
+                      javaFieldValue = javaField.asString()
+                      copyRecord.setStringField('python_field', 'java src_ip = ' + javaFieldValue)
+                  except:
+                    # Print an error message in case of error
+                    errorMsg = 'ERROR in python code processing this record: ' + str(copyRecord)
+                    print errorMsg
+                    copyRecord.addError('unknown_error', errorMsg)
                   outputRecords.append(copyRecord)
-
                 return outputRecords
-
 
         - processor: syslog_debugger
           component: com.hurence.logisland.processor.DebugStream

@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.9.8
+version: 0.10.0-SNAPSHOT
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -102,13 +102,12 @@ engine:
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
-
         - processor: match_query
           component: com.hurence.logisland.processor.MatchQuery
           type: processor
           documentation: a parser that produce alerts from lucene queries
           configuration:
-            numeric.fields: avg_bytes_out,connections_count
+            numeric.fields: bytes_out,connections_count
             too_much_bandwidth: avg_bytes_out:[50000 TO 5000000]
             too_many_connections: connections_count:[500 TO 1000000]
             output.record.type: threshold_alert

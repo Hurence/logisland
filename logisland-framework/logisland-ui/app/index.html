@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="LogIsland Dashboard">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, job-scalable=no"/>
+
+    <title>LogIsland UI</title>
+
+    <!--<link rel='stylesheet' href='//fonts.googleapis.com/css?family=Roboto:400,700'>-->
+    <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./jspm_packages/github/angular/bower-material@master/angular-material.css"/>
+    <!--<link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0/release/dataTable.css"/>-->
+    <!--<link rel="stylesheet" href="./jspm_packages/github/swimlane/angular-data-table@0.7.0/release/material.css"/>-->
+    <link rel="stylesheet" href="./jspm_packages/github/vitalets/angular-xeditable@0.6.0/dist/css/xeditable.css">
+    <link rel="stylesheet" href="./assets/app.css"/>
+</head>
+<body layout="column"
+      layout-align="start top"
+      ng-controller="AppController as app"
+      ng-cloak>
+
+<!-- Header / Top bar -->
+<md-toolbar layout="row">
+    <div flex
+         class="md-toolbar-tools"
+         layout="row"
+         layout-align="start center">
+        <md-button class="menu md-icon-button"
+                   ng-click="app.toggleList('left')"
+                   aria-label="Show Job List">
+            <md-icon md-svg-icon="menu"></md-icon>
+        </md-button>
+        <h1>LogIsland UI</h1>
+    </div>
+    <div>{{ dataServiceAvailable }}</div>
+</md-toolbar>
+
+<md-content layout="row" flex>
+
+    <md-sidenav
+            class="md-sidenav-left"
+            md-component-id="left"
+            md-is-locked-open="$mdMedia('gt-sm')"
+            md-whiteframe="4">
+
+        <md-toolbar class="md-toolbar-tools">
+            <h2 class="md-toolbar-tools">Menu</h2>
+            <md-button class="md-icon-button"
+                       aria-label="Close Side Panel"
+                       hide-gt-sm=""
+                       ng-click="app.toggleList('left')">
+                <md-tooltip>Close Side Panel</md-tooltip>
+                <md-icon md-svg-icon="close"></md-icon>
+            </md-button>
+        </md-toolbar>
+
+        <md-content flex layout-padding>
+            <md-list layout-align="start center">
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">subject</md-icon>
+                    <a ui-sref="topics" ui-sref-active="active" ng-click="app.toggleList('left')">Topics</a>
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">directions_run</md-icon>
+                    <!--<a ui-sref="jobs.list" ui-sref-active="active" ng-click="app.toggleList('left')">Jobs</a>-->
+                    <span ng-click="expandJobs = !expandJobs">Jobs</span>
+                    <md-icon ng-show="expandJobs" ng-click="expandJobs = !expandJobs"
+                             class="material-icons md-light md-48">keyboard_arrow_down
+                    </md-icon>
+                    <md-icon ng-show="!expandJobs" ng-click="expandJobs = !expandJobs"
+                             class="material-icons md-light md-48">keyboard_arrow_right
+                    </md-icon>
+                </md-subheader>
+                <md-list-item ng-repeat="job in app.jobs" ng-show="expandJobs">
+                    <a ui-sref="jobs.details" ui-sref-active="active"
+                       ng-click="app.selectedJob=job; app.toggleList('left')">{{ job.name }}</a>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">warning</md-icon>
+                    Alerts
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">info</md-icon>
+                    Metrology
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">error</md-icon>
+                    Errors
+                </md-subheader>
+                <md-divider></md-divider>
+                <md-subheader flex class="md-no-sticky">
+                    <md-icon class="material-icons md-light md-48">settings</md-icon>
+                    Config
+                </md-subheader>
+                <md-divider></md-divider>
+            </md-list>
+        </md-content>
+    </md-sidenav>
+
+    <div flex layout-padding ui-view>No state selected</div>
+
+</md-content>
+
+<script src="./jspm_packages/system.js" type="text/javascript"></script>
+<script src="config.js" type="text/javascript"></script>
+<script type="text/javascript">
+    System
+        .import('src/boot/boot')
+        .catch( console.error.bind(console) ); /* make sure any errors print to console*/
+
+
+
+
+
+</script>
+<script type="text/ng-template" id="actions.html">
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="startJob($index)"
+               ng-class=" { 'md-primary': job.summary.status == 'RUNNING' }"
+               aria-label="Start Job">
+        <md-icon md-svg-icon="play"></md-icon>
+    </md-button>
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="pauseJob($index)"
+               ng-class="{ 'md-primary': job.summary.status == 'PAUSED' }"
+               aria-label="Pause Job">
+        <md-icon md-svg-icon="pause"></md-icon>
+    </md-button>
+    <md-button class="md-fab md-mini md-raised"
+               ng-click="shutdownJob($index)"
+               ng-class="{ 'md-primary': job.summary.status == 'STOPPED' }"
+               aria-label="Stop Job">
+        <md-icon md-svg-icon="stop"></md-icon>
+    </md-button></script>
+</body>
+</html>
