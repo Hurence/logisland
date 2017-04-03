@@ -84,6 +84,11 @@ public class MockRecord extends StandardRecord {
 		assertedFields.add(fieldName);
     }
 
+    public void assertFieldEquals(final String fieldName, final byte[] expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+        assertedFields.add(fieldName);
+    }
+
     public void assertFieldNotEquals(final String fieldName, final String expectedValue) {
         Assert.assertNotSame(expectedValue, getField(fieldName).asString());
 		assertedFields.add(fieldName);
