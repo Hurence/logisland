@@ -62,9 +62,9 @@ export default angular
                 template: '<job-list flex ></job-list>'
             })
             .state({
-                name: 'jobs.details',
-                url: '/details',
-                template: '<job-details flex selected="app.selectedJob"> </job-details>'
+                name: 'processors',
+                url: '/processors',
+                template: '<processor-list flex> </processor-list>'
             })
             .state({
                 name: 'topics',
