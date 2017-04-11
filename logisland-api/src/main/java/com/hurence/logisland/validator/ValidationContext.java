@@ -17,6 +17,8 @@ package com.hurence.logisland.validator;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceLookup;
 
 import java.util.Map;
 
@@ -29,7 +31,18 @@ public interface ValidationContext {
 
 
 
+    /**
+     * @return the {@link ControllerServiceLookup} which can be used to obtain
+     * Controller Services
+     */
+    ControllerServiceLookup getControllerServiceLookup();
 
+    /**
+     * @param controllerService to lookup the validation context of
+     * @return a ValidationContext that is appropriate for validating the given
+     * {@link ControllerService}
+     */
+    ValidationContext getControllerServiceValidationContext(ControllerService controllerService);
 
     /**
      * @param property being validated

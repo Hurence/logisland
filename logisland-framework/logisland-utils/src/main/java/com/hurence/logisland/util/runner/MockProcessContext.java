@@ -1,32 +1,53 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.util.runner;
 
-import com.hurence.logisland.component.*;
+import com.hurence.logisland.component.ConfigurableComponent;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.processor.StandardValidationContext;
+import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
-public class MockProcessContext implements ProcessContext {
+public class MockProcessContext extends MockControllerServiceLookup implements ControllerServiceLookup, ProcessContext {
 
     private final ConfigurableComponent component;
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
+    private final VariableRegistry variableRegistry;
 
+
+    /**
+     * Creates a new MockProcessContext for the given Processor
+     *
+     * @param component being mocked
+     * @param variableRegistry variableRegistry
+     */
+    public MockProcessContext(final ConfigurableComponent component, final VariableRegistry variableRegistry) {
+        this.component = Objects.requireNonNull(component);
+        this.variableRegistry = variableRegistry;
+    }
 
     /**
      * Creates a new MockProcessContext for the given Processor
@@ -34,9 +55,35 @@ public class MockProcessContext implements ProcessContext {
      * @param component being mocked
      */
     public MockProcessContext(final Processor component) {
-        this.component = Objects.requireNonNull(component);
+        this(component, VariableRegistry.EMPTY_REGISTRY);
     }
 
+    public MockProcessContext(final ControllerService component, final MockProcessContext context,  final VariableRegistry variableRegistry) {
+        this(component, variableRegistry);
+
+        try {
+            final Map<PropertyDescriptor, String> props = context.getControllerServiceProperties(component);
+            properties.putAll(props);
+
+            super.addControllerServices(context);
+        } catch (IllegalArgumentException e) {
+            // do nothing...the service is being loaded
+        }
+    }
+
+
+    Map<PropertyDescriptor, String> getControllerServiceProperties(final ControllerService controllerService) {
+        return super.getConfiguration(controllerService.getIdentifier()).getProperties();
+    }
+
+    /**
+     * Creates a new MockProcessContext for the given ProcessContext
+     *
+     * @param context
+     */
+    public MockProcessContext(final ProcessContext context) {
+        this(context.getProcessor(), VariableRegistry.EMPTY_REGISTRY);
+    }
 
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
@@ -183,6 +230,16 @@ public class MockProcessContext implements ProcessContext {
 
     @Override
     public Processor getProcessor() {
-        return (Processor)component;
+        return (Processor) component;
     }
+
+
+    public void addControllerService(final String serviceIdentifier, final ControllerService controllerService, final Map<PropertyDescriptor, String> properties, final String annotationData) {
+        requireNonNull(controllerService);
+        final ControllerServiceConfiguration config = addControllerService(controllerService);
+        config.setProperties(properties);
+        config.setAnnotationData(annotationData);
+    }
+
+
 }

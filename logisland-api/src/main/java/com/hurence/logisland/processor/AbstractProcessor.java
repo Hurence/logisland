@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import java.util.Collections;
 
 
 public abstract class AbstractProcessor extends AbstractConfigurableComponent implements Processor {
-
 
     public static final PropertyDescriptor INCLUDE_INPUT_RECORDS = new PropertyDescriptor.Builder()
             .name("include.input.records")
@@ -47,6 +47,11 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
     @Override
     public void init(ProcessContext context) {
         logger.debug("init");
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "abstract-id";
     }
 
 }

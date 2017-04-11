@@ -22,7 +22,7 @@ import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
-import com.hurence.logisland.processor.MockProcessContext;
+import com.hurence.logisland.util.runner.MockProcessContext;
 
 /**
  * Initializes a Procesor using a MockProcessorInitializationContext

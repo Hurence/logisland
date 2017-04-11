@@ -70,6 +70,7 @@
     <modules>
         <module>logisland-api</module>
         <module>logisland-plugins</module>
+        <module>logisland-services</module>
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
         <module>logisland-assembly</module>
@@ -285,6 +286,12 @@
             </dependency>
 
 
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.7.1</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.hbase</groupId>

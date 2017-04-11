@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor;
+package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.AbstractProcessor;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 
