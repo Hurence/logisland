@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.util;
 
+import com.hurence.logisland.util.string.StringUtils;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.Predicate;
 import com.jayway.jsonpath.internal.Utils;
