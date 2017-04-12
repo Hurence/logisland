@@ -658,7 +658,17 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

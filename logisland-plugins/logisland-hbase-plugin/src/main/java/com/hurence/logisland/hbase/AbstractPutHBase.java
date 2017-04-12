@@ -1,19 +1,21 @@
 package com.hurence.logisland.hbase;
 
 
-import com.hurence.logisland.annotation.lifecycle.OnScheduled;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.hbase.put.PutRecord;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.RecordSerializer;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -24,26 +26,26 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractPutHBase extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractPutHBase.class);
+    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractPutHBase.class);
 
     protected static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("HBase Client Service")
+            .name("hbase.client.service")
             .description("Specifies the Controller Service to use for accessing HBase.")
             .required(true)
             .identifiesControllerService(HBaseClientService.class)
             .build();
 
-    protected static final PropertyDescriptor TABLE_NAME = new PropertyDescriptor.Builder()
-            .name("Table Name")
-            .description("The name of the HBase Table to put data into")
+    protected static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
+            .name("table.name.field")
+            .description("The field containing the name of the HBase Table to put data into")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    protected static final PropertyDescriptor ROW_ID = new PropertyDescriptor.Builder()
-            .name("Row Identifier")
-            .description("Specifies the Row ID to use when inserting data into HBase")
+    protected static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
+            .name("row.identifier.field")
+            .description("Specifies  field containing the Row ID to use when inserting data into HBase")
             .required(false) // not all sub-classes will require this
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -61,7 +63,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             "Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.");
 
     static final PropertyDescriptor ROW_ID_ENCODING_STRATEGY = new PropertyDescriptor.Builder()
-            .name("Row Identifier Encoding Strategy")
+            .name("row.identifier.encoding.strategy")
             .description("Specifies the data type of Row ID used when inserting data into HBase. The default behavior is" +
                     " to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string" +
                     " to the correct byte[] representation. The Binary option should be used if you are using Binary row" +
@@ -72,24 +74,24 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .allowableValues(ROW_ID_ENCODING_STRING, ROW_ID_ENCODING_BINARY)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_FAMILY = new PropertyDescriptor.Builder()
-            .name("Column Family")
-            .description("The Column Family to use when inserting data into HBase")
+    protected static final PropertyDescriptor COLUMN_FAMILY_FIELD = new PropertyDescriptor.Builder()
+            .name("column.family.field")
+            .description("The field containing the  Column Family to use when inserting data into HBase")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_QUALIFIER = new PropertyDescriptor.Builder()
-            .name("Column Qualifier")
-            .description("The Column Qualifier to use when inserting data into HBase")
+    protected static final PropertyDescriptor COLUMN_QUALIFIER_FIELD = new PropertyDescriptor.Builder()
+            .name("column.qualifier.field")
+            .description("The field containing the  Column Qualifier to use when inserting data into HBase")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
-            .name("Batch Size")
+            .name("batch.size")
             .description("The maximum number of Records to process in a single execution. The Records will be " +
                     "grouped by table, and a single Put per table will be performed.")
             .required(true)
@@ -97,16 +99,73 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .defaultValue("25")
             .build();
 
+    protected static final AllowableValue AVRO_SERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
+
+    protected static final AllowableValue JSON_SERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+
+    protected static final AllowableValue KRYO_SERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
+
+    protected static final AllowableValue NO_SERIALIZER =
+            new AllowableValue("none", "no serialization", "send events as bytes");
+
+
+    protected static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.serializer")
+            .description("the serializer needed to i/o the record in the HBase row")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(KRYO_SERIALIZER.getValue())
+            .build();
+
+    protected static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+            .name("record.schema")
+            .description("the avro schema definition for the Avro serialization")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
 
     protected HBaseClientService clientService;
+    protected RecordSerializer serializer;
 
-    @OnScheduled
-    public void onScheduled(final ProcessContext context) {
+
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
+        final boolean isAvroSerializer = validationContext.getPropertyValue(RECORD_SERIALIZER).asString().toLowerCase().contains("avro");
+        final boolean isAvroSchemaSet = validationContext.getPropertyValue(RECORD_SCHEMA).isSet();
+
+        final List<ValidationResult> problems = new ArrayList<>();
+
+        if (isAvroSerializer && !isAvroSchemaSet) {
+            problems.add(new ValidationResult.Builder()
+                    .subject(RECORD_SERIALIZER.getDisplayName())
+                    .valid(false)
+                    .explanation("an avro schema must be provided with an avro serializer")
+                    .build());
+        }
+
+        return problems;
+    }
+
+    @Override
+    public void init(final ProcessContext context) {
         clientService = context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
+        if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
+            serializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                    context.getPropertyValue(RECORD_SCHEMA).asString());
+        } else {
+            serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
+        }
     }
 
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) throws ProcessException {
+
         final int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
 
         if (records == null || records.size() == 0) {
@@ -117,23 +176,33 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
 
         // Group Records by HBase Table
         for (final Record record : records) {
-            final PutRecord putRecord = createPut(session, context, record);
+            final PutRecord putRecord = createPut(context, record, serializer);
 
             if (putRecord == null) {
                 // sub-classes should log appropriate error messages before returning null
-                session.transfer(record, REL_FAILURE);
+                record.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(),
+                        logger,
+                        "Failed to produce a put for Record from {}" + record.toString());
             } else if (!putRecord.isValid()) {
                 if (StringUtils.isBlank(putRecord.getTableName())) {
-                    logger.error("Missing table name for Record {}; routing to failure", new Object[]{record});
+                    record.addError(ProcessError.BAD_RECORD.toString(),
+                            logger,
+                            "Missing table name for Record " + record.toString()                            );
                 } else if (null == putRecord.getRow()) {
-                    logger.error("Missing row id for Record {}; routing to failure", new Object[]{record});
+                    record.addError(ProcessError.BAD_RECORD.toString(),
+                            logger,
+                            "Missing row id for Record " + record.toString());
                 } else if (putRecord.getColumns() == null || putRecord.getColumns().isEmpty()) {
-                    logger.error("No columns provided for Record {}; routing to failure", new Object[]{record});
+                    record.addError(ProcessError.BAD_RECORD.toString(),
+                            logger,
+                            "No columns provided for Record " + record.toString());
                 } else {
                     // really shouldn't get here, but just in case
-                    logger.error("Failed to produce a put for Record {}; routing to failure", new Object[]{record});
+                    record.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(),
+                            logger,
+                            "Failed to produce a put for Record from " + record.toString()
+                            );
                 }
-                session.transfer(record, REL_FAILURE);
             } else {
                 List<PutRecord> putRecords = tablePuts.get(putRecord.getTableName());
                 if (putRecords == null) {
@@ -157,9 +226,8 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
                 logger.error(e.getMessage(), e);
 
                 for (PutRecord putRecord : entry.getValue()) {
-                    logger.error("Failed to send {} to HBase due to {}; routing to failure", new Object[]{putRecord.getRecord(), e});
-                    final Record failure = session.penalize(putRecord.getRecord());
-                    session.transfer(failure, REL_FAILURE);
+                    String msg = String.format("Failed to send {} to HBase due to {}; routing to failure", putRecord.getRecord(), e);
+                    putRecord.getRecord().addError("HBASE_PUT_RECORD_FAILURE", logger, msg);
                 }
             }
         }
@@ -168,10 +236,10 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
         logger.debug("Sent {} Records to HBase successfully in {} milliseconds", new Object[]{successes.size(), sendMillis});
 
         for (PutRecord putRecord : successes) {
-            session.transfer(putRecord.getRecord(), REL_SUCCESS);
             final String details = "Put " + putRecord.getColumns().size() + " cells to HBase";
-            session.getProvenanceReporter().send(putRecord.getRecord(), getTransitUri(putRecord), details, sendMillis);
+            //session.getProvenanceReporter().send(putRecord.getRecord(), getTransitUri(putRecord), details, sendMillis);
         }
+        return records;
 
     }
 

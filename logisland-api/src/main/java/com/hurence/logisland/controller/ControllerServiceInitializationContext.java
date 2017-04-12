@@ -20,4 +20,9 @@ public interface ControllerServiceInitializationContext extends KerberosContext 
     ControllerServiceLookup getControllerServiceLookup();
 
 
+    /**
+     * @return a logger that can be used to log important events in a standard
+     * way and generate bulletins when appropriate
+     */
+    ComponentLog getLogger();
 }

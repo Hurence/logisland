@@ -166,10 +166,6 @@ public class MockHBaseClientService extends AbstractControllerService implements
        return Bytes.toBytesBinary(s);
     }
 
-    @Override
-    public String getIdentifier() {
-        return "";
-    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {

@@ -20,6 +20,7 @@ import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.runner.MockProcessor;
 import org.junit.Test;
 
 import java.util.*;

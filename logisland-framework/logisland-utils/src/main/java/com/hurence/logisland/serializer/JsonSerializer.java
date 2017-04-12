@@ -68,7 +68,7 @@ public class JsonSerializer implements RecordSerializer {
         }
 
         @Override
-        public void serialize(Record record, JsonGenerator jgen, SerializerProvider provider)
+        public void serialize(Record record, JsonGenerator jgen, com.fasterxml.jackson.databind.SerializerProvider provider)
                 throws IOException, JsonProcessingException {
             jgen.writeStartObject();
             jgen.writeStringField("id", record.getId());

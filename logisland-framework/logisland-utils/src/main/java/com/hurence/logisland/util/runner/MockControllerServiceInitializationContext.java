@@ -5,15 +5,20 @@ package com.hurence.logisland.util.runner;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.MockComponentLogger;
 
 import java.io.File;
 
-public class MockControllerServiceInitializationContext extends MockControllerServiceLookup implements ControllerServiceInitializationContext, ControllerServiceLookup {
+public class MockControllerServiceInitializationContext extends MockControllerServiceLookup
+        implements ControllerServiceInitializationContext, ControllerServiceLookup {
 
     private final String identifier;
+    private final ComponentLog logger;
 
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
+        this.logger = new MockComponentLogger();
     }
 
 
@@ -33,6 +38,10 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return this;
     }
 
+    @Override
+    public ComponentLog getLogger() {
+        return logger;
+    }
 
     @Override
     public String getKerberosServicePrincipal() {

@@ -323,24 +323,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     def process(rdd: RDD[(Array[Byte], Array[Byte])])
 
 
-    /**
-      * build a serializer
-      *
-      * @param inSerializerClass the serializer type
-      * @param schemaContent     an Avro schema
-      * @return the serializer
-      */
-    def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
-        // TODO move this in a utility class
-        inSerializerClass match {
-            case c if c == AbstractKafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                val parser = new Parser
-                val inSchema = parser.parse(schemaContent)
-                new AvroSerializer(inSchema)
-            case c if c == AbstractKafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-            case _ => new KryoSerializer(true)
-        }
-    }
+
 
     /**
       *

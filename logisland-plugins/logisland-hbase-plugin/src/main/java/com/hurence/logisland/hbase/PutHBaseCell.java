@@ -31,22 +31,24 @@ public class PutHBaseCell extends AbstractPutHBase {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(HBASE_CLIENT_SERVICE);
-        properties.add(TABLE_NAME);
-        properties.add(ROW_ID);
+        properties.add(TABLE_NAME_FIELD);
+        properties.add(ROW_ID_FIELD);
         properties.add(ROW_ID_ENCODING_STRATEGY);
-        properties.add(COLUMN_FAMILY);
-        properties.add(COLUMN_QUALIFIER);
+        properties.add(COLUMN_FAMILY_FIELD);
+        properties.add(COLUMN_QUALIFIER_FIELD);
         properties.add(BATCH_SIZE);
+        properties.add(RECORD_SCHEMA);
+        properties.add(RECORD_SERIALIZER);
         return properties;
     }
 
 
     @Override
     protected PutRecord createPut(final ProcessContext context, final Record record, final RecordSerializer serializer) {
-        final String tableName = context.getPropertyValue(TABLE_NAME).asString();
-        final String row = context.getPropertyValue(ROW_ID).asString();
-        final String columnFamily = context.getPropertyValue(COLUMN_FAMILY).asString();
-        final String columnQualifier = context.getPropertyValue(COLUMN_QUALIFIER).asString();
+        final String tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+        final String row = record.getField(context.getPropertyValue(ROW_ID_FIELD).asString()).asString();
+        final String columnFamily = record.getField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()).asString();
+        final String columnQualifier = record.getField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()).asString();
 
 
         try {
@@ -54,8 +56,10 @@ public class PutHBaseCell extends AbstractPutHBase {
             serializer.serialize(baos, record);
             final byte[] buffer = baos.toByteArray();
             baos.close();
-            final Collection<PutColumn> columns = Collections.singletonList(new PutColumn(columnFamily.getBytes(StandardCharsets.UTF_8),
-                    columnQualifier.getBytes(StandardCharsets.UTF_8), buffer));
+            final Collection<PutColumn> columns = Collections.singletonList(new PutColumn(
+                    columnFamily.getBytes(StandardCharsets.UTF_8),
+                    columnQualifier.getBytes(StandardCharsets.UTF_8),
+                    buffer));
             byte[] rowKeyBytes = getRow(row, context.getPropertyValue(ROW_ID_ENCODING_STRATEGY).asString());
 
             return new PutRecord(tableName, rowKeyBytes, columns, record);

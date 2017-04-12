@@ -40,7 +40,7 @@ public class RecordStreamInitializer implements ConfigurableComponentInitializer
 
 
         final ComponentLog logger = new MockComponentLogger();
-        final MockProcessContext context = new MockProcessContext(null);
+        final MockProcessContext context = new MockProcessContext(null,null);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, recordStream, logger, context);
     }
 

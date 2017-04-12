@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.record;
 
+import com.hurence.logisland.logging.ComponentLog;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -69,6 +71,13 @@ public interface Record extends Serializable {
     int sizeInBytes();
 
     Record addError(String errorType, String errorMessage);
+
+    Record addError(String errorType);
+
+    Record addError(String errorType, ComponentLog logger, String errorMessage);
+
+    Record addError(String errorType, ComponentLog logger, String errorMessage, Object[] os);
+
 
     Collection<String> getErrors();
 }

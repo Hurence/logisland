@@ -26,6 +26,20 @@ import java.util.*;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
+
+    private String identifier = "";
+
+
+
+    @Override
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
     private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 
     /**

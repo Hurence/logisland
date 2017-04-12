@@ -4,7 +4,6 @@ import com.hurence.logisland.annotation.behavior.WritesAttribute;
 import com.hurence.logisland.annotation.behavior.WritesAttributes;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.annotation.lifecycle.OnScheduled;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.hbase.io.JsonFullRowSerializer;
@@ -13,22 +12,22 @@ import com.hurence.logisland.hbase.io.RowSerializer;
 import com.hurence.logisland.hbase.scan.Column;
 import com.hurence.logisland.hbase.scan.ResultCell;
 import com.hurence.logisland.hbase.scan.ResultHandler;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Tags({"hbase", "scan", "fetch", "get", "enrich"})
@@ -46,93 +45,72 @@ public class FetchHBaseRow extends AbstractProcessor {
     static final Pattern COLUMNS_PATTERN = Pattern.compile("\\w+(:\\w+)?(?:,\\w+(:\\w+)?)*");
 
     static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("HBase Client Service")
+            .name("hbase.client.service")
             .description("Specifies the Controller Service to use for accessing HBase.")
             .required(true)
             .identifiesControllerService(HBaseClientService.class)
             .build();
 
-    static final PropertyDescriptor TABLE_NAME = new PropertyDescriptor.Builder()
-            .name("Table Name")
-            .description("The name of the HBase Table to fetch from.")
+    static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
+            .name("table.name.field")
+            .description("The field containing the name of the HBase Table to fetch from.")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor ROW_ID = new PropertyDescriptor.Builder()
-            .name("Row Identifier")
-            .description("The identifier of the row to fetch.")
+    static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
+            .name("row.identifier.field")
+            .description("The field containing the  identifier of the row to fetch.")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor COLUMNS = new PropertyDescriptor.Builder()
-            .name("Columns")
-            .description("An optional comma-separated list of \"<colFamily>:<colQualifier>\" pairs to fetch. To return all columns " +
+    static final PropertyDescriptor COLUMNS_FIELD = new PropertyDescriptor.Builder()
+            .name("columns.field")
+            .description("The field containing an optional comma-separated list of \"<colFamily>:<colQualifier>\" pairs to fetch. To return all columns " +
                     "for a given family, leave off the qualifier such as \"<colFamily1>,<colFamily2>\".")
             .required(false)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.createRegexMatchingValidator(COLUMNS_PATTERN))
             .build();
 
-    static final AllowableValue DESTINATION_ATTRIBUTES = new AllowableValue("flowfile-attributes", "flowfile-attributes",
-            "Adds the JSON document representing the row that was fetched as an attribute named hbase.row. " +
-                    "The format of the JSON document is determined by the JSON Format property. " +
-                    "NOTE: Fetching many large rows into attributes may have a negative impact on performance.");
 
-    static final AllowableValue DESTINATION_CONTENT = new AllowableValue("flowfile-content", "flowfile-content",
-            "Overwrites the FlowFile content with a JSON document representing the row that was fetched. " +
-                    "The format of the JSON document is determined by the JSON Format property.");
 
-    static final PropertyDescriptor DESTINATION = new PropertyDescriptor.Builder()
-            .name("Destination")
-            .description("Indicates whether the row fetched from HBase is written to FlowFile content or FlowFile Attributes.")
-            .required(true)
-            .allowableValues(DESTINATION_ATTRIBUTES, DESTINATION_CONTENT)
-            .defaultValue(DESTINATION_ATTRIBUTES.getValue())
+
+    protected static final AllowableValue AVRO_SERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
+
+    protected static final AllowableValue JSON_SERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+
+    protected static final AllowableValue KRYO_SERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
+
+    protected static final AllowableValue NO_SERIALIZER =
+            new AllowableValue("none", "no serialization", "send events as bytes");
+
+
+    protected static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.serializer")
+            .description("the serializer needed to i/o the record in the HBase row")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
 
-    static final AllowableValue JSON_FORMAT_FULL_ROW = new AllowableValue("full-row", "full-row",
-            "Creates a JSON document with the format: {\"row\":<row-id>, \"cells\":[{\"fam\":<col-fam>, \"qual\":<col-val>, \"val\":<value>, \"ts\":<timestamp>}]}.");
-    static final AllowableValue JSON_FORMAT_QUALIFIER_AND_VALUE = new AllowableValue("col-qual-and-val", "col-qual-and-val",
-            "Creates a JSON document with the format: {\"<col-qual>\":\"<value>\", \"<col-qual>\":\"<value>\".");
-
-    static final PropertyDescriptor JSON_FORMAT = new PropertyDescriptor.Builder()
-            .name("JSON Format")
-            .description("Specifies how to represent the HBase row as a JSON document.")
-            .required(true)
-            .allowableValues(JSON_FORMAT_FULL_ROW, JSON_FORMAT_QUALIFIER_AND_VALUE)
-            .defaultValue(JSON_FORMAT_FULL_ROW.getValue())
+    protected static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+            .name("record.schema")
+            .description("the avro schema definition for the Avro serialization")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final AllowableValue ENCODING_NONE = new AllowableValue("none", "none", "Creates a String using the bytes of given data and the given Character Set.");
-    static final AllowableValue ENCODING_BASE64 = new AllowableValue("base64", "base64", "Creates a Base64 encoded String of the given data.");
 
-    static final PropertyDescriptor JSON_VALUE_ENCODING = new PropertyDescriptor.Builder()
-            .name("JSON Value Encoding")
-            .description("Specifies how to represent row ids, column families, column qualifiers, and values when stored in FlowFile attributes, or written to JSON.")
-            .required(true)
-            .allowableValues(ENCODING_NONE, ENCODING_BASE64)
-            .defaultValue(ENCODING_NONE.getValue())
-            .build();
-
-    static final PropertyDescriptor DECODE_CHARSET = new PropertyDescriptor.Builder()
-            .name("Decode Character Set")
-            .description("The character set used to decode data from HBase.")
-            .required(true)
-            .defaultValue("UTF-8")
-            .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
-            .build();
-
-    static final PropertyDescriptor ENCODE_CHARSET = new PropertyDescriptor.Builder()
-            .name("Encode Character Set")
-            .description("The character set used to encode the JSON representation of the row.")
-            .required(true)
-            .defaultValue("UTF-8")
-            .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
-            .build();
+    protected HBaseClientService clientService;
+    protected RecordSerializer serializer;
 
 
     static final String HBASE_TABLE_ATTR = "hbase.table";
@@ -142,23 +120,15 @@ public class FetchHBaseRow extends AbstractProcessor {
     static {
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(HBASE_CLIENT_SERVICE);
-        props.add(TABLE_NAME);
-        props.add(ROW_ID);
-        props.add(COLUMNS);
-        props.add(DESTINATION);
-        props.add(JSON_FORMAT);
-        props.add(JSON_VALUE_ENCODING);
-        props.add(ENCODE_CHARSET);
-        props.add(DECODE_CHARSET);
+        props.add(TABLE_NAME_FIELD);
+        props.add(ROW_ID_FIELD);
+        props.add(COLUMNS_FIELD);
+        props.add(RECORD_SERIALIZER);
+        props.add(RECORD_SCHEMA);
         properties = Collections.unmodifiableList(props);
     }
 
 
-
-    private volatile Charset decodeCharset;
-    private volatile Charset encodeCharset;
-    private volatile RowSerializer regularRowSerializer;
-    private volatile RowSerializer base64RowSerializer;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -166,90 +136,100 @@ public class FetchHBaseRow extends AbstractProcessor {
     }
 
 
+    @Override
+    public void init(ProcessContext context) {
 
-    @OnScheduled
-    public void onScheduled(ProcessContext context) {
-        this.decodeCharset = Charset.forName(context.getPropertyValue(DECODE_CHARSET).asString());
-        this.encodeCharset = Charset.forName(context.getPropertyValue(ENCODE_CHARSET).asString());
-
-        final String jsonFormat = context.getPropertyValue(JSON_FORMAT).asString();
-        if (jsonFormat.equals(JSON_FORMAT_FULL_ROW.getValue())) {
-            this.regularRowSerializer = new JsonFullRowSerializer(decodeCharset, encodeCharset);
-            this.base64RowSerializer = new JsonFullRowSerializer(decodeCharset, encodeCharset, true);
+        this.clientService = context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
+        if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
+            serializer = SerializerProvider.getSerializer(
+                    context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                    context.getPropertyValue(RECORD_SCHEMA).asString());
         } else {
-            this.regularRowSerializer = new JsonQualifierAndValueRowSerializer(decodeCharset, encodeCharset);
-            this.base64RowSerializer = new JsonQualifierAndValueRowSerializer(decodeCharset, encodeCharset, true);
+            serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
         }
+
+
     }
 
+
     @Override
-    public void onTrigger(ProcessContext context) throws ProcessException {
-        final FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return;
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) throws ProcessException {
+
+        for( Record record : records) {
+
+            try {
+                final String tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+                if (StringUtils.isBlank(tableName)) {
+                    record.addError(
+                            ProcessError.BAD_RECORD.toString(),
+                            getLogger(),
+                            "Table Name is blank or null for {}",
+                            new Object[]{record});
+
+                    continue;
+                }
+
+                final String rowId = record.getField(context.getPropertyValue(ROW_ID_FIELD).asString()).asString();
+                if (StringUtils.isBlank(rowId)) {
+                    record.addError(
+                            ProcessError.BAD_RECORD.toString(),
+                            getLogger(),
+                            "Row Identifier is blank or null for {}",
+                            new Object[]{record});
+                    continue;
+                }
+
+                final List<Column> columns = getColumns(record.getField(context.getPropertyValue(COLUMNS_FIELD).asString()).asString());
+
+
+
+                final RecordContentHandler handler = new RecordContentHandler(serializer);
+
+                final byte[] rowIdBytes = rowId.getBytes(StandardCharsets.UTF_8);
+
+                try {
+                    clientService.scan(tableName, rowIdBytes, rowIdBytes, columns, handler);
+                } catch (Exception e) {
+                    record.addError(
+                            ProcessError.BAD_RECORD.toString(),
+                            getLogger(),
+                            "Unable to fetch row {} from  {} due to {}",
+                            new Object[]{rowId, tableName, e});
+                    continue;
+                }
+
+                Collection<Record> handlerRecords = handler.getRecords();
+                if (!handler.handledRow()) {
+                    record.addError(
+                            ProcessError.BAD_RECORD.toString(),
+                            getLogger(),
+                            "Row {} not found in {}",
+                            new Object[]{rowId, tableName});
+                    continue;
+                }
+
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("Fetched {} from {} with row id {}", new Object[]{handlerRecords, tableName, rowId});
+                }
+
+                final Map<String, String> attributes = new HashMap<>();
+                attributes.put(HBASE_TABLE_ATTR, tableName);
+
+
+                records.addAll(handlerRecords);
+
+
+            }catch (Exception ex){
+                record.addError(ProcessError.RUNTIME_ERROR.toString(),
+                        getLogger(),
+                        "Unable to fetch row {}",
+                        new Object[]{ex});
+            }
+
         }
 
-        final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();
-        if (StringUtils.isBlank(tableName)) {
-            getLogger().error("Table Name is blank or null for {}, transferring to failure", new Object[] {flowFile});
-            session.transfer(session.penalize(flowFile), REL_FAILURE);
-            return;
-        }
+        return records;
 
-        final String rowId = context.getProperty(ROW_ID).evaluateAttributeExpressions(flowFile).getValue();
-        if (StringUtils.isBlank(rowId)) {
-            getLogger().error("Row Identifier is blank or null for {}, transferring to failure", new Object[] {flowFile});
-            session.transfer(session.penalize(flowFile), REL_FAILURE);
-            return;
-        }
-
-        final List<Column> columns = getColumns(context.getProperty(COLUMNS).evaluateAttributeExpressions(flowFile).getValue());
-        final HBaseClientService hBaseClientService = context.getProperty(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
-        final String destination = context.getProperty(DESTINATION).getValue();
-        final boolean base64Encode = context.getProperty(JSON_VALUE_ENCODING).getValue().equals(ENCODING_BASE64.getValue());
-
-        final RowSerializer rowSerializer = base64Encode ? base64RowSerializer : regularRowSerializer;
-
-        final FetchHBaseRowHandler handler = destination.equals(DESTINATION_CONTENT.getValue())
-                ? new FlowFileContentHandler(flowFile, session, rowSerializer) : new FlowFileAttributeHandler(flowFile, session, rowSerializer);
-
-        final byte[] rowIdBytes = rowId.getBytes(StandardCharsets.UTF_8);
-
-        try {
-            hBaseClientService.scan(tableName, rowIdBytes, rowIdBytes, columns, handler);
-        } catch (Exception e) {
-            getLogger().error("Unable to fetch row {} from  {} due to {}", new Object[] {rowId, tableName, e});
-            session.transfer(handler.getFlowFile(), REL_FAILURE);
-            return;
-        }
-
-        FlowFile handlerFlowFile = handler.getFlowFile();
-        if (!handler.handledRow()) {
-            getLogger().error("Row {} not found in {}, transferring to not found", new Object[] {rowId, tableName});
-            session.transfer(handlerFlowFile, REL_NOT_FOUND);
-            return;
-        }
-
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Fetched {} from {} with row id {}", new Object[]{handlerFlowFile, tableName, rowId});
-        }
-
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put(HBASE_TABLE_ATTR, tableName);
-        if (destination.equals(DESTINATION_CONTENT.getValue())) {
-            attributes.put(CoreAttributes.MIME_TYPE.key(), "application/json");
-        }
-
-        handlerFlowFile = session.putAllAttributes(handlerFlowFile, attributes);
-
-        final String transitUri = "hbase://" + tableName + "/" + rowId;
-        if (destination.equals(DESTINATION_CONTENT.getValue())) {
-            session.getProvenanceReporter().fetch(handlerFlowFile, transitUri);
-        } else {
-            session.getProvenanceReporter().modifyAttributes(handlerFlowFile, "Added attributes to FlowFile from " + transitUri);
-        }
-
-        session.transfer(handlerFlowFile, REL_SUCCESS);
     }
 
     /**
@@ -276,86 +256,53 @@ public class FetchHBaseRow extends AbstractProcessor {
         return columnsList;
     }
 
-    /**
-     * A ResultHandler that also provides access to a resulting FlowFile reference.
-     */
-    private interface FetchHBaseRowHandler extends ResultHandler {
 
-        /**
-         * @return returns the flow file reference that was used by this handler
-         */
-        Record getRecord();
 
-        /**
-         * @return returns true if this handler handled a row
-         */
-        boolean handledRow();
 
-    }
 
     /**
-     * A FetchHBaseRowHandler that writes the resulting row to the FlowFile content.
+     * A FetchHBaseRowHandler that writes the resulting row to the Record content.
      */
-    private static class FlowFileContentHandler implements FetchHBaseRowHandler {
+    private static class RecordContentHandler implements ResultHandler {
 
-        private Record record;
-        private final RowSerializer serializer;
+        private ArrayList<Record> records;
+        private final RecordSerializer serializer;
         private boolean handledRow = false;
 
-        public FlowFileContentHandler(final Record record,  final RowSerializer serializer) {
-            this.record = record;
+        private ComponentLog logger = new StandardComponentLogger("", this.getClass());
+
+        public RecordContentHandler(final RecordSerializer serializer) {
+            this.records = new ArrayList<>();
             this.serializer = serializer;
         }
 
         @Override
         public void handle(byte[] row, ResultCell[] resultCells) {
-            record = session.write(record, (out) -> {
-                serializer.serialize(row, resultCells, out);
-            });
+
+            for(ResultCell cell : resultCells ){
+
+                try {
+                  //  final byte[] row = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
+                    ByteArrayInputStream bais = new ByteArrayInputStream(cell.getRowArray());
+                    Record deserializedRecord = serializer.deserialize(bais);
+                    records.add(deserializedRecord);
+                    bais.close();
+                } catch (Exception e) {
+                    logger.debug("error while handling ResultCell for {}", new Object[]{e});
+                }
+            }
             handledRow = true;
         }
 
-        @Override
-        public Record getRecord() {
-            return record;
+
+        public Collection<Record> getRecords() {
+            return records;
         }
 
-        @Override
         public boolean handledRow() {
             return handledRow;
         }
     }
 
-    /**
-     * A FetchHBaseRowHandler that writes the resulting row to FlowFile attributes.
-     */
-    private static class FlowFileAttributeHandler implements FetchHBaseRowHandler {
 
-        private Record record;
-        private final RowSerializer rowSerializer;
-        private boolean handledRow = false;
-
-        public FlowFileAttributeHandler(final Record record, final RowSerializer serializer) {
-            this.record = record;
-            this.rowSerializer = serializer;
-        }
-
-        @Override
-        public void handle(byte[] row, ResultCell[] resultCells) {
-            final String serializedRow = rowSerializer.serialize(row, resultCells);
-            record = session.putAttribute(record, HBASE_ROW_ATTR, serializedRow);
-            handledRow = true;
-        }
-
-        @Override
-        public Record getRecord() {
-            return record;
-        }
-
-        @Override
-        public boolean handledRow() {
-            return handledRow;
-        }
-
-    }
 }

@@ -21,6 +21,7 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.schema.{SchemaManager, StandardSchemaManager}
+import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.validator.StandardValidators
@@ -107,13 +108,13 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * create serializers
                           */
-                        val deserializer = getSerializer(
+                        val deserializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
-                        val serializer = getSerializer(
+                        val serializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                        val errorSerializer = getSerializer(
+                        val errorSerializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 
@@ -157,6 +158,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             /**
                               * process incoming events
                               */
+                            processor.init(processorContext)
                             outgoingEvents = processor.process(processorContext, incomingEvents)
 
                             /**

@@ -19,7 +19,10 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.validator.ValidationContext;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +47,16 @@ public class StandardValidationContext implements ValidationContext {
         return new StandardPropertyValue(rawValue);
     }
 
+
+    @Override
+    public ControllerServiceLookup getControllerServiceLookup() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public ValidationContext getControllerServiceValidationContext(ControllerService controllerService) {
+        throw new NotImplementedException();
+    }
 
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor property) {

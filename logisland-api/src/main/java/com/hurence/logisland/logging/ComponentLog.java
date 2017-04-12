@@ -17,7 +17,7 @@ package com.hurence.logisland.logging;
 
 /**
  * <p>
- * The ComponentLog provides a mechanism to ensure that all NiFi components are
+ * The ComponentLog provides a mechanism to ensure that all components are
  * logging and reporting information in a consistent way. When messages are
  * logged to the ComponentLog, each message has the following characteristics:
  * </p>
@@ -27,7 +27,7 @@ package com.hurence.logisland.logging;
  * The <code>toString()</code> of the component is automatically prepended to
  * the message so that it is clear which component is providing the information.
  * This is important, since a single component may have many different instances
- * within the same NiFi instance.
+ * within the system.
  * </li>
  * <li>
  * If the last value in an Object[] argument that is passed to the logger is a
@@ -100,4 +100,12 @@ public interface ComponentLog {
     void debug(String msg, Object[] os, Throwable t);
 
     void debug(String msg);
+
+    void log(LogLevel level, String msg, Throwable t);
+
+    void log(LogLevel level, String msg, Object[] os);
+
+    void log(LogLevel level, String msg);
+
+    void log(LogLevel level, String msg, Object[] os, Throwable t);
 }
