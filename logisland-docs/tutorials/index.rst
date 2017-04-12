@@ -23,6 +23,7 @@ Contents:
    :maxdepth: 2
 
    index-apache-logs
+   enrich-apache-logs
    query-matching
    outlier-detection
    indexing-bro-events

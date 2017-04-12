@@ -16,7 +16,7 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.processor.util.StringUtils;
+import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
