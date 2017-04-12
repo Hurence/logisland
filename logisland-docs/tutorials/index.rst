@@ -27,4 +27,5 @@ Contents:
    query-matching
    outlier-detection
    indexing-bro-events
+   indexing-netflow-events
 
