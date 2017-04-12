@@ -471,33 +471,6 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
-.. _com.hurence.logisland.processor.pcap.ParsePCap: 
-
-ParsePCap
----------
-The PCap processor is the LogIsland entry point to parse network packets captured in pcap format. The PCap processor decodes the bytes of the incoming pcap record, where a Global pcap header followed by a sequence of [packet header, packet data] pairs are stored. Each incoming pcap event is parsed into n packet records where packet headers data is made available in dedicated fields.
-
-Class
-_____
-com.hurence.logisland.processor.pcap.ParsePCap
-
-Tags
-____
-PCap, security, IDS, NIDS
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
-
-----------
-
 .. _com.hurence.logisland.processor.ParseProperties: 
 
 ParseProperties
