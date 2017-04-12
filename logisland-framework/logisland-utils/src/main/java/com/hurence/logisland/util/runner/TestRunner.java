@@ -191,6 +191,17 @@ public interface TestRunner {
      * @param key   the key/value separator of the message
      * @param value the key of the message
      */
+    void enqueue(byte[] key, byte[] value);
+
+    /**
+     * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,
+     * and adds this Record to the Processor's Input Queue.
+     * <p>
+     * the key will be set as empty string if keyValueSeparator is empty
+     *
+     * @param key   the key/value separator of the message
+     * @param value the key of the message
+     */
     void enqueue(String key, String value);
 
     /**

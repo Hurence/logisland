@@ -149,6 +149,11 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     }
 
+    @Override
+    public void enqueue(byte[] key, byte[] value) {
+        final Record record = RecordUtils.getKeyValueRecord(key, value);
+        enqueue(record);
+    }
 
     @Override
     public void enqueue(String keyValueSeparator, InputStream inputStream) {

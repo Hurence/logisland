@@ -13,13 +13,13 @@ public class PutRecord {
     private final String tableName;
     private final byte[] row;
     private final Collection<PutColumn> columns;
-    private final Record flowFile;
+    private final Record record;
 
-    public PutRecord(String tableName, byte[] row, Collection<PutColumn> columns, Record flowFile) {
+    public PutRecord(String tableName, byte[] row, Collection<PutColumn> columns, Record record) {
         this.tableName = tableName;
         this.row = row;
         this.columns = columns;
-        this.flowFile = flowFile;
+        this.record = record;
     }
 
     public String getTableName() {
@@ -35,11 +35,11 @@ public class PutRecord {
     }
 
     public Record getRecord() {
-        return flowFile;
+        return record;
     }
 
     public boolean isValid() {
-        if (tableName == null || tableName.trim().isEmpty() || null == row || flowFile == null || columns == null || columns.isEmpty()) {
+        if (tableName == null || tableName.trim().isEmpty() || null == row || record == null || columns == null || columns.isEmpty()) {
             return false;
         }
 

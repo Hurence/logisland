@@ -28,4 +28,11 @@ public final class RecordUtils {
         record.setStringField(KV_RECORD_VALUE_FIELD, value);
         return record;
     }
+
+    public static Record getKeyValueRecord(byte[] key, byte[] value) {
+        final Record record = new StandardRecord("kv_record");
+        record.setField(KV_RECORD_KEY_FIELD, FieldType.BYTES, key);
+        record.setField(KV_RECORD_VALUE_FIELD, FieldType.BYTES, value);
+        return record;
+    }
 }

@@ -2,12 +2,22 @@
 package com.hurence.logisland.hbase;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.hbase.put.PutColumn;
 import com.hurence.logisland.hbase.put.PutRecord;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordUtils;
+import com.hurence.logisland.serializer.KryoSerializer;
+import com.hurence.logisland.serializer.RecordSerializer;
+import com.hurence.logisland.serializer.SerializerProvider;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -18,289 +28,228 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class TestPutHBaseCell {
-/*
-    @Test
-    public void testSingleFlowFile() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row = "row1";
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
 
+    private static Logger logger = LoggerFactory.getLogger(TestPutHBaseCell.class);
+    public static final String TABLE_NAME_KEY = "table_name";
+    public static final String ROW_ID_KEY = "row_id";
+    public static final String COLUMN_FAMILY_KEY = "column_family";
+    public static final String COLUMN_QUALIFIER_KEY = "column_qualifier";
+
+
+    public static final String TABLE_NAME = "logisland";
+    public static final String QUALIFIER = "qualifier1";
+    public static final String ROW_ID_1 = "id1";
+    public static final String ROW_ID_2 = "id2";
+    public static final String FAMILY = "family1";
+    public static final String KEY = "some key";
+    public static final String VALUE = "some content";
+    public static final String ROW_BINARY = "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x01\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x01\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
+            "\\x01\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x01\\x01\\x01\\x00\\x01\\x00\\x01\\x01\\x01\\x00\\x00\\x00" +
+            "\\x00\\x00\\x00\\x01\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x01\\x00\\x01\\x00\\x01\\x00" +
+            "\\x00\\x01\\x01\\x01\\x01\\x00\\x00\\x01\\x01\\x01\\x00\\x01\\x00\\x00";
+
+    private byte[] serialize(Record record) {
+
+
+        RecordSerializer serializer = SerializerProvider.getSerializer(KryoSerializer.class.getName(), null);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(baos, record);
+        final byte[] buffer = baos.toByteArray();
+        try {
+            baos.close();
+        } catch (IOException e) {
+            logger.info(e.toString());
+        }
+        return buffer;
+    }
+
+    private Record deserialize(byte[] cell) {
+        RecordSerializer serializer = SerializerProvider.getSerializer(KryoSerializer.class.getName(), null);
+        try {
+            //  final byte[] row = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
+            ByteArrayInputStream bais = new ByteArrayInputStream(cell);
+            Record deserializedRecord = serializer.deserialize(bais);
+            bais.close();
+            return deserializedRecord;
+
+        } catch (Exception e) {
+            logger.info(e.toString());
+            return null;
+        }
+    }
+
+    @Test
+    public void testSerializing() {
+        final Record inputRecord = new MockRecord(RecordUtils.getKeyValueRecord("key", "value"));
+
+        final byte[] serialized = serialize(inputRecord);
+
+        assertEquals(inputRecord, new MockRecord(deserialize(serialized)));
+    }
+
+    @Test
+    public void testSingleRecord() throws IOException, InitializationException {
+
+        final TestRunner runner = getTestRunner();
+
+        final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
+
+        final Record inputRecord = getRecord();
+        runner.enqueue(inputRecord);
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+
+
+        final MockRecord outputRecord = runner.getOutputRecords().get(0);
+        outputRecord.assertContentEquals(inputRecord);
+
+        assertNotNull(hBaseClient.getRecordPuts());
+        assertEquals(1, hBaseClient.getRecordPuts().size());
+
+        List<PutRecord> puts = hBaseClient.getRecordPuts().get(TABLE_NAME);
+        assertEquals(1, puts.size());
+        verifyPut(ROW_ID_1, FAMILY, QUALIFIER, inputRecord, puts.get(0));
+
+    }
+
+    private Record getRecord() {
+        final Record inputRecord = new MockRecord(RecordUtils.getKeyValueRecord(KEY, VALUE));
+
+        inputRecord.setStringField(ROW_ID_KEY, ROW_ID_1);
+        inputRecord.setStringField(COLUMN_FAMILY_KEY, FAMILY);
+        inputRecord.setStringField(COLUMN_QUALIFIER_KEY, QUALIFIER);
+        inputRecord.setStringField(TABLE_NAME_KEY, TABLE_NAME);
+        return inputRecord;
+    }
+
+    private TestRunner getTestRunner() {
         final TestRunner runner = TestRunners.newTestRunner(PutHBaseCell.class);
-        runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, tableName);
-        runner.setProperty(PutHBaseCell.ROW_ID_FIELD, row);
-        runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, columnFamily);
-        runner.setProperty(PutHBaseCell.COLUMN_QUALIFIER_FIELD, columnQualifier);
+        runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, TABLE_NAME_KEY);
+        runner.setProperty(PutHBaseCell.ROW_ID_FIELD, ROW_ID_KEY);
+        runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, COLUMN_FAMILY_KEY);
+        runner.setProperty(PutHBaseCell.COLUMN_QUALIFIER_FIELD, COLUMN_QUALIFIER_KEY);
         runner.setProperty(PutHBaseCell.BATCH_SIZE, "1");
+        runner.setProperty(PutHBaseCell.RECORD_SERIALIZER, KryoSerializer.class.getName());
+        return runner;
+    }
 
+
+    @Test
+    public void testMultipleRecordsSameTableDifferentRow() throws IOException, InitializationException {
+
+
+        final TestRunner runner = getTestRunner();
         final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
+        final Record inputRecord1 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_1);
+        final Record inputRecord2 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_2);
+        runner.enqueue(inputRecord1, inputRecord2);
 
-        final String content = "some content";
-        runner.enqueue(content.getBytes("UTF-8"));
+
         runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_SUCCESS);
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputErrorCount(0);
 
-        
-        final MockRecord outFile= runner.getOutputRecords().get(0);
-        outFile.assertContentEquals(content);
+        final MockRecord outFile = runner.getOutputRecords().get(0);
+        outFile.assertContentEquals(inputRecord1);
 
         assertNotNull(hBaseClient.getRecordPuts());
         assertEquals(1, hBaseClient.getRecordPuts().size());
 
-        List<PutRecord> puts = hBaseClient.getRecordPuts().get(tableName);
-        assertEquals(1, puts.size());
-        verifyPut(row, columnFamily, columnQualifier, content, puts.get(0));
-
-        assertEquals(1, runner.getProvenanceEvents().size());
-    }
-
-    @Test
-    public void testSingleFlowFileWithEL() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row = "row1";
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
-
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
-        runner.setProperty(PutHBaseCell.BATCH_SIZE, "1");
-
-        final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
-
-        final String content = "some content";
-        final Map<String, String> attributes = getAttributeMapWithEL(tableName, row, columnFamily, columnQualifier);
-        runner.enqueue(content.getBytes("UTF-8"), attributes);
-
-        runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_SUCCESS);
-
-        final MockFlowFile outFile = runner.getFlowFilesForRelationship(PutHBaseCell.REL_SUCCESS).get(0);
-        outFile.assertContentEquals(content);
-
-        assertNotNull(hBaseClient.getRecordPuts());
-        assertEquals(1, hBaseClient.getRecordPuts().size());
-
-        List<PutRecord> puts = hBaseClient.getRecordPuts().get(tableName);
-        assertEquals(1, puts.size());
-        verifyPut(row, columnFamily, columnQualifier, content, puts.get(0));
-
-        assertEquals(1, runner.getProvenanceEvents().size());
-    }
-
-    @Test
-    public void testSingleFlowFileWithELMissingAttributes() throws IOException, InitializationException {
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
-        runner.setProperty(PutHBaseCell.BATCH_SIZE, "1");
-
-        final MockHBaseClientService hBaseClient = new MockHBaseClientService();
-        runner.addControllerService("hbaseClient", hBaseClient);
-        runner.enableControllerService(hBaseClient);
-        runner.setProperty(PutHBaseCell.HBASE_CLIENT_SERVICE, "hbaseClient");
-
-        getHBaseClientService(runner);
-
-        final String content = "some content";
-        runner.enqueue(content.getBytes("UTF-8"), new HashMap<String, String>());
-        runner.run();
-
-        runner.assertTransferCount(PutHBaseCell.REL_SUCCESS, 0);
-        runner.assertTransferCount(PutHBaseCell.REL_FAILURE, 1);
-
-        assertEquals(0, runner.getProvenanceEvents().size());
-    }
-
-    @Test
-    public void testMultipleFlowFileWithELOneMissingAttributes() throws IOException, InitializationException {
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
-        runner.setProperty(PutHBaseCell.BATCH_SIZE, "10");
-
-        final MockHBaseClientService hBaseClient = new MockHBaseClientService();
-        runner.addControllerService("hbaseClient", hBaseClient);
-        runner.enableControllerService(hBaseClient);
-        runner.setProperty(PutHBaseCell.HBASE_CLIENT_SERVICE, "hbaseClient");
-
-        getHBaseClientService(runner);
-
-        // this one will go to failure
-        final String content = "some content";
-        runner.enqueue(content.getBytes("UTF-8"), new HashMap<String, String>());
-
-        // this will go to success
-        final String content2 = "some content2";
-        final Map<String, String> attributes = getAttributeMapWithEL("table", "row", "cf", "cq");
-        runner.enqueue(content2.getBytes("UTF-8"), attributes);
-
-        runner.run();
-        runner.assertTransferCount(PutHBaseCell.REL_SUCCESS, 1);
-        runner.assertTransferCount(PutHBaseCell.REL_FAILURE, 1);
-
-        assertEquals(1, runner.getProvenanceEvents().size());
-    }
-
-    @Test
-    public void testMultipleFlowFilesSameTableDifferentRow() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row1 = "row1";
-        final String row2 = "row2";
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
-
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
-        final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
-
-        final String content1 = "some content1";
-        final Map<String, String> attributes1 = getAttributeMapWithEL(tableName, row1, columnFamily, columnQualifier);
-        runner.enqueue(content1.getBytes("UTF-8"), attributes1);
-
-        final String content2 = "some content1";
-        final Map<String, String> attributes2 = getAttributeMapWithEL(tableName, row2, columnFamily, columnQualifier);
-        runner.enqueue(content2.getBytes("UTF-8"), attributes2);
-
-        runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_SUCCESS);
-
-        final MockFlowFile outFile = runner.getFlowFilesForRelationship(PutHBaseCell.REL_SUCCESS).get(0);
-        outFile.assertContentEquals(content1);
-
-        assertNotNull(hBaseClient.getRecordPuts());
-        assertEquals(1, hBaseClient.getRecordPuts().size());
-
-        List<PutRecord> puts = hBaseClient.getRecordPuts().get(tableName);
+        List<PutRecord> puts = hBaseClient.getRecordPuts().get(TABLE_NAME);
         assertEquals(2, puts.size());
-        verifyPut(row1, columnFamily, columnQualifier, content1, puts.get(0));
-        verifyPut(row2, columnFamily, columnQualifier, content2, puts.get(1));
+        verifyPut(ROW_ID_1, FAMILY, QUALIFIER, inputRecord1, puts.get(0));
+        verifyPut(ROW_ID_2, FAMILY, QUALIFIER, inputRecord2, puts.get(1));
 
-        assertEquals(2, runner.getProvenanceEvents().size());
     }
 
-    @Test
-    public void testMultipleFlowFilesSameTableDifferentRowFailure() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row1 = "row1";
-        final String row2 = "row2";
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
 
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
+    @Test
+    public void testMultipleRecordsSameTableDifferentRowFailure() throws IOException, InitializationException {
+
+
+        final TestRunner runner = getTestRunner();
         final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
         hBaseClient.setThrowException(true);
 
-        final String content1 = "some content1";
-        final Map<String, String> attributes1 = getAttributeMapWithEL(tableName, row1, columnFamily, columnQualifier);
-        runner.enqueue(content1.getBytes("UTF-8"), attributes1);
-
-        final String content2 = "some content1";
-        final Map<String, String> attributes2 = getAttributeMapWithEL(tableName, row2, columnFamily, columnQualifier);
-        runner.enqueue(content2.getBytes("UTF-8"), attributes2);
+        final Record inputRecord1 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_1);
+        final Record inputRecord2 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_2);
+        runner.enqueue(inputRecord1, inputRecord2);
 
         runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_FAILURE, 2);
+        runner.assertOutputErrorCount(2);
 
-        assertEquals(0, runner.getProvenanceEvents().size());
     }
 
     @Test
-    public void testMultipleFlowFilesSameTableSameRow() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row = "row1";
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
-
-        final PutHBaseCell proc = new PutHBaseCell();
-        final TestRunner runner = getTestRunnerWithEL(proc);
+    public void testMultipleRecordsSameTableSameRow() throws IOException, InitializationException {
+        final TestRunner runner = getTestRunner();
         final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
 
-        final String content1 = "some content1";
-        final Map<String, String> attributes1 = getAttributeMapWithEL(tableName, row, columnFamily, columnQualifier);
-        runner.enqueue(content1.getBytes("UTF-8"), attributes1);
 
-        final String content2 = "some content1";
-        runner.enqueue(content2.getBytes("UTF-8"), attributes1);
+        final Record inputRecord1 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_1);
+        final Record inputRecord2 = getRecord().setStringField(ROW_ID_KEY, ROW_ID_1);
+        runner.enqueue(inputRecord1, inputRecord2);
 
         runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_SUCCESS);
+        runner.assertAllInputRecordsProcessed();
 
-        final MockFlowFile outFile = runner.getFlowFilesForRelationship(PutHBaseCell.REL_SUCCESS).get(0);
-        outFile.assertContentEquals(content1);
+        final MockRecord outFile = runner.getOutputRecords().get(0);
+        outFile.assertContentEquals(inputRecord1);
 
         assertNotNull(hBaseClient.getRecordPuts());
         assertEquals(1, hBaseClient.getRecordPuts().size());
 
-        List<PutRecord> puts = hBaseClient.getRecordPuts().get(tableName);
+        List<PutRecord> puts = hBaseClient.getRecordPuts().get(TABLE_NAME);
         assertEquals(2, puts.size());
-        verifyPut(row, columnFamily, columnQualifier, content1, puts.get(0));
-        verifyPut(row, columnFamily, columnQualifier, content2, puts.get(1));
+        verifyPut(ROW_ID_1, FAMILY, QUALIFIER, inputRecord1, puts.get(0));
+        verifyPut(ROW_ID_1, FAMILY, QUALIFIER, inputRecord2, puts.get(1));
 
-        assertEquals(2, runner.getProvenanceEvents().size());
+
     }
 
     @Test
-    public void testSingleFlowFileWithBinaryRowKey() throws IOException, InitializationException {
-        final String tableName = "logisland";
-        final String row = "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x01\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x01\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +
-                "\\x01\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x01\\x01\\x01\\x00\\x01\\x00\\x01\\x01\\x01\\x00\\x00\\x00" +
-                "\\x00\\x00\\x00\\x01\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x01\\x00\\x01\\x00\\x01\\x00" +
-                "\\x00\\x01\\x01\\x01\\x01\\x00\\x00\\x01\\x01\\x01\\x00\\x01\\x00\\x00";
+    public void testSingleRecordWithBinaryRowKey() throws IOException, InitializationException {
 
-        final String columnFamily = "family1";
-        final String columnQualifier = "qualifier1";
 
         final TestRunner runner = TestRunners.newTestRunner(PutHBaseCell.class);
-        runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, tableName);
-        runner.setProperty(PutHBaseCell.ROW_ID_FIELD, row);
-        runner.setProperty(PutHBaseCell.ROW_ID_ENCODING_STRATEGY,PutHBaseCell.ROW_ID_ENCODING_BINARY.getValue());
-        runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, columnFamily);
-        runner.setProperty(PutHBaseCell.COLUMN_QUALIFIER_FIELD, columnQualifier);
+        runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, TABLE_NAME_KEY);
+        runner.setProperty(PutHBaseCell.ROW_ID_FIELD, ROW_ID_KEY);
+        runner.setProperty(PutHBaseCell.ROW_ID_ENCODING_STRATEGY, PutHBaseCell.ROW_ID_ENCODING_BINARY.getValue());
+        runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, COLUMN_FAMILY_KEY);
+        runner.setProperty(PutHBaseCell.COLUMN_QUALIFIER_FIELD, COLUMN_QUALIFIER_KEY);
         runner.setProperty(PutHBaseCell.BATCH_SIZE, "1");
 
         final MockHBaseClientService hBaseClient = getHBaseClientService(runner);
 
-        final byte[] expectedRowKey = hBaseClient.toBytesBinary(row);
+        final byte[] expectedRowKey = hBaseClient.toBytesBinary(ROW_BINARY);
 
-        final String content = "some content";
-        runner.enqueue(content.getBytes("UTF-8"));
+        final Record inputRecord1 = getRecord().setStringField(ROW_ID_KEY, ROW_BINARY);
+        runner.enqueue(inputRecord1);
         runner.run();
-        runner.assertAllFlowFilesTransferred(PutHBaseCell.REL_SUCCESS);
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
 
-        final MockFlowFile outFile = runner.getFlowFilesForRelationship(PutHBaseCell.REL_SUCCESS).get(0);
-        outFile.assertContentEquals(content);
+        final MockRecord outFile = runner.getOutputRecords().get(0);
+        outFile.assertContentEquals(inputRecord1);
 
         assertNotNull(hBaseClient.getRecordPuts());
         assertEquals(1, hBaseClient.getRecordPuts().size());
 
-        List<PutRecord> puts = hBaseClient.getRecordPuts().get(tableName);
+        List<PutRecord> puts = hBaseClient.getRecordPuts().get(TABLE_NAME);
         assertEquals(1, puts.size());
-        verifyPut(expectedRowKey, columnFamily.getBytes(StandardCharsets.UTF_8), columnQualifier.getBytes(StandardCharsets.UTF_8), content, puts.get(0));
+        verifyPut(expectedRowKey, FAMILY.getBytes(StandardCharsets.UTF_8), QUALIFIER.getBytes(StandardCharsets.UTF_8), inputRecord1, puts.get(0));
 
-        assertEquals(1, runner.getProvenanceEvents().size());
-    }
-    private Map<String, String> getAttributeMapWithEL(String tableName, String row, String columnFamily, String columnQualifier) {
-        final Map<String,String> attributes1 = new HashMap<>();
-        attributes1.put("hbase.tableName", tableName);
-        attributes1.put("hbase.row", row);
-        attributes1.put("hbase.columnFamily", columnFamily);
-        attributes1.put("hbase.columnQualifier", columnQualifier);
-        return attributes1;
     }
 
-    private TestRunner getTestRunnerWithEL(PutHBaseCell proc) {
-        final TestRunner runner = TestRunners.newTestRunner(proc);
-        runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, "${hbase.tableName}");
-        runner.setProperty(PutHBaseCell.ROW_ID_FIELD, "${hbase.row}");
-        runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, "${hbase.columnFamily}");
-        runner.setProperty(PutHBaseCell.COLUMN_QUALIFIER_FIELD, "${hbase.columnQualifier}");
-        return runner;
-    }
+
+
 
     private MockHBaseClientService getHBaseClientService(TestRunner runner) throws InitializationException {
         final MockHBaseClientService hBaseClient = new MockHBaseClientService();
@@ -310,11 +259,12 @@ public class TestPutHBaseCell {
         return hBaseClient;
     }
 
-    private void verifyPut(String row, String columnFamily, String columnQualifier, String content, PutRecord put) {
-        verifyPut(row.getBytes(StandardCharsets.UTF_8),columnFamily.getBytes(StandardCharsets.UTF_8),
-                                columnQualifier.getBytes(StandardCharsets.UTF_8),content,put);
+    private void verifyPut(String row, String columnFamily, String columnQualifier, Record content, PutRecord put) {
+        verifyPut(row.getBytes(StandardCharsets.UTF_8), columnFamily.getBytes(StandardCharsets.UTF_8),
+                columnQualifier.getBytes(StandardCharsets.UTF_8), content, put);
     }
-    private void verifyPut(byte[] row, byte[] columnFamily, byte[] columnQualifier, String content, PutRecord put) {
+
+    private void verifyPut(byte[] row, byte[] columnFamily, byte[] columnQualifier, Record content, PutRecord put) {
         assertEquals(new String(row, StandardCharsets.UTF_8), new String(put.getRow(), StandardCharsets.UTF_8));
 
         assertNotNull(put.getColumns());
@@ -323,7 +273,9 @@ public class TestPutHBaseCell {
         final PutColumn column = put.getColumns().iterator().next();
         assertEquals(new String(columnFamily, StandardCharsets.UTF_8), new String(column.getColumnFamily(), StandardCharsets.UTF_8));
         assertEquals(new String(columnQualifier, StandardCharsets.UTF_8), new String(column.getColumnQualifier(), StandardCharsets.UTF_8));
-        assertEquals(content, new String(column.getBuffer(), StandardCharsets.UTF_8));
+
+        MockRecord out = new MockRecord(deserialize(column.getBuffer()));
+        out.assertContentEquals(content);
     }
-*/
+
 }
