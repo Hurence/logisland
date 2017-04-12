@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.logging;
 
+import java.io.Serializable;
+
 /**
  * <p>
  * The ComponentLog provides a mechanism to ensure that all components are
@@ -47,7 +49,7 @@ package com.hurence.logisland.logging;
  * </ul>
  *
  */
-public interface ComponentLog {
+public interface ComponentLog extends Serializable{
 
     void warn(String msg, Throwable t);
 

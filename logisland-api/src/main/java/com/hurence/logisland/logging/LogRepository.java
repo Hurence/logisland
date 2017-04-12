@@ -1,6 +1,8 @@
 package com.hurence.logisland.logging;
 
-public interface LogRepository {
+import java.io.Serializable;
+
+public interface LogRepository extends Serializable{
 
     void addLogMessage(LogLevel level, String message);
 

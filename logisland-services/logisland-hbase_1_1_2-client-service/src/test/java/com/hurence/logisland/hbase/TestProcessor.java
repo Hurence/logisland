@@ -17,7 +17,7 @@ import java.util.List;
 public class TestProcessor extends AbstractProcessor {
 
     static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("HBase Client Service")
+            .name("hbase.client.service")
             .description("HBaseClientService")
             .identifiesControllerService(HBaseClientService.class)
             .required(true)

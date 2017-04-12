@@ -67,8 +67,8 @@ public class TestHBase_1_1_2_ClientService {
     public void setup() {
         // needed for calls to UserGroupInformation.setConfiguration() to work when passing in
         // config with Kerberos authentication enabled
-        System.setProperty("java.security.krb5.realm", "nifi.com");
-        System.setProperty("java.security.krb5.kdc", "nifi.kdc");
+        System.setProperty("java.security.krb5.realm", "logisland.com");
+        System.setProperty("java.security.krb5.kdc", "logisland.kdc");
 
         kerberosPropsWithFile = new KerberosProperties(new File("src/test/resources/krb5.conf"));
 
@@ -79,7 +79,7 @@ public class TestHBase_1_1_2_ClientService {
     public void testCustomValidate() throws InitializationException, IOException {
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final Table table = Mockito.mock(Table.class);
         when(table.getName()).thenReturn(TableName.valueOf(tableName));
 
@@ -189,7 +189,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test
     public void testSinglePut() throws InitializationException, IOException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final String row = "row1";
         final String columnFamily = "family1";
         final String columnQualifier = "qualifier1";
@@ -227,7 +227,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test
     public void testMultiplePutsSameRow() throws IOException, InitializationException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final String row = "row1";
         final String columnFamily = "family1";
         final String columnQualifier = "qualifier1";
@@ -276,7 +276,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test
     public void testMultiplePutsDifferentRow() throws IOException, InitializationException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final String row1 = "row1";
         final String row2 = "row2";
         final String columnFamily = "family1";
@@ -321,7 +321,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test
     public void testScan() throws InitializationException, IOException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // Mock an HBase Table so we can verify the put operations later
@@ -337,7 +337,7 @@ public class TestHBase_1_1_2_ClientService {
 
         final Map<String, String> cells = new HashMap<>();
         cells.put("greeting", "hello");
-        cells.put("name", "nifi");
+        cells.put("name", "logisland");
 
         service.addResult("row0", cells, now - 2);
         service.addResult("row1", cells, now - 1);
@@ -357,13 +357,13 @@ public class TestHBase_1_1_2_ClientService {
         assertNotNull(results);
         assertEquals(2, results.length);
 
-        verifyResultCell(results[0], "nifi", "greeting", "hello");
-        verifyResultCell(results[1], "nifi", "name", "nifi");
+        verifyResultCell(results[0], "logisland", "greeting", "hello");
+        verifyResultCell(results[1], "logisland", "name", "logisland");
     }
 
     @Test
     public void testScanWithValidFilter() throws InitializationException, IOException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // Mock an HBase Table so we can verify the put operations later
@@ -386,7 +386,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test(expected = IllegalArgumentException.class)
     public void testScanWithInvalidFilter() throws InitializationException, IOException {
-        final String tableName = "nifi";
+        final String tableName = "logisland";
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // Mock an HBase Table so we can verify the put operations later
@@ -480,7 +480,7 @@ public class TestHBase_1_1_2_ClientService {
                 when(cell.getValueOffset()).thenReturn(0);
                 when(cell.getValueLength()).thenReturn(valueArray.length);
 
-                final byte[] familyArray = "nifi".getBytes(StandardCharsets.UTF_8);
+                final byte[] familyArray = "logisland".getBytes(StandardCharsets.UTF_8);
                 when(cell.getFamilyArray()).thenReturn(familyArray);
                 when(cell.getFamilyOffset()).thenReturn(0);
                 when(cell.getFamilyLength()).thenReturn((byte) familyArray.length);

@@ -19,6 +19,7 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
+import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import org.apache.avro.Schema
@@ -63,13 +64,13 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                     /**
                       * create serializers
                       */
-                    val deserializer = getSerializer(
+                    val deserializer = SerializerProvider.getSerializer(
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString,
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
-                    val serializer = getSerializer(
+                    val serializer = SerializerProvider.getSerializer(
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_SERIALIZER).asString,
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                    val errorSerializer = getSerializer(
+                    val errorSerializer = SerializerProvider.getSerializer(
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                         streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 

@@ -100,7 +100,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
         final String setPropertyValue = properties.get(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new StandardPropertyValue(propValue);
+        return new MockPropertyValue(propValue, this, variableRegistry, descriptor);
     }
 
     @Override

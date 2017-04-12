@@ -8,7 +8,7 @@ import com.hurence.logisland.logging.ComponentLog;
 
 public abstract class AbstractControllerService extends AbstractConfigurableComponent implements ControllerService {
 
-    private String identifier;
+
     private ControllerServiceLookup serviceLookup;
     private ComponentLog logger;
 

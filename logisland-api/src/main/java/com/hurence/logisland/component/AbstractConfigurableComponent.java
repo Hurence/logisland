@@ -27,7 +27,7 @@ import java.util.*;
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
 
-    private String identifier = "";
+    protected String identifier = "";
 
 
 
