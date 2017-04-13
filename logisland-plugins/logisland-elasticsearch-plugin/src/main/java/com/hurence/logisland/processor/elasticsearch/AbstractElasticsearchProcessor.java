@@ -308,7 +308,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
     }
 
     /**
-     * Get the ElasticSearch hosts from a Nifi attribute, e.g.
+     * Get the ElasticSearch hosts.
      *
      * @param hosts A comma-separated list of ElasticSearch hosts (host:port,host2:port2, etc.)
      * @return List of InetSocketAddresses for the ES hosts

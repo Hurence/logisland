@@ -10,7 +10,7 @@ import com.hurence.logisland.processor.Processor;
 /**
  * <p>
  * This interface provides a mechanism for creating services that are shared
- * among all {@link Processor}s, {@link ReportingTask}s, and other
+ * among all {@link Processor}s,  and other
  * {@code ControllerService}s.
  * </p>
  *
@@ -22,7 +22,7 @@ import com.hurence.logisland.processor.Processor;
  * <ul>
  * <li>The implementation must implement this interface.</li>
  * <li>The implementation must have a file named
- * org.apache.nifi.controller.ControllerService located within the jar's
+ * com.hurence.logisland.controller.ControllerService located within the jar's
  * <code>META-INF/services</code> directory. This file contains a list of
  * fully-qualified class names of all <code>ControllerService</code>s in the
  * jar, one-per-line.
@@ -44,7 +44,7 @@ import com.hurence.logisland.processor.Processor;
  * {@link PropertyDescriptor.Builder} after calling the
  * {@link PropertyDescriptor.Builder#identifiesControllerService(Class) identifiesControllerService(Class)}
  * method and then the ControllerService is accessed via
- * {@link PropertyValue#asControllerService(Class)} method.
+ *  method.
  * <p>
  * For example:
  * </p>
@@ -68,7 +68,6 @@ import com.hurence.logisland.processor.Processor;
  * <li>A Controller Service can be obtained via a
  * {@link ControllerServiceLookup}. This lookup may be obtained, for example,
  * from the {@link ProcessContext} that is provided to a {@link Processor}'s
- * {@link Processor#onTrigger(ProcessContext) onTrigger}
  * method.
  * <p>
  * For example:

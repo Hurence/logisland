@@ -46,7 +46,7 @@ public class KerberosProperties {
                 if (kerberosConfigFile == null) {
                     return new ValidationResult.Builder()
                             .subject(subject).input(input).valid(false)
-                            .explanation("you are missing the nifi.kerberos.krb5.file property which "
+                            .explanation("you are missing the logisland.kerberos.krb5.file property which "
                                     + "must be set in order to use Kerberos")
                             .build();
                 }
@@ -55,7 +55,7 @@ public class KerberosProperties {
                 if (!kerberosConfigFile.canRead()) {
                     return new ValidationResult.Builder().subject(subject).input(input).valid(false)
                             .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                    + "and nifi has adequate permissions", kerberosConfigFile.getAbsoluteFile()))
+                                    + "and logisland has adequate permissions", kerberosConfigFile.getAbsoluteFile()))
                             .build();
                 }
 
@@ -66,13 +66,13 @@ public class KerberosProperties {
         this.kerberosPrincipal = new PropertyDescriptor.Builder()
                 .name("Kerberos Principal")
                 .required(false)
-                .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+                .description("Kerberos principal to authenticate as. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
                 .addValidator(kerberosConfigValidator)
                 .build();
 
         this.kerberosKeytab = new PropertyDescriptor.Builder()
                 .name("Kerberos Keytab").required(false)
-                .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+                .description("Kerberos keytab associated with the principal. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
                 .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
                 .addValidator(kerberosConfigValidator)
                 .build();
