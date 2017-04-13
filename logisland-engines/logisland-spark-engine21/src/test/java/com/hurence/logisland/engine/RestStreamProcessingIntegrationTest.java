@@ -43,7 +43,7 @@ public class RestStreamProcessingIntegrationTest extends AbstractStreamProcessin
     private static Logger logger = LoggerFactory.getLogger(RestStreamProcessingIntegrationTest.class);
 
 
-    Optional<EngineContext> getEngineContext() {
+    protected Optional<EngineContext> getEngineContext() {
 
         String zkPort = String.valueOf(zkServer.port());
         String kafkaPort = String.valueOf(BROKERPORT);

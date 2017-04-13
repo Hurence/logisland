@@ -132,6 +132,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                 }).toList
                             } else {
                                 // processor
+                                logger.warn(s"KafkaRecordStreamParallelProcessing - spark 2.1 - process")
                                 deserializeRecords(partition, deserializer)
                             }
 

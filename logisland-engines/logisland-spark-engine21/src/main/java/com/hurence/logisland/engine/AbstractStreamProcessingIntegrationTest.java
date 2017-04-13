@@ -33,9 +33,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,6 +45,9 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
+
+//import ch.qos.logback.classic.Level;
+//import ch.qos.logback.classic.Logger;
 
 /**
  * Abstract class for integration testing
@@ -61,7 +63,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     protected static final String MAGIC_STRING = "the world is so big";
 
 
-    private static Logger logger = (Logger)LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
 
     private static KafkaProducer<byte[], byte[]> producer;
     private static KafkaConsumer<byte[], byte[]> consumer;
@@ -94,8 +96,8 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     @Before
     public void setUp() throws InterruptedException, IOException {
 
-        Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.WARN);
+        Logger root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        //root.setLevel(Level.WARN);
 
         SparkUtils.customizeLogLevels();
         // setup Zookeeper
@@ -180,7 +182,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     }
 
 
-    abstract Optional<EngineContext> getEngineContext();
+    protected abstract Optional<EngineContext> getEngineContext();
 
 
     protected static void sendRecord(String topic, Record record) throws IOException {
@@ -215,7 +217,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
         consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(Arrays.asList(OUTPUT_TOPIC));
+        consumer.subscribe(Arrays.asList(topic));
 
 
         List<Record> outputRecords = new ArrayList<>();
