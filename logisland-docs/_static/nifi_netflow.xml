@@ -1,0 +1,460 @@
+<?xml version="1.0" ?>
+<template encoding-version="1.0">
+  <description></description>
+  <groupId>32d55107-015b-1000-a6e8-0c3f58671bd1</groupId>
+  <name>nifi_netflow</name>
+  <snippet>
+    <connections>
+      <id>32e0ff60-015b-1000-0000-000000000000</id>
+      <parentGroupId>32d55107-015b-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>32d55107-015b-1000-0000-000000000000</groupId>
+        <id>32dd59ca-015b-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>32d55107-015b-1000-0000-000000000000</groupId>
+        <id>32dbe663-015b-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>334d97af-015b-1000-0000-000000000000</id>
+      <parentGroupId>32d55107-015b-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>32d55107-015b-1000-0000-000000000000</groupId>
+        <id>334cf37a-015b-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>32d55107-015b-1000-0000-000000000000</groupId>
+        <id>32dbe663-015b-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <processors>
+      <id>32dbe663-015b-1000-0000-000000000000</id>
+      <parentGroupId>32d55107-015b-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1.0</x>
+        <y>0.0</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Local Network Interface</key>
+            <value>
+              <name>Local Network Interface</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Port</key>
+            <value>
+              <name>Port</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Receive Buffer Size</key>
+            <value>
+              <name>Receive Buffer Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Size of Message Queue</key>
+            <value>
+              <name>Max Size of Message Queue</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Size of Socket Buffer</key>
+            <value>
+              <name>Max Size of Socket Buffer</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Character Set</key>
+            <value>
+              <name>Character Set</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Batch Size</key>
+            <value>
+              <name>Max Batch Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Message Delimiter</key>
+            <value>
+              <name>Message Delimiter</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Sending Host</key>
+            <value>
+              <name>Sending Host</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Sending Host Port</key>
+            <value>
+              <name>Sending Host Port</name>
+            </value>
+          </entry>
+        </descriptors>
+        <executionNode>ALL</executionNode>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Local Network Interface</key>
+          </entry>
+          <entry>
+            <key>Port</key>
+            <value>2055</value>
+          </entry>
+          <entry>
+            <key>Receive Buffer Size</key>
+            <value>65507 B</value>
+          </entry>
+          <entry>
+            <key>Max Size of Message Queue</key>
+            <value>10000</value>
+          </entry>
+          <entry>
+            <key>Max Size of Socket Buffer</key>
+            <value>0.2 MB</value>
+          </entry>
+          <entry>
+            <key>Character Set</key>
+            <value>UTF-8</value>
+          </entry>
+          <entry>
+            <key>Max Batch Size</key>
+            <value>1</value>
+          </entry>
+          <entry>
+            <key>Message Delimiter</key>
+            <value>\n</value>
+          </entry>
+          <entry>
+            <key>Sending Host</key>
+          </entry>
+          <entry>
+            <key>Sending Host Port</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>ListenUDP</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.ListenUDP</type>
+    </processors>
+    <processors>
+      <id>32dd59ca-015b-1000-0000-000000000000</id>
+      <parentGroupId>32d55107-015b-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>0.0</x>
+        <y>228.0</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Known Brokers</key>
+            <value>
+              <name>Known Brokers</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Topic Name</key>
+            <value>
+              <name>Topic Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Partition Strategy</key>
+            <value>
+              <name>Partition Strategy</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Partition</key>
+            <value>
+              <name>Partition</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Kafka Key</key>
+            <value>
+              <name>Kafka Key</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Delivery Guarantee</key>
+            <value>
+              <name>Delivery Guarantee</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Message Delimiter</key>
+            <value>
+              <name>Message Delimiter</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Buffer Size</key>
+            <value>
+              <name>Max Buffer Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Record Size</key>
+            <value>
+              <name>Max Record Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Communications Timeout</key>
+            <value>
+              <name>Communications Timeout</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Async Batch Size</key>
+            <value>
+              <name>Async Batch Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Queue Buffering Max Time</key>
+            <value>
+              <name>Queue Buffering Max Time</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Compression Codec</key>
+            <value>
+              <name>Compression Codec</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Client Name</key>
+            <value>
+              <name>Client Name</name>
+            </value>
+          </entry>
+        </descriptors>
+        <executionNode>ALL</executionNode>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Known Brokers</key>
+            <value>sandbox:9092</value>
+          </entry>
+          <entry>
+            <key>Topic Name</key>
+            <value>netflow</value>
+          </entry>
+          <entry>
+            <key>Partition Strategy</key>
+            <value>Round Robin</value>
+          </entry>
+          <entry>
+            <key>Partition</key>
+          </entry>
+          <entry>
+            <key>Kafka Key</key>
+          </entry>
+          <entry>
+            <key>Delivery Guarantee</key>
+            <value>0</value>
+          </entry>
+          <entry>
+            <key>Message Delimiter</key>
+          </entry>
+          <entry>
+            <key>Max Buffer Size</key>
+            <value>5 MB</value>
+          </entry>
+          <entry>
+            <key>Max Record Size</key>
+            <value>1 MB</value>
+          </entry>
+          <entry>
+            <key>Communications Timeout</key>
+            <value>30 secs</value>
+          </entry>
+          <entry>
+            <key>Async Batch Size</key>
+            <value>16384</value>
+          </entry>
+          <entry>
+            <key>Queue Buffering Max Time</key>
+          </entry>
+          <entry>
+            <key>Compression Codec</key>
+            <value>none</value>
+          </entry>
+          <entry>
+            <key>Client Name</key>
+            <value>nf</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>PutKafka</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.kafka.PutKafka</type>
+    </processors>
+    <processors>
+      <id>334cf37a-015b-1000-0000-000000000000</id>
+      <parentGroupId>32d55107-015b-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>584.0</x>
+        <y>203.0</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Directory</key>
+            <value>
+              <name>Directory</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Conflict Resolution Strategy</key>
+            <value>
+              <name>Conflict Resolution Strategy</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Create Missing Directories</key>
+            <value>
+              <name>Create Missing Directories</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Maximum File Count</key>
+            <value>
+              <name>Maximum File Count</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Last Modified Time</key>
+            <value>
+              <name>Last Modified Time</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Permissions</key>
+            <value>
+              <name>Permissions</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Owner</key>
+            <value>
+              <name>Owner</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Group</key>
+            <value>
+              <name>Group</name>
+            </value>
+          </entry>
+        </descriptors>
+        <executionNode>ALL</executionNode>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Directory</key>
+            <value>/tmp/netflow</value>
+          </entry>
+          <entry>
+            <key>Conflict Resolution Strategy</key>
+            <value>fail</value>
+          </entry>
+          <entry>
+            <key>Create Missing Directories</key>
+            <value>true</value>
+          </entry>
+          <entry>
+            <key>Maximum File Count</key>
+          </entry>
+          <entry>
+            <key>Last Modified Time</key>
+          </entry>
+          <entry>
+            <key>Permissions</key>
+          </entry>
+          <entry>
+            <key>Owner</key>
+          </entry>
+          <entry>
+            <key>Group</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>PutFile</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.PutFile</type>
+    </processors>
+  </snippet>
+  <timestamp>04/07/2017 10:28:10 UTC</timestamp>
+</template>
