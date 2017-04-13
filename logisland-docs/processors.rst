@@ -287,7 +287,7 @@ Fetches a row from an HBase table. The Destination property controls whether the
 
 Class
 _____
-com.hurence.logisland.hbase.FetchHBaseRow
+com.hurence.logisland.processor.hbase.FetchHBaseRow
 
 Tags
 ____
@@ -611,7 +611,7 @@ Adds the Contents of a Record to HBase as the value of a single cell
 
 Class
 _____
-com.hurence.logisland.hbase.PutHBaseCell
+com.hurence.logisland.processor.hbase.PutHBaseCell
 
 Tags
 ____
