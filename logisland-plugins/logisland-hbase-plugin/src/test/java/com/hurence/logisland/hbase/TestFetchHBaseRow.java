@@ -2,22 +2,50 @@
 package com.hurence.logisland.hbase;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordUtils;
+import com.hurence.logisland.serializer.KryoSerializer;
+import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TestFetchHBaseRow {
-/*
+
+
+    public static final String FAMILY = "cf1";
+    public static final String COLUMN_QUALIFIER_1 = "cq1";
+    public static final String COLUMN_QUALIFIER_2 = "cq2";
     private FetchHBaseRow proc;
     private MockHBaseClientService hBaseClientService;
     private TestRunner runner;
+
+    public static final String TABLE_NAME_KEY = "table_name";
+    public static final String ROW_ID_KEY = "row_id";
+    public static final String COLUMNS_KEY = "columns";
+
+
+    public static final String TABLE_NAME = "logisland";
+    public static final String QUALIFIER = "qualifier1";
+    public static final String ROW_ID_1 = "id1";
+    public static final String ROW_ID_2 = "id2";
+
+    public static final String KEY = "some key";
+    public static final String VALUE = "some content";
+
+    private Record getRecord() {
+        final Record inputRecord = new MockRecord(RecordUtils.getKeyValueRecord(KEY, VALUE));
+
+        inputRecord.setStringField(ROW_ID_KEY, ROW_ID_1);
+        inputRecord.setStringField(COLUMNS_KEY, FAMILY + ":" + COLUMN_QUALIFIER_1);
+        inputRecord.setStringField(TABLE_NAME_KEY, TABLE_NAME);
+        return inputRecord;
+    }
 
     @Before
     public void setup() throws InitializationException {
@@ -28,6 +56,11 @@ public class TestFetchHBaseRow {
         runner.addControllerService("hbaseClient", hBaseClientService);
         runner.enableControllerService(hBaseClientService);
         runner.setProperty(FetchHBaseRow.HBASE_CLIENT_SERVICE, "hbaseClient");
+
+        runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, TABLE_NAME_KEY);
+        runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, ROW_ID_KEY);
+        runner.setProperty(FetchHBaseRow.COLUMNS_FIELD, COLUMNS_KEY);
+        runner.setProperty(FetchHBaseRow.RECORD_SERIALIZER, KryoSerializer.class.getName());
     }
 
     @Test
@@ -59,77 +92,41 @@ public class TestFetchHBaseRow {
     }
 
     @Test
-    public void testNoIncomingFlowFile() {
+    public void testNoIncomingRecord() {
         runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, "table1");
         runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, "row1");
 
         runner.run();
-        runner.assertTransferCount(FetchHBaseRow.REL_FAILURE, 0);
-        runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 0);
-        runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
+        runner.assertOutputErrorCount(0);
+        runner.assertOutputRecordsCount(0);
 
         Assert.assertEquals(0, hBaseClientService.getNumScans());
     }
 
-    @Test
-    public void testInvalidTableName() {
-        runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, "${hbase.table}");
-        runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, "row1");
-
-        runner.enqueue("trigger flow file");
-        runner.run();
-
-        runner.assertTransferCount(FetchHBaseRow.REL_FAILURE, 1);
-        runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 0);
-        runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
-
-        Assert.assertEquals(0, hBaseClientService.getNumScans());
-    }
-
-    @Test
-    public void testInvalidRowId() {
-        runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, "table1");
-        runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, "${hbase.row}");
-
-        runner.enqueue("trigger flow file");
-        runner.run();
-
-        runner.assertTransferCount(FetchHBaseRow.REL_FAILURE, 1);
-        runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 0);
-        runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
-
-        Assert.assertEquals(0, hBaseClientService.getNumScans());
-    }
 
     @Test
     public void testFetchToAttributesWithStringValues() {
         final Map<String, String> cells = new HashMap<>();
-        cells.put("cq1", "val1");
-        cells.put("cq2", "val2");
+        cells.put(COLUMN_QUALIFIER_1, "val1");
+        cells.put(COLUMN_QUALIFIER_2, "val2");
 
         final long ts1 = 123456789;
-        hBaseClientService.addResult("row1", cells, ts1);
+        hBaseClientService.addResult(FAMILY + ":" + COLUMN_QUALIFIER_1, cells, ts1);
 
-        runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, "table1");
-        runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, "row1");
-        runner.setProperty(FetchHBaseRow.DESTINATION, FetchHBaseRow.DESTINATION_ATTRIBUTES);
 
-        runner.enqueue("trigger flow file");
+        Record inRecord = getRecord();
+        runner.enqueue(inRecord);
         runner.run();
 
-        runner.assertTransferCount(FetchHBaseRow.REL_FAILURE, 0);
-        runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
-        runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
+        runner.assertOutputErrorCount(0);
+        runner.assertOutputRecordsCount(1);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertAttributeEquals(FetchHBaseRow.HBASE_ROW_ATTR,
-                "{\"row\":\"row1\", \"cells\": [" +
-                        "{\"fam\":\"nifi\",\"qual\":\"cq1\",\"val\":\"val1\",\"ts\":" + ts1 + "}, " +
-                        "{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
+        final MockRecord record = runner.getOutputRecords().get(0);
+        record.assertContentEquals(inRecord);
 
         Assert.assertEquals(1, hBaseClientService.getNumScans());
     }
-
+/*
     @Test
     public void testFetchSpecificColumnsToAttributesWithStringValues() {
         final Map<String, String> cells = new HashMap<>();
@@ -151,8 +148,8 @@ public class TestFetchHBaseRow {
         runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
         runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertAttributeEquals(FetchHBaseRow.HBASE_ROW_ATTR,
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertAttributeEquals(FetchHBaseRow.HBASE_ROW_ATTR,
                 "{\"row\":\"row1\", \"cells\": [{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
 
         Assert.assertEquals(1, hBaseClientService.getNumScans());
@@ -189,8 +186,8 @@ public class TestFetchHBaseRow {
         final String qual2Base64 = Base64.encodeBase64String("cq2".getBytes(StandardCharsets.UTF_8));
         final String val2Base64 = Base64.encodeBase64String("val2".getBytes(StandardCharsets.UTF_8));
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertAttributeEquals(FetchHBaseRow.HBASE_ROW_ATTR,
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertAttributeEquals(FetchHBaseRow.HBASE_ROW_ATTR,
                 "{\"row\":\"" + rowBase64 + "\", \"cells\": [" +
                         "{\"fam\":\"" + fam1Base64 + "\",\"qual\":\"" + qual1Base64 + "\",\"val\":\"" + val1Base64 + "\",\"ts\":" + ts1 + "}, " +
                         "{\"fam\":\"" + fam2Base64 + "\",\"qual\":\"" + qual2Base64 + "\",\"val\":\"" + val2Base64 + "\",\"ts\":" + ts1 + "}]}");
@@ -234,8 +231,8 @@ public class TestFetchHBaseRow {
         runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
         runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertContentEquals("{\"row\":\"row1\", \"cells\": [" +
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertContentEquals("{\"row\":\"row1\", \"cells\": [" +
                 "{\"fam\":\"nifi\",\"qual\":\"cq1\",\"val\":\"val1\",\"ts\":" + ts1 + "}, " +
                 "{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
 
@@ -263,8 +260,8 @@ public class TestFetchHBaseRow {
         runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
         runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertContentEquals("{\"row\":\"row1\", \"cells\": [{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertContentEquals("{\"row\":\"row1\", \"cells\": [{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
 
         Assert.assertEquals(1, hBaseClientService.getNumScans());
     }
@@ -300,8 +297,8 @@ public class TestFetchHBaseRow {
         final String qual2Base64 = Base64.encodeBase64String("cq2".getBytes(StandardCharsets.UTF_8));
         final String val2Base64 = Base64.encodeBase64String("val2".getBytes(StandardCharsets.UTF_8));
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertContentEquals("{\"row\":\"" + rowBase64 + "\", \"cells\": [" +
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertContentEquals("{\"row\":\"" + rowBase64 + "\", \"cells\": [" +
                 "{\"fam\":\"" + fam1Base64 + "\",\"qual\":\"" + qual1Base64 + "\",\"val\":\"" + val1Base64 + "\",\"ts\":" + ts1 + "}, " +
                 "{\"fam\":\"" + fam2Base64 + "\",\"qual\":\"" + qual2Base64 + "\",\"val\":\"" + val2Base64 + "\",\"ts\":" + ts1 + "}]}");
 
@@ -328,8 +325,8 @@ public class TestFetchHBaseRow {
         runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
         runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertContentEquals("{\"cq1\":\"val1\", \"cq2\":\"val2\"}");
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertContentEquals("{\"cq1\":\"val1\", \"cq2\":\"val2\"}");
 
         Assert.assertEquals(1, hBaseClientService.getNumScans());
     }
@@ -360,8 +357,8 @@ public class TestFetchHBaseRow {
         runner.assertTransferCount(FetchHBaseRow.REL_SUCCESS, 1);
         runner.assertTransferCount(FetchHBaseRow.REL_NOT_FOUND, 0);
 
-        final MockFlowFile flowFile = runner.getFlowFilesForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
-        flowFile.assertContentEquals("{\"row\":\"row1\", \"cells\": [{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
+        final MockRecord record = runner.getRecordsForRelationship(FetchHBaseRow.REL_SUCCESS).get(0);
+        record.assertContentEquals("{\"row\":\"row1\", \"cells\": [{\"fam\":\"nifi\",\"qual\":\"cq2\",\"val\":\"val2\",\"ts\":" + ts1 + "}]}");
 
         Assert.assertEquals(1, hBaseClientService.getNumScans());
     }
