@@ -29,7 +29,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>logisland-bro-plugin</module>
-		<module>logisland-pcap-plugin</module>
+		    <module>logisland-pcap-plugin</module>
         <module>logisland-scripting-processors-plugin</module>
         <module>logisland-querymatcher-plugin</module>
         <!--<module>logisland-botsearch-plugin</module>-->

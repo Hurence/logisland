@@ -89,7 +89,7 @@ engine:
 
         # parse apache logs
         - processor: apache_parser
-          component: com.hurence.logisland.processor.scripting.python.PythonProcessor
+          component: com.hurence.logisland.processor.scripting.python.RunPython
           type: parser
           documentation: a parser that add a new field if a threshold has been crossed
           configuration:
