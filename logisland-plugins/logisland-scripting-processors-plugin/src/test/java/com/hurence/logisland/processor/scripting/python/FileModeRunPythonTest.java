@@ -25,32 +25,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test the ability of calling a python processor and executing some python code in the processor.
- * The python code is defined inline (inline mode).
+ * Test the ability of calling a python processor loaded from a script file (file mode)
+ * and executing some python code in the processor.
  */
-public class InlineModePythonProcessorTest {
+public class FileModeRunPythonTest {
     
-    private static Logger logger = LoggerFactory.getLogger(InlineModePythonProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(FileModeRunPythonTest.class);
+    
+    private static final String PYTHON_PROCESSOR = "./src/main/python/processors/basic/BasicProcessor.py";
 
-    private static String INDENT = "    ";
-    private static final String CODE_PROCESS =
-            INDENT + "print \"Inside process of inline processor python code\"\n"  +
-            INDENT + "# Copy the records and add python_field field in it\n" +
-            INDENT + "outputRecords = []\n" +
-            INDENT + "for record in records:\n" +
-            INDENT + "    copyRecord = StandardRecord(record)\n" +
-            INDENT + "    # Check that one can read values coming from java\n" +
-            INDENT + "    javaFieldValue = copyRecord.getField(\"java_field\").getRawValue()\n" +
-            INDENT + "    expectedValue = \"java_field_value\"\n" +
-            INDENT + "    assert (javaFieldValue == expectedValue) , \"Expected \" + expectedValue + \" but got \" + javaFieldValue\n" +
-            INDENT + "    copyRecord.setStringField('python_field', 'python_field_value')\n" +
-            INDENT + "    outputRecords.append(copyRecord)\n" +
-            INDENT + "return outputRecords";
-    
     @Test
     public void testSimple() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new PythonProcessor());
-        testRunner.setProperty(PythonProcessor.SCRIPT_CODE_PROCESS, CODE_PROCESS);
+        final TestRunner testRunner = TestRunners.newTestRunner(new RunPython());
+        testRunner.setProperty(RunPython.SCRIPT_PATH, PYTHON_PROCESSOR);
         testRunner.assertValid();
         Record record = new StandardRecord("simple_record");
         record.setStringField("java_field", "java_field_value");

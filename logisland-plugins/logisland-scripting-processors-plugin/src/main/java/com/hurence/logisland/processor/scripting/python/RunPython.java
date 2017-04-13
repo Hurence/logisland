@@ -54,7 +54,7 @@ import static java.util.stream.Collectors.joining;
 
 @Tags({"scripting", "python"})
 @CapabilityDescription(
-        " !!!! WARNING !!!!\n\nThe python processor is currently an experimental feature : it is delivered as is, with the"
+        " !!!! WARNING !!!!\n\nThe RunPython processor is currently an experimental feature : it is delivered as is, with the"
         + " current set of features and is subject to modifications in API or anything else in further logisland releases"
         + " without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml"
         + " example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end"
@@ -67,9 +67,9 @@ import static java.util.stream.Collectors.joining;
         + " python code may depend on some python dependencies. If the set of python dependencies already delivered with"
         + " the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to"
         + " give their location. Currently only the nltk python library is delivered with Logisland.")
-public class PythonProcessor extends AbstractProcessor {
+public class RunPython extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(PythonProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(RunPython.class);
     
     // Python code for import statements
     private String scriptCodeImports = null;
