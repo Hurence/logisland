@@ -36,28 +36,22 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class BytesArraySerializer implements RecordSerializer {
 
-    private static Logger logger = LoggerFactory.getLogger(BytesArraySerializer.class);
-
     /* TODO */
     public void serialize(OutputStream objectDataOutput, Record record) {
-        throw new RuntimeException("ByteArraySerializer serialize method not implemented yet");
+        throw new RuntimeException("BytesArraySerializer serialize method not implemented yet");
     }
 
     public Record deserialize(InputStream objectDataInput) {
         try {
-            Record record = new StandardRecord("pcap test");
+            Record record = new StandardRecord();
             byte[] bytes = IOUtils.toByteArray(objectDataInput);
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, bytes);
-            logger.debug("BytesArraySerializer - deserialize - message 1");
-
             return record;
         } catch (Throwable t) {
          //   t.printStackTrace();

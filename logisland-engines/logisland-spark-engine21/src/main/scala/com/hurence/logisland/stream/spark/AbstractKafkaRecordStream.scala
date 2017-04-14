@@ -21,7 +21,7 @@ import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer, BytesArraySerializer}
+import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, BytesArraySerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
@@ -446,6 +446,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             try {
                 val bais = new ByteArrayInputStream(rawEvent.value())
                 logger.debug(s"AbstractKafkaRecordStream - deserializeRecords - Thread Id = $threadId")
+                val serializerName = serializer.getClass().getName();
+                logger.debug(s"Serializer name = $serializerName")
                 val deserialized = serializer.deserialize(bais)
                 bais.close()
 

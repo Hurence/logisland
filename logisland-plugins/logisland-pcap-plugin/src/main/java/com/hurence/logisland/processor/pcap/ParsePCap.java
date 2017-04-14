@@ -19,10 +19,11 @@ package com.hurence.logisland.processor.pcap;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.*;
+import com.hurence.logisland.processor.AbstractProcessor;
+import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
-
 import org.krakenapps.pcap.decoder.ip.Ipv4Packet;
 import org.krakenapps.pcap.decoder.tcp.TcpPacket;
 import org.krakenapps.pcap.decoder.udp.UdpPacket;
@@ -34,13 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.EnumMap;
+import java.util.*;
 
 import static com.hurence.logisland.processor.pcap.PcapHelper.ETHERNET_DECODER;
 
@@ -100,7 +95,6 @@ public class ParsePCap extends AbstractProcessor {
             final byte[] pcapRawValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
 
             try {
-                //Thread.sleep(1000);
                 LogIslandEthernetDecoder decoder = ETHERNET_DECODER.get();
 
                 PcapByteInputStream pcapByteInputStream = new PcapByteInputStream(pcapRawValue);
@@ -133,7 +127,13 @@ public class ParsePCap extends AbstractProcessor {
 
                         //outputRecord.setField(new Field(FieldDictionary.RECORD_KEY, FieldType.LONG, pcapTimestamp));
                         outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "network_packet"));
-                        outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packet));
+
+                        //outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, packet));
+                        //byte[] toto = new byte[packetHeader.getInclLen()];
+                        //packet.getPacketData().gets(toto);
+                        //outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, toto));
+                        //outputRecord.setField(new Field(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, ByteUtil.toBytes(packet.getPacketData())));
+
                         outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
                         logger.debug("ParsePCap - Start Parsing - Step 1 - Thread Id = " + threadId);
                         if (ipv4Packet.getVersion() == Constants.PROTOCOL_IPV4) {
@@ -182,11 +182,10 @@ public class ParsePCap extends AbstractProcessor {
                         logger.debug("ParsePCap - Ignorable exception while parsing packet.", ignored);
                     } catch (EOFException eof) {
                         // Ignore exception and break : the while loop is left when eof is reached
-                        logger.debug("ParsePCap - EOFException permettant de sortir de la boucle while");
+                        logger.debug("ParsePCap - EOFException allowing exit from the while loop");
                         break;
                     }
                 }
-                logger.debug("ParsePCap - fin de la boucle while(true)");
             }
             catch (InvalidPCapFileException e) {
                 logger.debug("ParsePCap - catch InvalidPCapFileException");
@@ -202,28 +201,6 @@ public class ParsePCap extends AbstractProcessor {
         });
         logger.debug("ParsePCap - return outputRecords contenant " + outputRecords.size() + " records.");
         return outputRecords;
-    }
-    
-    /**
-     * Deeply clones the passed map regarding keys (so that one can modify keys of the original map without changing
-     * the clone).
-     * @param origMap Map to clone.
-     * @return Cloned map.
-     */
-    private static Map<String, Object> cloneMap(Map<String, Object> origMap)
-    {
-        Map<String, Object> finalMap = new HashMap<String, Object>();
-        origMap.forEach( (key, value) -> {
-            if (value instanceof Map)
-            {
-                Map<String, Object> map = (Map<String, Object>)value;
-                finalMap.put(key, (Object)cloneMap(map)); 
-            } else
-            {
-                finalMap.put(key, value);
-            }
-        });
-        return finalMap;
     }
 
 }
