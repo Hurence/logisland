@@ -138,32 +138,33 @@ First we have to peform some configuration steps on sandbox (to configure and st
     },
     "mappings" : {
       "netflowevent" : {
-      	"numeric_detection": true,
+        "numeric_detection": true,
         "_all" : {"enabled" : false},
         "properties" : {
-              "dOctets": {"index": "analyzed", "type": "long" },
-              "dPkts": { "index": "analyzed", "type": "long" },
-              "dst_as": { "index": "analyzed", "type": "long" },
-              "dst_mask": { "index": "analyzed", "type": "long" },
-              "dst_ip4": { "index": "analyzed", "type": "ip" },
-              "dst_port": { "index": "analyzed", "type": "long" },
-              "first":{"index": "analyzed", "type": "long" },
-              "input":{"index": "analyzed", "type": "long" },
-              "last":{"index": "analyzed", "type": "long" },
-              "nexthop":{"index": "analyzed", "type": "long" },
-              "output":{"index": "analyzed", "type": "long" },
-              "nprot":{"index": "analyzed", "type": "long" },
-              "record_time":{"index": "analyzed", "type": "date","format": "strict_date_optional_time||epoch_millis" },
-              "src_as":{"index": "analyzed", "type": "long" },
-              "src_mask":{"index": "analyzed", "type": "long" },
-              "srca_ip4": { "index": "analyzed", "type": "ip" },
-              "src_port":{"index": "analyzed", "type": "long" },
-              "flags":{"index": "analyzed", "type": "long" },
-              "tos":{"index": "analyzed", "type": "long" },
-              "strict_date_optional_time||epoch_second" }
-            }
-          }
+          "dOctets": {"index": "analyzed", "type": "long" },
+          "dPkts": { "index": "analyzed", "type": "long" },
+          "dst_as": { "index": "analyzed", "type": "long" },
+          "dst_mask": { "index": "analyzed", "type": "long" },
+          "dst_ip4": { "index": "analyzed", "type": "ip" },
+          "dst_port": { "index": "analyzed", "type": "long" },
+          "first":{"index": "analyzed", "type": "long" },
+          "input":{"index": "analyzed", "type": "long" },
+          "last":{"index": "analyzed", "type": "long" },
+          "nexthop":{"index": "analyzed", "type": "ip" },
+          "output":{"index": "analyzed", "type": "long" },
+          "nprot":{"index": "analyzed", "type": "long" },
+          "record_time":{"index": "analyzed", "type": "date","format": "strict_date_optional_time||epoch_millis" },
+          "src_as":{"index": "analyzed", "type": "long" },
+          "src_mask":{"index": "analyzed", "type": "long" },
+          "src_ip4": { "index": "analyzed", "type": "ip" },
+          "src_port":{"index": "analyzed", "type": "long" },
+          "flags":{"index": "analyzed", "type": "long" },
+          "tos":{"index": "analyzed", "type": "long" },
+          "unix_nsecs":{"index": "analyzed", "type": "long" },
+          "unix_secs":{"index": "analyzed", "type": "date","format": "strict_date_optional_time||epoch_second" }
         }
+      }
+    }
   }'
 
 In order to send netflow V5 event (binary format) to ``logisland_raw`` Kafka topic, we will use a nifi instance which will simply listen for netflow traffic on a UDP port (we keep here the default netflow port 2055) and push these netflow records to a kafka broker (sandbox:9092 with topic ``netflow``).
@@ -287,7 +288,7 @@ Within this stream there is a single processor in the processor chain: the Netfl
 
    # Transform Netflow events into Logisland records
         - processor: Netflow adaptor
-          component: com.hurence.logisland.processor.bro.NetflowProcessor
+          component: com.hurence.logisland.processor.netflow.ParseNetflowEvent
           type: parser
           documentation: A processor that transforms Netflow events into LogIsland events
           configuration:
