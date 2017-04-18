@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Test simple Bro events processor.
  */
-public class BroProcessorTest {
+public class ParseBroEventTest {
     
-    private static Logger logger = LoggerFactory.getLogger(BroProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ParseBroEventTest.class);
     
     // Bro conn input event
     private static final String BRO_CONN_EVENT =
@@ -129,7 +129,7 @@ public class BroProcessorTest {
      */
     @Test
     public void testBroFakeDeepEvent() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new BroProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseBroEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("bro_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, BRO_FAKE_DEEP_EVENT);
@@ -185,7 +185,7 @@ public class BroProcessorTest {
     
     @Test
     public void testBroSshPasswordGuessingNotice() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new BroProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseBroEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("bro_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, BRO_SSH_PASSWORD_GUESSING_NOTICE);
@@ -231,7 +231,7 @@ public class BroProcessorTest {
     
     @Test
     public void testBroDnsEvent() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new BroProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseBroEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("bro_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, BRO_DNS_EVENT);
@@ -308,7 +308,7 @@ public class BroProcessorTest {
     
     @Test
     public void testBroConnEvent() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new BroProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseBroEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("bro_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, BRO_CONN_EVENT);
