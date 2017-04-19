@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Tags({"record", "fields", "remove", "delete"})
-@CapabilityDescription("Keep only records based on a given field")
+@CapabilityDescription("Keep only records based on a given field value")
 public class FilterRecords extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

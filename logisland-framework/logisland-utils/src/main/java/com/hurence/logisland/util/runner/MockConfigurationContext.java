@@ -2,10 +2,8 @@ package com.hurence.logisland.util.runner;
 
 
 
-import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
@@ -15,12 +13,11 @@ import com.hurence.logisland.validator.ValidationResult;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-public class MockConfigurationContext extends AbstractConfiguredComponent implements ConfigurationContext {
+public class MockConfigurationContext implements ConfigurationContext {
 
-
+    private final Map<PropertyDescriptor, String> properties;
     private final ControllerServiceLookup serviceLookup;
     private final ControllerService service;
     private final VariableRegistry variableRegistry;
@@ -40,9 +37,8 @@ public class MockConfigurationContext extends AbstractConfiguredComponent implem
                                     final Map<PropertyDescriptor, String> properties,
                                     final ControllerServiceLookup serviceLookup,
                                     final VariableRegistry variableRegistry) {
-        super(null, "");
         this.service = service;
-        this.properties.putAll(properties);
+        this.properties = properties;
         this.serviceLookup = serviceLookup;
         this.variableRegistry = variableRegistry;
     }
@@ -63,10 +59,54 @@ public class MockConfigurationContext extends AbstractConfiguredComponent implem
     }
 
     @Override
+    public ValidationResult setProperty(String name, String value) {
+        return null;
+    }
+
+    @Override
     public PropertyValue newPropertyValue(String rawValue) {
         return null;
     }
 
+    @Override
+    public String getIdentifier() {
+        return null;
+    }
+
+    @Override
+    public void setName(String name) {
+
+    }
+
+    @Override
+    public boolean removeProperty(String name) {
+        return false;
+    }
+
+    @Override
+    public Map<PropertyDescriptor, String> getProperties() {
+        return new HashMap<>(this.properties);
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public String getProperty(PropertyDescriptor property) {
+        return null;
+    }
+
+    @Override
+    public boolean isValid() {
+        return false;
+    }
+
+    @Override
+    public Collection<ValidationResult> getValidationErrors() {
+        return null;
+    }
 
     private PropertyDescriptor getActualDescriptor(final PropertyDescriptor property) {
         if (service == null) {
@@ -77,9 +117,4 @@ public class MockConfigurationContext extends AbstractConfiguredComponent implem
         return resolved == null ? property : resolved;
     }
 
-
-    @Override
-    public void verifyModifiable() throws IllegalStateException {
-
-    }
 }
