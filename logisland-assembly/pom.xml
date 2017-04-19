@@ -146,6 +146,12 @@
     <profiles>
         <profile>
             <id>hdp-2.4</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.4</value>
+                </property>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
@@ -157,6 +163,12 @@
 
         <profile>
             <id>hdp-2.5</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
