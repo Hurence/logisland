@@ -224,6 +224,231 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
+
+KafkaRecordStreamDebugger
+-------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner: 
+
+KafkaRecordStreamHDFSBurner
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
+   "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
+   "**record.type**", "the type of event to filter", "", "null", "", ""
+   "num.partitions", "the numbers of physical files on HDFS", "", "4", "", ""
+   "exclude.errors", "do we include records with errors ?", "", "true", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing: 
+
+KafkaRecordStreamParallelProcessing
+-----------------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator: 
+
+KafkaRecordStreamSQLAggregator
+------------------------------
+This is a stream capable of SQL query interpretations
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
+
+Tags
+____
+stream, SQL, query, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "aggregation", "", ""
+
+----------
+
+.. _com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine: 
+
+KafkaStreamProcessingEngine
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**spark.app.name**", "Tha application name", "", "logisland", "", ""
+   "**spark.master**", "The url to Spark Master", "", "local[2]", "", ""
+   "spark.yarn.deploy-mode", "The yarn deploy mode", "", "null", "", ""
+   "spark.yarn.queue", "The name of the YARN queue", "", "default", "", ""
+   "spark.driver.memory", "The memory size for Spark driver", "", "512m", "", ""
+   "spark.executor.memory", "The memory size for Spark executors", "", "1g", "", ""
+   "spark.driver.cores", "The number of cores for Spark driver", "", "4", "", ""
+   "spark.executor.cores", "The number of cores for Spark driver", "", "1", "", ""
+   "spark.executor.instances", "The number of instances for Spark app", "", "null", "", ""
+   "spark.serializer", "Class to use for serializing objects that will be sent over the network or need to be cached in serialized form", "", "org.apache.spark.serializer.KryoSerializer", "", ""
+   "spark.streaming.blockInterval", "Interval at which data received by Spark Streaming receivers is chunked into blocks of data before storing them in Spark. Minimum recommended - 50 ms", "", "350", "", ""
+   "spark.streaming.kafka.maxRatePerPartition", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "5000", "", ""
+   "**spark.streaming.batchDuration**", "No Description Provided.", "", "2000", "", ""
+   "spark.streaming.backpressure.enabled", "This enables the Spark Streaming to control the receiving rate based on the current batch scheduling delays and processing times so that the system receives only as fast as the system can process.", "", "false", "", ""
+   "spark.streaming.unpersist", "Force RDDs generated and persisted by Spark Streaming to be automatically unpersisted from Spark's memory. The raw input data received by Spark Streaming is also automatically cleared. Setting this to false will allow the raw data and persisted RDDs to be accessible outside the streaming application as they will not be cleared automatically. But it comes at the cost of higher memory usage in Spark.", "", "false", "", ""
+   "spark.ui.port", "No Description Provided.", "", "4050", "", ""
+   "spark.streaming.timeout", "No Description Provided.", "", "-1", "", ""
+   "spark.streaming.kafka.maxRetries", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "3", "", ""
+   "spark.streaming.ui.retainedBatches", "How many batches the Spark Streaming UI and status APIs remember before garbage collecting.", "", "200", "", ""
+   "spark.streaming.receiver.writeAheadLog.enable", "Enable write ahead logs for receivers. All the input data received through receivers will be saved to write ahead logs that will allow it to be recovered after driver failures.", "", "false", "", ""
+   "spark.yarn.maxAppAttempts", "Because Spark driver and Application Master share a single JVM, any error in Spark driver stops our long-running job. Fortunately it is possible to configure maximum number of attempts that will be made to re-run the application. It is reasonable to set higher value than default 2 (derived from YARN cluster property yarn.resourcemanager.am.max-attempts). 4 works quite well, higher value may cause unnecessary restarts even if the reason of the failure is permanent.", "", "4", "", ""
+   "spark.yarn.am.attemptFailuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, 4 attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.yarn.max.executor.failures", "a maximum number of executor failures before the application fails. By default it is max(2 * num executors, 3), well suited for batch jobs but not for long-running jobs. The property comes with corresponding validity interval which also should be set.8 * num_executors", "", "20", "", ""
+   "spark.yarn.executor.failuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, x attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.task.maxFailures", "For long-running jobs you could also consider to boost maximum number of task failures before giving up the job. By default tasks will be retried 4 times and then job fails.", "", "8", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery
@@ -640,42 +865,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.scripting.python.PythonProcessor: 
-
-PythonProcessor
----------------
- !!!! WARNING !!!!
-
-The python processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
-
-This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
-
-Class
-_____
-com.hurence.logisland.processor.scripting.python.PythonProcessor
-
-Tags
-____
-scripting, python
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "script.code.imports", "For inline mode only. This is the pyhton code that should hold the import statements if required.", "", "null", "", ""
-   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "", ""
-   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "", ""
-   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "", ""
-   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "", ""
-   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "", ""
-
-----------
-
 .. _com.hurence.logisland.processor.RemoveFields: 
 
 RemoveFields
@@ -700,6 +889,42 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**fields.to.remove**", "the comma separated list of field names (e.g. 'policyid,date_raw'", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.scripting.python.RunPython: 
+
+RunPython
+---------
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
+
+Class
+_____
+com.hurence.logisland.processor.scripting.python.RunPython
+
+Tags
+____
+scripting, python
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "script.code.imports", "For inline mode only. This is the pyhton code that should hold the import statements if required.", "", "null", "", ""
+   "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "", ""
+   "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "", ""
+   "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "", ""
+   "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "", ""
+   "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "", ""
 
 ----------
 
@@ -747,6 +972,33 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.time.field", "the name of the time field to sample", "", "record_time", "", ""
    "**sampling.algorithm**", "the implementation of the algorithm", "none, lttb, average, first_item, min_max, mode_median", "null", "", ""
    "**sampling.parameter**", "the parmater of the algorithm", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SelectDistinctRecords: 
+
+SelectDistinctRecords
+---------------------
+Keep only distinct records based on a given field
+
+Class
+_____
+com.hurence.logisland.processor.SelectDistinctRecords
+
+Tags
+____
+record, fields, remove, delete
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**field.name**", "the field to distinct records", "", "record_id", "", ""
 
 ----------
 

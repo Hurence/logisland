@@ -59,11 +59,17 @@ public class SelectDistinctRecords extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
+        String fieldToFilterOn = context.getPropertyValue(FILTERING_FIELD).asString();
+        Collection<Record> outputRecords = records.stream().filter(record -> !record.hasField(fieldToFilterOn)).collect(Collectors.toList());
         try {
-            String fieldToFilterOn = context.getPropertyValue(FILTERING_FIELD).asString();
-            records.stream()
+
+
+
+            outputRecords.addAll(
+                    records.stream()
                     .filter(distinctByKey(record -> record.getField(fieldToFilterOn)))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
+
 
 
         } catch (Exception ex) {
@@ -72,7 +78,7 @@ public class SelectDistinctRecords extends AbstractProcessor {
                     ex.toString());
         }
 
-        return records;
+        return outputRecords;
     }
 
 
