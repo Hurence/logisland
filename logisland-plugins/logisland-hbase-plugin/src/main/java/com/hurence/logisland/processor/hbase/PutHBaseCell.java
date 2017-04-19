@@ -4,9 +4,9 @@ package com.hurence.logisland.processor.hbase;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.hbase.put.PutColumn;
 import com.hurence.logisland.processor.hbase.put.PutRecord;
-import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.RecordSerializer;
 import org.slf4j.Logger;
@@ -40,16 +40,29 @@ public class PutHBaseCell extends AbstractPutHBase {
         properties.add(BATCH_SIZE);
         properties.add(RECORD_SCHEMA);
         properties.add(RECORD_SERIALIZER);
+        properties.add(TABLE_NAME_DEFAULT);
+        properties.add(COLUMN_FAMILY_DEFAULT);
+        properties.add(COLUMN_QUALIFIER_DEFAULT);
         return properties;
     }
 
 
     @Override
     protected PutRecord createPut(final ProcessContext context, final Record record, final RecordSerializer serializer) {
-        final String tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
         final String row = record.getField(context.getPropertyValue(ROW_ID_FIELD).asString()).asString();
-        final String columnFamily = record.getField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()).asString();
-        final String columnQualifier = record.getField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()).asString();
+
+
+        String tableName = context.getPropertyValue(TABLE_NAME_DEFAULT).asString();
+        if (record.hasField(context.getPropertyValue(TABLE_NAME_FIELD).asString()))
+            tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+
+        String columnFamily = context.getPropertyValue(COLUMN_FAMILY_DEFAULT).asString();
+        if (record.hasField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()))
+            columnFamily = record.getField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()).asString();
+
+        String columnQualifier = context.getPropertyValue(COLUMN_QUALIFIER_DEFAULT).asString();
+        if (record.hasField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()))
+            columnQualifier = record.getField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()).asString();
 
 
         try {

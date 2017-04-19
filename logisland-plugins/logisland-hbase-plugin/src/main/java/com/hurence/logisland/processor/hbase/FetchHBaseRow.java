@@ -53,6 +53,13 @@ public class FetchHBaseRow extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+
+    protected static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
+            .name("table.name.default")
+            .description("The table table to use if table name field is not set")
+            .required(false)
+            .build();
+
     static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
             .name("table.name.field")
             .description("The field containing the name of the HBase Table to fetch from.")
@@ -128,6 +135,7 @@ public class FetchHBaseRow extends AbstractProcessor {
         props.add(COLUMNS_FIELD);
         props.add(RECORD_SERIALIZER);
         props.add(RECORD_SCHEMA);
+        props.add(TABLE_NAME_DEFAULT);
         properties = Collections.unmodifiableList(props);
     }
 
@@ -166,7 +174,10 @@ public class FetchHBaseRow extends AbstractProcessor {
         for( Record record : records) {
 
             try {
-                final String tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+                String tableName = context.getPropertyValue(TABLE_NAME_DEFAULT).asString();
+                if (record.hasField(context.getPropertyValue(TABLE_NAME_FIELD).asString()))
+                    tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+
                 if (StringUtils.isBlank(tableName)) {
                     record.addError(
                             ProcessError.BAD_RECORD.toString(),

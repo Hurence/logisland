@@ -43,6 +43,13 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .identifiesControllerService(HBaseClientService.class)
             .build();
 
+
+    protected static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
+            .name("table.name.default")
+            .description("The table table to use if table name field is not set")
+            .required(false)
+            .build();
+
     protected static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
             .name("table.name.field")
             .description("The field containing the name of the HBase Table to put data into")
@@ -82,12 +89,24 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .allowableValues(ROW_ID_ENCODING_STRING, ROW_ID_ENCODING_BINARY)
             .build();
 
+    protected static final PropertyDescriptor COLUMN_FAMILY_DEFAULT = new PropertyDescriptor.Builder()
+            .name("column.family.default")
+            .description("The column family to use if column family field is not set")
+            .required(false)
+            .build();
+
     protected static final PropertyDescriptor COLUMN_FAMILY_FIELD = new PropertyDescriptor.Builder()
             .name("column.family.field")
             .description("The field containing the  Column Family to use when inserting data into HBase")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    protected static final PropertyDescriptor COLUMN_QUALIFIER_DEFAULT = new PropertyDescriptor.Builder()
+            .name("column.qualifier.default")
+            .description("The column qualifier to use if column qualifier field is not set")
+            .required(false)
             .build();
 
     protected static final PropertyDescriptor COLUMN_QUALIFIER_FIELD = new PropertyDescriptor.Builder()
