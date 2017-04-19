@@ -191,6 +191,231 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
+
+KafkaRecordStreamDebugger
+-------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner: 
+
+KafkaRecordStreamHDFSBurner
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
+   "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
+   "**record.type**", "the type of event to filter", "", "null", "", ""
+   "num.partitions", "the numbers of physical files on HDFS", "", "4", "", ""
+   "exclude.errors", "do we include records with errors ?", "", "true", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing: 
+
+KafkaRecordStreamParallelProcessing
+-----------------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator: 
+
+KafkaRecordStreamSQLAggregator
+------------------------------
+This is a stream capable of SQL query interpretations
+
+Class
+_____
+com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
+
+Tags
+____
+stream, SQL, query, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+   "avro.input.schema", "the avro schema definition", "", "null", "", ""
+   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
+   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
+   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
+   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
+   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
+   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
+   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "aggregation", "", ""
+
+----------
+
+.. _com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine: 
+
+KafkaStreamProcessingEngine
+---------------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**spark.app.name**", "Tha application name", "", "logisland", "", ""
+   "**spark.master**", "The url to Spark Master", "", "local[2]", "", ""
+   "spark.yarn.deploy-mode", "The yarn deploy mode", "", "null", "", ""
+   "spark.yarn.queue", "The name of the YARN queue", "", "default", "", ""
+   "spark.driver.memory", "The memory size for Spark driver", "", "512m", "", ""
+   "spark.executor.memory", "The memory size for Spark executors", "", "1g", "", ""
+   "spark.driver.cores", "The number of cores for Spark driver", "", "4", "", ""
+   "spark.executor.cores", "The number of cores for Spark driver", "", "1", "", ""
+   "spark.executor.instances", "The number of instances for Spark app", "", "null", "", ""
+   "spark.serializer", "Class to use for serializing objects that will be sent over the network or need to be cached in serialized form", "", "org.apache.spark.serializer.KryoSerializer", "", ""
+   "spark.streaming.blockInterval", "Interval at which data received by Spark Streaming receivers is chunked into blocks of data before storing them in Spark. Minimum recommended - 50 ms", "", "350", "", ""
+   "spark.streaming.kafka.maxRatePerPartition", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "5000", "", ""
+   "**spark.streaming.batchDuration**", "No Description Provided.", "", "2000", "", ""
+   "spark.streaming.backpressure.enabled", "This enables the Spark Streaming to control the receiving rate based on the current batch scheduling delays and processing times so that the system receives only as fast as the system can process.", "", "false", "", ""
+   "spark.streaming.unpersist", "Force RDDs generated and persisted by Spark Streaming to be automatically unpersisted from Spark's memory. The raw input data received by Spark Streaming is also automatically cleared. Setting this to false will allow the raw data and persisted RDDs to be accessible outside the streaming application as they will not be cleared automatically. But it comes at the cost of higher memory usage in Spark.", "", "false", "", ""
+   "spark.ui.port", "No Description Provided.", "", "4050", "", ""
+   "spark.streaming.timeout", "No Description Provided.", "", "-1", "", ""
+   "spark.streaming.kafka.maxRetries", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "3", "", ""
+   "spark.streaming.ui.retainedBatches", "How many batches the Spark Streaming UI and status APIs remember before garbage collecting.", "", "200", "", ""
+   "spark.streaming.receiver.writeAheadLog.enable", "Enable write ahead logs for receivers. All the input data received through receivers will be saved to write ahead logs that will allow it to be recovered after driver failures.", "", "false", "", ""
+   "spark.yarn.maxAppAttempts", "Because Spark driver and Application Master share a single JVM, any error in Spark driver stops our long-running job. Fortunately it is possible to configure maximum number of attempts that will be made to re-run the application. It is reasonable to set higher value than default 2 (derived from YARN cluster property yarn.resourcemanager.am.max-attempts). 4 works quite well, higher value may cause unnecessary restarts even if the reason of the failure is permanent.", "", "4", "", ""
+   "spark.yarn.am.attemptFailuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, 4 attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.yarn.max.executor.failures", "a maximum number of executor failures before the application fails. By default it is max(2 * num executors, 3), well suited for batch jobs but not for long-running jobs. The property comes with corresponding validity interval which also should be set.8 * num_executors", "", "20", "", ""
+   "spark.yarn.executor.failuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, x attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
+   "spark.task.maxFailures", "For long-running jobs you could also consider to boost maximum number of task failures before giving up the job. By default tasks will be retried 4 times and then job fails.", "", "8", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery
@@ -277,42 +502,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hash.algorithm**", "the algorithme to use to hash id string (e.g. 'SHA-256'", "SHA-384, SHA-224, SHA-256, MD2, SHA, SHA-512, MD5", "SHA-256", "", ""
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "", ""
    "**language.tag**", "the language to use to format numbers in string", "aa, ab, ae, af, ak, am, an, ar, as, av, ay, az, ba, be, bg, bh, bi, bm, bn, bo, br, bs, ca, ce, ch, co, cr, cs, cu, cv, cy, da, de, dv, dz, ee, el, en, eo, es, et, eu, fa, ff, fi, fj, fo, fr, fy, ga, gd, gl, gn, gu, gv, ha, he, hi, ho, hr, ht, hu, hy, hz, ia, id, ie, ig, ii, ik, in, io, is, it, iu, iw, ja, ji, jv, ka, kg, ki, kj, kk, kl, km, kn, ko, kr, ks, ku, kv, kw, ky, la, lb, lg, li, ln, lo, lt, lu, lv, mg, mh, mi, mk, ml, mn, mo, mr, ms, mt, my, na, nb, nd, ne, ng, nl, nn, no, nr, nv, ny, oc, oj, om, or, os, pa, pi, pl, ps, pt, qu, rm, rn, ro, ru, rw, sa, sc, sd, se, sg, si, sk, sl, sm, sn, so, sq, sr, ss, st, su, sv, sw, ta, te, tg, th, ti, tk, tl, tn, to, tr, ts, tt, tw, ty, ug, uk, ur, uz, ve, vi, vo, wa, wo, xh, yi, yo, za, zh, zu", "en", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.bro.NetflowProcessor: 
-
-NetflowProcessor
-----------------
-The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
-
-	-Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
-
-	-Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
-The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
-Netflow are sent to kafka in order to be processed by logisland.
-In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
-
-Class
-_____
-com.hurence.logisland.processor.bro.NetflowProcessor
-
-Tags
-____
-netflow, security
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
-   "output.record.type", "the output type of the record", "", "netflowevent", "", ""
-   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "", ""
 
 ----------
 
@@ -457,6 +646,33 @@ com.hurence.logisland.processor.bro.ParseBroEvent
 Tags
 ____
 bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.pcap.ParsePCap: 
+
+ParsePCap
+---------
+The PCap processor is the LogIsland entry point to parse network packets captured in pcap format. The PCap processor decodes the bytes of the incoming pcap record, where a Global pcap header followed by a sequence of [packet header, packet data] pairs are stored. Each incoming pcap event is parsed into n packet records where packet headers data is made available in dedicated fields.
+
+Class
+_____
+com.hurence.logisland.processor.pcap.ParsePCap
+
+Tags
+____
+PCap, security, IDS, NIDS
 
 Properties
 __________
