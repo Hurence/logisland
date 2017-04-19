@@ -50,7 +50,7 @@ public class RecordStreamProcessingDebuggerTest {
         ProcessorConfiguration processorConf = getSplitTextProcessorConfiguration();
         StreamConfiguration chainConf = getSQLStreamConfiguration();
         EngineConfiguration engineConf = getStandardEngineConfiguration();
-        engineConf.addProcessorChainConfigurations(chainConf);
+        engineConf.addPipelineConfigurations(chainConf);
        // chainConf.addProcessorConfiguration(processorConf);
 
 

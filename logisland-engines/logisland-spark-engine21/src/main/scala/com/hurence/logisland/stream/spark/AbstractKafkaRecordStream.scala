@@ -23,7 +23,7 @@ import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, Rest
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -228,6 +228,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
     protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var currentJobVersion: Int = 0
     protected var lastCheckCount: Int = 0
 
@@ -262,6 +263,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         logger.info("setup")
     }
 
+
+
     override def start() = {
         if (ssc == null)
             throw new IllegalStateException("stream not initialized")
@@ -295,6 +298,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
             restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
+            controllerServiceLookupSink = ssc.sparkContext.broadcast(ControllerServiceLookupSink())
 
             // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {

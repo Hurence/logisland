@@ -104,8 +104,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             // Get the singleton instance of SQLContext
             val sqlContext = SparkSession
                 .builder()
-                .appName("KafkaRecordStreamHDFSBurner")
-                .config("spark.some.config.option", "some-value")
+                .appName(appName)
+                .config(ssc.sparkContext.getConf)
                 .getOrCreate()
 
 

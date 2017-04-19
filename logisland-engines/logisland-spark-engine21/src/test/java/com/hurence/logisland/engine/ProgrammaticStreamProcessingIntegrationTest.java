@@ -60,7 +60,7 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
         conf.setComponent(KafkaStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
-        conf.addProcessorChainConfigurations(createStreamConfig());
+        conf.addPipelineConfigurations(createStreamConfig());
 
         return ComponentFactory.getEngineContext(conf);
     }

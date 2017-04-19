@@ -59,4 +59,8 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
         return logger;
     }
 
+    @Override
+    public boolean hasControllerService() {
+        return false;
+    }
 }

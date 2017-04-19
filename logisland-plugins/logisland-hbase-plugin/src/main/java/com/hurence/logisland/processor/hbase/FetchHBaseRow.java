@@ -41,9 +41,16 @@ public class FetchHBaseRow extends AbstractProcessor {
 
     static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("hbase.client.service")
-            .description("Specifies the Controller Service to use for accessing HBase.")
+            .description("The instance of the Controller Service to use for accessing HBase.")
             .required(true)
             .identifiesControllerService(HBaseClientService.class)
+            .build();
+
+    protected static final PropertyDescriptor HBASE_CLIENT_SERVICE_ID = new PropertyDescriptor.Builder()
+            .name("hbase.client.service.id")
+            .description("Specifies the Controller Service to use for accessing HBase.")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
@@ -115,6 +122,7 @@ public class FetchHBaseRow extends AbstractProcessor {
     static {
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(HBASE_CLIENT_SERVICE);
+        props.add(HBASE_CLIENT_SERVICE_ID);
         props.add(TABLE_NAME_FIELD);
         props.add(ROW_ID_FIELD);
         props.add(COLUMNS_FIELD);
@@ -123,6 +131,11 @@ public class FetchHBaseRow extends AbstractProcessor {
         properties = Collections.unmodifiableList(props);
     }
 
+
+    @Override
+    public boolean hasControllerService() {
+        return true;
+    }
 
 
     @Override

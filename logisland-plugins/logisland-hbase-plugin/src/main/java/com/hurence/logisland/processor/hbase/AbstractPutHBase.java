@@ -28,9 +28,17 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
 
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractPutHBase.class);
 
+
+    protected static final PropertyDescriptor HBASE_CLIENT_SERVICE_ID = new PropertyDescriptor.Builder()
+            .name("hbase.client.service.id")
+            .description("Specifies the Controller Service to use for accessing HBase.")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
     protected static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("hbase.client.service")
-            .description("Specifies the Controller Service to use for accessing HBase.")
+            .description("The instance of the Controller Service to use for accessing HBase.")
             .required(true)
             .identifiesControllerService(HBaseClientService.class)
             .build();
@@ -132,6 +140,11 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     protected HBaseClientService clientService;
     protected RecordSerializer serializer;
 
+
+    @Override
+    public boolean hasControllerService() {
+        return true;
+    }
 
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {

@@ -31,6 +31,7 @@ public class PutHBaseCell extends AbstractPutHBase {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(HBASE_CLIENT_SERVICE);
+        properties.add(HBASE_CLIENT_SERVICE_ID);
         properties.add(TABLE_NAME_FIELD);
         properties.add(ROW_ID_FIELD);
         properties.add(ROW_ID_ENCODING_STRATEGY);

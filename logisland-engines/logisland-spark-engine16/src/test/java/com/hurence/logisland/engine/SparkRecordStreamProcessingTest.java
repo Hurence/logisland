@@ -135,7 +135,7 @@ public class SparkRecordStreamProcessingTest {
         conf.setComponent(KafkaStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
-        conf.addProcessorChainConfigurations(createProcessorChainConfiguration());
+        conf.addPipelineConfigurations(createProcessorChainConfiguration());
 
         return conf;
     }
