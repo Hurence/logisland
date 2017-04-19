@@ -28,8 +28,8 @@
     <artifactId>logisland-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
+	<module>logisland-pcap-plugin</module>
         <module>logisland-cyber-security-plugin</module>
-		    <module>logisland-pcap-plugin</module>
         <module>logisland-scripting-processors-plugin</module>
         <module>logisland-querymatcher-plugin</module>
         <!--<module>logisland-botsearch-plugin</module>-->

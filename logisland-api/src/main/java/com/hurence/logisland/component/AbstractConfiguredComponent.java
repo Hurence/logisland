@@ -31,14 +31,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractConfiguredComponent implements ConfigurableComponent, ConfiguredComponent {
 
-    private final String id;
+    protected final String id;
     protected final ConfigurableComponent component;
 
-    private final AtomicReference<String> name;
-    private final AtomicReference<String> annotationData = new AtomicReference<>();
+    protected final AtomicReference<String> name;
+    protected final AtomicReference<String> annotationData = new AtomicReference<>();
 
     private final Lock lock = new ReentrantLock();
-    private final ConcurrentMap<PropertyDescriptor, String> properties = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<PropertyDescriptor, String> properties = new ConcurrentHashMap<>();
 
     private static Logger logger = LoggerFactory.getLogger(AbstractConfiguredComponent.class);
 
@@ -233,6 +233,8 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
         return component.validate(context);
     }
+
+
 
 
 

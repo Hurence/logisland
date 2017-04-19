@@ -88,14 +88,10 @@
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.1</hbase.version>
-        <spark.version>2.1.0</spark.version>
-        <kafka.version>0.10.0.1</kafka.version>
         <hadoop.guava.version>12.0.1</hadoop.guava.version>
         <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
-        <scala.version>2.11.8</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
         <elasticsearch.version>2.3.3</elasticsearch.version>
@@ -1126,7 +1122,10 @@
         <profile>
             <id>hdp-2.5</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
             </activation>
             <properties>
                 <spark.version>2.1.0</spark.version>
@@ -1142,6 +1141,12 @@
 
         <profile>
             <id>hdp-2.4</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.4</value>
+                </property>
+            </activation>
             <properties>
                 <spark.version>1.6.2</spark.version>
                 <kafka.version>0.8.2.1</kafka.version>

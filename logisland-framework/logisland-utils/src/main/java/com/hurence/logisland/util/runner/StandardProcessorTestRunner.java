@@ -128,6 +128,11 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
+    public void enqueue(Collection<Record> records) {
+        inputRecordsQueue.addAll(records);
+    }
+
+    @Override
     public void enqueue(List<String> values) {
         for (final String value : values) {
             enqueue(null, value);

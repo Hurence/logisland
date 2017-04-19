@@ -31,6 +31,7 @@ import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -165,6 +166,14 @@ public interface TestRunner {
      * @param Records to enqueue
      */
     void enqueue(Record... Records);
+
+
+    /**
+     * Enqueues the given Records into the Processor's input queue
+     *
+     * @param records to enqueue
+     */
+    void enqueue(Collection<Record> records);
 
 
     /**

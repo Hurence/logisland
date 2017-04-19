@@ -2,20 +2,25 @@ package com.hurence.logisland.util.runner;
 
 
 
+import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.registry.VariableRegistry;
+import com.hurence.logisland.validator.ValidationResult;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-public class MockConfigurationContext implements ConfigurationContext {
+public class MockConfigurationContext extends AbstractConfiguredComponent implements ConfigurationContext {
 
-    private final Map<PropertyDescriptor, String> properties;
+
     private final ControllerServiceLookup serviceLookup;
     private final ControllerService service;
     private final VariableRegistry variableRegistry;
@@ -35,8 +40,9 @@ public class MockConfigurationContext implements ConfigurationContext {
                                     final Map<PropertyDescriptor, String> properties,
                                     final ControllerServiceLookup serviceLookup,
                                     final VariableRegistry variableRegistry) {
+        super(null, "");
         this.service = service;
-        this.properties = properties;
+        this.properties.putAll(properties);
         this.serviceLookup = serviceLookup;
         this.variableRegistry = variableRegistry;
     }
@@ -52,9 +58,15 @@ public class MockConfigurationContext implements ConfigurationContext {
     }
 
     @Override
-    public Map<PropertyDescriptor, String> getProperties() {
-        return new HashMap<>(this.properties);
+    public PropertyValue getPropertyValue(String propertyName) {
+        return null;
     }
+
+    @Override
+    public PropertyValue newPropertyValue(String rawValue) {
+        return null;
+    }
+
 
     private PropertyDescriptor getActualDescriptor(final PropertyDescriptor property) {
         if (service == null) {
@@ -65,13 +77,9 @@ public class MockConfigurationContext implements ConfigurationContext {
         return resolved == null ? property : resolved;
     }
 
-    @Override
-    public String getSchedulingPeriod() {
-        return "0 secs";
-    }
 
     @Override
-    public Long getSchedulingPeriod(final TimeUnit timeUnit) {
-        return 0L;
+    public void verifyModifiable() throws IllegalStateException {
+
     }
 }
