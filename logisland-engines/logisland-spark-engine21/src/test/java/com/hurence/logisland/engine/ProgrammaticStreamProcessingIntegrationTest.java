@@ -48,7 +48,7 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
     private static Logger logger = LoggerFactory.getLogger(ProgrammaticStreamProcessingIntegrationTest.class);
 
 
-    protected Optional<EngineContext> getEngineContext() {
+    Optional<EngineContext> getEngineContext() {
         Map<String, String> properties = new HashMap<>();
         properties.put(KafkaStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
         properties.put(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "500");

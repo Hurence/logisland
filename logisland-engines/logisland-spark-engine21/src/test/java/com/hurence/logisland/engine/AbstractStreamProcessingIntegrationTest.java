@@ -180,7 +180,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     }
 
 
-    protected abstract Optional<EngineContext> getEngineContext();
+    abstract Optional<EngineContext> getEngineContext();
 
 
     protected static void sendRecord(String topic, Record record) throws IOException {
