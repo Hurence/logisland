@@ -398,9 +398,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-
+                //logger.debug("KafkaStreamProcessingEngine - createStreamingContext - getStream")
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext)
+                //logger.debug("KafkaStreamProcessingEngine - createStreamingContext - kafkaStream.start()")
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
@@ -408,6 +409,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             }
 
         })
+        //logger.debug("KafkaStreamProcessingEngine - createStreamingContext - end of getStreamContexts.foreach, and start of ssc")
         ssc
     }
 

@@ -106,7 +106,7 @@ public class PCapStreamProcessingIntegrationTest extends AbstractStreamProcessin
 
         final List<Record> records = new ArrayList<>();
 
-        byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/one_packet.pcap");
+        byte[] pcapbytes = FileUtil.loadFileContentAsBytes("pcapTestFiles/1-TCP-packet.pcap");
 
         try {
             // Wait for Kafka to start correctly :

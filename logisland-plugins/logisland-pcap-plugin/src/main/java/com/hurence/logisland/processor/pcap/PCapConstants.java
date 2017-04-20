@@ -20,9 +20,6 @@ package com.hurence.logisland.processor.pcap;
 
 import com.hurence.logisland.record.FieldType;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class PCapConstants {
 
   public static enum Fields {
@@ -31,7 +28,7 @@ public class PCapConstants {
     // Global Header data //
     ////////////////////////
 
-    GLOBAL_MAGICNUMBER("global_magic", FieldType.LONG)
+    GLOBAL_MAGICNUMBER("global_magic", FieldType.INT)
 
 
     ////////////////////////

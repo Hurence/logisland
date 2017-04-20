@@ -355,7 +355,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             // do the parallel processing
             kafkaStream.foreachRDD(rdd => {
-
                 /**
                   * check if conf needs to be refreshed
                   */
@@ -445,9 +444,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             // TODO handle key also
             try {
                 val bais = new ByteArrayInputStream(rawEvent.value())
-                logger.debug(s"AbstractKafkaRecordStream - deserializeRecords - Thread Id = $threadId")
                 val serializerName = serializer.getClass().getName();
-                logger.debug(s"Serializer name = $serializerName")
                 val deserialized = serializer.deserialize(bais)
                 bais.close()
 
