@@ -33,8 +33,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,9 +46,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
-
-//import ch.qos.logback.classic.Level;
-//import ch.qos.logback.classic.Logger;
 
 /**
  * Abstract class for integration testing
@@ -63,7 +61,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     protected static final String MAGIC_STRING = "the world is so big";
 
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
+    private static Logger logger = (Logger)LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
 
     private static KafkaProducer<byte[], byte[]> producer;
     private static KafkaConsumer<byte[], byte[]> consumer;
@@ -96,8 +94,8 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     @Before
     public void setUp() throws InterruptedException, IOException {
 
-        Logger root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        //root.setLevel(Level.WARN);
+        Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.WARN);
 
         SparkUtils.customizeLogLevels();
         // setup Zookeeper

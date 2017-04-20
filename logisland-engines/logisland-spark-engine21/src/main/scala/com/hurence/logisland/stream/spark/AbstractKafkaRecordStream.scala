@@ -439,19 +439,17 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       */
     def deserializeRecords(partition: Iterator[ConsumerRecord[Array[Byte], Array[Byte]]], serializer: RecordSerializer): List[Record] = {
         partition.flatMap(rawEvent => {
-            val threadId = Thread.currentThread.getId
 
             // TODO handle key also
             try {
                 val bais = new ByteArrayInputStream(rawEvent.value())
-                val serializerName = serializer.getClass().getName();
                 val deserialized = serializer.deserialize(bais)
                 bais.close()
 
                 Some(deserialized)
             } catch {
                 case t: Throwable =>
-                    logger.error(s"exception while deserializing events ${t.getMessage} - Thread id = $threadId")
+                    logger.error(s"exception while deserializing events ${t.getMessage}")
                     None
             }
 

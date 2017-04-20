@@ -205,15 +205,15 @@ public class ParsePCap extends AbstractProcessor {
                                 packetDataBuffer.discardReadBytes();
                                 udpPacket.setData(packetDataBuffer);
                             } else {
-                                logger.debug("////////////////////////////////////////////////////////"
+                                logger.debug("//////////////////////////"
                                         + "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far."
-                                        + "////////////////////////////////////////////////////////");
+                                        + "//////////////////////////");
                                 outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far.");
                             }
                         } else {
-                            logger.debug("////////////////////////////////////////////////////////"
+                            logger.debug("//////////////////////////"
                                     + "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far."
-                                    + "////////////////////////////////////////////////////////");
+                                    + "//////////////////////////");
                             outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far.");
                         }
 
