@@ -45,10 +45,10 @@ engine:
       type: stream
       documentation: A processor chain that parses pcap events into Logisland records
       configuration:
-        kafka.input.topics: pcaps
+        kafka.input.topics: pcap_topic
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
@@ -63,6 +63,29 @@ engine:
           component: com.hurence.logisland.processor.pcap.ParsePCap
           type: parser
           documentation: A processor that parses pcap events into LogIsland records
+          configuration:
+            debug: true
+            flow.mode: stream
+
+
+    # Indexing
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox.hortonworks.com:6667
+        kafka.zookeeper.quorum: sandbox.hortonworks.com:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
 
         # Put into ElasticSearch
         - processor: ES Publisher
@@ -70,7 +93,7 @@ engine:
           type: processor
           documentation: A processor that pushes pcap events into ES
           configuration:
-            default.index: pcap
+            default.index: pcap_index
             default.type: events
             hosts: sandbox:9300
             cluster.name: elasticsearch
