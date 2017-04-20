@@ -399,7 +399,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             try {
 
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
-                kafkaStream.setup(appName, ssc, streamingContext)
+                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>

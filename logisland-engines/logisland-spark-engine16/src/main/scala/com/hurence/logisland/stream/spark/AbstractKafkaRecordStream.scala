@@ -20,12 +20,13 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
+import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -191,9 +192,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     private val logger = LoggerFactory.getLogger(classOf[AbstractKafkaRecordStream])
     protected var kafkaSink: Broadcast[KafkaSink] = null
     protected var zkSink: Broadcast[ZookeeperSink] = null
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
+    protected var engineContext: EngineContext = null
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -216,10 +219,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     }
 
 
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext) = {
+    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
+        this.engineContext = engineContext
         SparkUtils.customizeLogLevels
     }
 
@@ -253,6 +257,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
+            controllerServiceLookupSink = ssc.sparkContext.broadcast(
+                ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+            )
 
             if (topicAutocreate) {
                 createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)

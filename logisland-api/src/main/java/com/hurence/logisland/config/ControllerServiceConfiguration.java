@@ -16,53 +16,36 @@
 package com.hurence.logisland.config;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Yaml definition of the Logisland service config
  *
  *
- * version: 0.9.5
- * documentation: LogIsland analytics main config file. Put here every engine or component config
- * engine: spark_engine
- *   component: com.hurence.logisland.engine.SparkStreamProcessingEngine
- *   ....
+ * - controllerService: hbase_service
+ *   component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+ *   type: service
+ *   documentation: a processor that links
+ *   configuration:
+ *     hadoop.configuration.files: conf/
+ *     zookeeper.quorum: sandbox
+ *     zookeeper.client.port: 2181
+ *     zookeeper.znode.parent:
+ *     hbase.client.retries: 3
+ *     phoenix.client.jar.location:
  *
  *
  */
-public class ControllerServiceConfiguration {
+public class ControllerServiceConfiguration extends AbstractComponentConfiguration{
 
-    private String documentation;
-    private String version;
-    private EngineConfiguration engine;
+    private String controllerService = "";
 
-    public String getDocumentation() {
-        return documentation;
+    public String getControllerService() {
+        return controllerService;
     }
 
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public EngineConfiguration getEngine() {
-        return engine;
-    }
-
-    public void setEngine(EngineConfiguration engine) {
-        this.engine = engine;
-    }
-
-    @Override
-    public String toString() {
-        return "LogislandSessionConfiguration{" +
-                "documentation='" + documentation + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+    public void setControllerService(String controllerService) {
+        this.controllerService = controllerService;
     }
 }

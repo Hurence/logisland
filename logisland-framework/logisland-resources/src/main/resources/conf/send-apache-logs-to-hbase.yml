@@ -38,11 +38,11 @@ engine:
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
 
-  serviceConfigurations:
+  controllerServiceConfigurations:
     # HBase
-    - service: hbase_service
+    - controllerService: hbase_service
       component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
-      type: stream
+      type: service
       documentation: a processor that links
       configuration:
         hadoop.configuration.files: conf/
@@ -105,7 +105,7 @@ engine:
         # put to HBase
         - processor: hbase_put
           component: com.hurence.logisland.processor.hbase.PutHBaseCell
-          type: processor
+          type: sink
           documentation: a processor that put incomming records to HBase
           configuration:
             hbase.client.service: hbase_service
@@ -120,7 +120,7 @@ engine:
         # fetch from HBase
         - processor: hbase_fetch
           component: com.hurence.logisland.processor.hbase.FetchHBaseRow
-          type: processor
+          type: sink
           documentation: a processor that fetch Record from HBase
           configuration:
             hbase.client.service: hbase_service

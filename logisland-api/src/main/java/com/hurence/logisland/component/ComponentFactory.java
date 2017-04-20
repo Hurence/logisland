@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,32 +15,25 @@
  */
 package com.hurence.logisland.component;
 
-import com.hurence.logisland.annotation.lifecycle.OnAdded;
-import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
-import com.hurence.logisland.config.StreamConfiguration;
+import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.controller.StandardControllerServiceContext;
+import com.hurence.logisland.config.StreamConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.engine.EngineContext;
+import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.stream.StandardStreamContext;
-import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.stream.RecordStream;
+import com.hurence.logisland.stream.StandardStreamContext;
 import com.hurence.logisland.stream.StreamContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static java.util.Objects.requireNonNull;
 
 
 public final class ComponentFactory {
@@ -69,24 +62,13 @@ public final class ComponentFactory {
                     .entrySet().forEach(e -> engineContext.setProperty(e.getKey(), e.getValue()));
 
 
-
-
-          /*  configuration.getControllerServiceConfigurations().forEach(serviceConfig -> {
-                Optional<ServiceContext> serviceContext = getServiceContext(serviceConfig);
-                if (serviceContext.isPresent())
-                    engineContext.addServiceContext(serviceContext.get());
+            // load all controller service initialization context
+            configuration.getControllerServiceConfigurations().forEach(serviceConfig -> {
+                engineContext.addControllerServiceConfiguration(serviceConfig);
             });
-
-            configuration.getConfiguration()
-                    .entrySet().forEach(e -> engineContext.setProperty(e.getKey(), e.getValue()));*/
-
 
 
             logger.info("created engine {}", configuration.getComponent());
-
-
-
-
 
 
             return Optional.of(engineContext);
@@ -96,30 +78,6 @@ public final class ComponentFactory {
         }
         return Optional.empty();
     }
-
-   /* private static Optional<ControllerService> getServiceContext(ControllerServiceConfiguration serviceConfig)
-     throws InitializationException {
-
-
-        final MockControllerServiceInitializationContext initContext =
-                new StandardControllerServiceContext(requireNonNull(service), requireNonNull(identifier));
-
-        initContext.addControllerServices(context);
-        service.initialize(initContext);
-
-        final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
-        for (final Map.Entry<String, String> entry : properties.entrySet()) {
-            resolvedProps.put(service.getPropertyDescriptor(entry.getKey()), entry.getValue());
-        }
-
-        try {
-            ReflectionUtils.invokeMethodsWithAnnotation(OnAdded.class, service);
-        } catch (final InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
-            throw new InitializationException(e);
-        }
-
-        context.addControllerService(identifier, service, resolvedProps, null);
-    }*/
 
     /**
      * Instanciates a stream from of configuration

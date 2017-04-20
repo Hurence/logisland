@@ -38,10 +38,7 @@ import kafka.producer.ProducerConfig;
 import kafka.utils.TestUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +62,8 @@ public class SparkRecordStreamProcessingTest {
     private static EngineConfiguration engineConfiguration;
     private static ConsumerConnector consumer;
 
-    @BeforeClass
-    public static void setUp() throws InterruptedException, IOException {
+    @Before
+    public void setUp() throws InterruptedException, IOException {
         kafkaContext = new EmbeddedKafkaEnvironment();
         Properties properties = TestUtils.getProducerConfig("localhost:" + kafkaContext.getBrokerPort());
         ProducerConfig producerConfig = new ProducerConfig(properties);
@@ -115,8 +112,8 @@ public class SparkRecordStreamProcessingTest {
         logger.info("done waiting for engine startup");
     }
 
-    @AfterClass
-    public static void tearDown() throws NoSuchFieldException, IllegalAccessException {
+    @After
+    public void tearDown() throws NoSuchFieldException, IllegalAccessException {
         producer.close();
         consumer.shutdown();
         kafkaContext.close();

@@ -16,11 +16,30 @@
  */
 package com.hurence.logisland.controller;
 
+import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
+
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Set;
 
-public class StandardControllerServiceLookup implements ControllerServiceLookup {
+
+/**
+ * a controller service lookup is initialized with config and  will dynamically load service instances as needed
+ */
+public class StandardControllerServiceLookup implements ControllerServiceLookup, Serializable {
+
+    private static ComponentLog logger = new StandardComponentLogger("standardControllerServiceLookup", StandardControllerServiceLookup.class);
+
+
+    public StandardControllerServiceLookup(Collection<ControllerServiceConfiguration> configurations) {
+    }
+
     @Override
     public ControllerService getControllerService(String serviceIdentifier) {
+
+        logger.debug("getting controller service {}", new Object[]{serviceIdentifier});
         return null;
     }
 
