@@ -87,6 +87,15 @@ engine:
             value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
+
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          type: parser
+          documentation: debugs
+          configuration:
+
+
+
     # indexing
     - stream: indexing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing

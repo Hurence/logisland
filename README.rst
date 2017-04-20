@@ -38,7 +38,8 @@ to build from the source just clone and package
 
     git clone git@github.com:Hurence/logisland.git
     cd logisland
-    mvn install
+    mvn install -Dhdp=2.4
+
 
 
 Basic Workflow
