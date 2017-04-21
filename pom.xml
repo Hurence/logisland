@@ -87,8 +87,8 @@
         <logisland.version>${project.version}</logisland.version>
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.1</hbase.version>
-        <hadoop.guava.version>12.0.1</hadoop.guava.version>
+        <hbase.version>1.1.2.2.4.0.0-169</hbase.version>
+        <hadoop.guava.version>18.0</hadoop.guava.version>
         <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
@@ -110,6 +110,12 @@
 
 
     <repositories>
+
+        <repository>
+            <id>hdp</id>
+            <name>Hortonwork repo</name>
+            <url>http://repo.hortonworks.com/content/groups/public/</url>
+        </repository>
         <repository>
             <id>central</id>
             <!-- This should be at top, it makes maven try the central repo 
@@ -496,6 +502,12 @@
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>com.google.guava</artifactId>
+                        <groupId>guava</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
