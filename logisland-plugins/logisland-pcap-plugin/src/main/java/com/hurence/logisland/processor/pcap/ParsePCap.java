@@ -58,10 +58,10 @@ public class ParsePCap extends AbstractProcessor {
 
     public static final String BATCH_FLOW_MODE = "batch";
     public static final String STREAM_FLOW_MODE = "stream";
-
+    private static final String KEY_DEBUG = "debug";
 
     public static final PropertyDescriptor DEBUG_PROPERTY = new PropertyDescriptor.Builder()
-            .name("debug")
+            .name(KEY_DEBUG)
             .description("Enable debug.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
@@ -269,4 +269,26 @@ public class ParsePCap extends AbstractProcessor {
         return outputRecords;
     }
 
+    @Override
+    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
+
+        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+
+        /**
+         * Handle the debug property
+         */
+        if (descriptor.getName().equals(KEY_DEBUG))
+        {
+            if (newValue != null)
+            {
+                if (newValue.equalsIgnoreCase("true"))
+                {
+                    debug = true;
+                }
+            } else
+            {
+                debug = false;
+            }
+        }
+    }
 }
