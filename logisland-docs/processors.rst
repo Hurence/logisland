@@ -186,7 +186,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
-   "service.id", "Specifies the Controller Service to use for .", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
    "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
    "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
@@ -882,7 +881,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
-   "service.id", "Specifies the Controller Service to use for .", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "", "**true**"
    "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "", "**true**"
    "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "", ""

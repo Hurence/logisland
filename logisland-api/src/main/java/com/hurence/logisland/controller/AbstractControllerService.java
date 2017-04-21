@@ -33,10 +33,10 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
      * Provides a mechanism by which subclasses can perform initialization of
      * the Controller Service before it is scheduled to be run
      *
-     * @param config of initialization context
+     * @param context of initialization context
      * @throws InitializationException if unable to init
      */
-    protected void init(final ControllerServiceInitializationContext config) throws InitializationException {
+    protected void init(final ControllerServiceInitializationContext context) throws InitializationException {
     }
 
     /**

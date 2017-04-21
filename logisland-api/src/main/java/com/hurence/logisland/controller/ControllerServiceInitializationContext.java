@@ -2,10 +2,11 @@
 package com.hurence.logisland.controller;
 
 
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.kerberos.KerberosContext;
 import com.hurence.logisland.logging.ComponentLog;
 
-public interface ControllerServiceInitializationContext extends KerberosContext {
+public interface ControllerServiceInitializationContext extends KerberosContext, ComponentContext {
 
     /**
      * @return the identifier associated with the {@link ControllerService} with

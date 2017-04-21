@@ -181,6 +181,9 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context) {
         clientService = context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
+        if(clientService == null)
+            logger.error("HBase client service is not initialized!");
+
         if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
             serializer = SerializerProvider.getSerializer(
                     context.getPropertyValue(RECORD_SERIALIZER).asString(),

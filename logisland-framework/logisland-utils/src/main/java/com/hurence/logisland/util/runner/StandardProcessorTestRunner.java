@@ -41,6 +41,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -320,7 +321,7 @@ public class StandardProcessorTestRunner implements TestRunner {
         }
 
         try {
-            final ConfigurationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
+            final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
             ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, configContext);
         } catch (final InvocationTargetException ite) {
             ite.getCause().printStackTrace();

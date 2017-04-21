@@ -17,21 +17,29 @@ package com.hurence.logisland.controller;
 
 
 import com.hurence.logisland.component.*;
+import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.ProcessingEngine;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.stream.StreamContext;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class StandardControllerServiceContext extends AbstractConfiguredComponent implements ComponentContext {
+public class StandardControllerServiceContext extends AbstractConfiguredComponent implements ComponentContext, ControllerServiceInitializationContext {
 
 
-    private final List<StreamContext> streamContexts = new ArrayList<>();
 
-    public StandardControllerServiceContext(final ProcessingEngine engine, final String id) {
-        super(engine, id);
+    private final ComponentLog logger;
+
+
+
+    public StandardControllerServiceContext(final ControllerService controllerService, final String identifier) {
+        super(controllerService, identifier);
+        this.logger =  new StandardComponentLogger(identifier, StandardControllerServiceContext.class);
     }
 
 
@@ -62,5 +70,30 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
     @Override
     public void verifyModifiable() throws IllegalStateException {
 
+    }
+
+    @Override
+    public ControllerServiceLookup getControllerServiceLookup() {
+        return null;
+    }
+
+    @Override
+    public ComponentLog getLogger() {
+        return logger;
+    }
+
+    @Override
+    public String getKerberosServicePrincipal() {
+        return null;
+    }
+
+    @Override
+    public File getKerberosServiceKeytab() {
+        return null;
+    }
+
+    @Override
+    public File getKerberosConfigurationFile() {
+        return null;
     }
 }

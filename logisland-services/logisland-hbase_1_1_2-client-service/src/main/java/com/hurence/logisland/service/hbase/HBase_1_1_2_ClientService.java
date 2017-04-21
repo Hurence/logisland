@@ -75,7 +75,6 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     private volatile UserGroupInformation ugi;
     private volatile KerberosTicketRenewer renewer;
 
-    private List<PropertyDescriptor> properties;
     private KerberosProperties kerberosProperties;
     private volatile File kerberosConfigFile = null;
 
@@ -83,20 +82,30 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     private final AtomicReference<ValidationResources> validationResourceHolder = new AtomicReference<>();
 
     @Override
-    protected void init(ControllerServiceInitializationContext config) throws InitializationException {
-        kerberosConfigFile = config.getKerberosConfigurationFile();
-        kerberosProperties = getKerberosProperties(kerberosConfigFile);
+    @OnEnabled
+    public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        try {
+            kerberosConfigFile = context.getKerberosConfigurationFile();
+            kerberosProperties = getKerberosProperties(kerberosConfigFile);
 
-        List<PropertyDescriptor> props = new ArrayList<>();
-        props.add(HADOOP_CONF_FILES);
-        props.add(kerberosProperties.getKerberosPrincipal());
-        props.add(kerberosProperties.getKerberosKeytab());
-        props.add(ZOOKEEPER_QUORUM);
-        props.add(ZOOKEEPER_CLIENT_PORT);
-        props.add(ZOOKEEPER_ZNODE_PARENT);
-        props.add(HBASE_CLIENT_RETRIES);
-        props.add(PHOENIX_CLIENT_JAR_LOCATION);
-        this.properties = Collections.unmodifiableList(props);
+            this.connection = createConnection(context);
+
+            // connection check
+            if (this.connection != null) {
+                final Admin admin = this.connection.getAdmin();
+                if (admin != null) {
+                    admin.listTableNames();
+                }
+
+                // if we got here then we have a successful connection, so if we have a ugi then start a renewer
+                if (ugi != null) {
+                    final String id = getClass().getSimpleName();
+                    renewer = SecurityUtil.startTicketRenewalThread(id, ugi, TICKET_RENEWAL_PERIOD, getLogger());
+                }
+            }
+        }catch (Exception e){
+            throw new InitializationException(e);
+        }
     }
 
     protected KerberosProperties getKerberosProperties(File kerberosConfigFile) {
@@ -105,7 +114,21 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+
+        List<PropertyDescriptor> props = new ArrayList<>();
+        props.add(HADOOP_CONF_FILES);
+        if(kerberosProperties !=null){
+            props.add(kerberosProperties.getKerberosPrincipal());
+            props.add(kerberosProperties.getKerberosKeytab());
+        }
+
+        props.add(ZOOKEEPER_QUORUM);
+        props.add(ZOOKEEPER_CLIENT_PORT);
+        props.add(ZOOKEEPER_ZNODE_PARENT);
+        props.add(HBASE_CLIENT_RETRIES);
+        props.add(PHOENIX_CLIENT_JAR_LOCATION);
+
+        return Collections.unmodifiableList(props);
     }
 
     @Override
@@ -160,26 +183,8 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
         return problems;
     }
 
-    @OnEnabled
-    public void onEnabled(final ConfigurationContext context) throws InitializationException, IOException, InterruptedException {
-        this.connection = createConnection(context);
 
-        // connection check
-        if (this.connection != null) {
-            final Admin admin = this.connection.getAdmin();
-            if (admin != null) {
-                admin.listTableNames();
-            }
-
-            // if we got here then we have a successful connection, so if we have a ugi then start a renewer
-            if (ugi != null) {
-                final String id = getClass().getSimpleName();
-                renewer = SecurityUtil.startTicketRenewalThread(id, ugi, TICKET_RENEWAL_PERIOD, getLogger());
-            }
-        }
-    }
-
-    protected Connection createConnection(final ConfigurationContext context) throws IOException, InterruptedException {
+    protected Connection createConnection(final ControllerServiceInitializationContext context) throws IOException, InterruptedException {
         final String configFiles = context.getPropertyValue(HADOOP_CONF_FILES).asString();
         final Configuration hbaseConfig = getConfigurationFromFiles(configFiles);
 
@@ -194,7 +199,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
             hbaseConfig.set(HBASE_CONF_ZNODE_PARENT, context.getPropertyValue(ZOOKEEPER_ZNODE_PARENT).asString());
         }
         if (context.getPropertyValue(HBASE_CLIENT_RETRIES).isSet()) {
-            hbaseConfig.set(HBASE_CONF_CLIENT_RETRIES, context.getPropertyValue(HBASE_CLIENT_RETRIES).asString());
+            hbaseConfig.setInt(HBASE_CONF_CLIENT_RETRIES, context.getPropertyValue(HBASE_CLIENT_RETRIES).asInteger());
         }
 
         // add any dynamic properties to the HBase configuration

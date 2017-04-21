@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,23 +47,26 @@ public class PutHBaseCell extends AbstractPutHBase {
 
     @Override
     protected PutRecord createPut(final ProcessContext context, final Record record, final RecordSerializer serializer) {
-        final String row = record.getField(context.getPropertyValue(ROW_ID_FIELD).asString()).asString();
-
 
         String tableName = context.getPropertyValue(TABLE_NAME_DEFAULT).asString();
-        if (record.hasField(context.getPropertyValue(TABLE_NAME_FIELD).asString()))
-            tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
-
         String columnFamily = context.getPropertyValue(COLUMN_FAMILY_DEFAULT).asString();
-        if (record.hasField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()))
-            columnFamily = record.getField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()).asString();
-
         String columnQualifier = context.getPropertyValue(COLUMN_QUALIFIER_DEFAULT).asString();
-        if (record.hasField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()))
-            columnQualifier = record.getField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()).asString();
-
 
         try {
+            if (!record.hasField(context.getPropertyValue(ROW_ID_FIELD).asString()))
+                throw new IllegalArgumentException("record has no ROW_ID_FIELD");
+
+            final String row = record.getField(context.getPropertyValue(ROW_ID_FIELD).asString()).asString();
+
+            if (record.hasField(context.getPropertyValue(TABLE_NAME_FIELD).asString()))
+                tableName = record.getField(context.getPropertyValue(TABLE_NAME_FIELD).asString()).asString();
+
+            if (record.hasField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()))
+                columnFamily = record.getField(context.getPropertyValue(COLUMN_FAMILY_FIELD).asString()).asString();
+
+            if (record.hasField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()))
+                columnQualifier = record.getField(context.getPropertyValue(COLUMN_QUALIFIER_FIELD).asString()).asString();
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             serializer.serialize(baos, record);
             final byte[] buffer = baos.toByteArray();
@@ -77,7 +79,7 @@ public class PutHBaseCell extends AbstractPutHBase {
 
             return new PutRecord(tableName, rowKeyBytes, columns, record);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.toString());
         }
 

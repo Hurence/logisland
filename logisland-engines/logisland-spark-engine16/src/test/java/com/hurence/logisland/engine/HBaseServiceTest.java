@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,10 @@ import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
+import com.hurence.logisland.processor.hbase.AbstractPutHBase;
 import com.hurence.logisland.processor.hbase.PutHBaseCell;
-import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
@@ -39,13 +40,15 @@ import kafka.producer.Producer;
 import kafka.producer.ProducerConfig;
 import kafka.utils.TestUtils;
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -55,10 +58,10 @@ import static org.junit.Assert.fail;
 /**
  * Empty Java class for source jar generation (need to publish on OSS sonatype)
  */
-public class SparkRecordStreamProcessingTest {
+public class HBaseServiceTest {
 
 
-    private static Logger logger = LoggerFactory.getLogger(SparkRecordStreamProcessingTest.class);
+    private static Logger logger = LoggerFactory.getLogger(HBaseServiceTest.class);
     private static Producer producer;
     private static EmbeddedKafkaEnvironment kafkaContext;
     private static EngineConfiguration engineConfiguration;
@@ -123,7 +126,6 @@ public class SparkRecordStreamProcessingTest {
     }
 
 
-
     private EngineConfiguration createEngineConfiguration() {
         Map<String, String> properties = new HashMap<>();
         properties.put(KafkaStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
@@ -143,15 +145,13 @@ public class SparkRecordStreamProcessingTest {
     }
 
 
-
     private List<ControllerServiceConfiguration> createControllerServiceConfigurations() {
 
         Map<String, String> properties = new HashMap<>();
         properties.put("hadoop.configuration.files", "");
         properties.put("zookeeper.quorum", "localhost");
         properties.put("zookeeper.client.port", "2181");
-        properties.put("zookeeper.znode.parent", "");
-        properties.put("hbase.client.retries", "");
+        properties.put("zookeeper.znode.parent", "/hbase");
         properties.put("phoenix.client.jar.location", "");
 
         ControllerServiceConfiguration conf = new ControllerServiceConfiguration();
@@ -171,7 +171,7 @@ public class SparkRecordStreamProcessingTest {
         properties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(), kafkaContext.getZkConnect());
         properties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
         properties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
-        properties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.NO_SERIALIZER().getValue());
+        properties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
         properties.put(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET().getName(), AbstractKafkaRecordStream.LARGEST_OFFSET().getValue());
 
         StreamConfiguration conf = new StreamConfiguration();
@@ -184,25 +184,39 @@ public class SparkRecordStreamProcessingTest {
         return conf;
     }
 
+
     private ProcessorConfiguration createProcessorConfiguration() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(MockProcessor.FAKE_MESSAGE.getName(), "the world is so big");
+        properties.put(PutHBaseCell.HBASE_CLIENT_SERVICE.getName(), "hbase_service");
+        properties.put(PutHBaseCell.BATCH_SIZE.getName(), "100");
+        properties.put(PutHBaseCell.COLUMN_FAMILY_DEFAULT.getName(), "cf");
+        properties.put(PutHBaseCell.COLUMN_QUALIFIER_DEFAULT.getName(), "cq");
+        properties.put(PutHBaseCell.ROW_ID_FIELD.getName(), "hbase_rowkey");
+        properties.put(PutHBaseCell.TABLE_NAME_DEFAULT.getName(), "logisland");
+
 
         ProcessorConfiguration conf = new ProcessorConfiguration();
-        conf.setComponent(MockProcessor.class.getName());
-        conf.setType(ComponentType.PROCESSOR.toString());
+        conf.setComponent(PutHBaseCell.class.getName());
+        conf.setType(ComponentType.SINK.toString());
         conf.setConfiguration(properties);
-        conf.setProcessor("mock");
+        conf.setProcessor("put_hbase");
 
         return conf;
     }
 
 
-    private void sendMessage(String topic, String message) {
+    private void sendMessage(String topic, Record record) throws IOException {
 
-        KeyedMessage<String, byte[]> data = new KeyedMessage<>(topic, message.getBytes());
+
+        // serialize event
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final KryoSerializer kryoSerializer = new KryoSerializer(true);
+        kryoSerializer.serialize(baos, record);
+        KeyedMessage<String, byte[]> data = new KeyedMessage(topic, baos.toByteArray());
+        baos.close();
         List<KeyedMessage> messages = new ArrayList<>();
         messages.add(data);
+
 
         // send event to Kafka topic
         producer.send(scala.collection.JavaConversions.asScalaBuffer(messages));
@@ -240,12 +254,14 @@ public class SparkRecordStreamProcessingTest {
 
     @Test
     @Ignore
-    public void validateIntegration() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void validateIntegration() throws NoSuchFieldException, IllegalAccessException, InterruptedException, IOException {
 
+        Record record = new StandardRecord();
 
-        sendMessage("logisland_raw", "ok right now");
+        sendMessage(AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue(),
+                new StandardRecord().setStringField("hbase_rowkey", "id1").setStringField("value", "myField"));
         Thread.sleep(3000);
-        Collection<Record> records = readMessages("logisland_events");
+        Collection<Record> records = readMessages(AbstractKafkaRecordStream.DEFAULT_EVENTS_TOPIC().getValue());
 
         assertTrue(records.size() != 0);
 

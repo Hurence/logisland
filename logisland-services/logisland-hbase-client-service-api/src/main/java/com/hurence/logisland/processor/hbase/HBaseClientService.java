@@ -49,7 +49,7 @@ public interface HBaseClientService extends ControllerService {
             .name("hbase.client.retries")
             .description("The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.")
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("1")
+            .defaultValue("3")
             .build();
 
     PropertyDescriptor PHOENIX_CLIENT_JAR_LOCATION = new PropertyDescriptor.Builder()

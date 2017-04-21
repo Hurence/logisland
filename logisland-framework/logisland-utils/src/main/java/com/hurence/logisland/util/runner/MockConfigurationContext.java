@@ -6,16 +6,19 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MockConfigurationContext implements ConfigurationContext {
+public class MockConfigurationContext implements ControllerServiceInitializationContext {
 
     private final Map<PropertyDescriptor, String> properties;
     private final ControllerServiceLookup serviceLookup;
@@ -74,6 +77,16 @@ public class MockConfigurationContext implements ConfigurationContext {
     }
 
     @Override
+    public ControllerServiceLookup getControllerServiceLookup() {
+        return this.serviceLookup;
+    }
+
+    @Override
+    public ComponentLog getLogger() {
+        return null;
+    }
+
+    @Override
     public void setName(String name) {
 
     }
@@ -117,4 +130,18 @@ public class MockConfigurationContext implements ConfigurationContext {
         return resolved == null ? property : resolved;
     }
 
+    @Override
+    public String getKerberosServicePrincipal() {
+        return null;
+    }
+
+    @Override
+    public File getKerberosServiceKeytab() {
+        return null;
+    }
+
+    @Override
+    public File getKerberosConfigurationFile() {
+        return null;
+    }
 }

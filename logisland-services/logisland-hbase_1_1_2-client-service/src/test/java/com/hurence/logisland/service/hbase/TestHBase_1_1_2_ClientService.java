@@ -18,6 +18,7 @@ package com.hurence.logisland.service.hbase;
 
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ConfigurationContext;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.hadoop.KerberosProperties;
 import com.hurence.logisland.processor.hbase.HBaseClientService;
 import com.hurence.logisland.processor.hbase.put.PutColumn;
@@ -511,7 +512,7 @@ public class TestHBase_1_1_2_ClientService {
         }
 
         @Override
-        protected Connection createConnection(ConfigurationContext context) throws IOException {
+        protected Connection createConnection(ControllerServiceInitializationContext context) throws IOException {
             Connection connection = Mockito.mock(Connection.class);
             Mockito.when(connection.getTable(table.getName())).thenReturn(table);
             return connection;

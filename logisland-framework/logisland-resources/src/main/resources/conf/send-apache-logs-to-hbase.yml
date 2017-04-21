@@ -45,10 +45,10 @@ engine:
       type: service
       documentation: a processor that links
       configuration:
-        hadoop.configuration.files: conf/
+        hadoop.configuration.files:
         zookeeper.quorum: sandbox
         zookeeper.client.port: 2181
-        zookeeper.znode.parent:
+        zookeeper.znode.parent: /hbase
         hbase.client.retries: 3
         phoenix.client.jar.location:
 

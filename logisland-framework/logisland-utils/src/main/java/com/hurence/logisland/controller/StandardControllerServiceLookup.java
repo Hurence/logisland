@@ -16,13 +16,26 @@
  */
 package com.hurence.logisland.controller;
 
+import com.hurence.logisland.annotation.lifecycle.OnAdded;
+import com.hurence.logisland.annotation.lifecycle.OnEnabled;
+import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
+import com.hurence.logisland.util.runner.ReflectionUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static java.util.Objects.requireNonNull;
 
 
 /**
@@ -30,17 +43,46 @@ import java.util.Set;
  */
 public class StandardControllerServiceLookup implements ControllerServiceLookup, Serializable {
 
+    private final Map<String, ControllerService> controllerServiceMap = new ConcurrentHashMap<>();
+
     private static ComponentLog logger = new StandardComponentLogger("standardControllerServiceLookup", StandardControllerServiceLookup.class);
 
 
+    private static final AtomicLong currentId = new AtomicLong(0);
+
     public StandardControllerServiceLookup(Collection<ControllerServiceConfiguration> configurations) {
+
+
+        configurations.forEach(controllerServiceConfiguration -> {
+
+            try {
+                AbstractControllerService service = (AbstractControllerService) Class.forName(controllerServiceConfiguration.getComponent()).newInstance();
+
+                ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, Long.toString(currentId.incrementAndGet()));
+                Map<String,String> properties = controllerServiceConfiguration.getConfiguration();
+                properties.keySet().forEach( name -> context.setProperty(name, properties.get(name)));
+
+
+                controllerServiceMap.put(controllerServiceConfiguration.getControllerService(), service);
+                service.initialize(context);
+            } catch (IllegalAccessException |
+                    IllegalArgumentException |
+                    ClassNotFoundException |
+                    InstantiationException e) {
+                logger.error("unable to load class {} : {} ", new Object[]{controllerServiceConfiguration, e.toString()});
+            } catch (InitializationException e) {
+                logger.error("unable to initialize class {} : {} ", new Object[]{controllerServiceConfiguration, e.toString()});
+            }
+
+        });
+
     }
 
     @Override
     public ControllerService getControllerService(String serviceIdentifier) {
 
         logger.debug("getting controller service {}", new Object[]{serviceIdentifier});
-        return null;
+        return controllerServiceMap.get(serviceIdentifier);
     }
 
     @Override
