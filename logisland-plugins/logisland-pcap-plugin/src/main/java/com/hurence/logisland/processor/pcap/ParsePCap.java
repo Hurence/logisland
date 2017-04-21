@@ -144,7 +144,7 @@ public class ParsePCap extends AbstractProcessor {
 
                         // Retrieve the timestamp provided by the probe in the kafka message key :
                         final Long pcapTimestampInNanos = 1000000L * record.getField(FieldDictionary.RECORD_TIME).asLong();
-                        // if (debug) {logger.debug("pcapTimestampInNanos : " + pcapTimestampInNanos.toString());}
+                        //if (debug) {logger.debug("pcapTimestampInNanos : " + pcapTimestampInNanos.toString());}
 
                         // Encapsulate the packet raw data with the packet header and the global header :
                         pcapRawValue = PcapHelper.addGlobalHeader(PcapHelper.addPacketHeader(pcapTimestampInNanos, pcapRawValue, Endianness.getNativeEndianness()), Endianness.getNativeEndianness());
