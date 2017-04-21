@@ -101,8 +101,6 @@
         <jersey2-version>2.25</jersey2-version>
         <servlet-api-version>2.5</servlet-api-version>
 
-        <jackson.version>2.6.6</jackson.version>
-
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
@@ -466,6 +464,11 @@
                 <artifactId>json-simple</artifactId>
                 <version>1.1</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${hadoop.guava.version}</version>
+            </dependency>
 
 
             <dependency>
@@ -660,6 +663,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-client-service-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1132,6 +1140,7 @@
                 <kafka.version>0.10.0.1</kafka.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
+                <jackson.version>2.6.6</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine21</module>
@@ -1152,6 +1161,7 @@
                 <kafka.version>0.8.2.1</kafka.version>
                 <scala.version>2.10.6</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
+                <jackson.version>2.4.4</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine16</module>

@@ -92,5 +92,10 @@
             <artifactId>logisland-hadoop-utils</artifactId>
             <version>0.10.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

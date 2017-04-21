@@ -58,6 +58,11 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
     lazy val zkClient = createZKClient()
     private val logger = LoggerFactory.getLogger(classOf[ZookeeperSink])
 
+
+    def shutdown() ={
+        zkClient.close()
+    }
+
     /**
       * will retrieve the amount of partitions for a given Kafka topic.
       *

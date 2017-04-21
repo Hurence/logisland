@@ -1,26 +1,27 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.PropertyDescriptor
+import com.hurence.logisland.component.{PropertyDescriptor, StandardPropertyValue}
+import com.hurence.logisland.processor.AbstractProcessor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.schema.{SchemaManager, StandardSchemaManager}
+import com.hurence.logisland.registry.VariableRegistry
 import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
@@ -95,7 +96,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
             val outputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString
 
             rdd.foreachPartition(partition => {
-                try{
+                try {
                     if (partition.nonEmpty) {
                         /**
                           * index to get the correct offset range for the rdd partition we're working on
@@ -142,7 +143,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                     // parser
                                     partition.map(rawMessage => {
                                         val key = if (rawMessage._1 != null) new String(rawMessage._1) else ""
-                                        val value = if (rawMessage._2 != null) new String(rawMessage._2,"ISO-8859-1") else ""
+                                        val value = if (rawMessage._2 != null) new String(rawMessage._2, "ISO-8859-1") else ""
                                         RecordUtils.getKeyValueRecord(key, value)
                                     }).toList
                                 } else {
@@ -158,6 +159,10 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             /**
                               * process incoming events
                               */
+                            if (processor.hasControllerService) {
+                                val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+                                processorContext.addControllerServiceLookup(controllerServiceLookup)
+                            }
                             processor.init(processorContext)
                             outgoingEvents = processor.process(processorContext, incomingEvents)
 
@@ -182,15 +187,15 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * Do we make records compliant with a given Avro schema ?
                           */
-                        if(streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).isSet){
-                            try{
+                        if (streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).isSet) {
+                            try {
                                 val strSchema = streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString()
                                 val parser = new Schema.Parser
                                 val schema = parser.parse(strSchema)
 
-                                outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema) )
-                            }catch {
-                                case t:Throwable =>
+                                outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema))
+                            } catch {
+                                case t: Throwable =>
                                     logger.warn("something wrong while converting records " +
                                         "to valid accordingly to provide Avro schma " + t.getMessage)
                             }
@@ -223,18 +228,18 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
                     }
-                }catch{
-                    case ex:OffsetOutOfRangeException =>
+                } catch {
+                    case ex: OffsetOutOfRangeException =>
                         val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
                         val latestOffsetsString = zkSink.value.loadOffsetRangesFromZookeeper(
                             brokerList,
                             appName,
                             inputTopics.split(",").toSet)
-                            .map( t => s"${t._1.topic}_${t._1.partition}:${t._2}")
-                            .mkString( ", ")
+                            .map(t => s"${t._1.topic}_${t._1.partition}:${t._2}")
+                            .mkString(", ")
                         val offestsString = offsetRanges
                             .map(o => s"${o.topic}_${o.partition}:${o.fromOffset}/${o.untilOffset}")
-                            .mkString( ", ")
+                            .mkString(", ")
 
                         logger.error(s"exception : ${ex.toString}")
                         logger.error(s"unable to process partition. current Offsets $offestsString latest offsets $latestOffsetsString")

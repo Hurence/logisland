@@ -65,7 +65,7 @@ public class TestFetchHBaseRow {
 
     @Test
     public void testColumnsValidation() {
-        runner.setProperty(FetchHBaseRow.HBASE_CLIENT_SERVICE_ID, "hbaseService");
+        runner.setProperty(FetchHBaseRow.HBASE_CLIENT_SERVICE, "hbaseService");
         runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, "table1");
         runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, "row1");
         runner.assertValid();

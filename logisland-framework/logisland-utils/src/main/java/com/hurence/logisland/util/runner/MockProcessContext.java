@@ -15,10 +15,7 @@
  */
 package com.hurence.logisland.util.runner;
 
-import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
@@ -225,6 +222,11 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public void setName(String name) {
+
+    }
+
+    @Override
+    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
 
     }
 

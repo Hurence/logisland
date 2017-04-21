@@ -41,6 +41,23 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase-plugin</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase-client-service-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -104,6 +121,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

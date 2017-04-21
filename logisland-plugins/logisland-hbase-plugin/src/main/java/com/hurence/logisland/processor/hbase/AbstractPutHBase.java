@@ -29,14 +29,9 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractPutHBase.class);
 
 
-    protected static final PropertyDescriptor HBASE_CLIENT_SERVICE_ID = new PropertyDescriptor.Builder()
-            .name("hbase.client.service.id")
-            .description("Specifies the Controller Service to use for accessing HBase.")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
 
-    protected static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+
+    public static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("hbase.client.service")
             .description("The instance of the Controller Service to use for accessing HBase.")
             .required(true)
@@ -44,13 +39,13 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .build();
 
 
-    protected static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
             .name("table.name.default")
             .description("The table table to use if table name field is not set")
             .required(false)
             .build();
 
-    protected static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
             .name("table.name.field")
             .description("The field containing the name of the HBase Table to put data into")
             .required(true)
@@ -58,7 +53,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    protected static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
             .name("row.identifier.field")
             .description("Specifies  field containing the Row ID to use when inserting data into HBase")
             .required(false) // not all sub-classes will require this
@@ -71,10 +66,10 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
     static final String BINARY_ENCODING_VALUE = "Binary";
 
 
-    protected static final AllowableValue ROW_ID_ENCODING_STRING = new AllowableValue(STRING_ENCODING_VALUE, STRING_ENCODING_VALUE,
+    public static final AllowableValue ROW_ID_ENCODING_STRING = new AllowableValue(STRING_ENCODING_VALUE, STRING_ENCODING_VALUE,
             "Stores the value of row id as a UTF-8 String.");
 
-    protected static final AllowableValue ROW_ID_ENCODING_BINARY = new AllowableValue(BINARY_ENCODING_VALUE, BINARY_ENCODING_VALUE,
+    public static final AllowableValue ROW_ID_ENCODING_BINARY = new AllowableValue(BINARY_ENCODING_VALUE, BINARY_ENCODING_VALUE,
             "Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.");
 
     static final PropertyDescriptor ROW_ID_ENCODING_STRATEGY = new PropertyDescriptor.Builder()
@@ -89,13 +84,13 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .allowableValues(ROW_ID_ENCODING_STRING, ROW_ID_ENCODING_BINARY)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_FAMILY_DEFAULT = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor COLUMN_FAMILY_DEFAULT = new PropertyDescriptor.Builder()
             .name("column.family.default")
             .description("The column family to use if column family field is not set")
             .required(false)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_FAMILY_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor COLUMN_FAMILY_FIELD = new PropertyDescriptor.Builder()
             .name("column.family.field")
             .description("The field containing the  Column Family to use when inserting data into HBase")
             .required(true)
@@ -103,13 +98,13 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_QUALIFIER_DEFAULT = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor COLUMN_QUALIFIER_DEFAULT = new PropertyDescriptor.Builder()
             .name("column.qualifier.default")
             .description("The column qualifier to use if column qualifier field is not set")
             .required(false)
             .build();
 
-    protected static final PropertyDescriptor COLUMN_QUALIFIER_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor COLUMN_QUALIFIER_FIELD = new PropertyDescriptor.Builder()
             .name("column.qualifier.field")
             .description("The field containing the  Column Qualifier to use when inserting data into HBase")
             .required(true)
@@ -117,7 +112,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    protected static final PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
             .name("batch.size")
             .description("The maximum number of Records to process in a single execution. The Records will be " +
                     "grouped by table, and a single Put per table will be performed.")
@@ -126,20 +121,20 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .defaultValue("25")
             .build();
 
-    protected static final AllowableValue AVRO_SERIALIZER =
+    public static final AllowableValue AVRO_SERIALIZER =
             new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
 
-    protected static final AllowableValue JSON_SERIALIZER =
+    public static final AllowableValue JSON_SERIALIZER =
             new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
 
-    protected static final AllowableValue KRYO_SERIALIZER =
+    public static final AllowableValue KRYO_SERIALIZER =
             new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
 
-    protected static final AllowableValue NO_SERIALIZER =
+    public static final AllowableValue NO_SERIALIZER =
             new AllowableValue("none", "no serialization", "send events as bytes");
 
 
-    protected static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
             .name("record.serializer")
             .description("the serializer needed to i/o the record in the HBase row")
             .required(false)
@@ -148,7 +143,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
 
-    protected static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
             .name("record.schema")
             .description("the avro schema definition for the Avro serialization")
             .required(false)

@@ -242,7 +242,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+            val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
@@ -320,7 +320,12 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ex.toString)
         }
     }
-
+/*
+    override def stop() {
+        kafkaSink.value.shutdown()
+        zkSink.value.shutdown()
+    }
+  */
 
     /**
       * to be overriden by subclasses

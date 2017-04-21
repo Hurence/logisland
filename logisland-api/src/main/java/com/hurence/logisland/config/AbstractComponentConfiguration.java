@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.config;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ import java.util.Map;
  * value.regex: (\S*):(\S*)
  * value.fields: a,b
  */
-public abstract class AbstractComponentConfiguration {
+public abstract class AbstractComponentConfiguration implements Serializable{
 
     private String component = "";
     private String documentation = "";
