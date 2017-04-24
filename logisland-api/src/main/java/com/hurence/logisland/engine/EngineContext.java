@@ -21,6 +21,7 @@ import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.stream.StreamContext;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 public interface EngineContext extends ComponentContext {

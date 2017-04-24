@@ -117,6 +117,13 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
