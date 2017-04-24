@@ -115,15 +115,19 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         kafkaServer = TestUtils.createServer(config, mock);
 
         // create topics
-        AdminUtils.createTopic(zkUtils,
+        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils,
                 AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue(),
                 1,
                 1,
                 new Properties(),
                 RackAwareMode.Disabled$.MODULE$);
-        AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
 
 
 
