@@ -292,8 +292,8 @@ public class FetchHBaseRow extends AbstractProcessor {
             for (ResultCell cell : resultCells) {
 
                 try {
-                    //  final byte[] row = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
-                    ByteArrayInputStream bais = new ByteArrayInputStream(cell.getRowArray());
+                    final byte[] cellRow = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
+                    ByteArrayInputStream bais = new ByteArrayInputStream(cellRow);
                     Record deserializedRecord = serializer.deserialize(bais);
                     records.add(deserializedRecord);
                     bais.close();
