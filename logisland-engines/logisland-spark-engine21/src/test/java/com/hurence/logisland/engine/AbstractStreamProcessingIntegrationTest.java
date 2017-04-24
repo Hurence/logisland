@@ -122,7 +122,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
                 1,
                 new Properties(),
                 RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue())) 
+        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
         if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
@@ -175,6 +175,14 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         }
 
         if (zkUtils != null) {
+            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue());
             zkUtils.close();
         }
 
