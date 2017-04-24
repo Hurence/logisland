@@ -6,15 +6,15 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.hbase.scan.Column;
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
-import com.hurence.logisland.processor.hbase.scan.ResultHandler;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.processor.hbase.scan.Column;
+import com.hurence.logisland.processor.hbase.scan.ResultCell;
+import com.hurence.logisland.processor.hbase.scan.ResultHandler;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
@@ -39,7 +39,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
     static final Pattern COLUMNS_PATTERN = Pattern.compile("\\w+(:\\w+)?(?:,\\w+(:\\w+)?)*");
 
-    static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("hbase.client.service")
             .description("The instance of the Controller Service to use for accessing HBase.")
             .required(true)
@@ -47,13 +47,13 @@ public class FetchHBaseRow extends AbstractProcessor {
             .build();
 
 
-    protected static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
             .name("table.name.default")
             .description("The table table to use if table name field is not set")
             .required(false)
             .build();
 
-    static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor TABLE_NAME_FIELD = new PropertyDescriptor.Builder()
             .name("table.name.field")
             .description("The field containing the name of the HBase Table to fetch from.")
             .required(true)
@@ -61,7 +61,7 @@ public class FetchHBaseRow extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
             .name("row.identifier.field")
             .description("The field containing the  identifier of the row to fetch.")
             .required(true)
@@ -69,7 +69,7 @@ public class FetchHBaseRow extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor COLUMNS_FIELD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor COLUMNS_FIELD = new PropertyDescriptor.Builder()
             .name("columns.field")
             .description("The field containing an optional comma-separated list of \"<colFamily>:<colQualifier>\" pairs to fetch. To return all columns " +
                     "for a given family, leave off the qualifier such as \"<colFamily1>,<colFamily2>\".")
@@ -79,22 +79,20 @@ public class FetchHBaseRow extends AbstractProcessor {
             .build();
 
 
-
-
-    protected static final AllowableValue AVRO_SERIALIZER =
+    public static final AllowableValue AVRO_SERIALIZER =
             new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
 
-    protected static final AllowableValue JSON_SERIALIZER =
+    public static final AllowableValue JSON_SERIALIZER =
             new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
 
-    protected static final AllowableValue KRYO_SERIALIZER =
+    public static final AllowableValue KRYO_SERIALIZER =
             new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
 
-    protected static final AllowableValue NO_SERIALIZER =
+    public static final AllowableValue NO_SERIALIZER =
             new AllowableValue("none", "no serialization", "send events as bytes");
 
 
-    protected static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
             .name("record.serializer")
             .description("the serializer needed to i/o the record in the HBase row")
             .required(false)
@@ -103,7 +101,7 @@ public class FetchHBaseRow extends AbstractProcessor {
             .defaultValue(KRYO_SERIALIZER.getValue())
             .build();
 
-    protected static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
             .name("record.schema")
             .description("the avro schema definition for the Avro serialization")
             .required(false)
@@ -111,14 +109,15 @@ public class FetchHBaseRow extends AbstractProcessor {
             .build();
 
 
-    protected HBaseClientService clientService;
-    protected RecordSerializer serializer;
+    public HBaseClientService clientService;
+    public RecordSerializer serializer;
 
 
     static final String HBASE_TABLE_ATTR = "hbase.table";
     static final String HBASE_ROW_ATTR = "hbase.row";
 
     static final List<PropertyDescriptor> properties;
+
     static {
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(HBASE_CLIENT_SERVICE);
@@ -163,7 +162,7 @@ public class FetchHBaseRow extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) throws ProcessException {
 
-        for( Record record : records) {
+        for (Record record : records) {
 
             try {
                 String tableName = context.getPropertyValue(TABLE_NAME_DEFAULT).asString();
@@ -190,8 +189,9 @@ public class FetchHBaseRow extends AbstractProcessor {
                     continue;
                 }
 
-                final List<Column> columns = getColumns(record.getField(context.getPropertyValue(COLUMNS_FIELD).asString()).asString());
-
+                List<Column> columns = null;
+                if (record.hasField(context.getPropertyValue(COLUMNS_FIELD).asString()))
+                    columns = getColumns(record.getField(context.getPropertyValue(COLUMNS_FIELD).asString()).asString());
 
 
                 final RecordContentHandler handler = new RecordContentHandler(serializer);
@@ -230,7 +230,7 @@ public class FetchHBaseRow extends AbstractProcessor {
                 records.addAll(handlerRecords);
 
 
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 record.addError(ProcessError.RUNTIME_ERROR.toString(),
                         getLogger(),
                         "Unable to fetch row {}",
@@ -253,7 +253,7 @@ public class FetchHBaseRow extends AbstractProcessor {
         List<Column> columnsList = new ArrayList<>(columns.length);
 
         for (final String column : columns) {
-            if (column.contains(":"))  {
+            if (column.contains(":")) {
                 final String[] parts = column.split(":");
                 final byte[] cf = parts[0].getBytes(StandardCharsets.UTF_8);
                 final byte[] cq = parts[1].getBytes(StandardCharsets.UTF_8);
@@ -266,9 +266,6 @@ public class FetchHBaseRow extends AbstractProcessor {
 
         return columnsList;
     }
-
-
-
 
 
     /**
@@ -290,10 +287,10 @@ public class FetchHBaseRow extends AbstractProcessor {
         @Override
         public void handle(byte[] row, ResultCell[] resultCells) {
 
-            for(ResultCell cell : resultCells ){
+            for (ResultCell cell : resultCells) {
 
                 try {
-                  //  final byte[] row = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
+                    //  final byte[] row = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
                     ByteArrayInputStream bais = new ByteArrayInputStream(cell.getRowArray());
                     Record deserializedRecord = serializer.deserialize(bais);
                     records.add(deserializedRecord);

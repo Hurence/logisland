@@ -23,6 +23,7 @@ import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
 import com.hurence.logisland.processor.hbase.AbstractPutHBase;
+import com.hurence.logisland.processor.hbase.FetchHBaseRow;
 import com.hurence.logisland.processor.hbase.PutHBaseCell;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -186,7 +187,7 @@ public class HBaseServiceTest {
 
 
     private ProcessorConfiguration createProcessorConfiguration() {
-        Map<String, String> properties = new HashMap<>();
+    /*    Map<String, String> properties = new HashMap<>();
         properties.put(PutHBaseCell.HBASE_CLIENT_SERVICE.getName(), "hbase_service");
         properties.put(PutHBaseCell.BATCH_SIZE.getName(), "100");
         properties.put(PutHBaseCell.COLUMN_FAMILY_DEFAULT.getName(), "cf");
@@ -199,7 +200,20 @@ public class HBaseServiceTest {
         conf.setComponent(PutHBaseCell.class.getName());
         conf.setType(ComponentType.SINK.toString());
         conf.setConfiguration(properties);
-        conf.setProcessor("put_hbase");
+        conf.setProcessor("put_hbase");*/
+
+        Map<String, String> properties = new HashMap<>();
+        properties.put(FetchHBaseRow.HBASE_CLIENT_SERVICE.getName(), "hbase_service");
+        properties.put(FetchHBaseRow.COLUMNS_FIELD.getName(), "hbase_colums");
+        properties.put(FetchHBaseRow.ROW_ID_FIELD.getName(), "hbase_rowkey");
+        properties.put(FetchHBaseRow.TABLE_NAME_DEFAULT.getName(), "logisland");
+
+
+        ProcessorConfiguration conf = new ProcessorConfiguration();
+        conf.setComponent(FetchHBaseRow.class.getName());
+        conf.setType(ComponentType.SINK.toString());
+        conf.setConfiguration(properties);
+        conf.setProcessor("fetch_hbase");
 
         return conf;
     }

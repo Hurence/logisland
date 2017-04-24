@@ -39,7 +39,7 @@ engine:
     spark.ui.port: 4050
 
   controllerServiceConfigurations:
-    # HBase
+
     - controllerService: hbase_service
       component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
       type: service
