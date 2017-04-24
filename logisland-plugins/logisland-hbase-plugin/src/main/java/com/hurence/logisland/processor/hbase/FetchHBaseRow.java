@@ -292,13 +292,13 @@ public class FetchHBaseRow extends AbstractProcessor {
             for (ResultCell cell : resultCells) {
 
                 try {
-                    final byte[] cellRow = Arrays.copyOfRange(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength() + cell.getRowOffset());
-                    ByteArrayInputStream bais = new ByteArrayInputStream(cellRow);
+                    final byte[] cellValue = Arrays.copyOfRange(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength() + cell.getValueOffset());
+                    ByteArrayInputStream bais = new ByteArrayInputStream(cellValue);
                     Record deserializedRecord = serializer.deserialize(bais);
                     records.add(deserializedRecord);
                     bais.close();
                 } catch (Exception e) {
-                    logger.debug("error while handling ResultCell for {}", new Object[]{e});
+                    logger.error("error while handling ResultCell for {} : {}", new Object[]{cell, e});
                 }
             }
             handledRow = true;
