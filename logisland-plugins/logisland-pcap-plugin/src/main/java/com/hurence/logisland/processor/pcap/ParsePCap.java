@@ -58,10 +58,10 @@ public class ParsePCap extends AbstractProcessor {
 
     public static final String BATCH_FLOW_MODE = "batch";
     public static final String STREAM_FLOW_MODE = "stream";
-
+    private static final String KEY_DEBUG = "debug";
 
     public static final PropertyDescriptor DEBUG_PROPERTY = new PropertyDescriptor.Builder()
-            .name("debug")
+            .name(KEY_DEBUG)
             .description("Enable debug.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
@@ -78,7 +78,9 @@ public class ParsePCap extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
-        logger.debug("Initializing PCap Processor");
+        if (debug) {
+            logger.debug("Initializing PCap Processor");
+        }
     }
     
     @Override
@@ -111,14 +113,14 @@ public class ParsePCap extends AbstractProcessor {
 
             byte[] pcapRawValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
 
-            //logger.debug("Length : " + pcapRawValue.length);
+            // if (debug) {logger.debug("Length : " + pcapRawValue.length);}
             /*
             String pcapString = "";
             for(int i = 0; i<pcapRawValue.length; i++)
             {
                 pcapString = pcapString + ", " + pcapRawValue[i];
             }
-            logger.debug("pcapString : " + pcapString);
+             if (debug) {logger.debug("pcapString : " + pcapString);}
             */
 
             try {
@@ -142,7 +144,7 @@ public class ParsePCap extends AbstractProcessor {
 
                         // Retrieve the timestamp provided by the probe in the kafka message key :
                         final Long pcapTimestampInNanos = 1000000L * record.getField(FieldDictionary.RECORD_TIME).asLong();
-                        //logger.debug("pcapTimestampInNanos : " + pcapTimestampInNanos.toString());
+                        //if (debug) {logger.debug("pcapTimestampInNanos : " + pcapTimestampInNanos.toString());}
 
                         // Encapsulate the packet raw data with the packet header and the global header :
                         pcapRawValue = PcapHelper.addGlobalHeader(PcapHelper.addPacketHeader(pcapTimestampInNanos, pcapRawValue, Endianness.getNativeEndianness()), Endianness.getNativeEndianness());
@@ -156,11 +158,13 @@ public class ParsePCap extends AbstractProcessor {
                         throw new Exception("The flow mode is not configured correctly.");
                 }
 
-                //logger.debug("Magic Number = " + globalHeader.getMagicNumber());
+                // if (debug) {logger.debug("Magic Number = " + globalHeader.getMagicNumber());}
 
-                //logger.debug("Message 1 - Thread Id = " + threadId);
+                // if (debug) {logger.debug("Message 1 - Thread Id = " + threadId);}
                 if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1) {
-                    logger.debug("Invalid pcap file format : Unable to parse the global header magic number - Thread Id : " + threadId);
+                    if (debug) {
+                        logger.debug("Invalid pcap file format : Unable to parse the global header magic number - Thread Id : " + threadId);
+                    }
                     throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number - Thread Id : " + threadId);
                 }
 
@@ -187,11 +191,11 @@ public class ParsePCap extends AbstractProcessor {
                         outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "pcap_packet"));
 
                         outputRecord.setField(new Field(FieldDictionary.PROCESSOR_NAME, FieldType.STRING, this.getClass().getSimpleName()));
-                        //logger.debug("Start Parsing - Step 1 - Thread Id = " + threadId);
+                        // if (debug) {logger.debug("Start Parsing - Step 1 - Thread Id = " + threadId);}
                         if (ipv4Packet.getVersion() == Constants.PROTOCOL_IPV4) {
-                            //logger.debug("Start Parsing - Step 2 : IPv4 parsing");
+                            // if (debug) {logger.debug("Start Parsing - Step 2 : IPv4 parsing");}
                             if (ipv4Packet.getProtocol() == Constants.PROTOCOL_TCP) {
-                                //logger.debug("Start Parsing - Step 3 : TCP parsing");
+                                // if (debug) {logger.debug("Start Parsing - Step 3 : TCP parsing");}
                                 tcpPacket = TcpPacket.parse(ipv4Packet);
                             } else if (ipv4Packet.getProtocol() == Constants.PROTOCOL_UDP) {
                                 Buffer packetDataBuffer = ipv4Packet.getData();
@@ -205,38 +209,44 @@ public class ParsePCap extends AbstractProcessor {
                                 packetDataBuffer.discardReadBytes();
                                 udpPacket.setData(packetDataBuffer);
                             } else {
-                                logger.debug("//////////////////////////"
-                                        + "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far."
-                                        + "//////////////////////////");
+                                 if (debug) {
+                                     logger.debug("//////////////////////////"
+                                             + "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far."
+                                             + "//////////////////////////");
+                                 }
                                 outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol inside ipv4 packet : only TCP and UDP protocols are handled so far.");
                             }
                         } else {
-                            logger.debug("//////////////////////////"
-                                    + "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far."
-                                    + "//////////////////////////");
+                            if (debug) {
+                                logger.debug("//////////////////////////"
+                                        + "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far."
+                                        + "//////////////////////////");
+                            }
                             outputRecord.addError(ProcessError.NOT_IMPLEMENTED_ERROR.getName(), "Not Implemented protocol : only IPv4 protocol (TCP & UDP) is handled so far.");
                         }
 
-                        //logger.debug("Start new PacketInfo");
+                        // if (debug) {logger.debug("Start new PacketInfo")};
                         PacketInfo pi = new PacketInfo(globalHeader, packetHeader, packet, ipv4Packet, tcpPacket, udpPacket);
-                        //logger.debug("Start PcapHelper.packetToFields");
+                        // if (debug) {logger.debug("Start PcapHelper.packetToFields");}
                         EnumMap<PCapConstants.Fields, Object> result = PcapHelper.packetToFields(pi);
-                        //logger.debug("Start setting Fields");
+                        // if (debug) {logger.debug("Start setting Fields");}
                         for (PCapConstants.Fields field : PCapConstants.Fields.values()) {
                             if (result.containsKey(field)) {
-                                //logger.debug("Adding field " + field.getName());
+                                // if (debug) {logger.debug("Adding field " + field.getName());}
                                 outputRecord.setField(new Field(field.getName(), field.getFieldType(), result.get(field)));
                             }
                         }
 
-                        logger.debug("One packet record has been successfully added.");
+                        if (debug) {logger.debug("One packet record has been successfully added.");}
                         outputRecords.add(outputRecord);
 
                     } catch (NegativeArraySizeException ignored) {
-                        logger.debug("Ignorable exception while parsing packet.", ignored);
+                        if (debug) {
+                            logger.debug("Ignorable exception while parsing packet.", ignored);
+                        }
                     } catch (EOFException eof) {
                         // Ignore exception and break : the while loop is left when eof is reached
-                        //logger.debug("Exit from the while loop");
+                        // if (debug) {logger.debug("Exit from the while loop");}
                         break;
                     }
                 }
@@ -245,14 +255,40 @@ public class ParsePCap extends AbstractProcessor {
                 StandardRecord outputRecord = new StandardRecord();
                 outputRecord.addError(ProcessError.INVALID_FILE_FORMAT_ERROR.getName(), e.getMessage());
                 outputRecord.setField(new Field(FieldDictionary.RECORD_VALUE, FieldType.BYTES, pcapRawValue));
-                logger.debug("InvalidPCapFileException : error record added successfully.");
+                if (debug) {
+                    logger.debug("InvalidPCapFileException : error record added successfully.");
+                }
                 outputRecords.add(outputRecord);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
-        logger.debug(outputRecords.size() + " packet records has been generated by the parsePCap processor.");
+        if (debug) {
+            logger.debug(outputRecords.size() + " packet records has been generated by the parsePCap processor.");
+        }
         return outputRecords;
     }
 
+    @Override
+    public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
+
+        logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+
+        /**
+         * Handle the debug property
+         */
+        if (descriptor.getName().equals(KEY_DEBUG))
+        {
+            if (newValue != null)
+            {
+                if (newValue.equalsIgnoreCase("true"))
+                {
+                    debug = true;
+                }
+            } else
+            {
+                debug = false;
+            }
+        }
+    }
 }
