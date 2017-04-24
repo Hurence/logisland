@@ -162,6 +162,8 @@ public class FetchHBaseRow extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) throws ProcessException {
 
+
+        List<Record> outputRecords = new ArrayList<>();
         for (Record record : records) {
 
             try {
@@ -227,7 +229,7 @@ public class FetchHBaseRow extends AbstractProcessor {
                 attributes.put(HBASE_TABLE_ATTR, tableName);
 
 
-                records.addAll(handlerRecords);
+                outputRecords.addAll(handlerRecords);
 
 
             } catch (Exception ex) {
@@ -239,7 +241,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
         }
 
-        return records;
+        return outputRecords;
 
     }
 
