@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.processor.bro;
+package com.hurence.logisland.processor.netflow;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
@@ -26,18 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Test simple Bro events processor.
  */
-public class NetflowProcessorTest {
+public class ParseNetflowEventTest {
     
-    private static Logger logger = LoggerFactory.getLogger(NetflowProcessorTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ParseNetflowEventTest.class);
     
     // Bro conn input event
     private  final byte[] nfByterecord =  new byte[] {0, 5, 0, 2, 62, -128, 0, 69, 88, -20, -100, -22, 0, 1,
@@ -57,7 +54,7 @@ public class NetflowProcessorTest {
             NETFLOW_EVENT = "";
         }
 
-        final TestRunner testRunner = TestRunners.newTestRunner(new NetflowProcessor());
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetflowEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("netflowevent");
         record.setStringField(FieldDictionary.RECORD_VALUE, NETFLOW_EVENT);

@@ -30,7 +30,7 @@
 
 
     <repositories>
-        <!-- TODO TK-->
+        <!-- TODO : handle this repository inside logisland code-->
         <repository>
             <id>Metron-Kraken-Repo</id>
             <name>Metron Kraken Repository</name>

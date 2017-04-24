@@ -275,21 +275,19 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+
 
 ----------
 
@@ -316,21 +314,25 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
    "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
    "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
    "**record.type**", "the type of event to filter", "", "null", "", ""
@@ -362,21 +364,24 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
    "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
    "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
 
@@ -405,21 +410,24 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
+
+   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
+   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
+   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
+   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "_metrics", "", ""
    "avro.input.schema", "the avro schema definition", "", "null", "", ""
    "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
    "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+   "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
+   "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
    "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
    "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
    "output.record.type", "the output type of the record", "", "aggregation", "", ""
@@ -721,6 +729,42 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
+
+ParseNetflowEvent
+-----------------
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	-Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	-Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
+
+Class
+_____
+com.hurence.logisland.processor.netflow.ParseNetflowEvent
+
+Tags
+____
+netflow, security
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "netflowevent", "", ""
+   "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.pcap.ParsePCap: 
 
 ParsePCap
@@ -744,7 +788,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "debug", "Enable debug.", "", "false", "", ""
+   "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "", ""
 
 ----------
 

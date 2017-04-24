@@ -22,7 +22,7 @@ import java.util.Collections
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
+import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, BytesArraySerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
@@ -111,6 +111,8 @@ object AbstractKafkaRecordStream {
         "avro serialization", "serialize events as json blocs")
     val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
         "kryo serialization", "serialize events as json blocs")
+    val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
+        "byte array serialization", "serialize events as byte arrays")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
 
@@ -119,7 +121,7 @@ object AbstractKafkaRecordStream {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -128,7 +130,7 @@ object AbstractKafkaRecordStream {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -138,7 +140,7 @@ object AbstractKafkaRecordStream {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(JSON_SERIALIZER.getValue)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .build
 
     val METRICS_TOPIC = new PropertyDescriptor.Builder()
@@ -361,7 +363,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             // do the parallel processing
             kafkaStream.foreachRDD(rdd => {
-
                 /**
                   * check if conf needs to be refreshed
                   */
@@ -433,6 +434,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 val inSchema = parser.parse(schemaContent)
                 new AvroSerializer(inSchema)
             case c if c == AbstractKafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
+            case c if c == AbstractKafkaRecordStream.BYTESARRAY_SERIALIZER.getValue => new BytesArraySerializer()
             case _ => new KryoSerializer(true)
         }
     }

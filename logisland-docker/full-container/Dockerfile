@@ -23,8 +23,8 @@ EXPOSE 80 443
 
 
 # Kafka
-RUN curl -s http://apache.crihan.fr/dist/kafka/0.9.0.1/kafka${scala.binary.version}-0.9.0.1.tgz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s kafka${scala.binary.version}-0.9.0.1 kafka
+RUN curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s kafka_2.11-0.10.0.0 kafka
 ENV KAFKA_HOME /usr/local/kafka
 EXPOSE 2181 9092
 COPY server.properties $KAFKA_HOME/config/server.properties
@@ -47,7 +47,7 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 # Spark
 RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s spark-1.6.2-bin-hadoop2.6 spark
+RUN cd /usr/local && ln -s spark-2.1.0-bin-hadoop2.7 spark
 ENV SPARK_HOME /usr/local/spark
 ENV PATH $PATH:$SPARK_HOME/bin
 EXPOSE 4040
