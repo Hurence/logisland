@@ -28,6 +28,15 @@
     <artifactId>logisland-cyber-security-plugin</artifactId>
     <packaging>jar</packaging>
 
+    <repositories>
+        <!-- TODO : handle this repository inside logisland code-->
+        <repository>
+            <id>Metron-Kraken-Repo</id>
+            <name>Metron Kraken Repository</name>
+            <url>https://raw.github.com/opensoc/kraken/mvn-repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -46,6 +55,21 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.krakenapps</groupId>
+            <artifactId>kraken-pcap</artifactId>
+            <version>1.7.1</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-simple</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
