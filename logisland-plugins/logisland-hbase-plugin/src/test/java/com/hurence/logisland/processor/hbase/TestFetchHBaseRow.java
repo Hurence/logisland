@@ -4,7 +4,9 @@ package com.hurence.logisland.processor.hbase;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
+import com.hurence.logisland.serializer.JsonSerializer;
 import com.hurence.logisland.serializer.KryoSerializer;
+import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -12,13 +14,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TestFetchHBaseRow {
 
 
-    public static final String FAMILY = "cf1";
+    public static final String FAMILY = "cf";
     public static final String COLUMN_QUALIFIER_1 = "cq1";
     public static final String COLUMN_QUALIFIER_2 = "cq2";
     private FetchHBaseRow proc;
@@ -38,13 +44,31 @@ public class TestFetchHBaseRow {
     public static final String KEY = "some key";
     public static final String VALUE = "some content";
 
-    private Record getRecord() {
-        final Record inputRecord = new MockRecord(RecordUtils.getKeyValueRecord(KEY, VALUE));
+
+        final Record inputRecord = new MockRecord(RecordUtils.getKeyValueRecord(KEY, VALUE))
+                .setStringField(ROW_ID_KEY, ROW_ID_1)
+                .setStringField(COLUMNS_KEY, FAMILY + ":" + COLUMN_QUALIFIER_1)
+                .setStringField(TABLE_NAME_KEY, TABLE_NAME);
+
+
+
+
+    private String serializeRecord(RecordSerializer serializer, Record inputRecord) throws IOException {
+
 
         inputRecord.setStringField(ROW_ID_KEY, ROW_ID_1);
         inputRecord.setStringField(COLUMNS_KEY, FAMILY + ":" + COLUMN_QUALIFIER_1);
         inputRecord.setStringField(TABLE_NAME_KEY, TABLE_NAME);
-        return inputRecord;
+
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(baos, inputRecord);
+        baos.close();
+
+
+        return new String(baos.toByteArray());
+
     }
 
     @Before
@@ -60,7 +84,7 @@ public class TestFetchHBaseRow {
         runner.setProperty(FetchHBaseRow.TABLE_NAME_FIELD, TABLE_NAME_KEY);
         runner.setProperty(FetchHBaseRow.ROW_ID_FIELD, ROW_ID_KEY);
         runner.setProperty(FetchHBaseRow.COLUMNS_FIELD, COLUMNS_KEY);
-        runner.setProperty(FetchHBaseRow.RECORD_SERIALIZER, KryoSerializer.class.getName());
+        runner.setProperty(FetchHBaseRow.RECORD_SERIALIZER, JsonSerializer.class.getName());
     }
 
     @Test
@@ -106,16 +130,16 @@ public class TestFetchHBaseRow {
 
 
     @Test
-    public void testFetchToAttributesWithStringValues() {
+    public void testFetchToAttributesWithStringValues() throws IOException {
         final Map<String, String> cells = new HashMap<>();
-        cells.put(COLUMN_QUALIFIER_1, "val1");
+        cells.put(COLUMN_QUALIFIER_1, serializeRecord(new JsonSerializer(), inputRecord));
         cells.put(COLUMN_QUALIFIER_2, "val2");
 
         final long ts1 = 123456789;
         hBaseClientService.addResult(FAMILY + ":" + COLUMN_QUALIFIER_1, cells, ts1);
 
 
-        Record inRecord = getRecord();
+        Record inRecord = inputRecord;
         runner.enqueue(inRecord);
         runner.run();
 
@@ -129,16 +153,16 @@ public class TestFetchHBaseRow {
     }
 
     @Test
-    public void testFetchSpecificColumnsToAttributesWithStringValues() {
+    public void testFetchSpecificColumnsToAttributesWithStringValues() throws IOException {
         final Map<String, String> cells = new HashMap<>();
         cells.put(COLUMN_QUALIFIER_1, "val1");
-        cells.put(COLUMN_QUALIFIER_2, "val2");
+        cells.put(COLUMN_QUALIFIER_2, serializeRecord(new JsonSerializer(), inputRecord));
 
         final long ts1 = 123456789;
         hBaseClientService.addResult("row1", cells, ts1);
 
 
-        Record inRecord = getRecord().setStringField(COLUMNS_KEY, "logisland:cq2");
+        Record inRecord = inputRecord.setStringField(COLUMNS_KEY, FAMILY + ":cq2");
         runner.enqueue(inRecord);
         runner.run();
 

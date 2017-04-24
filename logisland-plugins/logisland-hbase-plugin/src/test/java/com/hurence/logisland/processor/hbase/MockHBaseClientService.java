@@ -105,7 +105,7 @@ public class MockHBaseClientService extends AbstractControllerService implements
             cell.setValueOffset(0);
             cell.setValueLength(valueArray.length);
 
-            final byte[] familyArray = "nifi".getBytes(StandardCharsets.UTF_8);
+            final byte[] familyArray = "cf".getBytes(StandardCharsets.UTF_8);
             cell.setFamilyArray(familyArray);
             cell.setFamilyOffset(0);
             cell.setFamilyLength((byte) familyArray.length);
