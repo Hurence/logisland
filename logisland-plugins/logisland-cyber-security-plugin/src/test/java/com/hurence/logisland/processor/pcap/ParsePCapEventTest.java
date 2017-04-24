@@ -35,9 +35,9 @@ import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
 /**
  * Test PCap processor.
  */
-public class ParsePCapTest {
+public class ParsePCapEventTest {
     
-    private static Logger logger = LoggerFactory.getLogger(ParsePCapTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ParsePCapEventTest.class);
 
     private int testPCapFieldsValid(MockRecord out) {
 
