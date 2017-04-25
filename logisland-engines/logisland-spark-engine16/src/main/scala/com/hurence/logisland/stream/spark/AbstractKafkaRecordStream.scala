@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import java.io.ByteArrayInputStream
@@ -20,11 +20,10 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
+import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
-import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
@@ -38,10 +37,8 @@ import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConversions._
 
 
 object AbstractKafkaRecordStream {
@@ -183,6 +180,20 @@ object AbstractKafkaRecordStream {
         .required(false)
         .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
         .build
+
+
+    val < = new PropertyDescriptor.Builder()
+        .name("kafka.message.key.field")
+        .description("Sets the field which contains the key of the message " +
+            "which will be sent to the output topic. " +
+            "The default key field is set to record_id" +
+            "If the field doesn't exist or is empty" +
+            "the message key will be null and the partitioner will send the message" +
+            "to a random partition, else the DefaultPartitioner will be used " +
+            "to send the message to a partition id computed from the hash of the key field value")
+        .required(false)
+        .defaultValue(FieldDictionary.RECORD_ID)
+        .build
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -212,6 +223,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_MESSAGE_KEY_FIELD)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -238,6 +250,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
+            val keyField = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MESSAGE_KEY_FIELD).asString
             val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
 
             val kafkaSinkParams = Map(
@@ -251,7 +264,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
-            kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
+            kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams, keyField))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
 
             if (topicAutocreate) {
@@ -365,7 +378,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
         }).toList
     }
-
 
 
     /**
