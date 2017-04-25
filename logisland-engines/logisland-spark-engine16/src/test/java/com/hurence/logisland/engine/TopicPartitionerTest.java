@@ -42,8 +42,6 @@ public class TopicPartitionerTest {
     public void validatePartitionner() {
 
         int numPartitions = 50;
-        Partitioner partitioner = new Partitioner();
-        List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < 1000; i++) {
             String recordId = DivolteIdentifier.generate().value;

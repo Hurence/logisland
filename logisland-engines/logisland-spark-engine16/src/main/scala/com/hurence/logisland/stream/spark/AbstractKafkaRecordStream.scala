@@ -20,14 +20,11 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.engine.EngineContext
-import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
+import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
-import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
-import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
@@ -35,7 +32,6 @@ import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
-import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
@@ -186,7 +182,7 @@ object AbstractKafkaRecordStream {
         .build
 
 
-    val < = new PropertyDescriptor.Builder()
+    val KAFKA_MESSAGE_KEY_FIELD = new PropertyDescriptor.Builder()
         .name("kafka.message.key.field")
         .description("Sets the field which contains the key of the message " +
             "which will be sent to the output topic. " +
@@ -259,7 +255,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
             val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
             val keyField = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MESSAGE_KEY_FIELD).asString
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
@@ -337,12 +332,13 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ex.toString)
         }
     }
-/*
-    override def stop() {
-        kafkaSink.value.shutdown()
-        zkSink.value.shutdown()
-    }
-  */
+
+    /*
+        override def stop() {
+            kafkaSink.value.shutdown()
+            zkSink.value.shutdown()
+        }
+      */
 
     /**
       * to be overriden by subclasses
@@ -350,8 +346,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       * @param rdd
       */
     def process(rdd: RDD[(Array[Byte], Array[Byte])])
-
-
 
 
     /**
