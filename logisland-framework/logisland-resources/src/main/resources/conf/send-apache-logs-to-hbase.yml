@@ -48,7 +48,7 @@ engine:
         hadoop.configuration.files:
         zookeeper.quorum: sandbox
         zookeeper.client.port: 2181
-        zookeeper.znode.parent: /hbase
+        zookeeper.znode.parent: /hbase-unsecure
         hbase.client.retries: 3
         phoenix.client.jar.location:
 
@@ -109,12 +109,16 @@ engine:
           documentation: a processor that put incomming records to HBase
           configuration:
             hbase.client.service: hbase_service
-            batch.size: 1000
+            batch.size: 20000
             row.identifier.encoding.strategy: String
+            table.name.default: logisland_analytics
             table.name.field: hbase_table_name
-            row.identifier.field: hbase_row_id
-            column.family.field: hbase_column_familly
-            column.qualifier.field: hbase_column_qualifier
+            row.identifier.field: src_ip
+            column.family.field: hbase_column_family
+            column.family.default: e
+            column.qualifier.field: record_id
+            column.qualifier.default: c
+            record.serializer: com.hurence.logisland.serializer.JsonSerializer
 
 
         # fetch from HBase
@@ -129,3 +133,11 @@ engine:
             table.name.field: hbase_table_name
             row.identifier.field: hbase_row_id
             columns.field: hbase_columns
+
+        # eventually debug
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          type: parser
+          documentation: a debugger
+          configuration:
+            event.serializer: json
