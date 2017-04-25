@@ -215,7 +215,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         consumerProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         consumerProps.put("auto.offset.reset", "earliest");  // to make sure the consumer starts from the beginning of the topic
         consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(Arrays.asList(OUTPUT_TOPIC));
+        consumer.subscribe(Arrays.asList(topic));
 
 
         List<Record> outputRecords = new ArrayList<>();

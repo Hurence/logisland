@@ -1,5 +1,5 @@
 #########################################################################################################
-# Logisland configuration script example: parse pcap files and display them in Kibana
+# Logisland configuration script example: PArse Netflow events and index them into ElasticSearch
 #########################################################################################################
 
 version: 0.9.8
@@ -10,9 +10,9 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Parse pcap events with LogIsland
+  documentation: Index Netflow events with LogIsland
   configuration:
-    spark.app.name: parsePCapEventsDemo
+    spark.app.name: IndexNetFlowEventsDemo
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -39,17 +39,18 @@ engine:
     spark.ui.port: 4050
   streamConfigurations:
 
+
     # Parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: A processor chain that parses pcap events into Logisland records
+      documentation: A processor chain that transforms Netflow events into Logisland records
       configuration:
-        kafka.input.topics: pcap_topic
+        kafka.input.topics: netflow
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -58,21 +59,20 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Transform pcap events into Logisland packet records
-        - processor: ParsePCap processor
-          component: com.hurence.logisland.processor.pcap.ParsePCap
+        # Transform Netflow events into Logisland records
+        - processor: Netflow adaptor
+          component: com.hurence.logisland.processor.netflow.ParseNetflowEvent
           type: parser
-          documentation: A processor that parses pcap events into LogIsland records
+          documentation: A processor that transforms Netflow events into LogIsland events
           configuration:
-            debug: true
-            flow.mode: stream
-
+            debug: false
+            enrich.record: false
 
     # Indexing
     - stream: indexing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: processor
-      documentation: a processor that push events to ES
+      documentation: A processor chain that pushes Netflow events to ES
       configuration:
         kafka.input.topics: logisland_events
         kafka.output.topics: none
@@ -80,8 +80,8 @@ engine:
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox.hortonworks.com:6667
-        kafka.zookeeper.quorum: sandbox.hortonworks.com:2181
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
@@ -91,9 +91,9 @@ engine:
         - processor: ES Publisher
           component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
           type: processor
-          documentation: A processor that pushes pcap events into ES
+          documentation: A processor that pushes Netflow events into ES
           configuration:
-            default.index: pcap_index
+            default.index: netflow
             default.type: events
             hosts: sandbox:9300
             cluster.name: elasticsearch
@@ -101,4 +101,3 @@ engine:
             timebased.index: today
             es.index.field: search_index
             es.type.field: record_type
-

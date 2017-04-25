@@ -21,6 +21,8 @@ package com.hurence.logisland.processor.pcap;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.hurence.logisland.processor.pcap.utils.Endianness;
+import com.hurence.logisland.util.bytes.ByteUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.krakenapps.pcap.decoder.ethernet.EthernetType;
@@ -29,17 +31,13 @@ import org.krakenapps.pcap.file.GlobalHeader;
 import org.krakenapps.pcap.packet.PacketHeader;
 import org.krakenapps.pcap.packet.PcapPacket;
 import org.krakenapps.pcap.util.ByteOrderConverter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.EnumMap;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
-
-import com.hurence.logisland.processor.pcap.utils.Endianness;
-import com.hurence.logisland.util.bytes.ByteUtil;
 
 public class PcapHelper {
 
@@ -121,12 +119,12 @@ public class PcapHelper {
       if ( globalHeader.getMagicNumber() == 0xa1b2c3d4 || globalHeader.getMagicNumber() == 0xd4c3b2a1 )
       {
         //Time is in micro assemble as nano
-        logger.info("Times are in micro according to the magic number");
+        //logger.info("Times are in micro according to the magic number");
         return packetHeader.getTsSec() * 1000000000L + packetHeader.getTsUsec() * 1000L ;
       }
       else if ( globalHeader.getMagicNumber() == 0xa1b23c4d || globalHeader.getMagicNumber() == 0x4d3cb2a1 ) {
         //Time is in nano assemble as nano
-        logger.info("Times are in nano according to the magic number");
+        //logger.info("Times are in nano according to the magic number");
         return packetHeader.getTsSec() * 1000000000L + packetHeader.getTsUsec() ;
       }
       //Default assume time is in micro assemble as nano
