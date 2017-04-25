@@ -31,7 +31,7 @@
 package com.hurence.logisland.util.spark
 
 import java.net.InetAddress
-import java.util.Collections
+import java.util.{Collections, Date}
 
 import kafka.admin.AdminUtils
 import kafka.api.{OffsetRequest, PartitionOffsetRequestInfo}
@@ -57,6 +57,11 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
 
     lazy val zkClient = createZKClient()
     private val logger = LoggerFactory.getLogger(classOf[ZookeeperSink])
+
+
+    def shutdown() ={
+        zkClient.close()
+    }
 
     /**
       * will retrieve the amount of partitions for a given Kafka topic.
@@ -208,7 +213,8 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
 
         val hostname = InetAddress.getLocalHost.getHostName
         val ownerId = s"$group-$hostname-${o.partition}"
-        val now = org.joda.time.DateTime.now.getMillis
+        val now = new Date().getTime
+
 
         // Consumer Ids
         locally {

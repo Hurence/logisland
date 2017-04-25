@@ -27,8 +27,18 @@ public class EngineConfiguration extends AbstractComponentConfiguration {
         return streamConfigurations;
     }
 
-    public void addProcessorChainConfigurations(StreamConfiguration processorChains) {
+    public void addPipelineConfigurations(StreamConfiguration processorChains) {
         this.streamConfigurations.add(processorChains);
     }
 
+
+    private List<ControllerServiceConfiguration> controllerServiceConfigurations = new ArrayList<>();
+
+    public List<ControllerServiceConfiguration> getControllerServiceConfigurations() {
+        return controllerServiceConfigurations;
+    }
+
+    public void setControllerServiceConfigurations(List<ControllerServiceConfiguration> controllerServiceConfigurations) {
+        this.controllerServiceConfigurations = controllerServiceConfigurations;
+    }
 }

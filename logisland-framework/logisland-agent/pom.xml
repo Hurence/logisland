@@ -182,6 +182,10 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
 
     </dependencies>
     <build>

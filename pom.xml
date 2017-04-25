@@ -70,6 +70,7 @@
     <modules>
         <module>logisland-api</module>
         <module>logisland-plugins</module>
+        <module>logisland-services</module>
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
         <module>logisland-assembly</module>
@@ -86,8 +87,8 @@
         <logisland.version>${project.version}</logisland.version>
         <lucene.version>5.5.0</lucene.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.1</hbase.version>
-        <hadoop.guava.version>12.0.1</hadoop.guava.version>
+        <hbase.version>1.1.2.2.4.0.0-169</hbase.version>
+        <hadoop.guava.version>18.0</hadoop.guava.version>
         <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
@@ -100,8 +101,6 @@
         <jersey2-version>2.25</jersey2-version>
         <servlet-api-version>2.5</servlet-api-version>
 
-        <jackson.version>2.6.6</jackson.version>
-
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
@@ -111,6 +110,12 @@
 
 
     <repositories>
+
+        <repository>
+            <id>hdp</id>
+            <name>Hortonwork repo</name>
+            <url>http://repo.hortonworks.com/content/groups/public/</url>
+        </repository>
         <repository>
             <id>central</id>
             <!-- This should be at top, it makes maven try the central repo 
@@ -281,6 +286,12 @@
             </dependency>
 
 
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.7.1</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -459,6 +470,11 @@
                 <artifactId>json-simple</artifactId>
                 <version>1.1</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${hadoop.guava.version}</version>
+            </dependency>
 
 
             <dependency>
@@ -486,6 +502,12 @@
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>com.google.guava</artifactId>
+                        <groupId>guava</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -642,7 +664,28 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hadoop-utils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-client-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1110,6 +1153,7 @@
                 <kafka.version>0.10.0.1</kafka.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
+                <jackson.version>2.6.6</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine21</module>
@@ -1130,6 +1174,7 @@
                 <kafka.version>0.8.2.1</kafka.version>
                 <scala.version>2.10.6</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
+                <jackson.version>2.4.4</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine16</module>

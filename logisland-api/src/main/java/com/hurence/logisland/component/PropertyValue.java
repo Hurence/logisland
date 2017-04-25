@@ -17,6 +17,8 @@ package com.hurence.logisland.component;
 
 
 
+import com.hurence.logisland.controller.ControllerService;
+
 import java.io.Serializable;
 
 /**
@@ -89,6 +91,30 @@ public interface PropertyValue extends Serializable {
      * value, <code>false</code> otherwise
      */
     public boolean isSet();
+
+
+    /**
+     * @return the ControllerService whose identifier is the raw value of
+     * <code>this</code>, or <code>null</code> if either the value is not set or
+     * the value does not identify a ControllerService
+     */
+    ControllerService asControllerService();
+
+    /**
+     * @param <T> the generic type of the controller service
+     * @param serviceType the class of the Controller Service
+     * @return the ControllerService whose identifier is the raw value of the
+     * <code>this</code>, or <code>null</code> if either the value is not set or
+     * the value does not identify a ControllerService. The object returned by
+     * this method is explicitly cast to type specified, if the type specified
+     * is valid. Otherwise, throws an IllegalArgumentException
+     *
+     * @throws IllegalArgumentException if the value of <code>this</code> points
+     * to a ControllerService but that service is not of type
+     * <code>serviceType</code> or if <code>serviceType</code> references a
+     * class that is not an interface
+     */
+    <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException;
 
 
 }

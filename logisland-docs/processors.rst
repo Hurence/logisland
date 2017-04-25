@@ -162,6 +162,67 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+hbase, scan, fetch, get, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
+   "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.FilterRecords: 
+
+FilterRecords
+-------------
+Keep only records based on a given field value
+
+Class
+_____
+com.hurence.logisland.processor.FilterRecords
+
+Tags
+____
+record, fields, remove, delete
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**field.name**", "the field name", "", "record_id", "", ""
+   "**field.value**", "the field value to keep", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.GenerateRandomRecord: 
 
 GenerateRandomRecord
@@ -214,6 +275,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
+
    "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
    "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
    "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
@@ -223,14 +285,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
    "**logisland.agent.quorum**", "the stream needs to know how to reach Agent REST api in order to live update its processors", "", "sandbox:8081", "", ""
    "logisland.agent.pull.throttling", "wait every x batch to pull agent for new conf", "", "10", "", ""
+
 
 ----------
 
@@ -257,6 +314,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
+
    "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
    "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
    "**kafka.output.topics**", "Sets the output Kafka topic name", "", "_records", "", ""
@@ -266,6 +324,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
+
    "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
    "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
    "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
@@ -304,6 +363,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 .. csv-table:: allowable-values
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
+
 
    "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
    "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
@@ -349,6 +409,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 .. csv-table:: allowable-values
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
+
 
    "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "_errors", "", ""
    "**kafka.input.topics**", "Sets the input Kafka topic name", "", "_raw", "", ""
@@ -841,6 +902,44 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+Adds the Contents of a Record to HBase as the value of a single cell
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+hadoop, hbase
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "", ""
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "", ""
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "", ""
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.RemoveFields: 
 
 RemoveFields
@@ -948,6 +1047,33 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.time.field", "the name of the time field to sample", "", "record_time", "", ""
    "**sampling.algorithm**", "the implementation of the algorithm", "none, lttb, average, first_item, min_max, mode_median", "null", "", ""
    "**sampling.parameter**", "the parmater of the algorithm", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SelectDistinctRecords: 
+
+SelectDistinctRecords
+---------------------
+Keep only distinct records based on a given field
+
+Class
+_____
+com.hurence.logisland.processor.SelectDistinctRecords
+
+Tags
+____
+record, fields, remove, delete
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**field.name**", "the field to distinct records", "", "record_id", "", ""
 
 ----------
 

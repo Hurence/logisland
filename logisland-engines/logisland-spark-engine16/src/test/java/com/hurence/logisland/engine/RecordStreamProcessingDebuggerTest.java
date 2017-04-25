@@ -21,7 +21,7 @@ import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
-import com.hurence.logisland.processor.MockProcessor;
+import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.processor.DebugStream;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.stream.spark.*;
@@ -50,7 +50,7 @@ public class RecordStreamProcessingDebuggerTest {
         ProcessorConfiguration processorConf = getSplitTextProcessorConfiguration();
         StreamConfiguration chainConf = getSQLStreamConfiguration();
         EngineConfiguration engineConf = getStandardEngineConfiguration();
-        engineConf.addProcessorChainConfigurations(chainConf);
+        engineConf.addPipelineConfigurations(chainConf);
        // chainConf.addProcessorConfiguration(processorConf);
 
 

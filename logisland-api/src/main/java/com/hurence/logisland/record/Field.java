@@ -16,6 +16,7 @@
 package com.hurence.logisland.record;
 
 import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.controller.ControllerService;
 
 import java.io.Serializable;
 
@@ -179,6 +180,24 @@ public class Field implements PropertyValue, Serializable {
     @Override
     public boolean isSet() {
         return rawValue != null;
+    }
+
+    @Override
+    public ControllerService asControllerService() {
+        try {
+            return (ControllerService)rawValue;
+        }catch (Exception ex){
+            throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
+        }
+    }
+
+    @Override
+    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
+        try {
+            return (T)rawValue;
+        }catch (Exception ex){
+            throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
+        }
     }
 
 }

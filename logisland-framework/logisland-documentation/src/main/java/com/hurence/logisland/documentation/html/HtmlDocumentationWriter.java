@@ -278,9 +278,9 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
                 xmlStreamWriter.writeCharacters(", and whether a property is considered " + "\"sensitive\", meaning that its value will be encrypted. Before entering a "
                         + "value in a sensitive property, ensure that the ");
 
-                writeSimpleElement(xmlStreamWriter, "strong", "nifi.properties");
+                writeSimpleElement(xmlStreamWriter, "strong", "logisland.properties");
                 xmlStreamWriter.writeCharacters(" file has " + "an entry for the property ");
-                writeSimpleElement(xmlStreamWriter, "strong", "nifi.sensitive.props.key");
+                writeSimpleElement(xmlStreamWriter, "strong", "logisland.sensitive.props.key");
             }
             xmlStreamWriter.writeCharacters(".");
             xmlStreamWriter.writeEndElement();

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,14 +32,17 @@
 package com.hurence.logisland.serializer;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.record.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +71,7 @@ public class JsonSerializer implements RecordSerializer {
         }
 
         @Override
-        public void serialize(Record record, JsonGenerator jgen, SerializerProvider provider)
+        public void serialize(Record record, JsonGenerator jgen, com.fasterxml.jackson.databind.SerializerProvider provider)
                 throws IOException, JsonProcessingException {
             jgen.writeStartObject();
             jgen.writeStringField("id", record.getId());
@@ -181,21 +184,21 @@ public class JsonSerializer implements RecordSerializer {
                     case VALUE_NUMBER_INT:
                         try {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.INT, jp.getIntValue()));
-                        }catch(JsonParseException ex){
+                        } catch (JsonParseException ex) {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
                         }
                         break;
 
                     case VALUE_NUMBER_FLOAT:
-                        try{
-                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
-                        }catch(JsonParseException ex){
+                        try {
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
+                        } catch (JsonParseException ex) {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
                         }
                         break;
                     case VALUE_FALSE:
                     case VALUE_TRUE:
-                        fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
                         break;
                     case START_ARRAY:
                         logger.info(jp.getCurrentName());
@@ -205,7 +208,7 @@ public class JsonSerializer implements RecordSerializer {
                         break;
                     case VALUE_STRING:
 
-                        if(jp.getCurrentName() != null){
+                        if (jp.getCurrentName() != null) {
                             switch (jp.getCurrentName()) {
                                 case "id":
                                     id = jp.getValueAsString();
@@ -221,7 +224,7 @@ public class JsonSerializer implements RecordSerializer {
                                     }
                                     break;
                                 default:
-                                    fields.put(jp.getCurrentName(),new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
+                                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
 
                                     break;
                             }
@@ -256,11 +259,11 @@ public class JsonSerializer implements RecordSerializer {
 
         Record record = null;
         try {
-            record = mapper.readValue(in, Record.class);
+            return record = mapper.readValue(in, Record.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
+            throw new RecordSerializationException("unable to deserialize record");
         }
 
-        return record;
     }
 }

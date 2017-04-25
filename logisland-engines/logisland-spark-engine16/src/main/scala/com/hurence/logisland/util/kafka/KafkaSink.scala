@@ -45,6 +45,10 @@ class KafkaSink(createProducer: () => KafkaProducer[Array[Byte], Array[Byte]]) e
     lazy val producer = createProducer()
 
 
+    def shutdown() ={
+        producer.close()
+    }
+
     def send(topic: String, key: Array[Byte], value: Array[Byte]): Unit =
         producer.send(new ProducerRecord(topic, value))
 

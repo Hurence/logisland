@@ -16,15 +16,24 @@
 package com.hurence.logisland.util.runner;
 
 
+import com.hurence.logisland.annotation.lifecycle.OnAdded;
+import com.hurence.logisland.annotation.lifecycle.OnDisabled;
+import com.hurence.logisland.annotation.lifecycle.OnEnabled;
+import com.hurence.logisland.annotation.lifecycle.OnRemoved;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.Record;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface TestRunner {
 
@@ -162,6 +171,14 @@ public interface TestRunner {
     /**
      * Enqueues the given Records into the Processor's input queue
      *
+     * @param records to enqueue
+     */
+    void enqueue(Collection<Record> records);
+
+
+    /**
+     * Enqueues the given Records into the Processor's input queue
+     *
      * @param values to enqueue
      */
     void enqueue(List<String> values);
@@ -173,6 +190,17 @@ public interface TestRunner {
      */
     void enqueue(String[] values);
 
+
+    /**
+     * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,
+     * and adds this Record to the Processor's Input Queue.
+     * <p>
+     * the key will be set as empty string if keyValueSeparator is empty
+     *
+     * @param key   the key/value separator of the message
+     * @param value the key of the message
+     */
+    void enqueue(byte[] key, byte[] value);
 
     /**
      * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,
@@ -241,4 +269,207 @@ public interface TestRunner {
      * @throws NullPointerException if the name is null
      */
     String removeVariable(String name);
+
+
+
+    /**
+     * @param identifier of controller service
+     * @return the {@link ControllerService} that is registered with the given
+     *         identifier, or <code>null</code> if no Controller Service exists with the
+     *         given identifier
+     */
+    ControllerService getControllerService(String identifier);
+
+    /**
+     * Assert that the currently configured set of properties/annotation data
+     * are valid for the given Controller Service.
+     *
+     * @param service the service to validate
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     */
+    void assertValid(ControllerService service);
+
+    /**
+     * Assert that the currently configured set of properties/annotation data
+     * are NOT valid for the given Controller Service.
+     *
+     * @param service the service to validate
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     *
+     */
+    void assertNotValid(ControllerService service);
+
+    /**
+     * Adds the given {@link ControllerService} to this TestRunner so that the
+     * configured Processor can access it using the given
+     * <code>identifier</code>. The ControllerService is not expected to be
+     * initialized, as the framework will create the appropriate
+     * {@link ControllerServiceInitializationContext ControllerServiceInitializationContext}
+     * and initialize the ControllerService with no specified properties.
+     *
+     * This will call any method on the given Controller Service that is
+     * annotated with the
+     * {@link OnAdded @OnAdded} annotation.
+     *
+     * @param identifier of service
+     * @param service the service
+     * @throws InitializationException ie
+     */
+    void addControllerService(String identifier, ControllerService service) throws InitializationException;
+
+    /**
+     * Adds the given {@link ControllerService} to this TestRunner so that the
+     * configured Processor can access it using the given
+     * <code>identifier</code>. The ControllerService is not expected to be
+     * initialized, as the framework will create the appropriate
+     * {@link ControllerServiceInitializationContext ControllerServiceInitializationContext}
+     * and initialize the ControllerService with the given properties.
+     *
+     * This will call any method on the given Controller Service that is
+     * annotated with the
+     * {@link OnAdded @OnAdded} annotation.
+     *
+     * @param identifier of service
+     * @param service the service
+     * @param properties service properties
+     * @throws InitializationException ie
+     */
+    void addControllerService(String identifier, ControllerService service, Map<String, String> properties) throws InitializationException;
+
+    /**
+     * <p>
+     * Marks the Controller Service as enabled so that it can be used by other
+     * components.
+     * </p>
+     *
+     * <p>
+     * This method will result in calling any method in the Controller Service
+     * that is annotated with the
+     * {@link OnEnabled @OnEnabled}
+     * annotation.
+     * </p>
+     *
+     * @param service the service to enable
+     */
+    void enableControllerService(ControllerService service);
+
+    /**
+     * <p>
+     * Marks the Controller Service as disabled so that it cannot be used by
+     * other components.
+     * </p>
+     *
+     * <p>
+     * This method will result in calling any method in the Controller Service
+     * that is annotated with the
+     * {@link OnDisabled @OnDisabled}
+     * annotation.
+     * </p>
+     *
+     * @param service the service to disable
+     */
+    void disableControllerService(ControllerService service);
+
+    /**
+     * @param service the service
+     * @return {@code true} if the given Controller Service is enabled,
+     *         {@code false} if it is disabled
+     *
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     */
+    boolean isControllerServiceEnabled(ControllerService service);
+
+    /**
+     * <p>
+     * Removes the Controller Service from the TestRunner. This will call any
+     * method on the ControllerService that is annotated with the
+     * {@link OnRemoved @OnRemoved}
+     * annotation.
+     * </p>
+     *
+     * @param service the service
+     *
+     * @throws IllegalStateException if the ControllerService is not disabled
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     *
+     */
+    void removeControllerService(ControllerService service);
+
+
+    /**
+     * Sets the given property on the given ControllerService
+     *
+     * @param service to modify
+     * @param property to modify
+     * @param value value to use
+     * @return result
+     *
+     * @throws IllegalStateException if the ControllerService is not disabled
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     *
+     */
+    ValidationResult setProperty(ControllerService service, PropertyDescriptor property, String value);
+
+    /**
+     * Sets the given property on the given ControllerService
+     *
+     * @param service to modify
+     * @param property to modify
+     * @param value value to use
+     * @return result
+     *
+     * @throws IllegalStateException if the ControllerService is not disabled
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     *
+     */
+    ValidationResult setProperty(ControllerService service, PropertyDescriptor property, AllowableValue value);
+
+    /**
+     * Sets the property with the given name on the given ControllerService
+     *
+     * @param service to modify
+     * @param propertyName to modify
+     * @param value value to use
+     * @return result
+     *
+     * @throws IllegalStateException if the ControllerService is not disabled
+     * @throws IllegalArgumentException if the given ControllerService is not
+     *             known by this TestRunner (i.e., it has not been added via the
+     *             {@link #addControllerService(String, ControllerService)} or
+     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             if the Controller Service has been removed via the
+     *             {@link #removeControllerService(ControllerService)} method.
+     *
+     */
+    ValidationResult setProperty(ControllerService service, String propertyName, String value);
 }

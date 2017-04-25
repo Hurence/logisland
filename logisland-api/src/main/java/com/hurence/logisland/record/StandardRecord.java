@@ -31,6 +31,7 @@
 
 package com.hurence.logisland.record;
 
+import com.hurence.logisland.logging.ComponentLog;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -397,6 +398,23 @@ public class StandardRecord implements Record {
         errors.add(finalMessage.toString());
         setField(FieldDictionary.RECORD_ERRORS, FieldType.ARRAY, errors);
         return this;
+    }
+
+    @Override
+    public Record addError(String errorType) {
+        return addError(errorType, null);
+    }
+
+    @Override
+    public Record addError(String errorType, ComponentLog logger, String errorMessage) {
+        logger.error(errorMessage);
+        return addError(errorType, errorMessage);
+    }
+
+    @Override
+    public Record addError(String errorType, ComponentLog logger, String errorMessage, Object[] os) {
+        logger.error(errorMessage, os);
+        return addError(errorType, errorMessage);
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.Collections
 import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Tags}
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
+import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
@@ -117,7 +118,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
             val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
             // this is used to implicitly convert an RDD to a DataFrame.
 
-            val deserializer = getSerializer(
+            val deserializer = SerializerProvider.getSerializer(
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString,
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
 
@@ -166,10 +167,10 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                         /**
                           * create serializers
                           */
-                        val serializer = getSerializer(
+                        val serializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                        val errorSerializer = getSerializer(
+                        val errorSerializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
 

@@ -31,7 +31,7 @@
 package com.hurence.logisland.util.spark
 
 import java.net.InetAddress
-import java.util.Collections
+import java.util.{Collections, Date}
 
 import com.hurence.logisland.zookeeper.serializers.ZkStringSerializer
 import kafka.admin.AdminUtils
@@ -213,7 +213,7 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
 
         val hostname = InetAddress.getLocalHost.getHostName
         val ownerId = s"$group-$hostname-${o.partition}"
-        val now = org.joda.time.DateTime.now.getMillis
+        val now = new Date().getTime
 
         // Consumer Ids
         locally {

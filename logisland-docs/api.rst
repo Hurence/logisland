@@ -229,7 +229,7 @@ That's why we can deploy all our components through yaml config files
 .. code-block:: yaml
 
     - processor: mock_processor
-      component: com.hurence.logisland.processor.MockProcessor
+      component: com.hurence.logisland.util.runner.MockProcessor
       type: parser
       documentation: a parser that produce events for nothing
       configuration:
