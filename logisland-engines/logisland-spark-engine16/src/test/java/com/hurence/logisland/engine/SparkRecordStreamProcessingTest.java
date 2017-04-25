@@ -17,11 +17,13 @@ package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.ComponentType;
+import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine;
-import com.hurence.logisland.processor.MockProcessor;
+import com.hurence.logisland.processor.hbase.PutHBaseCell;
+import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
@@ -38,10 +40,7 @@ import kafka.producer.ProducerConfig;
 import kafka.utils.TestUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +64,8 @@ public class SparkRecordStreamProcessingTest {
     private static EngineConfiguration engineConfiguration;
     private static ConsumerConnector consumer;
 
-    @BeforeClass
-    public static void setUp() throws InterruptedException, IOException {
+    @Before
+    public void setUp() throws InterruptedException, IOException {
         kafkaContext = new EmbeddedKafkaEnvironment();
         Properties properties = TestUtils.getProducerConfig("localhost:" + kafkaContext.getBrokerPort());
         ProducerConfig producerConfig = new ProducerConfig(properties);
@@ -83,14 +82,14 @@ public class SparkRecordStreamProcessingTest {
         zkClient.delete("/consumers/group0");
 
         // setup simple consumer
-        Properties consumerProperties = TestUtils.createConsumerProperties(kafkaContext.getZkConnect(), "group0", "consumer0", 1000);
+        Properties consumerProperties = TestUtils.createConsumerProperties(kafkaContext.getZkConnect(), "group0", "consumer0", 3000);
         consumer = Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
         engineConfiguration = createEngineConfiguration();
 
-
+/*
         File checkpointDir = new File("checkpoints");
         if (checkpointDir.isDirectory())
-            FileUtils.forceDelete(checkpointDir);
+            FileUtils.forceDelete(checkpointDir);*/
 
         Optional<EngineContext> instance = ComponentFactory.getEngineContext(engineConfiguration);
         assertTrue(instance.isPresent());
@@ -104,6 +103,7 @@ public class SparkRecordStreamProcessingTest {
             public void run() {
                 System.setProperty("hadoop.home.dir", "/");
                 engine.start(engineContext);
+                engine.shutdown(engineContext);
                 System.out.println("done");
             }
         };
@@ -115,15 +115,16 @@ public class SparkRecordStreamProcessingTest {
         logger.info("done waiting for engine startup");
     }
 
-    @AfterClass
-    public static void tearDown() throws NoSuchFieldException, IllegalAccessException {
+    @After
+    public void tearDown() throws NoSuchFieldException, IllegalAccessException {
         producer.close();
         consumer.shutdown();
         kafkaContext.close();
     }
 
 
-    static EngineConfiguration createEngineConfiguration() {
+
+    private EngineConfiguration createEngineConfiguration() {
         Map<String, String> properties = new HashMap<>();
         properties.put(KafkaStreamProcessingEngine.SPARK_APP_NAME().getName(), "testApp");
         properties.put(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "2000");
@@ -135,16 +136,39 @@ public class SparkRecordStreamProcessingTest {
         conf.setComponent(KafkaStreamProcessingEngine.class.getName());
         conf.setType(ComponentType.ENGINE.toString());
         conf.setConfiguration(properties);
-        conf.addProcessorChainConfigurations(createProcessorChainConfiguration());
+        conf.addPipelineConfigurations(createProcessorChainConfiguration());
+        conf.setControllerServiceConfigurations(createControllerServiceConfigurations());
 
         return conf;
     }
 
 
-    static StreamConfiguration createProcessorChainConfiguration() {
+
+    private List<ControllerServiceConfiguration> createControllerServiceConfigurations() {
+
         Map<String, String> properties = new HashMap<>();
-        properties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(), "localhost:9001");
-        properties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(), "localhost:9000");
+        properties.put("hadoop.configuration.files", "");
+        properties.put("zookeeper.quorum", "localhost");
+        properties.put("zookeeper.client.port", "2181");
+        properties.put("zookeeper.znode.parent", "");
+        properties.put("hbase.client.retries", "");
+        properties.put("phoenix.client.jar.location", "");
+
+        ControllerServiceConfiguration conf = new ControllerServiceConfiguration();
+        conf.setComponent("com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService");
+        conf.setDocumentation("an HBase service");
+        conf.setType(ComponentType.SINK.toString());
+        conf.setConfiguration(properties);
+        conf.setControllerService("hbase_service");
+
+        return Collections.singletonList(conf);
+    }
+
+
+    private StreamConfiguration createProcessorChainConfiguration() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST().getName(), "localhost:" + kafkaContext.getBrokerPort());
+        properties.put(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM().getName(), kafkaContext.getZkConnect());
         properties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
         properties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
         properties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.NO_SERIALIZER().getValue());
@@ -160,7 +184,7 @@ public class SparkRecordStreamProcessingTest {
         return conf;
     }
 
-    static ProcessorConfiguration createProcessorConfiguration() {
+    private ProcessorConfiguration createProcessorConfiguration() {
         Map<String, String> properties = new HashMap<>();
         properties.put(MockProcessor.FAKE_MESSAGE.getName(), "the world is so big");
 
@@ -174,22 +198,18 @@ public class SparkRecordStreamProcessingTest {
     }
 
 
-    static void sendMessage(String topic, String message) {
-        // serialize event
-      /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final KryoSerializer kryoSerializer = new KryoSerializer(true);
-        kryoSerializer.serialize(baos, record);*/
-        KeyedMessage<String, byte[]> data = new KeyedMessage<>(topic, message.getBytes()); //new KeyedMessage(topic, baos.toByteArray());
-        //  baos.close();
+    private void sendMessage(String topic, String message) {
+
+        KeyedMessage<String, byte[]> data = new KeyedMessage<>(topic, message.getBytes());
         List<KeyedMessage> messages = new ArrayList<>();
         messages.add(data);
 
         // send event to Kafka topic
         producer.send(scala.collection.JavaConversions.asScalaBuffer(messages));
-        System.out.println("sent");
+        logger.info("sent");
     }
 
-    static Collection<Record> readMessages(String topic) {
+    private Collection<Record> readMessages(String topic) {
 
         List<Record> outputRecords = new ArrayList<>();
         // starting consumer
@@ -225,7 +245,7 @@ public class SparkRecordStreamProcessingTest {
 
         sendMessage("logisland_raw", "ok right now");
         Thread.sleep(3000);
-        Collection<Record> records = readMessages(AbstractKafkaRecordStream.DEFAULT_EVENTS_TOPIC().getValue());
+        Collection<Record> records = readMessages("logisland_events");
 
         assertTrue(records.size() != 0);
 

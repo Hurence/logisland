@@ -1,0 +1,143 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.10.0-SNAPSHOT
+documentation: This tutorial job sends apache logs to an HBase table
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Put and fetch some apache logs with logisland
+  configuration:
+    spark.app.name: SendApacheLogs2HBaseDemo
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: hbase_service
+      component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+      type: service
+      documentation: a processor that links
+      configuration:
+        hadoop.configuration.files:
+        zookeeper.quorum: sandbox
+        zookeeper.client.port: 2181
+        zookeeper.znode.parent: /hbase-unsecure
+        hbase.client.retries: 3
+        phoenix.client.jar.location:
+
+  streamConfigurations:
+
+    # parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        avro.output.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.apache_log",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "src_ip",      "type": ["string","null"] },
+               { "name": "http_method", "type": ["string","null"] },
+               { "name": "bytes_out",   "type": ["long","null"] },
+               { "name": "http_query",  "type": ["string","null"] },
+               { "name": "http_version","type": ["string","null"] },
+               { "name": "http_status", "type": ["string","null"] },
+               { "name": "identd",      "type": ["string","null"] },
+               { "name": "user",        "type": ["string","null"] }    ]}
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: apache_log
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+
+        # put to HBase
+        - processor: hbase_put
+          component: com.hurence.logisland.processor.hbase.PutHBaseCell
+          type: sink
+          documentation: a processor that put incomming records to HBase
+          configuration:
+            hbase.client.service: hbase_service
+            batch.size: 20000
+            row.identifier.encoding.strategy: String
+            table.name.default: logisland_analytics
+            table.name.field: hbase_table_name
+            row.identifier.field: src_ip
+            column.family.field: hbase_column_family
+            column.family.default: e
+            column.qualifier.field: record_id
+            column.qualifier.default: c
+            record.serializer: com.hurence.logisland.serializer.JsonSerializer
+
+
+        # fetch from HBase
+        - processor: hbase_fetch
+          component: com.hurence.logisland.processor.hbase.FetchHBaseRow
+          type: sink
+          documentation: a processor that fetch Record from HBase
+          configuration:
+            hbase.client.service: hbase_service
+            batch.size: 1000
+            row.identifier.encoding.strategy: String
+            table.name.field: hbase_table_name
+            row.identifier.field: hbase_row_id
+            columns.field: hbase_columns
+
+        # eventually debug
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          type: parser
+          documentation: a debugger
+          configuration:
+            event.serializer: json

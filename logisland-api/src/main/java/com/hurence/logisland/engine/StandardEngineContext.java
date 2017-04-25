@@ -20,6 +20,8 @@ import com.hurence.logisland.component.AbstractConfiguredComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.stream.StreamContext;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
 
 
     private final List<StreamContext> streamContexts = new ArrayList<>();
+    private final List<ControllerServiceConfiguration> controllerServiceConfigurations = new ArrayList<>();
 
     public StandardEngineContext(final ProcessingEngine engine, final String id) {
         super(engine, id);
@@ -77,5 +80,16 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     @Override
     public void verifyModifiable() throws IllegalStateException {
 
+    }
+
+
+    @Override
+    public Collection<ControllerServiceConfiguration> getControllerServiceConfigurations() {
+        return controllerServiceConfigurations;
+    }
+
+    @Override
+    public void addControllerServiceConfiguration(ControllerServiceConfiguration config) {
+        controllerServiceConfigurations.add(config);
     }
 }

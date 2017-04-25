@@ -18,10 +18,38 @@ package com.hurence.logisland.component;
 
 //import com.hurence.logisland.utils.time.FormatUtils;
 
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.registry.VariableRegistry;
+
 public class StandardPropertyValue implements PropertyValue {
 
     private final String rawValue;
+    private final ControllerServiceLookup serviceLookup;
+    private final VariableRegistry variableRegistry;
 
+    public StandardPropertyValue(final String rawValue, final ControllerServiceLookup serviceLookup) {
+        this(rawValue, serviceLookup, VariableRegistry.EMPTY_REGISTRY);
+    }
+
+    /**
+     * Constructs a new StandardPropertyValue with the given value & service
+     * lookup and indicates whether or not the rawValue contains any NiFi
+     * Expressions. If it is unknown whether or not the value contains any NiFi
+     * Expressions, the
+     * {@link #StandardPropertyValue(String, ControllerServiceLookup, VariableRegistry)}
+     * constructor should be used or <code>true</code> should be passed.
+     *
+     * @param rawValue value
+     * @param serviceLookup lookup
+     * @param variableRegistry variableRegistry
+     */
+    public StandardPropertyValue(final String rawValue, final ControllerServiceLookup serviceLookup,
+                                 final VariableRegistry variableRegistry) {
+        this.rawValue = rawValue;
+        this.serviceLookup = serviceLookup;
+        this.variableRegistry = variableRegistry;
+    }
 
     /**
      * Constructs a new StandardPropertyValue with the given value. If it is unknown whether or not the value
@@ -29,7 +57,8 @@ public class StandardPropertyValue implements PropertyValue {
      * @param rawValue value
      */
     public StandardPropertyValue(final String rawValue) {
-        this.rawValue = rawValue;
+
+        this(rawValue, null, VariableRegistry.EMPTY_REGISTRY);
     }
 
     public String getRawValue() {
@@ -75,5 +104,33 @@ public class StandardPropertyValue implements PropertyValue {
     @Override
     public boolean isSet() {
         return rawValue != null;
+    }
+
+    @Override
+    public ControllerService asControllerService() {
+        if (rawValue == null || rawValue.equals("") || serviceLookup == null) {
+            return null;
+        }
+
+        return serviceLookup.getControllerService(rawValue);
+    }
+
+    @Override
+    public <T extends ControllerService> T asControllerService(final Class<T> serviceType) throws IllegalArgumentException {
+        if (!serviceType.isInterface()) {
+            throw new IllegalArgumentException("ControllerServices may be referenced only via their interfaces; " + serviceType + " is not an interface");
+        }
+        if (rawValue == null || rawValue.equals("") || serviceLookup == null) {
+            return null;
+        }
+
+        final ControllerService service = serviceLookup.getControllerService(rawValue);
+        if (service == null) {
+            return null;
+        }
+        if (serviceType.isAssignableFrom(service.getClass())) {
+            return serviceType.cast(service);
+        }
+        throw new IllegalArgumentException("Controller Service with identifier " + rawValue + " is of type " + service.getClass() + " and cannot be cast to " + serviceType);
     }
 }

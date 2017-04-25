@@ -21,7 +21,7 @@ import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
 import com.hurence.logisland.logging.MockComponentLogger;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.processor.MockProcessContext;
+import com.hurence.logisland.util.runner.MockProcessContext;
 import com.hurence.logisland.processor.Processor;
 
 /**

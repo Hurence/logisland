@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import java.util
@@ -27,6 +27,7 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
@@ -85,7 +86,15 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
             // Get the singleton instance of SQLContext
-            val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
+            //val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
+
+            val sqlContext = SparkSession
+                .builder()
+                .appName(appName)
+                .config(ssc.sparkContext.getConf)
+                .getOrCreate()
+
+
             // this is used to implicitly convert an RDD to a DataFrame.
 
             val deserializer = getSerializer(

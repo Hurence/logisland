@@ -20,10 +20,11 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
+import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, BytesArraySerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -229,7 +230,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
+    protected var engineContext: EngineContext = null
     protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var currentJobVersion: Int = 0
     protected var lastCheckCount: Int = 0
 
@@ -256,13 +259,15 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     }
 
 
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext) = {
+    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
+        this.engineContext = engineContext
         SparkUtils.customizeLogLevels
-        logger.info("setup")
     }
+
+
 
     override def start() = {
         if (ssc == null)
@@ -297,6 +302,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
             restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
+            controllerServiceLookupSink = ssc.sparkContext.broadcast(
+                ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+            )
 
             // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {

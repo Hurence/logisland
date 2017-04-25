@@ -1,0 +1,128 @@
+package com.hurence.logisland.hadoop;
+
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
+import com.hurence.logisland.validator.Validator;
+import org.apache.hadoop.conf.Configuration;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * All processors and controller services that need properties for Kerberos
+ * Principal and Keytab should obtain them through this class by calling:
+ *
+ * KerberosProperties props =
+ * KerberosProperties.create(NiFiProperties.getInstance())
+ *
+ * The properties can be accessed from the resulting KerberosProperties
+ * instance.
+ */
+public class KerberosProperties {
+
+    private final File kerberosConfigFile;
+    private final Validator kerberosConfigValidator;
+    private final PropertyDescriptor kerberosPrincipal;
+    private final PropertyDescriptor kerberosKeytab;
+
+    /**
+     * Instantiate a KerberosProperties object but keep in mind it is
+     * effectively a singleton because the krb5.conf file needs to be set as a
+     * system property which this constructor will take care of.
+     *
+     * @param kerberosConfigFile file of krb5.conf
+     */
+    public KerberosProperties(final File kerberosConfigFile) {
+        this.kerberosConfigFile = kerberosConfigFile;
+
+        this.kerberosConfigValidator = new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input) {
+                // Check that the Kerberos configuration is set
+                if (kerberosConfigFile == null) {
+                    return new ValidationResult.Builder()
+                            .subject(subject).input(input).valid(false)
+                            .explanation("you are missing the logisland.kerberos.krb5.file property which "
+                                    + "must be set in order to use Kerberos")
+                            .build();
+                }
+
+                // Check that the Kerberos configuration is readable
+                if (!kerberosConfigFile.canRead()) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
+                            .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+                                    + "and logisland has adequate permissions", kerberosConfigFile.getAbsoluteFile()))
+                            .build();
+                }
+
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+        };
+
+        this.kerberosPrincipal = new PropertyDescriptor.Builder()
+                .name("Kerberos Principal")
+                .required(false)
+                .description("Kerberos principal to authenticate as. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
+                .addValidator(kerberosConfigValidator)
+                .build();
+
+        this.kerberosKeytab = new PropertyDescriptor.Builder()
+                .name("Kerberos Keytab").required(false)
+                .description("Kerberos keytab associated with the principal. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
+                .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+                .addValidator(kerberosConfigValidator)
+                .build();
+    }
+
+    public File getKerberosConfigFile() {
+        return kerberosConfigFile;
+    }
+
+    public Validator getKerberosConfigValidator() {
+        return kerberosConfigValidator;
+    }
+
+    public PropertyDescriptor getKerberosPrincipal() {
+        return kerberosPrincipal;
+    }
+
+    public PropertyDescriptor getKerberosKeytab() {
+        return kerberosKeytab;
+    }
+
+    public static List<ValidationResult> validatePrincipalAndKeytab(final String subject, final Configuration config, final String principal, final String keytab, final ComponentLog logger) {
+        final List<ValidationResult> results = new ArrayList<>();
+
+        // if security is enabled then the keytab and principal are required
+        final boolean isSecurityEnabled = SecurityUtil.isSecurityEnabled(config);
+
+        final boolean blankPrincipal = (principal == null || principal.isEmpty());
+        if (isSecurityEnabled && blankPrincipal) {
+            results.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(subject)
+                    .explanation("Kerberos Principal must be provided when using a secure configuration")
+                    .build());
+        }
+
+        final boolean blankKeytab = (keytab == null || keytab.isEmpty());
+        if (isSecurityEnabled && blankKeytab) {
+            results.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(subject)
+                    .explanation("Kerberos Keytab must be provided when using a secure configuration")
+                    .build());
+        }
+
+        if (!isSecurityEnabled && (!blankPrincipal || !blankKeytab)) {
+            logger.warn("Configuration does not have security enabled, Keytab and Principal will be ignored");
+        }
+
+        return results;
+    }
+
+}
