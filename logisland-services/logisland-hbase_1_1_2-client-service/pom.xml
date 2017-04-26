@@ -26,16 +26,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-   <!--     <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-hadoop-utils</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-common</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
@@ -52,7 +42,6 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
-
             </exclusions>
         </dependency>
         <dependency>
@@ -63,7 +52,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
