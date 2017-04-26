@@ -67,9 +67,9 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -84,8 +84,22 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                 </includes>
                             </artifactSet>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
-                            </transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer">
+
+                                </transformer>
+
+
+                                    </transformers>
+
+                           <!-- <relocations>
+
+                                <relocation>
+                                    <pattern>org.apache.lucene</pattern>
+                                    <shadedPattern>logisland.querymatcher.org.apache.lucene</shadedPattern>
+                                </relocation>
+                            </relocations>-->
+
                         </configuration>
                     </execution>
                 </executions>
