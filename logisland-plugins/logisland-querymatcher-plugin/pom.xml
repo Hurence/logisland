@@ -78,28 +78,29 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         </goals>
                         <configuration>
                             <artifactSet>
+                                <excludes>
+                                    <exclude>com.hurence:*</exclude>
+                                </excludes>
                                 <includes>
-                                    <include>org.apache.lucene:*</include>
-                                    <include>com.github.flaxsearch:luwak</include>
+                                    <include>*:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
                                 <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer">
-
-                                </transformer>
-
-
-                                    </transformers>
-
-                           <!-- <relocations>
-
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <relocations>
                                 <relocation>
-                                    <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>logisland.querymatcher.org.apache.lucene</shadedPattern>
+                                    <pattern>com</pattern>
+                                    <shadedPattern>logisland.elasticsearch.com</shadedPattern>
                                 </relocation>
-                            </relocations>-->
-
+                                <relocation>
+                                    <pattern>org</pattern>
+                                    <shadedPattern>logisland.elasticsearch.org</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>

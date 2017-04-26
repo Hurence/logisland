@@ -16,7 +16,8 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -100,11 +101,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-core</artifactId>
-    <version>2.6.6</version>
-</dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.6.6</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -128,26 +129,28 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>com.hurence:*</exclude>
+                                    <exclude>com.hurence.logisland:*</exclude>
                                 </excludes>
                                 <includes>
                                     <include>*:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-                            <!--<relocations>
+                            <relocations>
                                 <relocation>
-                                    <pattern>com.google</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com.google</shadedPattern>
+                                    <pattern>com</pattern>
+                                    <shadedPattern>logisland.elasticsearch.com</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org.apache.lucene</shadedPattern>
+                                    <pattern>org</pattern>
+                                    <shadedPattern>logisland.elasticsearch.org</shadedPattern>
                                 </relocation>
-                            </relocations>-->
+                            </relocations>
 
                         </configuration>
                     </execution>
