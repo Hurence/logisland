@@ -123,31 +123,20 @@
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.hurence.logisland:*</exclude>
-                                </excludes>
                                 <includes>
-                                    <include>*:*</include>
+                                    <include>com.google.guava:guava</include>
+                                    <include>org.elasticsearch:*</include>
+                                    <include>org.apache.lucene:*</include>
+                                    <include>org.hamcrest:*</include>
+                                    <include>com.github.spullara.mustache.java:compiler</include>
+                                    <include>com.carrotsearch:*</include>
                                 </includes>
-
                             </artifactSet>
 
                             <relocations>
                                 <relocation>
                                     <pattern>com.google</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com.google</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org.apache.lucene</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org.elasticsearch</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.twitter</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com.twitter</shadedPattern>
+                                    <shadedPattern>com.hurence.logisland.com.google</shadedPattern>
                                 </relocation>
                             </relocations>
                             <transformers>
