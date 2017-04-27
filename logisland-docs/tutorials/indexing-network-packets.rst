@@ -37,77 +37,41 @@ Packets information collected by Logisland
 __________________________________________
 LogIsland parses all the fields of IP protocol headers, namely :
 
-1. IP Header fields
-
-IP Header's 1st 32-bits word :
+**1. IP Header fields**
 
 - IP version : ip_version
 - Internet Header Length : ip_internet_header_length
 - Type of Service : ip_type_of_service
 - Datagram Total Length : ip_datagram_total_length
-
-IP Header’s 2nd 32-bits word :
-
 - Identification : ip_identification
 - Flags : ip_flags
 - Fragment offset : ip_fragment_offset
 - Time To Live : ip_time_to_live
 - Protocol : protocol
 - Header Checksum : ip_checksum
-
-IP Headers's 4th 32-bits word :
-
 - Source IP address : src_ip
-
-IP Headers's 5th 32-bits word :
-
 - Destination IP address : dst_ip
-
-IP Headers's following 32-bits word(s) :
-
 - Options : ip_options (variable size)
 - Padding : ip_padding (variable size)
 
-2. TCP Header fields
-
-TCP Header's 1st 32-bits word :
+**2. TCP Header fields**
 
 - Source port number : src_port
 - Destination port number : dest_port
-
-TCP Header's 2nd 32-bits word :
-
 - Sequence Number : tcp_sequence_number
-
-TCP Header's 3rd 32-bits word :
-
 - Acknowledgment Number : tcp_acknowledgment_number
-
-TCP Header's 4th 32-bits word :
-
 - Data offset : tcp_data_offset
 - Flags : tcp_flags
 - Window size : tcp_window_size
-
-TCP Header's 5th 32-bits word :
-
 - Checksum : tcp_checksum
 - Urgent Pointer : tcp_urgent_pointer
-
-TCP Header's following 32-bits word(s) :
-
 - Options : tcp_options (variable size)
 - Padding : tcp_padding (variable size)
 
-3. UDP Header fields
-
-UDP Header's 1st 32-bits word :
+**3. UDP Header fields**
 
 - Source port number : src_port
 - Destination port number : dest_port
-
-UDP Header's 2nd 32-bits word :
-
 - Segment total length : udp_segment_total_length
 - Checksum : udp_checksum
 
