@@ -67,7 +67,7 @@ We will launch two streaming processes, one for generating the corresponding Net
 
 .. note::
 
-   You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-netflow-events.yml>`_
+   You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-netflow-events.yml>`_ for this tutorial which can also be found under `$LOGISLAND_HOME/conf` directory in the LogIsland container.
 
 
 1. Start LogIsland as a Docker container
