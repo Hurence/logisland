@@ -16,8 +16,6 @@
 package com.hurence.logisland.engine;
 
 import com.google.common.base.Splitter;
-import com.hurence.logisland.record.Record;
-import org.apache.kafka.clients.producer.internals.Partitioner;
 import org.apache.kafka.common.utils.Utils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -29,44 +27,51 @@ import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
-/**
- * Empty Java class for source jar generation (need to publish on OSS sonatype)
- */
+
 public class TopicPartitionerTest {
 
 
     private static Logger logger = LoggerFactory.getLogger(TopicPartitionerTest.class);
 
 
+    /**
+     * id are generated like following
+     *
+     * 0:j20ize7q:pAsoBf029w4Ah4J0rP60X0gXQkFqSHgq
+     * 0:j20ize84:nuSamuvnm01ZhfS2dLI4QTtX5hoRVno_
+     * 0:j20ize8c:NpIsnSnbcuqnoT-C9tV8AEXFSCQLr-AX
+     * 0:j20ize8d:3FB4b4zreyrwuic54eOKI4S3Ua9VFTD_
+     */
     @Test
-    public void validatePartitionner() {
+    public void validatePartitioningIdempotency() {
 
         int numPartitions = 50;
 
         for (int i = 0; i < 1000; i++) {
-            String recordId = DivolteIdentifier.generate().value;
+            String recordId = WebAnalyticIdentifier.generate().value;
+            logger.info(recordId);
 
             Set<Integer> partitions = new HashSet<>();
             for (int j = 0; j < 10; j++) {
-                partitions.add(getPartition(numPartitions, recordId));
+                partitions.add(getKafkaDefaultPartition(numPartitions, recordId));
             }
             assertTrue(partitions.size() == 1);
         }
     }
 
-    private int getPartition(int numPartitions, String recordId) {
+    private int getKafkaDefaultPartition(int numPartitions, String recordId) {
         return  Utils.abs(Utils.murmur2(recordId.getBytes())) % numPartitions;
     }
 }
 
 /**
- * Unique time-based identifiers for Divolte.
+ * Unique time-based identifiers for web analytics.
  * <p>
  * Divolte uses unique identifiers for several purposes, some of which require
  * an embedded timestamp indicating when the identifier was generated. (Although
  * we could use Version 1 UUIDs, not all clients can trivially generate these.)
  */
-final class DivolteIdentifier {
+final class WebAnalyticIdentifier {
     private final static char VERSION = '0';
     private final static String VERSION_STRING = "" + VERSION;
     private static final char SEPARATOR_CHAR = ':';
@@ -88,7 +93,7 @@ final class DivolteIdentifier {
      */
     public final char version;
 
-    private DivolteIdentifier(final long timestamp, final String id) {
+    private WebAnalyticIdentifier(final long timestamp, final String id) {
         this.version = VERSION;
         this.timestamp = timestamp;
         this.value = VERSION_STRING + SEPARATOR_CHAR
@@ -109,15 +114,15 @@ final class DivolteIdentifier {
     @Override
     public boolean equals(final Object other) {
         return this == other ||
-                null != other && getClass() == other.getClass() && value.equals(((DivolteIdentifier) other).value);
+                null != other && getClass() == other.getClass() && value.equals(((WebAnalyticIdentifier) other).value);
     }
 
-    public static Optional<DivolteIdentifier> tryParse(final String input) {
+    public static Optional<WebAnalyticIdentifier> tryParse(final String input) {
         Objects.requireNonNull(input);
         try {
             final List<String> parts = (List<String>) splitter.split(input);
             return parts.size() == 3 && VERSION_STRING.equals(parts.get(0))
-                    ? Optional.of(new DivolteIdentifier(Long.parseLong(parts.get(1), 36), parts.get(2)))
+                    ? Optional.of(new WebAnalyticIdentifier(Long.parseLong(parts.get(1), 36), parts.get(2)))
                     : Optional.empty();
         } catch (final NumberFormatException e) {
             return Optional.empty();
@@ -127,17 +132,17 @@ final class DivolteIdentifier {
     // Some sources mention it's a good idea to avoid contention on SecureRandom instances...
     private final static ThreadLocal<SecureRandom> localRandom = ThreadLocal.withInitial(SecureRandom::new);
 
-    public static DivolteIdentifier generate(final long ts) {
+    public static WebAnalyticIdentifier generate(final long ts) {
         final SecureRandom random = localRandom.get();
 
         final byte[] randomBytes = new byte[24];
         random.nextBytes(randomBytes);
         final String id = Base64.getUrlEncoder().encodeToString(randomBytes);
 
-        return new DivolteIdentifier(ts, id);
+        return new WebAnalyticIdentifier(ts, id);
     }
 
-    public static DivolteIdentifier generate() {
+    public static WebAnalyticIdentifier generate() {
         return generate(System.currentTimeMillis());
     }
 }
