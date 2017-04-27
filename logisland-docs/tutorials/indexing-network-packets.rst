@@ -7,20 +7,20 @@ A network packet is a formatted unit of data carried by a network from one compu
 
 Packet Headers
 ______________
-1. Protocol headers (IP, TCP, …)
+**1. Protocol headers (IP, TCP, …)**
 
 This information is stored in different layers called “headers”, encapsulating the packet payload. For example, a TCP/IP packet is wrapped in a `TCP header <https://en.wikipedia.org/wiki/Transmission_Control_Protocol#TCP_segment_structure>`_, which is in turn encapsulated in an `IP header <https://en.wikipedia.org/wiki/IPv4#Header>`_.
 
 The individual packets for a given file or message may travel different routes through the Internet. When they have all arrived, they are reassembled by the TCP layer at the receiving end.
 
-2. PCAP format specific headers
+**2. PCAP format specific headers**
 
 Packets can be either analysed in real-time (stream mode) or stored in files for upcoming analysis (batch mode). In the latter case, the packets are stored in the pcap format, adding some specific headers :
 
 - a `global header <https://wiki.wireshark.org/Development/LibpcapFileFormat#Global_Header>`_ is added in the beginning of the pcap file
 - a `packet header <https://wiki.wireshark.org/Development/LibpcapFileFormat#Record_.28Packet.29_Header>`_ is added in front of each packet
 
-**In this tutorial we are going to capture packets in live stream mode**
+In this tutorial we are going to **capture packets in live stream mode**
 
 Why capturing network packets ?
 _______________________________
