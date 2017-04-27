@@ -46,8 +46,10 @@ import static com.hurence.logisland.processor.networkpacket.PcapHelper.ETHERNET_
 @Tags({"PCap", "security", "IDS", "NIDS"})
 @CapabilityDescription(
         "The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode). "
-        +"In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records."
-        +"The fields successive protocol headers are then extracted and made available in dedicated record fields."
+        + " In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records."
+        + " The fields of packet headers are then extracted and made available in dedicated record fields."
+        + " See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_"
+        + " for an example of usage of this processor."
     )
 
 public class ParseNetworkPacket extends AbstractProcessor {
