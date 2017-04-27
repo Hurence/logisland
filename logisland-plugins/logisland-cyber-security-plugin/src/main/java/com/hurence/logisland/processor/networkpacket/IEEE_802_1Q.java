@@ -17,7 +17,7 @@
 /** This code is adapted from https://github.com/apache/incubator-metron/blob/master/metron-platform/metron-pcap/src/main/java/org/apache/metron/pcap/IEEE_802_1Q.java */
 
 
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
 public class IEEE_802_1Q {
 

@@ -16,7 +16,7 @@
 
 /** This code is adapted from https://github.com/apache/incubator-metron/blob/master/metron-platform/metron-pcap/src/main/java/org/apache/metron/pcap/PcapByteInputStream.java */
 
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
 import org.krakenapps.pcap.PcapInputStream;
 import org.krakenapps.pcap.file.GlobalHeader;
