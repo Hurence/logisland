@@ -74,6 +74,7 @@
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
         <module>logisland-assembly</module>
+        <module>logisland-docker</module>
     </modules>
 
     <properties>
