@@ -16,14 +16,16 @@ The individual packets for a given file or message may travel different routes t
 2. PCAP format specific headers
 
 Packets can be either analysed in real-time (stream mode) or stored in files for upcoming analysis (batch mode). In the latter case, the packets are stored in the pcap format, adding some specific headers :
+
 - a `global header <https://wiki.wireshark.org/Development/LibpcapFileFormat#Global_Header>`_ is added in the beginning of the pcap file
 - a `packet header <https://wiki.wireshark.org/Development/LibpcapFileFormat#Record_.28Packet.29_Header>`_ is added in front of each packet
 
-In this tutorial we are going to capture packets in live stream mode
+**In this tutorial we are going to capture packets in live stream mode**
 
 Why capturing network packets ?
 _______________________________
 Packet sniffing, or packet analysis, is the process of capturing any data transmitted over the local network and searching for any information that may be useful for :
+
 - Troubleshooting network problems
 - Detecting network intrusion attempts
 - Detecting network misuse by internal and external users
@@ -38,12 +40,14 @@ LogIsland parses all the fields of IP protocol headers, namely :
 1. IP Header fields
 
 IP Header's 1st 32-bits word :
+
 - IP version : ip_version
 - Internet Header Length : ip_internet_header_length
 - Type of Service : ip_type_of_service
 - Datagram Total Length : ip_datagram_total_length
 
 IP Header’s 2nd 32-bits word :
+
 - Identification : ip_identification
 - Flags : ip_flags
 - Fragment offset : ip_fragment_offset
@@ -52,47 +56,58 @@ IP Header’s 2nd 32-bits word :
 - Header Checksum : ip_checksum
 
 IP Headers's 4th 32-bits word :
+
 - Source IP address : src_ip
 
 IP Headers's 5th 32-bits word :
+
 - Destination IP address : dst_ip
 
 IP Headers's following 32-bits word(s) :
+
 - Options : ip_options (variable size)
 - Padding : ip_padding (variable size)
 
 2. TCP Header fields
 
 TCP Header's 1st 32-bits word :
+
 - Source port number : src_port
 - Destination port number : dest_port
 
 TCP Header's 2nd 32-bits word :
+
 - Sequence Number : tcp_sequence_number
 
 TCP Header's 3rd 32-bits word :
+
 - Acknowledgment Number : tcp_acknowledgment_number
 
 TCP Header's 4th 32-bits word :
+
 - Data offset : tcp_data_offset
 - Flags : tcp_flags
 - Window size : tcp_window_size
 
 TCP Header's 5th 32-bits word :
+
 - Checksum : tcp_checksum
 - Urgent Pointer : tcp_urgent_pointer
 
 TCP Header's following 32-bits word(s) :
+
 - Options : tcp_options (variable size)
 - Padding : tcp_padding (variable size)
 
 3. UDP Header fields
 
 UDP Header's 1st 32-bits word :
+
 - Source port number : src_port
 - Destination port number : dest_port
 
 UDP Header's 2nd 32-bits word :
+
 - Segment total length : udp_segment_total_length
 - Checksum : udp_checksum
 
@@ -182,7 +197,7 @@ Connect a shell to your logisland container to launch LogIsland streaming jobs :
 Setup Spark/Kafka streaming engine
 __________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-network-packets.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_
+The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_ :
 
 .. code-block:: yaml
 
@@ -318,7 +333,7 @@ Let’s install and use the Apache pycapa probe to capture and send packets to k
 
 Install pycapa probe
 ____________________
-All required steps to install pycapa probe are explained in this site, but here are the main steps :
+All required steps to install pycapa probe are explained in `this site <https://github.com/apache/incubator-metron/tree/master/metron-sensors/pycapa>`_, but here are the main installation steps :
 
 1. Install libpcap, pip (python-pip) and python-devel :
 
