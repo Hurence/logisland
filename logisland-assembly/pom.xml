@@ -60,17 +60,6 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
         </dependency>
@@ -97,10 +86,6 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-useragent-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-email</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

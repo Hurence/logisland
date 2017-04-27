@@ -290,6 +290,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
    "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
    "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
+
    "kafka.message.key.field", "Sets the field which contains the key of the message which will be sent to the output topic. The default key field is set to record_idIf the field doesn't exist or is emptythe message key will be null and the partitioner will send the messageto a random partition, else the DefaultPartitioner will be used to send the message to a partition id computed from the hash of the key field value", "", "record_id", "", ""
 
 ----------
