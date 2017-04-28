@@ -286,13 +286,6 @@ public class ElasticsearchTest {
                 .execute()
                 .actionGet();
         Assert.assertEquals(1, searchResponse.getHits().getTotalHits());
-
-        String response = "{\"@timestamp\":\"2016-10-03T22:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record0\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}";
-
-
-        String esResponse = searchResponse.getHits().getAt(0).getSourceAsString();
-        assertNotNull(esResponse);
-        assertTrue(response.equals(esResponse));
     }
 
 
