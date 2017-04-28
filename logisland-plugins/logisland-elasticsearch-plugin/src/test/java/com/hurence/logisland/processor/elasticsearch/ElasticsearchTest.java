@@ -130,7 +130,7 @@ public class ElasticsearchTest {
         } catch(IOException e) {
             Assert.assertTrue(e.getMessage().contains("Reindex failed"));
         }*/
-
+        ElasticsearchUtils.refreshIndex(client, "baz");
         Assert.assertEquals(0, ElasticsearchUtils.countIndex(client, "baz"));
 
         // Drop index foo
