@@ -16,7 +16,7 @@
 
 /** This code is adapted from https://github.com/apache/incubator-metron/blob/master/metron-platform/metron-common/src/main/java/org/apache/metron/common/Constants.java */
 
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
 import com.hurence.logisland.record.FieldType;
 
@@ -24,23 +24,23 @@ public class PCapConstants {
 
   public static enum Fields {
 
-    ////////////////////////
-    // Global Header data //
-    ////////////////////////
+    //////////////////////////
+    // Global Header fields //
+    //////////////////////////
 
     GLOBAL_MAGICNUMBER("global_magic", FieldType.INT)
 
 
-    ////////////////////////
-    // Packet Header data //
-    ////////////////////////
+    //////////////////////////
+    // Packet Header fields //
+    //////////////////////////
 
     ,PCKT_TIMESTAMP_IN_NANOS("packet_timestamp_in_nanos", FieldType.LONG)
 
 
-    ////////////////////
-    // IP Header data //
-    ////////////////////
+    //////////////////////
+    // IP Header fields //
+    //////////////////////
 
     /* IP Header's 1st 32-bits word : */
     , IP_VERSION("ip_version", FieldType.INT)                                        /*  4 bits */
@@ -48,30 +48,30 @@ public class PCapConstants {
     , IP_TYPEOFSERVICE("ip_type_of_service", FieldType.INT)                          /*  8 bits */
     , IP_DATAGRAMTOTALLENGTH("ip_datagram_total_length", FieldType.INT)              /* 16 bits */
 
-    /* IP Headers's 2nd 32-bits word : */
+    /* IP Header's 2nd 32-bits word : */
     , IP_IDENTIFICATION("ip_identification", FieldType.INT)                          /* 16 bits */
     , IP_FLAGS("ip_flags", FieldType.INT)                                            /*  3 bits */
     , IP_FRAGMENTOFFSET("ip_fragment_offset", FieldType.INT)                         /* 13 bits */
 
-    /* IP Headers's 3rd 32-bits word : */
+    /* IP Header's 3rd 32-bits word : */
     , IP_TIMETOLIVE("ip_time_to_live", FieldType.INT)                                /*  8 bits */
     , IP_PROTOCOL("protocol", FieldType.INT)                                         /*  8 bits */
     , IP_CHECKSUM("ip_checksum", FieldType.INT)                                      /* 16 bits */
 
-    /* IP Headers's 4th 32-bits word : */
+    /* IP Header's 4th 32-bits word : */
     , IP_SRCIPADDRESS("src_ip", FieldType.STRING)                                    /* 32 bits */
 
-    /* IP Headers's 5th 32-bits word : */
+    /* IP Header's 5th 32-bits word : */
     , IP_DSTIPADDRESS("dst_ip", FieldType.STRING)                                    /* 32 bits */
 
-    /* IP Headers's following 32-bits word(s) : */
+    /* IP Header's following 32-bits word(s) : */
     , IP_OPTIONS("ip_options", FieldType.BYTES)                                      /* variable size */
     , IP_PADDING("ip_padding", FieldType.BYTES)                                      /* variable size */
 
 
-    /////////////////////
-    // TCP Header data //
-    /////////////////////
+    ///////////////////////
+    // TCP Header fields //
+    ///////////////////////
 
     /* TCP Header's 1st 32-bits word : */
     , TCP_SRCPORT("src_port", FieldType.INT)                                         /* 16 bits */
@@ -92,11 +92,11 @@ public class PCapConstants {
     , TCP_CHECKSUM("tcp_checksum", FieldType.INT)                                    /* 16 bits */
     , TCP_URGENTPOINTER("tcp_urgent_pointer", FieldType.INT)                         /* 16 bits */
 
-    /* TCP Headers's following 32-bits word(s) : */
+    /* TCP Header's following 32-bits word(s) : */
     , TCP_OPTIONS("tcp_options", FieldType.BYTES)                                    /* variable size */
     , TCP_PADDING("tcp_padding", FieldType.BYTES)                                    /* variable size */
 
-    /* TCP Headers's other computed information : */
+    /* TCP Header's other computed information : */
     , TCP_COMPUTED_SRCIP("tcp_computed_src_ip", FieldType.STRING)
     , TCP_COMPUTED_DSTIP("tcp_computed_dest_ip", FieldType.STRING)
     , TCP_COMPUTED_SEGMENTTOTALLENGTH("tcp_computed_segment_total_length", FieldType.INT)
@@ -107,9 +107,9 @@ public class PCapConstants {
     , TCP_COMPUTED_RELATIVESEQ("tcp_computed_relative_seq", FieldType.INT)
 
 
-    /////////////////////
-    // UDP Header data //
-    /////////////////////
+    ///////////////////////
+    // UDP Header fields //
+    ///////////////////////
 
     /* UDP Header's 1st 32-bits word : */
     , UDP_SRCPORT("src_port", FieldType.INT)                                         /* 16 bits */

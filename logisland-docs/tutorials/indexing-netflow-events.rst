@@ -63,18 +63,17 @@ We will launch two streaming processes, one for generating the corresponding Net
 
 .. note::
 
-  It is important to understand that in real environment Netflow traffic will be triggered by network devices (router, switches,...), so you will have to get the netflow traffic from the defined collectors, and sent the corresponding record (formatted in JSON format has described before) to the Logisland service (Kafka).
+  It is important to understand that in real environment Netflow traffic will be triggered by network devices (router, switches,...), so you will have to get the netflow traffic from the defined collectors, and send the corresponding record (formatted in JSON format as described before) to the Logisland service (Kafka).
 
 .. note::
 
-   You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-netflow-events.yml>`_
-   for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory in the Logsiland container.
+   You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of Logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-netflow-events.yml>`_ for this tutorial which can also be found under `$LOGISLAND_HOME/conf` directory in the LogIsland container.
 
 
 1. Start LogIsland as a Docker container
 ----------------------------------------
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
-The docker container is built from a Centos 6.4 image with the following tools enabled (among other)
+The docker container is built from a Centos 6.4 image with the following tools enabled (among others)
 
 - Kafka
 - Spark
@@ -88,7 +87,7 @@ Pull the image from Docker Repository (it may take some time)
 
     docker pull hurence/logisland
 
-You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
+You should be aware that this Docker container is quite eager in RAM and will need at least 8G of memory to run smoothly.
 Now run the container
 
 .. code-block:: sh
@@ -213,11 +212,11 @@ Connect a shell to your logisland container to launch the following streaming jo
 
     docker exec -ti logisland bash
     cd $LOGISLAND_HOME
-    bin/logisland.sh --conf conf/index-apache-logs.yml
+    bin/logisland.sh --conf conf/index-netflow-events.yml
 
 Setup Spark/Kafka streaming engine
 __________________________________
-An Engine is needed to handle the stream processing. This ``conf/index-netflow-logs.yml`` configuration file defines a stream processing job setup.
+An Engine is needed to handle the stream processing. This ``conf/index-netflow-events.yml`` configuration file defines a stream processing job setup.
 The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_
 
 .. code-block:: yaml
@@ -282,7 +281,7 @@ We can define some serializers to marshall all records from and to a topic.
         kafka.topic.default.replicationFactor: 2
       processorConfigurations:
 
-Within this stream there is a single processor in the processor chain: the Netflow processor. It takes an incoming Netflow event/notice binary record, parse them and computes a Logisland Record as a sequence of fields that were contained in the binary record.
+Within this stream there is a single processor in the processor chain: the Netflow processor. It takes an incoming Netflow event/notice binary record, parses it and computes a Logisland Record as a sequence of fields that were contained in the binary record.
 
 .. code-block:: yaml
 

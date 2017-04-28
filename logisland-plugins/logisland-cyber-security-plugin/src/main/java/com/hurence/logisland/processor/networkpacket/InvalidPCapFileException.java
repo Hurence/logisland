@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
 /**
  * Indicates an invalid pcap file format

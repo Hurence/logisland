@@ -64,7 +64,7 @@ Pull the image from Docker Repository (it may take some time)
 
     docker pull hurence/logisland
 
-You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
+You should be aware that this Docker container is quite eager in RAM and will need at least 8G of memory to run smoothly.
 Now run the container
 
 .. code-block:: sh
@@ -187,7 +187,7 @@ Here the stream will read all the Bro events and notices sent in the ``bro`` top
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-Within this stream there is a single processor in the processor chain: the ``Bro`` processor. It takes an incoming Bro event/notice JSON document computes a Logisland ``Record`` as a sequence of fields
+Within this stream there is a single processor in the processor chain: the ``Bro`` processor. It takes an incoming Bro event/notice JSON document and computes a Logisland ``Record`` as a sequence of fields
 that were contained in the JSON document.
 
 .. code-block:: yaml

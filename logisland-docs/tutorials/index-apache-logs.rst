@@ -32,7 +32,7 @@ Pull the image from Docker Repository (it may take some time)
 
     docker pull hurence/logisland
 
-You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
+You should be aware that this Docker container is quite eager in RAM and will need at least 8G of memory to run smoothly.
 Now run the container
 
 .. code-block:: sh

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -29,15 +29,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.hurence.logisland.processor.pcap.Constants.*;
-import static com.hurence.logisland.processor.pcap.PCapConstants.Fields.*;
+import static com.hurence.logisland.processor.networkpacket.Constants.*;
+import static com.hurence.logisland.processor.networkpacket.PCapConstants.Fields.*;
 
 /**
  * Test PCap processor.
  */
-public class ParsePCapEventTest {
+public class ParseNetworkPacketTest {
     
-    private static Logger logger = LoggerFactory.getLogger(ParsePCapEventTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ParseNetworkPacketTest.class);
 
     private int testPCapFieldsValid(MockRecord out) {
 
@@ -257,7 +257,7 @@ public class ParsePCapEventTest {
 
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "pcap_packet");
 
-        out.assertFieldEquals(FieldDictionary.PROCESSOR_NAME, "ParsePCap");
+        out.assertFieldEquals(FieldDictionary.PROCESSOR_NAME, "ParseNetworkPacket");
 
         //////////////////////////
         // Global Header Fields //
@@ -362,8 +362,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void test1TCPPacketsPCapRecord() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
@@ -402,8 +402,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void test1TCPPacketsPCapRecord_Stream() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "stream");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "stream");
         testRunner.assertValid();
         Record record1 = new StandardRecord("packet_event");
         Record record2 = new StandardRecord("packet_event");
@@ -452,8 +452,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void test4TCPPacketsPCapRecord() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
@@ -484,8 +484,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void testARPPCapRecord() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
@@ -514,8 +514,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void testTwoSmallSizePCapRecords() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record1 = new StandardRecord("pcap_event");
         Record record2 = new StandardRecord("pcap_event");
@@ -544,8 +544,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void testMediumSizePCapRecord() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 
@@ -580,8 +580,8 @@ public class ParsePCapEventTest {
 
     @Test
     public void testDummyPCapRecord() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new ParsePCap());
-        testRunner.setProperty(ParsePCap.FLOW_MODE, "batch");
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetworkPacket());
+        testRunner.setProperty(ParseNetworkPacket.FLOW_MODE, "batch");
         testRunner.assertValid();
         Record record = new StandardRecord("pcap_event");
 

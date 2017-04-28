@@ -28,4 +28,5 @@ Contents:
    outlier-detection
    indexing-bro-events
    indexing-netflow-events
+   indexing-network-packets
 

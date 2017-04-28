@@ -17,9 +17,9 @@
 /** This code is adapted from https://github.com/apache/incubator-metron/blob/master/metron-platform/metron-pcap/src/main/java/org/apache/metron/pcap/PacketInfo.java */
 
 
-package com.hurence.logisland.processor.pcap;
+package com.hurence.logisland.processor.networkpacket;
 
-import com.hurence.logisland.processor.pcap.utils.PcapUtils;
+import com.hurence.logisland.processor.networkpacket.utils.PcapUtils;
 import org.krakenapps.pcap.decoder.ip.Ipv4Packet;
 import org.krakenapps.pcap.decoder.tcp.TcpPacket;
 import org.krakenapps.pcap.decoder.udp.UdpPacket;

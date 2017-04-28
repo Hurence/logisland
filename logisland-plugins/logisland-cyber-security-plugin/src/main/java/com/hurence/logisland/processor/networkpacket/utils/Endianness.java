@@ -18,7 +18,7 @@
 
 
 
-package com.hurence.logisland.processor.pcap.utils;
+package com.hurence.logisland.processor.networkpacket.utils;
 
 import java.nio.ByteOrder;
 

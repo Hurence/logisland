@@ -1,8 +1,8 @@
 #########################################################################################################
-# Logisland configuration script example: parse pcap files and display them in Kibana
+# Logisland configuration script example: parse network packets and display them in Kibana
 #########################################################################################################
 
-version: 0.9.8
+version: 0.10.0-SNAPSHOT
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -10,9 +10,9 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Parse pcap events with LogIsland
+  documentation: Parse network packets with LogIsland
   configuration:
-    spark.app.name: parsePCapEventsDemo
+    spark.app.name: ParseNetworkPacketDemo
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -43,9 +43,9 @@ engine:
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: A processor chain that parses pcap events into Logisland records
+      documentation: A processor chain that parses network packets into Logisland records
       configuration:
-        kafka.input.topics: pcap_topic
+        kafka.input.topics: packets_topic
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
@@ -58,11 +58,11 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Transform pcap events into Logisland packet records
-        - processor: ParsePCap processor
-          component: com.hurence.logisland.processor.pcap.ParsePCap
+        # Transform network packets into LogIsland packet records
+        - processor: ParseNetworkPacket processor
+          component: com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
           type: parser
-          documentation: A processor that parses pcap events into LogIsland records
+          documentation: A processor that parses network packets into LogIsland records
           configuration:
             debug: true
             flow.mode: stream
@@ -80,8 +80,8 @@ engine:
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox.hortonworks.com:6667
-        kafka.zookeeper.quorum: sandbox.hortonworks.com:2181
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
@@ -91,9 +91,9 @@ engine:
         - processor: ES Publisher
           component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
           type: processor
-          documentation: A processor that pushes pcap events into ES
+          documentation: A processor that pushes network packet records into ES
           configuration:
-            default.index: pcap_index
+            default.index: packets_index
             default.type: events
             hosts: sandbox:9300
             cluster.name: elasticsearch

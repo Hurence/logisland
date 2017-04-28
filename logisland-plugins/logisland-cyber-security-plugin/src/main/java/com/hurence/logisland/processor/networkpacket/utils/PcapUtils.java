@@ -17,7 +17,7 @@
 /** This code is adapted from https://github.com/apache/incubator-metron/blob/master/metron-platform/metron-pcap/src/main/java/org/apache/metron/pcap/utils/PcapUtils.java */
 
 
-package com.hurence.logisland.processor.pcap.utils;
+package com.hurence.logisland.processor.networkpacket.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
