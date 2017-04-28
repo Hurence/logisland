@@ -28,9 +28,13 @@ import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,21 +46,20 @@ import java.util.List;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertHitCount;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.hasStatus;
 
-@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, maxNumDataNodes = 2)
-@ThreadLeakScope(ThreadLeakScope.Scope.SUITE)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.TEST, numDataNodes = 1)
+@ThreadLeakScope(ThreadLeakScope.Scope.TEST)
 public class PutElasticsearchTest extends ESIntegTestCase {
 
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearchTest.class);
 
-    /*
-        @Override
-        protected Settings nodeSettings(int nodeOrdinal) {
-            return Settings.builder().put(super.nodeSettings(nodeOrdinal))
-                    .put("node.mode", "network")
-                    .build();
-        }
-    */
+  /*  @Override
+    protected Settings nodeSettings(int nodeOrdinal) {
+        return Settings.builder().put(super.nodeSettings(nodeOrdinal))
+                .put("node.mode", "network")
+                .build();
+    }*/
+
     @Before
     private void setup() throws IOException {
         Client client = client();
@@ -66,6 +69,48 @@ public class PutElasticsearchTest extends ESIntegTestCase {
         ensureGreen("test");
     }
 
+
+    /**
+     * sometimes RandomizeTesting randomly fails
+     * really don't know why, but if you retry at least once
+     * everything goes !!!
+     */
+    public class Retry implements TestRule {
+        private int retryCount;
+
+        public Retry(int retryCount) {
+            this.retryCount = retryCount;
+        }
+
+        public Statement apply(Statement base, Description description) {
+            return statement(base, description);
+        }
+
+        private Statement statement(final Statement base, final Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    Throwable caughtThrowable = null;
+
+                    // implement retry logic here
+                    for (int i = 0; i < retryCount; i++) {
+                        try {
+                            base.evaluate();
+                            return;
+                        } catch (Throwable t) {
+                            caughtThrowable = t;
+                            System.err.println(description.getDisplayName() + ": run " + (i+1) + " failed");
+                        }
+                    }
+                    System.err.println(description.getDisplayName() + ": giving up after " + retryCount + " failures");
+                    throw caughtThrowable;
+                }
+            };
+        }
+    }
+
+    @Rule
+    public Retry retry = new Retry(3);
 
 //TODO correct instable es tests. The problem must come from ESIntegTestCase
     //TODO I would personnaly ttry to use another class for testing es.
@@ -143,10 +188,11 @@ public class PutElasticsearchTest extends ESIntegTestCase {
 
         String response2 = "{\"@timestamp\":\"2016-10-03T20:14:48+02:00\",\"ip_source\":\"123.34.45.123\",\"ip_target\":\"255.255.255.255\",\"is_host_blacklisted\":false,\"is_outside_office_hours\":false,\"method\":\"GET\",\"record_id\":\"firewall_record1\",\"record_time\":1475525688668,\"record_type\":\"cisco_record\",\"request_size\":1399,\"response_size\":452,\"tags\":[\"spam\",\"filter\",\"mail\"],\"url_host\":\"origin-www.20minutes.fr\",\"url_path\":\"/r15lgc-100KB.js\",\"url_port\":\"80\",\"url_scheme\":\"http\"}";
 
-        
+
         String esResponse = searchResponse.getHits().getAt(0).getSourceAsString();
         assertNotNull(esResponse);
-        assertTrue(response1.equals(esResponse) || response2.equals(esResponse));
+        boolean condition = response1.equals(esResponse) || response2.equals(esResponse);
+        assertTrue(condition);
     }
 
     /**
