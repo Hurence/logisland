@@ -25,6 +25,7 @@ Contents:
    intro
    concepts
    architecture
+   developer
    tutorials/index
    api
    processors
