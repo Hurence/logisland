@@ -345,10 +345,14 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         .setOpType(IndexRequest.OpType.CREATE);
                 bulkProcessor.add(result.request());
             }
+
+            /**
+             * flush remaining items
+             */
             bulkProcessor.flush();
 
             /**
-             * fluch remaining items
+             * close the bulk Processor
              */
             try {
                 if (!bulkProcessor.awaitClose(10, TimeUnit.SECONDS)) {

@@ -35,6 +35,7 @@
         <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
+        <module>logisland-elasticsearch-plugin-new</module>
         <module>logisland-sampling-plugin</module>
         <module>logisland-useragent-plugin</module>
         <module>logisland-hbase-plugin</module>
