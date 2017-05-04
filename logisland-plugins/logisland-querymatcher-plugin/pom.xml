@@ -81,6 +81,15 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                 <excludes>
                                     <exclude>com.hurence.logisland:logisland-utils</exclude>
                                     <exclude>com.hurence.logisland:logisland-api</exclude>
+                                    <exclude>log4j:*</exclude>
+                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>com.sun:*</exclude>
+                                    <exclude>org.joda:*</exclude>
+                                    <exclude>joda-time:*</exclude>
+                                    <exclude>javax:*</exclude>
+                                    <exclude>jline:*</exclude>
+                                    <exclude>javassist:*</exclude>
+                                    <exclude>:*</exclude>
                                 </excludes>
                                 <includes>
                                     <include>*:*</include>
@@ -103,22 +112,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <pattern>io</pattern>
                                     <shadedPattern>shaded.logisland.querymatcher.io</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>jline</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.jline</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>javax</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.javax</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>javassist</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.javassist</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>joda-time</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.joda-time</shadedPattern>
-                                </relocation>
+
+
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>shaded.logisland.querymatcher.com.google</shadedPattern>
@@ -154,10 +149,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                 <relocation>
                                     <pattern>com.ning</pattern>
                                     <shadedPattern>shaded.logisland.querymatcher.com.ning</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.sun</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.sun</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org</pattern>

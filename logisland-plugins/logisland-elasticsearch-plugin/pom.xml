@@ -106,6 +106,15 @@
                                 <excludes>
                                     <exclude>com.hurence.logisland:logisland-utils</exclude>
                                     <exclude>com.hurence.logisland:logisland-api</exclude>
+                                    <exclude>log4j:*</exclude>
+                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>com.sun:*</exclude>
+                                    <exclude>org.joda:*</exclude>
+                                    <exclude>joda-time:*</exclude>
+                                    <exclude>javax:*</exclude>
+                                    <exclude>jline:*</exclude>
+                                    <exclude>javassist:*</exclude>
+                                    <exclude>:*</exclude>
                                 </excludes>
                                 <includes>
                                     <include>*:*</include>
@@ -122,22 +131,8 @@
                                     <pattern>io</pattern>
                                     <shadedPattern>shaded.logisland.elasticsearch.io</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>jline</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.jline</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>javax</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.javax</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>javassist</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.javassist</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>joda-time</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.joda-time</shadedPattern>
-                                </relocation>
+
+
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>shaded.logisland.elasticsearch.com.google</shadedPattern>
@@ -166,10 +161,7 @@
                                     <pattern>com.thoughtworks</pattern>
                                     <shadedPattern>shaded.logisland.elasticsearch.com.thoughtworks</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>com.sun</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.com.sun</shadedPattern>
-                                </relocation>
+
                                 <relocation>
                                     <pattern>com.ning</pattern>
                                     <shadedPattern>shaded.logisland.elasticsearch.com.ning</shadedPattern>
