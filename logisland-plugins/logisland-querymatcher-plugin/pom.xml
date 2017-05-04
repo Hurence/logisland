@@ -32,6 +32,18 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <packaging>jar</packaging>
     <artifactId>logisland-querymatcher-plugin</artifactId>
 
+    <properties>
+        <!-- Versions -->
+        <lucene.version>5.4.0</lucene.version>
+        <luwak.version>1.4.0</luwak.version>
+
+        <!-- Configuration -->
+        <shaded.package>${logisland.shade.packageName}.querymatcher</shaded.package>
+
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -45,6 +57,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>com.github.flaxsearch</groupId>
             <artifactId>luwak</artifactId>
+            <version>${luwak.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -60,16 +73,15 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <version>5.4.0</version>
+            <version>${lucene.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>4</version>
+                <version>${shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -78,30 +90,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.hurence.logisland:logisland-utils</exclude>
-                                    <exclude>com.hurence.logisland:logisland-api</exclude>
-                                    <exclude>log4j:log4j</exclude>
-                                    <exclude>javax.mail:mail</exclude>
-                                    <exclude>javax.activation:activation</exclude>
-                                    <exclude>org.javassist:javassist</exclude>
-                                    <exclude>jline:jline</exclude>
-                                    <exclude>com.sun:*</exclude>
-                                    <exclude>org.joda:joda-convert</exclude>
-                                    <exclude>joda-time:joda-time</exclude>
-                                    <exclude>commons-codec:commons-codec</exclude>
-                                    <exclude>commons-cli:commons-cli</exclude>
-                                    <exclude>commons-collections:commons-collections</exclude>
-                                    <exclude>org.slf4j:slf4j-api</exclude>
-                                    <exclude>org.slf4j:slf4j-log4j12</exclude>
-                                    <exclude>org.apache.commons:commons-lang3</exclude>
-                                    <exclude>org.apache.commons:commons-math3</exclude>
-                                    <exclude>org.apache.commons:commons-math</exclude>
-                                </excludes>
                                 <includes>
                                     <include>com.hurence.logisland:logisland-querymatcher-plugin</include>
                                     <include>org.apache.lucene:*</include>
-                                    <include>com.google.guava:*</include>
+                                    <include>com.github.flaxsearch:luwak</include>
                                     <include>com.fasterxml.jackson:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
@@ -111,10 +103,23 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
                                     <include>io.netty:*</include>
-                                    <include>org.elasticsearch:*</include>
                                     <include>com.thoughtworks.paranamer:*</include>
                                 </includes>
                             </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
@@ -125,43 +130,43 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
                                 <relocation>
                                     <pattern>com.github</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.github</shadedPattern>
+                                    <shadedPattern>${shaded.package}.com.github</shadedPattern>
                                 </relocation>
 
                                 <relocation>
                                     <pattern>io</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.io</shadedPattern>
+                                    <shadedPattern>${shaded.package}.io</shadedPattern>
                                 </relocation>
 
 
 
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.com.fasterxml</shadedPattern>
+                                    <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
                                 </relocation>
 
 
                                 <relocation>
                                     <pattern>com.ning</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.com.ning</shadedPattern>
+                                    <shadedPattern>${shaded.package}.com.ning</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.org.apache.lucene</shadedPattern>
+                                    <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.org.elasticsearch</shadedPattern>
+                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
                                 </relocation>
 
 
                                 <relocation>
                                     <pattern>uk</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.uk</shadedPattern>
+                                    <shadedPattern>${shaded.package}.uk</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>ch</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.ch</shadedPattern>
+                                    <shadedPattern>${shaded.package}.ch</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
