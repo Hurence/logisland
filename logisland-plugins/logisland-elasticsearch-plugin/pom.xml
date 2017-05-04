@@ -103,6 +103,10 @@
                         </goals>
                         <configuration>
                             <artifactSet>
+                                <excludes>
+                                    <exclude>com.hurence.logisland:logisland-utils</exclude>
+                                    <exclude>com.hurence.logisland:logisland-api</exclude>
+                                </excludes>
                                 <includes>
                                     <include>*:*</include>
                                 </includes>
@@ -164,7 +168,7 @@
                                 </relocation>
                                 <relocation>
                                     <pattern>com.sun</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.sun</shadedPattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.sun</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.ning</pattern>

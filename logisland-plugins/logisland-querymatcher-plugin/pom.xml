@@ -78,6 +78,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         </goals>
                         <configuration>
                             <artifactSet>
+                                <excludes>
+                                    <exclude>com.hurence.logisland:logisland-utils</exclude>
+                                    <exclude>com.hurence.logisland:logisland-api</exclude>
+                                </excludes>
                                 <includes>
                                     <include>*:*</include>
                                 </includes>
