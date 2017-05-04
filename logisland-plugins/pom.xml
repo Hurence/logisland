@@ -38,6 +38,7 @@
         <module>logisland-elasticsearch-plugin-new</module>
         <module>logisland-sampling-plugin</module>
         <module>logisland-useragent-plugin</module>
+        <module>logisland-consolidate-session-plugin</module>
         <module>logisland-hbase-plugin</module>
     </modules>
 </project>

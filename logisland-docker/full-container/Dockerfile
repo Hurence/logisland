@@ -1,25 +1,8 @@
-FROM centos:6.7
+FROM hurence/base:1.0.0
 MAINTAINER Hurence
 
 
 USER root
-
-# install dev tools
-RUN yum clean all; \
-    rpm --rebuilddb; \
-    yum install -y curl which tar sudo openssh-server openssh-clients rsync wget git svn telnet nano;
-RUN yum groupinstall -y 'Development Tools';
-
-
-# Java 8
-RUN wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jre-8u60-linux-x64.rpm" && yum -y localinstall jre-8u60-linux-x64.rpm && rm jre-8u60-linux-x64.rpm
-ENV JAVA_HOME /usr
-
-
-# Install Nginx.
-RUN rm -rf /var/cache/yum/x86_64/6/extras/packages && rm -rf /tmp && yum -y install epel-release && yum -y install nginx
-COPY default.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80 443
 
 
 # Kafka
@@ -29,20 +12,6 @@ ENV KAFKA_HOME /usr/local/kafka
 EXPOSE 2181 9092
 COPY server.properties $KAFKA_HOME/config/server.properties
 
-# Build and install kafkacat util
-RUN cd /usr/local; \
-    git clone https://github.com/edenhill/librdkafka.git; \
-    cd librdkafka/;  \
-    ./configure; \
-    make; \
-    make install;
-RUN cd /usr/local; \
-    git clone https://github.com/edenhill/kafkacat.git; \
-    cd kafkacat/;  \
-    ./configure; \
-    make; \
-    make install;
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 
 # Spark
@@ -77,11 +46,6 @@ EXPOSE 9200 9300 9201 9301
 # Grafana
 RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470047149.x86_64.rpm
 
-RUN curl -s http://www-eu.apache.org/dist/nifi/1.1.1/nifi-1.1.1-bin.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s nifi-1.1.1 nifi
-ENV NIFI_HOME /usr/local/nifi
-EXPOSE 8080
-EXPOSE 3000
 
 # Log-Island
 COPY logisland-0.10.0-SNAPSHOT-bin.tar.gz /usr/local/logisland-0.10.0-SNAPSHOT-bin.tar.gz
@@ -92,6 +56,16 @@ RUN cd /usr/local; \
     rm -f /usr/local/logisland-0.10.0-SNAPSHOT-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
 RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
+
+
+# Nifi
+#RUN curl -s http://www-eu.apache.org/dist/nifi/1.1.1/nifi-1.1.1-bin.tar.gz | tar -xz -C /usr/local/
+#RUN cd /usr/local && ln -s nifi-1.1.1 nifi
+#ENV NIFI_HOME /usr/local/nifi
+#EXPOSE 8080
+#EXPOSE 3000
+
+
 
 
 # Kafka manager

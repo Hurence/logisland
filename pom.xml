@@ -74,6 +74,7 @@
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
         <module>logisland-assembly</module>
+        <module>logisland-docker</module>
     </modules>
 
     <properties>
@@ -605,6 +606,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-common-processors-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-consolidate-session-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
