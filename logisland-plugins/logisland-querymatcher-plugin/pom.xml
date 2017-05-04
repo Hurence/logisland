@@ -84,6 +84,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <exclude>log4j:log4j</exclude>
                                     <exclude>javax.mail:mail</exclude>
                                     <exclude>javax.activation:activation</exclude>
+                                    <exclude>org.javassist:javassist</exclude>
                                     <exclude>jline:jline</exclude>
                                     <exclude>com.sun:*</exclude>
                                     <exclude>org.joda:joda-convert</exclude>
@@ -95,9 +96,23 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <exclude>org.slf4j:slf4j-log4j12</exclude>
                                     <exclude>org.apache.commons:commons-lang3</exclude>
                                     <exclude>org.apache.commons:commons-math3</exclude>
+                                    <exclude>org.apache.commons:commons-math</exclude>
                                 </excludes>
                                 <includes>
-                                    <include>*:*</include>
+                                    <include>com.hurence.logisland:logisland-querymatcher-plugin</include>
+                                    <include>org.apache.lucene:*</include>
+                                    <include>com.google.guava:*</include>
+                                    <include>com.fasterxml.jackson:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>com.fasterxml.jackson.dataformat:*</include>
+                                    <include>com.twitter:*</include>
+                                    <include>com.tdunning:*</include>
+                                    <include>com.spatial4j:*</include>
+                                    <include>com.carrotsearch:*</include>
+                                    <include>org.hdrhistogram:HdrHistogram</include>
+                                    <include>io.netty:*</include>
+                                    <include>org.elasticsearch:*</include>
+                                    <include>com.thoughtworks.paranamer:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -119,46 +134,27 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                 </relocation>
 
 
-                                <relocation>
-                                    <pattern>com.google</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.google</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.spatial4j</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.spatial4j</shadedPattern>
-                                </relocation>
+
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.fasterxml</shadedPattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.fasterxml</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>com.carrotsearch</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.carrotsearch</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.twitter</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.twitter</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.tdunning</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.tdunning</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.thoughtworks</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.thoughtworks</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.esotericsoftware</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.esotericsoftware</shadedPattern>
-                                </relocation>
+
+
                                 <relocation>
                                     <pattern>com.ning</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.com.ning</shadedPattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.ning</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org</pattern>
-                                    <shadedPattern>shaded.logisland.querymatcher.org</shadedPattern>
+                                    <pattern>org.apache.lucene</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.org.apache.lucene</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.elasticsearch</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.org.elasticsearch</shadedPattern>
+                                </relocation>
+
+
                                 <relocation>
                                     <pattern>uk</pattern>
                                     <shadedPattern>shaded.logisland.querymatcher.uk</shadedPattern>

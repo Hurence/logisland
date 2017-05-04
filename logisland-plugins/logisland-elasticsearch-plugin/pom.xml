@@ -109,6 +109,7 @@
                                     <exclude>log4j:log4j</exclude>
                                     <exclude>javax.mail:mail</exclude>
                                     <exclude>javax.activation:activation</exclude>
+                                    <exclude>org.javassist:javassist</exclude>
                                     <exclude>jline:jline</exclude>
                                     <exclude>com.sun:*</exclude>
                                     <exclude>org.joda:joda-convert</exclude>
@@ -120,9 +121,23 @@
                                     <exclude>org.slf4j:slf4j-log4j12</exclude>
                                     <exclude>org.apache.commons:commons-lang3</exclude>
                                     <exclude>org.apache.commons:commons-math3</exclude>
+                                    <exclude>org.apache.commons:commons-math</exclude>
                                 </excludes>
                                 <includes>
-                                    <include>*:*</include>
+                                    <include>com.hurence.logisland:logisland-elasticsearch-plugin</include>
+                                    <include>org.apache.lucene:*</include>
+                                    <include>com.google.guava:*</include>
+                                    <include>com.fasterxml.jackson:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>com.fasterxml.jackson.dataformat:*</include>
+                                    <include>com.twitter:*</include>
+                                    <include>com.tdunning:*</include>
+                                    <include>com.spatial4j:*</include>
+                                    <include>com.carrotsearch:*</include>
+                                    <include>org.hdrhistogram:HdrHistogram</include>
+                                    <include>io.netty:*</include>
+                                    <include>org.elasticsearch:*</include>
+                                    <include>com.thoughtworks.paranamer:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -136,6 +151,7 @@
                                     <pattern>io</pattern>
                                     <shadedPattern>shaded.logisland.elasticsearch.io</shadedPattern>
                                 </relocation>
+
 
 
                                 <relocation>
@@ -172,8 +188,12 @@
                                     <shadedPattern>shaded.logisland.elasticsearch.com.ning</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.org</shadedPattern>
+                                    <pattern>org.apache.lucene</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.org.apache.lucene</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.elasticsearch</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.org.elasticsearch</shadedPattern>
                                 </relocation>
                             </relocations>
 
