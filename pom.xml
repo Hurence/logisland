@@ -86,16 +86,14 @@
         <inceptionYear>2014</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <logisland.version>${project.version}</logisland.version>
-        <lucene.version>5.5.0</lucene.version>
+
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.2.2.4.0.0-169</hbase.version>
         <hadoop.guava.version>18.0</hadoop.guava.version>
-        <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
-        <elasticsearch.version>2.3.3</elasticsearch.version>
 
         <swagger-core-version>1.5.9</swagger-core-version>
         <jetty-version>9.2.9.v20150224</jetty-version>
@@ -106,7 +104,8 @@
         <MaxPermGen>512m</MaxPermGen>
 
         <!-- Package to use when relocating shaded classes. -->
-        <logisland.shade.packageName>com.hurence.logisland</logisland.shade.packageName>
+        <logisland.shade.packageName>shade.logisland</logisland.shade.packageName>
+        <shade-plugin.version>2.4.3</shade-plugin.version>
     </properties>
 
 
@@ -402,32 +401,7 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>org.elasticsearch</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${elasticsearch.version}</version>
 
-            </dependency>
-            <dependency>
-                <groupId>org.elasticsearch</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${elasticsearch.version}</version>
-                <classifier>tests</classifier>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-test-framework</artifactId>
-                <version>${lucene.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.carrotsearch.randomizedtesting</groupId>
-                <artifactId>randomizedtesting-runner</artifactId>
-                <version>2.1.16</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
@@ -716,11 +690,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- <dependency>
+         <dependency>
              <groupId>org.slf4j</groupId>
              <artifactId>slf4j-simple</artifactId>
              <scope>test</scope>
-         </dependency>-->
+         </dependency>
 
     </dependencies>
     <build>
@@ -1146,6 +1120,7 @@
 
     <profiles>
 
+        <!--  hdp 2.4 -->
         <profile>
             <id>hdp-2.5</id>
             <activation>
@@ -1167,6 +1142,7 @@
             </modules>
         </profile>
 
+        <!--  hdp 2.5 -->
         <profile>
             <id>hdp-2.4</id>
             <activation>
@@ -1184,6 +1160,21 @@
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine16</module>
+
+            </modules>
+        </profile>
+
+
+        <profile>
+            <id>generateDoc</id>
+            <activation>
+                <property>
+                    <name>generateDoc</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-framework/logisland-documentation</module>
 
             </modules>
         </profile>
