@@ -106,15 +106,20 @@
                                 <excludes>
                                     <exclude>com.hurence.logisland:logisland-utils</exclude>
                                     <exclude>com.hurence.logisland:logisland-api</exclude>
-                                    <exclude>log4j:*</exclude>
-                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>log4j:log4j</exclude>
+                                    <exclude>javax.mail:mail</exclude>
+                                    <exclude>javax.activation:activation</exclude>
+                                    <exclude>jline:jline</exclude>
                                     <exclude>com.sun:*</exclude>
-                                    <exclude>org.joda:*</exclude>
-                                    <exclude>joda-time:*</exclude>
-                                    <exclude>javax:*</exclude>
-                                    <exclude>jline:*</exclude>
-                                    <exclude>javassist:*</exclude>
-                                    <exclude>:*</exclude>
+                                    <exclude>org.joda:joda-convert</exclude>
+                                    <exclude>joda-time:joda-time</exclude>
+                                    <exclude>commons-codec:commons-codec</exclude>
+                                    <exclude>commons-cli:commons-cli</exclude>
+                                    <exclude>commons-collections:commons-collections</exclude>
+                                    <exclude>org.slf4j:slf4j-api</exclude>
+                                    <exclude>org.slf4j:slf4j-log4j12</exclude>
+                                    <exclude>org.apache.commons:commons-lang3</exclude>
+                                    <exclude>org.apache.commons:commons-math3</exclude>
                                 </excludes>
                                 <includes>
                                     <include>*:*</include>
