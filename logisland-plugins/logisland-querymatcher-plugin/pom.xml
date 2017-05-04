@@ -78,9 +78,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.hurence:*</exclude>
-                                </excludes>
                                 <includes>
                                     <include>*:*</include>
                                 </includes>
@@ -92,13 +89,83 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <relocations>
+
                                 <relocation>
-                                    <pattern>com</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com</shadedPattern>
+                                    <pattern>com.github</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.github</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>io</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.io</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>jline</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.jline</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javax</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.javax</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javassist</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.javassist</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>joda-time</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.joda-time</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.spatial4j</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.spatial4j</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.fasterxml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.carrotsearch</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.carrotsearch</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.twitter</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.twitter</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.tdunning</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.tdunning</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.thoughtworks</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.thoughtworks</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.esotericsoftware</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.esotericsoftware</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.ning</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.ning</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.sun</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.sun</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org</shadedPattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.org</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>uk</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.uk</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>ch</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.ch</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

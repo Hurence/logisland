@@ -103,9 +103,6 @@
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.hurence.logisland:*</exclude>
-                                </excludes>
                                 <includes>
                                     <include>*:*</include>
                                 </includes>
@@ -118,12 +115,64 @@
                             </transformers>
                             <relocations>
                                 <relocation>
-                                    <pattern>com</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com</shadedPattern>
+                                    <pattern>io</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.io</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>jline</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.jline</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javax</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.javax</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javassist</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.javassist</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>joda-time</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.joda-time</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.spatial4j</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.spatial4j</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.fasterxml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.carrotsearch</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.carrotsearch</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.twitter</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.twitter</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.tdunning</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.tdunning</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.thoughtworks</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.thoughtworks</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.sun</pattern>
+                                    <shadedPattern>shaded.logisland.querymatcher.com.sun</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.ning</pattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.com.ning</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org</shadedPattern>
+                                    <shadedPattern>shaded.logisland.elasticsearch.org</shadedPattern>
                                 </relocation>
                             </relocations>
 
