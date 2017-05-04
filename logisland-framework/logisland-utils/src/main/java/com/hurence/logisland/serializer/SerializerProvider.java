@@ -28,6 +28,7 @@ public class SerializerProvider {
     private static String AVRO_SERIALIZER = AvroSerializer.class.getName();
     private static String JSON_SERIALIZER = JsonSerializer.class.getName();
     private static String KRYO_SERIALIZER = KryoSerializer.class.getName();
+    private static String BYTES_ARRAY_SERIALIZER = BytesArraySerializer.class.getName();
     private static String NOOP_SERIALIZER = NoopSerializer.class.getName();
 
     /**
@@ -48,6 +49,8 @@ public class SerializerProvider {
                 return new JsonSerializer();
             } else if (inSerializerClass.equals(KRYO_SERIALIZER)) {
                 return new KryoSerializer(true);
+            } else if (inSerializerClass.equals(BYTES_ARRAY_SERIALIZER)) {
+                return new BytesArraySerializer();
             } else {
                 return new NoopSerializer();
             }
