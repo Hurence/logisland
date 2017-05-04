@@ -267,7 +267,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         SparkUtils.customizeLogLevels
     }
 
-
+    override def getStreamContext() : StreamingContext = {
+        return(this.ssc);
+    }
 
     override def start() = {
         if (ssc == null)
