@@ -277,10 +277,10 @@ public class ConsolidateSession extends AbstractProcessor {
         String firstEventDateTime_field         = context.getPropertyValue(FIRST_EVENT_DATETIME_FIELD).asString();
         String lastEventDateTime_field          = context.getPropertyValue(LAST_EVENT_DATETIME_FIELD).asString();
         String sessionInactivityDuration_field  = context.getPropertyValue(SESSION_INACTIVITY_DURATION_FIELD).asString();
-        String[] fields_to_add          = null ;
+        String[] fields_to_add                  = null;
 
         if ((fields_to_return != null) && ( ! fields_to_return.isEmpty())) {
-            fields_to_return.split(",");
+            fields_to_add = fields_to_return.split(",");
         }
 
         Map<String, List<Record>> groupedBySessions = records
@@ -307,7 +307,7 @@ public class ConsolidateSession extends AbstractProcessor {
         //            .collect(Collectors.toList());
         //    sortedMapSessions.put(sessionKey, sortedRecords);
         //}
-
+        //
        for (String sessionKey : groupedBySessions.keySet())
         {
             try {
@@ -394,12 +394,28 @@ public class ConsolidateSession extends AbstractProcessor {
                 // Set the events counter
                 consolidatedSession.setField(eventsCounter_field, FieldType.LONG, count);
 
-                // Add additional fields if available in the record containing the userid.
+                // Add the userid record if available
                 if (useridRecord != null) {
                     consolidatedSession.setField(userid_field, FieldType.STRING, useridRecord.getField(userid_field).asString());
-                    if (fields_to_add != null) {
-                        for (String field : fields_to_add) {
-                            String value = useridRecord.getField(field).asString();
+                }
+
+                // Add additional fields from the first record in the stream containing it.
+                if ((fields_to_add != null) && (fields_to_add.length > 0)) {
+                    for (String field : fields_to_add)
+                    {
+                        Optional<Record> optionalRecord = groupedBySessions.get(sessionKey)
+                                .stream()
+                                .filter(p -> (
+                                        (p.getField(field) != null) &&
+                                        (p.getField(field).asString() != null) &&
+                                        (! p.getField(field).asString().isEmpty()))
+                                 )
+                                .findFirst();
+
+                        if (optionalRecord.isPresent())
+                        {
+                            Record recordContainingField = optionalRecord.get();
+                            String value = recordContainingField.getField(field).asString();
                             if ((value != null) && (!value.isEmpty())) {
                                 consolidatedSession.setField(field, FieldType.STRING, value);
                             }
