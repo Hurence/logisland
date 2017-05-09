@@ -628,4 +628,142 @@ public class ConsolidateSessionTest {
         Assert.assertTrue((cs.getField("b").asString())
                 .equals(B2BUnit));
     }
+
+    @Test
+    public void testCalculateSessionDuration()
+    {
+        Collection<Record> records = new ArrayList<>();
+        TestRunner testRunner = TestRunners.newTestRunner(new ConsolidateSession());
+
+        long now = System.currentTimeMillis();
+        long sessionInactivityTimeout = 180; // in seconds
+        long margin = 60000; // 60 seconds
+        long event3_timestamp = now - sessionInactivityTimeout*1000 - margin;
+        long event2_timestamp = event3_timestamp - margin;
+        long event1_timestamp = event2_timestamp - margin;
+        long sessionDuration = 2*margin/1000; // in seconds
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event1_timestamp))
+                .setField("v", FieldType.STRING, "http://page1"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s2")
+                .setField("t", FieldType.STRING, "1493197966585")
+                .setField("v", FieldType.STRING, "http://page2"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event2_timestamp))
+                .setField("v", FieldType.STRING, "http://page3"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event3_timestamp))
+                .setField("v", FieldType.STRING, "http://pageX"));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s5")
+                .setField("t", FieldType.STRING, "1493197966584")
+                .setField("v", FieldType.STRING, "http://pageY"));
+
+        testRunner.setProperty(ConsolidateSession.SESSION_ID_FIELD, "s");
+        testRunner.setProperty(ConsolidateSession.TIMESTAMP_FIELD, "t");
+        testRunner.setProperty(ConsolidateSession.VISITED_PAGE_FIELD, "v");
+        testRunner.setProperty(ConsolidateSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(sessionInactivityTimeout));
+        testRunner.setProperty(ConsolidateSession.IS_SESSION_ACTIVE_FIELD, "i");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputErrorCount(0);
+        List<MockRecord> outputRecords=testRunner.getOutputRecords();
+        try {
+            MockRecord cs = outputRecords
+                    .stream()
+                    .filter(p -> (p.getField("s").asString()).equals("s1"))
+                    .findFirst()
+                    .get();
+
+            Assert.assertEquals(
+                    cs.getField(ConsolidateSession.SESSION_DURATION_FIELD.getDefaultValue()).asLong(),
+                    new Long (sessionDuration));
+        }
+        catch (Exception e) {
+            Assert.assertFalse(false);
+        }
+    }
+
+    @Test
+    public void testSessionInactivityDuration()
+    {
+        Collection<Record> records = new ArrayList<>();
+        TestRunner testRunner = TestRunners.newTestRunner(new ConsolidateSession());
+
+        long now = System.currentTimeMillis();
+        long sessionInactivityTimeout = 180; // in seconds
+        long margin = 60000; // 60 seconds
+        // Make sure the session already timed out to check the computed
+        //  sessionInactivityDuration is maxed out to the defined session timeout
+        long event3_timestamp = now - sessionInactivityTimeout*1000 - margin;
+        long event2_timestamp = event3_timestamp - margin;
+        long event1_timestamp = event2_timestamp - margin;
+        long sessionDuration = 2*margin/1000; // in seconds
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event1_timestamp))
+                .setField("v", FieldType.STRING, "http://page1"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s2")
+                .setField("t", FieldType.STRING, "1493197966585")
+                .setField("v", FieldType.STRING, "http://page2"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event2_timestamp))
+                .setField("v", FieldType.STRING, "http://page3"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, String.valueOf(event3_timestamp))
+                .setField("v", FieldType.STRING, "http://pageX"));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s5")
+                .setField("t", FieldType.STRING, "1493197966584")
+                .setField("v", FieldType.STRING, "http://pageY"));
+
+        testRunner.setProperty(ConsolidateSession.SESSION_ID_FIELD, "s");
+        testRunner.setProperty(ConsolidateSession.TIMESTAMP_FIELD, "t");
+        testRunner.setProperty(ConsolidateSession.VISITED_PAGE_FIELD, "v");
+        testRunner.setProperty(ConsolidateSession.SESSION_INACTIVITY_TIMEOUT, String.valueOf(sessionInactivityTimeout));
+        testRunner.setProperty(ConsolidateSession.IS_SESSION_ACTIVE_FIELD, "i");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(3);
+        testRunner.assertOutputErrorCount(0);
+        List<MockRecord> outputRecords=testRunner.getOutputRecords();
+        try {
+            MockRecord cs = outputRecords
+                    .stream()
+                    .filter(p -> (p.getField("s").asString()).equals("s1"))
+                    .findFirst()
+                    .get();
+
+            Assert.assertEquals(
+                    cs.getField(ConsolidateSession.SESSION_INACTIVITY_DURATION_FIELD.getDefaultValue()).asLong(),
+                    new Long (sessionInactivityTimeout));
+        }
+        catch (Exception e) {
+            Assert.assertFalse(false);
+        }
+    }
 }

@@ -353,14 +353,17 @@ public class ConsolidateSession extends AbstractProcessor {
                 // Compute session inactivity duration (in milliseconds)
                 long now = System.currentTimeMillis();
                 long sessionInactivityDuration = (now - latestRecord.getField(timestamp_field).asLong()) / 1000;
-                if (sessionInactivityDuration > session_inactivity_timeout) {
+                if (sessionInactivityDuration > session_inactivity_timeout)
+                {
                     // Mark the session as closed
                     consolidatedSession.setField(isSessionActive_field, FieldType.BOOLEAN, false);
+                    // Max out the sessionInactivityDuration
+                    sessionInactivityDuration = session_inactivity_timeout;
                 } else {
                     consolidatedSession.setField(isSessionActive_field, FieldType.BOOLEAN, true);
                 }
 
-                long sessionDuration = (now - firstRecord.getField(timestamp_field).asLong()) / 1000;
+                long sessionDuration = (latestRecord.getField(timestamp_field).asLong() - firstRecord.getField(timestamp_field).asLong()) / 1000;
                 if (sessionDuration > 0) {
                     consolidatedSession.setField(sessionDuration_field, FieldType.LONG, sessionDuration);
                 }
