@@ -32,6 +32,18 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <packaging>jar</packaging>
     <artifactId>logisland-querymatcher-plugin</artifactId>
 
+    <properties>
+        <!-- Versions -->
+        <lucene.version>5.4.0</lucene.version>
+        <luwak.version>1.4.0</luwak.version>
+
+        <!-- Configuration -->
+        <shaded.package>${logisland.shade.packageName}.querymatcher</shaded.package>
+
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -45,6 +57,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>com.github.flaxsearch</groupId>
             <artifactId>luwak</artifactId>
+            <version>${luwak.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -60,16 +73,15 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <version>5.4.0</version>
+            <version>${lucene.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>4</version>
+                <version>${shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -78,13 +90,36 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.hurence:*</exclude>
-                                </excludes>
                                 <includes>
-                                    <include>*:*</include>
+                                    <include>com.hurence.logisland:logisland-querymatcher-plugin</include>
+                                    <include>org.apache.lucene:*</include>
+                                    <include>com.github.flaxsearch:luwak</include>
+                                    <include>com.fasterxml.jackson:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>com.fasterxml.jackson.dataformat:*</include>
+                                    <include>com.twitter:*</include>
+                                    <include>com.tdunning:*</include>
+                                    <include>com.spatial4j:*</include>
+                                    <include>com.carrotsearch:*</include>
+                                    <include>org.hdrhistogram:HdrHistogram</include>
+                                    <include>io.netty:*</include>
+                                    <include>com.thoughtworks.paranamer:*</include>
                                 </includes>
                             </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
@@ -92,13 +127,46 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <relocations>
+
                                 <relocation>
-                                    <pattern>com</pattern>
-                                    <shadedPattern>logisland.elasticsearch.com</shadedPattern>
+                                    <pattern>com.github</pattern>
+                                    <shadedPattern>${shaded.package}.com.github</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>io</pattern>
+                                    <shadedPattern>${shaded.package}.io</shadedPattern>
+                                </relocation>
+
+
+
+                                <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
+                                </relocation>
+
+
+                                <relocation>
+                                    <pattern>com.ning</pattern>
+                                    <shadedPattern>${shaded.package}.com.ning</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org</pattern>
-                                    <shadedPattern>logisland.elasticsearch.org</shadedPattern>
+                                    <pattern>org.apache.lucene</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.elasticsearch</pattern>
+                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
+                                </relocation>
+
+
+                                <relocation>
+                                    <pattern>uk</pattern>
+                                    <shadedPattern>${shaded.package}.uk</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>ch</pattern>
+                                    <shadedPattern>${shaded.package}.ch</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
