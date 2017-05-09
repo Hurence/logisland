@@ -501,4 +501,131 @@ public class ConsolidateSessionTest {
         testRunner.assertOutputRecordsCount(3);
         testRunner.assertOutputErrorCount(0);
     }
+
+    @Test
+    public void testGrabOneFieldPresentEveryWhere()
+    {
+        Collection<Record> records = new ArrayList<>();
+        String partyId = "123456";
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966584")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s2")
+                .setField("t", FieldType.STRING, "1493197966585")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, "654321"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966590")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966600")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197967000")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+        TestRunner testRunner = TestRunners.newTestRunner(new ConsolidateSession());
+        testRunner.setProperty(ConsolidateSession.SESSION_ID_FIELD, "s");
+        testRunner.setProperty(ConsolidateSession.TIMESTAMP_FIELD, "t");
+        testRunner.setProperty(ConsolidateSession.FIELDS_TO_RETURN, "f");
+        testRunner.setProperty(ConsolidateSession.VISITED_PAGE_FIELD, "v");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(2);
+        testRunner.assertOutputErrorCount(0);
+        List<MockRecord> outputRecords=testRunner.getOutputRecords();
+
+        MockRecord cs= outputRecords
+                .stream()
+                .filter(p->(p.getField("s").asString()).equals("s1"))
+                .findFirst()
+                .get();
+
+        Assert.assertTrue((cs.getField("f").asString())
+                .equals(partyId));
+    }
+
+    @Test
+    public void testGrabSeveralFieldsPresent()
+    {
+        Collection<Record> records = new ArrayList<>();
+        String partyId = "123456";
+        String B2BUnit = "999999";
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966584")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s2")
+                .setField("t", FieldType.STRING, "1493197966585")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, "654321"));
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966590")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197966600")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("b", FieldType.STRING, B2BUnit)
+                .setField("f", FieldType.STRING, partyId));
+
+
+        records.add(new StandardRecord()
+                .setField("s", FieldType.STRING, "s1")
+                .setField("t", FieldType.STRING, "1493197967000")
+                .setField("v", FieldType.STRING, "http://page3")
+                .setField("f", FieldType.STRING, partyId));
+
+        TestRunner testRunner = TestRunners.newTestRunner(new ConsolidateSession());
+        testRunner.setProperty(ConsolidateSession.SESSION_ID_FIELD, "s");
+        testRunner.setProperty(ConsolidateSession.TIMESTAMP_FIELD, "t");
+        testRunner.setProperty(ConsolidateSession.FIELDS_TO_RETURN, "f,b");
+        testRunner.setProperty(ConsolidateSession.VISITED_PAGE_FIELD, "v");
+        testRunner.assertValid();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(2);
+        testRunner.assertOutputErrorCount(0);
+        List<MockRecord> outputRecords=testRunner.getOutputRecords();
+
+        MockRecord cs= outputRecords
+                .stream()
+                .filter(p->(p.getField("s").asString()).equals("s1"))
+                .findFirst()
+                .get();
+
+        Assert.assertTrue((cs.getField("f").asString())
+                .equals(partyId));
+
+        Assert.assertTrue((cs.getField("b").asString())
+                .equals(B2BUnit));
+    }
 }
