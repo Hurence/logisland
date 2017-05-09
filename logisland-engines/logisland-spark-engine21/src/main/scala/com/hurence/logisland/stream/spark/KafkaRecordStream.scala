@@ -30,4 +30,5 @@ trait KafkaRecordStream extends RecordStream{
       * @param streamContext
       */
     def setup(appName: String,ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext);
+    def getStreamContext() : StreamingContext;
 }
