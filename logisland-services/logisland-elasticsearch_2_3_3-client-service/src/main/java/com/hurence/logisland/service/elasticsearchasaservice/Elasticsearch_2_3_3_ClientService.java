@@ -93,11 +93,13 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
-        try {
-            createElasticsearchClient(context);
-            createBulkProcessor(context);
-        }catch (Exception e){
-            throw new InitializationException(e);
+        synchronized(this) {
+            try {
+                createElasticsearchClient(context);
+                createBulkProcessor(context);
+            }catch (Exception e){
+                throw new InitializationException(e);
+            }
         }
     }
 
