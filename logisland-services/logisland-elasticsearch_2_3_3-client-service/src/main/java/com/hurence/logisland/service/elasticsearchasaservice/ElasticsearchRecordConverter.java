@@ -40,7 +40,7 @@ public class ElasticsearchRecordConverter {
      * @param record
      * @return
      */
-    public static String convert(Record record) {
+    public static String convertToString(Record record) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));

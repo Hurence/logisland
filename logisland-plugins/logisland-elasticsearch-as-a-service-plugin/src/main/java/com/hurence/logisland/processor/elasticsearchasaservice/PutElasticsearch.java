@@ -3,7 +3,6 @@ package com.hurence.logisland.processor.elasticsearchasaservice;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.elasticsearchasaservice.put.ElasticsearchPutRecord;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import org.joda.time.DateTime;
@@ -77,8 +76,8 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor
                     }
                 }
 
-                ElasticsearchPutRecord elasticsearchPutRecord = new ElasticsearchPutRecord(docIndex, docType, record);
-                elasticsearchClientService.put(elasticsearchPutRecord);
+                String document = elasticsearchClientService.convertRecordToString(record);
+                elasticsearchClientService.bulkPut(docIndex, docType, document, Optional.of(record.getId()));
 
             }
         }

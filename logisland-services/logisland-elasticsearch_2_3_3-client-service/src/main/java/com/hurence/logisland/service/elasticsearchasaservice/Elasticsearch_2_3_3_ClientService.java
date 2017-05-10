@@ -11,11 +11,21 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.elasticsearchasaservice.ElasticsearchClientService;
-import com.hurence.logisland.processor.elasticsearchasaservice.put.ElasticsearchPutRecord;
+import com.hurence.logisland.record.Record;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsAction;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -23,8 +33,11 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,7 +46,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Tags({ "hbase", "client"})
 @CapabilityDescription("Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing " +
@@ -45,11 +60,11 @@ import java.util.concurrent.TimeUnit;
         description="These properties will be set on the HBase configuration after loading any provided configuration files.")
 public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
-    private volatile Client esClient;
+    protected volatile Client esClient;
     private volatile List<InetSocketAddress> esHosts;
     private volatile String authToken;
-    private volatile BulkProcessor bulkProcessor;
-    private volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
+    protected volatile BulkProcessor bulkProcessor;
+    protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -94,8 +109,7 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
      * @param context The context for this processor
      * @throws ProcessException if an error occurs while creating an Elasticsearch client
      */
-    private void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
-
+    protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
         if (esClient != null) {
             return;
         }
@@ -232,7 +246,7 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
         return esHosts;
     }
 
-    private void createBulkProcessor(ControllerServiceInitializationContext context)
+    protected void createBulkProcessor(ControllerServiceInitializationContext context)
     {
         if (bulkProcessor != null) {
             return;
@@ -303,15 +317,207 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void put(ElasticsearchPutRecord elasticsearchPutRecord) {
-        // dump event to a JSON format
-        String document = ElasticsearchRecordConverter.convert(elasticsearchPutRecord.getRecord());
+    public void flushBulkProcessor() {
+        bulkProcessor.flush();
+    }
+
+    @Override
+    public void bulkPut(String docIndex, String docType, String document, Optional<String> OptionalId) {
         // add it to the bulk
         IndexRequestBuilder result = esClient
-                .prepareIndex(elasticsearchPutRecord.getDocIndex(), elasticsearchPutRecord.getDocType())
-                .setId(elasticsearchPutRecord.getRecord().getId())
-                .setSource(document).setOpType(IndexRequest.OpType.INDEX);
+                .prepareIndex(docIndex, docType)
+                .setSource(document)
+                .setOpType(IndexRequest.OpType.INDEX);
+        if(OptionalId.isPresent())
+        {
+            result.setId(OptionalId.get());
+        }
         bulkProcessor.add(result.request());
+    }
+
+    @Override
+    public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
+        // add it to the bulk
+        IndexRequestBuilder result = esClient
+                .prepareIndex(docIndex, docType)
+                .setSource(document)
+                .setOpType(IndexRequest.OpType.INDEX);
+        if(OptionalId.isPresent())
+        {
+            result.setId(OptionalId.get());
+        }
+        bulkProcessor.add(result.request());
+    }
+
+    @Override
+    public boolean existsIndex(String indexName) throws IOException {
+        // could also use  client.admin().indices().prepareExists(indexName).execute().get();
+        IndicesExistsResponse ersp = IndicesExistsAction.INSTANCE.newRequestBuilder(esClient).setIndices(indexName).get();
+        // TODO TK : is the following better ?
+        boolean exists = esClient.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
+        return ersp.isExists();
+    }
+
+    @Override
+    public void refreshIndex(String indexName) throws Exception {
+        esClient.admin().indices().prepareRefresh(indexName).execute().get();
+    }
+
+    @Override
+    public void saveAsync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
+        esClient.prepareIndex(indexName, doctype).setSource(doc).execute().get();
+    }
+
+    @Override
+    public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
+        esClient.prepareIndex(indexName, doctype).setSource(doc).execute().get();
+        refreshIndex(indexName);
+    }
+
+    @Override
+    public long countIndex(String indexName) throws Exception {
+        // There is no "count" method; instead make a "search for all" and set the desired number of returned
+        // records to zero. No actual hits get returned, but the "metadata" for the result includes the total
+        // number of matched records, ie the size.
+        SearchResponse rsp = esClient.prepareSearch(indexName)
+                .setQuery(QueryBuilders.matchAllQuery())
+                .setSize(0)
+                .execute().get();
+        return rsp.getHits().getTotalHits();
+    }
+
+    @Override
+    public void createIndex(int numShards, int numReplicas, String indexName) throws IOException {
+        // Define the index itself
+        CreateIndexRequestBuilder builder = esClient.admin().indices().prepareCreate(indexName);
+        builder.setSettings(Settings.builder()
+                .put("number_of_shards", numShards)
+                .put("number_of_replicas", numReplicas)
+                .build());
+
+        try {
+            CreateIndexResponse rsp = builder.execute().get();
+            if (!rsp.isAcknowledged()) {
+                throw new IOException("Elasticsearch index definition not acknowledged");
+            }
+            getLogger().info("Created index {}", new Object[]{indexName});
+        } catch (Exception e) {
+            getLogger().error("Failed to create ES index", e);
+            throw new IOException("Failed to create ES index", e);
+        }
+    }
+
+    @Override
+    public void dropIndex(String indexName) throws IOException {
+        try {
+            esClient.admin().indices().prepareDelete(indexName).execute().get();
+            getLogger().info("Delete index {}", new Object[]{indexName});
+        } catch (Exception e) {
+            throw new IOException(String.format("Unable to delete index %s", indexName), e);
+        }
+    }
+
+    @Override
+    public void copyIndex(String reindexScrollTimeout, String srcIndex, String dstIndex)
+            throws IOException {
+
+        SearchResponse scrollResp = esClient.prepareSearch(srcIndex)
+                .setSearchType(SearchType.QUERY_AND_FETCH)
+                .setScroll(reindexScrollTimeout)
+                .setQuery(QueryBuilders.matchAllQuery()) // Match all query
+                .setSize(100) // 100 hits per shard will be returned for each scroll
+                .execute().actionGet();
+
+        AtomicBoolean failed = new AtomicBoolean(false);
+
+        // A user of a BulkProcessor just keeps adding requests to it, and the BulkProcessor itself decides when
+        // to send a request to the ES nodes, based on its configuration settings. Calls can be triggerd by number
+        // of queued requests, total size of queued requests, and time since previous request. The defaults for
+        // these settings are all sensible, so are not overridden here. The BulkProcessor has an internal threadpool
+        // which allows it to send multiple batches concurrently; the default is "1" meaning that a single completed
+        // batch can be sending in the background while a new batch is being built. When the non-active batch is
+        // "full", the add call blocks until the background batch completes.
+
+        while (true) {
+            if (scrollResp.getHits().getHits().length == 0) {
+                // No more results
+                break;
+            }
+
+            for (SearchHit hit : scrollResp.getHits()) {
+                IndexRequest request = new IndexRequest(dstIndex, hit.type(), hit.id());
+                Map<String, Object> source = hit.getSource();
+                request.source(source);
+                bulkProcessor.add(request);
+            }
+
+            String scrollId = scrollResp.getScrollId();
+            scrollResp = esClient.prepareSearchScroll(scrollId)
+                    .setScroll(reindexScrollTimeout)
+                    .execute().actionGet();
+        }
+
+        getLogger().info("Reindex completed");
+    }
+
+    @Override
+    public void createAlias(String indexName, String aliasName) throws IOException {
+        IndicesAliasesRequestBuilder builder = esClient.admin().indices().prepareAliases().addAlias(indexName, aliasName);
+        try {
+            IndicesAliasesResponse rsp = builder.execute().get();
+            if (!rsp.isAcknowledged()) {
+                throw new IOException(String.format(
+                        "Creation of elasticsearch alias '%s' for index '%s' not acknowledged.", aliasName, indexName));
+            }
+        } catch (IOException e) {
+            getLogger().error("Failed to create elasticsearch alias {} for index {}", new Object[] {aliasName, indexName, e});
+            throw e;
+        } catch (ExecutionException | InterruptedException e) {
+            String msg = String.format("Failed to create elasticsearch alias '%s' for index '%s'", aliasName, indexName);
+            throw new IOException(msg, e);
+        }
+    }
+
+    @Override
+    public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
+            throws IOException {
+
+        PutMappingRequestBuilder builder = esClient.admin().indices().preparePutMapping(indexName);
+        builder.setType(doctype).setSource(mappingAsJsonString);
+
+        try {
+            PutMappingResponse rsp = builder.execute().get();
+            if (!rsp.isAcknowledged()) {
+                throw new IOException("Elasticsearch mapping definition not acknowledged");
+            }
+            return true;
+        } catch (Exception e) {
+            getLogger().error("Failed to load ES mapping {} for index {}", new Object[]{doctype, indexName, e});
+            // This is an error that can be fixed by providing alternative inputs so return boolean rather
+            // than throwing an exception.
+            return false;
+        }
+    }
+
+    @Override
+    public String convertRecordToString(Record record) {
+        return ElasticsearchRecordConverter.convertToString(record);
+    }
+
+    @Override
+    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue)
+    {
+        SearchResponse searchResponse = esClient.prepareSearch(docIndex)
+                .setTypes(docType)
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.termQuery(docName, docValue))
+                .setFrom(0).setSize(60).setExplain(true)
+                .execute()
+                .actionGet();
+
+        long numberOfHits = searchResponse.getHits().getTotalHits();
+
+        return numberOfHits;
     }
 
     @OnDisabled
