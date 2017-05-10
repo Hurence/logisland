@@ -53,17 +53,18 @@ class KafkaSink(createProducer: () => (KafkaProducer[Array[Byte], Array[Byte]], 
       */
     def produce(topic: String, events: List[Record], serializer: RecordSerializer) = {
 
-        val messages = events.map(event => {
+        events.foreach(event => {
             // messages are serialized with kryo first
             val baos: ByteArrayOutputStream = new ByteArrayOutputStream
             serializer.serialize(baos, event)
 
             // and then converted to KeyedMessage
             val key = if (event.hasField(keyField))
-                event.getField(keyField).asString()
+                event.getField(keyField).asString().getBytes()
             else
-                ""
-            val message = new ProducerRecord(topic, key.getBytes(), baos.toByteArray)
+                null
+
+            val message = new ProducerRecord(topic, key, baos.toByteArray)
             baos.close()
 
 
