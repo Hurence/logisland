@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.elasticsearch.put;
+package com.hurence.logisland.processor.elasticsearchasaservice.put;
 
 
 import com.hurence.logisland.record.Record;

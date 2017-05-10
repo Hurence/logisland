@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.elasticsearch;
+package com.hurence.logisland.processor.elasticsearchasaservice;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
@@ -6,12 +6,11 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.processor.elasticsearch.put.ElasticsearchPutRecord;
+import com.hurence.logisland.processor.elasticsearchasaservice.put.ElasticsearchPutRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -199,9 +198,8 @@ public interface ElasticsearchClientService extends ControllerService {
      * Put a given document in a elasticsearch type / index.
      *
      * @param elasticsearchPutRecord holds information regarding the document to be indexed
-     * @throws IOException thrown when there are communication errors with Elasticsearch
      */
-    void put(ElasticsearchPutRecord elasticsearchPutRecord) throws IOException;
+    void put(ElasticsearchPutRecord elasticsearchPutRecord);
 
 
 }

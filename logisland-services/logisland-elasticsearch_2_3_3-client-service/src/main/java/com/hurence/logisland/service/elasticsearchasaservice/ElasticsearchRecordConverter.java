@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hurence.logisland.service.elasticsearch;
+package com.hurence.logisland.service.elasticsearchasaservice;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;

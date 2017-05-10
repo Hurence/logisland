@@ -1,4 +1,4 @@
-package com.hurence.logisland.service.elasticsearch;
+package com.hurence.logisland.service.elasticsearchasaservice;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
@@ -10,10 +10,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.processor.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.processor.elasticsearch.put.ElasticsearchPutRecord;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
+import com.hurence.logisland.processor.elasticsearchasaservice.ElasticsearchClientService;
+import com.hurence.logisland.processor.elasticsearchasaservice.put.ElasticsearchPutRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
@@ -27,7 +25,6 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Tags({ "hbase", "client"})
 @CapabilityDescription("Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing " +
@@ -320,7 +318,15 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
     public void shutdown() {
         if (bulkProcessor != null) {
             bulkProcessor.flush();
-            bulkProcessor.awaitClose();
+            try {
+                if (!bulkProcessor.awaitClose(10, TimeUnit.SECONDS)) {
+                    getLogger().error("some request could not be send to es because of time out");
+                } else {
+                    getLogger().info("all requests have been submitted to es");
+                }
+            } catch (InterruptedException e) {
+                getLogger().error(e.getMessage());
+            }
         }
 
         if (esClient != null) {
