@@ -41,6 +41,7 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
+            <version>2.3.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
