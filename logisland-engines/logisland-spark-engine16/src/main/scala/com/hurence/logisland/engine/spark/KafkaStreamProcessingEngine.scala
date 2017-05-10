@@ -399,7 +399,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             try {
 
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
-                kafkaStream.setup(appName, ssc, streamingContext)
+                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
@@ -411,7 +411,18 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     }
 
 
-    override def shutdown(context: EngineContext) = {
+    override def shutdown(engineContext: EngineContext) = {
+        engineContext.getStreamContexts.foreach(streamingContext => {
+            try {
+
+                val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
+                kafkaStream.stop()
+            } catch {
+                case ex: Exception =>
+                    logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
+            }
+
+        })
         logger.info(s"shuting down Spark engine")
     }
 

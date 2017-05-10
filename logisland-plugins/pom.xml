@@ -28,8 +28,7 @@
     <artifactId>logisland-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>logisland-mailer-plugin</module>
-        <module>logisland-bro-plugin</module>
+        <module>logisland-cyber-security-plugin</module>
         <module>logisland-scripting-processors-plugin</module>
         <module>logisland-querymatcher-plugin</module>
         <!--<module>logisland-botsearch-plugin</module>-->
@@ -37,5 +36,8 @@
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-sampling-plugin</module>
+        <module>logisland-useragent-plugin</module>
+        <module>logisland-consolidate-session-plugin</module>
+        <module>logisland-hbase-plugin</module>
     </modules>
 </project>

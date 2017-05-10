@@ -29,64 +29,69 @@ public class MockRecord extends StandardRecord {
 
 	private static final long serialVersionUID = 7750544989597574120L;
 
-	private final Set<String> assertedFields;
+	//private final Set<String> assertedFields;
 	
     public MockRecord(Record toClone) {
         super(toClone);
         
-        this.assertedFields = new HashSet<>();
+      //  this.assertedFields = new HashSet<>();
     }
 
     public void assertFieldExists(final String fieldName) {
         Assert.assertTrue("Field " + fieldName + " does not exist", hasField(fieldName));
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
     public void assertFieldNotExists(final String fieldName) {
         Assert.assertFalse("Attribute " + fieldName + " not exists with value " + getField(fieldName),
                 hasField(fieldName));
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
     public void assertFieldTypeEquals(final String fieldName, final FieldType type) {
         Assert.assertEquals(type, getField(fieldName).getType());
-        assertedFields.add(fieldName);
+        //assertedFields.add(fieldName);
     }
 
 
     public void assertFieldEquals(final String fieldName, final String expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asString());
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
 	}
     
     public void assertFieldEquals(final String fieldName, final boolean expectedValue) {
         Assert.assertEquals(new Boolean(expectedValue), getField(fieldName).asBoolean());
-        assertedFields.add(fieldName);
+      //  assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final int expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asInteger().intValue());
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final long expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asLong().longValue());
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final float expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asFloat(), 0.000001);
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
     public void assertFieldEquals(final String fieldName, final double expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).asDouble(), 0.000001);
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
+    }
+
+    public void assertFieldEquals(final String fieldName, final byte[] expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+       // assertedFields.add(fieldName);
     }
 
     public void assertFieldNotEquals(final String fieldName, final String expectedValue) {
         Assert.assertNotSame(expectedValue, getField(fieldName).asString());
-		assertedFields.add(fieldName);
+		//assertedFields.add(fieldName);
     }
 
 
@@ -98,7 +103,7 @@ public class MockRecord extends StandardRecord {
 		// get missing asserted fields
 		Set<String> fields = new HashSet<>(getAllFieldNames());
 		fields.removeAll(ignoreFields);
-		fields.removeAll(assertedFields);
+		//fields.removeAll(assertedFields);
 		Assert.assertEquals("List of not asserted fields: " + fields, 0, fields.size());
     }
     

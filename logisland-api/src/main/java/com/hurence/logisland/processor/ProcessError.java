@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 public enum ProcessError {
 
+    BAD_RECORD,
     RECORD_CONVERSION_ERROR,
     NUMBER_PARSING_ERROR,
     DATE_PARSING_ERROR,
@@ -25,6 +26,8 @@ public enum ProcessError {
     INDEXATION_ERROR,
     CONFIG_SETTING_ERROR,
     STRING_FORMAT_ERROR,
+    INVALID_FILE_FORMAT_ERROR,
+    NOT_IMPLEMENTED_ERROR,
     RUNTIME_ERROR,
     UNKNOWN_ERROR;
 

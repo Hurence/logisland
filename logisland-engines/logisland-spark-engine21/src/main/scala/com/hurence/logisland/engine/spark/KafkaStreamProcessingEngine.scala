@@ -305,7 +305,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         Collections.unmodifiableList(descriptors)
     }
 
-    private var streamingContext: StreamingContext = null
 
     /**
       * start the engine
@@ -315,7 +314,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
         val timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
-        streamingContext = createStreamingContext(engineContext)
+        val streamingContext = createStreamingContext(engineContext)
 
         /**
           * shutdown context gracefully
@@ -400,7 +399,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             try {
 
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
-                kafkaStream.setup(appName, ssc, streamingContext)
+                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
@@ -414,8 +413,19 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     override def shutdown(engineContext: EngineContext) = {
         logger.info(s"shuting down Spark engine")
-        if (streamingContext != null)
-            streamingContext.stop(stopSparkContext = true, stopGracefully = true)
+        engineContext.getStreamContexts.foreach(streamingContext => {
+            try {
+
+                val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
+                val sc = kafkaStream.getStreamContext();
+                sc.stop(stopSparkContext = true, stopGracefully = true)
+                kafkaStream.stop()
+            } catch {
+                case ex: Exception =>
+                    logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
+            }
+
+        })
     }
 
     override def onPropertyModified(descriptor: PropertyDescriptor, oldValue: String, newValue: String) = {

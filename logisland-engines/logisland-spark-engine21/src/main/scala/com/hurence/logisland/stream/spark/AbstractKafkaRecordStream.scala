@@ -20,10 +20,11 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
+import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
+import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, BytesArraySerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
-import com.hurence.logisland.util.spark.{KafkaSink, RestJobsApiClientSink, SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
@@ -110,6 +111,8 @@ object AbstractKafkaRecordStream {
         "avro serialization", "serialize events as json blocs")
     val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
         "kryo serialization", "serialize events as json blocs")
+    val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
+        "byte array serialization", "serialize events as byte arrays")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
 
@@ -118,7 +121,7 @@ object AbstractKafkaRecordStream {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -127,7 +130,7 @@ object AbstractKafkaRecordStream {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -137,7 +140,7 @@ object AbstractKafkaRecordStream {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(JSON_SERIALIZER.getValue)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .build
 
     val METRICS_TOPIC = new PropertyDescriptor.Builder()
@@ -227,7 +230,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
+    protected var engineContext: EngineContext = null
     protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var currentJobVersion: Int = 0
     protected var lastCheckCount: Int = 0
 
@@ -254,12 +259,16 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     }
 
 
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext) = {
+    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
+        this.engineContext = engineContext
         SparkUtils.customizeLogLevels
-        logger.info("setup")
+    }
+
+    override def getStreamContext() : StreamingContext = {
+        return(this.ssc);
     }
 
     override def start() = {
@@ -295,6 +304,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
             restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
+            controllerServiceLookupSink = ssc.sparkContext.broadcast(
+                ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+            )
 
             // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {
@@ -353,7 +365,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             // do the parallel processing
             kafkaStream.foreachRDD(rdd => {
-
                 /**
                   * check if conf needs to be refreshed
                   */
@@ -425,6 +436,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 val inSchema = parser.parse(schemaContent)
                 new AvroSerializer(inSchema)
             case c if c == AbstractKafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
+            case c if c == AbstractKafkaRecordStream.BYTESARRAY_SERIALIZER.getValue => new BytesArraySerializer()
             case _ => new KryoSerializer(true)
         }
     }

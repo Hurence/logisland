@@ -60,17 +60,6 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
         </dependency>
@@ -88,19 +77,19 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-consolidate-session-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-scripting-processors-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-bro-plugin</artifactId>
+            <artifactId>logisland-cyber-security-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-mailer-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-email</artifactId>
+            <artifactId>logisland-useragent-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -129,6 +118,18 @@
             <scope>runtime</scope>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hadoop-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -142,6 +143,12 @@
     <profiles>
         <profile>
             <id>hdp-2.4</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.4</value>
+                </property>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
@@ -154,7 +161,10 @@
         <profile>
             <id>hdp-2.5</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
             </activation>
             <dependencies>
                 <dependency>

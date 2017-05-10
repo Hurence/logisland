@@ -115,19 +115,18 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val startTime = System.currentTimeMillis()
                         val processor = processorContext.getProcessor
 
-
+                        /**
+                          * convert incoming Kafka messages into Records
+                          * if there's no serializer we assume that we need to compute a Record from K/V
+                          */
                         if (firstPass) {
-                            /**
-                              * convert incoming Kafka messages into Records
-                              * if there's no serializer we assume that we need to compute a Record from K/V
-                              */
                             incomingEvents = if (
                                 streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString
                                     == AbstractKafkaRecordStream.NO_SERIALIZER.getValue) {
                                 // parser
                                 partition.map(rawMessage => {
                                     val key = if (rawMessage.key() != null) new String(rawMessage.key()) else ""
-                                    val value = if (rawMessage.value() != null) new String(rawMessage.value()) else ""
+                                    val value = if (rawMessage.value() != null) new String(rawMessage.value(),"ISO-8859-1") else ""
                                     RecordUtils.getKeyValueRecord(key, value)
                                 }).toList
                             } else {
@@ -143,6 +142,10 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * process incoming events
                           */
+                        if(processor.hasControllerService){
+
+                        }
+                        processor.init(processorContext)
                         outgoingEvents = processor.process(processorContext, incomingEvents)
 
                         /**

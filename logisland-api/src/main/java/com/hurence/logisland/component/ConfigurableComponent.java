@@ -69,4 +69,10 @@ public interface ConfigurableComponent extends Serializable{
      * @return PropertyDescriptor objects this component currently supports
      */
     List<PropertyDescriptor> getPropertyDescriptors();
+
+    /**
+     * @return the unique identifier that the framework assigned to this
+     * component
+     */
+    String getIdentifier();
 }

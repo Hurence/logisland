@@ -70,9 +70,11 @@
     <modules>
         <module>logisland-api</module>
         <module>logisland-plugins</module>
+        <module>logisland-services</module>
         <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
         <module>logisland-assembly</module>
+        <module>logisland-docker</module>
     </modules>
 
     <properties>
@@ -84,37 +86,36 @@
         <inceptionYear>2014</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <logisland.version>${project.version}</logisland.version>
-        <lucene.version>5.5.0</lucene.version>
+
         <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.1</hbase.version>
-        <spark.version>2.1.0</spark.version>
-        <kafka.version>0.10.0.1</kafka.version>
-        <hadoop.guava.version>12.0.1</hadoop.guava.version>
-        <elasticsearch.guava.version>18.0</elasticsearch.guava.version>
+        <hbase.version>1.1.2.2.4.0.0-169</hbase.version>
+        <hadoop.guava.version>18.0</hadoop.guava.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
-        <scala.version>2.11.8</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
-        <elasticsearch.version>2.3.3</elasticsearch.version>
 
         <swagger-core-version>1.5.9</swagger-core-version>
         <jetty-version>9.2.9.v20150224</jetty-version>
         <jersey2-version>2.25</jersey2-version>
         <servlet-api-version>2.5</servlet-api-version>
 
-        <jackson.version>2.6.6</jackson.version>
-
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
 
         <!-- Package to use when relocating shaded classes. -->
-        <logisland.shade.packageName>com.hurence.logisland</logisland.shade.packageName>
+        <logisland.shade.packageName>shade.logisland</logisland.shade.packageName>
+        <shade-plugin.version>2.4.3</shade-plugin.version>
     </properties>
 
 
     <repositories>
+
+        <repository>
+            <id>hdp</id>
+            <name>Hortonwork repo</name>
+            <url>http://repo.hortonworks.com/content/groups/public/</url>
+        </repository>
         <repository>
             <id>central</id>
             <!-- This should be at top, it makes maven try the central repo 
@@ -287,6 +288,12 @@
 
 
             <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.7.1</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>
@@ -394,32 +401,7 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>org.elasticsearch</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${elasticsearch.version}</version>
 
-            </dependency>
-            <dependency>
-                <groupId>org.elasticsearch</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${elasticsearch.version}</version>
-                <classifier>tests</classifier>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-test-framework</artifactId>
-                <version>${lucene.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.carrotsearch.randomizedtesting</groupId>
-                <artifactId>randomizedtesting-runner</artifactId>
-                <version>2.1.16</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
@@ -463,6 +445,11 @@
                 <artifactId>json-simple</artifactId>
                 <version>1.1</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${hadoop.guava.version}</version>
+            </dependency>
 
 
             <dependency>
@@ -480,16 +467,18 @@
                 <artifactId>json-path</artifactId>
                 <version>2.0.0</version>
             </dependency>
-            <dependency>
-                <groupId>com.github.flaxsearch</groupId>
-                <artifactId>luwak</artifactId>
-                <version>1.4.0</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>com.google.guava</artifactId>
+                        <groupId>guava</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -591,17 +580,17 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-consolidate-session-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-scripting-processors-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-bro-plugin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-mailer-plugin</artifactId>
+                <artifactId>logisland-cyber-security-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -641,12 +630,38 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-agent</artifactId>
+                <artifactId>logisland-mailer-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-mailer-plugin</artifactId>
+                <artifactId>logisland-useragent-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hadoop-utils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase-client-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -671,11 +686,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- <dependency>
+         <dependency>
              <groupId>org.slf4j</groupId>
              <artifactId>slf4j-simple</artifactId>
              <scope>test</scope>
-         </dependency>-->
+         </dependency>
 
     </dependencies>
     <build>
@@ -1101,16 +1116,21 @@
 
     <profiles>
 
+        <!--  hdp 2.4 -->
         <profile>
             <id>hdp-2.5</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
             </activation>
             <properties>
                 <spark.version>2.1.0</spark.version>
                 <kafka.version>0.10.0.1</kafka.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
+                <jackson.version>2.6.6</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine21</module>
@@ -1118,16 +1138,39 @@
             </modules>
         </profile>
 
+        <!--  hdp 2.5 -->
         <profile>
             <id>hdp-2.4</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.4</value>
+                </property>
+            </activation>
             <properties>
                 <spark.version>1.6.2</spark.version>
                 <kafka.version>0.8.2.1</kafka.version>
                 <scala.version>2.10.6</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
+                <jackson.version>2.4.4</jackson.version>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine16</module>
+
+            </modules>
+        </profile>
+
+
+        <profile>
+            <id>generateDoc</id>
+            <activation>
+                <property>
+                    <name>generateDoc</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-framework/logisland-documentation</module>
 
             </modules>
         </profile>

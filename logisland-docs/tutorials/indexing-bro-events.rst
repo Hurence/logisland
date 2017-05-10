@@ -10,7 +10,7 @@ can be deployed to monitor your infrastructure. Bro listens to the packets of yo
 and generates high level events from them. It can for instance generate an event each time there is a
 connection, a file transfer, a DNS query...anything that can be deduced from packet analysis.
 
-Through its out-of-the-box Bro processor, Logisland integrates with Bro and is able to receive and handle Bro events and notices coming from Bro.
+Through its out-of-the-box ParseBroEvent processor, Logisland integrates with Bro and is able to receive and handle Bro events and notices coming from Bro.
 By analyzing those events with Logisland, you may do some correlations and for instance generate some higher level alarms or do whatever
 you want, in a scalable manner, like monitoring a huge infrastructure with hundreds of machines.
 
@@ -19,7 +19,7 @@ Bro calls such events 'notices'. For instance a notice can be generated when a u
 Logisland is also able to receive and handle those notices.
 
 For the purpose of this tutorial, we will show you how to receive Bro events and notices in Logisland and how to index them in
-ElasticSearch for network audit purpose. But you can imagine to plug any Logisland processors after the Bro processor to build
+ElasticSearch for network audit purpose. But you can imagine to plug any Logisland processors after the ParseBroEvent processor to build
 your own monitoring system or any other application based on Bro events and notices handling.
 
 Tutorial environment
@@ -64,7 +64,7 @@ Pull the image from Docker Repository (it may take some time)
 
     docker pull hurence/logisland
 
-You should be aware that this Docker container is quite eager in RAM and will need at leat 8G of memory to run smoothly.
+You should be aware that this Docker container is quite eager in RAM and will need at least 8G of memory to run smoothly.
 Now run the container
 
 .. code-block:: sh
@@ -187,14 +187,14 @@ Here the stream will read all the Bro events and notices sent in the ``bro`` top
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-Within this stream there is a single processor in the processor chain: the ``Bro`` processor. It takes an incoming Bro event/notice JSON document computes a Logisland ``Record`` as a sequence of fields
+Within this stream there is a single processor in the processor chain: the ``Bro`` processor. It takes an incoming Bro event/notice JSON document and computes a Logisland ``Record`` as a sequence of fields
 that were contained in the JSON document.
 
 .. code-block:: yaml
 
     # Transform Bro events into Logisland records
     - processor: Bro adaptor
-      component: com.hurence.logisland.processor.bro.BroProcessor
+      component: com.hurence.logisland.processor.bro.ParseBroEvent
       type: parser
       documentation: A processor that transforms Bro events into LogIsland events
           
@@ -369,7 +369,7 @@ container (host, port, client id to use). These are communication settings:
         );
 
 This line tells the Kafka topic name to use. It is important that it is the same as the
-input topic of the Bro processor in Logisland:
+input topic of the ParseBroEvent processor in Logisland:
 
 .. code-block:: bro    
         
@@ -560,7 +560,7 @@ Here, as the Bro event is of type ``dns``, the event has been indexed using the 
 type in the index. This allows to easily search only among events of a particular
 type.
 
-The Bro processor has used the first level field ``dns`` of the incoming JSON event from Bro to add
+The ParseBroEvent processor has used the first level field ``dns`` of the incoming JSON event from Bro to add
 a ``record_type`` field to the record he has created. This field has been used by the PutElasicsearch processor
 to determine the index type to use for storing the record.
 
@@ -575,7 +575,7 @@ For instance the ``id.orig_h`` field has been renamed into ``id_orig_h``.
 
 That is basically all the job the Bro Processor does. It's a small adaptation layer for Bro events. Now if you look in the
 Bro documentation and know the Bro event format, you can be able to know the format of a matching record going out of
-the Bro processor. You should then be able to write some Logsisland processors to handle any record going out of the Bro Processor.
+the ParseBroEvent processor. You should then be able to write some Logsisland processors to handle any record going out of the Bro Processor.
 
 Issue a Bro Notice
 __________________

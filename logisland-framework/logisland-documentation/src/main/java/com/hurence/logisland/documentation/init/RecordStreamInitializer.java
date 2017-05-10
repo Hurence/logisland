@@ -19,10 +19,9 @@ import com.hurence.logisland.annotation.lifecycle.OnShutdown;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
-import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
-import com.hurence.logisland.processor.MockProcessContext;
+import com.hurence.logisland.util.runner.MockProcessContext;
 import com.hurence.logisland.stream.RecordStream;
 
 /**
@@ -41,7 +40,7 @@ public class RecordStreamInitializer implements ConfigurableComponentInitializer
 
 
         final ComponentLog logger = new MockComponentLogger();
-        final MockProcessContext context = new MockProcessContext(null);
+        final MockProcessContext context = new MockProcessContext(null,null);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, recordStream, logger, context);
     }
 

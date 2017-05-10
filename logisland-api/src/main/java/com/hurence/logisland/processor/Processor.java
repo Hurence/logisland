@@ -42,4 +42,10 @@ public interface Processor extends ConfigurableComponent {
      */
     Collection<Record> process(ProcessContext context, Collection<Record> records);
 
+
+    /**
+     * Useful if we want to know if a controller service must be injected in the context.
+     */
+    boolean hasControllerService();
+
 }

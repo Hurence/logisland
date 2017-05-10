@@ -16,16 +16,22 @@
 package com.hurence.logisland.processor;
 
 
-import com.hurence.logisland.component.AbstractConfiguredComponent;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.component.*;
+import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.registry.VariableRegistry;
 
 public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
 
 
+    private ControllerServiceLookup controllerServiceLookup;
+
     public StandardProcessContext(final Processor processor, final String id) {
         super(processor, id);
+    }
+
+    @Override
+    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+        this.controllerServiceLookup = controllerServiceLookup;
     }
 
     @Override
@@ -48,7 +54,7 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new StandardPropertyValue(propValue);
+        return new StandardPropertyValue(propValue,controllerServiceLookup, VariableRegistry.EMPTY_REGISTRY);
     }
 
     @Override

@@ -44,7 +44,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-consolidate-session-plugin</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
@@ -117,6 +120,13 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

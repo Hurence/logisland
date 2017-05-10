@@ -16,6 +16,7 @@
 package com.hurence.logisland.component;
 
 
+import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 
@@ -78,6 +79,8 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
     private final boolean expressionLanguageSupported;
 
 
+    private Class<? extends ControllerService> controllerServiceDefinition;
+
 
     /**
      * The validators that should be used whenever an attempt is made to set
@@ -96,6 +99,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         this.sensitive = builder.sensitive;
         this.dynamic = builder.dynamic;
         this.expressionLanguageSupported = builder.expressionLanguageSupported;
+        this.controllerServiceDefinition = builder.controllerServiceDefinition;
         this.validators = new ArrayList<>(builder.validators);
     }
 
@@ -126,6 +130,62 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
                 return csResult;
             }
         }
+/*
+
+        // if the property descriptor identifies a Controller Service, validate that the ControllerService exists, is of the correct type, and is valid
+        if (controllerServiceDefinition != null) {
+            final Set<String> validIdentifiers = context.getControllerServiceLookup().getControllerServiceIdentifiers(controllerServiceDefinition);
+            if (validIdentifiers != null && validIdentifiers.contains(input)) {
+                final ControllerService controllerService = context.getControllerServiceLookup().getControllerService(input);
+                if (!context.isValidationRequired(controllerService)) {
+                    return new ValidationResult.Builder()
+                            .input(input)
+                            .subject(getName())
+                            .valid(true)
+                            .build();
+                }
+
+                final String serviceId = controllerService.getIdentifier();
+                if (!isDependentServiceEnableable(context, serviceId)) {
+                    return new ValidationResult.Builder()
+                            .input(context.getControllerServiceLookup().getControllerServiceName(serviceId))
+                            .subject(getName())
+                            .valid(false)
+                            .explanation("Controller Service " + controllerService + " is disabled")
+                            .build();
+                }
+
+                final Collection<ValidationResult> validationResults = controllerService.validate(context.getControllerServiceValidationContext(controllerService));
+                final List<ValidationResult> invalidResults = new ArrayList<>();
+                for (final ValidationResult result : validationResults) {
+                    if (!result.isValid()) {
+                        invalidResults.add(result);
+                    }
+                }
+                if (!invalidResults.isEmpty()) {
+                    return new ValidationResult.Builder()
+                            .input(input)
+                            .subject(getName())
+                            .valid(false)
+                            .explanation("Controller Service is not valid: " + (invalidResults.size() > 1 ? invalidResults : invalidResults.get(0)))
+                            .build();
+                }
+
+                return new ValidationResult.Builder()
+                        .input(input)
+                        .subject(getName())
+                        .valid(true)
+                        .build();
+            } else {
+                return new ValidationResult.Builder()
+                        .input(input)
+                        .subject(getName())
+                        .valid(false)
+                        .explanation("Invalid Controller Service: " + input + " is not a valid Controller Service Identifier or does not reference the correct type of Controller Service")
+                        .build();
+            }
+        }
+        */
 
         for (final Validator validator : validators) {
             lastResult = validator.validate(this.name, input);
@@ -138,6 +198,10 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
 
 
 
+    public Class<? extends ControllerService> getControllerServiceDefinition() {
+        return controllerServiceDefinition;
+    }
+
     public static final class Builder {
 
         private String displayName = null;
@@ -148,6 +212,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
         private boolean required = false;
         private boolean sensitive = false;
         private boolean expressionLanguageSupported = false;
+        private Class<? extends ControllerService> controllerServiceDefinition;
         private boolean dynamic = false;
         private List<Validator> validators = new ArrayList<>();
 
@@ -161,6 +226,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
             this.sensitive = specDescriptor.sensitive;
             this.dynamic = specDescriptor.dynamic;
             this.expressionLanguageSupported = specDescriptor.expressionLanguageSupported;
+            this.controllerServiceDefinition = specDescriptor.getControllerServiceDefinition();
             this.validators = new ArrayList<>(specDescriptor.validators);
             return this;
         }
@@ -341,6 +407,22 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
             return false;
         }
 
+
+        /**
+         * Specifies that this property provides the identifier of a Controller
+         * Service that implements the given interface
+         *
+         * @param controllerServiceDefinition the interface that is implemented
+         * by the Controller Service
+         * @return the builder
+         */
+        public Builder identifiesControllerService(final Class<? extends ControllerService> controllerServiceDefinition) {
+            if (controllerServiceDefinition != null) {
+                this.controllerServiceDefinition = controllerServiceDefinition;
+            }
+            return this;
+        }
+
         /**
          * @return a PropertyDescriptor as configured
          *
@@ -400,6 +482,8 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
     public List<AllowableValue> getAllowableValues() {
         return allowableValues == null ? null : Collections.unmodifiableList(allowableValues);
     }
+
+
 
     @Override
     public boolean equals(final Object other) {

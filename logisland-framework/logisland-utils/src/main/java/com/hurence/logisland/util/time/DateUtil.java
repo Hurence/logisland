@@ -447,7 +447,7 @@ public final class DateUtil {
      * @see SimpleDateFormat
      */
     public static Date parse(String dateString, String dateFormat, TimeZone timeZone) throws ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat, new Locale("en", "US"));
         simpleDateFormat.setTimeZone(timeZone);
         simpleDateFormat.setLenient(false); // Don't automatically convert invalid date.
         if (dateFormat.equals("MMM dd HH:mm:ss")) {

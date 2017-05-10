@@ -89,7 +89,7 @@ public class ElasticsearchRecordConverter {
                     }
 
                 } catch (Throwable ex) {
-                    logger.error("unable to process a field in record : {}, {}", record, ex.getMessage());
+                    logger.error("unable to process a field in record : {}, {}", record, ex.toString());
                 }
             });
 
@@ -97,7 +97,7 @@ public class ElasticsearchRecordConverter {
             document.flush();
             return result;
         } catch (Throwable ex) {
-            logger.error("unable to convert record : {}, {}", record, ex.getMessage());
+            logger.error("unable to convert record : {}, {}", record, ex.toString());
         }
         return null;
     }

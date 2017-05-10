@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import java.io.ByteArrayInputStream
@@ -20,28 +20,25 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
+import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
-import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.{SparkUtils, ZookeeperSink}
+import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, SparkUtils, ZookeeperSink}
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
-import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.kafka.{KafkaUtils, OffsetRange}
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConversions._
 
 
 object AbstractKafkaRecordStream {
@@ -183,6 +180,20 @@ object AbstractKafkaRecordStream {
         .required(false)
         .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
         .build
+
+
+    val KAFKA_MESSAGE_KEY_FIELD = new PropertyDescriptor.Builder()
+        .name("kafka.message.key.field")
+        .description("Sets the field which contains the key of the message " +
+            "which will be sent to the output topic. " +
+            "The default key field is set to record_id" +
+            "If the field doesn't exist or is empty" +
+            "the message key will be null and the partitioner will send the message" +
+            "to a random partition, else the DefaultPartitioner will be used " +
+            "to send the message to a partition id computed from the hash of the key field value")
+        .required(false)
+        .defaultValue(FieldDictionary.RECORD_ID)
+        .build
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -191,9 +202,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     private val logger = LoggerFactory.getLogger(classOf[AbstractKafkaRecordStream])
     protected var kafkaSink: Broadcast[KafkaSink] = null
     protected var zkSink: Broadcast[ZookeeperSink] = null
+    protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
+    protected var engineContext: EngineContext = null
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -212,14 +225,16 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_MESSAGE_KEY_FIELD)
         Collections.unmodifiableList(descriptors)
     }
 
 
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext) = {
+    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
+        this.engineContext = engineContext
         SparkUtils.customizeLogLevels
     }
 
@@ -238,7 +253,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
-            val zkClient = new ZkClient(zkQuorum, 3000, 3000, ZKStringSerializer)
+            val zkClient = new ZkClient(zkQuorum, 30000, 30000, ZKStringSerializer)
+            val keyField = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MESSAGE_KEY_FIELD).asString
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
@@ -251,8 +267,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
-            kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
+            kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams, keyField))
             zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
+            controllerServiceLookupSink = ssc.sparkContext.broadcast(
+                ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
+            )
 
             if (topicAutocreate) {
                 createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
@@ -314,6 +333,12 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         }
     }
 
+    /*
+        override def stop() {
+            kafkaSink.value.shutdown()
+            zkSink.value.shutdown()
+        }
+      */
 
     /**
       * to be overriden by subclasses
@@ -322,25 +347,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
       */
     def process(rdd: RDD[(Array[Byte], Array[Byte])])
 
-
-    /**
-      * build a serializer
-      *
-      * @param inSerializerClass the serializer type
-      * @param schemaContent     an Avro schema
-      * @return the serializer
-      */
-    def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
-        // TODO move this in a utility class
-        inSerializerClass match {
-            case c if c == AbstractKafkaRecordStream.AVRO_SERIALIZER.getValue =>
-                val parser = new Parser
-                val inSchema = parser.parse(schemaContent)
-                new AvroSerializer(inSchema)
-            case c if c == AbstractKafkaRecordStream.JSON_SERIALIZER.getValue => new JsonSerializer()
-            case _ => new KryoSerializer(true)
-        }
-    }
 
     /**
       *
@@ -365,7 +371,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
         }).toList
     }
-
 
 
     /**

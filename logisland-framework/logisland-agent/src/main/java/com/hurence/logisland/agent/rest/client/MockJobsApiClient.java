@@ -17,7 +17,7 @@
 package com.hurence.logisland.agent.rest.client;
 
 import com.hurence.logisland.agent.rest.model.*;
-import com.hurence.logisland.processor.MockProcessor;
+import com.hurence.logisland.util.runner.MockProcessor;
 import com.hurence.logisland.processor.SplitText;
 
 import java.util.Date;

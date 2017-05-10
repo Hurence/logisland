@@ -60,7 +60,7 @@ engine:
 
         # Transform Bro events into Logisland records
         - processor: Bro adaptor
-          component: com.hurence.logisland.processor.bro.BroProcessor
+          component: com.hurence.logisland.processor.bro.ParseBroEvent
           type: parser
           documentation: A processor that transforms Bro events into LogIsland events
 

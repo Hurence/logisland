@@ -235,7 +235,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             /**
              * Verify there is no duplicate ids
              */
-            /*{
+           /* {
                 Set<String> ids = new HashSet<>();
                 Iterator<Record> it = records.iterator();
                 while (it.hasNext()) {
@@ -342,7 +342,7 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         .prepareIndex(docIndex, docType)
                         .setId(record.getId())
                         .setSource(document)
-                        .setOpType(IndexRequest.OpType.CREATE);
+                        .setOpType(IndexRequest.OpType.INDEX);
                 bulkProcessor.add(result.request());
             }
             bulkProcessor.flush();
@@ -372,10 +372,10 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
             }
 
 
-            esClient.get().close();
+           esClient.get().close();
         }
 
-        return failedRecords;
+        return records;
     }
 
 

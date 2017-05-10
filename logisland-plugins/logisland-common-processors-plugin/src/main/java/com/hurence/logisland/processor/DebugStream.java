@@ -96,7 +96,7 @@ public class DebugStream extends AbstractProcessor {
         }
 
 
-        return Collections.emptyList();
+        return collection;
     }
 
 

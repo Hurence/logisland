@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,19 +16,18 @@
 package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 @Tags({"record", "fields", "remove", "delete"})
 @CapabilityDescription("Removes a list of fields defined by a comma separated list of field names")
@@ -49,7 +48,7 @@ public class RemoveFields extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-        try{
+        try {
             List<String> fieldsToRemove = Lists.newArrayList(
                     context.getPropertyValue(FIELDS_TO_REMOVE).asString().split(","));
 
@@ -61,7 +60,7 @@ public class RemoveFields extends AbstractProcessor {
                     }
                 });
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.warn("issue while trying to remove field list {} :  {}",
                     context.getPropertyValue(FIELDS_TO_REMOVE).asString(),
                     ex.toString());
