@@ -188,7 +188,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         Assert.assertEquals(0, elasticsearchClientService.countIndex("bar"));
         elasticsearchClientService.copyIndex(TimeValue.timeValueMinutes(2).toString(), "foo", "bar");
         elasticsearchClientService.flushBulkProcessor();
-        Thread.sleep(500);
+        Thread.sleep(2000);
         elasticsearchClientService.refreshIndex("bar");
         Assert.assertEquals(1, elasticsearchClientService.countIndex("bar"));
 
@@ -255,7 +255,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         elasticsearchClientService.bulkPut(docIndex, docType, document1, Optional.of(docId));
         // Flush the bulk processor :
         elasticsearchClientService.flushBulkProcessor();
-        Thread.sleep(500);
+        Thread.sleep(2000);
         try {
             // Refresh the index :
             elasticsearchClientService.refreshIndex(docIndex);
