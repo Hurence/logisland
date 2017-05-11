@@ -6,11 +6,12 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
-import com.hurence.logisland.record.Record;
-
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -202,6 +203,14 @@ public interface ElasticsearchClientService extends ControllerService {
      * Flush the bulk processor.
      */
     void flushBulkProcessor();
+
+    /**
+     * Get a list of documents based on their index, type and id.
+     *
+     * @param multiGetQueryRecords list of MultiGetQueryRecord to fetch
+     * @return the list of fetched MultiGetResponseRecord records
+     */
+    List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords);
 
     /**
      * Put a given document in elasticsearch bulk processor.

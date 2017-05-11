@@ -21,6 +21,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.elasticsearchasaservice.ElasticsearchClientService;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -224,9 +226,9 @@ public class TestElasticsearch_2_3_3_ClientService {
     }
 
     @Test
-    public void testSinglePut() throws InitializationException, IOException, InterruptedException {
-        final String docIndex = "foo";
-        final String docType = "type1";
+    public void testBulkPut() throws InitializationException, IOException, InterruptedException {
+        final String index = "foo";
+        final String type = "type1";
         final String docId = "id1";
         final String nameKey = "name";
         final String nameValue = "fred";
@@ -237,28 +239,26 @@ public class TestElasticsearch_2_3_3_ClientService {
         document1.put(nameKey, nameValue);
         document1.put(ageKey, ageValue);
 
-        String test = (String) document1.get(nameKey);
-
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor :
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
 
         // Verify the index does not exist
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex(docIndex));
+        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
 
         // Create the index
-        elasticsearchClientService.createIndex(2, 1, docIndex);
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex(docIndex));
+        elasticsearchClientService.createIndex(2, 1, index);
+        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
 
         // Put a document in the bulk processor :
-        elasticsearchClientService.bulkPut(docIndex, docType, document1, Optional.of(docId));
+        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
         // Flush the bulk processor :
         elasticsearchClientService.flushBulkProcessor();
         Thread.sleep(2000);
         try {
             // Refresh the index :
-            elasticsearchClientService.refreshIndex(docIndex);
+            elasticsearchClientService.refreshIndex(index);
         } catch (Exception e) {
             logger.error("Error while refreshing the index : " + e.toString());
         }
@@ -266,7 +266,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         long documentsNumber = 0;
 
         try {
-            documentsNumber = elasticsearchClientService.countIndex(docIndex);
+            documentsNumber = elasticsearchClientService.countIndex(index);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
@@ -274,22 +274,107 @@ public class TestElasticsearch_2_3_3_ClientService {
         Assert.assertEquals(1, documentsNumber);
 
         try {
-            elasticsearchClientService.saveSync(docIndex, docType, document1);
+            elasticsearchClientService.saveSync(index, type, document1);
         } catch (Exception e) {
             logger.error("Error while saving the document in the index : " + e.toString());
         }
 
         try {
-            documentsNumber = elasticsearchClientService.countIndex(docIndex);
+            documentsNumber = elasticsearchClientService.countIndex(index);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
 
         Assert.assertEquals(2, documentsNumber);
 
-        long numberOfHits = elasticsearchClientService.searchNumberOfHits(docIndex, docType, nameKey, nameValue);
+        long numberOfHits = elasticsearchClientService.searchNumberOfHits(index, type, nameKey, nameValue);
 
         Assert.assertEquals(2, numberOfHits);
+
+    }
+
+    @Test
+    public void testMultiGet() throws InitializationException, IOException, InterruptedException {
+        final String index = "index";
+        final String type = "type";
+
+        Map<String, Object> document1 = new HashMap<>();
+        final String docId1 = "id1";
+        document1.put("field_beg_1", "field_beg_1_document1_value");
+        document1.put("field_beg_2", "field_beg_2_document1_value");
+        document1.put("field_beg_3", "field_beg_3_document1_value");
+        document1.put("field_fin_1", "field_fin_1_document1_value");
+        document1.put("field_fin_2", "field_fin_2_document1_value");
+
+        Map<String, Object> document2 = new HashMap<>();
+        final String docId2 = "id2";
+        document2.put("field_beg_1", "field_beg_1_document2_value");
+        document2.put("field_beg_2", "field_beg_2_document2_value");
+        document2.put("field_beg_3", "field_beg_3_document2_value");
+        document2.put("field_fin_1", "field_fin_1_document2_value");
+        document2.put("field_fin_2", "field_fin_2_document2_value");
+
+        Map<String, Object> document3 = new HashMap<>();
+        final String docId3 = "id3";
+        document3.put("field_beg_1", "field_beg_1_document3_value");
+        document3.put("field_beg_2", "field_beg_2_document3_value");
+        // this 3rd field is intentionally removed :
+        // document3.put("field_beg_3", "field_beg_3_document3_value");
+        document3.put("field_fin_1", "field_fin_1_document3_value");
+        document3.put("field_fin_2", "field_fin_2_document3_value");
+
+        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+
+        // create the controller service and link it to the test processor :
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+
+        // Verify the index does not exist
+        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
+
+        // Create the index
+        elasticsearchClientService.createIndex(2, 1, index);
+        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
+
+        // Put documents in the bulk processor :
+        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId1));
+        elasticsearchClientService.bulkPut(index, type, document2, Optional.of(docId2));
+        elasticsearchClientService.bulkPut(index, type, document3, Optional.of(docId3));
+        // Flush the bulk processor :
+        elasticsearchClientService.flushBulkProcessor();
+        Thread.sleep(2000);
+        try {
+            // Refresh the index :
+            elasticsearchClientService.refreshIndex(index);
+        } catch (Exception e) {
+            logger.error("Error while refreshing the index : " + e.toString());
+        }
+
+        long documentsNumber = 0;
+        try {
+            documentsNumber = elasticsearchClientService.countIndex(index);
+        } catch (Exception e) {
+            logger.error("Error while counting the number of documents in the index : " + e.toString());
+        }
+        Assert.assertEquals(3, documentsNumber);
+
+        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+        ArrayList<String> documentIds = new ArrayList<>();
+        String[] fieldsToInclude = {"field_b*", "field*1"};
+        String[] fieldsToExclude = {"field_*2"};
+
+        documentIds.add(docId1);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, documentIds, null, null));
+        List<MultiGetResponseRecord> multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
+
+        multiGetQueryRecords.clear();
+        documentIds.clear();
+
+        documentIds.add(docId1);
+        documentIds.add(docId2);
+        documentIds.add(docId3);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, documentIds, fieldsToInclude, fieldsToExclude));
+        List<MultiGetResponseRecord> multiGetResponseRecords2 = elasticsearchClientService.multiGet(multiGetQueryRecords);
+
 
     }
 

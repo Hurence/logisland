@@ -11,6 +11,8 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.elasticsearchasaservice.ElasticsearchClientService;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.Record;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
@@ -22,6 +24,7 @@ import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRespon
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.*;
+import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -35,6 +38,7 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.source.FetchSourceContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -349,6 +353,45 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
             result.setId(OptionalId.get());
         }
         bulkProcessor.add(result.request());
+    }
+
+    @Override
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
+
+        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+
+        MultiGetRequestBuilder multiGetRequestBuilder = esClient.prepareMultiGet();
+
+        for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
+        {
+            String index = multiGetQueryRecord.getIndexName();
+            String type = multiGetQueryRecord.getTypeName();
+            List<String> documentIds = multiGetQueryRecord.getDocumentIds();
+            String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
+            String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
+            if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
+                for (String documentId : documentIds) {
+                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
+                    item.fetchSourceContext(new FetchSourceContext(fieldsToInclude, fieldsToExclude));
+                    multiGetRequestBuilder.add(item);
+                }
+            } else {
+                multiGetRequestBuilder.add(index, type, documentIds);
+            }
+        }
+        MultiGetResponse multiGetItemResponses = multiGetRequestBuilder.get();
+
+        for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
+            GetResponse response = itemResponse.getResponse();
+            if (response.isExists()) {
+                Map<String,Object> responseMap = response.getSourceAsMap();
+                Map<String,String> retrievedFields = new HashMap<>();
+                responseMap.forEach((k,v) -> retrievedFields.put(k,v.toString()));
+                multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
+            }
+        }
+
+        return multiGetResponseRecords;
     }
 
     @Override
