@@ -1,6 +1,5 @@
 package com.hurence.logisland.service.elasticsearchasaservice;
 
-import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
@@ -54,14 +53,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Tags({ "hbase", "client"})
-@CapabilityDescription("Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing " +
-        "a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files " +
-        "are provided, they will be loaded first, and the values of the additional properties will override the values from " +
-        "the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase " +
-        "configuration.")
-@DynamicProperty(name="The name of an HBase configuration property.", value="The value of the given HBase configuration property.",
-        description="These properties will be set on the HBase configuration after loading any provided configuration files.")
+@Tags({ "elasticsearch", "client"})
+@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 2.3.3.")
 public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
     protected volatile Client esClient;

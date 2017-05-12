@@ -1,6 +1,8 @@
 package com.hurence.logisland.processor.elasticsearchasaservice;
 
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -12,40 +14,57 @@ import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
 
+@Tags({"elasticsearch"})
+@CapabilityDescription("Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.\n" +
+        "Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :\n" +
+        "- index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
+        "- type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.\n" +
+        "- ids (ArrayList<String>) : list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
+        "- includes (ArrayList<String>) : list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        "- excludes (ArrayList<String>) : list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        "\n" +
+        "Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :\n" +
+        "- index (same field name as the incoming record) : name of the elasticsearch index.\n" +
+        "- type (same field name as the incoming record) : name of the elasticsearch type.\n" +
+        "- id (same field name as the incoming record) : retrieved document id.\n" +
+        "- a list of String fields containing :\n" +
+        "   * field name : the retrieved field name\n" +
+        "   * field value : the retrieved field value"
+)
 public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
 {
 
     public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
             .name("es.index.field")
-            .description("the name of the record field containing es index name to use in multiget query")
+            .description("the name of the incoming records field containing es index name to use in multiget query. ")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ES_TYPE_FIELD = new PropertyDescriptor.Builder()
             .name("es.type.field")
-            .description("the name of the record field containing es type name to use in multiget query")
+            .description("the name of the incoming records field containing es type name to use in multiget query")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ES_IDS_FIELD = new PropertyDescriptor.Builder()
             .name("es.ids.field")
-            .description("the name of the record field containing es document Ids to use in multiget query")
+            .description("the name of the incoming records field containing es document Ids to use in multiget query")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ES_INCLUDES_FIELD = new PropertyDescriptor.Builder()
             .name("es.includes.field")
-            .description("the name of the record field containing es includes to use in multiget query")
+            .description("the name of the incoming records field containing es includes to use in multiget query")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor ES_EXCLUDES_FIELD = new PropertyDescriptor.Builder()
             .name("es.excludes.field")
-            .description("the name of the record field containing es excludes to use in multiget query")
+            .description("the name of the incoming records field containing es excludes to use in multiget query")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();

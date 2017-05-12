@@ -1,6 +1,8 @@
 package com.hurence.logisland.processor.elasticsearchasaservice;
 
 
+import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -12,6 +14,8 @@ import org.joda.time.DateTime;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Tags({"elasticsearch"})
+@CapabilityDescription("Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor")
 public class PutElasticsearch extends AbstractElasticsearchProcessor
 {
 
