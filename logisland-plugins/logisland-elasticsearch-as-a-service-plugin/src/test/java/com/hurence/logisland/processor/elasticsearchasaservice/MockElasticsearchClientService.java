@@ -76,7 +76,17 @@ public class MockElasticsearchClientService extends AbstractControllerService im
 
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
-        return new ArrayList<>();
+
+        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+        multiGetQueryRecords.forEach(multiGetQueryRecord -> {
+            String index = multiGetQueryRecord.getIndexName();
+            String type = multiGetQueryRecord.getTypeName();
+            multiGetQueryRecord.getDocumentIds().forEach(id -> {
+                MultiGetResponseRecord multiGetResponseRecord = new MultiGetResponseRecord(index, type, id, null);
+                multiGetResponseRecords.add(multiGetResponseRecord);
+                    });
+                });
+        return multiGetResponseRecords;
     }
     @Override
     public boolean existsIndex(String indexName) throws IOException {

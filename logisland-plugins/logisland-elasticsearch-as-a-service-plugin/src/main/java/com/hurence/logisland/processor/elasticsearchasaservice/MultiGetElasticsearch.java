@@ -132,9 +132,12 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 outputRecord.setStringField(indexFieldName, responseRecord.getIndexName());
                 outputRecord.setStringField(typeFieldName, responseRecord.getTypeName());
                 outputRecord.setStringField(idsFieldName, responseRecord.getDocumentId());
-                responseRecord.getRetrievedFields().forEach((k,v) -> {
-                    outputRecord.setStringField(k.toString(), v.toString());
-                });
+                if(responseRecord.getRetrievedFields() != null)
+                {
+                    responseRecord.getRetrievedFields().forEach((k,v) -> {
+                        outputRecord.setStringField(k.toString(), v.toString());
+                    });
+                }
                 outputRecords.add(outputRecord);
             });
         }
