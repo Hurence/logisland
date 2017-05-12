@@ -1,10 +1,12 @@
 package com.hurence.logisland.processor.elasticsearchasaservice;
 
 
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.validator.StandardValidators;
 import org.joda.time.DateTime;
 
 import java.text.SimpleDateFormat;
@@ -12,6 +14,51 @@ import java.util.*;
 
 public class PutElasticsearch extends AbstractElasticsearchProcessor
 {
+
+    public static final PropertyDescriptor DEFAULT_INDEX = new PropertyDescriptor.Builder()
+            .name("default.index")
+            .description("The name of the index to insert into")
+            .required(true)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor DEFAULT_TYPE = new PropertyDescriptor.Builder()
+            .name("default.type")
+            .description("The type of this document (used by Elasticsearch for indexing and searching)")
+            .required(true)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final AllowableValue NO_DATE_SUFFIX = new AllowableValue("no", "No date",
+            "no date added to default index");
+
+    public static final AllowableValue TODAY_DATE_SUFFIX = new AllowableValue("today", "Today's date",
+            "today's date added to default index");
+
+    public static final AllowableValue YESTERDAY_DATE_SUFFIX = new AllowableValue("yesterday", "yesterday's date",
+            "yesterday's date added to default index");
+
+    public static final PropertyDescriptor TIMEBASED_INDEX = new PropertyDescriptor.Builder()
+            .name("timebased.index")
+            .description("do we add a date suffix")
+            .required(true)
+            .allowableValues(NO_DATE_SUFFIX, TODAY_DATE_SUFFIX, YESTERDAY_DATE_SUFFIX)
+            .defaultValue(NO_DATE_SUFFIX.getValue())
+            .build();
+
+    public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
+            .name("es.index.field")
+            .description("the name of the event field containing es index name => will override index value if set")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor ES_TYPE_FIELD = new PropertyDescriptor.Builder()
+            .name("es.type.field")
+            .description("the name of the event field containing es doc type => will override type value if set")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {

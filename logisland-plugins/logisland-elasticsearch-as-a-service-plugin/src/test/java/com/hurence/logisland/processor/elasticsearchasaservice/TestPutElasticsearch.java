@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.hurence.logisland.processor.elasticsearchasaservice.AbstractElasticsearchProcessor.TODAY_DATE_SUFFIX;
+import static com.hurence.logisland.processor.elasticsearchasaservice.PutElasticsearch.TODAY_DATE_SUFFIX;
 
 
 public class TestPutElasticsearch {

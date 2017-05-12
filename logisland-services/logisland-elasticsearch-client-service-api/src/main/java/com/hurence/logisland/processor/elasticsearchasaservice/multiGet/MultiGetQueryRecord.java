@@ -27,7 +27,11 @@ public class MultiGetQueryRecord {
     private final String[] fieldsToInclude;
     private final String[] fieldsToExclude;
 
-    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds, final String[] fieldsToInclude, final String[] fieldsToExclude) {
+    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds, final String[] fieldsToInclude, final String[] fieldsToExclude) throws InvalidMultiGetQueryRecordException {
+        if(indexName == null)
+            throw new InvalidMultiGetQueryRecordException("The index name cannot be null");
+        if(documentIds == null)
+            throw new InvalidMultiGetQueryRecordException("The list of document ids cannot be null");
         this.indexName = indexName;
         this.typeName = typeName;
         this.documentIds = documentIds;
@@ -35,7 +39,7 @@ public class MultiGetQueryRecord {
         this.fieldsToExclude = fieldsToExclude;
     }
 
-    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds) {
+    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds)  throws InvalidMultiGetQueryRecordException {
         this(indexName, typeName, documentIds, null, null);
     }
 

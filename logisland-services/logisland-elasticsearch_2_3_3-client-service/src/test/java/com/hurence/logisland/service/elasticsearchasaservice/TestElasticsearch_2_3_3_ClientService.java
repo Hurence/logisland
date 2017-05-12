@@ -21,6 +21,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.processor.elasticsearchasaservice.ElasticsearchClientService;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -294,7 +295,7 @@ public class TestElasticsearch_2_3_3_ClientService {
     }
 
     @Test
-    public void testMultiGet() throws InitializationException, IOException, InterruptedException {
+    public void testMultiGet() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
         final String index1 = "index1";
         final String index2 = "index2";
         final String type1 = "type1";
@@ -377,7 +378,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         String[] fieldsToInclude = {"field_b*", "field*1"};
         String[] fieldsToExclude = {"field_*2"};
 
-        // Test 1 MultiGetQueryRecord, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
+        // Test : 1 MultiGetQueryRecord record, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
         documentIds.add(docId1);
         multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
@@ -393,7 +394,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         documentIds.clear();
         multiGetResponseRecords.clear();
 
-        // Test 1 MultiGetQueryRecord, with 1 index, 0 type, 3 ids, WITH include, WITH exclude :
+        // Test : 1 MultiGetQueryRecord record, with 1 index, 0 type, 3 ids, WITH include, WITH exclude :
         documentIds.add(docId1);
         documentIds.add(docId2);
         documentIds.add(docId3);
@@ -425,7 +426,7 @@ public class TestElasticsearch_2_3_3_ClientService {
         documentIds.clear();
         multiGetResponseRecords.clear();
 
-        // Test 2 MultiGetQueryRecord :
+        // Test : 2 MultiGetQueryRecord records :
         //    - 1st : 1 index (index1), 1 type, 2 ids, WITH include, WITH exclude    --> expecting : 2 docs retrieved (from index1), 3 fields each (except doc3 : 2 fields)
         //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
         documentIds.add(docId1);
