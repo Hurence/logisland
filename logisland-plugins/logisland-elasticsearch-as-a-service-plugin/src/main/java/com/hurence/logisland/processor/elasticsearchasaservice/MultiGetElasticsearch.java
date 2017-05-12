@@ -104,16 +104,29 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 }
 
                 String index = record.getField(indexFieldName).asString();
-                String type = record.getField(typeFieldName).asString();
+                String type = record.getField(typeFieldName) != null ? record.getField(typeFieldName).asString() : null;
                 List<String> ids = new ArrayList<>((List<String>)record.getField(idsFieldName).getRawValue());
-                List<String> includesList = new ArrayList<>((List<String>)record.getField(includesFieldName).getRawValue());
-                List<String> excludesList = new ArrayList<>((List<String>)record.getField(excludesFieldName).getRawValue());
+                List<String> includesList;
+                String[] includesArray;
+                if(record.getField(includesFieldName) != null && record.getField(includesFieldName).getRawValue() != null)
+                {
+                    includesList = new ArrayList<>((List<String>)record.getField(includesFieldName).getRawValue());
+                    includesArray = new String[includesList.size()];
+                    includesArray = includesList.toArray(includesArray);
+                } else {
+                    includesArray = null;
+                }
 
-                String[] includesArray = new String[includesList.size()];
-                includesArray = includesList.toArray(includesArray);
-
-                String[] excludesArray = new String[excludesList.size()];
-                excludesArray = excludesList.toArray(excludesArray);
+                List<String> excludesList;
+                String[] excludesArray;
+                if(record.getField(excludesFieldName) != null && record.getField(excludesFieldName).getRawValue() != null)
+                {
+                    excludesList = new ArrayList<>((List<String>)record.getField(excludesFieldName).getRawValue());
+                    excludesArray = new String[excludesList.size()];
+                    excludesArray = excludesList.toArray(excludesArray);
+                } else {
+                    excludesArray = null;
+                }
 
                 try {
                     multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, ids, includesArray, excludesArray));
