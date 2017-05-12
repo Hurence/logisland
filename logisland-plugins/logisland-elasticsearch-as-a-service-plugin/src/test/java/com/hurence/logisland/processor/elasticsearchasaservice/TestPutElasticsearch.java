@@ -28,7 +28,7 @@ public class TestPutElasticsearch {
     private static Logger logger = LoggerFactory.getLogger(TestPutElasticsearch.class);
 
     @Test
-    public void testTwoRecords() throws IOException, InitializationException {
+    public void testPutElasticsearchTwoRecords() throws IOException, InitializationException {
 
         final String DEFAULT_INDEX = "test_index";
         final String DEFAULT_TYPE = "cisco_record";

@@ -106,17 +106,17 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 String index = record.getField(indexFieldName).asString();
                 String type = record.getField(typeFieldName).asString();
                 List<String> ids = new ArrayList<>((List<String>)record.getField(idsFieldName).getRawValue());
+                List<String> includesList = new ArrayList<>((List<String>)record.getField(includesFieldName).getRawValue());
+                List<String> excludesList = new ArrayList<>((List<String>)record.getField(excludesFieldName).getRawValue());
 
-                int includesLength = ((String[])record.getField(includesFieldName).getRawValue()).length;
-                String[] includes = new String[includesLength];
-                System.arraycopy(record.getField(includesFieldName).getRawValue(), 0, includes, 0, includesLength);
+                String[] includesArray = new String[includesList.size()];
+                includesArray = includesList.toArray(includesArray);
 
-                int excludesLength = ((String[])record.getField(excludesFieldName).getRawValue()).length;
-                String[] excludes = new String[excludesLength];
-                System.arraycopy(record.getField(excludesFieldName).getRawValue(), 0, excludes, 0, excludesLength);
+                String[] excludesArray = new String[excludesList.size()];
+                excludesArray = excludesList.toArray(excludesArray);
 
                 try {
-                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, ids, includes, excludes));
+                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, ids, includesArray, excludesArray));
                 } catch (InvalidMultiGetQueryRecordException e) {
                     StandardRecord outputRecord = new StandardRecord(record);
                     outputRecord.addError(ProcessError.BAD_RECORD.getName(), e.getMessage());

@@ -2,6 +2,8 @@ package com.hurence.logisland.processor.elasticsearchasaservice;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.Record;
 
 import java.io.IOException;
@@ -72,6 +74,10 @@ public class MockElasticsearchClientService extends AbstractControllerService im
         this.mapDocuments.add(mapDocument);
     }
 
+    @Override
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
+        return new ArrayList<>();
+    }
     @Override
     public boolean existsIndex(String indexName) throws IOException {
 
