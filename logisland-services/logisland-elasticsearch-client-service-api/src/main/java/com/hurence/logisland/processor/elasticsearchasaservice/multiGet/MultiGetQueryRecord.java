@@ -35,6 +35,10 @@ public class MultiGetQueryRecord {
         this.fieldsToExclude = fieldsToExclude;
     }
 
+    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds) {
+        this(indexName, typeName, documentIds, null, null);
+    }
+
     public String getIndexName() {
         return indexName;
     }
