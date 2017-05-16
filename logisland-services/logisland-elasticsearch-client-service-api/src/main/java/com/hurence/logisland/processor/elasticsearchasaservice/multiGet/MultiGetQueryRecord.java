@@ -30,6 +30,8 @@ public class MultiGetQueryRecord {
     public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds, final String[] fieldsToInclude, final String[] fieldsToExclude) throws InvalidMultiGetQueryRecordException {
         if(indexName == null)
             throw new InvalidMultiGetQueryRecordException("The index name cannot be null");
+        if(indexName != null && indexName.isEmpty())
+            throw new InvalidMultiGetQueryRecordException("The index name cannot be empty");
         if(documentIds == null)
             throw new InvalidMultiGetQueryRecordException("The list of document ids cannot be null");
         this.indexName = indexName;

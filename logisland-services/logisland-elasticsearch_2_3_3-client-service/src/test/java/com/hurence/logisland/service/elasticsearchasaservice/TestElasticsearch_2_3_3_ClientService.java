@@ -378,6 +378,16 @@ public class TestElasticsearch_2_3_3_ClientService {
         String[] fieldsToInclude = {"field_b*", "field*1"};
         String[] fieldsToExclude = {"field_*2"};
 
+        // Make sure a dummy query returns no result :
+        documentIds.add(docId1);
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "", documentIds,new String[]{"dummy"},new String[]{}));
+        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
+        Assert.assertEquals(0, multiGetResponseRecords.size()); // number of documents retrieved
+
+        multiGetQueryRecords.clear();
+        documentIds.clear();
+        multiGetResponseRecords.clear();
+
         // Test : 1 MultiGetQueryRecord record, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
         documentIds.add(docId1);
         multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds));
@@ -452,4 +462,38 @@ public class TestElasticsearch_2_3_3_ClientService {
 
     }
 
+    @Test
+    public void testMultiGetInvalidRecords() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
+
+        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+
+        String errorMessage ="";
+
+        // Validate null index behaviour :
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord(null, null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+            Assert.assertEquals(errorMessage,"The index name cannot be null");
+
+        // Validate empty index behaviour :
+        try {
+        multiGetQueryRecords.add(new MultiGetQueryRecord("", null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals(errorMessage,"The index name cannot be empty");
+
+        // Validate null documentIds behaviour :
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals(errorMessage,"The list of document ids cannot be null");
+
+        // Make sure no invalid MultiGetQueryRecord has been added to multiGetQueryRecords list :
+        Assert.assertEquals(0, multiGetQueryRecords.size());
+    }
 }
