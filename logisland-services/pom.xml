@@ -17,6 +17,7 @@
         <module>logisland-hbase_1_1_2-client-service</module>
         <module>logisland-elasticsearch-client-service-api</module>
         <module>logisland-elasticsearch_2_3_3-client-service</module>
+        <module>logisland-elasticsearch_2_4_0-client-service</module>
     </modules>
 
 
