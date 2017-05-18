@@ -41,6 +41,11 @@ to build from the source just clone and package
     mvn install -Dhdp=2.4
 
 
+If some dependencies are not available in IntelliJ IDEA, try the following command
+   
+ .. code-bloc::
+  
+    mvn idea:idea -Phdp-2.4,hdp-2.5 
 
 Basic Workflow
 --------------
