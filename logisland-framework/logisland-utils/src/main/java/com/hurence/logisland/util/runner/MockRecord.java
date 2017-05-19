@@ -94,6 +94,18 @@ public class MockRecord extends StandardRecord {
 		//assertedFields.add(fieldName);
     }
 
+    public void assertStringFieldStartWith(final String fieldName, final String expectedValue) {
+        Assert.assertNotNull(getField(fieldName).asString());
+        String msg = "'" + getField(fieldName).asString()  +"' does not start by '" + expectedValue +"'";
+        Assert.assertTrue(msg, getField(fieldName).asString().startsWith(expectedValue));
+    }
+
+    public void assertStringFieldEndWith(final String fieldName, final String expectedValue) {
+        Assert.assertNotNull(getField(fieldName).asString());
+        String msg = "'" + getField(fieldName).asString()  +"' does not end by '" + expectedValue +"'";
+        Assert.assertTrue(msg, getField(fieldName).asString().endsWith(expectedValue));
+    }
+
 
     public void assertRecordSizeEquals(final int size) {
         Assert.assertEquals(size, size());
