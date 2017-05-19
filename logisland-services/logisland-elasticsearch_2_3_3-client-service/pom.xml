@@ -80,8 +80,9 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>${shade-plugin.version}</version>
+                <version>4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -114,6 +115,7 @@
                                     <include>org.apache.httpcomponents:*</include>
                                     <include>commons-codec:*</include>
                                     <include>org.jboss.netty:*</include>
+                                    <include>com.ning:*</include>
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -153,7 +155,7 @@
                             <relocations>
                                 <relocation>
                                     <pattern>io</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.io</shadedPattern>
+                                    <shadedPattern>${shaded.package}.io</shadedPattern>
                                 </relocation>
 
 

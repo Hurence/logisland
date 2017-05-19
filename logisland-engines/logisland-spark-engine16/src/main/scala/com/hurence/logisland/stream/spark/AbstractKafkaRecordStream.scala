@@ -329,7 +329,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             kafkaStream.foreachRDD(rdd => process(rdd))
         } catch {
             case ex: Throwable => logger.error("something bad happened, please check Kafka or Zookeeper health : {}",
-                ex.toString)
+                ex)
         }
     }
 
