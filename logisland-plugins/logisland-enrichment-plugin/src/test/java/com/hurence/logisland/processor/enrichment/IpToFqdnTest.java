@@ -31,7 +31,7 @@ public class IpToFqdnTest {
 
     public static final long TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND = 4000;
     public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME = 7*3000;
-    public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME = 10;
+    public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME = 30;
 
     public static final long TIME_PROCESSING_INVALID_IP_MAX_IN_MILLISECOND = 100;
     public static final long TIME_PROCESSING_UNAUTHORIZED_RESOLUTION_MAX_IN_MILLISECOND = 4000;
@@ -88,7 +88,7 @@ public class IpToFqdnTest {
 
         long lastedInMilliseconds = end - start;
         String msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME +
-                "' seconds. It lasted '" + lastedInMilliseconds + "' seconds.";
+                "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
         Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME);
 
 
@@ -106,7 +106,7 @@ public class IpToFqdnTest {
 
         lastedInMilliseconds = end - start;
         msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME +
-                "' seconds. It lasted '" + lastedInMilliseconds + "' seconds.";
+                "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
         Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME);
     }
 
@@ -143,7 +143,7 @@ public class IpToFqdnTest {
         //less than 1 second to treat those ten records
         long lastedInMilliseconds = end - start;
         String msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND +
-                "' seconds. It lasted '" + lastedInMilliseconds + "' seconds.";
+                "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
         Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND);
     }
 
