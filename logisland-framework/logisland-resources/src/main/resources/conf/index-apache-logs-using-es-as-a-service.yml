@@ -41,7 +41,7 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearchasaservice.Elasticsearch_2_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
       type: service
       documentation: elasticsearch 2.4.0 service implementation
       configuration:
@@ -126,7 +126,7 @@ engine:
 
         # put to elasticsearch
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearchasaservice.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:

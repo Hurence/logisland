@@ -42,7 +42,7 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearchasaservice.Elasticsearch_2_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
       type: service
       documentation: elasticsearch 2.4.0 service implementation
       configuration:
@@ -81,7 +81,7 @@ engine:
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearchasaservice.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:

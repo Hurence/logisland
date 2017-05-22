@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Tags({"record", "elasticsearch", "sink", "record"})
 @CapabilityDescription("This is a processor that puts records to ES")
-public class PutElasticsearch extends AbstractElasticsearchProcessor {
+public class PutElasticsearch extends AbstractESProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
 
