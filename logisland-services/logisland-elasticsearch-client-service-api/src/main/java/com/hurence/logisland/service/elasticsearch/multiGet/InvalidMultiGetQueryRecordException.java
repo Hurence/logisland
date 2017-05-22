@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.elasticsearch.multiGet;
+package com.hurence.logisland.service.elasticsearch.multiGet;
 
 /**
  * Indicates an invalid MultiGetQueryRecord

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hurence.logisland.processor.elasticsearch.multiGet;
+package com.hurence.logisland.service.elasticsearch.multiGet;
 
 
 import java.util.Map;

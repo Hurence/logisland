@@ -1,15 +1,15 @@
-package com.hurence.logisland.processor.hbase;
+package com.hurence.logisland.service.hbase;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.processor.hbase.put.PutColumn;
-import com.hurence.logisland.processor.hbase.put.PutRecord;
-import com.hurence.logisland.processor.hbase.scan.Column;
-import com.hurence.logisland.processor.hbase.scan.ResultHandler;
-import com.hurence.logisland.processor.hbase.validate.ConfigFilesValidator;
+import com.hurence.logisland.service.hbase.put.PutColumn;
+import com.hurence.logisland.service.hbase.put.PutRecord;
+import com.hurence.logisland.service.hbase.scan.Column;
+import com.hurence.logisland.service.hbase.scan.ResultHandler;
+import com.hurence.logisland.service.hbase.validate.ConfigFilesValidator;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.io.IOException;

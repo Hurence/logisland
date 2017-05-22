@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.hbase.scan;
+package com.hurence.logisland.service.hbase.scan;
 
 public class ResultCell {
 

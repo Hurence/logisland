@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.hbase.validate;
+package com.hurence.logisland.service.hbase.validate;
 
 
 import com.hurence.logisland.validator.StandardValidators;

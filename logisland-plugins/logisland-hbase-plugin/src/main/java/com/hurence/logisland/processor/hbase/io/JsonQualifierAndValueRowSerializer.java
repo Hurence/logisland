@@ -1,7 +1,7 @@
 
 package com.hurence.logisland.processor.hbase.io;
 
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
+import com.hurence.logisland.service.hbase.scan.ResultCell;
 import com.hurence.logisland.processor.hbase.util.RowSerializerUtil;
 import org.apache.commons.lang3.StringEscapeUtils;
 

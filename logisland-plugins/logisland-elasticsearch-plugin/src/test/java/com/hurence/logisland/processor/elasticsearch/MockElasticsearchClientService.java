@@ -2,8 +2,9 @@ package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.processor.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.processor.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
+import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.Record;
 
 import java.io.IOException;

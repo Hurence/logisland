@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.hbase.put;
+package com.hurence.logisland.service.hbase.put;
 
 /**
  * Encapsulates the information for one column of a put operation.

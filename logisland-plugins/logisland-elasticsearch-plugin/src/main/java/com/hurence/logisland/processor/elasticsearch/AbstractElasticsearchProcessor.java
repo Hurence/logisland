@@ -21,6 +21,7 @@ import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 
 
 public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
