@@ -14,6 +14,7 @@ import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGet
 import com.hurence.logisland.processor.elasticsearchasaservice.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.Record;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.ActionRequestValidationException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -372,15 +373,23 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
                 multiGetRequestBuilder.add(index, type, documentIds);
             }
         }
-        MultiGetResponse multiGetItemResponses = multiGetRequestBuilder.get();
 
-        for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
-            GetResponse response = itemResponse.getResponse();
-            if (response != null && response.isExists()) {
-                Map<String,Object> responseMap = response.getSourceAsMap();
-                Map<String,String> retrievedFields = new HashMap<>();
-                responseMap.forEach((k,v) -> retrievedFields.put(k,v.toString()));
-                multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
+        MultiGetResponse multiGetItemResponses = null;
+        try {
+            multiGetItemResponses = multiGetRequestBuilder.get();
+        } catch (ActionRequestValidationException e) {
+            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
+        }
+
+        if (multiGetItemResponses != null) {
+            for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
+                GetResponse response = itemResponse.getResponse();
+                if (response != null && response.isExists()) {
+                    Map<String,Object> responseMap = response.getSourceAsMap();
+                    Map<String,String> retrievedFields = new HashMap<>();
+                    responseMap.forEach((k,v) -> retrievedFields.put(k,v.toString()));
+                    multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
+                }
             }
         }
 

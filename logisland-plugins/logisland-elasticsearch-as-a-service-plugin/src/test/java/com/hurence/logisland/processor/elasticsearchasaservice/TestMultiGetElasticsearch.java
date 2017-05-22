@@ -1,7 +1,6 @@
 package com.hurence.logisland.processor.elasticsearchasaservice;
 
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -11,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,16 +55,16 @@ public class TestMultiGetElasticsearch {
         final Record inputRecord1 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         final Record inputRecord2 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         runner.enqueue(inputRecord1);
         runner.enqueue(inputRecord2);
@@ -118,55 +115,55 @@ public class TestMultiGetElasticsearch {
         final Record inputRecord1 = new StandardRecord("es_multiget")
                 // index field is intentionally missing : .setStringField(ES_INDEX_FIELD, index1)
                 .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         // index field empty --> 1 output error record
         final Record inputRecord2 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, "")
                 .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         // index field null --> 1 output error record
         final Record inputRecord3 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, null)
                 .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         // type field missing --> no problem --> 3 document ids <==> 3 output records
         final Record inputRecord4 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 // type field is intentionally missing : .setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*, field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         // document ids field missing --> 1 output error record
         final Record inputRecord5 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 .setStringField(ES_TYPE_FIELD, type1)
-                // document ids field is intentionally missing : .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_b*", "field*1")))
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList("field_*2")));
+                // document ids field is intentionally missing : .setField(ES_IDS_FIELD, docId1 + "," + docId2)
+                .setStringField(ES_INCLUDES_FIELD, "field_b*,field*1")
+                .setStringField(ES_EXCLUDES_FIELD, "field_*2");
 
         // includes and excludes fields missing --> no problem --> 2 document ids <==> 2 output records
         final Record inputRecord6 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 .setStringField(ES_TYPE_FIELD, type2)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2)));
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2);
 
         // includes and excludes fields null and type field missing --> no problem --> 3 document ids <==> 3 output records
         final Record inputRecord7 = new StandardRecord("es_multiget")
                 .setStringField(ES_INDEX_FIELD, index1)
                 //.setStringField(ES_TYPE_FIELD, type1)
-                .setField(ES_IDS_FIELD, FieldType.ARRAY, new ArrayList<>(Arrays.asList(docId1, docId2, docId3)))
-                .setField(ES_INCLUDES_FIELD, FieldType.ARRAY, null)
-                .setField(ES_EXCLUDES_FIELD, FieldType.ARRAY, null);
+                .setStringField(ES_IDS_FIELD, docId1 + "," + docId2 + "," + docId3)
+                .setStringField(ES_INCLUDES_FIELD, null)
+                .setStringField(ES_EXCLUDES_FIELD, null);
 
         runner.enqueue(inputRecord1);
         runner.enqueue(inputRecord2);
