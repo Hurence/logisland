@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Tags({"record", "elasticsearch", "sink", "record"})
 @CapabilityDescription("This is a processor that puts records to ES")
-public class PutElasticsearch extends AbstractElasticsearchProcessor {
+public class PutElasticsearch extends AbstractESProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(PutElasticsearch.class);
 
@@ -345,10 +345,14 @@ public class PutElasticsearch extends AbstractElasticsearchProcessor {
                         .setOpType(IndexRequest.OpType.INDEX);
                 bulkProcessor.add(result.request());
             }
+
+            /**
+             * flush remaining items
+             */
             bulkProcessor.flush();
 
             /**
-             * fluch remaining items
+             * close the bulk Processor
              */
             try {
                 if (!bulkProcessor.awaitClose(10, TimeUnit.SECONDS)) {

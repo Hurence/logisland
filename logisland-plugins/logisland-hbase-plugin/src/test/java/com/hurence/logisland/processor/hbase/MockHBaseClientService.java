@@ -2,12 +2,12 @@ package com.hurence.logisland.processor.hbase;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.processor.hbase.put.PutColumn;
-import com.hurence.logisland.processor.hbase.put.PutRecord;
-import com.hurence.logisland.processor.hbase.scan.Column;
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
-import com.hurence.logisland.processor.hbase.scan.ResultHandler;
-import org.apache.hadoop.hbase.util.Bytes;
+import com.hurence.logisland.service.hbase.HBaseClientService;
+import com.hurence.logisland.service.hbase.put.PutColumn;
+import com.hurence.logisland.service.hbase.put.PutRecord;
+import com.hurence.logisland.service.hbase.scan.Column;
+import com.hurence.logisland.service.hbase.scan.ResultCell;
+import com.hurence.logisland.service.hbase.scan.ResultHandler;
 
 
 import java.io.IOException;
@@ -163,7 +163,7 @@ public class MockHBaseClientService extends AbstractControllerService implements
 
     @Override
     public byte[] toBytesBinary(String s) {
-       return Bytes.toBytesBinary(s);
+       return s.getBytes();
     }
 
 

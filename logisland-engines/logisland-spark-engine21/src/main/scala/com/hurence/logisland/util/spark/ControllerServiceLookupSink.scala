@@ -13,6 +13,8 @@ class ControllerServiceLookupSink(createControllerServiceLookup: () => Controlle
     lazy val controllerServiceLookup = createControllerServiceLookup()
 
 
+    def getControllerServiceLookup(): ControllerServiceLookup = controllerServiceLookup
+
     def getControllerService(serviceIdentifier: String): ControllerService =
         controllerServiceLookup.getControllerService(serviceIdentifier)
 
@@ -26,7 +28,7 @@ class ControllerServiceLookupSink(createControllerServiceLookup: () => Controlle
 object ControllerServiceLookupSink {
     def apply(configs: util.Collection[ControllerServiceConfiguration]): ControllerServiceLookupSink = {
         val f = () => {
-            new StandardControllerServiceLookup(configs)
+           new StandardControllerServiceLookup(configs)
 
 
         }

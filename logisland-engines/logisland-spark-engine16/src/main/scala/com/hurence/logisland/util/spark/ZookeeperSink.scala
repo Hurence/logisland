@@ -125,11 +125,18 @@ class ZookeeperSink(createZKClient: () => ZkClient) extends Serializable {
                 case Some(metadata) =>
                     metadata.leader match {
                         case Some(leader) =>
-                            val consumer = new kafka.consumer.SimpleConsumer(leader.host, leader.port, 10000, 100000, clientId)
-                            val topicAndPartition = TopicAndPartition(topic, partitionId)
-                            val request = OffsetRequest(Map(topicAndPartition -> PartitionOffsetRequestInfo(time, nOffsets)))
-                            val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
-                            partitionId -> Some(offsets.head)
+                            try{
+                                val consumer = new kafka.consumer.SimpleConsumer(leader.host, leader.port, 10000, 100000, clientId)
+                                val topicAndPartition = TopicAndPartition(topic, partitionId)
+                                val request = OffsetRequest(Map(topicAndPartition -> PartitionOffsetRequestInfo(time, nOffsets)))
+                                val offsets = consumer.getOffsetsBefore(request).partitionErrorAndOffsets(topicAndPartition).offsets
+                                partitionId -> Some(offsets.head)
+                            }catch {
+                                case ex:Throwable =>
+                                    logger.warn("unable to get offsets for partition %d".format(partitionId))
+                                    partitionId -> None
+                            }
+
                         case None =>
                             logger.info("partition %d does not have a leader. Skip getting offsets".format(partitionId))
                             partitionId -> None

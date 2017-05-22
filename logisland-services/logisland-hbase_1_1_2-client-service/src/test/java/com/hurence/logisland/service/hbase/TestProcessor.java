@@ -4,7 +4,6 @@ package com.hurence.logisland.service.hbase;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.hbase.HBaseClientService;
 import com.hurence.logisland.record.Record;
 
 import java.util.ArrayList;
