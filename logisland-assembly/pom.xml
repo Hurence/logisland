@@ -81,7 +81,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-scripting-processors-plugin</artifactId>
+            <artifactId>logisland-scripting-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
