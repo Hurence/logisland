@@ -19,9 +19,9 @@ import java.util.*;
         "Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :\n" +
         "- index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
         "- type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.\n" +
-        "- ids (ArrayList<String>) : list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
-        "- includes (ArrayList<String>) : list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
-        "- excludes (ArrayList<String>) : list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        "- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
+        "- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
+        "- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.\n" +
         "\n" +
         "Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :\n" +
         "- index (same field name as the incoming record) : name of the elasticsearch index.\n" +
@@ -104,43 +104,59 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
             String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
 
             List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
-            List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
 
             for (Record record : records) {
 
-                if(!record.hasField(indexFieldName) || record.getField(indexFieldName) == null || !record.getField(indexFieldName).getType().equals(FieldType.STRING) || record.getField(indexFieldName).getRawValue() == null || record.getField(indexFieldName).getRawValue().toString().isEmpty() ) {
+                if(     !record.hasField(indexFieldName)  // record doesn't contain index field
+                        || record.getField(indexFieldName) == null // index field is null
+                        || !record.getField(indexFieldName).getType().equals(FieldType.STRING) // index field is not of STRING type
+                        || record.getField(indexFieldName).getRawValue() == null // index field raw value is null
+                        || record.getField(indexFieldName).getRawValue().toString().isEmpty() // index field is empty
+                        ) {
                     StandardRecord outputRecord = new StandardRecord(record);
-                    outputRecord.addError(ProcessError.BAD_RECORD.getName(), "record must have the field " + indexFieldName + " containing the index name to use in the multiget query. This field must be of STRING type and cannot be empty.");
+                    outputRecord.addError(ProcessError.BAD_RECORD.getName(), "record must have the field "
+                            + indexFieldName + " containing the index name to use in the multiget query. This field must be of STRING type and cannot be empty.");
                     outputRecords.add(outputRecord);
                     continue;
                 }
 
-                if(!record.hasField(idsFieldName) || record.getField(idsFieldName) == null || !record.getField(idsFieldName).getType().equals(FieldType.ARRAY) || record.getField(idsFieldName).getRawValue() == null || record.getField(idsFieldName).getRawValue().toString().isEmpty() ) {
+                if(     !record.hasField(idsFieldName)
+                        || record.getField(idsFieldName) == null
+                        || !record.getField(idsFieldName).getType().equals(FieldType.STRING)
+                        || record.getField(idsFieldName).getRawValue() == null
+                        || record.getField(idsFieldName).getRawValue().toString().isEmpty() ) {
                     StandardRecord outputRecord = new StandardRecord(record);
-                    outputRecord.addError(ProcessError.BAD_RECORD.getName(), "record must have the field " + idsFieldName + " containing the Ids to use in the multiget query. This field must be of ARRAY type and cannot be empty.");
+                    outputRecord.addError(ProcessError.BAD_RECORD.getName(), "record must have the field " + idsFieldName + " containing the Ids to use in the multiget query. This field must be of STRING type and cannot be empty.");
                     outputRecords.add(outputRecord);
                     continue;
                 }
 
+                // Index :
                 String index = record.getField(indexFieldName).asString();
+
+                // Type :
                 String type = record.getField(typeFieldName) != null ? record.getField(typeFieldName).asString() : null;
-                List<String> ids = new ArrayList<>((List<String>)record.getField(idsFieldName).getRawValue());
-                List<String> includesList;
+
+                // Document Ids :
+                String idsString = record.getField(idsFieldName).asString();
+                List<String> idsList = new ArrayList<>(Arrays.asList(idsString.split("\\s*,\\s*")));
+
+                // Includes :
                 String[] includesArray;
-                if(record.getField(includesFieldName) != null && record.getField(includesFieldName).getRawValue() != null)
-                {
-                    includesList = new ArrayList<>((List<String>)record.getField(includesFieldName).getRawValue());
+                if(record.getField(includesFieldName) != null && record.getField(includesFieldName).getRawValue() != null) {
+                    String includesString = record.getField(includesFieldName).asString();
+                    List<String> includesList = new ArrayList<>(Arrays.asList(includesString.split("\\s*,\\s*")));
                     includesArray = new String[includesList.size()];
                     includesArray = includesList.toArray(includesArray);
                 } else {
                     includesArray = null;
                 }
 
-                List<String> excludesList;
+                // Excludes :
                 String[] excludesArray;
-                if(record.getField(excludesFieldName) != null && record.getField(excludesFieldName).getRawValue() != null)
-                {
-                    excludesList = new ArrayList<>((List<String>)record.getField(excludesFieldName).getRawValue());
+                if(record.getField(excludesFieldName) != null && record.getField(excludesFieldName).getRawValue() != null) {
+                    String excludesString = record.getField(excludesFieldName).asString();
+                    List<String> excludesList = new ArrayList<>(Arrays.asList(excludesString.split("\\s*,\\s*")));
                     excludesArray = new String[excludesList.size()];
                     excludesArray = excludesList.toArray(excludesArray);
                 } else {
@@ -148,7 +164,7 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 }
 
                 try {
-                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, ids, includesArray, excludesArray));
+                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, idsList, includesArray, excludesArray));
                 } catch (InvalidMultiGetQueryRecordException e) {
                     StandardRecord outputRecord = new StandardRecord(record);
                     outputRecord.addError(ProcessError.BAD_RECORD.getName(), e.getMessage());
@@ -157,7 +173,7 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 }
             }
 
-            multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
+            List<MultiGetResponseRecord> multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
             multiGetResponseRecords.forEach(responseRecord -> {
                 StandardRecord outputRecord = new StandardRecord();
