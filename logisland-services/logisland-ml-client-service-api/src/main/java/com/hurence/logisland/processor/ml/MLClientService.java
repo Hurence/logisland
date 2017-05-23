@@ -30,14 +30,9 @@ public interface MLClientService extends  ControllerService {
 
     PropertyDescriptor ML_MODEL_FILE_PATH = new PropertyDescriptor.Builder()
             .name("ml.model.file.path")
-            .description("Comma-separated list of Hadoop Configuration files," +
-                    " such as hbase-site.xml and core-site.xml for kerberos, " +
-                    "including full paths to the files.")
+            .description("path to the pre-trained MNIST Deep Learning model file.")
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
-
-
-
 
 
     /**
