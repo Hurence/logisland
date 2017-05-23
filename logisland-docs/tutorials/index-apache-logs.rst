@@ -82,7 +82,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 Setup Spark/Kafka streaming engine
 __________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-apache-logs.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_
+The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor
 
 .. code-block:: yaml
 
@@ -111,8 +111,19 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
         spark.streaming.ui.retainedBatches: 200
         spark.streaming.receiver.writeAheadLog.enable: false
         spark.ui.port: 4050
-      streamConfigurations:
 
+      controllerServiceConfigurations:
+
+        - controllerService: elasticsearch_service
+          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+          type: service
+          documentation: elasticsearch 2.4.0 service implementation
+          configuration:
+            hosts: sandbox:9300
+            cluster.name: elasticsearch
+            batch.size: 2000
+
+      streamConfigurations:
 
 Stream 1 : parse incoming apache log lines
 __________________________________________
@@ -208,17 +219,15 @@ The second Kafka stream will handle ``Records`` pushed into ``logisland_events``
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # put to elasticsearch
+        # add to elasticsearch
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that trace the processed events
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: logisland
             default.type: event
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type

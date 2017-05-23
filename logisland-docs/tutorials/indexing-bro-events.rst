@@ -228,7 +228,7 @@ So there is no need to define an output topic. The input topic is enough:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
       
-The only processor in the processor chain of this stream is the ``PutElasticsearch`` processor.
+The only processor in the processor chain of this stream is the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 

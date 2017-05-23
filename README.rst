@@ -92,7 +92,19 @@ The following `conf/configuration-template.yml` contains a sample of processor d
         spark.streaming.kafka.maxRatePerPartition: 3000
         spark.streaming.timeout: -1
         spark.ui.port: 4050
-      processorChainConfigurations:
+
+      controllerServiceConfigurations:
+
+        - controllerService: elasticsearch_service
+          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+          type: service
+          documentation: elasticsearch 2.4.0 service implementation
+          configuration:
+            hosts: sandbox:9300
+            cluster.name: elasticsearch
+            batch.size: 2000
+
+      streamConfigurations:
 
         # parsing
         - stream: parsing_stream
@@ -141,17 +153,15 @@ The following `conf/configuration-template.yml` contains a sample of processor d
             kafka.topic.default.replicationFactor: 1
           processorConfigurations:
 
-            # put to elasticsearch
+            # add to elasticsearch
             - processor: es_publisher
-              component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+              component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
               type: processor
-              documentation: a processor that trace the processed events
+              documentation: a processor that indexes processed events in elasticsearch
               configuration:
+                elasticsearch.client.service: elasticsearch_service
                 default.index: logisland
                 default.type: event
-                hosts: sandbox:9300
-                cluster.name: elasticsearch
-                batch.size: 2000
                 timebased.index: yesterday
                 es.index.field: search_index
                 es.type.field: record_type
