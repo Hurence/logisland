@@ -53,23 +53,15 @@ public class runDeepLearning extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(runDeepLearning.class);
 
-    final int FIN = 1;
-    final int SYN = 2;
-    final int RST = 4;
-    final int PSH = 8;
-    final int ACK = 16;
-    final int URG = 32;
-
     private boolean debug = false;
 
     private static final String KEY_DEBUG = "debug";
 
     protected MLClientService clientService;
 
-
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
-            .description("Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.")
+            .description("Enable debug.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
             .build();
@@ -157,7 +149,7 @@ public class runDeepLearning extends AbstractProcessor {
             shift += 4;
             float[][] labelData = new float[count][0];
             for (int i = 0; i < count; i++) {
-                int lab = getByte(Arrays.copyOfRange(recordValue, shift, shift + 1));
+                int lab = readByte(Arrays.copyOfRange(recordValue, shift, shift + 1));
                 shift += 1;
                 labelData[i] = new float[10];
                 labelData[i][lab] = 1.0F;
@@ -235,63 +227,8 @@ public class runDeepLearning extends AbstractProcessor {
     }
 
 
-    private Map getRecord(byte[] record) {
-
-        String[] record_label = {"src_ip4", "dst_ip4", "nexthop", "input", "output", "dPkts", "dOctets", "first",
-                "last", "src_port", "dst_port", "pad1", "flags", "nprot", "tos", "src_as", "dst_as", "src_mask",
-                "dst_mask", "pad2"};
-        String[] record_type = {"ip", "ip", "ip", "short", "short", "int", "int", "int", "int", "short", "short", "byte", "byte",
-                "byte", "byte", "short", "short", "byte", "byte", "short"};
-
-        Map<String, Object> record_value = new HashMap<>();
-
-        byte shift = 0;
-        byte[] ID = null;
-
-        for (byte i = 0; i < record_label.length; i++) {
-            switch (record_type[i]) {
-                case "byte":
-                    ID = Arrays.copyOfRange(record, shift, shift + 1);
-                    record_value.put(record_label[i], getByte(ID));
-                    shift += 1;
-                    break;
-
-                case "short":
-                    ID = Arrays.copyOfRange(record, shift, shift + 2);
-                    record_value.put(record_label[i], getShort(ID));
-                    shift += 2;
-                    break;
-
-                case "int":
-                    ID = Arrays.copyOfRange(record, shift, shift + 4);
-                    record_value.put(record_label[i], readInt(ID));
-                    shift += 4;
-                    break;
-
-                case "ip":
-                    ID = Arrays.copyOfRange(record, shift, shift + 4);
-                    record_value.put(record_label[i], getIP(ID));
-                    shift += 4;
-                    break;
-            }
-        }
-
-        if (debug) {
-            for (String label : record_label) {
-                logger.debug(label + "=" + record_value.get(label));
-            }
-        }
-
-        return (record_value);
-
-    }
-
-    private short getByte(byte[] buffer) {
+    private short readByte(byte[] buffer) {
         return ((short) (buffer[0] & 0xFF));
-    }
-
-    private int getShort(byte[] buffer) {
-        return ((int) (((buffer[0] & 0xFF) << 8) | (buffer[1] & 0xFF)));
     }
 
     private long readInt(byte[] buffer) {
@@ -299,17 +236,4 @@ public class runDeepLearning extends AbstractProcessor {
                 | ((buffer[2] & 0xFF) << 8) | (buffer[3] & 0xFF)));
     }
 
-    private String getIP(byte[] buffer) {
-
-        try {
-            for (byte i = 1; i < 4; i++) {
-                buffer[i] = (byte) (buffer[i] & 0xFF);
-            }
-            InetAddress address = InetAddress.getByAddress(buffer);
-            return (address.toString().replace("/", ""));
-        } catch (UnknownHostException e) {
-            logger.error("Bad host address");
-        }
-        return ("");
-    }
 }
