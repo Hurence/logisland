@@ -23,16 +23,14 @@ import java.util.Collection;
 import java.util.List;
 
 
-@Tags({"hbase", "client"})
-@CapabilityDescription("A controller service for accessing an HBase client.")
+@Tags({"ml", "client"})
+@CapabilityDescription("A controller service for accessing an Machine Learning  client.")
 public class MLClientServiceImpl extends AbstractControllerService implements MLClientService {
 
 
     PropertyDescriptor ML_MODEL_FILE_PATH = new PropertyDescriptor.Builder()
             .name("ml.model.file.path")
-            .description("Comma-separated list of Hadoop Configuration files," +
-                    " such as hbase-site.xml and core-site.xml for kerberos, " +
-                    "including full paths to the files.")
+            .description("path to the pre-trained MNIST Deep Learning model file.")
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
 
