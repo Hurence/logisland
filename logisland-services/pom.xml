@@ -20,6 +20,8 @@
         <module>logisland-elasticsearch_2_4_0-client-service</module>
         <module>logisland-cache-service-api</module>
         <module>logisland-cache_key_value-service-api</module>
+				<module>logisland-ml-client-service-api</module>
+        <module>logisland-ml-client-service</module>
     </modules>
 
 

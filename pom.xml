@@ -286,6 +286,61 @@
                 <version>5.4.0</version>
             </dependency>
 
+						<dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-core</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-nlp</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+						<dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>jackson</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-api</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-base64</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-buffer</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-common</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-context</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-jackson</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native-api</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native</artifactId>
+                <version>0.8.0</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -658,6 +713,11 @@
                 <artifactId>logisland-hadoop-utils</artifactId>
                 <version>${project.version}</version>
             </dependency>
+	    <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-ml-client-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-hbase-client-service-api</artifactId>
@@ -671,6 +731,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-ml-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
