@@ -50,6 +50,7 @@ The example below shows how to include all of the fields supported by the proces
 
 
 .. code-block:: yaml
+
     # parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
@@ -83,7 +84,6 @@ The example below shows how to include all of the fields supported by the proces
                { "name": "user",        "type": ["string","null"] } ,
                { "name": "http_user_agent",  "type": ["string","null"] },
                { "name": "http_referer",     "type": ["string","null"] },
-               # User-Agent new fields
                { "name": "DeviceClass",  "type": ["string","null"] },
                { "name": "DeviceName",  "type": ["string","null"] },
                { "name": "DeviceBrand",  "type": ["string","null"] },
@@ -190,12 +190,7 @@ a *generic command line non-JVM Apache Kafka producer and consumer* which can be
 
 
 If you don't have your own httpd logs available, you can use some freely available log files from
-`Elastic <https://raw.githubusercontent.com/elastic/examples/master/ElasticStack_apache/apache_logs>`_ web site access:
-
-.. code-block:: sh
-
-
-
+`Elastic <https://raw.githubusercontent.com/elastic/examples/master/ElasticStack_apache/apache_logs>`_ web site
 
 Let's send the first 500000 lines of access log to LogIsland with kafkacat to ``logisland_raw`` Kafka topic
 

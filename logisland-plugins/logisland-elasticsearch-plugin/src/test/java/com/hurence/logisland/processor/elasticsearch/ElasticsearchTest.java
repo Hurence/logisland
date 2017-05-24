@@ -202,6 +202,7 @@ public class ElasticsearchTest {
         // Insert a record into foo and count foo
         Assert.assertEquals(0, ElasticsearchUtils.countIndex(client, "foo"));
         ElasticsearchUtils.saveSync(client, "foo", "type1", doc1);
+        ElasticsearchUtils.refreshIndex(client, "foo");
         Assert.assertEquals(2, ElasticsearchUtils.countIndex(client, "foo"));
 
 
