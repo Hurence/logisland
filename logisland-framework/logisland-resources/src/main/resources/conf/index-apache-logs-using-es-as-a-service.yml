@@ -103,7 +103,8 @@ engine:
           component: com.hurence.logisland.processor.DebugStream
           type: parser
           documentation: debugs
-          configuration:
+            configuration:
+            event.serializer: json
 
     # indexing
     - stream: indexing_stream

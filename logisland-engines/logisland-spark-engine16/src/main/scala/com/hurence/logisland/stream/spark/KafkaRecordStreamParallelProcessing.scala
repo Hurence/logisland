@@ -143,7 +143,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                     // parser
                                     partition.map(rawMessage => {
                                         val key = if (rawMessage._1 != null) new String(rawMessage._1) else ""
-                                        val value = if (rawMessage._2 != null) new String(rawMessage._2, "ISO-8859-1") else ""
+                                        val value = if (rawMessage._2 != null) new String(rawMessage._2) else ""
                                         RecordUtils.getKeyValueRecord(key, value)
                                     }).toList
                                 } else {

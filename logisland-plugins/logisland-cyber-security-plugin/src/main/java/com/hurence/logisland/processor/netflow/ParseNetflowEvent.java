@@ -122,12 +122,7 @@ public class ParseNetflowEvent extends AbstractProcessor {
          */
         records.forEach(record -> {
             byte[] recordValue=null;
-            try {
-                recordValue = ((String) record.getField(FieldDictionary.RECORD_VALUE).getRawValue()).getBytes("ISO-8859-1");
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Error while retrieving the record value : record skipped");
-                return;
-            }
+            recordValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
             if (debug) {
                 logger.debug("record=" + Arrays.toString(recordValue));
             }
