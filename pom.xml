@@ -1133,7 +1133,7 @@
 
     <profiles>
 
-        <!--  hdp 2.4 -->
+        <!--  hdp 2.5 -->
         <profile>
             <id>hdp-2.5</id>
             <activation>
@@ -1148,6 +1148,7 @@
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
                 <jackson.version>2.6.6</jackson.version>
+                <hdp>2.5</hdp>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine21</module>
@@ -1155,10 +1156,11 @@
             </modules>
         </profile>
 
-        <!--  hdp 2.5 -->
+        <!--  hdp 2.4 -->
         <profile>
             <id>hdp-2.4</id>
             <activation>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.4</value>
@@ -1170,10 +1172,10 @@
                 <scala.version>2.10.6</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
                 <jackson.version>2.4.4</jackson.version>
+                <hdp>2.4</hdp>
             </properties>
             <modules>
                 <module>logisland-engines/logisland-spark-engine16</module>
-
             </modules>
         </profile>
 

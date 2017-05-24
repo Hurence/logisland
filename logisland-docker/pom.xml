@@ -37,9 +37,9 @@
                             <imageTags>
                                 <imageTag>${project.version}</imageTag>
                             </imageTags>
-                            <buildArgs>
+                            <!--buildArgs>
                                 <LOGISLAND_VERSION>${project.version}</LOGISLAND_VERSION>
-                            </buildArgs>
+                            </buildArgs-->
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
