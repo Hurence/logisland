@@ -30,6 +30,7 @@ import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import nl.basjes.parse.useragent.UserAgentAnalyzer.Builder;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +39,15 @@ import java.util.stream.Collectors;
 
 /**
  * HTTP user-agent processor
- *
  */
 @Tags({"User-Agent", "clickstream", "DMP"})
 @CapabilityDescription(
         "The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest."
-        + " There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them."
-        + " This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.")
+                + " There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them."
+                + " This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.")
 public class ParseUserAgent extends AbstractProcessor {
+
+    private static final Object sync = new Object();
 
     private static Logger logger = LoggerFactory.getLogger(ParseUserAgent.class);
 
@@ -57,7 +59,7 @@ public class ParseUserAgent extends AbstractProcessor {
     private List<String> selectedFields;
     private boolean confidenceEnabled;
     private boolean ambiguityEnabled;
-    
+
     private static final String KEY_DEBUG = "debug";
     private static final String KEY_CACHE_ENABLED = "cache.enabled";
     private static final String KEY_CACHE_SIZE = "cache.size";
@@ -134,12 +136,12 @@ public class ParseUserAgent extends AbstractProcessor {
 
     // Removes original User-Agent
     public static final PropertyDescriptor USERAGENT_KEEP = new PropertyDescriptor.Builder()
-        .name(KEY_USERAGENT_KEEP)
-        .description("Defines if the field that contained the User-Agent must be kept or not in the resulting records.")
-        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-        .required(false)
-        .defaultValue("true")
-        .build();
+            .name(KEY_USERAGENT_KEEP)
+            .description("Defines if the field that contained the User-Agent must be kept or not in the resulting records.")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .required(false)
+            .defaultValue("true")
+            .build();
 
     // Report per field confidence
     public static final PropertyDescriptor CONFIDENCE_ENABLED = new PropertyDescriptor.Builder()
@@ -161,42 +163,41 @@ public class ParseUserAgent extends AbstractProcessor {
 
     // List of attributes to return
     public static final PropertyDescriptor FIELDS_TO_RETURN = new PropertyDescriptor.Builder()
-        .name(KEY_FIELDS_TO_RETURN)
-        .description("Defines the fields to be returned.")
-        .addValidator(new Validator() {
-            @Override
-            public ValidationResult validate(final String subject, final String value) {
+            .name(KEY_FIELDS_TO_RETURN)
+            .description("Defines the fields to be returned.")
+            .addValidator(new Validator() {
+                @Override
+                public ValidationResult validate(final String subject, final String value) {
 
-                String reason = null;
-                try {
-                    String[] fields = value.split(",");
-                    for (String field : fields) {
-                        String f = field.trim();
-                        if (!defaultFields.contains(f)) {
-                            reason += "The field " + f + " is not valid. ";
+                    String reason = null;
+                    try {
+                        String[] fields = value.split(",");
+                        for (String field : fields) {
+                            String f = field.trim();
+                            if (!defaultFields.contains(f)) {
+                                reason += "The field " + f + " is not valid. ";
+                            }
                         }
+                    } catch (final Exception e) {
+                        reason = "not a comma separated list";
                     }
-                } catch (final Exception e) {
-                    reason = "not a comma separated list";
+
+                    return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
                 }
-
-                return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
-            }
-        })
-        .required(false)
-        .defaultValue(String.join(", ", defaultFields))
-        .build();
-
+            })
+            .required(false)
+            .defaultValue(String.join(", ", defaultFields))
+            .build();
 
 
     // TODO :  add the following params
     // Resource file with regex ???
 
     // error if useragent field is missing true/false
-    
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        
+
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(DEBUG);
         descriptors.add(CACHE_ENABLED);
@@ -211,8 +212,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
 
     @Override
-    public void init(final ProcessContext context)
-    {
+    public void init(final ProcessContext context) {
         logger.debug("Initializing User-Agent Processor");
 
         debug = context.getPropertyValue(DEBUG).asBoolean();
@@ -237,37 +237,32 @@ public class ParseUserAgent extends AbstractProcessor {
         }
 
         if (Singleton.get() == null) {
-            GenericObjectPool<UserAgentAnalyzer> pool = new GenericObjectPool(new ObjectFactory<UserAgentAnalyzer>() {
-                @Override
-                public UserAgentAnalyzer getInstance() {
-                    logger.info("Creating User-Agent Processor");
-                    Builder builder = UserAgentAnalyzer.newBuilder();
-                    if (useCache) {
-                        builder.withCache(cacheSize);
-                    } else {
-                        builder.withoutCache();
-                    }
-                    builder.withFields(selectedFields);
-                    return builder.build();
+            synchronized (sync) {
+                if (Singleton.get() == null) {
+
+                    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+
+                    //config.setMaxIdle(1);
+                    config.setMaxTotal(10);
+
+                    //TestOnBorrow=true --> To ensure that we get a valid object from pool
+                    //config.setTestOnBorrow(true);
+
+                    //TestOnReturn=true --> To ensure that valid object is returned to pool
+                    //config.setTestOnReturn(true);
+
+                    PooledUserAgentAnalyzerFactory factory = new PooledUserAgentAnalyzerFactory(selectedFields, cacheSize);
+
+                    UserAgentAnalyzerPool pool = new UserAgentAnalyzerPool(factory, config);
+                    Singleton.set(pool);
                 }
-
-                public void destroy(UserAgentAnalyzer obj) {
-                    logger.info("Destroying User-Agent Processor");
-                }
-            }, 10);
-
-
-            Singleton.set(pool);
+            }
         }
-
-
     }
 
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records)
-    {
-        if (debug)
-        {
+    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+        if (debug) {
             logger.debug("User-Agent Processor records input: " + records);
         }
 
@@ -276,8 +271,7 @@ public class ParseUserAgent extends AbstractProcessor {
         init(context);
         // END BIG HACK
 
-        for (Record record : records)
-        {
+        for (Record record : records) {
 
             Field uaField = record.getField(userAgentField);
             if (uaField == null) {
@@ -285,14 +279,13 @@ public class ParseUserAgent extends AbstractProcessor {
                 continue;
             }
 
-            String recordValue = (String)uaField.getRawValue();
-
-            GenericObjectPool<UserAgentAnalyzer> pool = null;
+            String recordValue = (String) uaField.getRawValue();
+            UserAgentAnalyzerPool pool = null;
             UserAgentAnalyzer uaa = null;
 
             try {
-                pool = (GenericObjectPool<UserAgentAnalyzer>)Singleton.get();
-                uaa = pool.get();
+                pool = (UserAgentAnalyzerPool) Singleton.get();
+                uaa = pool.borrowObject();
 
                 UserAgent agent = uaa.parse(recordValue);
 
@@ -307,18 +300,16 @@ public class ParseUserAgent extends AbstractProcessor {
                 }
 
                 if (ambiguityEnabled) {
-                     record.setField(new Field("ambiguity", FieldType.INT, agent.getAmbiguityCount()));
+                    record.setField(new Field("ambiguity", FieldType.INT, agent.getAmbiguityCount()));
                 }
-
-            } catch(Throwable t)
-            {
+            } catch (Throwable t) {
                 t.printStackTrace();
                 record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in User-agent decoding");
                 logger.error("Cannot parse User-Agent content: " + record);
                 continue;
             } finally {
                 if (pool != null && uaa != null) {
-                    pool.release(uaa);
+                    pool.returnObject(uaa);
                 }
             }
 
