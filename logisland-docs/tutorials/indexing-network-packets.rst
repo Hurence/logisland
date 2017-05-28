@@ -195,6 +195,18 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
   streamConfigurations:
 
 Stream 1 : parse incoming Network Packets
@@ -266,21 +278,19 @@ The second Kafka stream will handle ``Records`` pushed into the ``logisland_even
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-The only processor in the processor chain of this stream is the ``PutElasticsearch`` processor.
+The only processor in the processor chain of this stream is the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
-        # Put into ElasticSearch
+        # Bulk add into ElasticSearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes network packet records into ES
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: packets_index
             default.type: events
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: today
             es.index.field: search_index
             es.type.field: record_type

@@ -82,7 +82,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 Setup Spark/Kafka streaming engine
 __________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-apache-logs.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor
+The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor.
 
 .. code-block:: yaml
 
@@ -121,7 +121,7 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
           configuration:
             hosts: sandbox:9300
             cluster.name: elasticsearch
-            batch.size: 2000
+            batch.size: 20000
 
       streamConfigurations:
 

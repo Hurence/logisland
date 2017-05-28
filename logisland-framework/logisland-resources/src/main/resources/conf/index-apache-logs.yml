@@ -47,7 +47,7 @@ engine:
       configuration:
         hosts: sandbox:9300
         cluster.name: elasticsearch
-        batch.size: 2000
+        batch.size: 20000
 
   streamConfigurations:
 
@@ -119,7 +119,7 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # add to elasticsearch
+        # Bulk add to elasticsearch
         - processor: es_publisher
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
