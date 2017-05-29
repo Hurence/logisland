@@ -217,7 +217,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 Setup Spark/Kafka streaming engine
 __________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-netflow-events.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine, we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_
+The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor.
 
 .. code-block:: yaml
 
@@ -251,6 +251,18 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
   streamConfigurations:
 
 Stream 1 : parse incoming Netflow (Binary format) lines
@@ -322,21 +334,19 @@ The second Kafka stream will handle ``Records`` pushed into the ``logisland_even
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-The only processor in the processor chain of this stream is the ``PutElasticsearch`` processor.
+The only processor in the processor chain of this stream is the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
-    # Put into ElasticSearch
+    # Bulk add into ElasticSearch
     - processor: ES Publisher
-      component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
       documentation: A processor that pushes Netflow events into ES
       configuration:
+        elasticsearch.client.service: elasticsearch_service
         default.index: netflow
         default.type: events
-        hosts: sandbox:9300
-        cluster.name: elasticsearch
-        batch.size: 2000
         timebased.index: today
         es.index.field: search_index
         es.type.field: record_type

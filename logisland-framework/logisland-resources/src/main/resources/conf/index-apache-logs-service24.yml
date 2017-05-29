@@ -38,7 +38,6 @@ engine:
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
 
-
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
@@ -46,13 +45,13 @@ engine:
       type: service
       documentation: elasticsearch 2.4.0 service implementation
       configuration:
-        hosts: localhost:9300
+        hosts: sandbox:9300
         cluster.name: elasticsearch
         batch.size: 2000
-        flush.interval: 1
 
   streamConfigurations:
 
+    # parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
@@ -64,8 +63,8 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84186:6667
-        kafka.zookeeper.quorum: sd-76387:2181,sd-84186:2181,sd-84189:2181
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
@@ -81,7 +80,7 @@ engine:
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:

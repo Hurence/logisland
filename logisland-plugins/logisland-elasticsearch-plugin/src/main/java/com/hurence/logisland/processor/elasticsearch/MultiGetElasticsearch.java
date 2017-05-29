@@ -135,7 +135,10 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 String index = record.getField(indexFieldName).asString();
 
                 // Type :
-                String type = record.getField(typeFieldName) != null ? record.getField(typeFieldName).asString() : null;
+                String type = ( record.getField(typeFieldName) != null
+                        && record.getField(typeFieldName).asString().trim().length() > 0 )  // if the type is empty (whitespaces), consider it is not set (type = null)
+                        ? record.getField(typeFieldName).asString()
+                        : null;
 
                 // Document Ids :
                 String idsString = record.getField(idsFieldName).asString();

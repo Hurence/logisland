@@ -16,7 +16,7 @@ We assume that you are already familiar with logisland platform and that you hav
 The first Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
 and chain of a `SplitText </plugins.html#splittext>`_
 
-The first Processor simply parse the csv lines while the second index them into the serach engine.
+The first Processor simply parse the csv lines while the second index them into the search engine.
 Please note the output schema.
 
 .. code-block:: yaml
@@ -59,10 +59,6 @@ Please note the output schema.
             record.type: apache_log
             value.regex: (\S+),(\S+)
             value.fields: record_time,record_value
-
-
-
-
 
 
 
@@ -126,7 +122,7 @@ and a `RecordSampler </plugins.html#recordsampler>`_  Processor
 
 
     # sample time series
-    - stream: detect_toutliers
+    - stream: detect_outliers
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
       documentation: a processor that match query in parrallel
@@ -154,12 +150,10 @@ and a `RecordSampler </plugins.html#recordsampler>`_  Processor
             sampling.parameter: 10
 
 
-
-
 4. Setup the indexing Stream
 ----------------------------
 The last Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and chain of a `SplitText </plugins.html#splittext>`_  and a `PutElasticsearch </plugins.html#putelasticsearch>`_
+and chain of a `SplitText </plugins.html#splittext>`_  and a `BulkAddElasticsearch </plugins.html#bulkaddelasticsearch>`_
 for indexing the whole records
 
 .. code-block:: yaml
@@ -184,15 +178,13 @@ for indexing the whole records
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that trace the processed events
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: logisland
             default.type: event
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type

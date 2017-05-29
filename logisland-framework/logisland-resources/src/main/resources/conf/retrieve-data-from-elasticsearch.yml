@@ -10,9 +10,9 @@ documentation: LogIsland analytics main config file. Put here every engine or co
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Index some apache logs with logisland
+  documentation: Retrieve data indexed in elasticsearch using MultiGetElasticsearch based on Multi Get Elasticsearch API
   configuration:
-    spark.app.name: IndexApacheLogsDemo
+    spark.app.name: RetrieveDataFromElasticsearchDemo
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -47,7 +47,7 @@ engine:
       configuration:
         hosts: sandbox:9300
         cluster.name: elasticsearch
-        batch.size: 2000
+        batch.size: 20000
 
   streamConfigurations:
 
@@ -55,7 +55,7 @@ engine:
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: A stream that processes incoming records containing filtering criteria and retrieves data from Elasticsearch using the MultiGetElasticsearch processor
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events
@@ -96,45 +96,26 @@ engine:
           documentation: a parser that produce events from an apache log REGEX
           configuration:
             record.type: apache_log
-            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
-            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+            value.regex: (\S*)\s*;\s*(\S*)\s*;\s*(\S*)\s*;\s*(\S*)\s*;\s*(\S*)
+            value.fields: index,type,ids,includes,excludes
 
-        - processor: debug
-          component: com.hurence.logisland.processor.DebugStream
-          type: parser
-          documentation: debugs
-            configuration:
-            event.serializer: json
-
-    # indexing
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: a processor that push events to ES
-      configuration:
-        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregations,logisland_alerts
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
-        # put to elasticsearch
-        - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+        - processor: es_multigetter
+          component: com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
           type: processor
-          documentation: a processor that indexes processed events in elasticsearch
+          documentation: a processor that retrieves data from elasticsearch
           configuration:
             elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
-            default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+            es.index.field: index
+            es.type.field: type
+            es.ids.field: ids
+            es.includes.field: includes
+            es.excludes.field: excludes
+
+        - processor: logger
+          component: com.hurence.logisland.processor.DebugStream
+          type: processor
+          documentation: a processor that logs incoming records
+          configuration:
+            event.serializer: json
+
 
