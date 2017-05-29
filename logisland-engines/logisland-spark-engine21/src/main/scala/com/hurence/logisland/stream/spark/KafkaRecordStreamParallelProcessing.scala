@@ -128,7 +128,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                     // parser
                                     partition.map(rawMessage => {
                                         val key = if (rawMessage.key() != null) new String(rawMessage.key()) else ""
-                                        val value = if (rawMessage.value() != null) new String(rawMessage.value(), "ISO-8859-1") else ""
+                                        val value = if (rawMessage.value() != null) new String(rawMessage.value()) else ""
                                         RecordUtils.getKeyValueRecord(key, value)
                                     }).toList
                                 } else {
@@ -182,7 +182,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             } catch {
                                 case t: Throwable =>
                                     logger.warn("something wrong while converting records " +
-                                        "to valid accordingly to provide Avro schma " + t.getMessage)
+                                        "to valid accordingly to provide Avro schema " + t.getMessage)
                             }
 
                         }

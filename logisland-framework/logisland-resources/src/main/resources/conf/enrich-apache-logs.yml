@@ -1,0 +1,201 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.10.0-SNAPSHOT
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: IndexApacheLogsDemo
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
+  streamConfigurations:
+
+    # parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        avro.output.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.apache_log",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "src_ip",      "type": ["string","null"] },
+               { "name": "http_method", "type": ["string","null"] },
+               { "name": "bytes_out",   "type": ["long","null"] },
+               { "name": "http_query",  "type": ["string","null"] },
+               { "name": "http_version","type": ["string","null"] },
+               { "name": "http_status", "type": ["string","null"] },
+               { "name": "identd",      "type": ["string","null"] },
+               { "name": "user",        "type": ["string","null"] } ,
+               { "name": "http_user_agent",  "type": ["string","null"] },
+               { "name": "http_referer",     "type": ["string","null"] },
+               { "name": "DeviceClass",  "type": ["string","null"] },
+               { "name": "DeviceName",  "type": ["string","null"] },
+               { "name": "DeviceBrand",  "type": ["string","null"] },
+               { "name": "DeviceCpu",  "type": ["string","null"] },
+               { "name": "DeviceFirmwareVersion",  "type": ["string","null"] },
+               { "name": "DeviceVersion",  "type": ["string","null"] },
+               { "name": "OperatingSystemClass",  "type": ["string","null"] },
+               { "name": "OperatingSystemName",  "type": ["string","null"] },
+               { "name": "OperatingSystemVersion",  "type": ["string","null"] },
+               { "name": "OperatingSystemNameVersion",  "type": ["string","null"] },
+               { "name": "OperatingSystemVersionBuild",  "type": ["string","null"] },
+               { "name": "LayoutEngineClass",  "type": ["string","null"] },
+               { "name": "LayoutEngineName",  "type": ["string","null"] },
+               { "name": "LayoutEngineVersion",  "type": ["string","null"] },
+               { "name": "LayoutEngineVersionMajor",  "type": ["string","null"] },
+               { "name": "LayoutEngineNameVersion",  "type": ["string","null"] },
+               { "name": "LayoutEngineNameVersionMajor",  "type": ["string","null"] },
+               { "name": "LayoutEngineBuild",  "type": ["string","null"] },
+               { "name": "AgentClass",  "type": ["string","null"] },
+               { "name": "AgentName",  "type": ["string","null"] },
+               { "name": "AgentVersion",  "type": ["string","null"] },
+               { "name": "AgentVersionMajor",  "type": ["string","null"] },
+               { "name": "AgentNameVersion",  "type": ["string","null"] },
+               { "name": "AgentNameVersionMajor",  "type": ["string","null"] },
+               { "name": "AgentBuild",  "type": ["string","null"] },
+               { "name": "AgentLanguage",  "type": ["string","null"] },
+               { "name": "AgentLanguageCode",  "type": ["string","null"] },
+               { "name": "AgentInformationEmail",  "type": ["string","null"] },
+               { "name": "AgentInformationUrl",  "type": ["string","null"] },
+               { "name": "AgentSecurity",  "type": ["string","null"] },
+               { "name": "AgentUuid",  "type": ["string","null"] },
+               { "name": "FacebookCarrier",  "type": ["string","null"] },
+               { "name": "FacebookDeviceClass",  "type": ["string","null"] },
+               { "name": "FacebookDeviceName",  "type": ["string","null"] },
+               { "name": "FacebookDeviceVersion",  "type": ["string","null"] },
+               { "name": "FacebookFBOP",  "type": ["string","null"] },
+               { "name": "FacebookFBSS",  "type": ["string","null"] },
+               { "name": "FacebookOperatingSystemName",  "type": ["string","null"] },
+               { "name": "FacebookOperatingSystemVersion",  "type": ["string","null"] },
+               { "name": "Anonymized",  "type": ["string","null"] },
+               { "name": "HackerAttackVector",  "type": ["string","null"] },
+               { "name": "HackerToolkit",  "type": ["string","null"] },
+               { "name": "KoboAffiliate",  "type": ["string","null"] },
+               { "name": "KoboPlatformId",  "type": ["string","null"] },
+               { "name": "IECompatibilityVersion",  "type": ["string","null"] },
+               { "name": "IECompatibilityVersionMajor",  "type": ["string","null"] },
+               { "name": "IECompatibilityNameVersion",  "type": ["string","null"] },
+               { "name": "IECompatibilityNameVersionMajor",  "type": ["string","null"] },
+               { "name": "Carrier",  "type": ["string","null"] },
+               { "name": "GSAInstallationID",  "type": ["string","null"] },
+               { "name": "WebviewAppName",  "type": ["string","null"] },
+               { "name": "WebviewAppNameVersionMajor",  "type": ["string","null"] },
+               { "name": "WebviewAppVersion",  "type": ["string","null"] },
+               { "name": "WebviewAppVersionMajor",  "type": ["string","null"]} ]}
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: apache_log
+            # Previous regex
+            #value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            #value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+            # Updated regex
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)\s+"(\S+)"\s+"([^\"]+)"
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out,http_referer,http_user_agent
+
+        - processor: user_agent_analyzer
+          component: com.hurence.logisland.processor.useragent.ParseUserAgent
+          type: processor
+          documentation: decompose the user_agent field into meaningful attributes
+          configuration:
+            useragent.field: http_user_agent
+            fields: DeviceClass,DeviceName,DeviceBrand,DeviceCpu,DeviceFirmwareVersion,DeviceVersion,OperatingSystemClass,OperatingSystemName,OperatingSystemVersion,OperatingSystemNameVersion,OperatingSystemVersionBuild,LayoutEngineClass,LayoutEngineName,LayoutEngineVersion,LayoutEngineVersionMajor,LayoutEngineNameVersion,LayoutEngineNameVersionMajor,LayoutEngineBuild,AgentClass,AgentName,AgentVersion,AgentVersionMajor,AgentNameVersion,AgentNameVersionMajor,AgentBuild,AgentLanguage,AgentLanguageCode,AgentInformationEmail,AgentInformationUrl,AgentSecurity,AgentUuid,FacebookCarrier,FacebookDeviceClass,FacebookDeviceName,FacebookDeviceVersion,FacebookFBOP,FacebookFBSS,FacebookOperatingSystemName,FacebookOperatingSystemVersion,Anonymized,HackerAttackVector,HackerToolkit,KoboAffiliate,KoboPlatformId,IECompatibilityVersion,IECompatibilityVersionMajor,IECompatibilityNameVersion,IECompatibilityNameVersionMajor,GSAInstallationID,WebviewAppName,WebviewAppNameVersionMajor,WebviewAppVersion,WebviewAppVersionMajor
+
+    # indexing
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES
+      configuration:
+        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregations,logisland_alerts
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that trace the processed events
+          configuration:
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+

@@ -37,6 +37,18 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4051
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
   streamConfigurations:
 
     # 1. parse time series
@@ -164,15 +176,13 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that trace the processed events
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: logisland
             default.type: event
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type

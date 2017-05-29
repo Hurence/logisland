@@ -37,8 +37,19 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
-  streamConfigurations:
 
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
+  streamConfigurations:
 
     # Parsing
     - stream: parsing_stream
@@ -49,7 +60,7 @@ engine:
         kafka.input.topics: netflow
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
+        kafka.input.topics.serializer:.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
@@ -87,17 +98,15 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Put into ElasticSearch
+        # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes Netflow events into ES
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: netflow
             default.type: events
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: today
             es.index.field: search_index
             es.type.field: record_type
