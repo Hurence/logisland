@@ -6,6 +6,8 @@ In the following tutorial we'll drive you through the process of enriching Apach
 One of the first step when treating web access logs is to extract information from the User-Agent header string, in order to be able to classify traffic.
 The User-Agent string is part of the access logs from the web server (this is the last field in the example below).
 
+Another step is to find the FQDN (full qualified domain name) from an ip address.
+
 .. code:
 
       127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://www.example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
@@ -13,7 +15,14 @@ The User-Agent string is part of the access logs from the web server (this is th
 That string is packed with information from the visitor, when you know how to interpret it. However, the User-Agent string is not based on any standard, and it is not trivial to extract meaningful information from it.
 LogIsland provides a processor, based on the `YAUAA library <http://github.com/nielsbasjes/yauaa>`_, that simplifies that treatement.
 
-We will reuse the Docker container hosting all the LogIsland services from the `previous tutorial <index-apache-logs.html>`__, and add the User-Agent processor to the stream.
+LogIsland provides a processor, based on `InetAdress class from JDK 8 <https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html>`_, that use reverse Dns to determine FQDN from an IP.
+
+.. note::
+
+    This class find FQDN from ip using IN-ADDR.ARPA (or IP6.ARPA for ipv6). If it finds a domain name, it verifies that it matches back the same address ip in order to prevent against `IP spoofing attack <https://en.wikipedia.org/wiki/IP_address_spoofing>`_.
+    If you want to return the ip anyway, you should implement a new plugin using another library as dnsjava for example or open an issue for asking this feature.
+
+We will reuse the Docker container hosting all the LogIsland services from the `previous tutorial <index-apache-logs.html>`__, and add the User-Agent as well as the IpToFqdn processor to the stream
 
 
 .. note::
@@ -26,7 +35,7 @@ We will reuse the Docker container hosting all the LogIsland services from the `
 LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
 You can find the steps to start the Docker image and start the LogIsland server in the `previous tutorial <index-apache-logs.html>`__.
-However, you'll start the server with a different configuration file (that already includes the User-Agent processor)
+However, you'll start the server with a different configuration file (that already includes the necessary modifications)
 
 
 Stream 1 : modify the stream to analyze the User-Agent string
@@ -40,7 +49,9 @@ The stream needs to be modified to ::
 
 * modify the regex to add the referer and the User-Agent strings for the SplitText processor
 * modify the Avro schema to include the new fields returned by the UserAgentProcessor
-* include the the processing of the User-Agent string after the parsing of the logs
+* include the processing of the User-Agent string after the parsing of the logs
+* include the processor IpToFqdn after the ParserUserAgent
+* include a cache service to use with IpToFqdn processor
 
 The example below shows how to include all of the fields supported by the processor.
 
@@ -55,7 +66,7 @@ The example below shows how to include all of the fields supported by the proces
     - controllerService: lru_cache_service
       component: com.hurence.logisland.service.cache.LRUKeyValueCacheService
       type: service
-      documentation: cache service implementation using LinkedHashMap (LRU: Least Recent Used)
+      documentation: cache service implementation using LinkedHashMap (Least Recent Used)
       configuration:
         cache.size: 16384
 
@@ -220,6 +231,10 @@ Let's send the first 500000 lines of access log to LogIsland with kafkacat to ``
     wget https://raw.githubusercontent.com/elastic/examples/master/ElasticStack_apache/apache_logs
     head -500000 apache_logs | kafkacat -b sandbox:9092 -t logisland_raw
 
+.. note::
+
+    The process should last around 280 seconds because reverse dns is a costly operation.
+    After all data are processed, you can inject the same logs again and it should be very fast to process thanks to the cache that saved all matched ip.
 
 3. Monitor your spark jobs and Kafka topics
 -------------------------------------------
@@ -326,5 +341,8 @@ The logs are now loaded into elasticSearch, in the following form :
 
 
 You can now browse your data in Kibana and build great dashboards
+
+
+
 
 
