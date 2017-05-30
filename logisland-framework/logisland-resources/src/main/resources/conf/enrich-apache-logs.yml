@@ -52,7 +52,7 @@ engine:
     - controllerService: lru_cache_service
       component: com.hurence.logisland.service.cache.LRUKeyValueCacheService
       type: service
-      documentation: cache service implementation using LinkedHashMap (LRU: Least Recent Used)
+      documentation: cache service implementation using LinkedHashMap (Least Recent Used)
       configuration:
         cache.size: 16384
 
