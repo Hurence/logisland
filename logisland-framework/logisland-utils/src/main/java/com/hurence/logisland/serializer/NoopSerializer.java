@@ -55,7 +55,6 @@ public class NoopSerializer implements RecordSerializer {
      */
     @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {
-        logger.info("noop means : you don't have to call me I won't do anything");
     }
 
     /**
@@ -65,7 +64,6 @@ public class NoopSerializer implements RecordSerializer {
      */
     @Override
     public Record deserialize(InputStream in) throws RecordSerializationException {
-        logger.info("noop means : you don't have to call me I won't do anything");
         return null;
     }
 }

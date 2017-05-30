@@ -21,6 +21,7 @@ import java.util.Collections
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.schema.{SchemaManager, StandardSchemaManager}
+import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
 import com.hurence.logisland.validator.StandardValidators
@@ -104,7 +105,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val errorSerializer = getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-
+                        val metricsSerializer = getSerializer(
+                            streamContext.getPropertyValue(AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue).asString,
+                            null)
                         /**
                           * process events by chaining output records
                           */
@@ -205,7 +208,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         kafkaSink.value.produce(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
                             processingMetrics.toList,
-                            serializer
+                            metricsSerializer
                         )
 
                         /**
