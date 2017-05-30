@@ -3,7 +3,8 @@ package com.hurence.logisland.processor.hbase;
 
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.hbase.put.PutRecord;
+import com.hurence.logisland.service.hbase.HBaseClientService;
+import com.hurence.logisland.service.hbase.put.PutRecord;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;

@@ -3,7 +3,7 @@ package com.hurence.logisland.processor.hbase.io;
 
 
 
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
+import com.hurence.logisland.service.hbase.scan.ResultCell;
 
 import java.io.IOException;
 import java.io.OutputStream;

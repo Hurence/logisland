@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-services</artifactId>
+        <version>0.10.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- Versions -->
+        <elasticsearch.version>2.3.3</elasticsearch.version>
+
+        <!-- Configuration -->
+        <shaded.package>${logisland.shade.packageName}.elasticsearch233</shaded.package>
+
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-client-service-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.esotericsoftware.kryo</groupId>
+                    <artifactId>kryo</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.6.6</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dtests.security.manager=false</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.immutables.tools</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+
+                            <artifactSet>
+                                <includes>
+                                    <include>com.hurence.logisland:logisland-elasticsearch-plugin</include>
+                                    <include>org.apache.lucene:*</include>
+                                    <include>com.google.guava:*</include>
+                                    <include>com.twitter:*</include>
+                                    <include>com.tdunning:*</include>
+                                    <include>com.spatial4j:*</include>
+                                    <include>com.carrotsearch:*</include>
+                                    <include>org.hdrhistogram:HdrHistogram</include>
+                                    <include>org.elasticsearch:*</include>
+                                    <include>com.thoughtworks.paranamer:*</include>
+                                    <include>org.elasticsearch:*</include>
+                                    <include>org.elasticsearch.client:*</include>
+                                    <include>org.elasticsearch.plugin:*</include>
+                                    <include>org.elasticsearch.test:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>com.fasterxml.jackson.dataformat:*</include>
+                                    <include>io.netty:*</include>
+                                    <include>org.yaml:*</include>
+                                    <include>org.apache.httpcomponents:*</include>
+                                    <include>commons-codec:*</include>
+                                    <include>org.jboss.netty:*</include>
+                                    <include>com.ning:*</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+
+                                <!-- Ensure the custom JarHell is excluded -->
+                                <filter>
+                                    <artifact>org.elasticsearch:elasticsearch</artifact>
+                                    <excludes>
+                                        <exclude>org/elasticsearch/bootstrap/JarHell.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
+                                    <manifestEntries>
+                                        <Change>GIT commit ID</Change>
+                                        <Build-Date>${maven.build.timestamp}</Build-Date>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <relocations>
+                                <relocation>
+                                    <pattern>io</pattern>
+                                    <shadedPattern>${shaded.package}.io</shadedPattern>
+                                </relocation>
+
+
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>${shaded.package}.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.spatial4j</pattern>
+                                    <shadedPattern>${shaded.package}.com.spatial4j</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.carrotsearch</pattern>
+                                    <shadedPattern>${shaded.package}.com.carrotsearch</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.twitter</pattern>
+                                    <shadedPattern>${shaded.package}.com.twitter</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.tdunning</pattern>
+                                    <shadedPattern>${shaded.package}.com.tdunning</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.thoughtworks</pattern>
+                                    <shadedPattern>${shaded.package}.com.thoughtworks</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>com.ning</pattern>
+                                    <shadedPattern>${shaded.package}.com.ning</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.lucene</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.elasticsearch</pattern>
+                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    
+</project>

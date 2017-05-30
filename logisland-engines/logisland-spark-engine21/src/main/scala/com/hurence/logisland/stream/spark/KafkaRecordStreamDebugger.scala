@@ -148,7 +148,7 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                         } catch {
                             case t: Throwable =>
                                 logger.warn("something wrong while converting records " +
-                                    "to valid accordingly to provide Avro schma " + t.getMessage)
+                                    "to valid accordingly to provide Avro schema " + t.getMessage)
                         }
 
                     }

@@ -17,15 +17,13 @@
 package com.hurence.logisland.service.hbase;
 
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.hadoop.KerberosProperties;
-import com.hurence.logisland.processor.hbase.HBaseClientService;
-import com.hurence.logisland.processor.hbase.put.PutColumn;
-import com.hurence.logisland.processor.hbase.put.PutRecord;
-import com.hurence.logisland.processor.hbase.scan.Column;
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
-import com.hurence.logisland.processor.hbase.scan.ResultHandler;
+import com.hurence.logisland.service.hbase.put.PutColumn;
+import com.hurence.logisland.service.hbase.put.PutRecord;
+import com.hurence.logisland.service.hbase.scan.Column;
+import com.hurence.logisland.service.hbase.scan.ResultCell;
+import com.hurence.logisland.service.hbase.scan.ResultHandler;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.hadoop.hbase.Cell;
