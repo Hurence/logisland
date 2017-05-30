@@ -105,8 +105,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val errorSerializer = getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                        val metricsSerializer = getSerializer(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue).asString,
+                        val metricsSerializer = SerializerProvider.getSerializer(
+                            AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue,
                             null)
                         /**
                           * process events by chaining output records

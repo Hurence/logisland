@@ -48,10 +48,10 @@ public class RecordStreamProcessingDebuggerTest {
         logger.info("starting StreamProcessingRunner");
 
         ProcessorConfiguration processorConf = getSplitTextProcessorConfiguration();
-        StreamConfiguration chainConf = getSQLStreamConfiguration();
+        StreamConfiguration chainConf = getParallelStreamConfiguration();
         EngineConfiguration engineConf = getStandardEngineConfiguration();
         engineConf.addPipelineConfigurations(chainConf);
-       // chainConf.addProcessorConfiguration(processorConf);
+        chainConf.addProcessorConfiguration(processorConf);
 
 
         try {

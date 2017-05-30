@@ -54,7 +54,7 @@ public class SerializerProvider {
                 return new NoopSerializer();
             }
         } catch (Exception e) {
-            logger.log(LogLevel.DEBUG, e.toString());
+            logger.log(LogLevel.ERROR, e.toString());
             return new NoopSerializer();
         }
 
