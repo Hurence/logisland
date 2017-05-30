@@ -34,7 +34,7 @@ _____________________________________________________________
 
 .. note::
 
-    You can either apply the modifications from this section to the file *conf/index-apache-logs.yml* ot directly use the file *conf/user-agent-logs.yml* that already includes them.
+    You can either apply the modifications from this section to the file *conf/index-apache-logs.yml* ot directly use the file *conf/enrich-apache-logs.yml* that already includes them.
 
 The stream needs to be modified to ::
 
@@ -50,7 +50,16 @@ The example below shows how to include all of the fields supported by the proces
 
 
 .. code-block:: yaml
+  controllerServiceConfigurations:
 
+    - controllerService: lru_cache_service
+      component: com.hurence.logisland.service.cache.LRUKeyValueCacheService
+      type: service
+      documentation: cache service implementation using LinkedHashMap (LRU: Least Recent Used)
+      configuration:
+        cache.size: 16384
+
+  streamConfigurations:
     # parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
@@ -166,6 +175,16 @@ The example below shows how to include all of the fields supported by the proces
           configuration:
             useragent.field: http_user_agent
             fields: DeviceClass,DeviceName,DeviceBrand,DeviceCpu,DeviceFirmwareVersion,DeviceVersion,OperatingSystemClass,OperatingSystemName,OperatingSystemVersion,OperatingSystemNameVersion,OperatingSystemVersionBuild,LayoutEngineClass,LayoutEngineName,LayoutEngineVersion,LayoutEngineVersionMajor,LayoutEngineNameVersion,LayoutEngineNameVersionMajor,LayoutEngineBuild,AgentClass,AgentName,AgentVersion,AgentVersionMajor,AgentNameVersion,AgentNameVersionMajor,AgentBuild,AgentLanguage,AgentLanguageCode,AgentInformationEmail,AgentInformationUrl,AgentSecurity,AgentUuid,FacebookCarrier,FacebookDeviceClass,FacebookDeviceName,FacebookDeviceVersion,FacebookFBOP,FacebookFBSS,FacebookOperatingSystemName,FacebookOperatingSystemVersion,Anonymized,HackerAttackVector,HackerToolkit,KoboAffiliate,KoboPlatformId,IECompatibilityVersion,IECompatibilityVersionMajor,IECompatibilityNameVersion,IECompatibilityNameVersionMajor,GSAInstallationID,WebviewAppName,WebviewAppNameVersionMajor,WebviewAppVersion,WebviewAppVersionMajor
+
+        - processor: ipToFqdn
+          component: com.hurence.logisland.processor.enrichment.IpToFqdn
+          type: processor
+          documentation: find full qualified domain name correponding to an ip using reverse Dns.
+          configuration:
+            ip.address.field: src_ip
+            fqdn.field: src_ip
+            override.fqdn.field: true
+            cache.service: lru_cache_service
 
 
 Once the configuration file is updated, LogIsland must be restarted with that new configuration file.
