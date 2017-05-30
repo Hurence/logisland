@@ -52,7 +52,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
                 continue;
             }
             if (!IPAddressUtil.isIPv4LiteralAddress(ip) && !IPAddressUtil.isIPv6LiteralAddress(ip)) {
-                logger.debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{record, ip});
+                logger.debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{ip, record});
                 continue;
             }
             processIp(record, ip, context);
