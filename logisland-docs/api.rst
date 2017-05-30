@@ -334,7 +334,7 @@ You can then start to generate the source code from the swgger yaml file
     swagger-codegen generate \
         --group-id com.hurence.logisland \
         --artifact-id logisland-agent \
-        --artifact-version 0.10.0-SNAPSHOT \
+        --artifact-version 0.10.0-rc1 \
         --api-package com.hurence.logisland.agent.rest.api \
         --model-package com.hurence.logisland.agent.rest.model \
         -o logisland-framework/logisland-agent \

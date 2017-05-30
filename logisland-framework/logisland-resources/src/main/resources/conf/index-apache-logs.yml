@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.10.0-rc1
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -41,9 +41,9 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
       type: service
-      documentation: elasticsearch 2.4.0 service implementation
+      documentation: elasticsearch 2.3.3 service implementation
       configuration:
         hosts: sandbox:9300
         cluster.name: elasticsearch
@@ -55,7 +55,7 @@ engine:
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: a processor that converts raw apache logs into structured log records
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events

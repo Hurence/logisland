@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0-rc1</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -734,8 +734,13 @@
                         <properties>
                             <project.inceptionYear>2016</project.inceptionYear>
                             <owner>Hurence</owner>
-                            <email>bailet.thomas@gmail.com</email>
+                            <email>support@hurence.com</email>
+
                         </properties>
+                        <includes>
+                            <include>**/*.java</include>
+                            <include>**/*.scala</include>
+                        </includes>
                         <excludes>
                             <exclude>logisland-docs/**</exclude>
                             <exclude>logisland-docker/**</exclude>

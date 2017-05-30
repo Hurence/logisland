@@ -204,14 +204,14 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-    mvn versions:set -DnewVersion=0.10.0-SNAPSHOT
+    mvn versions:set -DnewVersion=0.10.0-rc1
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
-    git tag -a v0.10.0-SNAPSHOT -m "new logisland release 0.10.0-SNAPSHOT"
-    git push origin v0.10.0-SNAPSHOT
+    git tag -a v0.10.0-rc1 -m "new logisland release 0.10.0-rc1"
+    git push origin v0.10.0-rc1
 
 follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 
@@ -227,12 +227,9 @@ Building the image
     # build logisland
     mvn clean install -DskipTests -Pdocker -Dhdp=2.4
 
-To tag the latest docker image find its id
-
-.. code-block:: sh
-
+    # verify image build
     docker images
-    docker tag 7d9495d03763 hurence/logisland:latest
+
 
 then login and push the latest image
 

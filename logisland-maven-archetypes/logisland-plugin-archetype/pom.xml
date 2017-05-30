@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-maven-archetypes</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
 
     <artifactId>logisland-plugin-archetype</artifactId>

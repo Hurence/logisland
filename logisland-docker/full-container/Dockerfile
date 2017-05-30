@@ -48,12 +48,12 @@ RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470
 
 
 # Log-Island
-COPY logisland-0.10.0-SNAPSHOT-bin.tar.gz /usr/local/logisland-0.10.0-SNAPSHOT-bin.tar.gz
+COPY logisland-0.10.0-rc1-bin.tar.gz /usr/local/logisland-0.10.0-rc1-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-0.10.0-SNAPSHOT-bin.tar.gz; \
-    ln -s /usr/local/logisland-0.10.0-SNAPSHOT /usr/local/logisland; \
+    tar -xzf logisland-0.10.0-rc1-bin.tar.gz; \
+    ln -s /usr/local/logisland-0.10.0-rc1 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/logisland-0.10.0-SNAPSHOT-bin.tar.gz
+    rm -f /usr/local/logisland-0.10.0-rc1-bin.tar.gz
 ENV LOGISLAND_HOME /usr/local/logisland
 RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
 
