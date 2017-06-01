@@ -31,6 +31,9 @@ import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.SplitText;
 import com.hurence.logisland.stream.RecordStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -299,10 +302,25 @@ public class DocGenerator {
     }
 
     public static void main(String[] args) {
+        DocGenerator.generate(new File("."), "rst");
+        DocGenerator.generate(new File("../logisland-framework/logisland-agent/src/main/resources"), "json");
 
+        try {
+            FileUtils.copyDirectory(
+                    new File("."),
+                    new File("../logisland-framework/logisland-resources/src/main/resources/docs"),
+                    new WildcardFileFilter("*.rst"));
 
-        DocGenerator.generate(new File("../../logisland-docs"), "rst");
-        DocGenerator.generate(new File("../../logisland-framework/logisland-agent/src/main/resources"), "json");
+            FileUtils.copyDirectory(
+                    new File("tutorials"),
+                    new File("../logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
+                    new WildcardFileFilter("*.rst"));
 
+            FileUtils.copyDirectory(
+                    new File("_static"),
+                    new File("../logisland-framework/logisland-resources/src/main/resources/docs/_static"));
+        } catch (IOException e) {
+            logger.error(e.toString());
+        }
     }
 }

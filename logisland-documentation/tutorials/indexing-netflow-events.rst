@@ -180,7 +180,7 @@ In order to send netflow V5 event (binary format) to ``logisland_raw`` Kafka top
 
 2. Import flow template
 
-   Download `this <https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/nifi_netflow.xml>`_ nifi template and import it using "Upload Template" in "Operator" toolbox.
+   Download `this <https://github.com/Hurence/logisland/tree/master/logisland-documentation/_static/nifi_netflow.xml>`_ nifi template and import it using "Upload Template" in "Operator" toolbox.
 
    .. image:: /_static/nifi-template-dialog.png
 
@@ -408,7 +408,7 @@ You have now to save your search by clicking the save icon. Save this search as 
 Display network information in kibana dashboard
 _______________________________________________
 
-First, you need to import the predefined Kibana dashboard (download `this file <https://github.com/Hurence/logisland/tree/master/logisland-docs/_static/netflow_dashboard.json>`_ first) under ``Settings`` tab, ``Objetcs`` subtab.
+First, you need to import the predefined Kibana dashboard (download `this file <https://github.com/Hurence/logisland/tree/master/logisland-documentation/_static/netflow_dashboard.json>`_ first) under ``Settings`` tab, ``Objetcs`` subtab.
 
 Select ``Import`` and load previously saved netflow_dashboard.json dashboard (it also contains required Kibana visualizations)
 
