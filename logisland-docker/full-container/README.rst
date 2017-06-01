@@ -78,3 +78,22 @@ if you want to mount a directory from your host, add the following option :
 
     -v ~/projects/logisland/docker/mount/:/usr/local/logisland
 
+
+Deploy the image to Docker hub
+------------------------------
+
+tag the image as latest
+
+.. code-block:: sh
+
+    # verify image build
+    docker images
+    docker tag <IMAGE_ID> latest
+
+
+then login and push the latest image
+
+.. code-block:: sh
+
+    docker login
+    docker push hurence/logisland-hdp2.4
