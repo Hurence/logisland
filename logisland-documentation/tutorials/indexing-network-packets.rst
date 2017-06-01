@@ -205,14 +205,14 @@ The first section configures the Spark engine, we will use a `KafkaStreamProcess
       configuration:
         hosts: sandbox:9300
         cluster.name: elasticsearch
-        batch.size: 20000
+        batch.size: 4000
 
   streamConfigurations:
 
 Stream 1 : parse incoming Network Packets
 _________________________________________
 Inside this engine you will run a Kafka stream of processing, so we setup input/output topics and Kafka/Zookeeper hosts.
-Here the stream will read all the logs sent in ``packets_topic`` topic and push the processed packet records into ``logisland_events`` topic.
+Here the stream will read all the logs sent in ``logisland_input_packets_topic`` topic and push the processed packet records into ``logisland_parsed_packets_topic`` topic.
 
 We can define some serializers to marshall all records from and to a topic.
 
@@ -224,9 +224,9 @@ We can define some serializers to marshall all records from and to a topic.
       type: stream
       documentation: A processor chain that parses network packets into Logisland records
       configuration:
-        kafka.input.topics: packets_topic
-        kafka.output.topics: logisland_events
-        kafka.error.topics: logisland_errors
+        kafka.input.topics: logisland_input_packets_topic
+        kafka.output.topics: logisland_parsed_packets_topic
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -250,12 +250,12 @@ Within this stream there is a single processor in the processor chain: the Parse
             debug: true
             flow.mode: stream
 
-This stream will process network packets as soon as they will be queued into ``packets_topic`` Kafka topic, each packet will be parsed as a record which will be pushed back to Kafka in the ``logisland_events`` topic.
+This stream will process network packets as soon as they will be queued into ``logisland_input_packets_topic`` Kafka topic, each packet will be parsed as a record which will be pushed back to Kafka in the ``logisland_parsed_packets_topic`` topic.
 
 Stream 2: Index the processed records into Elasticsearch
 ________________________________________________________
 
-The second Kafka stream will handle ``Records`` pushed into the ``logisland_events`` topic to index them into ElasticSearch. So there is no need to define an output topic:
+The second Kafka stream will handle ``Records`` pushed into the ``logisland_parsed_packets_topic`` topic to index them into ElasticSearch. So there is no need to define an output topic:
 
 .. code-block:: yaml
 
@@ -263,11 +263,11 @@ The second Kafka stream will handle ``Records`` pushed into the ``logisland_even
     - stream: indexing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: processor
-      documentation: a processor that push events to ES
+      documentation: a processor that pushes events to ES
       configuration:
-        kafka.input.topics: logisland_events
+        kafka.input.topics: logisland_parsed_packets_topic
         kafka.output.topics: none
-        kafka.error.topics: logisland_errors
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -315,7 +315,8 @@ All required steps to install pycapa probe are explained in `this site <https://
 
   yum install libpcap
   yum install python-pip
-  yum install python-pip
+  yum install python-devel
+
 
 2. Build pycapa probe from Metron repo
 
@@ -329,11 +330,11 @@ All required steps to install pycapa probe are explained in `this site <https://
 
 Capture network packets
 _______________________
-To start capturing network packets into the topic ``packets_topic`` using pycapa probe, use the following command :
+To start capturing network packets into the topic ``logisland_input_packets_topic`` using pycapa probe, use the following command :
 
 .. code-block:: sh
 
-  pycapa --producer --kafka sandbox:9092 --topic packets_topic -i eth0
+  pycapa --producer --kafka sandbox:9092 --topic logisland_input_packets_topic -i eth0
 
 6. Monitor your spark jobs and Kafka topics
 -------------------------------------------

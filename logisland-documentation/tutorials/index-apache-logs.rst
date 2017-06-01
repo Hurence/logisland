@@ -204,7 +204,7 @@ The second Kafka stream will handle ``Records`` pushed into ``logisland_events``
     - stream: indexing_stream
       component: com.hurence.logisland.processor.chain.KafkaRecordStream
       type: processor
-      documentation: a processor that push events to ES
+      documentation: a processor that pushes events to ES
       configuration:
         kafka.input.topics: logisland_events
         kafka.output.topics: none
