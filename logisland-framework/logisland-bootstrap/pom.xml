@@ -61,7 +61,7 @@
     <profiles>
 
         <profile>
-            <id>hdp-2.4</id>
+            <id>hdp2.4</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
@@ -72,13 +72,13 @@
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark-engine16</artifactId>
+                    <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
                 </dependency>
             </dependencies>
 
         </profile>
         <profile>
-            <id>hdp-2.5</id>
+            <id>hdp2.5</id>
             <activation>
                 <property>
                     <name>hdp</name>
@@ -86,6 +86,10 @@
                 </property>
             </activation>
             <dependencies>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
+                </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-agent</artifactId>

@@ -29,7 +29,7 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>logisland-outlier-detection-plugin</artifactId>
+    <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
 
 
 

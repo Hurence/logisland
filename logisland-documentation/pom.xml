@@ -66,7 +66,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-outlier-detection-plugin</artifactId>
+            <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

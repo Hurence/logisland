@@ -72,8 +72,9 @@
         <module>logisland-api</module>
         <module>logisland-plugins</module>
         <module>logisland-services</module>
-        <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
+        <module>logisland-documentation</module>
+        <module>logisland-engines</module>
         <module>logisland-assembly</module>
         <module>logisland-docker</module>
     </modules>
@@ -604,12 +605,12 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-spark-engine21</artifactId>
+                <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-spark-engine16</artifactId>
+                <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -619,7 +620,7 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-outlier-detection-plugin</artifactId>
+                <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -696,6 +697,11 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-documentation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-resources</artifactId>
                 <classifier>resources</classifier>
                 <scope>runtime</scope>
@@ -748,7 +754,7 @@
                             <include>**/*.scala</include>
                         </includes>
                         <excludes>
-                            <exclude>logisland-docs/**</exclude>
+                            <exclude>logisland-documentation/**</exclude>
                             <exclude>logisland-docker/**</exclude>
                             <exclude>**/*.rst</exclude>
                             <exclude>**/README</exclude>
@@ -1156,7 +1162,7 @@
 
         <!--  hdp 2.5 -->
         <profile>
-            <id>hdp-2.5</id>
+            <id>hdp2.5</id>
             <activation>
                 <property>
                     <name>hdp</name>
@@ -1171,15 +1177,11 @@
                 <jackson.version>2.6.6</jackson.version>
                 <hdp>2.5</hdp>
             </properties>
-            <modules>
-                <module>logisland-engines/logisland-spark-engine21</module>
-                <module>logisland-framework/logisland-agent</module>
-            </modules>
         </profile>
 
         <!--  hdp 2.4 -->
         <profile>
-            <id>hdp-2.4</id>
+            <id>hdp2.4</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
@@ -1195,24 +1197,6 @@
                 <jackson.version>2.4.4</jackson.version>
                 <hdp>2.4</hdp>
             </properties>
-            <modules>
-                <module>logisland-engines/logisland-spark-engine16</module>
-            </modules>
-        </profile>
-
-
-        <profile>
-            <id>generateDoc</id>
-            <activation>
-                <property>
-                    <name>generateDoc</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>logisland-framework/logisland-documentation</module>
-
-            </modules>
         </profile>
 
         <!--    mvn -DperformRelease=true  clean deploy           -->
