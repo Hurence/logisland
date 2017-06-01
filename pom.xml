@@ -159,6 +159,12 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>osssonatype</id>
+            <name>OSS Sonatype</name>
+            <url>https://repo1.maven.org/maven2/</url>
+            <layout>default</layout>
+        </repository>
 
         <repository>
             <id>confluent</id>

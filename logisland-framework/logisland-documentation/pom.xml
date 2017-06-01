@@ -72,7 +72,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
         </dependency>
@@ -104,6 +104,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
         </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -142,10 +143,11 @@
 
     </build>
 
-    <profiles>
+  <!--  <profiles>
         <profile>
             <id>hdp-2.4</id>
             <activation>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.4</value>
@@ -180,5 +182,5 @@
             </dependencies>
 
         </profile>
-    </profiles>
+    </profiles>-->
 </project>

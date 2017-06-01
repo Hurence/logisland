@@ -43,6 +43,6 @@ public class ProcessorsApiServiceImpl extends ProcessorsApiService {
     }
 
 
-    private static String JSON_PLUGINS_FILE = "processors.json";
+    private static String JSON_PLUGINS_FILE = "components.json";
 
 }

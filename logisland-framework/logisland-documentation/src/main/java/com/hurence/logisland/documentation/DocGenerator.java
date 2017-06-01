@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ package com.hurence.logisland.documentation;
 
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.documentation.html.HtmlDocumentationWriter;
 import com.hurence.logisland.documentation.html.HtmlProcessorDocumentationWriter;
 import com.hurence.logisland.documentation.init.EngineInitializer;
@@ -38,6 +39,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 /**
  * Uses the ExtensionManager to get a list of Processor, ControllerService, and
@@ -46,7 +48,7 @@ import java.util.TreeMap;
 public class DocGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(DocGenerator.class);
-    public static final String OUTPUT_FILE = "processors";
+    public static final String OUTPUT_FILE = "components";
 
     /**
      * Generates documentation into the work/docs dir specified
@@ -86,12 +88,14 @@ public class DocGenerator {
         ClassFinder.findClasses(new Visitor<String>() {
             @Override
             public boolean visit(String clazz) {
-                if (clazz.contains("logisland") && !clazz.contains("Mock")) {
+                if (clazz.contains("logisland") && !clazz.contains("Mock") && !clazz.contains("shade")) {
                     try {
                         Class c = Class.forName(clazz);
+
+
                         extensionClasses.put(c.getSimpleName(), c);
-                    } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                        e.printStackTrace();
+                    } catch (Throwable e) {
+                        logger.error("Unable to load class " + clazz + " : " + e.getMessage());
                     }
                 }
 
@@ -100,8 +104,6 @@ public class DocGenerator {
         });
 
         docsDirectory.mkdirs();
-        logger.info("Generating documentation for: " + extensionClasses.size() + " components in: "
-                + docsDirectory);
 
 
         // write headers for single rst file
@@ -111,9 +113,9 @@ public class DocGenerator {
                 baseDocumenationFile.delete();
 
             try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
-                writer.println("Processors");
+                writer.println("Components");
                 writer.println("==========");
-                writer.println("You'll find here the list of all usable Processors, Engines and other components " +
+                writer.println("You'll find here the list of all usable Processors, Engines, Services and other components " +
                         "that can be usable out of the box in your analytics streams");
                 writer.println();
             } catch (FileNotFoundException e) {
@@ -156,18 +158,23 @@ public class DocGenerator {
             }
         });
 
+
+        logger.info("Generating " +writerType + " documentation for " + Arrays.stream(sortedExtensionsClasses)
+                .filter(ConfigurableComponent.class::isAssignableFrom).count() + " components in: "
+                + docsDirectory);
+
         Arrays.stream(sortedExtensionsClasses)
                 .filter(ConfigurableComponent.class::isAssignableFrom)
                 .forEach(extensionClass -> {
-                    final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
-                    try {
-                        document(docsDirectory, componentClass, writerType);
+            final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
+            try {
+                document(docsDirectory, componentClass, writerType);
 
-                    } catch (Exception e) {
-                        // nothing to do
-                    }
+            } catch (Exception e) {
+                logger.error(e.toString());
+            }
 
-                });
+        });
 
 
         if (writerType.equals("json")) {
@@ -231,22 +238,21 @@ public class DocGenerator {
     private static DocumentationWriter getDocumentWriter(final Class<? extends ConfigurableComponent> componentClass,
                                                          final String writerType) {
 
-        if (writerType.equals("html")) {
-            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
-                return new HtmlProcessorDocumentationWriter();
-            }
 
-            return null;
-        } else if (writerType.equals("rst")) {
-            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
-                return new RstDocumentationWriter();
+        if (Processor.class.isAssignableFrom(componentClass) ||
+                RecordStream.class.isAssignableFrom(componentClass) ||
+                ControllerService.class.isAssignableFrom(componentClass) ||
+                ProcessingEngine.class.isAssignableFrom(componentClass)) {
+            switch (writerType) {
+                case "html":
+                    return new HtmlProcessorDocumentationWriter();
+                case "rst":
+                    return new RstDocumentationWriter();
+                case "json":
+                    return new JsonDocumentationWriter();
+                default:
+                    return null;
             }
-            return null;
-        } else if (writerType.equals("json")) {
-            if (Processor.class.isAssignableFrom(componentClass) || RecordStream.class.isAssignableFrom(componentClass) || ProcessingEngine.class.isAssignableFrom(componentClass)) {
-                return new JsonDocumentationWriter();
-            }
-            return null;
         } else {
             return null;
         }

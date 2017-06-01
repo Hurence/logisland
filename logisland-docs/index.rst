@@ -28,7 +28,7 @@ Contents:
    developer
    tutorials/index
    api
-   processors
+   components
    changes
    faq
 

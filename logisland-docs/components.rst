@@ -1,7 +1,82 @@
-Processors
+Components
 ==========
-You'll find here the list of all usable Processors, Engines and other components that can be usable out of the box in your analytics streams
+You'll find here the list of all usable Processors, Engines, Services and other components that can be usable out of the box in your analytics streams
 
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
+
+BulkAddElasticsearch
+--------------------
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+   "**default.index**", "The name of the index to insert into", "", "null", "", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "", "**true**"
+   "**timebased.index**", "do we add a date suffix", "No date (no date added to default index), Today's date (today's date added to default index), yesterday's date (yesterday's date added to default index)", "no", "", ""
+   "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "", ""
+   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.consolidateSession.ConsolidateSession: 
+
+ConsolidateSession
+------------------
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
+
+Class
+_____
+com.hurence.logisland.processor.consolidateSession.ConsolidateSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "session.timeout", "session timeout in sec", "", "1800", "", ""
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "", ""
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "", ""
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "", ""
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "", ""
+   "fields.to.return", "the list of fields to return", "", "null", "", ""
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "", ""
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "", ""
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "", ""
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "", ""
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "", ""
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "", ""
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "", ""
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "", ""
 
 ----------
 
@@ -132,6 +207,47 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
+
+EnrichRecordsElasticsearch
+--------------------------
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+The plugin properties are :
+- es.index (String)            : Name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
+- es.key (String)              : Name of the elasticsearch key on which the multiget query will be performed. This field is mandatory.
+- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", ""
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", ""
+   "es.type", "The name of the ES type to use in multiget query. ", "", "null", "", ""
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", ""
+   "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.EvaluateJsonPath: 
 
 EvaluateJsonPath
@@ -252,233 +368,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger: 
-
-KafkaRecordStreamDebugger
--------------------------
-No description provided.
-
-Class
-_____
-com.hurence.logisland.stream.spark.KafkaRecordStreamDebugger
-
-Tags
-____
-None.
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
-   "avro.input.schema", "the avro schema definition", "", "null", "", ""
-   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
-
-   "kafka.message.key.field", "Sets the field which contains the key of the message which will be sent to the output topic. The default key field is set to record_idIf the field doesn't exist or is emptythe message key will be null and the partitioner will send the messageto a random partition, else the DefaultPartitioner will be used to send the message to a partition id computed from the hash of the key field value", "", "record_id", "", ""
-
-----------
-
-.. _com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner: 
-
-KafkaRecordStreamHDFSBurner
----------------------------
-No description provided.
-
-Class
-_____
-com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner
-
-Tags
-____
-None.
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
-   "avro.input.schema", "the avro schema definition", "", "null", "", ""
-   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
-   "**output.folder.path**", "the location where to put files : file:///tmp/out", "", "null", "", ""
-   "**output.format**", "can be parquet, orc csv", "parquet, txt, json, json", "null", "", ""
-   "**record.type**", "the type of event to filter", "", "null", "", ""
-   "num.partitions", "the numbers of physical files on HDFS", "", "4", "", ""
-   "exclude.errors", "do we include records with errors ?", "", "true", "", ""
-
-----------
-
-.. _com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing: 
-
-KafkaRecordStreamParallelProcessing
------------------------------------
-No description provided.
-
-Class
-_____
-com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-
-Tags
-____
-None.
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
-   "avro.input.schema", "the avro schema definition", "", "null", "", ""
-   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
-   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
-   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
-
-----------
-
-.. _com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator: 
-
-KafkaRecordStreamSQLAggregator
-------------------------------
-This is a stream capable of SQL query interpretations
-
-Class
-_____
-com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
-
-Tags
-____
-stream, SQL, query, record
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**kafka.error.topics**", "Sets the error topics Kafka topic name", "", "logisland_errors", "", ""
-   "**kafka.input.topics**", "Sets the input Kafka topic name", "", "logisland_raw", "", ""
-   "**kafka.output.topics**", "Sets the output Kafka topic name", "", "logisland_events", "", ""
-   "kafka.metrics.topic", "a topic to send metrics of processing. no output if not set", "", "logisland_metrics", "", ""
-   "avro.input.schema", "the avro schema definition", "", "null", "", ""
-   "avro.output.schema", "the avro schema definition for the output serialization", "", "null", "", ""
-   "kafka.input.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.output.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
-   "kafka.error.topics.serializer", "No Description Provided.", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
-   "kafka.topic.autoCreate", "define wether a topic should be created automatically if not already exists", "", "true", "", ""
-   "kafka.topic.default.partitions", "if autoCreate is set to true, this will set the number of partition at topic creation time", "", "20", "", ""
-   "kafka.topic.default.replicationFactor", "if autoCreate is set to true, this will set the number of replica for each partition at topic creation time", "", "3", "", ""
-   "**kafka.metadata.broker.list**", "a comma separated list of host:port brokers", "", "sandbox:9092", "", ""
-   "**kafka.zookeeper.quorum**", "No Description Provided.", "", "sandbox:2181", "", ""
-   "kafka.manual.offset.reset", "Sets manually an initial offset in ZooKeeper: smallest (automatically reset the offset to the smallest offset), largest (automatically reset the offset to the largest offset), anything else (throw exception to the consumer)", "largest offset (the offset to the largest offset), smallest offset (the offset to the smallest offset)", "null", "", ""
-   "max.results.count", "the max number of rows to output. (-1 for no limit)", "", "-1", "", ""
-   "**sql.query**", "The SQL query to execute, please note that the table name must exists in input topics names", "", "null", "", ""
-   "output.record.type", "the output type of the record", "", "aggregation", "", ""
-
-----------
-
-.. _com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine: 
-
-KafkaStreamProcessingEngine
----------------------------
-No description provided.
-
-Class
-_____
-com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
-
-Tags
-____
-None.
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**spark.app.name**", "Tha application name", "", "logisland", "", ""
-   "**spark.master**", "The url to Spark Master", "", "local[2]", "", ""
-   "spark.yarn.deploy-mode", "The yarn deploy mode", "", "null", "", ""
-   "spark.yarn.queue", "The name of the YARN queue", "", "default", "", ""
-   "spark.driver.memory", "The memory size for Spark driver", "", "512m", "", ""
-   "spark.executor.memory", "The memory size for Spark executors", "", "1g", "", ""
-   "spark.driver.cores", "The number of cores for Spark driver", "", "4", "", ""
-   "spark.executor.cores", "The number of cores for Spark driver", "", "1", "", ""
-   "spark.executor.instances", "The number of instances for Spark app", "", "null", "", ""
-   "spark.serializer", "Class to use for serializing objects that will be sent over the network or need to be cached in serialized form", "", "org.apache.spark.serializer.KryoSerializer", "", ""
-   "spark.streaming.blockInterval", "Interval at which data received by Spark Streaming receivers is chunked into blocks of data before storing them in Spark. Minimum recommended - 50 ms", "", "350", "", ""
-   "spark.streaming.kafka.maxRatePerPartition", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "5000", "", ""
-   "**spark.streaming.batchDuration**", "No Description Provided.", "", "2000", "", ""
-   "spark.streaming.backpressure.enabled", "This enables the Spark Streaming to control the receiving rate based on the current batch scheduling delays and processing times so that the system receives only as fast as the system can process.", "", "false", "", ""
-   "spark.streaming.unpersist", "Force RDDs generated and persisted by Spark Streaming to be automatically unpersisted from Spark's memory. The raw input data received by Spark Streaming is also automatically cleared. Setting this to false will allow the raw data and persisted RDDs to be accessible outside the streaming application as they will not be cleared automatically. But it comes at the cost of higher memory usage in Spark.", "", "false", "", ""
-   "spark.ui.port", "No Description Provided.", "", "4050", "", ""
-   "spark.streaming.timeout", "No Description Provided.", "", "-1", "", ""
-   "spark.streaming.kafka.maxRetries", "Maximum rate (number of records per second) at which data will be read from each Kafka partition", "", "3", "", ""
-   "spark.streaming.ui.retainedBatches", "How many batches the Spark Streaming UI and status APIs remember before garbage collecting.", "", "200", "", ""
-   "spark.streaming.receiver.writeAheadLog.enable", "Enable write ahead logs for receivers. All the input data received through receivers will be saved to write ahead logs that will allow it to be recovered after driver failures.", "", "false", "", ""
-   "spark.yarn.maxAppAttempts", "Because Spark driver and Application Master share a single JVM, any error in Spark driver stops our long-running job. Fortunately it is possible to configure maximum number of attempts that will be made to re-run the application. It is reasonable to set higher value than default 2 (derived from YARN cluster property yarn.resourcemanager.am.max-attempts). 4 works quite well, higher value may cause unnecessary restarts even if the reason of the failure is permanent.", "", "4", "", ""
-   "spark.yarn.am.attemptFailuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, 4 attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
-   "spark.yarn.max.executor.failures", "a maximum number of executor failures before the application fails. By default it is max(2 * num executors, 3), well suited for batch jobs but not for long-running jobs. The property comes with corresponding validity interval which also should be set.8 * num_executors", "", "20", "", ""
-   "spark.yarn.executor.failuresValidityInterval", "If the application runs for days or weeks without restart or redeployment on highly utilized cluster, x attempts could be exhausted in few hours. To avoid this situation, the attempt counter should be reset on every hour of so.", "", "1h", "", ""
-   "spark.task.maxFailures", "For long-running jobs you could also consider to boost maximum number of task failures before giving up the job. By default tasks will be retried 4 times and then job fails.", "", "8", "", ""
-
-----------
-
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery
@@ -565,6 +454,52 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hash.algorithm**", "the algorithme to use to hash id string (e.g. 'SHA-256'", "SHA-384, SHA-224, SHA-256, MD2, SHA, SHA-512, MD5", "SHA-256", "", ""
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "", ""
    "**language.tag**", "the language to use to format numbers in string", "aa, ab, ae, af, ak, am, an, ar, as, av, ay, az, ba, be, bg, bh, bi, bm, bn, bo, br, bs, ca, ce, ch, co, cr, cs, cu, cv, cy, da, de, dv, dz, ee, el, en, eo, es, et, eu, fa, ff, fi, fj, fo, fr, fy, ga, gd, gl, gn, gu, gv, ha, he, hi, ho, hr, ht, hu, hy, hz, ia, id, ie, ig, ii, ik, in, io, is, it, iu, iw, ja, ji, jv, ka, kg, ki, kj, kk, kl, km, kn, ko, kr, ks, ku, kv, kw, ky, la, lb, lg, li, ln, lo, lt, lu, lv, mg, mh, mi, mk, ml, mn, mo, mr, ms, mt, my, na, nb, nd, ne, ng, nl, nn, no, nr, nv, ny, oc, oj, om, or, os, pa, pi, pl, ps, pt, qu, rm, rn, ro, ru, rw, sa, sc, sd, se, sg, si, sk, sl, sm, sn, so, sq, sr, ss, st, su, sv, sw, ta, te, tg, th, ti, tk, tl, tn, to, tr, ts, tt, tw, ty, ug, uk, ur, uz, ve, vi, vo, wa, wo, xh, yi, yo, za, zh, zu", "en", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
+
+MultiGetElasticsearch
+---------------------
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+- index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+- index (same field name as the incoming record) : name of the elasticsearch index.
+- type (same field name as the incoming record) : name of the elasticsearch type.
+- id (same field name as the incoming record) : retrieved document id.
+- a list of String fields containing :
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Class
+_____
+com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
+
+Tags
+____
+elasticsearch
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+   "**es.index.field**", "the name of the incoming records field containing es index name to use in multiget query. ", "", "null", "", ""
+   "**es.type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "", ""
+   "**es.ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "", ""
+   "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "", ""
+   "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "", ""
 
 ----------
 
@@ -759,15 +694,15 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.pcap.ParsePCap: 
+.. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
 
-ParsePCap
----------
-The PCap processor is the LogIsland entry point to parse network packets captured in pcap format. The PCap processor decodes the bytes of the incoming pcap record, where a Global pcap header followed by a sequence of [packet header, packet data] pairs are stored. Each incoming pcap event is parsed into n packet records where packet headers data is made available in dedicated fields.
+ParseNetworkPacket
+------------------
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
 
 Class
 _____
-com.hurence.logisland.processor.pcap.ParsePCap
+com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
 
 Tags
 ____
@@ -846,53 +781,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "", ""
    "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "", ""
    "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.elasticsearch.PutElasticsearch: 
-
-PutElasticsearch
-----------------
-This is a processor that puts records to ES
-
-Class
-_____
-com.hurence.logisland.processor.elasticsearch.PutElasticsearch
-
-Tags
-____
-record, elasticsearch, sink, record
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-, whether a property supports the  `Expression Language <expression-language.html>`_ , and whether a property is considered "sensitive", meaning that its value will be encrypted. Before entering a value in a sensitive property, ensure that the **logisland.properties** file has an entry for the property **logisland.sensitive.props.key**.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**cluster.name**", "Name of the ES cluster (for example, elasticsearch_brew). Defaults to 'elasticsearch'", "", "elasticsearch", "", ""
-   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "", ""
-   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "", ""
-   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "", ""
-   "username", "Username to access the Elasticsearch cluster", "", "null", "", ""
-   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", ""
-   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "", ""
-   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "", ""
-   "**default.index**", "The name of the index to insert into", "", "null", "", "**true**"
-   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "", "**true**"
-   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "", ""
-   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
-   "bulk.size", "bulk size in MB", "", "5", "", ""
-   "concurrent.requests", "setConcurrentRequests", "", "2", "", ""
-   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "", ""
-   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "", ""
-   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "No retry policy (when a request fail there won't be any retry.), wait a fixed amount of time between retries (wait a fixed amount of time between retries, using user put retry number and throttling delay), custom exponential policy (time waited between retries grow exponentially, using user put retry number and throttling delay), es default exponential policy (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "", ""
-   "flush.interval", "flush interval in sec", "", "5", "", ""
-   "**timebased.index**", "do we add a date suffix", "No date (no date added to default index), Today's date (today's date added to default index), yesterday's date (yesterday's date added to default index)", "no", "", ""
-   "es.index.field", "the name of the event field containing es index type => will override index value if set", "", "null", "", ""
-   "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "", ""
 
 ----------
 
