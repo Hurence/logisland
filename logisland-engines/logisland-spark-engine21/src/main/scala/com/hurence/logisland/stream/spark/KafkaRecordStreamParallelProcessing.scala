@@ -193,11 +193,13 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * push outgoing events and errors to Kafka
                           */
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
-                            outgoingEvents.toList,
-                            serializer
-                        )
+                        if(!streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString.contains("none")){
+                            kafkaSink.value.produce(
+                                streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
+                                outgoingEvents.toList,
+                                serializer
+                            )
+                        }
 
                         kafkaSink.value.produce(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString,

@@ -238,7 +238,7 @@ object AbstractKafkaRecordStream {
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
 
-
+    val NONE_TOPIC: String = "none"
     private val logger = LoggerFactory.getLogger(classOf[AbstractKafkaRecordStream])
     protected var kafkaSink: Broadcast[KafkaSink] = null
     protected var zkSink: Broadcast[ZookeeperSink] = null
@@ -312,7 +312,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
                 ProducerConfig.ACKS_CONFIG -> "all",
                 ProducerConfig.RETRIES_CONFIG -> "3",
-                ProducerConfig.BATCH_SIZE_CONFIG -> "500",
+                ProducerConfig.LINGER_MS_CONFIG -> "5",
+                ProducerConfig.BATCH_SIZE_CONFIG -> "20000",
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
@@ -496,7 +497,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                              topicDefaultReplicationFactor: Int): Unit = {
 
         topics.foreach(topic => {
-            if (!AdminUtils.topicExists(zkUtils, topic)) {
+
+            if (!topic.equals(NONE_TOPIC) && !AdminUtils.topicExists(zkUtils, topic)) {
                 AdminUtils.createTopic(zkUtils, topic, topicDefaultPartitions, topicDefaultReplicationFactor)
                 Thread.sleep(1000)
                 logger.info(s"created topic $topic with" +
