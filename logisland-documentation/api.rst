@@ -134,7 +134,7 @@ then comes the initialization bloc of the component given a ``ComponentContext``
 .. code-block:: java
 
     @Override
-    public void init(final ComponentContext context) {
+    public void init(final ProcessContext context) {
         logger.info("init MockProcessor");
     }
 
@@ -143,66 +143,157 @@ And now the real business part with the ``process`` method which handles all the
 .. code-block:: java
 
     @Override
-    public Collection<Record> process(final ComponentContext context,
-                                      final Collection<Record> collection) {
-        // log inputs
-        collection.stream().forEach(record -> {
-            logger.info("mock processing record : {}", record)
-        });
+    public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        // output a useless record
-        Record mockRecord = new Record("mock_record");
-        mockRecord.setField("incomingEventsCount", FieldType.INT, collection.size());
-        mockRecord.setStringField("message",
-                                   context.getProperty(FAKE_MESSAGE).asString());
+        final String message = context.getPropertyValue(FAKE_MESSAGE).asString();
+        final List<Record> outputRecords = new ArrayList<>(collection);
+        outputRecords.forEach(record -> record.setStringField("message", message));
 
-        return Collections.singleton(mockRecord);
+        return outputRecords;
+    }
+}
+
+The Processor can then be configured through yaml config files
+
+.. code-block:: yaml
+
+    - processor: mock_processor
+      component: com.hurence.logisland.util.runner.MockProcessor
+      type: parser
+      documentation: a parser that produce events for nothing
+      configuration:
+         fake.message: the super message
+
+
+Transverse service injection : ControllerService
+------------------------------------------------
+we often need to share access to external Services across the Processors,
+for example bulk buffers or client connections to external data sources.
+
+
+For example a cache service that could cache K/V tuple across the worker node.
+We need to provide an interface API for this service :
+
+.. code-block:: java
+
+    public interface CacheService<K,V> extends ControllerService {
+
+        PropertyDescriptor CACHE_SIZE = new PropertyDescriptor.Builder()
+                .name("cache.size")
+                .description("The maximum number of element in the cache.")
+                .required(false)
+                .defaultValue("16384")
+                .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+                .build();
+
+        public V get(K k);
+
+        public void set(K k, V v);
+    }
+
+And an implementation of the cache contract :
+
+.. code-block:: java
+
+    public class LRUKeyValueCacheService<K,V>  extends AbstractControllerService implements CacheService<K,V> {
+
+        private volatile Cache<K,V> cache;
+
+        @Override
+        public V get(K k) {
+            return cache.get(k);
+        }
+
+        @Override
+        public void set(K k, V v) {
+            cache.set(k, v);
+        }
+
+        @Override
+        @OnEnabled
+        public void init(ControllerServiceInitializationContext context) throws InitializationException {
+            try {
+                this.cache = createCache(context);
+            }catch (Exception e){
+                throw new InitializationException(e);
+            }
+        }
+
+        @Override
+        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+            List<PropertyDescriptor> props = new ArrayList<>();
+            props.add(CACHE_SIZE);
+            return Collections.unmodifiableList(props);
+        }
+
+        protected Cache<K,V> createCache(final ControllerServiceInitializationContext context) throws IOException, InterruptedException {
+            final int capacity = context.getPropertyValue(CACHE_SIZE).asInteger();
+            return new LRUCache<K,V>(capacity);
+        }
     }
 
 
-}
-
-
-The runtime context : Instance
-------------------------------
-you can use your wonderful processor by setting its configuration and asking the ``ComponentFactory`` to give you one ``ProcessorInstance`` which is a ``ConfiguredComponent``.
+You can then use this service in a custom processor :
 
 .. code-block:: java
 
-    String message = "logisland rocks !";
-    Map<String, String> conf = new HashMap<>();
-    conf.put(MockProcessor.FAKE_MESSAGE.getName(), message );
+    public class TestProcessor extends AbstractProcessor {
 
-    ProcessorConfiguration componentConfiguration = new ProcessorConfiguration();
-    componentConfiguration.setComponent(MockProcessor.class.getName());
-    componentConfiguration.setType(ComponentType.PROCESSOR.toString());
-    componentConfiguration.setConfiguration(conf);
+        static final PropertyDescriptor CACHE_SERVICE = new PropertyDescriptor.Builder()
+                .name("cache.service")
+                .description("CacheService")
+                .identifiesControllerService(CacheService.class)
+                .required(true)
+                .build();
 
-    Optional<StandardProcessorInstance> instance =
-        ComponentFactory.getProcessorInstance(componentConfiguration);
-    assertTrue(instance.isPresent());
+        @Override
+        public boolean hasControllerService() {
+            return true;
+        }
 
-Then you need a ``ComponentContext`` to run your processor.
+        @Override
+        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+            List<PropertyDescriptor> propDescs = new ArrayList<>();
+            propDescs.add(CACHE_SERVICE);
+            return propDescs;
+        }
 
-.. code-block:: java
+        @Override
+        public Collection<Record> process(ProcessContext context, Collection<Record> records) {
+            return Collections.emptyList();
+        }
+    }
 
-    ComponentContext context = new StandardComponentContext(instance.get());
-    Processor processor = instance.get().getProcessor();
 
-And finally you can use it to process records
+The injection is done through yaml config files by injecting the instance of `lru_cache` Service.
 
-.. code-block:: java
+.. code-block:: yaml
 
-    Record record = new Record("mock_record");
-    record.setId("record1");
-    record.setStringField("name", "tom");
-    List<Record> records =
-        new ArrayList<>(processor.process(context, Collections.singleton(record)));
+      ...
 
-    assertEquals(1, records.size());
-    assertTrue(records.get(0).hasField("message"));
-    assertEquals(message, records.get(0).getField("message").asString());
+      controllerServiceConfigurations:
 
+        - controllerService: lru_cache
+          component: com.hurence.logisland.service.elasticsearch.LRUKeyValueCacheService
+          type: service
+          documentation: cache service
+          configuration:
+            cache.size: 5000
+
+      streamConfigurations:
+        - stream: parsing_stream
+          component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+
+          ...
+
+          processorConfigurations:
+
+            - processor: mock_processor
+              component: com.hurence.logisland.processor.TestProcessor
+              type: parser
+              documentation: a parser that produce events for nothing
+              configuration:
+                 cache.service: lru_cache
 
 
 Chaining processors in a stream : RecordStream
@@ -217,23 +308,6 @@ Running the processor's flow : Engine
 
 .. warning:: @todo
 
-
-
-
-Packaging and conf
-------------------
-
-The end user of logisland is not the developer, but the business analyst which does understand any line of code.
-That's why we can deploy all our components through yaml config files
-
-.. code-block:: yaml
-
-    - processor: mock_processor
-      component: com.hurence.logisland.util.runner.MockProcessor
-      type: parser
-      documentation: a parser that produce events for nothing
-      configuration:
-         fake.message: the super message
 
 
 
@@ -256,6 +330,7 @@ All you need is to instantiate a Testrunner with your Processor and its properti
     final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
     testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
     testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
+
     // check if config is valid
     testRunner.assertValid();
 

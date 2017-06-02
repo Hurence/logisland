@@ -36,6 +36,10 @@ public class TestProcessor extends AbstractProcessor {
             .required(true)
             .build();
 
+    @Override
+    public boolean hasControllerService() {
+        return true;
+    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
