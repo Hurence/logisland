@@ -79,6 +79,8 @@ public class ParseNetworkPacket extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        debug = context.getPropertyValue(DEBUG_PROPERTY).asBoolean();
+
         if (debug) {
             logger.debug("Initializing PCap Processor");
         }
@@ -101,8 +103,6 @@ public class ParseNetworkPacket extends AbstractProcessor {
         }
 
         final String flowMode = context.getPropertyValue(FLOW_MODE).asString();
-
-        long threadId = Thread.currentThread().getId();
 
         Endianness endianness = Endianness.getNativeEndianness();
 
@@ -164,9 +164,9 @@ public class ParseNetworkPacket extends AbstractProcessor {
                 // if (debug) {logger.debug("Message 1 - Thread Id = " + threadId);}
                 if (globalHeader.getMagicNumber() != 0xA1B2C3D4 && globalHeader.getMagicNumber() != 0xD4C3B2A1) {
                     if (debug) {
-                        logger.debug("Invalid pcap file format : Unable to parse the global header magic number - Thread Id : " + threadId);
+                        logger.debug("Invalid pcap file format : Unable to parse the global header magic number");
                     }
-                    throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number - Thread Id : " + threadId);
+                    throw new InvalidPCapFileException("Invalid pcap file format : Unable to parse the global header magic number.");
                 }
 
                 while (true) {
