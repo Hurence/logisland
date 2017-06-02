@@ -22,9 +22,9 @@ Event mining Workflow
 Here is an example of a typical event mining pipeline.
 
 1. Raw events (sensor data, logs, user click stream, ...) are sent to Kafka topics by a NIFI / Logstash / *Beats / Flume / Collectd (or whatever) agent
-3. Raw events are structured in Logisland Records, then processed and eventually pushed back to another Kafka topic by a Logisland streaming job
+2. Raw events are structured in Logisland Records, then processed and eventually pushed back to another Kafka topic by a Logisland streaming job
 3. Records are sent to external short living storage (Elasticsearch, Solr, Couchbase, ...) for online analytics.
-3. Records are sent to external long living storage (HBase, HDFS, ...) for offline analytics (aggregated reports or ML models).
+4. Records are sent to external long living storage (HBase, HDFS, ...) for offline analytics (aggregated reports or ML models).
 5. Logisland Processors handle Records to produce Alerts and Information from ML models
 
 
