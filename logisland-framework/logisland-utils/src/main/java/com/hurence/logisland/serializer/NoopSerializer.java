@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ public class NoopSerializer implements RecordSerializer {
      */
     @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {
-        logger.info("noop means : you don't have to call me I won't do anything");
     }
 
     /**
@@ -65,7 +64,6 @@ public class NoopSerializer implements RecordSerializer {
      */
     @Override
     public Record deserialize(InputStream in) throws RecordSerializationException {
-        logger.info("noop means : you don't have to call me I won't do anything");
         return null;
     }
 }

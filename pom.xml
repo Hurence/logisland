@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0-rc1</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -72,8 +72,9 @@
         <module>logisland-api</module>
         <module>logisland-plugins</module>
         <module>logisland-services</module>
-        <module>logisland-maven-archetypes</module>
         <module>logisland-framework</module>
+        <module>logisland-documentation</module>
+        <module>logisland-engines</module>
         <module>logisland-assembly</module>
         <module>logisland-docker</module>
     </modules>
@@ -158,6 +159,12 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>osssonatype</id>
+            <name>OSS Sonatype</name>
+            <url>https://repo1.maven.org/maven2/</url>
+            <layout>default</layout>
         </repository>
 
         <repository>
@@ -598,12 +605,12 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-spark-engine21</artifactId>
+                <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-spark-engine16</artifactId>
+                <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -613,7 +620,7 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-outlier-detection-plugin</artifactId>
+                <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -690,6 +697,11 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-documentation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-resources</artifactId>
                 <classifier>resources</classifier>
                 <scope>runtime</scope>
@@ -734,10 +746,15 @@
                         <properties>
                             <project.inceptionYear>2016</project.inceptionYear>
                             <owner>Hurence</owner>
-                            <email>bailet.thomas@gmail.com</email>
+                            <email>support@hurence.com</email>
+
                         </properties>
+                        <includes>
+                            <include>**/*.java</include>
+                            <include>**/*.scala</include>
+                        </includes>
                         <excludes>
-                            <exclude>logisland-docs/**</exclude>
+                            <exclude>logisland-documentation/**</exclude>
                             <exclude>logisland-docker/**</exclude>
                             <exclude>**/*.rst</exclude>
                             <exclude>**/README</exclude>
@@ -1145,7 +1162,7 @@
 
         <!--  hdp 2.5 -->
         <profile>
-            <id>hdp-2.5</id>
+            <id>hdp2.5</id>
             <activation>
                 <property>
                     <name>hdp</name>
@@ -1160,15 +1177,11 @@
                 <jackson.version>2.6.6</jackson.version>
                 <hdp>2.5</hdp>
             </properties>
-            <modules>
-                <module>logisland-engines/logisland-spark-engine21</module>
-                <module>logisland-framework/logisland-agent</module>
-            </modules>
         </profile>
 
         <!--  hdp 2.4 -->
         <profile>
-            <id>hdp-2.4</id>
+            <id>hdp2.4</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
@@ -1184,24 +1197,6 @@
                 <jackson.version>2.4.4</jackson.version>
                 <hdp>2.4</hdp>
             </properties>
-            <modules>
-                <module>logisland-engines/logisland-spark-engine16</module>
-            </modules>
-        </profile>
-
-
-        <profile>
-            <id>generateDoc</id>
-            <activation>
-                <property>
-                    <name>generateDoc</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>logisland-framework/logisland-documentation</module>
-
-            </modules>
         </profile>
 
         <!--    mvn -DperformRelease=true  clean deploy           -->

@@ -7,7 +7,7 @@ Small standalone Hadoop distribution for development and testing purpose :
 - Elasticsearch 2.3.3
 - Kibana 4.5.1
 - Kafka 0.9.0.1
-- Logisland 0.10.0-SNAPSHOT
+- Logisland 0.10.0-rc1
 
 
 This repository contains a Docker file to build a Docker image with Apache Spark, HBase, Flume & Zeppelin. 
@@ -32,14 +32,14 @@ Building the image
 
     # build logisland
     mvn clean install
-    cp logisland-assembly/target/logisland-0.10.0-SNAPSHOT-bin.tar.gz logisland-docker
+    cp logisland-assembly/target/logisland-0.10.0-rc1-bin.tar.gz logisland-docker
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue
 
 .. code-block:: sh
 
-    docker build --rm -t hurence/logisland:0.10.0-SNAPSHOT .
+    docker build --rm -t hurence/logisland:0.10.0-rc1 .
 
 
 Running the image
@@ -61,16 +61,16 @@ Running the image
         -p 9000:9000 \
         -p 8080-8082:8080-8082 \
         -p 3000:3000 \
-        -p 4050-4060:4050-4060 \
+        -p 4040-4060:4040-4060 \
         --name logisland \
         -h sandbox \
-        hurence/logisland:0.10.0-SNAPSHOT bash
+        hurence/logisland-hdp2.4:0.10.0-rc1 bash
 
 or
 
 .. code-block::
 
-    docker run -d -h sandbox hurence/logisland:0.10.0-SNAPSHOT -d
+    docker run -d -h sandbox hurence/logisland-hdp2.4:0.10.0-rc1 -d
 
 if you want to mount a directory from your host, add the following option :
 
@@ -78,3 +78,22 @@ if you want to mount a directory from your host, add the following option :
 
     -v ~/projects/logisland/docker/mount/:/usr/local/logisland
 
+
+Deploy the image to Docker hub
+------------------------------
+
+tag the image as latest
+
+.. code-block:: sh
+
+    # verify image build
+    docker images
+    docker tag <IMAGE_ID> latest
+
+
+then login and push the latest image
+
+.. code-block:: sh
+
+    docker login
+    docker push hurence/logisland-hdp2.4
