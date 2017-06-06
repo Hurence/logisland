@@ -251,7 +251,8 @@ public class TestPutHBaseCell {
 
     private MockHBaseClientService getHBaseClientService(TestRunner runner) throws InitializationException {
         final MockHBaseClientService hBaseClient = new MockHBaseClientService();
-        runner.addControllerService("hbaseClient", hBaseClient);
+        hBaseClient.setIdentifier("hbaseClient");
+        runner.addControllerService(hBaseClient);
         runner.enableControllerService(hBaseClient);
         runner.setProperty(PutHBaseCell.HBASE_CLIENT_SERVICE, "hbaseClient");
         return hBaseClient;

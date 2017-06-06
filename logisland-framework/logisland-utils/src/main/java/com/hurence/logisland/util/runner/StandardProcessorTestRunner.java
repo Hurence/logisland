@@ -359,15 +359,16 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void addControllerService(final String identifier, final ControllerService service) throws InitializationException {
-        addControllerService(identifier, service, new HashMap<String, String>());
+    public void addControllerService(final ControllerService service) throws InitializationException {
+        addControllerService(service, new HashMap<String, String>());
     }
 
     @Override
-    public void addControllerService(final String identifier, final ControllerService service, final Map<String, String> properties) throws InitializationException {
+    public void addControllerService(final ControllerService service, final Map<String, String> properties) throws InitializationException {
 
-
-        final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
+        requireNonNull(service.getIdentifier());
+        if (service.getIdentifier().isEmpty()) throw new InitializationException("Service Identifier should not be empty String");
+        final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), properties);
         initContext.addControllerServices(context);
         service.initialize(initContext);
 
@@ -375,14 +376,14 @@ public class StandardProcessorTestRunner implements TestRunner {
         for (final Map.Entry<String, String> entry : properties.entrySet()) {
             resolvedProps.put(service.getPropertyDescriptor(entry.getKey()), entry.getValue());
         }
-
         try {
             ReflectionUtils.invokeMethodsWithAnnotation(OnAdded.class, service);
         } catch (final InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
             throw new InitializationException(e);
         }
+        context.addControllerService(service, resolvedProps, null);
+        ControllerService servicee = context.getControllerService(service.getIdentifier());
 
-        context.addControllerService(identifier, service, resolvedProps, null);
     }
 
     @Override

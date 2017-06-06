@@ -46,7 +46,8 @@ public class TestBulkAddElasticsearch {
         runner.assertValid();
 
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
-        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        elasticsearchClient.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
         final Record inputRecord1 = new StandardRecord(DEFAULT_TYPE)

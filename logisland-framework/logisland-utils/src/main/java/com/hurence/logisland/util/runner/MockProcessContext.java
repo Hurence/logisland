@@ -236,7 +236,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
     }
 
 
-    public void addControllerService(final String serviceIdentifier, final ControllerService controllerService, final Map<PropertyDescriptor, String> properties, final String annotationData) {
+    public void addControllerService(final ControllerService controllerService, final Map<PropertyDescriptor, String> properties, final String annotationData) {
         requireNonNull(controllerService);
         final ControllerServiceConfiguration config = addControllerService(controllerService);
         config.setProperties(properties);

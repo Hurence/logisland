@@ -125,7 +125,8 @@ public class TestElasticsearch_2_3_3_ClientService {
     {
         final MockElasticsearchClientService elasticsearchClientService = new MockElasticsearchClientService();
 
-        runner.addControllerService("elasticsearchClient", elasticsearchClientService);
+        elasticsearchClientService.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClientService);
 
         runner.enableControllerService(elasticsearchClientService);
         runner.setProperty(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
