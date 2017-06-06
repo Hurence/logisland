@@ -75,11 +75,13 @@
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
         </dependency>
-				<dependency>
+
+        <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>jackson</artifactId>
         </dependency>

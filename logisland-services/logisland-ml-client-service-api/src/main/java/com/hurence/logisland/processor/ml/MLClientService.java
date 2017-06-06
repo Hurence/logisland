@@ -10,6 +10,7 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerService;
 
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.model.Model;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -39,7 +40,7 @@ public interface MLClientService extends  ControllerService {
      * Restore the previously computed Neural Network model.
      *
      */
-    MultiLayerNetwork restoreModel() ;
+    Model restoreModel() ;
 
 
 }
