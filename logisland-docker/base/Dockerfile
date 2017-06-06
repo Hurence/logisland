@@ -37,7 +37,26 @@ RUN cd /usr/local; \
     make install;
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
+# Install python
+RUN sudo yum install -y zlib-devel  bzip2-devel openssl-devel ncurses-devel sqlite-devel python-devel libpcap-devel
+RUN cd /opt; \
+    wget --no-check-certificate https://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz; \
+    tar xf Python-2.7.6.tar.xz; \
+    cd Python-2.7.6; \
+    ./configure --prefix=/usr/local; \
+    make && make altinstall;
+RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7 -
+ENV PATH /usr/local/bin:$PATH
 
+# Install pycapa (python for pcap)
+RUN mkdir /tmp; \
+    cd /tmp; \
+    git clone https://github.com/apache/incubator-metron.git
+RUN cd /tmp/incubator-metron/metron-sensors/pycapa; \
+    pip install six; \
+    /usr/local/bin/pip install -r requirements.txt; \
+    python2.7 setup.py install; \
+    rm -rf /tmp/incubator-metron
 
 # update boot script
 COPY bootstrap.sh /etc/bootstrap.sh
