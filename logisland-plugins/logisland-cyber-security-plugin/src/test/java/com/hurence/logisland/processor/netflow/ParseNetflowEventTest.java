@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Hurence 
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.netflow;
 
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.MockRecord;
@@ -48,16 +49,16 @@ public class ParseNetflowEventTest {
     @Test
     public void testNetFlowEvent() {
 
-        try {
-            NETFLOW_EVENT = new String(nfByterecord,"ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            NETFLOW_EVENT = "";
-        }
+        //try {
+            NETFLOW_EVENT = new String(nfByterecord);
+        //} catch (UnsupportedEncodingException e) {
+            //NETFLOW_EVENT = "";
+        //}
 
         final TestRunner testRunner = TestRunners.newTestRunner(new ParseNetflowEvent());
         testRunner.assertValid();
         Record record = new StandardRecord("netflowevent");
-        record.setStringField(FieldDictionary.RECORD_VALUE, NETFLOW_EVENT);
+        record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, nfByterecord);
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();

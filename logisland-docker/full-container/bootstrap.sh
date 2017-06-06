@@ -32,8 +32,8 @@ grafana-server --config=/usr/local/etc/grafana/grafana.ini --homepath /usr/local
 
 
 
-echo "you could start nifi with the following command"
-echo "cd $NIFI_HOME; bin/nifi.sh start"
+#echo "you could start nifi with the following command"
+#echo "cd $NIFI_HOME; bin/nifi.sh start"
 #cd $NIFI_HOME
 #sudo bin/nifi.sh start
 

@@ -1,13 +1,28 @@
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.processor.hbase;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.processor.hbase.put.PutColumn;
-import com.hurence.logisland.processor.hbase.put.PutRecord;
-import com.hurence.logisland.processor.hbase.scan.Column;
-import com.hurence.logisland.processor.hbase.scan.ResultCell;
-import com.hurence.logisland.processor.hbase.scan.ResultHandler;
-import org.apache.hadoop.hbase.util.Bytes;
+import com.hurence.logisland.service.hbase.HBaseClientService;
+import com.hurence.logisland.service.hbase.put.PutColumn;
+import com.hurence.logisland.service.hbase.put.PutRecord;
+import com.hurence.logisland.service.hbase.scan.Column;
+import com.hurence.logisland.service.hbase.scan.ResultCell;
+import com.hurence.logisland.service.hbase.scan.ResultHandler;
 
 
 import java.io.IOException;
@@ -163,7 +178,7 @@ public class MockHBaseClientService extends AbstractControllerService implements
 
     @Override
     public byte[] toBytesBinary(String s) {
-       return Bytes.toBytesBinary(s);
+       return s.getBytes();
     }
 
 

@@ -1,8 +1,6 @@
 # IntelliJ
 *.iml
-*.iws
-*.ipr
-.idea/*
+**/.idea/*
 
 # Eclipse
 **/.project

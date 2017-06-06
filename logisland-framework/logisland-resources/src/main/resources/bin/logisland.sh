@@ -242,7 +242,7 @@ esac
 java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${YARN_APP_NAME_OPTIONS} \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark-engine*.jar \
+    ${lib_dir}/logisland-spark*-engine*.jar \
     -conf ${CONF_FILE}"
 
 if [ ! -z "${VERBOSE_OPTIONS}" ]
