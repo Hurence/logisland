@@ -23,16 +23,13 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
 
     <artifactId>logisland-elasticsearch-plugin</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <!-- Versions -->
-        <elasticsearch.version>2.3.3</elasticsearch.version>
-
         <!-- Configuration -->
         <shaded.package>${logisland.shade.packageName}.elasticsearch</shaded.package>
 
@@ -42,6 +39,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
@@ -60,12 +61,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${elasticsearch.version}</version>
-        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -76,6 +71,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.6.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-client-service-api</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -88,8 +87,9 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>${shade-plugin.version}</version>
+                <version>4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -109,12 +109,7 @@
                                     <include>com.spatial4j:*</include>
                                     <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
-                                    <include>org.elasticsearch:*</include>
                                     <include>com.thoughtworks.paranamer:*</include>
-                                    <include>org.elasticsearch:*</include>
-                                    <include>org.elasticsearch.client:*</include>
-                                    <include>org.elasticsearch.plugin:*</include>
-                                    <include>org.elasticsearch.test:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
                                     <include>io.netty:*</include>
@@ -122,6 +117,7 @@
                                     <include>org.apache.httpcomponents:*</include>
                                     <include>commons-codec:*</include>
                                     <include>org.jboss.netty:*</include>
+                                    <include>com.ning:*</include>
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -137,33 +133,16 @@
                                         <exclude>build.properties</exclude>
                                     </excludes>
                                 </filter>
-
-                                <!-- Ensure the custom JarHell is excluded -->
-                                <filter>
-                                    <artifact>org.elasticsearch:elasticsearch</artifact>
-                                    <excludes>
-                                        <exclude>org/elasticsearch/bootstrap/JarHell.class</exclude>
-                                    </excludes>
-                                </filter>
                             </filters>
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
-                                    <manifestEntries>
-                                        <Change>GIT commit ID</Change>
-                                        <Build-Date>${maven.build.timestamp}</Build-Date>
-                                    </manifestEntries>
-                                </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <relocations>
                                 <relocation>
                                     <pattern>io</pattern>
-                                    <shadedPattern>shaded.logisland.elasticsearch.io</shadedPattern>
+                                    <shadedPattern>${shaded.package}.io</shadedPattern>
                                 </relocation>
-
 
                                 <relocation>
                                     <pattern>com.google</pattern>
@@ -202,12 +181,7 @@
                                     <pattern>org.apache.lucene</pattern>
                                     <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
-                                </relocation>
                             </relocations>
-
                         </configuration>
                     </execution>
                 </executions>

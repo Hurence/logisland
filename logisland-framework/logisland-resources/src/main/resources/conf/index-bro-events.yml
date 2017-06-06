@@ -37,6 +37,18 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
   streamConfigurations:
 
     # Parsing
@@ -83,17 +95,15 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Put into ElasticSearch
+        # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes Bro events into ES
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: bro
             default.type: events
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: today
             es.index.field: search_index
             es.type.field: record_type

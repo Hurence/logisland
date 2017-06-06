@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
     <artifactId>logisland-hbase-plugin</artifactId>
     <description>Support for interacting with HBase</description>
@@ -38,17 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
         </dependency>
@@ -68,6 +57,15 @@
         <dependency>
             <groupId>com.esotericsoftware.kryo</groupId>
             <artifactId>kryo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
         </dependency>
     </dependencies>
 </project>

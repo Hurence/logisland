@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
     <packaging>pom</packaging>
     <artifactId>logisland-docker</artifactId>
@@ -37,14 +37,14 @@
                             <imageTags>
                                 <imageTag>${project.version}</imageTag>
                             </imageTags>
-                            <buildArgs>
+                            <!--buildArgs>
                                 <LOGISLAND_VERSION>${project.version}</LOGISLAND_VERSION>
-                            </buildArgs>
+                            </buildArgs-->
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
                                     <directory>${project.basedir}/../logisland-assembly/target</directory>
-                                    <include>logisland-${project.version}-bin.tar.gz</include>
+                                    <include>logisland-${project.version}-bin-hdp${hdp}.tar.gz</include>
                                 </resource>
                             </resources>
                         </configuration>
