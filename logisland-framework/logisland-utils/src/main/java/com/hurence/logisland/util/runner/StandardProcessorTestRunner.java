@@ -382,8 +382,6 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new InitializationException(e);
         }
         context.addControllerService(service, resolvedProps, null);
-        ControllerService servicee = context.getControllerService(service.getIdentifier());
-
     }
 
     @Override
