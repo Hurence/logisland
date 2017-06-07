@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 public class MockControllerServiceInitializationContext extends MockControllerServiceLookup
         implements ControllerServiceInitializationContext, ControllerServiceLookup {
 
@@ -27,17 +29,24 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
     private final VariableRegistry variableRegistry;
 
-    public MockControllerServiceInitializationContext(final ControllerService controllerService, final Map<String, String> props) {
+    public MockControllerServiceInitializationContext(final ControllerService controllerService) {
         this.service = controllerService;
         this.logger = new MockComponentLogger();
         this.variableRegistry = VariableRegistry.EMPTY_REGISTRY;
+    }
+    public MockControllerServiceInitializationContext(final ControllerService controllerService, final Map<String, String> props) {
+       this(controllerService);
         for (Map.Entry<String, String> prop: props.entrySet()){
             this.properties.put(service.getPropertyDescriptor(prop.getKey()), prop.getValue());
         }
     }
 
 
-
+    public void setProps(Map<PropertyDescriptor, String> props) {
+        for (Map.Entry<PropertyDescriptor, String> prop: props.entrySet()) {
+            setProperty(prop.getKey().getName(), prop.getValue());
+        }
+    }
     @Override
     public String getIdentifier() {
         return service.getIdentifier();
@@ -131,7 +140,7 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public ValidationResult setProperty(String name, String value) {
-        return null;
+        return setProperty(new PropertyDescriptor.Builder().name(name).build(), value);
     }
 
     @Override
@@ -147,5 +156,33 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     @Override
     public String getName() {
         return null;
+    }
+
+    /**
+     * Updates the value of the property with the given PropertyDescriptor to
+     * the specified value IF and ONLY IF the value is valid according to the
+     * descriptor's validator. Otherwise, the property value is not updated. In
+     * either case, the ValidationResult is returned, indicating whether or not
+     * the property is valid
+     *
+     * @param descriptor of property to modify
+     * @param value      new value
+     * @return result
+     */
+    public ValidationResult setProperty(final PropertyDescriptor descriptor, final String value) {
+        requireNonNull(descriptor);
+        requireNonNull(value, "Cannot set property to null value; if the intent is to remove the property, call removeProperty instead");
+        final PropertyDescriptor fullyPopulatedDescriptor = service.getPropertyDescriptor(descriptor.getName());
+
+        final ValidationResult result = fullyPopulatedDescriptor.validate(value);
+        String oldValue = properties.put(fullyPopulatedDescriptor, value);
+        if (oldValue == null) {
+            oldValue = fullyPopulatedDescriptor.getDefaultValue();
+        }
+        if ((value == null && oldValue != null) || (value != null && !value.equals(oldValue))) {
+            service.onPropertyModified(fullyPopulatedDescriptor, oldValue, value);
+        }
+
+        return result;
     }
 }

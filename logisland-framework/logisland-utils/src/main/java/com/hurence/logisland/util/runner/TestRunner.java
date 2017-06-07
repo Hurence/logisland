@@ -359,7 +359,7 @@ public interface TestRunner {
      *
      * @param service the service to enable
      */
-    void enableControllerService(ControllerService service);
+    void enableControllerService(ControllerService service) throws InitializationException;
 
     /**
      * <p>
