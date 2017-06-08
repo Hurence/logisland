@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.processor.util.BaseSyslogTest;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -26,11 +25,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RegexpProcessorTest extends BaseSyslogTest {
+public class RegexpProcessorTest {
 
     private static final Logger logger = LoggerFactory.getLogger(RegexpProcessorTest.class);
 
-    private Record getRecord1() {
+    private Record getRecord() {
         Record record1 = new StandardRecord();
         record1.setField("location", FieldType.STRING, "https://www.mycompany.com/fr/search");
         record1.setField("description", FieldType.STRING, "text1-text2");
@@ -41,7 +40,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
 
     @Test
     public void testNoRegexp() {
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName");
@@ -57,7 +56,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
 
     @Test
     public void testEmptyRegexp() {
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:");
@@ -73,7 +72,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
 
     @Test
     public void testRegexpWithoutGroup() {
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:nogroup");
@@ -91,7 +90,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
     @Test
     public void testRegexpSimple() {
 
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
@@ -109,7 +108,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
     @Test
     public void testRegexpMultiple() {
 
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
@@ -130,7 +129,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
     @Test
     public void testRegexpMultipleMoreOutputVarsThanGroups() {
 
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
@@ -151,7 +150,7 @@ public class RegexpProcessorTest extends BaseSyslogTest {
     @Test
     public void testRegexpMultipleLessOutputVarsThanGroups() {
 
-        Record record1 = getRecord1();
+        Record record1 = getRecord();
 
         TestRunner testRunner = TestRunners.newTestRunner(new RegexpProcessor());
         testRunner.setProperty("location", "companyName:https\\:\\/\\/www\\.(\\w+\\.\\w+)\\/?.*");
