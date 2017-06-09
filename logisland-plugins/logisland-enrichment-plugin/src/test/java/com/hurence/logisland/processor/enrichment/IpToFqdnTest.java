@@ -6,7 +6,6 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
-import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
 import com.hurence.logisland.service.cache.model.Cache;
 import com.hurence.logisland.service.cache.model.LRUCache;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import sun.net.util.IPAddressUtil;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 public class IpToFqdnTest {
 

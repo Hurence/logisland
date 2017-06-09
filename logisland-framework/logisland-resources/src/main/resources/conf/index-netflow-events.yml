@@ -60,7 +60,7 @@ engine:
         kafka.input.topics: netflow
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer:.logisland.serializer.BytesArraySerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
