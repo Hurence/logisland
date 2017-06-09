@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>logisland-services</artifactId>
         <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-plugins</artifactId>
         <version>0.10.0-rc1</version>
     </parent>
 
-    <artifactId>logisland-cache_key_value-service-api</artifactId>
+    <artifactId>logisland-enrichment-plugin</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -20,15 +20,17 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cache-service-api</artifactId>
             <version>0.10.0-rc1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-utils</artifactId>
-            <scope>test</scope>
+            <artifactId>logisland-cache_key_value-service-api</artifactId>
+            <version>0.10.0-rc1</version>
         </dependency>
     </dependencies>
-
-
 </project>
