@@ -320,6 +320,11 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new IllegalStateException("Cannot enable Controller Service " + service + " because it is not disabled");
         }
 
+        final MockControllerServiceInitializationContext initContext =
+                new MockControllerServiceInitializationContext(service);
+        initContext.setProps(configuration.getProperties());
+        configuration.getService().initialize(initContext);
+
         try {
             final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
             ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, configContext);
@@ -330,11 +335,8 @@ public class StandardProcessorTestRunner implements TestRunner {
             e.printStackTrace();
             Assert.fail("Failed to enable Controller Service " + service + " due to " + e);
         }
-        final MockControllerServiceInitializationContext initContext =
-                new MockControllerServiceInitializationContext(service);
-        initContext.setProps(configuration.getProperties());
 
-        configuration.getService().initialize(initContext);
+
         configuration.setEnabled(true);
     }
 
