@@ -52,13 +52,13 @@ public interface RocksdbClientService extends ControllerService {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    PropertyDescriptor ROCKSDB_READONLY = new PropertyDescriptor.Builder()
-            .name("rocksdb.readonly")
-            .description("Should the database be opened in readOnly mode ? You can use only one instance in read and write mode")//TODO look in documentation i dont remember well
-            .required(false)
-            .defaultValue("false")
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .build();
+//    PropertyDescriptor ROCKSDB_READONLY = new PropertyDescriptor.Builder()
+//            .name("rocksdb.readonly")
+//            .description("Should the database be opened in readOnly mode ? You can use only one instance in read and write mode")//TODO look in documentation i dont remember well
+//            .required(false)
+//            .defaultValue("false")
+//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            .build();
     ///////////////////////////////////////
     // Properties of the column families //
     ///////////////////////////////////////
@@ -68,6 +68,8 @@ public interface RocksdbClientService extends ControllerService {
 
     PropertyDescriptor FAMILY_NAMES = new PropertyDescriptor.Builder()
             .name("rocksdb.family.name")
+            .required(false)
+            .defaultValue("default")
             .description("Comma-separated list of family names in rocksdb. You must specify all family currrently present in the database if you want to use the database in read and write mode (default).")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -76,45 +78,45 @@ public interface RocksdbClientService extends ControllerService {
     // Properties of the compaction policy //
     /////////////////////////////////////////
 
-    AllowableValue UNIVERSAL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleUniversal", "Universal compaction policy",
-            "TODO");//TODO
-
-    AllowableValue LEVEL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleLevel", "Level compaction policy",
-            "TODO.");//TODO
-
-    PropertyDescriptor COMPACTION_POLICY = new PropertyDescriptor.Builder()
-            .name("compaction.policy")
-            .description("strategy for compaction   ")
-            .required(false)
-            .allowableValues(UNIVERSAL_COMPACTION_POLICY, LEVEL_COMPACTION_POLICY)
-            .defaultValue(LEVEL_COMPACTION_POLICY.getValue())//current rocksDb default (5.4.0)
-            .build();
-
-    PropertyDescriptor AUTOMATIC_COMPACTION = new PropertyDescriptor.Builder()
-            .name("compaction.automatic")
-            .description("Disable automatic compactions. Manual compactions can still be issued on this database.")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-    //TODO
-    PropertyDescriptor COMPACTION_FILTER = new PropertyDescriptor.Builder()
-            .name("compaction.filter")
-            .description("Allows an application to modify/delete a key-value during background compaction. The client must provide compaction_filter_factory if it requires a new compaction filter to be used for different compaction processes. Client should specify only one of filter or factory. ")
-            .required(false)
-            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            //.defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-    //TODO
-    PropertyDescriptor COMPACTION_FILTER_FACTORY = new PropertyDescriptor.Builder()
-            .name("compaction.filter.factory")
-            .description("a factory that provides compaction filter objects which allow an application to modify/delete a key-value during background compaction.")
-            .required(false)
-            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            //.defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-
-    //TODO
+//    AllowableValue UNIVERSAL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleUniversal", "Universal compaction policy",
+//            "TODO");//TODO
+//
+//    AllowableValue LEVEL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleLevel", "Level compaction policy",
+//            "TODO.");//TODO
+//
+//    PropertyDescriptor COMPACTION_POLICY = new PropertyDescriptor.Builder()
+//            .name("compaction.policy")
+//            .description("strategy for compaction   ")
+//            .required(false)
+//            .allowableValues(UNIVERSAL_COMPACTION_POLICY, LEVEL_COMPACTION_POLICY)
+//            .defaultValue(LEVEL_COMPACTION_POLICY.getValue())//current rocksDb default (5.4.0)
+//            .build();
+//
+//    PropertyDescriptor AUTOMATIC_COMPACTION = new PropertyDescriptor.Builder()
+//            .name("compaction.automatic")
+//            .description("Disable automatic compactions. Manual compactions can still be issued on this database.")
+//            .required(false)
+//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            .defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
+//    //TODO
+//    PropertyDescriptor COMPACTION_FILTER = new PropertyDescriptor.Builder()
+//            .name("compaction.filter")
+//            .description("Allows an application to modify/delete a key-value during background compaction. The client must provide compaction_filter_factory if it requires a new compaction filter to be used for different compaction processes. Client should specify only one of filter or factory. ")
+//            .required(false)
+//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            //.defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
+//    //TODO
+//    PropertyDescriptor COMPACTION_FILTER_FACTORY = new PropertyDescriptor.Builder()
+//            .name("compaction.filter.factory")
+//            .description("a factory that provides compaction filter objects which allow an application to modify/delete a key-value during background compaction.")
+//            .required(false)
+//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            //.defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
+//
+//    //TODO
 //    Options::access_hint_on_compaction_start - Specify the file access pattern once a compaction is started. It will be applied to all input files of a compaction. Default: NORMAL
 //    Options::level0_file_num_compaction_trigger - Number of files to trigger level-0 compaction. A negative value means that level-0 compaction will not be triggered by number of files at all.
 //            Options::target_file_size_base and Options::target_file_size_multiplier - Target file size for compaction. target_file_size_base is per-file size for level-1. Target file size for level L can be calculated by target_file_size_base * (target_file_size_multiplier ^ (L-1)) For example, if target_file_size_base is 2MB and target_file_size_multiplier is 10, then each file on level-1 will be 2MB, and each file on level 2 will be 20MB, and each file on level-3 will be 200MB. Default target_file_size_base is 2MB and default target_file_size_multiplier is 1.
@@ -150,86 +152,29 @@ public interface RocksdbClientService extends ControllerService {
     // Properties of Table options //
     //////////////////////////////////////////
 
-    PropertyDescriptor CACHE_ENABLED = new PropertyDescriptor.Builder()
-            .name("rocksdb.cache.enabled")
-            .description("Should rocksDb uses cache ?")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-    //TODO
-    PropertyDescriptor UNCOMPRESSED_CACHE = new PropertyDescriptor.Builder()
-            .name("rocksdb.cache.uncompressed")
-            .description("Cache that will be used for rocksDb database to save uncompressed data in memory")
-            .required(false)
-            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            //.defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-    //TODO
-    PropertyDescriptor COMPRESSED_CACHE = new PropertyDescriptor.Builder()
-            .name("rocksdb.cache.compressed")
-            .description("Cache that will be used for rocksDb database to save compressed data in memory")
-            .required(false)
-            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            //.defaultValue("true")//current rocksDb default (5.4.0)
-            .build();
-
-    //////////////////////////////////////
-    // Properties of the backoff policy //
-    //////////////////////////////////////
-
-    AllowableValue NO_BACKOFF_POLICY = new AllowableValue("noBackoff", "No retry policy",
-            "when a request fail there won't be any retry.");
-
-    AllowableValue CONSTANT_BACKOFF_POLICY = new AllowableValue("constantBackoff", "wait a fixed amount of time between retries",
-            "wait a fixed amount of time between retries, using user put retry number and throttling delay");
-
-    AllowableValue EXPONENTIAL_BACKOFF_POLICY = new AllowableValue("exponentialBackoff", "custom exponential policy",
-            "time waited between retries grow exponentially, using user put retry number and throttling delay");
-
-    AllowableValue DEFAULT_EXPONENTIAL_BACKOFF_POLICY = new AllowableValue("defaultExponentialBackoff", "es default exponential policy",
-            "time waited between retries grow exponentially, using es default parameters");
-
-    PropertyDescriptor BULK_BACK_OFF_POLICY = new PropertyDescriptor.Builder()
-            .name("backoff.policy")
-            .description("strategy for retrying to execute requests in bulkRequest")
-            .required(true)
-            .allowableValues(NO_BACKOFF_POLICY, CONSTANT_BACKOFF_POLICY, EXPONENTIAL_BACKOFF_POLICY, DEFAULT_EXPONENTIAL_BACKOFF_POLICY)
-            .defaultValue(DEFAULT_EXPONENTIAL_BACKOFF_POLICY.getValue())
-            .build();
-
-    PropertyDescriptor BULK_RETRY_NUMBER = new PropertyDescriptor.Builder()
-            .name("num.retry")
-            .description("number of time we should try to inject a bulk into es")
-            .required(true)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("3")
-            .build();
-
-    PropertyDescriptor BULK_THROTTLING_DELAY = new PropertyDescriptor.Builder()
-            .name("throttling.delay")
-            .description("number of time we should wait between each retry (in milliseconds)")
-            .required(true)
-            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
-            .defaultValue("500")
-            .build();
-
-    ////////////////////////////////////////////////
-    // Properties of elasticsearch bulk processor //
-    ////////////////////////////////////////////////
-
-
-    //////////////////////
-    // Other properties //
-    //////////////////////
-
-
-
-
-
-
-
-
+//    PropertyDescriptor CACHE_ENABLED = new PropertyDescriptor.Builder()
+//            .name("rocksdb.cache.enabled")
+//            .description("Should rocksDb uses cache ?")
+//            .required(false)
+//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            .defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
+//    //TODO
+//    PropertyDescriptor UNCOMPRESSED_CACHE = new PropertyDescriptor.Builder()
+//            .name("rocksdb.cache.uncompressed")
+//            .description("Cache that will be used for rocksDb database to save uncompressed data in memory")
+//            .required(false)
+//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            //.defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
+//    //TODO
+//    PropertyDescriptor COMPRESSED_CACHE = new PropertyDescriptor.Builder()
+//            .name("rocksdb.cache.compressed")
+//            .description("Cache that will be used for rocksDb database to save compressed data in memory")
+//            .required(false)
+//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            //.defaultValue("true")//current rocksDb default (5.4.0)
+//            .build();
 
 
     ///////////////
@@ -567,6 +512,7 @@ public interface RocksdbClientService extends ControllerService {
     ///////////////////////
 
 
+
     ////////////////////
     // Put operations //
     ////////////////////
@@ -580,9 +526,17 @@ public interface RocksdbClientService extends ControllerService {
     void put(Collection<ValuePutRequest> puts) throws RocksDBException;
 
     /**
+     * Puts a batch of key value pairs in their column family using specific write option
+     *
+     * @param put a put mutation
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
+    void put(ValuePutRequest put) throws RocksDBException;
+
+    /**
      * Puts a key value pairs in their column family
      *
-     * @param family family to put data in
+     * @param familyName family to put data in
      * @param key the key of the value to store
      * @param value the value to store in the specified family
      * @throws RocksDBException thrown when there are communication errors with RocksDb
@@ -601,7 +555,7 @@ public interface RocksdbClientService extends ControllerService {
     /**
      * Puts a key value pairs in their column family using specific option
      *
-     * @param family family to put data in
+     * @param familyName family to put data in
      * @param key the key of the value to store
      * @param value the value to store in the specified family
      * @param writeOptions
@@ -633,6 +587,14 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
+     * @param getRequest
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
+    GetResponse get(GetRequest getRequest) throws RocksDBException;
+
+    /**
+     *
      * @param key
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
@@ -650,7 +612,7 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param family
+     * @param familyName
      * @param key
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
@@ -659,7 +621,7 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param family
+     * @param familyName
      * @param key
      * @param rOption
      * @return
@@ -672,6 +634,7 @@ public interface RocksdbClientService extends ControllerService {
     ///////////////////////
 
     Collection<DeleteResponse> multiDelete(Collection<DeleteRequest> deleteRequests) throws RocksDBException;
+    DeleteResponse delete(DeleteRequest deleteRequest) throws RocksDBException;
     void delete(byte[] key) throws RocksDBException;
     void delete(byte[] key, WriteOptions wOption) throws RocksDBException;
     void delete(String familyName, byte[] key) throws RocksDBException;
@@ -688,7 +651,6 @@ public interface RocksdbClientService extends ControllerService {
     // delete range operations ////
     ///////////////////////////////
 
-    Collection<DeleteRangeResponse> multiDeleteRange(Collection<DeleteRangeRequest> deleteRangeRequests) throws RocksDBException;
     void deleteRange(byte[] keyStart, byte[] keyEnd) throws RocksDBException;
     void deleteRange(byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException;
     void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd) throws RocksDBException;

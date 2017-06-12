@@ -7,26 +7,25 @@ import org.rocksdb.WriteOptions;
  */
 public class ValuePutRequest {
 
-    private byte[] family;
+    private String family;
     private byte[] key;
     private byte[] value;
     private WriteOptions wOptions;
 
     public ValuePutRequest(){}
 
-    public ValuePutRequest(final byte[] family, final byte[] key, final byte[] value, WriteOptions wOptions) {
+    public ValuePutRequest(final String family, final byte[] key, final byte[] value, WriteOptions wOptions) {
         this.family = family;
         this.key = key;
         this.value = value;
         this.wOptions = wOptions;
     }
 
-
-    public byte[] getFamily() {
+    public String getFamily() {
         return family;
     }
 
-    public void setFamily(byte[] family) {
+    public void setFamily(String family) {
         this.family = family;
     }
 

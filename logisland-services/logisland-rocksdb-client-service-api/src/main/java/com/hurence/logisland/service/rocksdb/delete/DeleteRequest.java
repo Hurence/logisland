@@ -1,18 +1,18 @@
 package com.hurence.logisland.service.rocksdb.delete;
 
-import org.rocksdb.ReadOptions;
+import org.rocksdb.WriteOptions;
 
 public class DeleteRequest {
 
-    private byte[] family;
+    private String family;
     private byte[] key;
-    private ReadOptions rOptions;
+    private WriteOptions wOptions;
 
-    public byte[] getFamily() {
+    public String getFamily() {
         return family;
     }
 
-    public void setFamily(byte[] family) {
+    public void setFamily(String family) {
         this.family = family;
     }
 
@@ -24,12 +24,12 @@ public class DeleteRequest {
         this.key = key;
     }
 
-    public ReadOptions getReadOption() {
-        return rOptions;
+    public WriteOptions getReadOption() {
+        return wOptions;
     }
 
-    public void setReadOption(ReadOptions rOptions) {
-        this.rOptions = rOptions;
+    public void setReadOption(WriteOptions rOptions) {
+        this.wOptions = rOptions;
     }
 
 

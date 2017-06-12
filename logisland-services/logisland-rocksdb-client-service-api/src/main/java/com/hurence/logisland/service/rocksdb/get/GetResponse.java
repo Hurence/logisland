@@ -2,16 +2,16 @@ package com.hurence.logisland.service.rocksdb.get;
 
 public class GetResponse {
 
-    private byte[] family;
+    private String family;
     private byte[] key;
     private byte[] value;
 
 
-    public byte[] getFamily() {
+    public String getFamily() {
         return family;
     }
 
-    public void setFamily(byte[] family) {
+    public void setFamily(String family) {
         this.family = family;
     }
 

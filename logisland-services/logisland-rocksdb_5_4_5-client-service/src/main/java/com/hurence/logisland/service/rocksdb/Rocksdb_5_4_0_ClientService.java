@@ -10,15 +10,12 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.serializer.Serializer;
-import com.hurence.logisland.service.rocksdb.delete.DeleteRangeRequest;
-import com.hurence.logisland.service.rocksdb.delete.DeleteRangeResponse;
 import com.hurence.logisland.service.rocksdb.delete.DeleteRequest;
 import com.hurence.logisland.service.rocksdb.delete.DeleteResponse;
 import com.hurence.logisland.service.rocksdb.get.GetRequest;
 import com.hurence.logisland.service.rocksdb.get.GetResponse;
 import com.hurence.logisland.service.rocksdb.put.ValuePutRequest;
 import com.hurence.logisland.service.rocksdb.scan.RocksIteratorHandler;
-import com.hurence.logisland.service.rocksdb.scan.RocksIteratorRequest;
 import com.hurence.logisland.validator.StandardValidators;
 import org.rocksdb.*;
 
@@ -47,37 +44,74 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     protected RocksDB db;
     protected DBOptions dbOptions;
-//    protected volatile List<ColumnFamilyOptions> familiesOptions;
-//    protected volatile List<ColumnFamilyDescriptor> familiesDescriptor;
-//    protected volatile List<ColumnFamilyHandle> familiesHandler = new ArrayList<>();
     protected List<String> familiesName = new ArrayList<>();
     protected Map<String, ColumnFamilyHandle> familiesHandler = new HashMap<>();
     protected Map<String, ColumnFamilyDescriptor> familiesDescriptor = new HashMap<>();
-    protected Serializer familiesNameSerialize;
 
     private static final String FAMILY_PREFIX = "family.";
-    protected TableFormatConfig tableFormat;
-    protected BlockBasedTableConfig a;
-    protected Cache b;
-    protected Filter c;
-
-
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
 
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(ROCKSDB_PATH);
-//        if(kerberosProperties !=null){
-//            props.add(kerberosProperties.getKerberosPrincipal());
-//            props.add(kerberosProperties.getKerberosKeytab());
-//        }
-//
-//        props.add(ZOOKEEPER_QUORUM);
-//        props.add(ZOOKEEPER_CLIENT_PORT);
-//        props.add(ZOOKEEPER_ZNODE_PARENT);
-//        props.add(HBASE_CLIENT_RETRIES);
-//        props.add(PHOENIX_CLIENT_JAR_LOCATION);
+        props.add(FAMILY_NAMES);
+        props.add(OPTIMIZE_FOR_SMALL_DB);
+        props.add(INCREASE_PARALLELISM);
+        props.add(CREATE_IF_MISSING);
+        props.add(CREATE_MISSING_COLUMN_FAMILIES);
+        props.add(ERROR_IF_EXISTS);
+        props.add(PARANOID_CHECKS);
+        props.add(MAX_OPEN_FILES);
+        props.add(MAX_FILE_OPENING_THREADS);
+        props.add(MAX_TOTAL_WAL_SIZE);
+        props.add(USE_FSYNC);
+        props.add(DB_LOG_DIR);
+        props.add(WAL_DIR);
+        props.add(DELETE_OBSOLETE_FILES_PERIOD_MICROS);
+        props.add(BASE_BACKGROUND_COMPACTIONS);
+        props.add(MAX_BACKGROUND_COMPACTIONS);
+        props.add(MAX_SUBCOMPACTIONS);
+        props.add(MAX_BACKGROUND_FLUSHES);
+        props.add(MAX_LOG_FILE_SIZE);
+        props.add(LOG_FILE_TIME_TO_ROLL);
+        props.add(KEEP_LOG_FILE_NUM);
+        props.add(RECYCLE_LOG_FILE_NUM);
+        props.add(MAX_MANIFEST_FILE_SIZE);
+        props.add(TABLE_CACHE_NUMSHARDBITS);
+        props.add(WAL_TTL_SECONDS);
+        props.add(WAL_SIZE_LIMIT_MB);
+        props.add(MANIFEST_PREALLOCATION_SIZE);
+        props.add(USE_DIRECT_READS);
+        props.add(USE_DIRECT_IO_FOR_FLUSH_AND_COMPACTION);
+        props.add(ALLOW_F_ALLOCATE);
+        props.add(ALLOW_MMAP_READS);
+        props.add(ALLOW_MMAP_WRITES);
+        props.add(IS_FD_CLOSE_ON_EXEC);
+        props.add(STATS_DUMP_PERIOD_SEC);
+        props.add(ADVISE_RANDOM_ON_OPEN);
+        props.add(DB_WRITE_BUFFER_SIZE);
+        props.add(NEW_TABLE_READER_FOR_COMPACTION_INPUTS);
+        props.add(COMPACTION_READAHEAD_SIZE);
+        props.add(RANDOM_ACCESS_MAX_BUFFER_SIZE);
+        props.add(WRITABLE_FILE_MAX_BUFFER_SIZE);
+        props.add(USE_ADAPTIVE_MUTEX);
+        props.add(BYTES_PER_SYNC);
+        props.add(WAL_BYTES_PER_SYNC);
+        props.add(ENABLE_THREAD_TRACKING);
+        props.add(DELAYED_WRITE_RATE);
+        props.add(ALLOW_CONCURRENT_MEMTABLE_WRITE);
+        props.add(ENABLE_WRITE_THREAD_ADAPTIVE_YIELD);
+        props.add(WRITE_THREAD_MAX_YIELD_USEC);
+        props.add(WRITE_THREAD_SLOW_YIELD_USEC);
+        props.add(SKIP_STATS_UPDATE_ON_DB_OPEN);
+        props.add(ALLOW_2_PC);
+        props.add(FAIL_IF_OPTIONS_FILE_ERROR);
+        props.add(DUMP_MALLOC_STATS);
+        props.add(AVOID_FLUSH_DURING_RECOVERY);
+        props.add(AVOID_FLUSH_DURING_SHUTDOWN);
+
+
         return Collections.unmodifiableList(props);
     }
 
@@ -230,20 +264,20 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
             dbOptions.setIncreaseParallelism(parallelism);
         }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_IF_MISSING).isSet()) {
-            if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_IF_MISSING).asBoolean())
-                dbOptions.createIfMissing();
+            boolean createIfMisssing = context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_IF_MISSING).asBoolean();
+            dbOptions.setCreateIfMissing(createIfMisssing);
         }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_MISSING_COLUMN_FAMILIES).isSet()) {
-            if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_MISSING_COLUMN_FAMILIES).asBoolean())
-                dbOptions.createIfMissing();
+            boolean createIfMisssingFamilies = context.getPropertyValue(Rocksdb_5_4_0_ClientService.CREATE_MISSING_COLUMN_FAMILIES).asBoolean();
+            dbOptions.setCreateMissingColumnFamilies(createIfMisssingFamilies);
         }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.ERROR_IF_EXISTS).isSet()) {
-            if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.ERROR_IF_EXISTS).asBoolean())
-                dbOptions.errorIfExists();
+            boolean createIfMisssingFamilies = context.getPropertyValue(Rocksdb_5_4_0_ClientService.ERROR_IF_EXISTS).asBoolean();
+            dbOptions.setErrorIfExists(createIfMisssingFamilies);
         }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.PARANOID_CHECKS).isSet()) {
-            if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.PARANOID_CHECKS).asBoolean())
-                dbOptions.paranoidChecks();
+            boolean paranoidChecks = context.getPropertyValue(Rocksdb_5_4_0_ClientService.ERROR_IF_EXISTS).asBoolean();
+            dbOptions.setParanoidChecks(paranoidChecks);
         }
 //        if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.PARANOID_CHECKS).isSet()) {
             //TODO add possibility to use a custom Env
@@ -380,7 +414,7 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 //            dbOptions.setAccessHintOnCompactionStart(accessHint);
 //        }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.NEW_TABLE_READER_FOR_COMPACTION_INPUTS).isSet()) {
-            Boolean newTableReaderForCompactionInputs = context.getPropertyValue(Rocksdb_5_4_0_ClientService.NEW_TABLE_READER_FOR_COMPACTION_INPUTS).asBoolean();
+            boolean newTableReaderForCompactionInputs = context.getPropertyValue(Rocksdb_5_4_0_ClientService.NEW_TABLE_READER_FOR_COMPACTION_INPUTS).asBoolean();
             dbOptions.setNewTableReaderForCompactionInputs(newTableReaderForCompactionInputs);
         }
         if (context.getPropertyValue(Rocksdb_5_4_0_ClientService.COMPACTION_READAHEAD_SIZE).isSet()) {
@@ -590,7 +624,21 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void put(Collection<ValuePutRequest> puts) throws RocksDBException {
-        //TODO
+        for (ValuePutRequest putR: puts) {
+            put(putR);
+        }
+    }
+
+    @Override
+    public void put(ValuePutRequest put) throws RocksDBException, IllegalArgumentException {
+//        byte[] family = put.getFamily();
+//        byte[] key = put.getKey();
+//        byte[] value = put.getValue();
+//        WriteOptions wOptions = put.getwOptions();
+//        if (key==null || value==null) {
+//            throw new IllegalArgumentException("key and value can not be null");
+//        }
+        put(put.getFamily(), put.getKey(), put.getValue(), put.getwOptions());
     }
 
     @Override
@@ -617,8 +665,21 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public Collection<GetResponse> multiGet(Collection<GetRequest> getRequests) throws RocksDBException {
-        //TODO
-        return null;
+        Collection<GetResponse> responses = new ArrayList<>();
+        for (GetRequest getR: getRequests) {
+            responses.add(get(getR));
+        }
+        return  responses;
+    }
+
+    @Override
+    public GetResponse get(GetRequest getRequest) throws RocksDBException {
+        byte[] value = get(getRequest.getFamily(), getRequest.getKey(), getRequest.getReadOption());
+        GetResponse resp = new GetResponse();
+        resp.setFamily(getRequest.getFamily());
+        resp.setKey(getRequest.getKey());
+        resp.setValue(value);
+        return  resp;
     }
 
     @Override
@@ -645,8 +706,20 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public Collection<DeleteResponse> multiDelete(Collection<DeleteRequest> deleteRequests) throws RocksDBException {
-        //TODO
-        return null;
+        Collection<DeleteResponse> responses = new ArrayList<>();
+        for (DeleteRequest deleteR: deleteRequests) {
+            responses.add(delete(deleteR));
+        }
+        return responses;
+    }
+
+    @Override
+    public DeleteResponse delete(DeleteRequest deleteRequest) throws RocksDBException {
+        delete(deleteRequest.getFamily(), deleteRequest.getKey(), deleteRequest.getReadOption());
+        DeleteResponse resp = new DeleteResponse();
+        resp.setFamily(deleteRequest.getFamily());
+        resp.setKey(deleteRequest.getKey());
+        return  resp;
     }
 
     @Override
@@ -669,12 +742,6 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
     public void delete(String familyName, byte[] key, WriteOptions wOption) throws RocksDBException {
         ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
         db.delete(fHandle, wOption, key);
-    }
-
-    @Override
-    public Collection<DeleteRangeResponse> multiDeleteRange(Collection<DeleteRangeRequest> deleteRangeRequests) throws RocksDBException {
-        //TODO
-        return null;
     }
 
     @Override
