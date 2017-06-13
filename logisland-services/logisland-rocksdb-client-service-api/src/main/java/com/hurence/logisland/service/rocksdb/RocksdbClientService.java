@@ -25,18 +25,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * **********WORK IN PROGRESS************
+ *
  * This is the interface for the rocksDb service.
  * Here some thinking I got
  *
  *
- * RocksDb a besoin d'un path pour écrire ses fichiers... Du coup j'ai plusieurs interrogations.
- _Ce path devrait être générer automatiquement par le service, l'utilisateur donne juste un nom pour la db ?
- _Ou bien l'utilisateur donne directe le path (qui serait du coup en mode sandbox)
- Dans tous les cas y'a le problème ou plusieurs utilisateurs d'un même cluster choisissent le même path sans le vouloir... Dans ce cas il faudrait rajouter un mot de passe (qu'il faudrait donc gérer nous même...) ? Ou quelque chose pour pouvoir enlever cette ambiguité ?
- On est d'accord que le service rocksDb finalement serait une sorte de zookeeper pour nos processeurs qui auraient besoin de persistence ? J'avoue que c'est assez compliqué donc des choses m'échappent probablement
- Sinon pour utiliser rocksDb uniquement in-memory je ne crois pas que ce soit possible à part en utilisant tmpfs/ramfs.
- Donc plus je me renseigne sur la techno plus je me dis que ce n'est pas du tout fait pour faire du pure caching.
+ * @Note: A track for using rocksDb as a cache would be to use tmpfs/ramfs.
  *
  */
 
@@ -44,7 +38,7 @@ import java.util.Set;
 @CapabilityDescription("A controller service for accessing an elasticsearch client.")
 public interface RocksdbClientService extends ControllerService {
 
-    //TODO should the path be sandboxed somewhere specific ?
+
     PropertyDescriptor ROCKSDB_PATH = new PropertyDescriptor.Builder()
             .name("rocksdb.path")
             .description("strategy for compaction")
@@ -52,6 +46,7 @@ public interface RocksdbClientService extends ControllerService {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+//TODO allowing readOnly mode
 //    PropertyDescriptor ROCKSDB_READONLY = new PropertyDescriptor.Builder()
 //            .name("rocksdb.readonly")
 //            .description("Should the database be opened in readOnly mode ? You can use only one instance in read and write mode")//TODO look in documentation i dont remember well
@@ -73,109 +68,6 @@ public interface RocksdbClientService extends ControllerService {
             .description("Comma-separated list of family names in rocksdb. You must specify all family currrently present in the database if you want to use the database in read and write mode (default).")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
-
-    /////////////////////////////////////////
-    // Properties of the compaction policy //
-    /////////////////////////////////////////
-
-//    AllowableValue UNIVERSAL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleUniversal", "Universal compaction policy",
-//            "TODO");//TODO
-//
-//    AllowableValue LEVEL_COMPACTION_POLICY = new AllowableValue("kCompactionStyleLevel", "Level compaction policy",
-//            "TODO.");//TODO
-//
-//    PropertyDescriptor COMPACTION_POLICY = new PropertyDescriptor.Builder()
-//            .name("compaction.policy")
-//            .description("strategy for compaction   ")
-//            .required(false)
-//            .allowableValues(UNIVERSAL_COMPACTION_POLICY, LEVEL_COMPACTION_POLICY)
-//            .defaultValue(LEVEL_COMPACTION_POLICY.getValue())//current rocksDb default (5.4.0)
-//            .build();
-//
-//    PropertyDescriptor AUTOMATIC_COMPACTION = new PropertyDescriptor.Builder()
-//            .name("compaction.automatic")
-//            .description("Disable automatic compactions. Manual compactions can still be issued on this database.")
-//            .required(false)
-//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            .defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-//    //TODO
-//    PropertyDescriptor COMPACTION_FILTER = new PropertyDescriptor.Builder()
-//            .name("compaction.filter")
-//            .description("Allows an application to modify/delete a key-value during background compaction. The client must provide compaction_filter_factory if it requires a new compaction filter to be used for different compaction processes. Client should specify only one of filter or factory. ")
-//            .required(false)
-//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            //.defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-//    //TODO
-//    PropertyDescriptor COMPACTION_FILTER_FACTORY = new PropertyDescriptor.Builder()
-//            .name("compaction.filter.factory")
-//            .description("a factory that provides compaction filter objects which allow an application to modify/delete a key-value during background compaction.")
-//            .required(false)
-//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            //.defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-//
-//    //TODO
-//    Options::access_hint_on_compaction_start - Specify the file access pattern once a compaction is started. It will be applied to all input files of a compaction. Default: NORMAL
-//    Options::level0_file_num_compaction_trigger - Number of files to trigger level-0 compaction. A negative value means that level-0 compaction will not be triggered by number of files at all.
-//            Options::target_file_size_base and Options::target_file_size_multiplier - Target file size for compaction. target_file_size_base is per-file size for level-1. Target file size for level L can be calculated by target_file_size_base * (target_file_size_multiplier ^ (L-1)) For example, if target_file_size_base is 2MB and target_file_size_multiplier is 10, then each file on level-1 will be 2MB, and each file on level 2 will be 20MB, and each file on level-3 will be 200MB. Default target_file_size_base is 2MB and default target_file_size_multiplier is 1.
-//    Options::max_compaction_bytes - Maximum number of bytes in all compacted files. We avoid expanding the lower level file set of a compaction if it would make the total compaction cover more than this amount.
-//            Options::max_background_compactions - Maximum number of concurrent background jobs, submitted to the default LOW priority thread pool
-//    Options::compaction_readahead_size - If non-zero, we perform bigger reads when doing compaction. If you're running RocksDB on spinning disks, you should set this to at least 2MB. We enforce it to be 2MB if you don't set it with direct I/O.
-
-    /////////////////////////////////////////////
-    // Properties of Leveled policy compaction //
-    /////////////////////////////////////////////
-
-    //TODO
-
-    ///////////////////////////////////////////////
-    // Properties of Universal policy compaction //
-    ///////////////////////////////////////////////
-
-    //TODO
-
-    //////////////////////////////////////////
-    // Properties of Fifo policy compaction //
-    //////////////////////////////////////////
-
-    //TODO
-
-    //////////////////////////////////////////
-    // Properties of BlockBasedTable Format //
-    //////////////////////////////////////////
-
-    //TODO
-
-    //////////////////////////////////////////
-    // Properties of Table options //
-    //////////////////////////////////////////
-
-//    PropertyDescriptor CACHE_ENABLED = new PropertyDescriptor.Builder()
-//            .name("rocksdb.cache.enabled")
-//            .description("Should rocksDb uses cache ?")
-//            .required(false)
-//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            .defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-//    //TODO
-//    PropertyDescriptor UNCOMPRESSED_CACHE = new PropertyDescriptor.Builder()
-//            .name("rocksdb.cache.uncompressed")
-//            .description("Cache that will be used for rocksDb database to save uncompressed data in memory")
-//            .required(false)
-//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            //.defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-//    //TODO
-//    PropertyDescriptor COMPRESSED_CACHE = new PropertyDescriptor.Builder()
-//            .name("rocksdb.cache.compressed")
-//            .description("Cache that will be used for rocksDb database to save compressed data in memory")
-//            .required(false)
-//            //.addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//            //.defaultValue("true")//current rocksDb default (5.4.0)
-//            .build();
-
 
     ///////////////
     // DBOptions //

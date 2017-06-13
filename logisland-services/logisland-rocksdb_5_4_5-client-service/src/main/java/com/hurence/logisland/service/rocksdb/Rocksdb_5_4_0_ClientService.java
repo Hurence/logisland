@@ -38,9 +38,12 @@ import java.util.regex.Pattern;
  * one or more propertie from the file by filling correspondant properties
  *
  * Do not use Options object as it is still there only for backward compatibility
+ *
+ * For family specific options, you can specify them by using 'family.<familyName>.option.name'
+ * for every family
  */
-@Tags({ "elasticsearch", "client"})
-@CapabilityDescription("Implementation of RocksdbClientService for Elasticsearch 5.4.0.")
+@Tags({ "rocksdb", "client"})
+@CapabilityDescription("Implementation of RocksdbClientService for Rocksdb 5.4.0.")
 public class Rocksdb_5_4_0_ClientService extends AbstractControllerService implements RocksdbClientService {
 
     protected RocksDB db;
@@ -55,7 +58,50 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
                     "([^\\.]*)\\.(.*)$"
     );
     final private List<String> familiesPropertiesSuffixe = Arrays.asList(
-            OPTIMIZE_FOR_SMALL_DB.getName()
+            OPTIMIZE_FOR_SMALL_DB.getName(),
+            OPTIMIZE_FOR_POINT_LOOKUP.getName(),
+            OPTIMIZE_LEVEL_STYLE_COMPACTION.getName(),
+            OPTIMIZE_UNIVERSAL_STYLE_COMPACTION.getName(),
+            FAMILY_KEY_COMPARATOR.getName(),
+            MERGE_OPERATOR_NAME.getName(),
+            WRITE_BUFFER_SIZE.getName(),
+            MAX_WRITE_BUFFER_NUMBER.getName(),
+            MIN_WRITE_BUFFER_NUMBER_TO_MERGE.getName(),
+            USE_FIXED_LENGTH_PREFIX_EXTRACTOR.getName(),
+            USE_CAPPED_PREFIX_EXTRACTOR.getName(),
+            COMPRESSION_TYPE.getName(),
+            COMPRESSION_PER_LEVEL.getName(),
+            NUM_LEVELS.getName(),
+            LEVEL_ZERO_FILE_NUM_COMPACTION_TRIGGER.getName(),
+            LEVEL_ZERO_SLOWDOWN_WRITES_TRIGGER.getName(),
+            LEVEL_ZERO_STOP_WRITES_TRIGGER.getName(),
+            TARGET_FILE_SIZE_BASE.getName(),
+            TARGET_FILE_SIZE_MULTIPLIER.getName(),
+            MAX_BYTES_FOR_LEVEL_BASE.getName(),
+            LEVEL_COMPACTION_DYNAMIC_LEVEL_BYTES.getName(),
+            MAX_BYTES_FOR_LEVEL_MULTIPLIER.getName(),
+            MAX_COMPACTION_BYTES.getName(),
+            ARENA_BLOCK_SIZE.getName(),
+            DISABLE_AUTO_COMPACTIONS.getName(),
+            COMPACTION_STYLE.getName(),
+            MAX_TABLE_FILES_SIZE_FIFO.getName(),
+            MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName(),
+            IN_PLACE_UPDATE_SUPPORT.getName(),
+            IN_PLACE_UPDATE_NUM_LOCKS.getName(),
+            MEM_TABLE_PREFIX_BLOOM_SIZE_RATIO.getName(),
+            BLOOM_LOCALITY.getName(),
+            MAX_SUCCESSIVE_MERGES.getName(),
+            OPTIMIZE_FILTERS_FOR_HITS.getName(),
+            MEMTABLE_HUGE_PAGE_SIZE.getName(),
+            SOFT_PENDING_COMPACTION_BYTES_LIMIT.getName(),
+            HARD_PENDING_COMPACTION_BYTES_LIMIT.getName(),
+            LEVEL0_FILE_NUM_COMPACTION_TRIGGER.getName(),
+            LEVEL0_SLOWDOWN_WRITES_TRIGGER.getName(),
+            LEVEL0_STOP_WRITES_TRIGGER.getName(),
+            PARANOID_FILE_CHECKS.getName(),
+            MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN.getName(),
+            REPORT_BG_IO_STATS.getName(),
+            FORCE_CONSISTENCY_CHECKS.getName()
     );
     public static final String FAMILY_PREFIX = "family.";
 
@@ -611,8 +657,8 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
                 String compressionType = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPRESSION_TYPE.getName()).asString();
                 familyOption.setCompressionType(CompressionType.getCompressionType(compressionType));
             }
-            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).isSet()) {
-                String[] compressionTypes = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).asString().split(",");
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPRESSION_PER_LEVEL.getName()).isSet()) {
+                String[] compressionTypes = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPRESSION_PER_LEVEL.getName()).asString().split(",");
                 List<CompressionType> cTypes = new ArrayList<>();
                 for (int j=0; j < compressionTypes.length; j++) {
                     cTypes.add(CompressionType.getCompressionType(compressionTypes[i]));
