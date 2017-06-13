@@ -303,7 +303,8 @@ public class IpToFqdnTest {
         runner.setProperty(IpToFqdn.OVERRIDE_FQDN, OVERRIDE_FQDN);
 
         final MockCacheService<String, String> cacheService = new MockCacheService(20);
-        runner.addControllerService("cacheService", cacheService);
+        cacheService.setIdentifier("cacheService");
+        runner.addControllerService(cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(IpToFqdn.CACHE_SERVICE, "cacheService");
 
