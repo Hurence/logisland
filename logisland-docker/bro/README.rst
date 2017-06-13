@@ -5,7 +5,7 @@ Content
 -------
 
 These files allow to build a Docker image containing `Bro <https://www.bro.org/>`_ necessary bits to run
-the `Indexing Bro events <https://github.com/Hurence/logisland/blob/master/logisland-docs/tutorials/indexing-bro-events.rst>`_ tutorial.
+the `Indexing Bro events <https://github.com/Hurence/logisland/blob/master/logisland-documentation/tutorials/indexing-bro-events.rst>`_ tutorial.
 
 Basically, the image is based on the `Ubuntu <https://hub.docker.com/_/ubuntu/>`_ 16.04 image. It also contains:
 

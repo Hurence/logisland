@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
 
     <artifactId>logisland-plugins</artifactId>
@@ -39,5 +39,6 @@
         <module>logisland-useragent-plugin</module>
         <module>logisland-consolidate-session-plugin</module>
         <module>logisland-hbase-plugin</module>
+        <module>logisland-enrichment-plugin</module>
     </modules>
 </project>

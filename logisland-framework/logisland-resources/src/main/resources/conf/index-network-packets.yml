@@ -2,7 +2,7 @@
 # Logisland configuration script example: parse network packets and display them in Kibana
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.10.0-rc1
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -57,9 +57,9 @@ engine:
       type: stream
       documentation: A processor chain that parses network packets into Logisland records
       configuration:
-        kafka.input.topics: packets_topic
-        kafka.output.topics: logisland_events
-        kafka.error.topics: logisland_errors
+        kafka.input.topics: logisland_input_packets_topic
+        kafka.output.topics: logisland_parsed_packets_topic
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -86,9 +86,9 @@ engine:
       type: processor
       documentation: a processor that push events to ES
       configuration:
-        kafka.input.topics: logisland_events
+        kafka.input.topics: logisland_parsed_packets_topic
         kafka.output.topics: none
-        kafka.error.topics: logisland_errors
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
