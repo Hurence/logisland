@@ -15,14 +15,14 @@ import com.hurence.logisland.service.rocksdb.get.GetRequest;
 import com.hurence.logisland.service.rocksdb.get.GetResponse;
 import com.hurence.logisland.service.rocksdb.scan.RocksIteratorHandler;
 import com.hurence.logisland.service.rocksdb.scan.RocksIteratorRequest;
+import com.hurence.logisland.service.rocksdb.util.RocksDbStatics;
 import com.hurence.logisland.validator.StandardValidators;
-import org.rocksdb.ReadOptions;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.WriteOptions;
+import org.rocksdb.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * **********WORK IN PROGRESS************
@@ -511,7 +511,365 @@ public interface RocksdbClientService extends ControllerService {
     // Family properties //
     ///////////////////////
 
+    PropertyDescriptor OPTIMIZE_FOR_POINT_LOOKUP = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.optimize.for.point.lookup")
+            .description("Use this if you don't need to keep the data sorted, i.e. you'll never use" +
+                    " an iterator, only Put() and Get() API calls. indicate size for cache in MB.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor OPTIMIZE_LEVEL_STYLE_COMPACTION = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.optimize.level.style.compaction")
+            .description("memtable memory budget in bytes for level style compaction.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor OPTIMIZE_UNIVERSAL_STYLE_COMPACTION = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.optimize.universal.style.compaction")
+            .description("memtable memory budget in bytes for universal style compaction.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .build();
 
+    AllowableValue BYTEWISE_COMPARATOR = new AllowableValue("bytewise", "Default lexicographical order",
+            "Order keys by lexicographical order.");
+    AllowableValue REVERSE_BYTEWISE_COMPARATOR = new AllowableValue("reverseBytewise", "Reverse lexicographical order",
+            "Order keys by reverse lexicographical order.");
+
+    PropertyDescriptor FAMILY_KEY_COMPARATOR = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.key.comparator")
+            .description("How to compare each key in database ? Comparator can be set once upon database creation.")
+            .required(false)
+            .allowableValues(BYTEWISE_COMPARATOR, REVERSE_BYTEWISE_COMPARATOR)
+            .build();
+
+    PropertyDescriptor MERGE_OPERATOR_NAME = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.merge.operator.name")
+            .description("Set the merge operator to be used for merging two merge operands" +
+                    " of the same key. The merge function is invoked during" +
+                    " compaction and at lookup time, if multiple key/value pairs belonging" +
+                    " to the same key are found in the database.")
+            .required(false)
+            .allowableValues("put", "uint64add", "stringappend", "stringappendtest")
+            .build();
+//    //TODO implement custom merge operator
+//    PropertyDescriptor MERGE_OPERATOR = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.merge.operator")
+//            .description("Custom merge operator.")
+//            .required(false)
+//            .build();
+//    //TODO implement custom compaction filter
+//    PropertyDescriptor COMPACTION_FILTER = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.compaction.filter")
+//            .description("custom compaction filter.")
+//            .required(false)
+//            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+//            .build();
+    PropertyDescriptor WRITE_BUFFER_SIZE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.write.buffer.size")
+            .description("the size of write buffer. Amount of data to build up in memory (backed by an unsorted log" +
+                    " on disk) before converting to a sorted on-disk file.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_WRITE_BUFFER_NUMBER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.write.buffer.number")
+            .description("Maximum number of write buffers.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor MIN_WRITE_BUFFER_NUMBER_TO_MERGE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.min.write.buffer.number.to.merge")
+            .description("the minimum number of write buffers" +
+                    " that will be merged together.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor USE_FIXED_LENGTH_PREFIX_EXTRACTOR = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.fixed.length.prefix.extractor")
+            .description("use the first n bytes of a key as its prefix.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor USE_CAPPED_PREFIX_EXTRACTOR = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.capped.prefix.extractor")
+            .description("use the first n bytes of a key as its prefix. Same as fixed length prefix extractor," +
+                    " except that when slice is shorter than the fixed length, it will use the full key.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor COMPRESSION_TYPE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.compression.type")
+            .description("the compression to use.")
+            .required(false)
+            .allowableValues(RocksDbStatics.compressionTypes)
+            .build();
+    PropertyDescriptor COMPRESSION_PER_LEVEL = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.compression.per.level")
+            .description("Compression type for each level (L0..LN)")
+            .required(false)
+            .addValidator(RocksDbStatics.LIST_COMPRESSION_TYPE_VALIDATOR_COMMA_SEPARATED)
+            .build();
+//    //TODO implement BOTTOMMOST_COMPRESSION_TYPE
+//    PropertyDescriptor BOTTOMMOST_COMPRESSION_TYPE = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.bottommost.compression.type")
+//            .description("use the first n bytes of a key as its prefix. Same as fixed length prefix extractor," +
+//                    " except that when slice is shorter than the fixed length, it will use the full key.")
+//            .required(false)
+//            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+//            .build();
+//    //TODO implement COMPRESSION_OPTIONS
+//    PropertyDescriptor COMPRESSION_OPTIONS = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.compression.options")
+//            .description("use the first n bytes of a key as its prefix. Same as fixed length prefix extractor," +
+//                    " except that when slice is shorter than the fixed length, it will use the full key.")
+//            .required(false)
+//            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+//            .build();
+    PropertyDescriptor NUM_LEVELS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.num.levels")
+            .description("The number of levels. (compaction)")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL_ZERO_FILE_NUM_COMPACTION_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level.zero.file.num.compaction.trigger")
+            .description("The number of files in level-0 to trigger compaction.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL_ZERO_SLOWDOWN_WRITES_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level.zero.slowdown.writes.trigger")
+            .description("Soft limit on number of level-0 files.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL_ZERO_STOP_WRITES_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level.zero.stop.writes.trigger")
+            .description("The hard limit of the number of level-0 files.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor TARGET_FILE_SIZE_BASE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.target.file.size.base")
+            .description("The target size of a level-0 file.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor TARGET_FILE_SIZE_MULTIPLIER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.target.file.size.multiplier")
+            .description("the size ratio between a level-(L+1) file and level-L file.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_BYTES_FOR_LEVEL_BASE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.bytes.for.level.base")
+            .description("Maximum bytes for level base.")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL_COMPACTION_DYNAMIC_LEVEL_BYTES = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level.compaction.dynamic.level.bytes")
+            .description("LevelCompactionDynamicLevelBytes should be enabled ? " +
+            " @Experimental(Turning this feature on or off for an existing DB can cause" +
+                    " unexpected LSM tree structure so it's not recommended)")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_BYTES_FOR_LEVEL_MULTIPLIER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.bytes.for.level.multiplier")
+            .description("the ratio between the total size of level-(L+1)" +
+                    " files and the total size of level-L files for all L.")
+            .required(false)
+            .addValidator(StandardValidators.DOUBLE_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_COMPACTION_BYTES = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.compaction.bytes")
+            .description("Max bytes in a compaction.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor ARENA_BLOCK_SIZE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.arena.block.size")
+            .description("The size of an arena block.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor DISABLE_AUTO_COMPACTIONS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.disable.auto.compactions")
+            .description("Should auto-compactions be disabled ?")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+    PropertyDescriptor COMPACTION_STYLE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.compaction.style")
+            .description("The compaction style to use")
+            .required(false)
+            .allowableValues(RocksDbStatics.compactionStyles)
+            .build();
+    PropertyDescriptor MAX_TABLE_FILES_SIZE_FIFO = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.table.files.size.fifo")
+            .description("The size limit of the total sum of table files.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_SEQUENTIAL_SKIP_IN_ITERATIONS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.sequential.skip.in.iterations")
+            .description("The number of keys could be skipped in a iteration.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+//    //TODO implement MEM_TABLE_CONFIG
+//    PropertyDescriptor MEM_TABLE_CONFIG = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.mem.table.config")
+//            .description("The number of keys could be skipped in a iteration.")
+//            .required(false)
+//            .addValidator(StandardValidators.LONG_VALIDATOR)
+//            .build();
+//    //TODO implement TABLE_FORMAT_CONFIG
+//    PropertyDescriptor TABLE_FORMAT_CONFIG = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.max.sequential.skip.in.iterations")
+//            .description("The number of keys could be skipped in a iteration.")
+//            .required(false)
+//            .addValidator(StandardValidators.LONG_VALIDATOR)
+//            .build();
+    PropertyDescriptor IN_PLACE_UPDATE_SUPPORT = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.in.place.update.support")
+            .description("True if thread-safe inplace updates are allowed.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+    PropertyDescriptor IN_PLACE_UPDATE_NUM_LOCKS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.in.place.update.num.locks")
+            .description("The number of locks used for inplace updates.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor MEM_TABLE_PREFIX_BLOOM_SIZE_RATIO = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.mem.table.prefix.bloom.size.ratio")
+            .description("The ratio. If prefix_extractor is set and memtable_prefix_bloom_size_ratio is not 0," +
+                    " create prefix bloom for memtable with the size of" +
+                    " write_buffer_size * memtable_prefix_bloom_size_ratio." +
+                    " If it is larger than 0.25, it is santinized to 0.25.")
+            .required(false)
+            .addValidator(StandardValidators.DOUBLE_VALIDATOR)
+            .build();
+    PropertyDescriptor BLOOM_LOCALITY = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.bloom.locality")
+            .description("The level of locality of bloom-filter probes.")
+            .required(false)
+            .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_SUCCESSIVE_MERGES = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.successive.merges")
+            .description("The maximum number of successive merges.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor OPTIMIZE_FILTERS_FOR_HITS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.optimize.filters.for.hits")
+            .description("This flag specifies that the implementation should optimize the filters" +
+                    " mainly for cases where keys are found rather than also optimize for keys" +
+                    " missed. This would be used in cases where the application knows that" +
+                    " there are very few misses or the performance in the case of misses is not" +
+                    " important.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+    PropertyDescriptor MEMTABLE_HUGE_PAGE_SIZE = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.memtable.huge.page.size")
+            .description("The page size of the huge page tlb")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor SOFT_PENDING_COMPACTION_BYTES_LIMIT = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.soft.pending.compaction.bytes.limit")
+            .description("The soft limit to impose on compaction.  All writes will be slowed down to at least" +
+                    " delayed_write_rate if estimated bytes needed to be compaction exceed this threshold.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor HARD_PENDING_COMPACTION_BYTES_LIMIT = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.hard.pending.compaction.bytes.limit")
+            .description("The hard limit to impose on compaction.  All writes are stopped if estimated bytes" +
+                            " needed to be compaction exceed this threshold.")
+            .required(false)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL0_FILE_NUM_COMPACTION_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level0.file.num.compaction.trigger")
+            .description("The number of files to trigger level-0 compaction. 0 means that" +
+                    " level-0 compaction will not be triggered by number of files at all.")
+            .required(false)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL0_SLOWDOWN_WRITES_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level0.slowdown.writes.trigger")
+            .description("The soft limit on the number of level-0 files.  0 means that no writing slow down will" +
+                            "be triggered by number of files in level-0.")
+            .required(false)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+    PropertyDescriptor LEVEL0_STOP_WRITES_TRIGGER = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.level0.stop.writes.trigger")
+            .description("The hard limit on the number of level-0 files. We stop writes at this point.")
+            .required(false)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+//    //TODO implement MAX_BYTES_FOR_LEVEL_MULTIPLIER_ADDITIONAL
+//    PropertyDescriptor MAX_BYTES_FOR_LEVEL_MULTIPLIER_ADDITIONAL = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.level0.stop.writes.trigger")
+//            .description("The hard limit on the number of level-0 files. We stop writes at this point.")
+//            .required(false)
+//            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+//            .build();
+    PropertyDescriptor PARANOID_FILE_CHECKS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.paranoid.file.checks")
+            .description("Enable paranoid file checks.  After writing every SST file, reopen it and read all the keys.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+    PropertyDescriptor MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.max.write.buffer.number.to.maintain")
+            .description("The maximum number of write buffers to maintain. See RocksDb documentation for more info.")
+            .required(false)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+//    //TODO implement COMPACTION_PRIORITY
+//    PropertyDescriptor COMPACTION_PRIORITY = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.max.write.buffer.number.to.maintain")
+//            .description("The maximum number of write buffers to maintain. See RocksDb documentation for more info.")
+//            .required(false)
+//            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+//            .build();
+    PropertyDescriptor REPORT_BG_IO_STATS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.report.bg.io.stats")
+            .description("Measure IO stats in compactions and flushes, if true.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+//    //TODO implement COMPACTION_OPTIONS_UNIVERSAL
+//    PropertyDescriptor COMPACTION_OPTIONS_UNIVERSAL = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.report.bg.io.stats")
+//            .description("Measure IO stats in compactions and flushes, if true.")
+//            .required(false)
+//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            .build();
+//    //TODO implement COMPACTION_OPTIONS_FIFO
+//    PropertyDescriptor COMPACTION_OPTIONS_FIFO = new PropertyDescriptor.Builder()
+//            .name("native.rocksdb.report.bg.io.stats")
+//            .description("Measure IO stats in compactions and flushes, if true.")
+//            .required(false)
+//            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//            .build();
+    PropertyDescriptor FORCE_CONSISTENCY_CHECKS = new PropertyDescriptor.Builder()
+            .name("native.rocksdb.force.consistency.checks")
+            .description("In debug mode, RocksDB run consistency checks on the LSM everytime the LSM" +
+                    " change (Flush, Compaction, AddFile). These checks are disabled in release" +
+                    " mode, use this option to enable them in release mode as well.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
 
     ////////////////////
     // Put operations //
@@ -523,7 +881,7 @@ public interface RocksdbClientService extends ControllerService {
      * @param puts a list of put mutations
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
-    void put(Collection<ValuePutRequest> puts) throws RocksDBException;
+    void multiPut(Collection<ValuePutRequest> puts) throws RocksDBException;
 
     /**
      * Puts a batch of key value pairs in their column family using specific write option
@@ -685,5 +1043,20 @@ public interface RocksdbClientService extends ControllerService {
      */
     void scan(String familyName, ReadOptions rOptions, RocksIteratorHandler handler) throws RocksDBException;
 
+    /**
+     *
+     * @return The dbObject if you want to use native api. You will need Column families handle.
+     * @see #getFamilies()
+     * @Note If the service close the db, your object will have an unknown behaviour if you still use it
+     */
+    RocksDB getDb();
+
+    /**
+     *
+     * @return The families handler of the db. You need it only if you want to use the RocksDb object. If you are
+     * familiar with rocksDb
+     * @Note If the service close the db, your object will have an unknown behaviour if you still use it
+     */
+    Map<String, ColumnFamilyHandle> getFamilies();
 
 }

@@ -1,10 +1,11 @@
 package com.hurence.logisland.service.rocksdb.delete;
 
+import java.util.Arrays;
+
 public class DeleteResponse {
 
     private String family;
     private byte[] key;
-    private byte[] value;
 
 
     public String getFamily() {
@@ -23,11 +24,21 @@ public class DeleteResponse {
         this.key = key;
     }
 
-    public byte[] getValue() {
-        return value;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DeleteResponse)) return false;
+
+        DeleteResponse that = (DeleteResponse) o;
+
+        if (family != null ? !family.equals(that.family) : that.family != null) return false;
+        return Arrays.equals(key, that.key);
     }
 
-    public void setValue(byte[] value) {
-        this.value = value;
+    @Override
+    public int hashCode() {
+        int result = family != null ? family.hashCode() : 0;
+        result = 31 * result + Arrays.hashCode(key);
+        return result;
     }
 }

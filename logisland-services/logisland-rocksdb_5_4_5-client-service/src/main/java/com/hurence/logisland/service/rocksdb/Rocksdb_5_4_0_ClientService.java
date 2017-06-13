@@ -9,7 +9,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.serializer.Serializer;
 import com.hurence.logisland.service.rocksdb.delete.DeleteRequest;
 import com.hurence.logisland.service.rocksdb.delete.DeleteResponse;
 import com.hurence.logisland.service.rocksdb.get.GetRequest;
@@ -20,6 +19,8 @@ import com.hurence.logisland.validator.StandardValidators;
 import org.rocksdb.*;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of rocksDb 5.4.0
@@ -47,8 +48,16 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
     protected List<String> familiesName = new ArrayList<>();
     protected Map<String, ColumnFamilyHandle> familiesHandler = new HashMap<>();
     protected Map<String, ColumnFamilyDescriptor> familiesDescriptor = new HashMap<>();
-
-    private static final String FAMILY_PREFIX = "family.";
+    final protected String defaultFamily = "default";
+    final private Pattern dynamicFamiliesPropertiesPattern = Pattern.compile(
+            "^" +
+            FAMILY_PREFIX.replace(".", "\\.") +
+                    "([^\\.]*)\\.(.*)$"
+    );
+    final private List<String> familiesPropertiesSuffixe = Arrays.asList(
+            OPTIMIZE_FOR_SMALL_DB.getName()
+    );
+    public static final String FAMILY_PREFIX = "family.";
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -117,18 +126,21 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(String propertyDescriptorName) {
-        //TODO use a regex
-        if (propertyDescriptorName.startsWith(FAMILY_PREFIX)) {
-            return new PropertyDescriptor.Builder()
-                    .description("Specifies the value for '" + propertyDescriptorName + "' in the DbOptions of RocksDb configuration.")
-                    .name(propertyDescriptorName)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .dynamic(true)
-                    .build();
-        } else {
-            return null;
+        Matcher matcher = dynamicFamiliesPropertiesPattern.matcher(propertyDescriptorName);
+        if (matcher.matches()) {
+            String familyName = matcher.group(1);
+            String propertyName = matcher.group(2);
+            if (familiesPropertiesSuffixe.contains(propertyName)) {
+                PropertyDescriptor propDescriptor = getPropertyDescriptor(propertyName);
+                return new PropertyDescriptor.Builder().fromPropertyDescriptor(propDescriptor)
+                        .description("Specifies the value for '" + propertyName + "' for column family '" + familyName + "'.")
+                        .displayName(propertyDescriptorName)
+                        .name(propertyDescriptorName)
+                        .dynamic(true)
+                        .build();
+            }
         }
-
+        return null;
     }
 
     @Override
@@ -533,69 +545,244 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         final String[] familiesName =  context.getPropertyValue(FAMILY_NAMES).asString().split(",");
 
         for (int i=0; i<familiesName.length;i++) {
-            final String familyPrefix = FAMILY_PREFIX + familiesName + ".";
+            final String familyPrefix = FAMILY_PREFIX + familiesName[i] + ".";
             final ColumnFamilyOptions familyOption = new ColumnFamilyOptions();
-            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_SMALL_DB).isSet()) {
-                if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_SMALL_DB).asBoolean())
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_SMALL_DB.getName()).isSet()) {
+                if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_SMALL_DB.getName()).asBoolean())
                     familyOption.optimizeForSmallDb();
             }
-//            optimizeForPointLookup
-//                    optimizeLevelStyleCompaction
-//            optimizeLevelStyleCompaction
-//                    optimizeUniversalStyleCompaction
-//            optimizeUniversalStyleCompaction
-//                    setComparator
-//            setComparator
-//                    setMergeOperatorName
-//            setMergeOperator
-//                    setCompactionFilter
-//            setWriteBufferSize
-//                    setMaxWriteBufferNumber
-//            setMinWriteBufferNumberToMerge
-//                    useFixedLengthPrefixExtractor
-//            useCappedPrefixExtractor
-//                    setCompressionType
-//            setCompressionPerLevel
-//                    setBottommostCompressionType
-//            setCompressionOptions
-//                    setNumLevels
-//            setLevelZeroFileNumCompactionTrigger
-//                    setLevelZeroSlowdownWritesTrigger
-//            setLevelZeroStopWritesTrigger
-//                    setTargetFileSizeBase
-//            setTargetFileSizeMultiplier
-//                    setMaxBytesForLevelBase
-//            setLevelCompactionDynamicLevelBytes
-//                    setMaxBytesForLevelMultiplier
-//            setMaxCompactionBytes
-//                    setArenaBlockSize
-//            setDisableAutoCompactions
-//                    setCompactionStyle
-//            setMaxTableFilesSizeFIFO
-//                    setMaxSequentialSkipInIterations
-//            setMemTableConfig
-//                    setTableFormatConfig
-//            setInplaceUpdateSupport
-//                    setInplaceUpdateNumLocks
-//            setMemtablePrefixBloomSizeRatio
-//                    setBloomLocality
-//            setMaxSuccessiveMerges
-//                    setOptimizeFiltersForHits
-//            setMemtableHugePageSize
-//                    setSoftPendingCompactionBytesLimit
-//            setHardPendingCompactionBytesLimit
-//                    setLevel0FileNumCompactionTrigger
-//            setLevel0SlowdownWritesTrigger
-//                    setLevel0StopWritesTrigger
-//            setMaxBytesForLevelMultiplierAdditional
-//                    setParanoidFileChecks
-//            setMaxWriteBufferNumberToMaintain
-//                    setCompactionPriority
-//            setReportBgIoStats
-//                    setCompactionOptionsUniversal
-//            setCompactionOptionsFIFO
-//                    setForceConsistencyChecks
-            //TODO set up props
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_POINT_LOOKUP.getName()).isSet()) {
+                long blockCacheSizeMb = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FOR_POINT_LOOKUP.getName()).asLong();
+                familyOption.optimizeForPointLookup(blockCacheSizeMb);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_LEVEL_STYLE_COMPACTION.getName()).isSet()) {
+                long memtableMemoryBudget = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_LEVEL_STYLE_COMPACTION.getName()).asLong();
+                familyOption.optimizeLevelStyleCompaction(memtableMemoryBudget);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_UNIVERSAL_STYLE_COMPACTION.getName()).isSet()) {
+                long memtableMemoryBudget = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_UNIVERSAL_STYLE_COMPACTION.getName()).asLong();
+                familyOption.optimizeUniversalStyleCompaction(memtableMemoryBudget);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.FAMILY_KEY_COMPARATOR.getName()).isSet()) {
+                String comparator = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.FAMILY_KEY_COMPARATOR.getName()).asString();
+                if (BYTEWISE_COMPARATOR.getValue().equals(comparator)) {
+                    familyOption.setComparator(BuiltinComparator.BYTEWISE_COMPARATOR);
+                } else if (REVERSE_BYTEWISE_COMPARATOR.getValue().equals(comparator)) {
+                    familyOption.setComparator(BuiltinComparator.REVERSE_BYTEWISE_COMPARATOR);
+                } else {
+                    throw new RuntimeException("paranoid checks.'" + comparator + "' did not match any known key comparator.(property '" +
+                            familyPrefix + Rocksdb_5_4_0_ClientService.FAMILY_KEY_COMPARATOR.getName() + "'");
+                }
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MERGE_OPERATOR_NAME.getName()).isSet()) {
+                String mergeOpName = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MERGE_OPERATOR_NAME.getName()).asString();
+                familyOption.setMergeOperatorName(mergeOpName);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MERGE_OPERATOR.getName()).isSet()) {
+//                String mergeOpName = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MERGE_OPERATOR.getName()).asString();
+                //TODO implement custom merge operator
+//                familyOption.setMergeOperator();
+//            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPACTION_FILTER.getName()).isSet()) {
+//                //TODO implement custom merge operator
+//                String mergeOpName = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPACTION_FILTER.getName()).asString();
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.WRITE_BUFFER_SIZE.getName()).isSet()) {
+                long writeBufferSize = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.WRITE_BUFFER_SIZE.getName()).asLong();
+                familyOption.setWriteBufferSize(writeBufferSize);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER.getName()).isSet()) {
+                int maxWriteBufferNumber = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER.getName()).asInteger();
+                familyOption.setMaxWriteBufferNumber(maxWriteBufferNumber);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MIN_WRITE_BUFFER_NUMBER_TO_MERGE.getName()).isSet()) {
+                int minWriteBufferToMergeNumber = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MIN_WRITE_BUFFER_NUMBER_TO_MERGE.getName()).asInteger();
+                familyOption.setMinWriteBufferNumberToMerge(minWriteBufferToMergeNumber);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_FIXED_LENGTH_PREFIX_EXTRACTOR.getName()).isSet()) {
+                int fixedLength = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_FIXED_LENGTH_PREFIX_EXTRACTOR.getName()).asInteger();
+                familyOption.useFixedLengthPrefixExtractor(fixedLength);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).isSet()) {
+                int capped = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).asInteger();
+                familyOption.useCappedPrefixExtractor(capped);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPRESSION_TYPE.getName()).isSet()) {
+                String compressionType = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPRESSION_TYPE.getName()).asString();
+                familyOption.setCompressionType(CompressionType.getCompressionType(compressionType));
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).isSet()) {
+                String[] compressionTypes = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).asString().split(",");
+                List<CompressionType> cTypes = new ArrayList<>();
+                for (int j=0; j < compressionTypes.length; j++) {
+                    cTypes.add(CompressionType.getCompressionType(compressionTypes[i]));
+                }
+                familyOption.setCompressionPerLevel(cTypes);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).isSet()) {
+//                //TODO implement BOTTOMMOST_COMPRESSION_TYPE
+//                int capped = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).asInteger();
+//                familyOption.setBottommostCompressionType(capped);
+//            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).isSet()) {
+//                //TODO support compression options
+//                int capped = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.USE_CAPPED_PREFIX_EXTRACTOR.getName()).asInteger();
+//                familyOption.setCompressionOptions(CompressionOptions);
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.NUM_LEVELS.getName()).isSet()) {
+                int numberOfLEvels = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.NUM_LEVELS.getName()).asInteger();
+                familyOption.setNumLevels(numberOfLEvels);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_FILE_NUM_COMPACTION_TRIGGER.getName()).isSet()) {
+                int numLevelZeroFileCompactionTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_FILE_NUM_COMPACTION_TRIGGER.getName()).asInteger();
+                familyOption.setLevelZeroFileNumCompactionTrigger(numLevelZeroFileCompactionTrigger);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_SLOWDOWN_WRITES_TRIGGER.getName()).isSet()) {
+                int numLevelZeroSlowdownWritesTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_SLOWDOWN_WRITES_TRIGGER.getName()).asInteger();
+                familyOption.setLevelZeroSlowdownWritesTrigger(numLevelZeroSlowdownWritesTrigger);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_STOP_WRITES_TRIGGER.getName()).isSet()) {
+                int numLevelZeroStopWritesTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_ZERO_STOP_WRITES_TRIGGER.getName()).asInteger();
+                familyOption.setLevelZeroStopWritesTrigger(numLevelZeroStopWritesTrigger);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.TARGET_FILE_SIZE_BASE.getName()).isSet()) {
+                int targetFileSizeBase = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.TARGET_FILE_SIZE_BASE.getName()).asInteger();
+                familyOption.setTargetFileSizeBase(targetFileSizeBase);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.TARGET_FILE_SIZE_MULTIPLIER.getName()).isSet()) {
+                int targetFileSizeMultiplier = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.TARGET_FILE_SIZE_MULTIPLIER.getName()).asInteger();
+                familyOption.setTargetFileSizeMultiplier(targetFileSizeMultiplier);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_BASE.getName()).isSet()) {
+                long maxBytesForLevelBase = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_BASE.getName()).asLong();
+                familyOption.setMaxBytesForLevelBase(maxBytesForLevelBase);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_COMPACTION_DYNAMIC_LEVEL_BYTES.getName()).isSet()) {
+                boolean dynamicLevelBytes = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL_COMPACTION_DYNAMIC_LEVEL_BYTES.getName()).asBoolean();
+                familyOption.setLevelCompactionDynamicLevelBytes(dynamicLevelBytes);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_MULTIPLIER.getName()).isSet()) {
+                double maxBytesForLevelMultiplier = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_MULTIPLIER.getName()).asDouble();
+                familyOption.setMaxBytesForLevelMultiplier(maxBytesForLevelMultiplier);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_COMPACTION_BYTES.getName()).isSet()) {
+                long maxCompactionBytes = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_COMPACTION_BYTES.getName()).asLong();
+                familyOption.setMaxCompactionBytes(maxCompactionBytes);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.ARENA_BLOCK_SIZE.getName()).isSet()) {
+                long arenaBlockSize = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.ARENA_BLOCK_SIZE.getName()).asLong();
+                familyOption.setArenaBlockSize(arenaBlockSize);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.DISABLE_AUTO_COMPACTIONS.getName()).isSet()) {
+                boolean autoCompaction = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.DISABLE_AUTO_COMPACTIONS.getName()).asBoolean();
+                familyOption.setDisableAutoCompactions(autoCompaction);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPACTION_STYLE.getName()).isSet()) {
+                String compaction = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.COMPACTION_STYLE.getName()).asString();
+                familyOption.setCompactionStyle(CompactionStyle.valueOf(compaction));
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_TABLE_FILES_SIZE_FIFO.getName()).isSet()) {
+                long maxTableFileSizeFifo = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_TABLE_FILES_SIZE_FIFO.getName()).asLong();
+                familyOption.setMaxTableFilesSizeFIFO(maxTableFileSizeFifo);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).isSet()) {
+                long maxSequentialSkipInIterations = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).asLong();
+                familyOption.setMaxSequentialSkipInIterations(maxSequentialSkipInIterations);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).isSet()) {
+//                long maxSequentialSkipInIterations = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).asLong();
+//                //TODO support memTableConfig
+//                familyOption.setMemTableConfig(maxSequentialSkipInIterations);
+//            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).isSet()) {
+//                long maxSequentialSkipInIterations = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SEQUENTIAL_SKIP_IN_ITERATIONS.getName()).asLong();
+//                //                //TODO support TableFormatConfig
+//                familyOption.setTableFormatConfig();
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.IN_PLACE_UPDATE_SUPPORT.getName()).isSet()) {
+                boolean inPlaceUpdateSupport = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.IN_PLACE_UPDATE_SUPPORT.getName()).asBoolean();
+                familyOption.setInplaceUpdateSupport(inPlaceUpdateSupport);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.IN_PLACE_UPDATE_NUM_LOCKS.getName()).isSet()) {
+                long inPlaceUpdateNumLocks = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.IN_PLACE_UPDATE_NUM_LOCKS.getName()).asLong();
+                familyOption.setInplaceUpdateNumLocks(inPlaceUpdateNumLocks);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MEM_TABLE_PREFIX_BLOOM_SIZE_RATIO.getName()).isSet()) {
+                double prefixBloomSizeRatio = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MEM_TABLE_PREFIX_BLOOM_SIZE_RATIO.getName()).asDouble();
+                familyOption.setMemtablePrefixBloomSizeRatio(prefixBloomSizeRatio);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.BLOOM_LOCALITY.getName()).isSet()) {
+                int blomLocality = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.BLOOM_LOCALITY.getName()).asInteger();
+                familyOption.setBloomLocality(blomLocality);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SUCCESSIVE_MERGES.getName()).isSet()) {
+                long maxSuccessiveMerges = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_SUCCESSIVE_MERGES.getName()).asLong();
+                familyOption.setMaxSuccessiveMerges(maxSuccessiveMerges);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FILTERS_FOR_HITS.getName()).isSet()) {
+                boolean optimizeFiltersForHits = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.OPTIMIZE_FILTERS_FOR_HITS.getName()).asBoolean();
+                familyOption.setOptimizeFiltersForHits(optimizeFiltersForHits);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MEMTABLE_HUGE_PAGE_SIZE.getName()).isSet()) {
+                long memTableHugePageSize = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MEMTABLE_HUGE_PAGE_SIZE.getName()).asLong();
+                familyOption.setMemtableHugePageSize(memTableHugePageSize);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.SOFT_PENDING_COMPACTION_BYTES_LIMIT.getName()).isSet()) {
+                long softPendingCompactionBytesLimit = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.SOFT_PENDING_COMPACTION_BYTES_LIMIT.getName()).asLong();
+                familyOption.setSoftPendingCompactionBytesLimit(softPendingCompactionBytesLimit);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.HARD_PENDING_COMPACTION_BYTES_LIMIT.getName()).isSet()) {
+                long hardPendingCompactionBytesLimit = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.SOFT_PENDING_COMPACTION_BYTES_LIMIT.getName()).asLong();
+                familyOption.setHardPendingCompactionBytesLimit(hardPendingCompactionBytesLimit);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_FILE_NUM_COMPACTION_TRIGGER.getName()).isSet()) {
+                int level0FileNumCompactionTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_FILE_NUM_COMPACTION_TRIGGER.getName()).asInteger();
+                familyOption.setLevel0FileNumCompactionTrigger(level0FileNumCompactionTrigger);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_SLOWDOWN_WRITES_TRIGGER.getName()).isSet()) {
+                int level0SlowdownWritesTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_SLOWDOWN_WRITES_TRIGGER.getName()).asInteger();
+                familyOption.setLevel0SlowdownWritesTrigger(level0SlowdownWritesTrigger);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_STOP_WRITES_TRIGGER.getName()).isSet()) {
+                int level0SlopWritesTrigger = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.LEVEL0_STOP_WRITES_TRIGGER.getName()).asInteger();
+                familyOption.setLevel0StopWritesTrigger(level0SlopWritesTrigger);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_MULTIPLIER_ADDITIONAL.getName()).isSet()) {
+//                //TODO manage this (as string ???)
+//                int[] maxBytesForLevelMultiplierAdditional = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_BYTES_FOR_LEVEL_MULTIPLIER_ADDITIONAL.getName()).asDouble();
+//                familyOption.setMaxBytesForLevelMultiplierAdditional(maxBytesForLevelMultiplierAdditional);
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.PARANOID_FILE_CHECKS.getName()).isSet()) {
+                boolean paranoidChecks = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.PARANOID_FILE_CHECKS.getName()).asBoolean();
+                familyOption.setParanoidFileChecks(paranoidChecks);
+            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN.getName()).isSet()) {
+                int maxWriteBufferNumberToMaintain = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN.getName()).asInteger();
+                familyOption.setMaxWriteBufferNumberToMaintain(maxWriteBufferNumberToMaintain);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN.getName()).isSet()) {
+//                int maxWriteBufferNumberToMaintain = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.MAX_WRITE_BUFFER_NUMBER_TO_MAINTAIN.getName()).asInteger();
+//                //TODO manage CompactionPriority
+//                familyOption.setCompactionPriority(maxWriteBufferNumberToMaintain);
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).isSet()) {
+                boolean reportBgIoStats = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).asBoolean();
+                familyOption.setReportBgIoStats(reportBgIoStats);
+            }
+//            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).isSet()) {
+//                boolean reportBgIoStats = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).asBoolean();
+//                //TODO manage CompactionOptionsUniversal
+//                familyOption.setCompactionOptionsUniversal(reportBgIoStats);
+//            }
+            //            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).isSet()) {
+//                boolean reportBgIoStats = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.REPORT_BG_IO_STATS.getName()).asBoolean();
+//                //TODO manage CompactionOptionsFIFO
+//                familyOption.setCompactionOptionsUniversal(reportBgIoStats);
+//            }
+            if (context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.FORCE_CONSISTENCY_CHECKS.getName()).isSet()) {
+                boolean forceConsistencyChecks = context.getPropertyValue(familyPrefix + Rocksdb_5_4_0_ClientService.FORCE_CONSISTENCY_CHECKS.getName()).asBoolean();
+                familyOption.setForceConsistencyChecks(forceConsistencyChecks);
+            }
             familyOptions.add(familyOption);
         }
         return familyOptions;
@@ -623,7 +810,7 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
 
     @Override
-    public void put(Collection<ValuePutRequest> puts) throws RocksDBException {
+    public void multiPut(Collection<ValuePutRequest> puts) throws RocksDBException {
         for (ValuePutRequest putR: puts) {
             put(putR);
         }
@@ -631,14 +818,20 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void put(ValuePutRequest put) throws RocksDBException, IllegalArgumentException {
-//        byte[] family = put.getFamily();
-//        byte[] key = put.getKey();
-//        byte[] value = put.getValue();
-//        WriteOptions wOptions = put.getwOptions();
-//        if (key==null || value==null) {
-//            throw new IllegalArgumentException("key and value can not be null");
-//        }
-        put(put.getFamily(), put.getKey(), put.getValue(), put.getwOptions());
+        String family = put.getFamily();
+        byte[] key = put.getKey();
+        byte[] value = put.getValue();
+        WriteOptions wOptions = put.getwOptions();
+        if (key==null || value==null) {
+            throw new IllegalArgumentException("key and value can not be null");
+        }
+        if (wOptions == null) {
+            wOptions = new WriteOptions();
+        }
+        if (family == null) {
+            family = defaultFamily;
+        }
+        put(family, key, value, wOptions);
     }
 
     @Override
@@ -654,7 +847,7 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void put(String familyName, byte[] key, byte[] value, WriteOptions writeOptions) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.put(fHandle, writeOptions, key, value);
     }
 
@@ -674,10 +867,22 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public GetResponse get(GetRequest getRequest) throws RocksDBException {
-        byte[] value = get(getRequest.getFamily(), getRequest.getKey(), getRequest.getReadOption());
+        String family = getRequest.getFamily();
+        final byte[] key = getRequest.getKey();
+        ReadOptions rOptions = getRequest.getReadOption();
+        if (key==null) {
+            throw new IllegalArgumentException("key can not be null");
+        }
+        if (rOptions == null) {
+            rOptions = new ReadOptions();
+        }
+        if (family == null) {
+            family = defaultFamily;
+        }
+        byte[] value = get(family, key, rOptions);
         GetResponse resp = new GetResponse();
-        resp.setFamily(getRequest.getFamily());
-        resp.setKey(getRequest.getKey());
+        resp.setFamily(family);
+        resp.setKey(key);
         resp.setValue(value);
         return  resp;
     }
@@ -694,18 +899,19 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public byte[] get(String familyName, byte[] key) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         return db.get(fHandle, key);
     }
 
     @Override
     public byte[] get(String familyName, byte[] key, ReadOptions rOption) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         return db.get(fHandle, rOption, key);
     }
 
     @Override
     public Collection<DeleteResponse> multiDelete(Collection<DeleteRequest> deleteRequests) throws RocksDBException {
+        //TODO
         Collection<DeleteResponse> responses = new ArrayList<>();
         for (DeleteRequest deleteR: deleteRequests) {
             responses.add(delete(deleteR));
@@ -715,10 +921,22 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public DeleteResponse delete(DeleteRequest deleteRequest) throws RocksDBException {
-        delete(deleteRequest.getFamily(), deleteRequest.getKey(), deleteRequest.getReadOption());
+        String family = deleteRequest.getFamily();
+        final byte[] key = deleteRequest.getKey();
+        WriteOptions wOptions = deleteRequest.getWriteOptions();
+        if (key==null) {
+            throw new IllegalArgumentException("key can not be null");
+        }
+        if (wOptions == null) {
+            wOptions = new WriteOptions();
+        }
+        if (family == null) {
+            family = defaultFamily;
+        }
+        delete(family, key, wOptions);
         DeleteResponse resp = new DeleteResponse();
-        resp.setFamily(deleteRequest.getFamily());
-        resp.setKey(deleteRequest.getKey());
+        resp.setFamily(family);
+        resp.setKey(key);
         return  resp;
     }
 
@@ -734,13 +952,13 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void delete(String familyName, byte[] key) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.delete(fHandle, key);
     }
 
     @Override
     public void delete(String familyName, byte[] key, WriteOptions wOption) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.delete(fHandle, wOption, key);
     }
 
@@ -756,13 +974,13 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.deleteRange(fHandle, keyStart, keyEnd);
     }
 
     @Override
     public void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.deleteRange(fHandle, wOption, keyStart, keyEnd);
     }
 
@@ -773,13 +991,32 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
 
     @Override
     public void scan(String familyName, RocksIteratorHandler handler) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         handler.handle(db.newIterator(fHandle));
     }
 
     @Override
     public void scan(String familyName, ReadOptions rOptions, RocksIteratorHandler handler) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         handler.handle(db.newIterator(fHandle, rOptions));
+    }
+
+    private ColumnFamilyHandle getFamilyHandle(String familyName) throws IllegalArgumentException {
+        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        if (fHandle==null) {
+            throw new IllegalArgumentException("family '" + familyName +
+                    "' does not exist. Please specify it in Db options with option '" + FAMILY_NAMES.getName() + "'");
+        }
+        return fHandle;
+    }
+
+    @Override
+    public RocksDB getDb() {
+        return db;
+    }
+
+    @Override
+    public Map<String, ColumnFamilyHandle> getFamilies() {
+        return familiesHandler;
     }
 }

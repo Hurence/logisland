@@ -1,5 +1,6 @@
 package com.hurence.logisland.service.rocksdb.scan;
 
+import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 /**
@@ -7,5 +8,5 @@ import org.rocksdb.RocksIterator;
  */
 public interface RocksIteratorHandler {
 
-    void handle(RocksIterator rocksIterator);
+    void handle(RocksIterator rocksIterator) throws RocksDBException;
 }
