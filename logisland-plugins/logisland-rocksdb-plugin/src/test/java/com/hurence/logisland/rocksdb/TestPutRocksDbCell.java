@@ -23,7 +23,6 @@ import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.SerializerProvider;
-import com.hurence.logisland.service.rocksdb.put.PutRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -36,10 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TestPutRocksDbCell {
 

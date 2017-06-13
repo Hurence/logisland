@@ -37,7 +37,7 @@ import java.util.List;
 
 
 @Tags({"rocksdb"})
-@CapabilityDescription("Adds the Contents of a Record to HBase as the value of a single cell")
+@CapabilityDescription("Adds the Contents of a Record to Rocksdb as the value of a single cell")
 public class PutRocksDbCell extends AbstractPutRocksDb {
 
     private static Logger logger = LoggerFactory.getLogger(PutRocksDbCell.class);

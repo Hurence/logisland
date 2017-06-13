@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Base class for processors that put data to HBase.
+ * Base class for processors that put data to RocksDb.
  */
 public abstract class AbstractPutRocksDb extends AbstractProcessor {
 
