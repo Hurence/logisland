@@ -20,10 +20,13 @@ public class RocksDbStatics {
         for (int i=0; i < compressions.length - 1;i++) {
             compressionTypes.add(compressions[i].getLibraryName());
         }
+        //remove null some compression have no libraryName... NO_COMPRESSION for example
+        compressionTypes.remove(null);
         CompactionStyle[] compactions = CompactionStyle.values();
         for (int i=0; i < compactions.length - 1;i++) {
             compactionStyles.add(compactions[i].name());
         }
+        compactionStyles.remove(null);
     }
 
     public static final Validator LIST_COMPRESSION_TYPE_VALIDATOR_COMMA_SEPARATED = new Validator() {

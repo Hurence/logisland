@@ -1,7 +1,9 @@
 package com.hurence.logisland.service.rocksdb;
 
 import com.hurence.logisland.component.InitializationException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
@@ -20,6 +22,9 @@ public class RocksDbTest {
 
     private final static Logger log = LoggerFactory.getLogger(RocksDbTest.class);
 
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
     /**
      * This test comes from rocksDb Project
      * https://github.com/facebook/rocksdb/blob/master/java/samples/src/main/java/RocksDBSample.java
@@ -31,8 +36,8 @@ public class RocksDbTest {
     public void testCache() throws InitializationException, IOException {
         RocksDB.loadLibrary();
 
-        final String db_path = "path";
-        final String db_path_not_found = "path_not_found";
+        final String db_path = folder.newFolder("path").getAbsolutePath();
+        final String db_path_not_found = folder.newFolder("path_not_found").getAbsolutePath();
         try (final Options options = new Options();
              final Filter bloomFilter = new BloomFilter(10);
              final ReadOptions readOptions = new ReadOptions()
