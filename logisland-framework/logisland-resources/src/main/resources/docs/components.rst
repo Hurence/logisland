@@ -5,6 +5,47 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 ----------
 
+.. _com.hurence.logisland.processor.ApplyRegexp: 
+
+ApplyRegexp
+-----------
+This processor is used to create a new set of fields from one field (using regexp).
+
+Class
+_____
+com.hurence.logisland.processor.ApplyRegexp
+
+Tags
+____
+parser, regex, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.ApplyRegexp`_ 
+
+----------
+
 .. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
 
 BulkAddElasticsearch
@@ -819,6 +860,47 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
    "column.family.default", "The column family to use if column family field is not set", "", "null", "", ""
    "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.RegexpProcessor: 
+
+RegexpProcessor
+---------------
+This processor is used to create a new set of fields from one field (using regexp).
+
+Class
+_____
+com.hurence.logisland.processor.RegexpProcessor
+
+Tags
+____
+parser, regex, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.RegexpProcessor`_ 
 
 ----------
 
