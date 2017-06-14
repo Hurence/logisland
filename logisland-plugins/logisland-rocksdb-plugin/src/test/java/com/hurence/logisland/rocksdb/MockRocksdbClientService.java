@@ -196,13 +196,4 @@ public class MockRocksdbClientService extends AbstractControllerService implemen
 
     }
 
-    @Override
-    public RocksDB getDb() {
-        return null;
-    }
-
-    @Override
-    public Map<String, ColumnFamilyHandle> getFamilies() {
-        return null;
-    }
 }
