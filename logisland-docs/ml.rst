@@ -36,6 +36,11 @@ A model that can be used to make prediction on Records
         Record predict(Record inputRecord) throws ModelPredictionException;
 
         Collection<Record> predict(Collection<Record> inputRecord) throws ModelPredictionException;
+
+        // methods for model validation
+
+        int accuracy(Collection<Record> inputRecord, Collection<Object> expectedLabel)
+
     }
 
 Train the model : ModelTrainingEngine

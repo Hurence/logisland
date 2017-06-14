@@ -22,6 +22,7 @@ import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.model.MLNModel;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldDictionary;
@@ -157,7 +158,7 @@ public class runDeepLearning extends AbstractProcessor {
             final int outputNum = 10;
             final Evaluation eval = new Evaluation(outputNum);
 
-            MultiLayerNetwork restored = clientService.restoreModel() ;
+            MultiLayerNetwork restored = ((MLNModel) clientService.restoreModel()).getMLNModel();
 
             INDArray image = Nd4j.create(featureData);
             INDArray label = Nd4j.create(labelData);

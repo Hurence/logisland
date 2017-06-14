@@ -27,6 +27,19 @@ http://www.w3.org/2001/XMLSchema-instance ">
     </parent>
     <artifactId>logisland-spark-engine21</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+
+        <spark.hdp.version>2.1.0</spark.hdp.version>
+        <scala.version>2.11.8</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <dl4j_spark>0.8.0_spark_2</dl4j_spark>
+
+        <nd4j.version>0.8.0</nd4j.version>
+        <dl4j.version>0.8.0</dl4j.version>
+        <canova.version>0.0.0.5</canova.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -66,6 +79,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.hdp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -100,6 +114,31 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>scala-compiler</artifactId>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
+            <version>${dl4j_spark}</version>
+        </dependency>
+        <!--dependency>
+          <groupId>org.nd4j</groupId>
+          <artifactId>nd4j-x86</artifactId>
+          <version>0.4-rc3.8</version>
+        </dependency-->
+        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-api -->
+        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-native -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-api</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+
 
 
         <!-- test dependencies -->
