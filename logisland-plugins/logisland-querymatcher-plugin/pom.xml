@@ -26,7 +26,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.10.0-rc1</version>
+        <version>0.10.1</version>
     </parent>
 
     <packaging>jar</packaging>

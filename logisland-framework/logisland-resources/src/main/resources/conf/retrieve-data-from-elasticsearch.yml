@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.10.0-rc1
+version: 0.10.1
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
