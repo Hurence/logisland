@@ -203,13 +203,13 @@ public abstract class AbstractPutRocksDb extends AbstractProcessor {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             for (PutRecord putRecord : putRecords) {
-                String msg = String.format("Failed to send {} to HBase due to {}; routing to failure", putRecord.getRecord(), e);
+                String msg = String.format("Failed to send %s to Rocksdb due to %s.", putRecord.getRecord(), e);
                 putRecord.getRecord().addError("HBASE_PUT_RECORD_FAILURE", logger, msg);
             }
         }
 
         final long sendMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-        logger.debug("Sent {} Records to Rocksdb successfully in {} milliseconds", new Object[]{puts.size(), sendMillis});
+        logger.debug("Processed {} Records in {} milliseconds", new Object[]{puts.size(), sendMillis});
 
         return records;
 
