@@ -27,6 +27,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +105,7 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
 
 
     @Test
+    @Ignore
     public void validateIntegration() throws NoSuchFieldException, IllegalAccessException, InterruptedException, IOException {
 
         final List<Record> records = new ArrayList<>();
