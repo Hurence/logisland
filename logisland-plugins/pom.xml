@@ -39,6 +39,7 @@
         <module>logisland-useragent-plugin</module>
         <module>logisland-consolidate-session-plugin</module>
         <module>logisland-hbase-plugin</module>
+        <module>logisland-rocksdb-plugin</module>
         <module>logisland-enrichment-plugin</module>
     </modules>
 </project>
