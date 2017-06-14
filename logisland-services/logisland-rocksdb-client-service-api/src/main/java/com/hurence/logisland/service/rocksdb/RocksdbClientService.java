@@ -780,6 +780,7 @@ public interface RocksdbClientService extends ControllerService {
      *
      * @param put a put mutation
      * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if put is null
      */
     void put(ValuePutRequest put) throws RocksDBException;
 
@@ -829,23 +830,24 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param getRequests
-     * @return
+     *
+     * @param getRequests a list of single get to do
+     * @return a list of response
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
     Collection<GetResponse> multiGet(Collection<GetRequest> getRequests) throws RocksDBException;
 
     /**
      *
-     * @param getRequest
-     * @return
+     * @param getRequest a single get request
+     * @return a single getResponse
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
     GetResponse get(GetRequest getRequest) throws RocksDBException;
 
     /**
      *
-     * @param key
+     * @param key the key to retrieve the value in the 'default' family
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
@@ -853,7 +855,7 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param key
+     * @param key the key to retrieve the value in the 'default' family
      * @param rOption
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
@@ -862,8 +864,8 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param familyName
-     * @param key
+     * @param familyName the family where to get the value from
+     * @param key the key to retrieve the value in the family
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
@@ -871,8 +873,8 @@ public interface RocksdbClientService extends ControllerService {
 
     /**
      *
-     * @param familyName
-     * @param key
+     * @param familyName the family where to get the value from
+     * @param key the key to retrieve the value in the family
      * @param rOption
      * @return
      * @throws RocksDBException thrown when there are communication errors with RocksDb
@@ -883,11 +885,52 @@ public interface RocksdbClientService extends ControllerService {
     // remove operations //
     ///////////////////////
 
+    /**
+     *
+     * @param deleteRequests a list of value to delete
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     Collection<DeleteResponse> multiDelete(Collection<DeleteRequest> deleteRequests) throws RocksDBException;
+
+    /**
+     *
+     * @param deleteRequest a value to delete
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     DeleteResponse delete(DeleteRequest deleteRequest) throws RocksDBException;
+
+    /**
+     *
+     * @param key a key to delete with his value in 'default' family
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void delete(byte[] key) throws RocksDBException;
+
+    /**
+     *
+     * @param key  a key to delete with his value in 'default' family
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void delete(byte[] key, WriteOptions wOption) throws RocksDBException;
+
+    /**
+     *
+     * @param familyName the family to do the delete
+     * @param key  a key to delete with his value in family
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void delete(String familyName, byte[] key) throws RocksDBException;
+
+    /**
+     *
+     * @param familyName the family to do the delete
+     * @param key a key to delete with his value in family
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void delete(String familyName, byte[] key, WriteOptions wOption) throws RocksDBException;
 
     /////////////////////////////
@@ -901,23 +944,54 @@ public interface RocksdbClientService extends ControllerService {
     // delete range operations ////
     ///////////////////////////////
 
+    /**
+     *
+     * @param keyStart first key to delete data from in 'default' family (included)
+     * @param keyEnd last key to delete data from in 'default' family (excluded)
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void deleteRange(byte[] keyStart, byte[] keyEnd) throws RocksDBException;
+
+    /**
+     *
+     * @param keyStart first key to delete data from in 'default' family (included)
+     * @param keyEnd last key to delete data from in 'default' family (excluded)
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void deleteRange(byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException;
+
+    /**
+     *
+     * @param familyName family name to delete data from
+     * @param keyStart first key to delete data from in family (included)
+     * @param keyEnd last key to delete data from in family (excluded)
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd) throws RocksDBException;
+
+    /**
+     *
+     * @param familyName family name to delete data from
+     * @param keyStart first key to delete data from in family (included)
+     * @param keyEnd last key to delete data from in family (excluded)
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException;
 
     ///////////////////////////////////////
     // scan operations (with iterator) ////
     ///////////////////////////////////////
     /**
-     * Scans the given table using the optional filter criteria and passing each result to the provided handler.
+     * Scans the 'default' family passing each result to the provided handler.
      *
      * @param handler  a handler to process iterators from rocksdb
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
     void scan(RocksIteratorHandler handler) throws RocksDBException;
     /**
-     * Scans the given table using the optional filter criteria and passing each result to the provided handler.
+     * Scans the given family passing the result to the provided handler.
      *
      * @param familyName the column family to scan over
      * @param handler  a handler to process iterators from rocksdb
@@ -925,8 +999,8 @@ public interface RocksdbClientService extends ControllerService {
      */
     void scan(String familyName, RocksIteratorHandler handler) throws RocksDBException;
 
-    /**Properties
-     * Scans the given table for the given rowId and passes the result to the handler.
+    /**
+     * Scans the given family passes the result to the handler.
      *
      * @param familyName the column family to scan over
      * @param rOptions readOptions
@@ -934,21 +1008,5 @@ public interface RocksdbClientService extends ControllerService {
      * @throws RocksDBException thrown when there are communication errors with RocksDb
      */
     void scan(String familyName, ReadOptions rOptions, RocksIteratorHandler handler) throws RocksDBException;
-
-    /**
-     *
-     * @return The dbObject if you want to use native api. You will need Column families handle.
-     * @see #getFamilies()
-     * @Note If the service close the db, your object will have an unknown behaviour if you still use it
-     */
-    RocksDB getDb();
-
-    /**
-     *
-     * @return The families handler of the db. You need it only if you want to use the RocksDb object. If you are
-     * familiar with rocksDb
-     * @Note If the service close the db, your object will have an unknown behaviour if you still use it
-     */
-    Map<String, ColumnFamilyHandle> getFamilies();
 
 }

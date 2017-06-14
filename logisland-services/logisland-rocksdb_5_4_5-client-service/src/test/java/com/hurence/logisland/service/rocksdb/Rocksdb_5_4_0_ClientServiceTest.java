@@ -56,7 +56,11 @@ public class Rocksdb_5_4_0_ClientServiceTest {
     static protected final byte[] value4 = "value4".getBytes();
     static protected final byte[] key5 = "key5".getBytes();
     static protected final byte[] value5 = "value5".getBytes();
-
+    static protected final byte[] nullKey = null;
+    static protected final byte[] nullValue = null;
+    static protected final GetRequest getRequestNull = null;
+    static protected final DeleteRequest deleteRequestNull = null;
+    static protected final ValuePutRequest valuePutRequestNull = null;
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
@@ -540,6 +544,151 @@ public class Rocksdb_5_4_0_ClientServiceTest {
         service.scan(defaultFamily, readOptions, handler);
         assertThat(handler.getValues() , hasItems(value1, value2, value3, value4, value5));
         assertThat(handler.getValues() , hasSize(5));
+    }
+
+    @Test
+    public void testApiWithNull() throws RocksDBException, InitializationException, IOException {
+
+        final String dbName = "myDb";
+        final String familyName1 = "fruits";
+        final String familyName2 = "legumes";
+        final String dbPath = folder.newFolder(dbName).getAbsolutePath();
+        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+
+        // no db path so should be invalid
+        Rocksdb_5_4_0_ClientService service = new Rocksdb_5_4_0_ClientService();
+        service.setIdentifier("rocksDbClientService");
+        runner.addControllerService(service);
+        runner.setProperty(service, Rocksdb_5_4_0_ClientService.ROCKSDB_PATH, dbPath);
+        runner.setProperty(service, Rocksdb_5_4_0_ClientService.CREATE_IF_MISSING, "true");
+        runner.setProperty(service, Rocksdb_5_4_0_ClientService.FAMILY_NAMES, defaultFamily + "," +
+                familyName1 +"," + familyName2);
+        runner.setProperty(service, Rocksdb_5_4_0_ClientService.CREATE_MISSING_COLUMN_FAMILIES, "true");
+
+        runner.assertValid(service);
+        // should be valid
+        runner.enableControllerService(service);
+
+        RocksIteratorFillerHandler handler = new RocksIteratorFillerHandler();
+        //put
+        try {
+            service.put(valuePutRequestNull);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.put(null, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.put(key2, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.put(null, value3);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.put(null, key3, value3);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+        try {
+            service.put(key3, value3, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.put(familyName1, key3, value3, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+
+        //get
+        try {
+            service.get(getRequestNull);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.get(nullKey);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.get(nullKey, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.get(null, nullKey, null);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+        try {
+            service.get(null, nullKey);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+
+        //delete
+        try {
+            service.delete(deleteRequestNull);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.delete(nullKey);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.delete(nullKey, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.delete(null, nullKey);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+        try {
+            service.delete(null, nullKey, null);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+
+        //delete range
+        try {
+            service.deleteRange(nullKey, nullKey);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.deleteRange(key2, nullKey);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.deleteRange(nullKey, key2);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.deleteRange(key2, key3, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.deleteRange(key2, nullKey, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.deleteRange(null, key3, value3);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+        try {
+            service.deleteRange(null, nullKey, value3, null);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+
+
+        //scan
+        try {
+            service.scan(null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+        try {
+            service.scan( null, null);
+            fail("expected IllegalArgumentException did not occured");
+        } catch (IllegalArgumentException ex) {}
+        try {
+            service.scan(familyName2, null, null);
+            fail("expected Npe did not occured");
+        } catch (NullPointerException ex) {}
+
     }
 
 

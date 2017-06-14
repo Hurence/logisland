@@ -51,13 +51,14 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
     protected List<String> familiesName = new ArrayList<>();
     protected Map<String, ColumnFamilyHandle> familiesHandler = new HashMap<>();
     protected Map<String, ColumnFamilyDescriptor> familiesDescriptor = new HashMap<>();
-    final protected String defaultFamily = "default";
-    final private Pattern dynamicFamiliesPropertiesPattern = Pattern.compile(
+    static final protected String defaultFamily = "default";
+    public static final String FAMILY_PREFIX = "family.";
+    static final private Pattern dynamicFamiliesPropertiesPattern = Pattern.compile(
             "^" +
             FAMILY_PREFIX.replace(".", "\\.") +
-                    "([^\\.]*)\\.(.*)$"
+                    "([^\\.]+)\\.(.+)$"
     );
-    final private List<String> familiesPropertiesSuffixe = Arrays.asList(
+    static final private List<String> familiesPropertiesSuffixe = Arrays.asList(
             OPTIMIZE_FOR_SMALL_DB.getName(),
             OPTIMIZE_FOR_POINT_LOOKUP.getName(),
             OPTIMIZE_LEVEL_STYLE_COMPACTION.getName(),
@@ -103,7 +104,7 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
             REPORT_BG_IO_STATS.getName(),
             FORCE_CONSISTENCY_CHECKS.getName()
     );
-    public static final String FAMILY_PREFIX = "family.";
+
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -202,12 +203,12 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
     }
 
     /**
-     * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
+     * Instantiate RocksDb Client. This should be called by subclasses' @OnScheduled method to create a client
      * if one does not yet exist. If called when scheduled, closeClient() should be called by the subclasses' @OnStopped
      * method so the client will be destroyed when the processor is stopped.
      *
      * @param context The context for this processor
-     * @throws ProcessException if an error occurs while creating an Elasticsearch client
+     * @throws ProcessException if an error occurs while creating an RocksDb client
      */
     protected void createDbClient(ControllerServiceInitializationContext context) throws ProcessException {
         //clean
@@ -234,15 +235,16 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
             getLogger().error("Failed to create RocksDb client due to {}", new Object[]{e}, e);
             throw new RuntimeException(e);
         }
+        if (db == null) {//RocksDB.open can return null
+            getLogger().error("Failed to create RocksDb client for unknown reason");
+            throw new ProcessException("Failed to create RocksDb client for unknown reason");
+        }
         //initialize map of handlers
         for (int i=0; i<familiesName.length;i++) {
             String familyName = familiesName[i];
             this.familiesHandler.put(familyName, familiesHandler.get(i));
         }
-        if (db == null) {//RocksDB.open can return null
-            getLogger().error("Failed to create RocksDb client for unknown reason");
-            throw new RuntimeException("Failed to create RocksDb client for unknown reason");
-        }
+
     }
 
     /**
@@ -854,7 +856,11 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         }
     }
 
-
+    /**
+     *
+     * @param puts a list of put mutations
+     * @throws RocksDBException
+     */
     @Override
     public void multiPut(Collection<ValuePutRequest> puts) throws RocksDBException {
         for (ValuePutRequest putR: puts) {
@@ -862,6 +868,13 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         }
     }
 
+    /**
+     *
+     * @param put a put mutation
+     * @throws RocksDBException
+     * @throws IllegalArgumentException
+     * @throws NullPointerException if put is null
+     */
     @Override
     public void put(ValuePutRequest put) throws RocksDBException, IllegalArgumentException {
         String family = put.getFamily();
@@ -880,28 +893,68 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         put(family, key, value, wOptions);
     }
 
+    /**
+     *
+     * @param familyName family to put data in
+     * @param key the key of the value to store
+     * @param value the value to store in the specified family
+     * @throws RocksDBException*
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void put(String familyName, byte[] key, byte[] value) throws RocksDBException {
-        ColumnFamilyHandle fHandle = familiesHandler.get(familyName);
+        ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.put(fHandle, key, value);
     }
 
+    /**
+     *
+     * @param key the key of the value to store
+     * @param value the value to store in the specified family
+     * @throws RocksDBException
+     * @throws NullPointerException if a parameter is null
+     */
     @Override
     public void put(byte[] key, byte[] value) throws RocksDBException {
         db.put(key, value);
     }
 
+    /**
+     *
+     * @param familyName family to put data in
+     * @param key the key of the value to store
+     * @param value the value to store in the specified family
+     * @param writeOptions
+     * @throws RocksDBException
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void put(String familyName, byte[] key, byte[] value, WriteOptions writeOptions) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.put(fHandle, writeOptions, key, value);
     }
 
+    /**
+     *
+     * @param key the key of the value to store
+     * @param value the value to store in the specified family
+     * @param writeOptions
+     * @throws RocksDBException
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void put(byte[] key, byte[] value, WriteOptions writeOptions) throws RocksDBException {
         db.put(writeOptions, key, value);
     }
 
+    /**
+     *
+     * @param getRequests a list of single get to do
+     * @return a list of response
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     @Override
     public Collection<GetResponse> multiGet(Collection<GetRequest> getRequests) throws RocksDBException {
         Collection<GetResponse> responses = new ArrayList<>();
@@ -911,6 +964,13 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         return  responses;
     }
 
+    /**
+     *
+     * @param getRequest a single get request
+     * @return a single getResponse
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public GetResponse get(GetRequest getRequest) throws RocksDBException {
         String family = getRequest.getFamily();
@@ -933,31 +993,70 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         return  resp;
     }
 
+    /**
+     *
+     * @param key the key to retrieve the value in the 'default' family
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public byte[] get(byte[] key) throws RocksDBException {
         return db.get(key);
     }
 
+    /**
+     *
+     * @param key the key to retrieve the value in the 'default' family
+     * @param rOption
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public byte[] get(byte[] key, ReadOptions rOption) throws RocksDBException {
         return db.get(rOption, key);
     }
 
+    /**
+     *
+     * @param familyName the family where to get the value from
+     * @param key the key to retrieve the value in the family
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public byte[] get(String familyName, byte[] key) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         return db.get(fHandle, key);
     }
 
+    /**
+     *
+     * @param familyName the family where to get the value from
+     * @param key the key to retrieve the value in the family
+     * @param rOption
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public byte[] get(String familyName, byte[] key, ReadOptions rOption) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         return db.get(fHandle, rOption, key);
     }
 
+    /**
+     *
+     * @param deleteRequests a list of value to delete
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     */
     @Override
     public Collection<DeleteResponse> multiDelete(Collection<DeleteRequest> deleteRequests) throws RocksDBException {
-        //TODO
         Collection<DeleteResponse> responses = new ArrayList<>();
         for (DeleteRequest deleteR: deleteRequests) {
             responses.add(delete(deleteR));
@@ -965,6 +1064,13 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         return responses;
     }
 
+    /**
+     *
+     * @param deleteRequest a value to delete
+     * @return
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public DeleteResponse delete(DeleteRequest deleteRequest) throws RocksDBException {
         String family = deleteRequest.getFamily();
@@ -986,61 +1092,154 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
         return  resp;
     }
 
+    /**
+     *
+     * @param key a key to delete with his value in 'default' family
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void delete(byte[] key) throws RocksDBException {
         db.delete(key);
     }
 
+    /**
+     *
+     * @param key  a key to delete with his value in 'default' family
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void delete(byte[] key, WriteOptions wOption) throws RocksDBException {
         db.delete(wOption, key);
     }
 
+    /**
+     *
+     * @param familyName the family to do the delete
+     * @param key  a key to delete with his value in family
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void delete(String familyName, byte[] key) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.delete(fHandle, key);
     }
 
+    /**
+     *
+     * @param familyName the family to do the delete
+     * @param key a key to delete with his value in family
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void delete(String familyName, byte[] key, WriteOptions wOption) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.delete(fHandle, wOption, key);
     }
 
+    /**
+     *
+     * @param keyStart first key to delete data from in 'default' family (included)
+     * @param keyEnd last key to delete data from in 'default' family (excluded)
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void deleteRange(byte[] keyStart, byte[] keyEnd) throws RocksDBException {
         db.deleteRange(keyStart, keyEnd);
     }
 
+    /**
+     *
+     * @param keyStart first key to delete data from in 'default' family (included)
+     * @param keyEnd last key to delete data from in 'default' family (excluded)
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void deleteRange(byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException {
         db.deleteRange(wOption, keyStart, keyEnd);
     }
 
+    /**
+     *
+     * @param familyName family name to delete data from
+     * @param keyStart first key to delete data from in family (included)
+     * @param keyEnd last key to delete data from in family (excluded)
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.deleteRange(fHandle, keyStart, keyEnd);
     }
 
+    /**
+     *
+     * @param familyName family name to delete data from
+     * @param keyStart first key to delete data from in family (included)
+     * @param keyEnd last key to delete data from in family (excluded)
+     * @param wOption
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void deleteRange(String familyName, byte[] keyStart, byte[] keyEnd, WriteOptions wOption) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         db.deleteRange(fHandle, wOption, keyStart, keyEnd);
     }
 
+    /**
+     *
+     * Scans the 'default' family passing each result to the provided handler.
+     *
+     * @param handler  a handler to process iterators from rocksdb
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     */
     @Override
     public void scan(RocksIteratorHandler handler) throws RocksDBException {
         handler.handle(db.newIterator());
     }
 
+    /**
+     *
+     * Scans the given family passing the result to the provided handler.
+     *
+     * @param familyName the column family to scan over
+     * @param handler  a handler to process iterators from rocksdb
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void scan(String familyName, RocksIteratorHandler handler) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
         handler.handle(db.newIterator(fHandle));
     }
 
+    /**
+     *
+     * Scans the given family passes the result to the handler.
+     *
+     * @param familyName the column family to scan over
+     * @param rOptions readOptions
+     * @param handler a handler to process iterators from rocksdb
+     * @throws RocksDBException thrown when there are communication errors with RocksDb
+     * @throws NullPointerException if a parameter is null (beside familyName).
+     * @throws IllegalArgumentException if familyName is not known in the db or null.
+     */
     @Override
     public void scan(String familyName, ReadOptions rOptions, RocksIteratorHandler handler) throws RocksDBException {
         ColumnFamilyHandle fHandle = getFamilyHandle(familyName);
@@ -1054,15 +1253,5 @@ public class Rocksdb_5_4_0_ClientService extends AbstractControllerService imple
                     "' does not exist. Please specify it in Db options with option '" + FAMILY_NAMES.getName() + "'");
         }
         return fHandle;
-    }
-
-    @Override
-    public RocksDB getDb() {
-        return db;
-    }
-
-    @Override
-    public Map<String, ColumnFamilyHandle> getFamilies() {
-        return familiesHandler;
     }
 }
