@@ -117,7 +117,7 @@ public class RunPython extends AbstractProcessor {
     
     public static final PropertyDescriptor SCRIPT_CODE_IMPORTS = new PropertyDescriptor.Builder()
             .name(KEY_SCRIPT_CODE_IMPORTS)
-            .description("For inline mode only. This is the pyhton code that should hold the import statements if required.")
+            .description("For inline mode only. This is the python code that should hold the import statements if required.")
             .required(false)
             .build();
 

@@ -20,18 +20,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland</artifactId>
+        <artifactId>logisland-framework</artifactId>
         <version>0.10.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>logisland-framework</artifactId>
+    <artifactId>logisland-scripting</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>logisland-resources</module>
-        <module>logisland-utils</module>
-        <module>logisland-bootstrap</module>
-      <!--  <module>logisland-documentation</module>-->
-        <module>logisland-hadoop-utils</module>
-        <module>logisland-scripting</module>
+        <module>logisland-scripting-base</module>
+        <module>logisland-scripting-mvel</module>
     </modules>
 </project>

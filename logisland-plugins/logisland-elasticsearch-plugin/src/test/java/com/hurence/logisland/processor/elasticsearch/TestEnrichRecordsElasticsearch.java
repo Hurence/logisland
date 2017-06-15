@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.InitializationException;
@@ -24,6 +39,7 @@ public class TestEnrichRecordsElasticsearch {
     public void testEnrichThreeRecords() throws IOException, InitializationException {
 
         final String RECORD_KEY_FIELD = "codeProduct";
+        final String ES_TYPE = "es_type";
         final String ES_INDEX = "index1";
         final String ES_INCLUDES = "*";
         final String ES_EXCLUDES = "N/A";
@@ -35,6 +51,8 @@ public class TestEnrichRecordsElasticsearch {
 
         //////////////////
         final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+
+        runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
         runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);
         runner.setProperty(EnrichRecordsElasticsearch.ES_INDEX_FIELD, ES_INDEX);
         runner.setProperty(EnrichRecordsElasticsearch.ES_INCLUDES_FIELD, ES_INCLUDES);
