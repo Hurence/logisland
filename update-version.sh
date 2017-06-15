@@ -6,7 +6,7 @@
 
 
 ## declare an array variable
-declare -a extension=("rst" "pom.xml" "html" "yml")
+declare -a extension=(".rst" "pom.xml" ".html" ".yml" ".txt" ".md" "SparkJobLauncher.java" "StreamProcessingRunner.java")
 
 
 function usage
@@ -42,11 +42,12 @@ done
 SED_REPLACE="s/$old_version/$new_version/g"
 
 ## now loop through the above array
-for i in "${extension[@]}"
-do
-   if [ "$dry_run" = true ]; then
-        grep -r -n -i --exclude-dir='.idea' --include="*$i" "$old_version" .
-   else
-        find . -not -path '*/\.*' -type f -name "*$i" -exec sed -i '' "$SED_REPLACE" {} \;
-   fi
-done
+if [ "$dry_run" = true ]; then
+     grep -r -n -i --exclude-dir=\*{.idea,.git} --exclude="*.iml"  "$old_version" .
+else
+
+    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git} --exclude=*.iml  "$old_version" .` ; do
+        echo  $i;
+        sed -i '' "$SED_REPLACE" $i
+     done
+fi
