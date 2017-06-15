@@ -51,7 +51,7 @@ RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470
 COPY logisland-*.tar.gz /usr/local/
 RUN cd /usr/local; \
     tar -xzf logisland-*.tar.gz; \
-    ln -s /usr/local/logisland-0.10.0-rc1 /usr/local/logisland; \
+    ln -s /usr/local/logisland-0.10.1 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/*.gz
 ENV LOGISLAND_HOME /usr/local/logisland
