@@ -1211,3 +1211,31 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.ml.runDeepLearning: 
+
+runDeepLearning
+---------------
+The ml processor has been writteen to describe how to implement machine Learning Capabilities to logismllandIt relies on deeplearning4j lmibraries to load the model and to run the Neural Network prediction
+
+Class
+_____
+com.hurence.logisland.processor.ml.runDeepLearning
+
+Tags
+____
+machine learning, deep learning
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug.", "", "null", "", ""
+   "**ml.model.file.path**", "the path of the ml model", "", "null", "", ""

@@ -21,21 +21,17 @@ import java.util.Collections
 import java.util.regex.Pattern
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext, ModelTrainingEngineImpl}
+import com.hurence.logisland.engine.{EngineContext, ModelTrainingEngineImpl}
 import com.hurence.logisland.model.{MLNModel, Model}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer}
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.api.java.JavaSparkContext
-import org.apache.spark.rdd.RDD
-import org.slf4j.LoggerFactory
 import org.apache.spark.{SparkConf, SparkContext}
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator
-import org.deeplearning4j.eval.Evaluation
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.conf.{NeuralNetConfiguration, Updater}
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster
@@ -43,6 +39,7 @@ import org.deeplearning4j.util.ModelSerializer
 import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.dataset.DataSet
 import org.nd4j.linalg.lossfunctions.LossFunctions
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 

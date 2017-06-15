@@ -27,23 +27,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
     </parent>
     <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
-<properties>
-    <spark.hdp.version>1.6.2</spark.hdp.version>
-    <scala.version>2.10.6</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <dl4j_spark>0.8.0_spark_1</dl4j_spark>
-    <!--spark.hdp.version>2.1.0</spark.hdp.version>
-    <scala.version>2.11.8</scala.version>
-    <scala.binary.version>2.11</scala.binary.version>
-    <dl4j_spark>0.8.0_spark_2</dl4j_spark-->
-
-    <nd4j.version>0.8.0</nd4j.version>
-    <dl4j.version>0.8.0</dl4j.version>
-    <canova.version>0.0.0.5</canova.version>
-</properties>
 
     <dependencies>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
@@ -116,80 +101,13 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>scala-logging-slf4j_2.10</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/dl4j-spark-nlp_2.11 -->
-
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
-            <version>${dl4j_spark}</version>
-        </dependency>
-        <!--dependency>
-          <groupId>org.nd4j</groupId>
-          <artifactId>nd4j-x86</artifactId>
-          <version>0.4-rc3.8</version>
-        </dependency-->
-        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-api -->
-        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-native -->
-        <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-backend</artifactId>
-            <version>0.8.0</version>
-        </dependency>
-
-
-
-
-
-        <!-- deeplearning 4j dependencies-->
-
-        <!--dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>dl4j-spark-nlp_2.10</artifactId>
-            <version>0.8.0_spark_1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-core</artifactId>
-            <version>${dl4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>dl4j-spark_2.10</artifactId>
-            <version>0.8.0_spark_1</version>
-        </dependency-->
 
         <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase-plugin</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase-client-service-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
-            <scope>test</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hadoop-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

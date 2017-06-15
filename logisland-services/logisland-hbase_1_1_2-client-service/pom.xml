@@ -94,12 +94,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase-client-service-api</artifactId>
-            <version>0.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hadoop-utils</artifactId>
-            <version>0.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

@@ -120,13 +120,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
             <version>${dl4j_spark}</version>
         </dependency>
-        <!--dependency>
-          <groupId>org.nd4j</groupId>
-          <artifactId>nd4j-x86</artifactId>
-          <version>0.4-rc3.8</version>
-        </dependency-->
-        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-api -->
-        <!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-native -->
+
         <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>nd4j-native</artifactId>

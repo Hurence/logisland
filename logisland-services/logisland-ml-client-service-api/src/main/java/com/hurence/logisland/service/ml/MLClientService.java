@@ -1,4 +1,4 @@
-package com.hurence.logisland.processor.ml;
+package com.hurence.logisland.service.ml;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;

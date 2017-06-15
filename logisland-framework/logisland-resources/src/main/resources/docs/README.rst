@@ -60,7 +60,6 @@ Then run the monitoring script in the background:
 If you install the [browser extensions](http://livereload.com/) then everything should update every time any files are
 saved without any manual steps on your part.
 
-
 If you want to install this extension. One way to do it is to install gem (on linux) with apt-get
 
     apt-get install gem
