@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-rc1</version>
+        <version>0.10.1</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
     <dependencies>
@@ -90,7 +90,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-scripting-processors-plugin</artifactId>
+            <artifactId>logisland-scripting-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

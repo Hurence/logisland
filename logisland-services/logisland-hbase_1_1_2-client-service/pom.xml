@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>0.10.0-rc1</version>
+        <version>0.10.1</version>
     </parent>
 
     <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
@@ -94,12 +94,12 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase-client-service-api</artifactId>
-            <version>0.10.0-rc1</version>
+            <version>0.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hadoop-utils</artifactId>
-            <version>0.10.0-rc1</version>
+            <version>0.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
