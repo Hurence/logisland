@@ -1,0 +1,90 @@
+version: 0.11.0
+documentation: launche a batch ML job
+engine:
+  component: com.hurence.logisland.engine.spark.BatchEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: TrainLogisticRegressionModelDemo
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    scheduling.delay: 24h
+
+  pipeline: logistic_regression_model_trainer
+    component: com.hurence.logisland.pipeline.ml.MLLibPipeline
+    documentation: >
+      fit a logistic regression model with input training file
+      outputs the model into a local file
+    configuration:
+
+    datasourceConfiguration:
+
+      # training set file input path
+      - datasource: training_data_input_file
+        type: input
+        component: com.hurence.logisland.datasource.LocalFile
+        configuration:
+          file.path: data/mllib/sample_libsvm_data.txt
+
+      # trained model output path
+      - datasource: trained_model_output_file
+        type: output
+        component: com.hurence.logisland.datasource.LocalFile
+        configuration:
+          file.path: models/lr_trained
+          overwrite.policy: replace
+
+    stageConfigurations:
+
+      # split all input lines according to a regex
+      - stage: regex_splitter
+        component: com.hurence.logisland.transformer.LogislandProcessorMapper
+        external.component: com.hurence.logisland.processor.RegexpProcessor
+        documentation: >
+          a parser that produce events from an apache log REGEX
+        configuration:
+          raw_value: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out:(\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+
+      # add mllib features
+      - stage: string_indexer
+        component: com.hurence.logisland.transformer.MLLibTransformer
+        external.component: org.apache.spark.ml.feature.StringIndexer
+        documentation: >
+          A label indexer that maps a label field to a label indice.
+          If the input field is numeric, we cast it to string and index the string values.
+          The indices are in [0, numLabels), ordered by label frequencies.
+          So the most frequent label gets index 0.
+        configuration:
+          input.field: http_query
+          output.field: indexed_http_query
+          # how to handle invalid entries.
+          # Options are skip (which will filter out rows with bad values), or error (which will throw an error).
+          handle.invalid: skip
+
+      # train the model
+      - stage: logistic_regression
+        component: com.hurence.logisland.transformer.ml.MLLibEstimator
+        external.component: org.apache.spark.ml.classification.LogisticRegression
+        documentation: >
+          Logistic regression.
+          Supports multinomial logistic (softmax) regression and binomial logistic regression.
+        configuration:
+          elastic.net.param: 0.1
+          family:
+          features.field:
+          fit.intercept: true
+          label.field: http_query
+          max.iter: 10
+          prediction.field: prediction
+          probability.field: probability
+          raw.prediction.field:
+          reg.param:
+          standardization: true
+          threshold: 0.1
+          thresholds:
+          tol:
+          weight.field:
