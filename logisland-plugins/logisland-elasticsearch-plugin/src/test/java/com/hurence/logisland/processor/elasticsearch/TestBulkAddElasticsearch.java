@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.component.InitializationException;
@@ -28,14 +43,13 @@ public class TestBulkAddElasticsearch {
     private static Logger logger = LoggerFactory.getLogger(TestBulkAddElasticsearch.class);
 
     @Test
-    public void testPutElasticsearchTwoRecords() throws IOException, InitializationException {
+    public void testBulkAddElasticsearchTwoRecords() throws IOException, InitializationException {
 
         final String DEFAULT_INDEX = "test_index";
         final String DEFAULT_TYPE = "cisco_record";
         final String ES_INDEX_FIELD = "index_field";
         final String ES_TYPE_FIELD = "type_field";
 
-        //////////////////
         final TestRunner runner = TestRunners.newTestRunner(BulkAddElasticsearch.class);
         runner.setProperty(BulkAddElasticsearch.DEFAULT_INDEX, DEFAULT_INDEX);
         runner.setProperty(BulkAddElasticsearch.DEFAULT_TYPE, DEFAULT_TYPE);
@@ -46,12 +60,10 @@ public class TestBulkAddElasticsearch {
 
         runner.assertValid();
 
-        ///////////////////
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
         runner.addControllerService("elasticsearchClient", elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
-        ///////////////////
         final Record inputRecord1 = new StandardRecord(DEFAULT_TYPE)
                 .setId("firewall_record0")
                 .setField(FieldDictionary.RECORD_TIME, FieldType.LONG, 1475525688668L)

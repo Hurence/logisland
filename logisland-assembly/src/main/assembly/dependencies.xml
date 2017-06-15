@@ -36,7 +36,7 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
                 <exclude>logisland-resources</exclude>
-                <exclude>logisland-docs</exclude>
+                <exclude>logisland-documentation</exclude>
             </excludes>
         </dependencySet>
 
@@ -101,27 +101,38 @@
                 </includes>
             </unpackOptions>
         </dependencySet>
-        
-        <!-- Writes out the docs directory contents -->
+
         <dependencySet>
             <scope>runtime</scope>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>docs/</outputDirectory>
+            <outputDirectory>./</outputDirectory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0770</fileMode>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
-            	<include>logisland-docs</include>
+                <include>logisland-resources</include>
             </includes>
             <unpack>true</unpack>
             <unpackOptions>
-                <filtered>false</filtered>
-                <excludes>
-                  <!-- LICENSE and NOTICE both covered by top-level -->
-                  <exclude>LICENSE</exclude>
-                  <exclude>NOTICE</exclude>
-                </excludes>
+                <filtered>true</filtered>
+                <includes>
+                    <include>docs/*.rst</include>
+                    <include>docs/tutorials/*.rst</include>
+                </includes>
             </unpackOptions>
-        </dependencySet>                
+        </dependencySet>
     </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>./logisland-documentation</directory>
+            <outputDirectory>./docs</outputDirectory>
+            <includes>
+                <include>*.rst</include>
+                <include>turorials/*.rst</include>
+            </includes>
+        </fileSet>
+
+    </fileSets>
     <files>
         <file>
             <source>./README.md</source>

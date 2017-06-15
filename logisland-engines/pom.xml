@@ -6,15 +6,41 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0-rc1</version>
     </parent>
     <packaging>pom</packaging>
 
     <artifactId>logisland-engines</artifactId>
 
-    <modules>
-        <module>logisland-spark-engine21</module>
-        <module>logisland-spark-engine16</module>
-    </modules>
+    <profiles>
+        <!--  hdp 2.5 -->
+        <profile>
+            <id>hdp2.5</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-spark_2_1-engine</module>
+            </modules>
+        </profile>
+
+        <!--  hdp 2.4 -->
+        <profile>
+            <id>hdp2.4</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>hdp</name>
+                    <value>2.4</value>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-spark_1_6-engine</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
