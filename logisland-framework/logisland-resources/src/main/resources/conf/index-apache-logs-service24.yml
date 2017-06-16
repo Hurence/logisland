@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 0.10.1
+version: 0.10.0-SNAPSHOT
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -12,8 +12,8 @@ engine:
   type: engine
   documentation: Index some apache logs with logisland
   configuration:
-    spark.app.name: PythonProcessingDemo
-    spark.master: local[*]
+    spark.app.name: IndexApacheLogsDemo
+    spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
     spark.executor.memory: 2G
@@ -37,6 +37,18 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 2000
+
   streamConfigurations:
 
     # parsing
@@ -51,25 +63,6 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.apache_log",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "src_ip",      "type": ["string","null"] },
-               { "name": "http_method", "type": ["string","null"] },
-               { "name": "bytes_out",   "type": ["long","null"] },
-               { "name": "http_query",  "type": ["string","null"] },
-               { "name": "http_version","type": ["string","null"] },
-               { "name": "http_status", "type": ["string","null"] },
-               { "name": "identd",      "type": ["string","null"] },
-               { "name": "user",        "type": ["string","null"] }    ]}
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
@@ -77,7 +70,6 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # parse apache logs
         - processor: apache_parser
           component: com.hurence.logisland.processor.SplitText
           type: parser
@@ -87,35 +79,14 @@ engine:
             value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
-        # parse apache logs
-        - processor: apache_parser
-          component: com.hurence.logisland.processor.scripting.python.RunPython
-          type: parser
-          documentation: a parser that add a new field if a threshold has been crossed
-          configuration:
-            script.code.process: |
-                outputRecords = []
-                # Check that one can read values coming from java:
-                # Go through each record and add a python field with a value from a field coming from java 
-                for record in records:
-                  try:
-                    copyRecord = StandardRecord(record)
-                    # Get the src_ip field value
-                    javaField = copyRecord.getField("src_ip")
-                    if javaField is not None:
-                      javaFieldValue = javaField.asString()
-                      copyRecord.setStringField('python_field', 'java src_ip = ' + javaFieldValue)
-                  except:
-                    # Print an error message in case of error
-                    errorMsg = 'ERROR in python code processing this record: ' + str(copyRecord)
-                    print errorMsg
-                    copyRecord.addError('unknown_error', errorMsg)
-                  outputRecords.append(copyRecord)
-                return outputRecords
-
-        - processor: syslog_debugger
-          component: com.hurence.logisland.processor.DebugStream
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
-          documentation: debug records
+          documentation: a processor that indexes processed events in elasticsearch
           configuration:
-            event.serializer: json
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type

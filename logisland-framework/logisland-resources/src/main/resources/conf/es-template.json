@@ -136,7 +136,7 @@
                             "analyzer" : "lkeyword"
                         }
                     }
-                },,
+                },
                 {
                     "ip":{
                         "match" : ".*_ip?$",

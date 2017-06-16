@@ -1,0 +1,92 @@
+# Logisland deployment containers to perform integration tests.
+version: '3'
+
+services:
+
+  # Logisland + Elasticsearch 2.3
+  logisland:
+    image: hurence/logisland-hdp2.4
+    container_name: logisland-hdp2.4
+    # Infinite loop as command to avoid stopping the logisland container.
+    command: tail -f /dev/null
+    environment:
+      - LOGISLAND_TUTORIALS=/data/all-tutorials
+    extra_hosts:
+      # Add entry for sandbox in /etc/hosts of container
+      - "sandbox:127.0.0.1"
+    volumes:
+      # Mount /data to reach testing purpose material.
+      - ./data:/data
+    ports:
+      - 5001:80
+      - 80:80
+      - 8080:8080
+      - 3000:3000
+      - 5601:5601
+      - 2181:2181
+      - 9092:9092
+      - 9000:9000
+      - 4050-4060:4050-4060
+      - 9203:9200
+      - 9303:9300
+    links:
+      - "elasticsearch24"
+      - "elasticsearch5"
+    networks:
+      - itnet
+
+  # Elasticsearch 5
+  elasticsearch5:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.1
+    container_name: elasticsearch5
+    environment:
+      # The cluster.name matches the one in all-tutorials.yml
+      - cluster.name=elasticsearch-5
+      # Disable authentication for test purpose
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9205:9200
+      - 9305:9300
+    networks:
+      - itnet
+
+  # Elasticsearch 2.4
+  elasticsearch24:
+    image: hurence/elastic-2.4
+    container_name: elasticsearch24
+    environment:
+      # The cluster.name matches the one in all-tutorials.yml
+      - cluster.name=elasticsearch-2.4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9204:9200
+      - 9304:9300
+    networks:
+      - itnet
+
+  # HBase 1.1.2
+  hbase112:
+    image: adaminspace/hbase
+    container_name: hbase112
+    # Override hbase-site.xml before starting HBase to redirect zookeeper connection to zookeeper hosted in logisland docker container.
+    command: /bin/sh -c 'cat /data/webanalytics/hbase/hbase-site.xml > /usr/local/hbase/hbase-1.1.2/conf/hbase-site.xml && hbase master start'
+    environment:
+      # Prevent HBase to start its own zookeeper.
+      - HBASE_MANAGES_ZK=false
+    volumes:
+      # /data/webanalytics/hbase/run-command.sh is used to send non-interactive commands to HBase.
+      - ./data:/data
+    networks:
+      - itnet
+    depends_on:
+      - logisland
+
+networks:
+  itnet:
