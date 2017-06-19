@@ -9,14 +9,23 @@ cache:
 
 language: java
 
-script: 
+before_install:
+  # Print out the current docker-compose version.
+  - docker-compose --version
+
+script:
   - mvn clean install -Dhdp=2.4
-  - mvn clean install -Dhdp=2.5
+  - mvn verify -Dhdp=2.4 -Pdocker -f logisland-docker/pom.xml
+  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up
+  - logisland-docker/src/it/resources/it.sh -d
+  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
+#  - mvn clean install -Dhdp=2.5
 
 jdk:
   - oraclejdk8
 
-install: true
+install:
+  - sudo sysctl -w vm.max_map_count=262144
 
 notifications:
   email:
