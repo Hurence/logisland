@@ -57,7 +57,7 @@ services:
 
   # Elasticsearch 2.4
   elasticsearch24:
-    image: hurence/elastic-2.4
+    image: hurence/elasticsearch-2.4
     container_name: elasticsearch24
     environment:
       # The cluster.name matches the one in all-tutorials.yml
