@@ -24,7 +24,7 @@ before_install:
   - docker-compose --version
 
 script:
-  - mvn clean install -Dhdp=2.4
+  - mvn clean install -Dhdp=2.4 | grep -v 'Download.* http://'
   - mvn verify -Dhdp=2.4 -Pdocker -f logisland-docker/pom.xml
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up
   - logisland-docker/src/it/resources/it.sh -d
