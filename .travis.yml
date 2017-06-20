@@ -15,11 +15,20 @@ cache:
 language: java
 
 before_install:
+  # update is required to update the repositories to see the new packages for
+  # Docker.
+  - sudo apt-get update
+
+  # Now we can install the newer docker-engine which is required for the newer
+  # docker-composer we will install next. The messy options are to force it to
+  # be non-interactive (normally it asks you a bunch of config questions).
+  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+
   # Upgrade/install docker-compose.
-#  - sudo rm -f /usr/local/bin/docker-compose
-#  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-#  - chmod +x docker-compose
-#  - sudo mv docker-compose /usr/local/bin
+  - sudo rm -f /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
   # Print out the current docker-compose version.
   - docker-compose --version
 
