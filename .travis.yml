@@ -36,7 +36,6 @@ script:
   - mvn clean install -Dhdp=2.4 | grep -v 'Download.* http://'
   - mvn package -Dhdp=2.4 -Pdocker -f logisland-docker/pom.xml
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d
-  - sleep 30
   - logisland-docker/src/it/resources/it.sh -d
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
 #  - mvn clean install -Dhdp=2.5

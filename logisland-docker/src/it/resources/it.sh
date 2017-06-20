@@ -454,7 +454,8 @@ ensure_logisland_ready()
 {
   debug "Polling elasticsearch on ${ES_URL}"
 
-  poll 30 1 fetch_elasticsearch_status "${ES_URL}"
+  # Wait up to 3 minutes for logisland to be up and running.
+  poll 180 1 fetch_elasticsearch_status "${ES_URL}"
 }
 
 # Sends the specified file to Kafka using the command kafkacat within the docker container.
