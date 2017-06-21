@@ -76,6 +76,10 @@ run_test()
   # Fully qualified name of input file mounted inside docker image.
   DOCKER_MOUNTED_INPUT_FILE="${INPUT_FILE:${#RESOURCE_DIR}}"
 
+  # Ensure kafka topic is created before sending data.
+  poll 300 1 lookup_kafka_topic "${KAFKA_TOPIC}"
+  abort_if "${?}" "Kafka topic ${KAFKA_TOPIC} missing. Aborting."
+
   # Sends data to kafka.
   EXPECTED_DOCS_COUNT=$(${DEBUG}; wc "${INPUT_FILE}" | awk '{print $1}')
   kafkacat "${DOCKER_MOUNTED_INPUT_FILE}"
@@ -449,6 +453,20 @@ fetch_elasticsearch_status()
   [[ `${CURL_BIN} -fs "${1}/_cat/health?h=status" | tr -d '[:space:]'` =~ ^(yellow|green)$ ]]
 }
 
+# Returns 0 if the provided topic is present in zookeeper; something else otherwise.
+# @param topic to lookup for in zookeeper.
+lookup_kafka_topic()
+{
+  require_args "${#}" 1 "lookup_kafka_topic <topic>"
+
+  local topic="$1"
+
+  # Execute zookeeper cli and receive output in DOCKER_STDOUT.
+  zookeeper_cli "ls /brokers/topics"
+
+  [[ `echo "$DOCKER_STDOUT" | grep "${topic}"` ]]
+}
+
 # Ensures that logisland is ready by polling the 'official' elasticsearch's health status denoted by ES_URL.
 ensure_logisland_ready()
 {
@@ -559,7 +577,8 @@ exec_in_docker()
 
     local DOCKER_CMD="${DOCKER_BIN} exec -t ${DOCKER_IMAGE_NAME} bash -c \"${CMD}\""
 
-    (${DEBUG}; bash -c "${DOCKER_CMD}")
+    # Store output of command.
+    DOCKER_STDOUT=`${DEBUG}; bash -c "${DOCKER_CMD}" 2>&1`
   fi
 }
 

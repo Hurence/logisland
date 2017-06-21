@@ -12,7 +12,7 @@ engine:
   type: engine
   documentation: Index some apache logs with logisland
   configuration:
-    spark.app.name: IndexApacheLogsDemo
+    spark.app.name: IntegrationTests
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
