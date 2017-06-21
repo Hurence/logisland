@@ -94,6 +94,7 @@ run_test()
 
     if test ${?} -ne 0 -a ${TEST_RESULT} -eq 0
     then
+      debug "Test ${TEST} failed for ${URL}."
       TEST_RESULT=1
     fi
   done

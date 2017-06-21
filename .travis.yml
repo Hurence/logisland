@@ -36,11 +36,11 @@ script:
   - echo -en "travis_fold:end:logisland-w-hdp${hdp}\\r"
   # Integration tests
   # The 'hdp' variable is substituted in 'docker-compose.yml' and 'it.sh'.
-  - echo -en "travis_fold:start:it-tests-w-hdp${hdp}\\r"
-  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d
-  - logisland-docker/src/it/resources/it.sh
+  - echo -en "travis_fold:start:it-tests-w-hdp2.4\\r"
+  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d --force-recreate
+  - logisland-docker/src/it/resources/it.sh -d
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
-  - echo -en "travis_fold:end:it-tests-w-hdp${hdp}\\r"
+  - echo -en "travis_fold:end:it-tests-w-hdp$2.4\\r"
 
   # Exact same with hdp2.5
   - export hdp="2.5"
@@ -52,8 +52,8 @@ script:
   # Integration tests
   # The 'hdp' variable is substituted in 'docker-compose.yml' and 'it.sh'.
   - echo -en "travis_fold:start:it-tests-w-hdp${hdp}\\r"
-  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d
-  - logisland-docker/src/it/resources/it.sh
+  - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d --force-recreate
+  - logisland-docker/src/it/resources/it.sh -d
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
   - echo -en "travis_fold:end:it-tests-w-hdp${hdp}\\r"
 
