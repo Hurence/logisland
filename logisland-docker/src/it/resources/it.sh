@@ -236,7 +236,8 @@ property()
 # Initializes the environment by setting the relevant variables such as hosts, ports, ...
 init_env()
 {
-  default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp2.4"
+  default_value hdp "2.4"
+  default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp${hdp}"
   default_value HBASE_DOCKER_IMAGE_NAME "hbase112"
   # elasticsearch 2.3.3 runs in logisland docker image
   default_value ES23_DOCKER_IMAGE_NAME "${LOGISLAND_DOCKER_IMAGE_NAME}"

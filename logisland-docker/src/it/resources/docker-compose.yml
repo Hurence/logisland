@@ -5,8 +5,8 @@ services:
 
   # Logisland + Elasticsearch 2.3
   logisland:
-    image: hurence/logisland-hdp2.4
-    container_name: logisland-hdp2.4
+    image: hurence/logisland-hdp${hdp}
+    container_name: logisland-hdp${hdp}
     # Infinite loop as command to avoid stopping the logisland container.
     command: tail -f /dev/null
     environment:
