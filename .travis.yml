@@ -29,28 +29,28 @@ before_install:
 
 script:
   # hdp 2.4
-  - echo -en "travis_fold:start:logisland-w-hdp24\r"
+  - echo -en "travis_fold:start:logisland-w-hdp24\\r"
   - mvn clean install -Dhdp=2.4 | grep -v 'Download.* http'
   - mvn package -Dhdp=2.4 -Pdocker -f logisland-docker/pom.xml
-  - echo -en "travis_fold:end:logisland-w-hdp24\r"
+  - echo -en "travis_fold:end:logisland-w-hdp24\\r"
 
-  - echo -en "travis_fold:start:it-tests-w-hdp24\r"
+  - echo -en "travis_fold:start:it-tests-w-hdp24\\r"
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d
   - logisland-docker/src/it/resources/it.sh
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
-  - echo -en "travis_fold:end:it-tests-w-hdp24\r"
+  - echo -en "travis_fold:end:it-tests-w-hdp24\\r"
 
   # hdp 2.5
-  - echo -en "travis_fold:start:logisland-w-hdp25\r"
+  - echo -en "travis_fold:start:logisland-w-hdp25\\r"
   - mvn clean install -Dhdp=2.5 | grep -v 'Download.* http'
   - mvn package -Dhdp=2.5 -Pdocker -f logisland-docker/pom.xml
-  - echo -en "travis_fold:end:logisland-w-hdp25\r"
+  - echo -en "travis_fold:end:logisland-w-hdp25\\r"
 
-  - echo -en "travis_fold:start:it-tests-w-hdp25\r"
+  - echo -en "travis_fold:start:it-tests-w-hdp25\\r"
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml up -d
-  - logisland-docker/src/it/resources/it.sh -d
+  - logisland-docker/src/it/resources/it.sh
   - docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
-  - echo -en "travis_fold:end:it-tests-w-hdp25\r"
+  - echo -en "travis_fold:end:it-tests-w-hdp25\\r"
 
 jdk:
   - oraclejdk8
