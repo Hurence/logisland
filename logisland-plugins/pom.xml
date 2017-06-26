@@ -31,7 +31,7 @@
         <module>logisland-cyber-security-plugin</module>
         <module>logisland-scripting-plugin</module>
         <module>logisland-querymatcher-plugin</module>
-        <!--<module>logisland-botsearch-plugin</module>-->
+        <module>logisland-botsearch-plugin</module>
         <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
