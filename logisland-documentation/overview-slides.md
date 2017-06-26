@@ -1,42 +1,83 @@
 
 
 # [fit] Logisland 
-## [fit] _**Event mining at scale**_
-### Thomas Bailet @hurence [2017-01-19]
+## [fit] _**event-mining@scale**_
+## @bailetthomas
 
+---
+
+# Schedule
+
+- Events & Logs core concepts
+- paradigm
 
 
 ---
 
-## [fit] Overview
+## [fit] Events & Logs
+## [fit] Core concepts
+
 
 ---
-# [fit] Logisland
-## [fit] provides a stream analytics solution 
-## [fit] that can handle all enterprise-scale
-## [fit] event data and processing
+
+# [fit] event = 
+# [fit] chronological change
+# [fit] in the system state
+
+
+---
+
+# [fit] log = 
+# [fit] centralized registry of
+# [fit] chronologically ordered events
+
+---
+
+# Log centric architecture
+
+![right fit](_static/log-centric.png)
+
+- **async** event production and consumption.
+- **uncorelated** publishers and subscribers.
+- acts as a **Messaging system**.
+- replay the log from any point in time.
+- **realtime** event availibility.
+
+---
+
+# How to handle distributed logs ?
+
+![inline](_static/kafka-topics-partitions-replicas.png)
+
+
+---
+# [fit] Logisland = 
+## [fit] high level stream analytics solution 
+## [fit] to handle massive scale
+## [fit] event processing
 
 ---
 
 # Big picture
 
-- **Open source**, developed by Hurence, implemented at lfdj.fr
+- **Open source**, initiated by Hurence
 - **High scalability** and **Fault-tolerant**.
 - **High throughput** (billions messages / day).
-- **Easy** to operate on Hadoop or on standalone containers
+- **Easy** to operate on Hadoop or on **standalone containers**
 - **Extensible framework** to build high level apps
-- Alternative to Splunk, StreamAnalytix, ...
+- Alternative to Splunk, StreamAnalytix, Streamline, ELK...
+
 
 ---
 
-# Purpose
+# Use cases
 
-- log mining
-- complex event processing
-- patterns finding
-- reframing
-- normalizing
-- contextualizing
+- **Log aggregation** : low latency log processing
+- **Stream processing** : multiple stages of processing (enriching, ...)
+- **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
+- **click stream tracking** : capture user click stream data
+- **SIEM** : security manager for intrusion detection
+- **IoT** : generate alerts based on outliers and forcasting.
 
 ---
 
@@ -44,10 +85,9 @@
 
 ---
 
-# Why ?
-
-- lot of historical code with elasticsearch, **Pig**, **Mahout** before **Spark** & **Kafka**  
-- **ELK** is great to start, but hard to centralize processing and lacks of offline ML 
+# Challengers ?
+ 
+- **ELK** is great to start with, but hard to centralize processing and lacks of real offline ML 
 - **Splunk** is fantastic but clients are not rich enough to afford it ;)
 - **NIFI** is a great tool but doesn't play well with distributed processing 
 - **Metron**, **Eagle** are too security centric
@@ -56,11 +96,11 @@
 
 # Features
 
-- out-of-the-box processors (no code required)
+- **out-of-the-box processors** (no code required)
 - raw data to structured records conversion
-- store to HDFS for offline analysis
-- records indexation for realtime search
-- alert percolation or query matching
+- I/O to Elasticsearch, HBase, HDFS, RocksDB
+- alert percolation or **query matching**
+- **online prediction** with offline trained ML models
 
 ---
 
@@ -76,6 +116,15 @@
 
 ---
 
+# Features 3
+
+- telemetry sources (bro, pcap, netflow)
+- live enrichement (geoip, custom lookups)
+- 
+
+---
+
+## [fit] Pyramidal Knowledge
 ## [fit] Paradigm
 
 ---
@@ -93,27 +142,7 @@
 
 ![inline](_static/data-to-knowldege.png)
 
----
 
-# La française des jeux sample
-
-Example of one production cluster 
-
-- 5 brokers
-- 2000 partitions (replication factor 3)
-- 100 000 msg/s
-
-
----
-
-# Use cases
-
-- **Log aggregation** : low latency processing over mutliple log datasources
-- **Stream processing** : multiple stages of processing (enriching, ...)
-- **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
-- **click stream tracking** : capture user click stream data
-- **SIEM** : security manager for intrusion detection
-- **IoT** : generate alerts based on outliers and forcasting.
 
 
 ---
@@ -216,9 +245,9 @@ takes a collection of ``Record`` and publish another collection of records
         Collection<Record> process(ProcessContext context, 
                                    Collection<Record> records);
     }
+    
 ---
-# Sample Processor config
-
+# Processor config 
 
     - processor: apache_parser
       component: com.hurence.logisland.processor.SplitText
@@ -333,7 +362,8 @@ you configure here your Spark job parameters
       
 ---
 
-## [fit] quick start
+## [fit] Quick 
+## [fit] Start
 
 
 ---
@@ -399,7 +429,7 @@ Run the job
 
 -------------------------
 
-## [fit] Questions ?
+## [fit] Q&A
 
 ---
 
