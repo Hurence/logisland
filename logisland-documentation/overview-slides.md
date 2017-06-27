@@ -97,30 +97,26 @@
 # Features
 
 - **out-of-the-box processors** (no code required)
-- raw data to structured records conversion
-- I/O to Elasticsearch, HBase, HDFS, RocksDB
+- high level **extensible** framework 
+- raw data to structured records automatic **conversion**
 - alert percolation or **query matching**
+- event **governance** with Avro schema management 
 - **online prediction** with offline trained ML models
+
 
 ---
 
 # Features 2
 
-- high level extensible framework  
-- stream governance with Avro schema management 
-- SQL aggregations
-- Time series sampling 
-- Outliers detection
-- Network footprint clustering
-
-
----
-
-# Features 3
-
+- I/O to Elasticsearch, HBase, HDFS, RocksDB, ...
 - telemetry sources (bro, pcap, netflow)
 - live enrichement (geoip, custom lookups)
-- 
+- SQL aggregations
+- Time series **sampling**
+- Outliers detection
+- **Network footprint** clustering
+
+
 
 ---
 
@@ -142,7 +138,9 @@
 
 ![inline](_static/data-to-knowldege.png)
 
+---
 
+![fit](_static/logisland-workflow.png)
 
 
 ---
@@ -151,7 +149,7 @@
 
 ---
 
-![fit](_static/logisland-workflow.png)
+![fit](_static/logisland-architecture.png)
 
 ---
 
@@ -160,62 +158,79 @@
 The basic unit of processing is the Record.
 A ``Record`` is a collection of ``Field``, while a ``Field`` has a ``name``, a ``type`` and a ``value``.
 
-    String id = "firewall_record1";
-    String type = "cisco";
-    Record record = new Record(type).setId(id);
 
-    assertTrue(record.isEmpty());
-    assertEquals(record.size(), 0);
+```scala
+String id = "firewall_record1";
+String type = "cisco";
+Record record = new Record(type).setId(id);
 
----
-
-A record is defined by its type and a collection of fields. 
-There are three special fields:
-
-
-    // shortcut for id
-    assertEquals(record.getId(), id);
-    assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), id);
-
-    // shortcut for time
-    assertEquals(record.getTime().getTime(), 
-        record.getField(FieldDictionary.RECORD_TIME).asLong().longValue());
-
-    // shortcut for type
-    assertEquals(record.getType(), type);
+assertTrue(record.isEmpty());
+assertEquals(record.size(), 0);
+```
 
 --- 
-And the *standard* fields have generic setters, getters and removers
 
-    record.setStringField("url_host", "origin-www.20minutes.fr")
-          .setField("method", FieldType.STRING, "GET")
-          .setField("response_size", FieldType.INT, 452)
-          .setField("is_outside_office_hours", FieldType.BOOLEAN, false)
-          .setField("tags",
-                    FieldType.ARRAY, 
-                    Arrays.asList("spam", "filter", "mail"));
+# Standard fields
+
+A record holds a collection of fields.
+
+```scala
+record.setStringField("url_host", "origin-www.20minutes.fr")
+      .setField("method", FieldType.STRING, "GET")
+      .setField("response_size", FieldType.INT, 452)
+      .setField("is_outside_office_hours", FieldType.BOOLEAN, false)
+      .setField("tags",
+                FieldType.ARRAY, 
+                Arrays.asList("spam", "filter", "mail"));
   
-    assertEquals(record.getField("method").asString(), "GET");
-    assertTrue(record.getField("response_size").asInteger() - 452 == 0);
-    record.removeField("is_outside_office_hours");
-    assertFalse(record.hasField("is_outside_office_hours"));
+assertEquals( record.getField("method").asString(), "GET");
+assertTrue( record.getField("response_size").asInteger() - 452 == 0);
+record.removeField("is_outside_office_hours");
+assertFalse( record.hasField("is_outside_office_hours"));
+```
+
 
 ---
+
+# Special fields
+
+A Record also has some special fields (type, time and id).
+
+```scala
+// shortcut for id
+assertEquals(record.getId(), id);
+assertEquals(record.getField(FieldDictionary.RECORD_ID).asString(), 
+             id);
+
+// shortcut for time
+assertEquals(record.getTime(), 
+  record.getField(FieldDictionary.RECORD_TIME).asLong());
+
+// shortcut for type
+assertEquals(record.getType(), type);
+```
+
+
+---
+
+# Field typing and validation
+
 Fields are strongly typed, you can validate them
 
-
-    Record record = new StandardRecord();
-    record.setField("request_size", FieldType.INT, 1399);
-    assertTrue(record.isValid());
+```scala
+Record record = new StandardRecord();
+record.setField("request_size", FieldType.INT, 1399);
+assertTrue(record.isValid());
     
-    record.setField("request_size", FieldType.INT, "zer");
-    assertFalse(record.isValid());
+record.setField("request_size", FieldType.INT, "tom");
+assertFalse(record.isValid());
     
-    record.setField("request_size", FieldType.DOUBLE, 45.5d);
-    assertTrue(record.isValid());
+record.setField("request_size", FieldType.DOUBLE, 45.5d);
+assertTrue(record.isValid());
     
-    record.setField("request_size", FieldType.STRING, 45L);
-    assertFalse(record.isValid());
+record.setField("request_size", FieldType.STRING, 45L);
+assertFalse(record.isValid());
+```
     
 --- 
 
@@ -230,33 +245,54 @@ The most common component you'll use is the ``Processor`` which
 takes a collection of ``Record`` and publish another collection of records
 
 ---
+# A configurable component that process Records
 
-    public interface Processor extends ConfigurableComponent {
+```java
+public interface Processor extends ConfigurableComponent {
     
-        /**
-         * Setup stateful parameters
-         */
-        void init(final ProcessContext context);
+  void init(final ProcessContext context);
     
-        /**
-         * Process the incoming collection of records to
-         * generate a new collection of records
-         */
-        Collection<Record> process(ProcessContext context, 
-                                   Collection<Record> records);
-    }
+  Collection<Record> process(ProcessContext context, 
+                             Collection<Record> records);
+}
+```
     
 ---
-# Processor config 
 
-    - processor: apache_parser
-      component: com.hurence.logisland.processor.SplitText
-      type: parser
-      documentation: a parser for apache log REGEX
-      configuration:
-        record.type: apache_log
-        value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/] ...
-        value.fields: src_ip,identd,user,record_time,http_method, ...
+# SplitText implementation
+Define PropertyDescriptor to handle components config.
+
+```java
+@Tags({"parser", "regex", "log", "record"})
+@CapabilityDescription("This is a processor that is used ...")
+@DynamicProperty(name = "alternative regex & mapping",   ...)
+public class SplitText extends AbstractProcessor {
+
+    public static final PropertyDescriptor VALUE_REGEX = 
+      new PropertyDescriptor.Builder()
+            .name("value.regex")
+            .description("the regex to match for the message value")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+    ...
+}
+```
+
+---
+# SplitText config 
+Use the components with simple yaml blocs.
+
+```
+- processor: apache_parser
+  component: com.hurence.logisland.processor.SplitText
+  type: parser
+  documentation: a parser for apache log REGEX
+  configuration:
+    record.type: apache_log
+    value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/] ...
+    value.fields: src_ip,identd,user,record_time,http_method, ...
+```
 
 ---
 
@@ -264,24 +300,11 @@ takes a collection of ``Record`` and publish another collection of records
 
 a record ``Stream`` basically :
 
+- is a configurable Component
 - reads a distributed collection of ``Record`` from Kafka input topics
 - transmits them to a chain of ``Processor``
 - write the output collection of ``Record`` to some Kafka output topics
 
----
-
-    public interface RecordStream extends ConfigurableComponent {
-    
-        /**
-         * start the stream processing
-         */
-        void start();
-    
-        /**
-         * stop the stream processing
-         */
-        void stop();
-    }
     
 ---
 
@@ -294,7 +317,9 @@ You can handle partionned data in 2 ways :
 
 ---
 # Sample Stream configuration
+Define a processing pipeline
 
+```
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
@@ -308,42 +333,23 @@ You can handle partionned data in 2 ways :
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         ...
       processorConfigurations:
+```
 
 ---
 
 # Engine
 
-The ``Engine`` manage a collection of ``Stream``
+- The ``Engine`` manage a collection of ``Stream``
+- this is the abstraction of the execution model, mainly in Spark actually but plans are to integrate Beam to move on Storm and Kafka Streams
+- you configure here your Spark job parameters
 
-this is the abstraction of the execution model, mainly in Spark actually but plans are to integrate Beam to move on Storm and Kafka Streams
-
-you configure here your Spark job parameters
-
----
-
-    /**
-     * Carry the whole workload of processing
-     */
-    public interface ProcessingEngine extends ConfigurableComponent {
-    
-        /**
-         * start the engine with a context
-         *
-         * @param engineContext
-         */
-        void start(EngineContext engineContext);
-    
-        /**
-         * shutdown the engine with a context
-         * @param engineContext
-         */
-        void shutdown(EngineContext engineContext);
-    
-    }
 
 ---
 # Sample engine configuration
 
+Define a processing job
+
+```
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
       type: engine
@@ -359,7 +365,88 @@ you configure here your Spark job parameters
         spark.yarn.queue: default
         ...
       streamConfigurations:
-      
+```
+
+
+---
+# Transverse service injection : ControllerService
+
+we often need to share access to external Services across the Processors,
+for example 
+
+- bulk buffers or client connections to external data 
+- a cache service that could cache K/V tuple across the worker node.
+
+---
+# Sample ControllerService component
+
+
+We need to provide an interface API for this service :
+
+``` java
+
+    public interface CacheService<K,V> extends ControllerService {
+
+        PropertyDescriptor CACHE_SIZE = new PropertyDescriptor.Builder()
+                .name("cache.size")
+                .description("The maximum number of element in the cache.")
+                .required(false)
+                .defaultValue("16384")
+                .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+                .build();
+
+        public V get(K k);
+
+        public void set(K k, V v);
+    }
+```
+
+---
+# Inject service in Processor
+
+You can then use this service in a custom processor :
+
+```java
+    public class TestProcessor extends AbstractProcessor {
+
+        static final PropertyDescriptor CACHE_SERVICE = new PropertyDescriptor.Builder()
+                .name("cache.service")
+                .description("CacheService")
+                .identifiesControllerService(CacheService.class)
+                .required(true)
+                .build();
+
+        @Override
+        public boolean hasControllerService() {
+            return true;
+        }
+    }
+```
+
+---
+
+# Define service in config
+
+The injection is done through yaml config files by injecting the instance of `lru_cache` Service.
+
+```
+      controllerServiceConfigurations:
+
+        - controllerService: lru_cache
+          component: com.hurence.logisland.service.elasticsearch.LRUKeyValueCacheService
+          configuration:
+            cache.size: 5000
+
+      streamConfigurations:
+        - stream: parsing_stream
+
+          processorConfigurations:
+            - processor: mock_processor
+              component: com.hurence.logisland.processor.TestProcessorhing
+              configuration:
+                 cache.service: lru_cache
+```
+
 ---
 
 ## [fit] Quick 
@@ -398,9 +485,6 @@ Run the job
 
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
---- 
-
-# Step 4 : Play with your data
 
 ---
 
