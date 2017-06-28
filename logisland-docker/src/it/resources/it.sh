@@ -269,6 +269,7 @@ init_env()
   if [[ -z "${NO_DOCKER}" ]]
   then
     default_value DOCKER_BIN `which docker 2> /dev/null`
+    default_value KAFKACAT_BIN "/usr/local/bin/kafkacat"
 
     # Services run within docker images.
     default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp${hdp}"
