@@ -264,7 +264,6 @@ init_env()
   # All supported elasticsearch versions.
   ELASTICS=( "ES23" "ES24" "ES5" )
 
-  default_value KAFKACAT_BIN `which kafkacat 2> /dev/null`
   default_value CURL_BIN `which curl 2> /dev/null`
 
   if [[ -z "${NO_DOCKER}" ]]
@@ -293,6 +292,7 @@ init_env()
     IFS=: read ES_HOST ES_PORT <<< ${ES23_EXPOSED_9200}
   else
     default_value JAVA_BIN `which java 2> /dev/null`
+    default_value KAFKACAT_BIN `which kafkacat 2> /dev/null`
 
     # Make sure logisland is installed.
     require_non_null LOGISLAND_HOME
