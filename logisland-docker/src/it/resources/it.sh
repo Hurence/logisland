@@ -43,6 +43,21 @@
 # - ES_PORT "9200"
 # - ES_URL "http://${ES_HOST}:${ES_PORT}"
 #
+#
+# Typical options' usage.
+# With docker: <script> -d -f
+# '-d' to get extra information from internal processing
+# '-f' to cleanup documents in elasticsearch
+#
+# Without docker: it.sh -d -i -f -DES_PORT=9203 -DES23_EXPOSED_9200=http://localhost:9203 -DES24_EXPOSED_9200=http://localhost:9204 -DES5_EXPOSED_9200=http://localhost:9205
+# '-i' no-docker mode
+# '-d' to get extra information from internal processing
+# '-f' to cleanup documents in elasticsearch
+# '-DES_PORT=9203' to specify which port to use to poll elasticsearch and determine when logisland is up and running
+# '-DES23_EXPOSED_9200=http://localhost:9203' to connect to elasticsearch 2.3
+# '-DES24_EXPOSED_9200=http://localhost:9204' to connect to elasticsearch 2.4
+# '-DES5_EXPOSED_9200=http://localhost:9205' to connect to elasticsearch 5
+#
 
 #-------------------------------------------------------------------------------
 
@@ -73,8 +88,13 @@ run_test()
 
   KAFKA_TOPIC="${TEST}_raw"
 
-  # Fully qualified name of input file mounted inside docker image.
-  DOCKER_MOUNTED_INPUT_FILE="${INPUT_FILE:${#RESOURCE_DIR}}"
+  if [[ -z "${NO_DOCKER}" ]]
+  then
+    # Fully qualified name of input file mounted inside docker image.
+    KAFKA_INPUT_FILE="${INPUT_FILE:${#RESOURCE_DIR}}"
+  else
+    KAFKA_INPUT_FILE="${INPUT_FILE}"
+  fi
 
   # Ensure kafka topic is created before sending data.
   poll 300 1 lookup_kafka_topic "${KAFKA_TOPIC}"
@@ -82,8 +102,8 @@ run_test()
 
   # Sends data to kafka.
   EXPECTED_DOCS_COUNT=$(${DEBUG}; wc "${INPUT_FILE}" | awk '{print $1}')
-  kafkacat "${DOCKER_MOUNTED_INPUT_FILE}"
-  abort_if "${?}" "Unable to perform kafkacat ${DOCKER_MOUNTED_INPUT_FILE}. Aborting."
+  kafkacat "${KAFKA_INPUT_FILE}"
+  abort_if "${?}" "Unable to perform kafkacat ${KAFKA_INPUT_FILE}. Aborting."
 
   # Check results for all elasticsearch supported versions.
   TEST_RESULT=0
@@ -98,6 +118,7 @@ run_test()
       TEST_RESULT=1
     fi
   done
+  unset ES_TAG
 
   clean_up
 
@@ -137,7 +158,7 @@ check_results()
     result=$?
   fi
 
-  return $result
+  return ${result}
 }
 
 # Performs cleanup by
@@ -156,6 +177,7 @@ clean_up()
       debug "Leave untouched $file"
     fi
   done
+  unset file
 }
 
 # Returns a temporary file that will be automatically removed when the script will end.
@@ -238,23 +260,24 @@ property()
 init_env()
 {
   default_value hdp "2.4"
-  default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp${hdp}"
-  default_value HBASE_DOCKER_IMAGE_NAME "hbase112"
-  # elasticsearch 2.3.3 runs in logisland docker image
-  default_value ES23_DOCKER_IMAGE_NAME "${LOGISLAND_DOCKER_IMAGE_NAME}"
-  default_value ES24_DOCKER_IMAGE_NAME "elasticsearch24"
-  default_value ES5_DOCKER_IMAGE_NAME "elasticsearch5"
 
   # All supported elasticsearch versions.
   ELASTICS=( "ES23" "ES24" "ES5" )
 
-  default_value KAFKACAT_BIN "/usr/local/bin/kafkacat"
-  default_value DOCKER_BIN `which docker 2> /dev/null`
+  default_value KAFKACAT_BIN `which kafkacat 2> /dev/null`
   default_value CURL_BIN `which curl 2> /dev/null`
 
   if [[ -z "${NO_DOCKER}" ]]
   then
+    default_value DOCKER_BIN `which docker 2> /dev/null`
+
     # Services run within docker images.
+    default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp${hdp}"
+    default_value HBASE_DOCKER_IMAGE_NAME "hbase112"
+    # elasticsearch 2.3.3 runs in logisland docker image
+    default_value ES23_DOCKER_IMAGE_NAME "${LOGISLAND_DOCKER_IMAGE_NAME}"
+    default_value ES24_DOCKER_IMAGE_NAME "elasticsearch24"
+    default_value ES5_DOCKER_IMAGE_NAME "elasticsearch5"
 
     # Sets variables LOGISLAND_DOCKER_CONTAINER_IP and LOGISLAND_EXPOSED_9200.
     init_docker_env "LOGISLAND"
@@ -269,10 +292,26 @@ init_env()
     DEFAULT_KAFKA_BROKER_HOST=${LOGISLAND_DOCKER_IMAGE_NAME}
     IFS=: read ES_HOST ES_PORT <<< ${ES23_EXPOSED_9200}
   else
+    default_value JAVA_BIN `which java 2> /dev/null`
+
+    # Make sure logisland is installed.
+    require_non_null LOGISLAND_HOME
+    default_value LOGISLAND_LIB "${LOGISLAND_HOME}/lib"
+
     # Assume services run on localhost by default.
     DEFAULT_KAFKA_BROKER_HOST="localhost"
     DEFAULT_ES_HOST="localhost"
   fi
+
+  # Check elasticsearch are defined.
+  for ES_TAG in ${ELASTICS[@]}
+  do
+    URL=$(eval echo "\$${ES_TAG}_EXPOSED_9200")
+    if [[ -z "${URL}" ]]
+    then
+      abort_if 1 "No value for variable ${ES_TAG}_EXPOSED_9200. Aborting."
+    fi
+  done
 
   # Assign value to host and port if not already defined by shell environment.
   default_value KAFKA_BROKER_HOST "${DEFAULT_KAFKA_BROKER_HOST}"
@@ -463,10 +502,10 @@ lookup_kafka_topic()
 
   local topic="$1"
 
-  # Execute zookeeper cli and receive output in DOCKER_STDOUT.
+  # Execute zookeeper cli and receive output in CMD_STDOUT.
   zookeeper_cli "ls /brokers/topics"
 
-  [[ `echo "$DOCKER_STDOUT" | grep "${topic}"` ]]
+  [[ `echo "$CMD_STDOUT" | grep "${topic}"` ]]
 }
 
 # Ensures that logisland is ready by polling the 'official' elasticsearch's health status denoted by ES_URL.
@@ -549,14 +588,37 @@ create_hbase_table()
 # @param(s) the full command
 hbase_cli()
 {
-  exec_in_docker "${HBASE_DOCKER_IMAGE_NAME}" /data/webanalytics/hbase/run-command.sh $@
+  if [[ -z "${NO_DOCKER}" ]]
+  then
+    exec_in_docker "${HBASE_DOCKER_IMAGE_NAME}" /data/webanalytics/hbase/run-command.sh $@
+  else
+    require_non_null HBASE_HOME
+    cmd="${@}"
+    CMD_STDOUT=$((${DEBUG}; bash -c "${HBASE_HOME}/bin/hbase shell") <<EOF
+${cmd}
+quit
+EOF
+)
+  fi
 }
 
 # Executes the provided command arguments in a zookeeper-cli like in the logisland docker image.
 # @param(s) the full command
 zookeeper_cli()
 {
-  exec_in_docker "${LOGISLAND_DOCKER_IMAGE_NAME}" /data/webanalytics/zookeeper/run-command.sh $@
+  if [[ -z "${NO_DOCKER}" ]]
+  then
+    exec_in_docker "${LOGISLAND_DOCKER_IMAGE_NAME}" /data/webanalytics/zookeeper/run-command.sh $@
+  else
+    require_non_null JAVA_BIN
+    cmd="${@}"
+    CMD_STDOUT=$((${DEBUG}; bash -c "${JAVA_BIN} -cp ${LOGISLAND_LIB}/zookeeper-3.4.6.jar:${LOGISLAND_LIB}/slf4j-api-1.7.12.jar:${LOGISLAND_LIB}/log4j-api-2.7.jar:${LOGISLAND_LIB}/log4j-core-2.7.jar:${LOGISLAND_LIB}/log4j-over-slf4j-1.7.12.jar:${LOGISLAND_LIB}/netty-3.7.0.Final.jar:${LOGISLAND_LIB}/jline-0.9.94.jar \
+     org.apache.zookeeper.ZooKeeperMain") <<EOF
+${cmd}
+quit
+EOF
+)
+  fi
 }
 
 # Executes the specified command in the specified docker image.
@@ -580,7 +642,9 @@ exec_in_docker()
     local DOCKER_CMD="${DOCKER_BIN} exec -t ${DOCKER_IMAGE_NAME} bash -c \"${CMD}\""
 
     # Store output of command.
-    DOCKER_STDOUT=`${DEBUG}; bash -c "${DOCKER_CMD}" 2>&1`
+    CMD_STDOUT=`${DEBUG}; bash -c "${DOCKER_CMD}" 2>&1`
+  else
+    abort "Docker is not defined. Unable to execute command '${@}'."
   fi
 }
 
@@ -720,6 +784,7 @@ do
     echo -e "\e[32mTest '${test}' succeeded.\e[0m"
   fi
 done
+unset test
 
 # Done.
 abort "${SCRIPT_RETURN_CODE}"
