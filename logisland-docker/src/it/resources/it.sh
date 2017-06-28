@@ -388,7 +388,7 @@ require_non_null()
 # @param the variable value to assign in case the variable is undefined
 default_value()
 {
-  require_args "${#}" 2 "default_value <var-name> <value>"
+  require_args "${#}" 2 "default_value ${1} <value>"
 
   local VARIABLE_NAME=\$"${1}"
   local VARIABLE_VALUE=`eval "expr \"$VARIABLE_NAME\""`
