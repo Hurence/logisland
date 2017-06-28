@@ -17,16 +17,14 @@ package com.hurence.logisland.processor.ml;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AbstractConfigurableComponent;
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.model.MLNModel;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.ml.MLClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -36,9 +34,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 
 /**

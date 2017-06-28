@@ -11,7 +11,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.model.MLNModel;
 import com.hurence.logisland.model.Model;
-import com.hurence.logisland.processor.ml.MLClientService;
+import com.hurence.logisland.service.ml.MLClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;

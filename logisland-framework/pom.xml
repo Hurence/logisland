@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.1</version>
     </parent>
 
     <artifactId>logisland-framework</artifactId>
@@ -30,7 +30,21 @@
         <module>logisland-resources</module>
         <module>logisland-utils</module>
         <module>logisland-bootstrap</module>
-      <!--  <module>logisland-documentation</module>-->
         <module>logisland-hadoop-utils</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>hdp2.5</id>
+            <activation>
+                <property>
+                    <name>hdp</name>
+                    <value>2.5</value>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-agent</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

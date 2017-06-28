@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.hurence.botsearch.analytics
 
 import com.hurence.logisland.botsearch.{HttpFlow, Trace}
-import com.hurence.logisland.util.spark.SparkUtils
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.feature.StandardScaler
@@ -65,7 +64,7 @@ object TracesAnalyzer extends LazyLogging {
 
         ////////////////////////////////////////
         // init spark context
-        val sc = SparkUtils.initContext(this.getClass.getName)
+      /*  val sc = SparkUtils.initContext(this.getClass.getName)
         val sqlContext = new SQLContext(sc)
         SparkUtils.registerUdfs(sqlContext)
         import sqlContext.implicits._
@@ -193,7 +192,7 @@ object TracesAnalyzer extends LazyLogging {
         tmp.show()
         tmp.write.save(s"$source/traces.parquet")
 
-        sc.stop()
+        sc.stop()*/
     }
 
 }

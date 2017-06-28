@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.1</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -32,8 +32,9 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <finalName>logisland-${project.version}</finalName>
+                    <finalName>logisland-${project.version}-bin-${project.activeProfiles[0].id}</finalName>
                     <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -77,11 +78,15 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-enrichment-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-consolidate-session-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-scripting-processors-plugin</artifactId>
+            <artifactId>logisland-scripting-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -101,16 +106,16 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-outlier-detection-plugin</artifactId>
+            <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
-     <!--   <dependency>
+        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-botsearch-plugin</artifactId>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
@@ -121,6 +126,10 @@
             <classifier>resources</classifier>
             <scope>runtime</scope>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-documentation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -142,6 +151,14 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cache_key_value-service-api</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -154,8 +171,9 @@
     </properties>
     <profiles>
         <profile>
-            <id>hdp-2.4</id>
+            <id>hdp2.4</id>
             <activation>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.4</value>
@@ -164,14 +182,14 @@
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark-engine16</artifactId>
+                    <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
                 </dependency>
             </dependencies>
 
         </profile>
 
         <profile>
-            <id>hdp-2.5</id>
+            <id>hdp2.5</id>
             <activation>
                 <property>
                     <name>hdp</name>
@@ -181,7 +199,7 @@
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark-engine21</artifactId>
+                    <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
@@ -224,7 +242,7 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
-                                    <includeArtifactIds>logisland-docs</includeArtifactIds>
+                                    <includeArtifactIds>logisland-documentation</includeArtifactIds>
                                     <includeGroupIds>org.apache.logisland</includeGroupIds>
                                     <excludeTransitive>false</excludeTransitive>
                                     <excludes>LICENSE,NOTICE</excludes>

@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.10.1
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -37,13 +37,25 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+      type: service
+      documentation: elasticsearch service
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 5000
+
   streamConfigurations:
 
     # parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: a processor that converts raw apache logs into structured log records
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events
@@ -51,25 +63,6 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.apache_log",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "src_ip",      "type": ["string","null"] },
-               { "name": "http_method", "type": ["string","null"] },
-               { "name": "bytes_out",   "type": ["long","null"] },
-               { "name": "http_query",  "type": ["string","null"] },
-               { "name": "http_version","type": ["string","null"] },
-               { "name": "http_status", "type": ["string","null"] },
-               { "name": "identd",      "type": ["string","null"] },
-               { "name": "user",        "type": ["string","null"] }    ]}
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
@@ -94,7 +87,7 @@ engine:
       type: processor
       documentation: a processor that push events to ES
       configuration:
-        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregations,logisland_alerts
+        kafka.input.topics: logisland_events,logisland_metrics
         kafka.output.topics: none
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
@@ -107,18 +100,15 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # put to elasticsearch
+        # Bulk add to elasticsearch
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
-          documentation: a processor that trace the processed events
+          documentation: a processor that indexes processed events in elasticsearch
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: logisland
             default.type: event
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type
-

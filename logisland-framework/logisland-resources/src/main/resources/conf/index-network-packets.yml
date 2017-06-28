@@ -2,7 +2,7 @@
 # Logisland configuration script example: parse network packets and display them in Kibana
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.10.1
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -37,6 +37,18 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch
+        batch.size: 20000
+
   streamConfigurations:
 
     # Parsing
@@ -45,9 +57,9 @@ engine:
       type: stream
       documentation: A processor chain that parses network packets into Logisland records
       configuration:
-        kafka.input.topics: packets_topic
-        kafka.output.topics: logisland_events
-        kafka.error.topics: logisland_errors
+        kafka.input.topics: logisland_input_packets_topic
+        kafka.output.topics: logisland_parsed_packets_topic
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer 
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -74,9 +86,9 @@ engine:
       type: processor
       documentation: a processor that push events to ES
       configuration:
-        kafka.input.topics: logisland_events
+        kafka.input.topics: logisland_parsed_packets_topic
         kafka.output.topics: none
-        kafka.error.topics: logisland_errors
+        kafka.error.topics: logisland_error_packets_topic
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -87,17 +99,15 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # Put into ElasticSearch
+        # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.elasticsearch.PutElasticsearch
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes network packet records into ES
           configuration:
+            elasticsearch.client.service: elasticsearch_service
             default.index: packets_index
             default.type: events
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 2000
             timebased.index: today
             es.index.field: search_index
             es.type.field: record_type

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,18 @@ public class MockRecord extends StandardRecord {
     public void assertFieldNotEquals(final String fieldName, final String expectedValue) {
         Assert.assertNotSame(expectedValue, getField(fieldName).asString());
 		//assertedFields.add(fieldName);
+    }
+
+    public void assertStringFieldStartWith(final String fieldName, final String expectedValue) {
+        Assert.assertNotNull(getField(fieldName).asString());
+        String msg = "'" + getField(fieldName).asString()  +"' does not start by '" + expectedValue +"'";
+        Assert.assertTrue(msg, getField(fieldName).asString().startsWith(expectedValue));
+    }
+
+    public void assertStringFieldEndWith(final String fieldName, final String expectedValue) {
+        Assert.assertNotNull(getField(fieldName).asString());
+        String msg = "'" + getField(fieldName).asString()  +"' does not end by '" + expectedValue +"'";
+        Assert.assertTrue(msg, getField(fieldName).asString().endsWith(expectedValue));
     }
 
 
