@@ -17,7 +17,7 @@ language: java
 before_install:
   # Update Docker.
   - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
   # Upgrade/install docker-compose.
   - sudo rm -f /usr/local/bin/docker-compose
