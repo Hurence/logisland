@@ -8,14 +8,80 @@
 
 # Schedule
 
-- Events & Logs core concepts
-- paradigm
+- Core concepts
+- Knowledge Paradigm
+- API Design
+- Quick start
 
 
 ---
 
-## [fit] Events & Logs
-## [fit] Core concepts
+## [fit] Introduction
+
+---
+
+# Big picture
+
+- **Open source**, initiated by Hurence
+- **High scalability** and **Fault-tolerant**.
+- **High throughput** (billions messages / day).
+- **Easy** to operate on Hadoop or on **standalone containers**
+- **Extensible framework** to build high level apps
+- Alternative to Splunk, StreamAnalytix, Streamline, ELK...
+
+
+---
+
+# Use cases
+
+- **Log aggregation** : low latency log processing
+- **Stream processing** : multiple stages of processing (enriching, ...)
+- **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
+- **click stream tracking** : capture user click stream data
+- **SIEM** : security manager for intrusion detection
+- **IoT** : generate alerts based on outliers and forcasting.
+
+
+
+---
+
+# Challengers ?
+ 
+- **ELK** is great to start with, but hard to centralize processing and lacks of real offline ML 
+- **Splunk** is fantastic but clients are not rich enough to afford it ;)
+- **NIFI** is a great tool but doesn't play well with distributed processing 
+- **Metron**, **Eagle** are too security centric
+
+---
+
+# Features
+
+- **out-of-the-box processors** (no code required)
+- high level **extensible** framework 
+- raw data to structured records automatic **conversion**
+- alert percolation or **query matching**
+- event **governance** with Avro schema management 
+- **online prediction** with offline trained ML models
+
+
+---
+
+# Features 2
+
+- I/O to Elasticsearch, HBase, HDFS, RocksDB, ...
+- telemetry sources (bro, pcap, netflow)
+- live enrichement (geoip, custom lookups)
+- SQL aggregations
+- Time series **sampling**
+- Outliers detection
+- **Network footprint** clustering
+
+
+
+---
+
+## [fit] Core
+## [fit] Concepts
 
 
 ---
@@ -56,65 +122,6 @@
 ## [fit] to handle massive scale
 ## [fit] event processing
 
----
-
-# Big picture
-
-- **Open source**, initiated by Hurence
-- **High scalability** and **Fault-tolerant**.
-- **High throughput** (billions messages / day).
-- **Easy** to operate on Hadoop or on **standalone containers**
-- **Extensible framework** to build high level apps
-- Alternative to Splunk, StreamAnalytix, Streamline, ELK...
-
-
----
-
-# Use cases
-
-- **Log aggregation** : low latency log processing
-- **Stream processing** : multiple stages of processing (enriching, ...)
-- **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
-- **click stream tracking** : capture user click stream data
-- **SIEM** : security manager for intrusion detection
-- **IoT** : generate alerts based on outliers and forcasting.
-
----
-
-![inline](_static/data-driven-computing.png)
-
----
-
-# Challengers ?
- 
-- **ELK** is great to start with, but hard to centralize processing and lacks of real offline ML 
-- **Splunk** is fantastic but clients are not rich enough to afford it ;)
-- **NIFI** is a great tool but doesn't play well with distributed processing 
-- **Metron**, **Eagle** are too security centric
-
----
-
-# Features
-
-- **out-of-the-box processors** (no code required)
-- high level **extensible** framework 
-- raw data to structured records automatic **conversion**
-- alert percolation or **query matching**
-- event **governance** with Avro schema management 
-- **online prediction** with offline trained ML models
-
-
----
-
-# Features 2
-
-- I/O to Elasticsearch, HBase, HDFS, RocksDB, ...
-- telemetry sources (bro, pcap, netflow)
-- live enrichement (geoip, custom lookups)
-- SQL aggregations
-- Time series **sampling**
-- Outliers detection
-- **Network footprint** clustering
 
 
 
@@ -140,11 +147,18 @@
 
 ---
 
+# Data Driven Computing
+
+![inline](_static/data-driven-computing.png)
+
+---
+
 ![fit](_static/logisland-workflow.png)
 
 
 ---
 
+## [fit] API 
 ## [fit] Design 
 
 ---
