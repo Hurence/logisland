@@ -73,14 +73,7 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
-        </dependency>
-     <!--   <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-assembly_${scala.binary.version}</artifactId>
-        </dependency>-->
+
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
@@ -119,29 +112,29 @@
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
                     <scalaVersion>${scala.version}</scalaVersion>
-                    <recompileMode>incremental</recompileMode>
-                    <useZincServer>false</useZincServer>
-                    <args>
-                        <arg>-unchecked</arg>
-                        <arg>-deprecation</arg>
-                    </args>
-                    <jvmArgs>
-                        <jvmArg>-Xms64m</jvmArg>
-                        <jvmArg>-Xms1024m</jvmArg>
-                        <jvmArg>-Xmx1024m</jvmArg>
-                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-                    </jvmArgs>
-                    <javacArgs>
-                        <javacArg>-source</javacArg>
-                        <javacArg>${maven.compiler.source}</javacArg>
-                        <javacArg>-target</javacArg>
-                        <javacArg>${maven.compiler.source}</javacArg>
-                    </javacArgs>
-                </configuration>
-            </plugin>
+                    <!-- <recompileMode>incremental</recompileMode>-->
+                     <useZincServer>false</useZincServer>
+                     <args>
+                         <arg>-unchecked</arg>
+                         <arg>-deprecation</arg>
+                     </args>
+                     <jvmArgs>
+                         <jvmArg>-Xms64m</jvmArg>
+                         <jvmArg>-Xms1024m</jvmArg>
+                         <jvmArg>-Xmx1024m</jvmArg>
+                         <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                         <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                     </jvmArgs>
+                     <javacArgs>
+                         <javacArg>-source</javacArg>
+                         <javacArg>${maven.compiler.source}</javacArg>
+                         <javacArg>-target</javacArg>
+                         <javacArg>${maven.compiler.source}</javacArg>
+                     </javacArgs>
+                 </configuration>
+             </plugin>
 
 
-        </plugins>
-    </build>
-</project>
+         </plugins>
+     </build>
+ </project>
