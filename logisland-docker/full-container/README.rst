@@ -64,7 +64,7 @@ Running the image
         -p 4040-4060:4040-4060 \
         --name logisland \
         -h sandbox \
-        hurence/logisland-hdp2.4:0.10.1 bash
+        hurence/logisland-hdp2.5:0.10.1 bash
 
 or
 

@@ -51,7 +51,7 @@ echo "to start go to /usr/local/logisland"
 
 echo "starting elasticsearch"
 runuser -l  elastic -c '/usr/local/elasticsearch/bin/elasticsearch -d'
-sleep 5
+sleep 10
 curl -XPUT http://localhost:9200/_template/logisland-template -d @$LOGISLAND_HOME/conf/es-template.json
 
 
