@@ -37,12 +37,12 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * Netflow (http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html) processor
+ * MNIST MLN Machine Learning processor
  */
 @Tags({"machine learning", "deep learning"})
 @CapabilityDescription(
-        "The ml processor has been writteen to describe how to implement machine Learning Capabilities to logismlland"
-                + "It relies on deeplearning4j lmibraries to load the model and to run the Neural Network prediction")
+        "The ml processor has been written to describe how to implement machine Learning Capabilities to logisland. "
+                + "It relies on deeplearning4j libraries to load the model and to run the Neural Network prediction")
 
 
 public class runDeepLearning extends AbstractProcessor {
@@ -102,78 +102,40 @@ public class runDeepLearning extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
-
        // process test images
         records.forEach(record -> {
             logger.info("****************starting processing of one record********************");
-            byte[] recordValue = null;
-            try {
-                recordValue = (byte[]) record.getField(FieldDictionary.RECORD_VALUE).getRawValue();
-            } catch (Exception e) {
-                logger.error("Error while retrieving the record value : record skipped");
-                return;
-            }
-            if (debug) {
-                logger.debug("record=" + Arrays.toString(recordValue));
-            }
-            int shift = 0;
-            long magic = readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
-            int count = (int) readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
-            int row = (int) readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
-            int col = (int) readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
 
-            float[][] featureData = new float[count][0];
+            // Note: one record could contain several images. Records also contain the corresponding labels
+            // The fact to have the labels for examples images could appear quite strange, but this is a machine learning
+            // demo processor and the label allow to monitor exactly the quality of predictions.
+            // in a real example, you obviously don't have these labels.
 
-            for (int i = 0; i < count; i++) {
-                float[] featureVec = new float[row * col];
-                byte[] im = Arrays.copyOfRange(recordValue, shift, shift + row * col);
-                shift += row * col;
-                for (int j = 0; j < im.length; ++j) {
-                    float v = (float) (im[j] & 255);
-                    featureVec[j] = v / 255.0F;
-                }
-                featureData[i] = featureVec;
-            }
-
-            magic = readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
-            count = (int) readInt(Arrays.copyOfRange(recordValue, shift, shift + 4));
-            shift += 4;
-            float[][] labelData = new float[count][0];
-            for (int i = 0; i < count; i++) {
-                int lab = readByte(Arrays.copyOfRange(recordValue, shift, shift + 1));
-                shift += 1;
-                labelData[i] = new float[10];
-                labelData[i][lab] = 1.0F;
-            }
             final int outputNum = 10;
             final Evaluation eval = new Evaluation(outputNum);
 
             MultiLayerNetwork restored = ((MLNModel) clientService.restoreModel()).getMLNModel();
 
-            INDArray image = Nd4j.create(featureData);
-            INDArray label = Nd4j.create(labelData);
-            DataSet myData = new DataSet(image, label);
+            RecordDecryptor rd = new MNISTRecordDecryptor();
+            rd.decrypt(record,false);
+            INDArray image = rd.getFeaturedData();
+            INDArray label = rd.getLabels();
 
-            INDArray output = restored.output(myData.getFeatureMatrix()); //get the networks prediction
-            eval.eval(myData.getLabels(), output); //check the prediction against the true class
+            INDArray output = restored.output(image); //get the networks prediction
+            //eval.eval(label, output); //check the prediction against the true class
 
-            HashMap<Integer,Integer> positive = (HashMap<Integer,Integer>)eval.positive();
+            /*HashMap<Integer,Integer> positive = (HashMap<Integer,Integer>)eval.positive();
             for  (Map.Entry<Integer, Integer> p: positive.entrySet()) {
                 logger.info(p.getKey()+" "+p.getValue());
             }
+            */
 
-
-            for (int i=0; i<count; i++) {
-                INDArray exp = myData.getLabels().getRow(i);
+            for (int i=0; i<rd.getCount(); i++) {
+               // INDArray exp = label.getRow(i);
                 INDArray pred = output.getRow(i);
 
                 float maxpred = pred.getFloat(0);
-                int maxexp = exp.getInt(0);
+             //   int maxexp = exp.getInt(0);
                 int rpred=0;
                 int rexp=0;
 
@@ -184,14 +146,16 @@ public class runDeepLearning extends AbstractProcessor {
                         maxpred = pred.getFloat(j);
                     }
 
-                    if (exp.getInt(j) > maxexp) {
+              /*      if (exp.getInt(j) > maxexp) {
                         rexp=j;
                         maxexp = exp.getInt(j);
-                    }
+                    }*/
                 }
 
-                logger.info("Image "+i+ " is supposed to be " + rexp
-                + " : model predict " + rpred);
+                /*logger.info("Image "+i+ " is supposed to be " + rexp
+                + " : model predict " + rpred);*/
+                logger.info("predicted image is "+rpred);
+                logger.info("prediction array is :" +output);
             }
             logger.info("****************General stats********************");
             logger.info(eval.stats(true));
@@ -220,16 +184,6 @@ public class runDeepLearning extends AbstractProcessor {
                 debug = false;
             }
         }
-    }
-
-
-    private short readByte(byte[] buffer) {
-        return ((short) (buffer[0] & 0xFF));
-    }
-
-    private long readInt(byte[] buffer) {
-        return ((long) (((buffer[0] & 0xFF) << 24) | ((buffer[1] & 0xFF) << 16)
-                | ((buffer[2] & 0xFF) << 8) | (buffer[3] & 0xFF)));
     }
 
 }

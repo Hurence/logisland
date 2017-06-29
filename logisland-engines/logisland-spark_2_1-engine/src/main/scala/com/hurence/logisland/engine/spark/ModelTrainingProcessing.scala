@@ -384,6 +384,9 @@ class ModelTrainingProcessing extends ModelTrainingEngineImpl {
 
     //----------------------------------
     //Create network configuration and conduct network training
+    // TODO: the conf should be defined as an higher level abstraction and not defined
+    // in the processing code.
+
     val conf = new NeuralNetConfiguration.Builder()
       .seed(12345)
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -423,9 +426,9 @@ class ModelTrainingProcessing extends ModelTrainingEngineImpl {
 
     val  mln : MLNModel = new MLNModel()
     mln.setMLNModel(sparkNet.getNetwork())
+    // TODO : hardcoded for now, need to be a parameter
     val locationToSave: File = new File("/tmp/MyComputationGraph.zip")
     ModelSerializer.writeModel(sparkNet.getNetwork, locationToSave, true)
-  System.out.println("Pat Add on est bien la")
     return mln
   }
 
