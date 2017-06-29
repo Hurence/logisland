@@ -21,41 +21,42 @@ ENV SPARK_HOME /usr/local/spark
 ENV PATH $PATH:$SPARK_HOME/bin
 EXPOSE 4040
 
+# Grafana
+RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470047149.x86_64.rpm
 
 # Kibana
-RUN curl -s https://download.elastic.co/kibana/kibana/kibana-4.5.1-linux-x64.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s kibana-4.5.1-linux-x64 kibana
+RUN curl -s https://artifacts.elastic.co/downloads/kibana/kibana-5.4.3-linux-x86_64.tar.gz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s kibana-5.4.3-linux-x86_64 kibana
 ENV KIBANA_HOME /usr/local/kibana
+RUN echo 'server.host: 0.0.0.0' >> /usr/local/kibana-5.4.3-linux-x86_64/config/kibana.yml
 EXPOSE 5601
 
-
 # Elasticsearch
-RUN curl -s https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.3/elasticsearch-2.3.3.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s elasticsearch-2.3.3 elasticsearch
+RUN curl -s https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.3.tar.gz | tar -xz -C /usr/local/
+RUN cd /usr/local && ln -s elasticsearch-5.4.3 elasticsearch
 ENV ES_HOME /usr/local/elasticsearch
 COPY elasticsearch.yml /usr/local/elasticsearch/config/elasticsearch.yml
 RUN useradd -ms /bin/bash elastic
 RUN chown -R elastic /usr/local/elasticsearch/
 RUN mkdir /tmp; chmod 777 /tmp
-USER elastic
-RUN mkdir /usr/local/elasticsearch/plugins; /usr/local/elasticsearch/bin/plugin install lmenezes/elasticsearch-kopf/2.3.3
-RUN /usr/local/elasticsearch/bin/plugin install mobz/elasticsearch-head
-USER root
-EXPOSE 9200 9300 9201 9301
-
-# Grafana
-RUN yum install -y https://grafanarel.s3.amazonaws.com/builds/grafana-3.1.1-1470047149.x86_64.rpm
+RUN echo 'elastic  -  nofile  65536' >> /etc/security/limits.conf; echo 'elastic  -  nproc  2048' >> /etc/security/limits.conf;
+EXPOSE 9200 9300
 
 
-# Log-Island
+
+# Logisland
 COPY logisland-*.tar.gz /usr/local/
+RUN ls /usr/local/
 RUN cd /usr/local; \
     tar -xzf logisland-*.tar.gz; \
     ln -s /usr/local/logisland-0.10.1 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/*.gz
 ENV LOGISLAND_HOME /usr/local/logisland
-RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
+COPY log4j.properties /usr/local/spark/conf
+
+
+
 
 
 # Nifi

@@ -8,6 +8,7 @@
 
 # Schedule
 
+- Introduction
 - Core concepts
 - Knowledge Paradigm
 - API Design
@@ -20,14 +21,14 @@
 
 ---
 
-# Big picture
+# Logisland Big picture
 
-- **Open source**, initiated by Hurence
+- **Multi-Purpose** realtime analytics framework
 - **High scalability** and **Fault-tolerant**.
 - **High throughput** (billions messages / day).
 - **Easy** to operate on Hadoop or on **standalone containers**
-- **Extensible framework** to build high level apps
-- Alternative to Splunk, StreamAnalytix, Streamline, ELK...
+- **Easily Extensible** to build high level apps
+- **Open source**, initiated by Hurence
 
 
 ---
@@ -39,24 +40,24 @@
 - **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
 - **click stream tracking** : capture user click stream data
 - **SIEM** : security manager for intrusion detection
-- **IoT** : generate alerts based on outliers and forcasting.
+- **IoT** : generate alerts based on outliers and forecasting.
 
 
 
 ---
 
-# Challengers ?
+# Challengers
  
 - **ELK** is great to start with, but hard to centralize processing and lacks of real offline ML 
 - **Splunk** is fantastic but clients are not rich enough to afford it ;)
 - **NIFI** is a great tool but doesn't play well with distributed processing 
-- **Metron**, **Eagle** are too security centric
+- **Metron**, **Eagle** are security centric
 
 ---
 
 # Features
 
-- **out-of-the-box processors** (no code required)
+- **out-of-the-box components** (no code required)
 - high level **extensible** framework 
 - raw data to structured records automatic **conversion**
 - alert percolation or **query matching**
@@ -104,10 +105,10 @@
 ![right fit](_static/log-centric.png)
 
 - **async** event production and consumption.
-- **uncorelated** publishers and subscribers.
+- **uncorrelated** publishers and subscribers.
 - acts as a **Messaging system**.
 - replay the log from any point in time.
-- **realtime** event availibility.
+- **realtime** event availability.
 
 ---
 
@@ -134,16 +135,18 @@
 
 ![right fit](_static/data-pyramid-mccandless.png)
 
-## [fit] Logisland continously transforms  
+## [fit] Logisland continuously transforms  
 ## [fit] data into information & 
 ## [fit] information into knowledge 
 ## [fit] by using asynchronous processing on 
 ## [fit] increasingly abstract 
-## [fit] and meaningfull records.
+## [fit] and meaningful records.
 
 ---
 
 ![inline](_static/data-to-knowldege.png)
+
+###### (credits : David McCandless, Information is Beautiful)
 
 ---
 
@@ -151,9 +154,6 @@
 
 ![inline](_static/data-driven-computing.png)
 
----
-
-![fit](_static/logisland-workflow.png)
 
 
 ---
@@ -184,7 +184,7 @@ assertEquals(record.size(), 0);
 
 --- 
 
-# Standard fields
+# Field
 
 A record holds a collection of fields.
 
@@ -206,7 +206,7 @@ assertFalse( record.hasField("is_outside_office_hours"));
 
 ---
 
-# Special fields
+# Special Field
 
 A Record also has some special fields (type, time and id).
 
@@ -249,9 +249,9 @@ assertFalse(record.isValid());
 --- 
 
 # Processor
-Logisland is a component centric framework, 
+Logisland is a **component centric** framework, 
 
-It's built over an abstraction layer to build configurable components.
+It's built over an abstraction layer to build **configurable components**.
 
 A component can be ``Configurable`` and ``Configured``.
 
@@ -385,8 +385,7 @@ Define a processing job
 ---
 # Transverse service injection : ControllerService
 
-we often need to share access to external Services across the Processors,
-for example 
+we often need to share access to external Services across the Processors, for example 
 
 - bulk buffers or client connections to external data 
 - a cache service that could cache K/V tuple across the worker node.
@@ -520,16 +519,10 @@ Run the job
 
 - **source** : [https://github.com/Hurence/logisland/releases](https://github.com/Hurence/logisland/releases)
 - **Docker** : [https://hub.docker.com/r/hurence/logisland/tags/](https://hub.docker.com/r/hurence/logisland/tags/)
-- **Maven** : [https://search.maven.org/#search%7Cga%7C1%7Clogisland](https://search.maven.org/#search%7Cga%7C1%7Clogisland)
 - **Documentation** : [http://logisland.readthedocs.io/en/latest/concepts.html](http://logisland.readthedocs.io/en/latest/concepts.html)
 - **support** : [https://gitter.im/logisland/logisland](https://gitter.im/logisland/logisland)
-- **contact** : thomas.bailet@hurence.com
+- **contact** : bailet.thomas@gmail.com
 
 -------------------------
 
 ## [fit] Q&A
-
----
-
-![inline](_static/hurence-logo.jpeg)
-
