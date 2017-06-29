@@ -55,8 +55,9 @@ public class LRUKeyValueCacheServiceTest {
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor
-        final CacheService<String, String> service = new MockCacheService<String, String>(3);
-        runner.addControllerService("lruCache", service);
+        final MockCacheService<String, String> service = new MockCacheService<String, String>(3);
+        service.setIdentifier("lruCache");
+        runner.addControllerService(service);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.CACHE_SERVICE, "lruCache");
         runner.assertValid(service);

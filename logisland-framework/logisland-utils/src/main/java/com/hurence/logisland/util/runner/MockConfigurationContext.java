@@ -24,6 +24,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.MockComponentLogger;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -35,10 +36,13 @@ import java.util.concurrent.TimeUnit;
 
 public class MockConfigurationContext implements ControllerServiceInitializationContext {
 
+    private final ComponentLog logger;
     private final Map<PropertyDescriptor, String> properties;
     private final ControllerServiceLookup serviceLookup;
     private final ControllerService service;
     private final VariableRegistry variableRegistry;
+    private final MockComponentContext componentContext;
+
 
     public MockConfigurationContext(final Map<PropertyDescriptor, String> properties,
                                     final ControllerServiceLookup serviceLookup) {
@@ -59,36 +63,14 @@ public class MockConfigurationContext implements ControllerServiceInitialization
         this.properties = properties;
         this.serviceLookup = serviceLookup;
         this.variableRegistry = variableRegistry;
+        this.componentContext = new MockComponentContext(service, properties, variableRegistry, serviceLookup);
+        this.logger = new MockComponentLogger();
     }
 
-
-    @Override
-    public PropertyValue getPropertyValue(PropertyDescriptor property) {
-        String value = properties.get(property);
-        if (value == null) {
-            value = getActualDescriptor(property).getDefaultValue();
-        }
-        return new MockPropertyValue(value, serviceLookup, variableRegistry);
-    }
-
-    @Override
-    public PropertyValue getPropertyValue(String propertyName) {
-        return null;
-    }
-
-    @Override
-    public ValidationResult setProperty(String name, String value) {
-        return null;
-    }
-
-    @Override
-    public PropertyValue newPropertyValue(String rawValue) {
-        return null;
-    }
 
     @Override
     public String getIdentifier() {
-        return null;
+        return componentContext.getIdentifier();
     }
 
     @Override
@@ -99,50 +81,6 @@ public class MockConfigurationContext implements ControllerServiceInitialization
     @Override
     public ComponentLog getLogger() {
         return null;
-    }
-
-    @Override
-    public void setName(String name) {
-
-    }
-
-    @Override
-    public boolean removeProperty(String name) {
-        return false;
-    }
-
-    @Override
-    public Map<PropertyDescriptor, String> getProperties() {
-        return new HashMap<>(this.properties);
-    }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public String getProperty(PropertyDescriptor property) {
-        return null;
-    }
-
-    @Override
-    public boolean isValid() {
-        return false;
-    }
-
-    @Override
-    public Collection<ValidationResult> getValidationErrors() {
-        return null;
-    }
-
-    private PropertyDescriptor getActualDescriptor(final PropertyDescriptor property) {
-        if (service == null) {
-            return property;
-        }
-
-        final PropertyDescriptor resolved = service.getPropertyDescriptor(property.getName());
-        return resolved == null ? property : resolved;
     }
 
     @Override
@@ -158,5 +96,60 @@ public class MockConfigurationContext implements ControllerServiceInitialization
     @Override
     public File getKerberosConfigurationFile() {
         return null;
+    }
+
+    @Override
+    public PropertyValue getPropertyValue(PropertyDescriptor descriptor) {
+        return componentContext.getPropertyValue(descriptor);
+    }
+
+    @Override
+    public PropertyValue getPropertyValue(String propertyName) {
+        return componentContext.getPropertyValue(propertyName);
+    }
+
+    @Override
+    public ValidationResult setProperty(String name, String value) {
+        return componentContext.setProperty(name, value);
+    }
+
+    @Override
+    public boolean removeProperty(String name) {
+        return componentContext.removeProperty(name);
+    }
+
+    @Override
+    public PropertyValue newPropertyValue(String rawValue) {
+        return componentContext.newPropertyValue(rawValue);
+    }
+
+    @Override
+    public Map<PropertyDescriptor, String> getProperties() {
+        return componentContext.getProperties();
+    }
+
+    @Override
+    public String getProperty(PropertyDescriptor property) {
+        return componentContext.getProperty(property);
+    }
+
+    @Override
+    public boolean isValid() {
+        return componentContext.isValid();
+    }
+
+    @Override
+    public Collection<ValidationResult> getValidationErrors() {
+        return componentContext.getValidationErrors();
+    }
+
+    @Override
+    public String getName() {
+        return componentContext.getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        componentContext.setName(name);
     }
 }

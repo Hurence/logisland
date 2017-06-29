@@ -310,7 +310,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void enableControllerService(final ControllerService service) {
+    public void enableControllerService(final ControllerService service) throws InitializationException {
         final ControllerServiceConfiguration configuration = context.getConfiguration(service.getIdentifier());
         if (configuration == null) {
             throw new IllegalArgumentException("Controller Service " + service + " is not known");
@@ -319,6 +319,11 @@ public class StandardProcessorTestRunner implements TestRunner {
         if (configuration.isEnabled()) {
             throw new IllegalStateException("Cannot enable Controller Service " + service + " because it is not disabled");
         }
+
+        final MockControllerServiceInitializationContext initContext =
+                new MockControllerServiceInitializationContext(service);
+        initContext.setProps(configuration.getProperties());
+        configuration.getService().initialize(initContext);
 
         try {
             final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
@@ -330,6 +335,7 @@ public class StandardProcessorTestRunner implements TestRunner {
             e.printStackTrace();
             Assert.fail("Failed to enable Controller Service " + service + " due to " + e);
         }
+
 
         configuration.setEnabled(true);
     }
@@ -359,30 +365,28 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void addControllerService(final String identifier, final ControllerService service) throws InitializationException {
-        addControllerService(identifier, service, new HashMap<String, String>());
+    public void addControllerService(final ControllerService service) throws InitializationException {
+        addControllerService(service, new HashMap<String, String>());
     }
 
     @Override
-    public void addControllerService(final String identifier, final ControllerService service, final Map<String, String> properties) throws InitializationException {
+    public void addControllerService(final ControllerService service, final Map<String, String> properties) throws InitializationException {
 
-
-        final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
+        requireNonNull(service.getIdentifier());
+        if (service.getIdentifier().isEmpty()) throw new InitializationException("Service Identifier should not be empty String");
+        final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), properties);
         initContext.addControllerServices(context);
-        service.initialize(initContext);
 
         final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
         for (final Map.Entry<String, String> entry : properties.entrySet()) {
             resolvedProps.put(service.getPropertyDescriptor(entry.getKey()), entry.getValue());
         }
-
         try {
             ReflectionUtils.invokeMethodsWithAnnotation(OnAdded.class, service);
         } catch (final InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
             throw new InitializationException(e);
         }
-
-        context.addControllerService(identifier, service, resolvedProps, null);
+        context.addControllerService(service, resolvedProps, null);
     }
 
     @Override

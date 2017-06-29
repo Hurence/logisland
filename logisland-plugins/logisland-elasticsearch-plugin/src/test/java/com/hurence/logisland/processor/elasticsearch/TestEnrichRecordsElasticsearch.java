@@ -60,7 +60,8 @@ public class TestEnrichRecordsElasticsearch {
 
         ///////////////////
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
-        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        elasticsearchClient.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
         ///////////////////
@@ -111,7 +112,8 @@ public class TestEnrichRecordsElasticsearch {
 
         ///////////////////
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
-        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        elasticsearchClient.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
         ///////////////////

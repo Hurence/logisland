@@ -34,7 +34,7 @@ public class MockPropertyValue implements PropertyValue {
     private final ControllerServiceLookup serviceLookup;
     private final PropertyDescriptor propertyDescriptor;
     private final PropertyValue stdPropValue;
-    private final VariableRegistry variableRegistry;
+        private final VariableRegistry variableRegistry;
     private boolean expressionsEvaluated = false;
 
     public MockPropertyValue(final String rawValue) {

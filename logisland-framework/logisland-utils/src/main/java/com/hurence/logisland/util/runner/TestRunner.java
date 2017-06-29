@@ -321,11 +321,10 @@ public interface TestRunner {
      * annotated with the
      * {@link OnAdded @OnAdded} annotation.
      *
-     * @param identifier of service
      * @param service the service
      * @throws InitializationException ie
      */
-    void addControllerService(String identifier, ControllerService service) throws InitializationException;
+    void addControllerService(ControllerService service) throws InitializationException;
 
     /**
      * Adds the given {@link ControllerService} to this TestRunner so that the
@@ -339,12 +338,11 @@ public interface TestRunner {
      * annotated with the
      * {@link OnAdded @OnAdded} annotation.
      *
-     * @param identifier of service
      * @param service the service
      * @param properties service properties
      * @throws InitializationException ie
      */
-    void addControllerService(String identifier, ControllerService service, Map<String, String> properties) throws InitializationException;
+    void addControllerService(ControllerService service, Map<String, String> properties) throws InitializationException;
 
     /**
      * <p>
@@ -361,7 +359,7 @@ public interface TestRunner {
      *
      * @param service the service to enable
      */
-    void enableControllerService(ControllerService service);
+    void enableControllerService(ControllerService service) throws InitializationException;
 
     /**
      * <p>
@@ -387,8 +385,8 @@ public interface TestRunner {
      *
      * @throws IllegalArgumentException if the given ControllerService is not
      *             known by this TestRunner (i.e., it has not been added via the
-     *             {@link #addControllerService(String, ControllerService)} or
-     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             {@link #addControllerService(ControllerService)} or
+     *             {@link #addControllerService(ControllerService, Map)} method or
      *             if the Controller Service has been removed via the
      *             {@link #removeControllerService(ControllerService)} method.
      */
@@ -407,8 +405,8 @@ public interface TestRunner {
      * @throws IllegalStateException if the ControllerService is not disabled
      * @throws IllegalArgumentException if the given ControllerService is not
      *             known by this TestRunner (i.e., it has not been added via the
-     *             {@link #addControllerService(String, ControllerService)} or
-     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             {@link #addControllerService(ControllerService)} or
+     *             {@link #addControllerService(ControllerService, Map)} method or
      *             if the Controller Service has been removed via the
      *             {@link #removeControllerService(ControllerService)} method.
      *
@@ -427,8 +425,8 @@ public interface TestRunner {
      * @throws IllegalStateException if the ControllerService is not disabled
      * @throws IllegalArgumentException if the given ControllerService is not
      *             known by this TestRunner (i.e., it has not been added via the
-     *             {@link #addControllerService(String, ControllerService)} or
-     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             {@link #addControllerService(ControllerService)} or
+     *             {@link #addControllerService(ControllerService, Map)} method or
      *             if the Controller Service has been removed via the
      *             {@link #removeControllerService(ControllerService)} method.
      *
@@ -446,8 +444,8 @@ public interface TestRunner {
      * @throws IllegalStateException if the ControllerService is not disabled
      * @throws IllegalArgumentException if the given ControllerService is not
      *             known by this TestRunner (i.e., it has not been added via the
-     *             {@link #addControllerService(String, ControllerService)} or
-     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             {@link #addControllerService(ControllerService)} or
+     *             {@link #addControllerService(ControllerService, Map)} method or
      *             if the Controller Service has been removed via the
      *             {@link #removeControllerService(ControllerService)} method.
      *
@@ -465,8 +463,8 @@ public interface TestRunner {
      * @throws IllegalStateException if the ControllerService is not disabled
      * @throws IllegalArgumentException if the given ControllerService is not
      *             known by this TestRunner (i.e., it has not been added via the
-     *             {@link #addControllerService(String, ControllerService)} or
-     *             {@link #addControllerService(String, ControllerService, Map)} method or
+     *             {@link #addControllerService(ControllerService)} or
+     *             {@link #addControllerService(ControllerService, Map)} method or
      *             if the Controller Service has been removed via the
      *             {@link #removeControllerService(ControllerService)} method.
      *

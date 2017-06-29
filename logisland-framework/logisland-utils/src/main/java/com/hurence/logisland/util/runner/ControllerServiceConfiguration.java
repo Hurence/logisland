@@ -41,6 +41,7 @@ public class ControllerServiceConfiguration {
     }
 
     public void setEnabled(final boolean enabled) {
+
         this.enabled.set(enabled);
     }
 

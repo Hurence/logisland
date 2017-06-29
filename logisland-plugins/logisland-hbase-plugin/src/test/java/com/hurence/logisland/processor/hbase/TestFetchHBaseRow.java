@@ -92,7 +92,8 @@ public class TestFetchHBaseRow {
         runner = TestRunners.newTestRunner(proc);
 
         hBaseClientService = new MockHBaseClientService();
-        runner.addControllerService("hbaseClient", hBaseClientService);
+        hBaseClientService.setIdentifier("hbaseClient");
+        runner.addControllerService(hBaseClientService);
         runner.enableControllerService(hBaseClientService);
         runner.setProperty(FetchHBaseRow.HBASE_CLIENT_SERVICE, "hbaseClient");
 

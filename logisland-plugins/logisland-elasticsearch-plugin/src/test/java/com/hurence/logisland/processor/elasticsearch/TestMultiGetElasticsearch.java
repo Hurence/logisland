@@ -63,7 +63,8 @@ public class TestMultiGetElasticsearch {
 
         ///////////////////
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
-        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        elasticsearchClient.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
         ///////////////////
@@ -121,7 +122,8 @@ public class TestMultiGetElasticsearch {
 
         ///////////////////
         final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
-        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        elasticsearchClient.setIdentifier("elasticsearchClient");
+        runner.addControllerService(elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
 
         ///////////////////
