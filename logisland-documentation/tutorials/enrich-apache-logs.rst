@@ -3,7 +3,7 @@ Index Apache logs Enrichment
 
 In the following tutorial we'll drive you through the process of enriching Apache logs with LogIsland platform.
 
-One of the first step when treating web access logs is to extract information from the User-Agent header string, in order to be able to classify traffic.
+One of the first steps when treating web access logs is to extract information from the User-Agent header string, in order to be able to classify traffic.
 The User-Agent string is part of the access logs from the web server (this is the last field in the example below).
 
 .. code:
