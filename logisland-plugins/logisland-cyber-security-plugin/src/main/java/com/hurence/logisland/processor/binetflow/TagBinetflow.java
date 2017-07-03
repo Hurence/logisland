@@ -97,7 +97,7 @@ public class TagBinetflow extends AbstractProcessor {
                     flow.setRequestSize(flowRecord.getField("bytes_in").asLong());
                     flow.setResponseSize(flowRecord.getField("bytes_out").asLong());
 
-                    String key = src_ip + dest_ip;
+                    String key = src_ip + "_" + dest_ip;
 
                     List<HttpFlow> value = map.get(key);
 
@@ -118,8 +118,6 @@ public class TagBinetflow extends AbstractProcessor {
 
             for (Map.Entry<String, List<HttpFlow>> entry : map.entrySet())
             {
-                System.out.println(entry.getKey() + "/" + entry.getValue());
-
                 List<HttpFlow> flows = entry.getValue();
                 if(flows.size() > 5)
                 {
@@ -131,8 +129,8 @@ public class TagBinetflow extends AbstractProcessor {
                     trace.compute();
 
                     NetworkTrace networkTrace = new NetworkTrace(
-                            trace.getIpSource(),
-                            trace.getIpTarget(),
+                            flows.get(0).getipSource(),
+                            flows.get(0).getIpTarget(),
                             (float) trace.getAvgUploadedBytes(),
                             (float) trace.getAvgDownloadedBytes(),
                             (float) trace.getAvgTimeBetweenTwoFLows(),
