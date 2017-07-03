@@ -26,7 +26,7 @@ public class MultiGetQueryRecord {
     private final String[] fieldsToInclude;
     private final String[] fieldsToExclude;
 
-    public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds, final String[] fieldsToInclude, final String[] fieldsToExclude) throws InvalidMultiGetQueryRecordException {
+    public MultiGetQueryRecord(final String indexName, final String typeName, final String[] fieldsToInclude, final String[] fieldsToExclude, final List<String> documentIds) throws InvalidMultiGetQueryRecordException {
         if (indexName == null)
             throw new InvalidMultiGetQueryRecordException("The index name cannot be null");
         if (indexName != null && indexName.isEmpty())
@@ -41,7 +41,7 @@ public class MultiGetQueryRecord {
     }
 
     public MultiGetQueryRecord(final String indexName, final String typeName, final List<String> documentIds) throws InvalidMultiGetQueryRecordException {
-        this(indexName, typeName, documentIds, null, null);
+        this(indexName, typeName, null, null, documentIds);
     }
 
     public String getIndexName() {

@@ -19,7 +19,6 @@ package com.hurence.logisland.processor.elasticsearch;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.expressionlanguage.InterpreterEngineException;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
@@ -27,13 +26,15 @@ import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordB
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Tags({"elasticsearch"})
@@ -70,7 +71,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
     public static final PropertyDescriptor ES_TYPE_FIELD = new PropertyDescriptor.Builder()
             .name("es.type")
-            .description("The name of the ES type to use in multiget query. ")
+            .description("The name of the ES type to use in multiget query.")
             .required(false)
             .expressionLanguageSupported(true)
             .build();
@@ -80,6 +81,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .description("The name of the ES fields to include in the record.")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .defaultValue("*")
             .build();
 
@@ -116,17 +118,10 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         List<Record> outputRecords = new ArrayList<>();
-        List<Pair<Record,String>> recordsToEnrich = new ArrayList<>();
+        List<Triple<Record,String, String[]>> recordsToEnrich = new ArrayList<>();
 
         if (records.size() != 0) {
-            String includesFieldName = context.getPropertyValue(ES_INCLUDES_FIELD).asString();
             String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
-
-            // Includes :
-            String[] includesArray = null;
-            if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
-                includesArray = includesFieldName.split("\\s*,\\s*");
-            }
 
             // Excludes :
             String[] excludesArray = null;
@@ -138,23 +133,22 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
 
             mgqrBuilder.excludeFields(excludesArray);
-            mgqrBuilder.includeFields(includesArray);
 
             List<MultiGetResponseRecord> multiGetResponseRecords = null;
             // HashSet<String> ids = new HashSet<>(); // Use a Set to avoid duplicates
-
-
 
             for (Record record : records) {
 
                 String recordKeyName = null;
                 String indexName = null;
                 String typeName = null;
+                String includesFieldName = null;
 
                 try {
                     recordKeyName = context.getPropertyValue(RECORD_KEY_FIELD).evaluate(record).asString();
                     indexName = context.getPropertyValue(ES_INDEX_FIELD).evaluate(record).asString();
                     typeName = context.getPropertyValue(ES_TYPE_FIELD).evaluate(record).asString();
+                    includesFieldName = context.getPropertyValue(ES_INCLUDES_FIELD).evaluate(record).asString();
                 } catch (Throwable t) {
                     record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in executing EL. Error: " + t.getMessage());
                     logger.error("Cannot interpret EL : " + record, t);
@@ -162,8 +156,13 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
                 if (recordKeyName != null) {
                     try {
-                        mgqrBuilder.add(indexName, typeName, recordKeyName);
-                        recordsToEnrich.add(new ImmutablePair(record, asUniqueKey(indexName, typeName, recordKeyName)));
+                        // Includes :
+                        String[] includesArray = null;
+                        if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
+                            includesArray = includesFieldName.split("\\s*,\\s*");
+                        }
+                        mgqrBuilder.add(indexName, typeName, includesArray, recordKeyName);
+                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includesArray));
                     } catch (Throwable t) {
                         record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
                         outputRecords.add(record);
@@ -206,15 +205,22 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
             recordsToEnrich.forEach(recordToEnrich -> {
 
-                Pair<Record,String> pair = recordToEnrich;
-                Record outputRecord = pair.getLeft();
+                Triple<Record, String, String[]> triple = recordToEnrich;
+                Record outputRecord = triple.getLeft();
 
                 // TODO: should probably store the resulting recordKeyName during previous invocation above
-                String key = pair.getRight();
+                String key = triple.getMiddle();
+                String[] includesArray = triple.getRight();
+                IncludeFields includeFields = new IncludeFields(includesArray);
+
                 MultiGetResponseRecord responseRecord = responses.get(key);
                 if ((responseRecord != null) && (responseRecord.getRetrievedFields() != null)) {
+                    // Retrieve the fields from responseRecord that matches the ones in the recordToEnrich.
                     responseRecord.getRetrievedFields().forEach((k, v) -> {
-                        outputRecord.setStringField(k.toString(), v.toString());
+                        String fieldName = k.toString();
+                        if (includeFields.includes(fieldName)) {
+                            outputRecord.setStringField(fieldName, v.toString());
+                        }
                     });
                 }
                 outputRecords.add(outputRecord);
@@ -238,4 +244,83 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         return sb.toString();
     }
 
+    private class IncludeFields {
+        private boolean containsAll = false;
+        private boolean containsSubstring = false;
+        private boolean containsEquality = false;
+
+        Set<String> equalityFields = null;
+        Map<String, Pattern> substringFields = null;
+
+        public IncludeFields(String[] includesArray){
+            if (includesArray == null || includesArray.length <= 0){
+                containsAll = true;
+            }
+            else {
+                Arrays.stream(includesArray).forEach((k) -> {
+                    if (k.equals("*")){
+                        containsAll = true;
+                    }
+                    else if (k.contains("*")){
+                        // It is a substring
+                        if (containsSubstring == false){
+                            substringFields = new HashMap<>();
+                            containsSubstring = true;
+                        }
+                        String buildCompileStr = k.replaceAll("\\*", ".\\*");
+                        Pattern pattern = Pattern.compile(buildCompileStr);
+                        substringFields.put(k, pattern);
+                    }
+                    else {
+                        if (containsEquality == false){
+                            equalityFields = new HashSet<String>();
+                            containsEquality = true;
+                        }
+                        equalityFields.add(k);
+                    }
+                });
+            }
+        }
+
+        public boolean matchesAll() {
+            return containsAll;
+        }
+
+        public boolean containsSubstring(){
+            return containsSubstring;
+        }
+
+        public boolean containsEquality(){
+            return containsEquality;
+        }
+
+        public boolean includes(String fieldName){
+            if (containsAll){
+                return true;
+            }
+            if (containsEquality) {
+                if (equalityFields.contains(fieldName)) {
+                    return true;
+                }
+            }
+            if (containsSubstring){
+                // Must go through each substring expresssion
+                for (String key : substringFields.keySet()) {
+                    Pattern expr = substringFields.get(key);
+                    Matcher valueMatcher = expr.matcher(fieldName);
+                    if (expr != null){
+                        try{
+                            if (valueMatcher.lookingAt()){
+                                return true;
+                            }
+                        }
+                        catch(Exception e){
+                            logger.warn("issue while matching on fieldname, exception {}", fieldName, e.getMessage());
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    }
 }

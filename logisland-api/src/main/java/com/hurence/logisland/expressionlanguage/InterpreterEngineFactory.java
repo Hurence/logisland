@@ -21,18 +21,28 @@ package com.hurence.logisland.expressionlanguage;
  */
 public class InterpreterEngineFactory {
 
-    private static InterpreterEngine singleton;
+    private static final String defaultEngineName = "mvel";
+    //private static final String defaultEngineName = "javascript";
+
+    private static Jsr223InterpreterEngine singleton;
     private static final Object lock = new Object();
 
     public static InterpreterEngine get() {
         if (singleton == null) {
             synchronized (lock) {
                 if (singleton == null) {
-                    singleton = new Jsr223InterpreterEngine();
+                    singleton = new Jsr223InterpreterEngine(defaultEngineName);
                 }
             }
         }
-
         return singleton;
+    }
+
+    public static void setInterpreter(String interpreter){
+        synchronized (lock) {
+            if ((singleton == null ) ||
+                    (! singleton.getName().equals(interpreter)))
+            singleton = new Jsr223InterpreterEngine(interpreter);
+        }
     }
 }

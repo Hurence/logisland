@@ -16,6 +16,8 @@
 package com.hurence.logisland.expressionlanguage;
 
 import javax.script.ScriptContext;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 
 /**
  * Created by mathieu on 31/05/17.
@@ -24,6 +26,9 @@ public interface InterpreterEngine {
 
     public String process(String script) throws InterpreterEngineException;
     public String process(String script, ScriptContext context) throws InterpreterEngineException;
+
+    public boolean isCompilable();
+    public CompiledScript compile(String script);
 
     // Handling of : ${...}
     static boolean isExpressionLanguage(String content) {

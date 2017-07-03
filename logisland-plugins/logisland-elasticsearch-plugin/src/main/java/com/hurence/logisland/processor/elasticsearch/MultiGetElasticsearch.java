@@ -182,7 +182,7 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
                 }
 
                 try {
-                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, idsList, includesArray, excludesArray));
+                    multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, includesArray, excludesArray, idsList));
                 } catch (InvalidMultiGetQueryRecordException e) {
                     StandardRecord outputRecord = new StandardRecord(record);
                     outputRecord.addError(ProcessError.BAD_RECORD.getName(), e.getMessage());

@@ -42,13 +42,12 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
         this.variableRegistry = variableRegistry;
 
         InterpreterEngine ie = InterpreterEngineFactory.get();
-        if (ie instanceof Compilable) {
+        if (ie.isCompilable()) {
             try {
-                Compilable c = (Compilable) ie;
-                this.compiledScript = c.compile(InterpreterEngine.extractExpressionLanguage(script));
+                this.compiledScript = ie.compile(InterpreterEngine.extractExpressionLanguage(rawValue));
                 this.script = null;
 
-            } catch (ScriptException | InterpreterEngineException e) {
+            } catch (InterpreterEngineException e) {
                 throw new RuntimeException(e);
             }
         } else {
@@ -75,7 +74,7 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
      */
     protected Object getRawValue(Record record) throws InterpreterEngineException {
         ScriptContext context = new SimpleScriptContext();
-        record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue(), ScriptContext.ENGINE_SCOPE));
+        record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue().getRawValue(), ScriptContext.ENGINE_SCOPE));
         return getRawValue(context);
     }
 

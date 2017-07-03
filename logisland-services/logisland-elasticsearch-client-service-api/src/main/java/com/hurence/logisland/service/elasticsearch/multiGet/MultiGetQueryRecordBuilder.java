@@ -26,8 +26,7 @@ import java.util.*;
  */
 public class MultiGetQueryRecordBuilder {
 
-    private Tree<String> tree = new Tree<String>("/");
-    private Set<String> includes = new TreeSet();
+    private Tree<String> tree = new Tree<String>("/", HeadType.ROOT);
     private Set<String> excludes = new TreeSet();
 
     /**
@@ -35,32 +34,35 @@ public class MultiGetQueryRecordBuilder {
      */
     public MultiGetQueryRecordBuilder() {}
 
-    public MultiGetQueryRecordBuilder includeFields(String... includes) {
-        for (String include : includes) {
-            this.includes.add(include);
-        }
-        return this;
-    }
-
     public MultiGetQueryRecordBuilder excludeFields(String... excludes) {
-        for (String exclude : excludes) {
-            this.excludes.add(exclude);
+        if (excludes != null) {
+            for (String exclude : excludes) {
+                this.excludes.add(exclude);
+            }
         }
         return this;
     }
 
-    public MultiGetQueryRecordBuilder add(String indexName, String typeName, String... keys) {
+    public MultiGetQueryRecordBuilder add(String indexName, String typeName, String[] includes, String... keys) {
 
         if (indexName == null || typeName == null || keys == null) {
             throw new NullPointerException();
         }
 
-        Tree<String> t = tree.getOrCreateLeaf(indexName)
-        .getOrCreateLeaf(typeName);
+        Tree<String> t = tree.getOrCreateLeaf(indexName, HeadType.INDEX)
+        .getOrCreateLeaf(typeName, HeadType.TYPE);
+
+        // includes is an optional array
+        if (includes != null && includes.length > 0) {
+            for (String includeAttr : includes){
+                t.getOrCreateLeaf(includeAttr, HeadType.INCLUDE);
+            }
+        }
 
         for (String key : keys) {
-            t.getOrCreateLeaf(key);
+            t.getOrCreateLeaf(key, HeadType.KEY);
         }
+
         return this;
     }
 
@@ -69,9 +71,15 @@ public class MultiGetQueryRecordBuilder {
 
         for (Tree<String> idx : tree.getSubTrees()) {
             for (Tree<String> type : idx.getSubTrees()) {
-                List<String> keys = type.getSuccessors();
+                List<String> keys = type.getSuccessors(HeadType.KEY);
+                List<String> includeAttrs = type.getSuccessors(HeadType.INCLUDE);
 
-                MultiGetQueryRecord rec = new MultiGetQueryRecord(idx.getHead(), type.getHead(), keys);
+                MultiGetQueryRecord rec = new MultiGetQueryRecord(
+                        idx.getHead(),
+                        type.getHead(),
+                        (includeAttrs != null) ? (String [])includeAttrs.toArray(new String[includeAttrs.size()]) : null,
+                        (excludes != null) ? (String[])excludes.toArray(new String[excludes.size()]) : null,
+                        keys);
                 res.add(rec);
             }
         }
@@ -80,20 +88,26 @@ public class MultiGetQueryRecordBuilder {
     }
 }
 
+enum HeadType {
+    ROOT, INDEX, TYPE, INCLUDE, KEY
+}
+
 /**
  * Simple tree implementation.
  */
 class Tree<T> {
 
     private T head;
+    private HeadType type;
     private ArrayList<Tree<T>> leafs = new ArrayList();
 
-    public Tree(T head) {
+    public Tree(T head, HeadType type) {
         this.head = head;
+        this.type = type;
     }
 
-    public Tree<T> addLeaf(T leaf) {
-        Tree<T> t = new Tree<T>(leaf);
+    public Tree<T> addLeaf(T leaf, HeadType type) {
+        Tree<T> t = new Tree<T>(leaf, type);
         leafs.add(t);
         return t;
     }
@@ -102,10 +116,14 @@ class Tree<T> {
         return head;
     }
 
-    public List<T> getSuccessors() {
+    private HeadType getType() { return type;}
+
+    public List<T> getSuccessors(HeadType type) {
         List<T> successors = new ArrayList<T>();
         for (Tree<T> leaf : leafs) {
-            successors.add(leaf.head);
+            if (leaf.getType() == type) {
+                successors.add(leaf.head);
+            }
         }
         return successors;
     }
@@ -114,7 +132,7 @@ class Tree<T> {
         return leafs;
     }
 
-    public Tree<T> getOrCreateLeaf(T id) {
+    public Tree<T> getOrCreateLeaf(T id, HeadType type) {
         Tree newTree = null;
         for (Tree t : getSubTrees()) {
 
@@ -124,7 +142,7 @@ class Tree<T> {
             }
         }
         if (newTree == null) {
-            newTree = addLeaf(id);
+            newTree = addLeaf(id, type);
         }
         return newTree;
     }
