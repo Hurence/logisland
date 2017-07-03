@@ -9,6 +9,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class KMeansModelWrapper extends AbstractConfigurableComponent implements
             FileInputStream in = new FileInputStream(modelFilePath);
             ObjectInputStream ois = new ObjectInputStream(in);
             kMeansModel = (KMeansModel) (ois.readObject());
+            ois.close();
         } catch (Exception e) {
             System.out.println("Problem serializing: " + e);
         }
@@ -34,6 +36,15 @@ public class KMeansModelWrapper extends AbstractConfigurableComponent implements
     public Integer predict(double[] values) throws Exception {
         Vector inputValues = Vectors.dense(values);
         return kMeansModel.predict(inputValues);
+    }
+
+    public List<double[]> getClusterCenters() throws Exception {
+        Vector[] clusterCenters = kMeansModel.clusterCenters();
+        List<double[]> output = new ArrayList<>();
+        for (Vector clusterCenter: clusterCenters) {
+            output.add(clusterCenter.toArray());
+        }
+        return output;
     }
 
     @Override

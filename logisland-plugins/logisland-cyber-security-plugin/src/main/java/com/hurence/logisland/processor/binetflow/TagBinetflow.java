@@ -6,16 +6,15 @@ import com.hurence.logisland.botsearch.Trace;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
+import com.hurence.logisland.ml.model.KMeansModelWrapper;
 import com.hurence.logisland.ml.model.Model;
+import com.hurence.logisland.ml.scaler.Scaler;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.ml.ModelClientService;
-import org.apache.spark.mllib.feature.StandardScalerModel;
-import org.apache.spark.mllib.linalg.Vectors;
+import com.hurence.logisland.service.ml.ScalerModelClientService;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.util.*;
 
 public class TagBinetflow extends AbstractProcessor {
@@ -29,7 +28,15 @@ public class TagBinetflow extends AbstractProcessor {
             .identifiesControllerService(ModelClientService.class)
             .build();
 
+    public static final PropertyDescriptor SCALER_MODEL_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+            .name("ml.scaler.client.service")
+            .description("The instance of the Controller Service to use for accessing Machine Learning scaler model.")
+            .required(true)
+            .identifiesControllerService(ModelClientService.class)
+            .build();
+
     protected ModelClientService modelClientService;
+    protected ScalerModelClientService scalerModelClientService;
 
     @Override
     public boolean hasControllerService() {
@@ -42,6 +49,11 @@ public class TagBinetflow extends AbstractProcessor {
         if(modelClientService == null) {
             logger.error("Model client service is not initialized!");
         }
+
+        scalerModelClientService = context.getPropertyValue(SCALER_MODEL_CLIENT_SERVICE).asControllerService(ScalerModelClientService.class);
+        if(scalerModelClientService == null) {
+            logger.error("Scaler model client service is not initialized!");
+        }
     }
 
     @Override
@@ -49,6 +61,7 @@ public class TagBinetflow extends AbstractProcessor {
 
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(MODEL_CLIENT_SERVICE);
+        props.add(SCALER_MODEL_CLIENT_SERVICE);
 
         return Collections.unmodifiableList(props);
     }
@@ -63,9 +76,10 @@ public class TagBinetflow extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
+        List<Record> outputRecords = new ArrayList<>();
+
         if (records.size() != 0) {
 
-            //Map<String,List<List<Long>>> map =new HashMap<String, List<List<Long>>>();
             Map<String,List<HttpFlow>> map =new HashMap<String, List<HttpFlow>>();
 
             records.forEach(flowRecord -> {
@@ -85,21 +99,11 @@ public class TagBinetflow extends AbstractProcessor {
 
                     String key = src_ip + dest_ip;
 
-                    //List<List<Long>> value = map.get(key);
                     List<HttpFlow> value = map.get(key);
 
                     if (value != null) {
-                        //value.get(0).add(bytes_in);
-                        //value.get(1).add(bytes_out);
                         value.add(flow);
                     } else {
-                        //List<Long> bytes_in_0 = new ArrayList<>();
-                        //List<Long> bytes_out_1 = new ArrayList<>();
-                        //List<List<Long>> matrice = new ArrayList<>();
-                        //matrice.add(0, bytes_in_0);
-                        //matrice.add(1, bytes_out_1);
-                        //map.put(key, matrice);
-
                         ArrayList<HttpFlow> flows = new ArrayList<>();
                         flows.add(flow);
 
@@ -143,55 +147,61 @@ public class TagBinetflow extends AbstractProcessor {
 
             // load ScalerModel parameters :
 
-            /*
-            double meanUploadedBytes = 1.0;
-            double meanDownloadedBytes = 1.0;
-            double meanTimeBetweenTwoFLows = 1.0;
-            double meanMostSignificantFrequency = 1.0;
-
-            double stdUploadedBytes = 1.0;
-            double stdDownloadedBytes = 1.0;
-            double stdTimeBetweenTwoFLows = 1.0;
-            double stdMostSignificantFrequency = 1.0;
-            */
-
-            String scalerModelFile = "" ;
-            StandardScalerModel scalerModel = null;
-
             Model<double[],Integer> kmeansModel = modelClientService.getModel();
 
+            List<double[]> clusterCenters = null;
             try {
-                FileInputStream in = new FileInputStream(scalerModelFile);
-                ObjectInputStream ois = new ObjectInputStream(in);
-                scalerModel = (StandardScalerModel) ois.readObject();
-                ois.close();
+                clusterCenters = ((KMeansModelWrapper) kmeansModel).getClusterCenters();
             } catch (Exception e) {
-                System.out.println("Problem serializing: " + e);
+
             }
 
-            double[] traceValues = new double[4];
+            Scaler<double[],double[]> standardScalerModel = scalerModelClientService.getScalerModel();
+
+            double[] networkTraceElements = new double[4];
 
             Iterator<NetworkTrace> tracesIterator = networkTraces.iterator();
             while (tracesIterator.hasNext()) {
 
-                NetworkTrace trace = tracesIterator.next();
-                traceValues[0] = trace.avgUploadedBytes();
-                traceValues[1] = trace.avgDownloadedBytes();
-                traceValues[2] = trace.avgTimeBetweenTwoFLows();
-                traceValues[3] = trace.mostSignificantFrequency();
+                NetworkTrace networkTrace = tracesIterator.next();
+                networkTraceElements[0] = networkTrace.avgUploadedBytes();
+                networkTraceElements[1] = networkTrace.avgDownloadedBytes();
+                networkTraceElements[2] = networkTrace.avgTimeBetweenTwoFLows();
+                networkTraceElements[3] = networkTrace.mostSignificantFrequency();
 
-                double[] scaledTraceValues = scalerModel.transform(Vectors.dense(traceValues)).toArray();
+                StandardRecord outputRecord = new StandardRecord();
+                outputRecord.setField(new Field(FieldDictionary.RECORD_TYPE, FieldType.STRING, "tagged_trace"));
+                outputRecord.setField(new Field("avgUploadedBytes", FieldType.DOUBLE, networkTraceElements[0]));
+                outputRecord.setField(new Field("avgDownloadedBytes", FieldType.DOUBLE, networkTraceElements[1]));
+                outputRecord.setField(new Field("avgTimeBetweenTwoFLows", FieldType.DOUBLE, networkTraceElements[2]));
+                outputRecord.setField(new Field("mostSignificantFrequency", FieldType.DOUBLE, networkTraceElements[3]));
 
                 try {
-                    int clusterID = kmeansModel.predict(scaledTraceValues);
+                    double[] scaledNetworkTraceElements = standardScalerModel.transform(networkTraceElements);
+                    int clusterID = kmeansModel.predict(scaledNetworkTraceElements);
+
+                    outputRecord.setField(new Field("scaled_avgUploadedBytes", FieldType.DOUBLE, scaledNetworkTraceElements[0]));
+                    outputRecord.setField(new Field("scaled_avgDownloadedBytes", FieldType.DOUBLE, scaledNetworkTraceElements[1]));
+                    outputRecord.setField(new Field("scaled_avgTimeBetweenTwoFLows", FieldType.DOUBLE, scaledNetworkTraceElements[2]));
+                    outputRecord.setField(new Field("scaled_mostSignificantFrequency", FieldType.DOUBLE, scaledNetworkTraceElements[3]));
+
+                    outputRecord.setField(new Field("clusterID", FieldType.INT, clusterID));
+
+                    double[] centerCoordinates = clusterCenters.get(clusterID);
+
+                    outputRecord.setField(new Field("center_avgUploadedBytes", FieldType.DOUBLE, centerCoordinates[0]));
+                    outputRecord.setField(new Field("center_avgDownloadedBytes", FieldType.DOUBLE, centerCoordinates[1]));
+                    outputRecord.setField(new Field("center_avgTimeBetweenTwoFLows", FieldType.DOUBLE, centerCoordinates[2]));
+                    outputRecord.setField(new Field("center_mostSignificantFrequency", FieldType.DOUBLE, centerCoordinates[3]));
+
+                    outputRecords.add(outputRecord);
                 } catch (Exception e) {
 
                 }
             }
         }
 
-        return records;
+        return outputRecords;
     }
-
 
 }
