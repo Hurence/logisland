@@ -1,7 +1,7 @@
 package com.hurence.logisland.engine;
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.model.Model;
+import com.hurence.logisland.ml.model.Model;
 import com.hurence.logisland.validator.StandardValidators;
 
 /**

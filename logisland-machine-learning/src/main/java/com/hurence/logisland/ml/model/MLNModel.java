@@ -1,12 +1,9 @@
-package com.hurence.logisland.model;
+package com.hurence.logisland.ml.model;
 
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +11,7 @@ import java.util.List;
 /**
  * Created by pducjac on 31/05/17.
  */
-public class MLNModel  extends AbstractConfigurableComponent implements Model {
+public class MLNModel  extends AbstractConfigurableComponent implements Model<Integer,Integer> {
     MultiLayerNetwork model = null;
 
     @Override
@@ -24,6 +21,11 @@ public class MLNModel  extends AbstractConfigurableComponent implements Model {
 
     @Override
     public Collection<Record> predict(Collection<Record> inputRecord) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Integer predict(Integer input) throws Exception {
         return null;
     }
 

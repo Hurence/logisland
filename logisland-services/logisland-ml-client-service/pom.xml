@@ -23,6 +23,10 @@
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-machine-learning</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-core</artifactId>
         </dependency>
