@@ -177,10 +177,6 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             try {
                 List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
 
-                for (MultiGetQueryRecord mgqr : mgqrs) {
-                    System.out.println(mgqr);
-                }
-
                 multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
             } catch (InvalidMultiGetQueryRecordException e ){
                 // should never happen
@@ -191,11 +187,6 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
                 return records;
             }
-
-
-             for (MultiGetResponseRecord mgrr : multiGetResponseRecords) {
-                    System.out.println(mgrr);
-                }
 
 
             // Transform the returned documents from ES in a Map
@@ -244,7 +235,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         return sb.toString();
     }
 
-    private class IncludeFields {
+    class IncludeFields {
         private boolean containsAll = false;
         private boolean containsSubstring = false;
         private boolean containsEquality = false;

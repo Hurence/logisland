@@ -39,7 +39,7 @@ public abstract class BaseScriptEngine extends AbstractScriptEngine {
 	    return builder.toString();
 	}
 	
-	private ScriptEngineFactory scriptEngineFactory;
+	private final ScriptEngineFactory scriptEngineFactory;
 	
 	public BaseScriptEngine(ScriptEngineFactory scriptEngineFactory) {
 		Objects.requireNonNull(scriptEngineFactory);

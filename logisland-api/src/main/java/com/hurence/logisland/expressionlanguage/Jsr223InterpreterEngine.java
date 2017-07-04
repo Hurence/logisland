@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.*;
+import java.util.Objects;
 
 public class Jsr223InterpreterEngine implements InterpreterEngine {
     private static Logger logger = LoggerFactory.getLogger(Jsr223InterpreterEngine.class);
@@ -53,10 +54,10 @@ public class Jsr223InterpreterEngine implements InterpreterEngine {
      * Constructor with interpretor name.
      * Allows to instantiate an alternative interpretor.
      *
-     * @param engineName the name of the interpretor to load
+     * @param engineName the name of the interpreter to load
      */
     public Jsr223InterpreterEngine(String engineName) {
-        this.engineName = engineName;
+        this.engineName = Objects.requireNonNull(engineName);
         ScriptEngineManager factory = new ScriptEngineManager();
         engine = factory.getEngineByName(engineName);
         if (engine == null){
@@ -85,7 +86,7 @@ public class Jsr223InterpreterEngine implements InterpreterEngine {
     }
 
     /**
-     * Executes code without with context.
+     * Executes code with context.
      *
      * @param script the script to execute
      * @param context the context

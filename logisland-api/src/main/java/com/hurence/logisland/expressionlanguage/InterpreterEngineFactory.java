@@ -38,11 +38,15 @@ public class InterpreterEngineFactory {
         return singleton;
     }
 
-    public static void setInterpreter(String interpreter){
+    public static Jsr223InterpreterEngine setInterpreter(String interpreter){
         synchronized (lock) {
             if ((singleton == null ) ||
                     (! singleton.getName().equals(interpreter)))
             singleton = new Jsr223InterpreterEngine(interpreter);
         }
+        return singleton;
     }
+
+    // Prevent instanciation
+    private InterpreterEngineFactory(){}
 }

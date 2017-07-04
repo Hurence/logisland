@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.script.Bindings;
 
 public class BindingsImpl implements Bindings {
-	private Map<String, Object> map;
+	private final Map<String, Object> map;
 	
 	public BindingsImpl(Map<String, Object> map) {
 		Objects.requireNonNull(map);

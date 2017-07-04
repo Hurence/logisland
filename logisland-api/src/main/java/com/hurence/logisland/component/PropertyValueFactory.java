@@ -47,4 +47,7 @@ public class PropertyValueFactory {
             final ControllerServiceLookup controllerServiceLookup) {
         return getInstance(descriptor, rawValue, controllerServiceLookup, VariableRegistry.EMPTY_REGISTRY);
     }
+
+    // Prevent instantiation
+    private PropertyValueFactory(){}
 }
