@@ -57,6 +57,28 @@
                 <includes>
                     <include>conf/*</include>
                 </includes>
+                <excludes>
+                    <exclude>conf/model.zip</exclude>
+                </excludes>
+            </unpackOptions>
+        </dependencySet>
+
+        <dependencySet>
+            <scope>runtime</scope>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>./</outputDirectory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0664</fileMode>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+            	<include>logisland-resources</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <filtered>false</filtered>
+                <includes>
+                    <include>conf/model.zip</include>
+                </includes>
             </unpackOptions>
         </dependencySet>
 

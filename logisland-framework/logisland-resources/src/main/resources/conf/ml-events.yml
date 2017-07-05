@@ -1,0 +1,82 @@
+#########################################################################################################
+# Logisland configuration script example: parse binary images and label 
+# and try to predict them using a preliminary saved model
+#########################################################################################################
+
+version: 0.9.8
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: MNIST image prediction using a NN model
+  configuration:
+    spark.app.name: MLDemo
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: ml_service
+      component: com.hurence.logisland.service.ml.MLClientServiceImpl
+      type: service
+      documentation: The client Service implementation 
+      configuration:
+        # specify the path to your MNIST model 
+        ml.model.file.path: /usr/local/logisland/conf/model.zip
+
+  streamConfigurations:
+
+
+    # Parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: A processor chain that transforms Netflow events into Logisland records
+      configuration:
+        kafka.input.topics: ml
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.BytesArraySerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # get image and label and run prediction
+        - processor: ml
+          component: com.hurence.logisland.processor.ml.runDeepLearning
+          type: parser
+          documentation: A processor that get image and label and run prediction
+          configuration:
+            ml.client.service: ml_service
+            debug: false
+

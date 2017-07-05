@@ -104,7 +104,14 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-botsearch-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-machine-learning</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -143,8 +150,8 @@
 
     </build>
 
-  <!--  <profiles>
-        <profile>
+<profiles>
+ <profile>
             <id>hdp2.4</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -156,7 +163,7 @@
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark-engine16</artifactId>
+                    <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
                 </dependency>
             </dependencies>
 
@@ -173,7 +180,7 @@
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark-engine21</artifactId>
+                    <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
@@ -182,5 +189,5 @@
             </dependencies>
 
         </profile>
-    </profiles>-->
+    </profiles>
 </project>

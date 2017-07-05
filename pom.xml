@@ -77,6 +77,7 @@
         <module>logisland-engines</module>
         <module>logisland-assembly</module>
         <module>logisland-docker</module>
+        <module>logisland-machine-learning</module>
     </modules>
 
     <properties>
@@ -96,6 +97,8 @@
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <algebird.version>0.12.0</algebird.version>
         <opencsv.version>3.7</opencsv.version>
+        <dl4j.version>0.8.0</dl4j.version>
+        <nd4j.version>0.8.0</nd4j.version>
 
         <swagger-core-version>1.5.9</swagger-core-version>
         <jetty-version>9.2.9.v20150224</jetty-version>
@@ -298,6 +301,61 @@
                 <version>5.4.0</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-core</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-nlp</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>jackson</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-api</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-base64</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-buffer</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-common</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-context</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-jackson</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native-api</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native</artifactId>
+                <version>0.8.0</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -696,6 +754,11 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-ml-client-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-hbase-client-service-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -711,7 +774,17 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-ml-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-cache-service-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -722,6 +795,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-machine-learning</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1205,7 +1283,23 @@
                 <scala.binary.version>2.11</scala.binary.version>
                 <jackson.version>2.6.6</jackson.version>
                 <hdp>2.5</hdp>
+                <dl4j_spark>0.8.0_spark_2</dl4j_spark>
             </properties>
+
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>dl4j-spark-nlp_${scala.binary.version}</artifactId>
+                    <version>0.8.0_spark_2</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
+                    <version>0.8.0_spark_2</version>
+                </dependency>
+            </dependencies>
+
         </profile>
 
         <!--  hdp 2.4 -->
@@ -1222,11 +1316,26 @@
                 <spark.version>1.6.2</spark.version>
                 <kafka.version>0.8.2.1</kafka.version>
                 <scala.version>2.10.6</scala.version>
+                <dl4j_spark>0.8.0_spark_1</dl4j_spark>
                 <scala.binary.version>2.10</scala.binary.version>
                 <jackson.version>2.4.4</jackson.version>
                 <hdp>2.4</hdp>
             </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>dl4j-spark-nlp_${scala.binary.version}</artifactId>
+                    <version>0.8.0_spark_1</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
+                    <version>0.8.0_spark_1</version>
+                </dependency>
+            </dependencies>
         </profile>
+
 
         <!--    mvn -DperformRelease=true  clean deploy           -->
         <profile>

@@ -102,6 +102,10 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-ml-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-useragent-plugin</artifactId>
         </dependency>
         <dependency>
@@ -116,10 +120,10 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
-     <!--   <dependency>
+        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-botsearch-plugin</artifactId>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
@@ -162,6 +166,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cache_key_value-service-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-machine-learning</artifactId>
         </dependency>
 
     </dependencies>

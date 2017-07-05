@@ -27,8 +27,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
     </parent>
     <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
@@ -65,7 +65,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>kafka_${scala.binary.version}</artifactId>
             <classifier>test</classifier>
         </dependency>
-
 
 
         <!-- spark dependencies -->
@@ -108,33 +107,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase-plugin</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase-client-service-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
-            <scope>test</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hadoop-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -167,8 +140,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </execution>
                 </executions>
                 <configuration>
-                    <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
-                    <scalaVersion>${scala.version}</scalaVersion>
+                    <scalaCompatVersion>2.10</scalaCompatVersion>
+                    <scalaVersion>2.10.6</scalaVersion>
                     <recompileMode>incremental</recompileMode>
                     <useZincServer>false</useZincServer>
                     <args>

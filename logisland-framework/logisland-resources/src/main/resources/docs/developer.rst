@@ -225,7 +225,7 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn clean install -DskipTests -Pdocker -Dhdp=2.4
+    mvn clean install -DskipTests -Pdocker -Dhdp=2.5
 
     # verify image build
     docker images

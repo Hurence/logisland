@@ -1,0 +1,62 @@
+version: 0.11.0
+documentation: launche a batch ML job
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: IndexApacheLogsDemo
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: ml_service
+      component: com.hurence.logisland.service.ml.MLClientServiceImpl
+      type: service
+      documentation: The client Service implementation
+      datasource: trained_model_output_file
+        type: input
+        component: com.hurence.logisland.datasource.LocalFile
+        configuration:
+          file.path: models/lr_trained
+
+  pipeline: logistic_regression_model_trainer
+    component: com.hurence.logisland.pipeline.ml.MLLibPipeline
+    documentation: >
+      fit a logistic regression model with input training file
+      outputs the model into a local file
+
+    stageConfigurations:
+
+      # tag input data
+      - stage: logistic_regression
+        component: com.hurence.logisland.transformer.ml.MLLibTransformer
+        external.component: org.apache.spark.ml.classification.LogisticRegression
+        documentation: >
+          Logistic regression.
+          Supports multinomial logistic (softmax) regression and binomial logistic regression.
+        configuration:
+          client.service: ml_service

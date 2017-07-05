@@ -1,0 +1,24 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.10.1
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.ModelTrainingProcessing
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: ml
+    spark.master: local[4]
+    spark.executor.memory: 8G
+    spark.driver.cores: 1
+    spark.driver.memory: 2G
+    spark.executor.instances: 2
+    spark.executor.cores: 2
+    spark.driver.extraJavaOptions: org.bytedeco.javacpp.maxphysicalbytes=5368709120
+    spark.executor.extraJavaOptions: org.bytedeco.javacpp.maxphysicalbytes=5368709120
+
