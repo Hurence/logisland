@@ -378,7 +378,7 @@ public class TestElasticsearch_2_4_0_ClientService {
 
         // Make sure a dummy query returns no result :
         documentIds.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "", documentIds,new String[]{"dummy"},new String[]{}));
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
         Assert.assertEquals(0, multiGetResponseRecords.size()); // number of documents retrieved
 
@@ -406,7 +406,7 @@ public class TestElasticsearch_2_4_0_ClientService {
         documentIds.add(docId1);
         documentIds.add(docId2);
         documentIds.add(docId3);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, documentIds, fieldsToInclude, fieldsToExclude));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, fieldsToInclude, fieldsToExclude, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
@@ -439,11 +439,11 @@ public class TestElasticsearch_2_4_0_ClientService {
         //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
         documentIds.add(docId1);
         documentIds.add(docId2);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds, fieldsToInclude, fieldsToExclude));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, fieldsToInclude, fieldsToExclude, documentIds));
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , documentIds_2, fieldsToInclude, null));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved

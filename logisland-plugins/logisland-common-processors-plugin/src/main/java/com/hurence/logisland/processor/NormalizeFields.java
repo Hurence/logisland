@@ -92,7 +92,9 @@ public class NormalizeFields extends AbstractProcessor {
 
         String conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
 
-
+        if (fieldsNameMapping == null) {
+            return;
+        }
         fieldsNameMapping.keySet().forEach(normalizedFieldName -> {
 
             final String[] obsoleteFieldNames = fieldsNameMapping.get(normalizedFieldName);

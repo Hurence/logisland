@@ -20,6 +20,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ public class TestEnrichRecordsElasticsearch {
     public void testEnrichThreeRecords() throws IOException, InitializationException {
 
         final String RECORD_KEY_FIELD = "codeProduct";
+        final String ES_TYPE = "es_type";
         final String ES_INDEX = "index1";
         final String ES_INCLUDES = "*";
         final String ES_EXCLUDES = "N/A";
@@ -50,6 +52,8 @@ public class TestEnrichRecordsElasticsearch {
 
         //////////////////
         final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+
+        runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
         runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);
         runner.setProperty(EnrichRecordsElasticsearch.ES_INDEX_FIELD, ES_INDEX);
         runner.setProperty(EnrichRecordsElasticsearch.ES_INCLUDES_FIELD, ES_INCLUDES);
@@ -125,8 +129,62 @@ public class TestEnrichRecordsElasticsearch {
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(1);
         runner.assertOutputErrorCount(0);
-
-
     }
+
+    @Test
+    public void testEnrichProperties_support_ExpressionLanguage() throws IOException, InitializationException {
+
+        final String RECORD_KEY_FIELD = "${codeProduct}";
+        final String ES_TYPE = "es_type";
+        final String ES_INDEX = "${company}";
+        final String ES_INCLUDES = "${'Class,coverage_'+countryCode+',brandName'}";
+        final String ES_EXCLUDES = "N/A";
+
+        final String index1 = "index1";
+        final String docId1 = "id1";
+        final String company = "mycompany.com";
+
+        //////////////////
+        final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+
+        runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
+        runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);
+        runner.setProperty(EnrichRecordsElasticsearch.ES_INDEX_FIELD, ES_INDEX);
+        runner.setProperty(EnrichRecordsElasticsearch.ES_INCLUDES_FIELD, ES_INCLUDES);
+        runner.setProperty(EnrichRecordsElasticsearch.ES_EXCLUDES_FIELD, ES_EXCLUDES);
+        runner.setProperty(EnrichRecordsElasticsearch.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
+
+        runner.assertValid();
+
+        ///////////////////
+        final MockElasticsearchClientService elasticsearchClient = new MockElasticsearchClientService();
+        runner.addControllerService("elasticsearchClient", elasticsearchClient);
+        runner.enableControllerService(elasticsearchClient);
+
+        ///////////////////
+        final Record inputRecord1 = new StandardRecord("es_multiget")
+                .setStringField("codeProduct", docId1)
+                .setStringField("category", "123456")
+                .setStringField("price", "89")
+                .setStringField("company", company)
+                .setStringField("countryCode","fr");
+
+        runner.enqueue(inputRecord1);
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+        runner.assertOutputErrorCount(0);
+
+        String indexName = runner.getProcessContext().getPropertyValue(EnrichRecordsElasticsearch.ES_INDEX_FIELD).evaluate(inputRecord1).asString();
+        Assert.assertTrue(indexName.equals(company));
+
+        String includes = runner.getProcessContext().getPropertyValue(EnrichRecordsElasticsearch.ES_INCLUDES_FIELD).evaluate(inputRecord1).asString();
+        Assert.assertTrue(includes.equals("Class,coverage_fr,brandName"));
+
+        String recordKeyName = runner.getProcessContext().getPropertyValue(EnrichRecordsElasticsearch.RECORD_KEY_FIELD).evaluate(inputRecord1).asString();
+        Assert.assertTrue(recordKeyName.equals(docId1));
+    }
+
+
 
 }

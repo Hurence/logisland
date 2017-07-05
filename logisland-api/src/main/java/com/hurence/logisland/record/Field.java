@@ -200,4 +200,8 @@ public class Field implements PropertyValue, Serializable {
         }
     }
 
+    @Override
+    public PropertyValue evaluate(Record record) {
+        throw new UnsupportedOperationException("The evaluate(record) method is not available for this type of PropertyValue");
+    }
 }
