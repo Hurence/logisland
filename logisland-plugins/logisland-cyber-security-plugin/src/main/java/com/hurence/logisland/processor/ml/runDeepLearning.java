@@ -19,22 +19,22 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.model.MLNModel;
+import com.hurence.logisland.ml.model.MLNModel;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.ml.MLClientService;
+import com.hurence.logisland.service.ml.ModelClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MNIST MLN Machine Learning processor
@@ -53,7 +53,7 @@ public class runDeepLearning extends AbstractProcessor {
 
     private static final String KEY_DEBUG = "debug";
 
-    protected MLClientService clientService;
+    protected ModelClientService clientService;
 
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
@@ -73,7 +73,7 @@ public class runDeepLearning extends AbstractProcessor {
             .name("ml.client.service")
             .description("The instance of the Controller Service to use for using ML services.")
             .required(true)
-            .identifiesControllerService(MLClientService.class)
+            .identifiesControllerService(ModelClientService.class)
             .build();
 
     @Override
@@ -85,7 +85,7 @@ public class runDeepLearning extends AbstractProcessor {
     public void init(final ProcessContext context) {
         PropertyValue ac =  context.getPropertyValue(ML_CLIENT_SERVICE);
 
-        clientService = context.getPropertyValue(ML_CLIENT_SERVICE).asControllerService(MLClientService.class);
+        clientService = context.getPropertyValue(ML_CLIENT_SERVICE).asControllerService(ModelClientService.class);
         if(clientService == null)
             logger.error("ML client service is not initialized!");
     }

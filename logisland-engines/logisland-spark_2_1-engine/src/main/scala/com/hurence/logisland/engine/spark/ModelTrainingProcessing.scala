@@ -22,7 +22,7 @@ import java.util.regex.Pattern
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.{EngineContext, ModelTrainingEngineImpl}
-import com.hurence.logisland.model.{MLNModel, Model}
+import com.hurence.logisland.ml.model.{MLNModel, Model}
 import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer}
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
+/*
 
 object ModelTrainingProcessing {
 
@@ -437,6 +438,8 @@ class ModelTrainingProcessing extends ModelTrainingEngineImpl {
   override def shutdown(engineContext: EngineContext) = {
     logger.info(s"shuting down Spark engine")
   }
+
 }
 
 
+*/

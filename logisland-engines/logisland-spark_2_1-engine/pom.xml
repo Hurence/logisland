@@ -55,6 +55,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-machine-learning</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
         </dependency>
         <dependency>
