@@ -1,0 +1,94 @@
+Job:
+  type: object
+  required:
+    - engine
+    - name
+    - streams
+    - version
+  properties:
+    id:
+      description: a unique identifier for the job
+      type: integer
+      format: int64
+    version:
+      description: the version of the job configuration
+      type: integer
+      format: int32
+    name:
+      description: the job name
+      type: string
+    summary:
+      $ref: '#/definitions/JobSummary'
+    engine:
+      $ref: '#/definitions/Engine'
+    streams:
+      type: array
+      items:
+        $ref: '#/definitions/Stream'
+
+JobSummary:
+  type: object
+  properties:
+    usedCores:
+      description: the number of used cores
+      type: integer
+      format: int32
+    usedMemory:
+      description: the total memory allocated for this job
+      type: integer
+      format: int32
+    status:
+      description: the job status
+      type: string
+      default: stopped
+      enum:
+      - stopped
+      - running
+      - failed
+      - paused
+    dateModified:
+      description: latest date of modification
+      type: string
+      format: date-time
+    documentation:
+      description: write here what the job is doing
+      type: string
+
+
+Engine:
+  type: object
+  required:
+    - component
+    - config
+    - name
+  properties:
+    name:
+      type: string
+    component:
+      type: string
+    config:
+      type: array
+      items:
+        $ref: 'property.yml'
+
+
+Stream:
+  type: object
+  required:
+    - component
+    - name
+  properties:
+    name:
+      type: string
+    component:
+      type: string
+    documentation:
+      type: string
+    config:
+      type: array
+      items:
+        $ref: 'property.yml'
+    processors:
+      type: array
+      items:
+        $ref: 'processor.yml'

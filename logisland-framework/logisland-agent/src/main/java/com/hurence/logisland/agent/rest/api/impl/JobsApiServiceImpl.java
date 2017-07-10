@@ -181,21 +181,21 @@ public class JobsApiServiceImpl extends JobsApiService {
     //------------------------
     @Override
     public Response getJobAlerts(Integer count, SecurityContext securityContext) throws NotFoundException {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                 .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "not implemented yet"))
                 .build();
     }
 
     @Override
     public Response getJobErrors(Integer count, SecurityContext securityContext) throws NotFoundException {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                 .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "not implemented yet"))
                 .build();
     }
 
     @Override
     public Response getJobMetrics(Integer count, SecurityContext securityContext) throws NotFoundException {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                 .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "not implemented yet"))
                 .build();
     }
@@ -265,7 +265,7 @@ public class JobsApiServiceImpl extends JobsApiService {
     @Override
     public Response reStartJob(String jobId, SecurityContext securityContext) throws NotFoundException {
         //TODO dont' forget to wait for real end of the job
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                 .entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "not implemented yet"))
                 .build();
     }

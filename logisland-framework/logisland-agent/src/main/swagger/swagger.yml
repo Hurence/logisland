@@ -40,7 +40,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   # Job API
   /configs:
@@ -56,11 +56,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Property'
+              $ref: 'property.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   # Job API
   /jobs:
@@ -76,11 +76,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Job'
+              $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     post:
       tags:
        - job
@@ -93,7 +93,7 @@ paths:
           description: Job to add to the store
           required: true
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
       responses:
         "404":
           description: Job not found
@@ -102,11 +102,11 @@ paths:
         "200":
           description: Job successfuly created
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   /jobs/metrics:
      get:
@@ -128,11 +128,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Metrics'
+              $ref: 'metrics.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   /jobs/alerts:
      get:
@@ -154,11 +154,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Metrics'
+              $ref: 'metrics.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   /jobs/errors:
      get:
@@ -178,11 +178,11 @@ paths:
         "200":
           description: job errors
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
 
   /jobs/{jobId}:
@@ -205,11 +205,11 @@ paths:
         "200":
           description: job definition
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     delete:
       tags:
         - job
@@ -230,11 +230,11 @@ paths:
         "200":
           description: job successfully removed
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     put:
       tags:
        - job
@@ -252,12 +252,12 @@ paths:
           description: Job to add to the store
           required: true
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
       responses:
         "200":
           description: Job successfuly created
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
     post:
       tags:
        - job
@@ -270,7 +270,7 @@ paths:
           description: Job configuration to add to the store
           required: true
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         - name: jobId
           in: path
           description: JobId to add to the store
@@ -284,11 +284,11 @@ paths:
         "200":
           description: Job successfuly created
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/restart:
      post:
       tags:
@@ -306,11 +306,11 @@ paths:
         "200":
           description: job successfuly started
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/start:
      post:
       tags:
@@ -328,11 +328,11 @@ paths:
         "200":
           description: job successfuly started
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/shutdown:
      post:
       tags:
@@ -350,11 +350,11 @@ paths:
         "200":
           description: job successfuly started
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/pause:
      post:
       tags:
@@ -372,11 +372,11 @@ paths:
         "200":
           description: job successfuly paused
           schema:
-            $ref: '#/definitions/Job'
+            $ref: 'job.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/status:
      get:
       tags:
@@ -398,7 +398,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/version:
      get:
       tags:
@@ -420,7 +420,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /jobs/{jobId}/engine:
      get:
       tags:
@@ -445,7 +445,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
 
   # Topics API
   /topics:
@@ -461,7 +461,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Topic'
+              $ref: 'topic.yml'
     post:
       tags:
           - topic
@@ -472,7 +472,7 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/Topic'
+            $ref: 'topic.yml'
       responses:
         '200':
           description: Status 200
@@ -491,11 +491,11 @@ paths:
         "200":
           description: Status 200
           schema:
-            $ref: '#/definitions/Topic'
+            $ref: 'topic.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     put:
       tags:
           - topic
@@ -506,7 +506,7 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/Topic'
+            $ref: 'topic.yml'
         - name: topicId
           in: path
           required: true
@@ -515,11 +515,11 @@ paths:
         "200":
           description: job successfuly started
           schema:
-            $ref: '#/definitions/Topic'
+            $ref: 'topic.yml'
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     delete:
       tags:
         - topic
@@ -539,7 +539,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /topics/{topicId}/keySchema:
     get:
       tags:
@@ -565,7 +565,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     put:
       tags:
         - schema
@@ -591,7 +591,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /topics/{topicId}/keySchema/checkCompatibility:
     post:
       tags:
@@ -618,7 +618,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /topics/{topicId}/valueSchema:
     get:
       tags:
@@ -645,7 +645,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
     put:
       tags:
         - schema
@@ -672,7 +672,7 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: 'error.yml'
   /topics/{topicId}/valueSchema/checkCompatibility:
     post:
       tags:
@@ -699,300 +699,25 @@ paths:
         default:
           description: unexpected error
           schema:
-            $ref: '#/definitions/Error'
-
-definitions:
-
-
-  FieldType:
-    type: object
-    required:
-      - name
-      - type
-    properties:
-      name:
-        description: a unique identifier for the topic
-        type: string
-      encrypted:
-        description: is the field need to be encrypted
-        type: boolean
-        default: false
-      indexed:
-        description: is the field need to be indexed to search store
-        type: boolean
-        default: true
-      persistent:
-        description: is the field need to be persisted to data store
-        type: boolean
-        default: true
-      optional:
-        description: is the field mandatory
-        type: boolean
-        default: true
-      type:
-        description: the type of the field
-        type: string
-        default: string
-        enum:
-        - string
-        - int
-        - long
-        - array
-        - float
-        - double
-        - bytes
-        - record
-        - map
-        - enum
-        - boolean
+            $ref: 'error.yml'
 
 
 
 
-  Metrics:
-    type: object
-    properties:
-      spark_app_name:
-        type: string
-      spark_partition_id:
-        type: integer
-      component_name:
-        type: string
-      input_topics:
-        type: string
-      output_topics:
-        type: string
-      topic_offset_from:
-        type: integer
-        format: int64
-      topic_offset_until:
-        type: integer
-        format: int64
-      num_incoming_messages:
-        type: integer
-      num_incoming_records:
-        type: integer
-      num_outgoing_records:
-        type: integer
-      num_errors_records:
-        type: integer
-        format: int64
-      error_percentage:
-        type: number
-        format: float
-      average_bytes_per_field:
-        type: integer
-      average_bytes_per_second:
-        type: integer
-      average_num_records_per_second:
-        type: integer
-      average_fields_per_record:
-        type: integer
-      average_bytes_per_record:
-        type: integer
-      total_bytes:
-        type: integer
-      total_fields:
-        type: integer
-      total_processing_time_in_ms:
-        type: integer
-        format: int64
 
 
-  Topic:
-    type: object
-    required:
-      - name
-      - partitions
-      - replicationFactor
-      - valueSchema
-      - serializer
-    properties:
-      id:
-        description: a unique identifier for the topic
-        type: integer
-        format: int64
-      version:
-        description: the version of the topic configuration
-        type: integer
-        format: int32
-      name:
-        description: the name of the topic
-        type: string
-      partitions:
-        description: default number of partitions
-        type: integer
-        format: int32
-      replicationFactor:
-        description: default replication factor
-        type: integer
-        format: int32
-      dateModified:
-        description: latest date of modification
-        type: string
-        format: date-time
-      documentation:
-        description: the description of the topic
-        type: string
-      serializer:
-        description: the class of the Serializer
-        type: string
-        default: "com.hurence.logisland.serializer.KryoSerializer"
-      businessTimeField:
-        description: the record_time field
-        type: string
-        default: "record_time"
-      rowkeyField:
-        description: the record_id field
-        type: string
-        default: "record_id"
-      recordTypeField:
-        description: the record type field
-        type: string
-        default: "record_type"
-      keySchema:
-        type: array
-        items:
-          $ref: '#/definitions/FieldType'
-      valueSchema:
-        type: array
-        items:
-          $ref: '#/definitions/FieldType'
 
 
-  JobSummary:
-    type: object
-    properties:
-      usedCores:
-        description: the number of used cores
-        type: integer
-        format: int32
-      usedMemory:
-        description: the total memory allocated for this job
-        type: integer
-        format: int32
-      status:
-        description: the job status
-        type: string
-        default: stopped
-        enum:
-        - stopped
-        - running
-        - failed
-        - paused
-      dateModified:
-        description: latest date of modification
-        type: string
-        format: date-time
-      documentation:
-        description: write here what the job is doing
-        type: string
-
-  Job:
-    type: object
-    required:
-      - engine
-      - name
-      - streams
-      - version
-    properties:
-      id:
-        description: a unique identifier for the job
-        type: integer
-        format: int64
-      version:
-        description: the version of the job configuration
-        type: integer
-        format: int32
-      name:
-        description: the job name
-        type: string
-      summary:
-        $ref: '#/definitions/JobSummary'
-      engine:
-        $ref: '#/definitions/Engine'
-      streams:
-        type: array
-        items:
-          $ref: '#/definitions/Stream'
-
-  Engine:
-    type: object
-    required:
-      - component
-      - config
-      - name
-    properties:
-      name:
-        type: string
-      component:
-        type: string
-      config:
-        type: array
-        items:
-          $ref: '#/definitions/Property'
-
-  Stream:
-    type: object
-    required:
-      - component
-      - name
-    properties:
-      name:
-        type: string
-      component:
-        type: string
-      documentation:
-        type: string
-      config:
-        type: array
-        items:
-          $ref: '#/definitions/Property'
-      processors:
-        type: array
-        items:
-          $ref: '#/definitions/Processor'
-
-  Processor:
-    type: object
-    required:
-      - component
-      - config
-      - name
-    properties:
-      name:
-        type: string
-      component:
-        type: string
-      documentation:
-        type: string
-      config:
-        type: array
-        items:
-          $ref: '#/definitions/Property'
-
-  Property:
-    type: object
-    required:
-      - key
-      - value
-    properties:
-      key:
-        type: string
-      type:
-        type: string
-        default: "string"
-      value:
-        type: string
 
 
-  Error:
-    required:
-      - code
-      - message
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
+
+
+
+
+
+
+
+
+
+
+

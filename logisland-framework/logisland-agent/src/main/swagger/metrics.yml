@@ -1,0 +1,48 @@
+  Metrics:
+    type: object
+    properties:
+      spark_app_name:
+        type: string
+      spark_partition_id:
+        type: integer
+      component_name:
+        type: string
+      input_topics:
+        type: string
+      output_topics:
+        type: string
+      topic_offset_from:
+        type: integer
+        format: int64
+      topic_offset_until:
+        type: integer
+        format: int64
+      num_incoming_messages:
+        type: integer
+      num_incoming_records:
+        type: integer
+      num_outgoing_records:
+        type: integer
+      num_errors_records:
+        type: integer
+        format: int64
+      error_percentage:
+        type: number
+        format: float
+      average_bytes_per_field:
+        type: integer
+      average_bytes_per_second:
+        type: integer
+      average_num_records_per_second:
+        type: integer
+      average_fields_per_record:
+        type: integer
+      average_bytes_per_record:
+        type: integer
+      total_bytes:
+        type: integer
+      total_fields:
+        type: integer
+      total_processing_time_in_ms:
+        type: integer
+        format: int64
