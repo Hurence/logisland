@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
+ * Copyright (C) 2016-2017 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@ package com.hurence.logisland.processor;
 /**
  * Created by fprunier on 15/04/16.
  */
-public class MatchingRule {
-    private String name = null;
-    private String query = null;
+class MatchingRule {
+    private final String name;
+    private final String query;
 
-    public MatchingRule(String name, String query) {
+
+    public MatchingRule(final String name, final String query) {
         this.name = name;
         this.query = query;
     }
