@@ -1430,7 +1430,7 @@ _________
 
 runDeepLearning
 ---------------
-The ml processor has been writteen to describe how to implement machine Learning Capabilities to logismllandIt relies on deeplearning4j lmibraries to load the model and to run the Neural Network prediction
+The ml processor has been written to describe how to implement machine Learning Capabilities to logisland. It relies on deeplearning4j libraries to load the model and to run the Neural Network prediction
 
 Class
 _____

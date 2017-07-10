@@ -11,6 +11,7 @@
 - Introduction
 - Core concepts
 - Knowledge Paradigm
+- Technical stack
 - API Design
 - Quick start
 
@@ -110,12 +111,6 @@
 - replay the log from any point in time.
 - **realtime** event availability.
 
----
-
-# How to handle distributed logs ?
-
-![inline](_static/kafka-topics-partitions-replicas.png)
-
 
 ---
 # [fit] Logisland = 
@@ -155,6 +150,81 @@
 ![inline](_static/data-driven-computing.png)
 
 
+
+---
+
+## [fit] Technical 
+## [fit] Stack 
+
+---
+
+# Technos
+
+- distributed message bus : **Kafka** 
+- stream processing : **Spark Streaming** (**Storm** or **KafkaStreams**)
+- machine learning : **Spark MLLib**, **DeepLearning4J**
+- realtime analytics : **Kibana**
+- external backends : **Elasticsearch**, **HBase**, **RocksDb**
+
+---
+
+# Handling distributed logs with Kafka
+
+![inline](_static/kafka-topics-partitions-replicas.png)
+
+
+---
+
+# Kafka architecture
+
+![inline](_static/kafka-design.png)
+
+---
+
+
+# Distribute processing load with Spark
+
+```scala
+// load file lines
+val lines = spark.sparkContext.textFile("hdfs://...")
+// get only those starting with "ERROR"
+val errors = lines.filter(_.startWith("ERROR"))
+// extract log fields
+val messages = errors.map(_.split('\t')(2))
+// put those logs in cache
+messages.cache()
+// get mysql error count
+messages.filter(_.contains("mysql")).count()
+// get php error count  
+messages.filter(_.contains("php")).count()
+```
+
+![right fit](_static/spark-rdd.png)
+
+> Cache data => faster results (1TB processed in 5/7s from cache vs 170s from hd)
+
+---
+
+# Spark lineage graph
+
+![inline](_static/spark-lineage.png)
+
+
+---
+
+# Micro-batching with Spark-Streaming
+
+![inline](_static/streaming-flow.png)
+
+![inline](_static/streaming-dstream-window.png)
+
+
+---
+
+# MLLib pipelines
+
+
+![inline](_static/mllib2-pipelines.png)q
 
 ---
 
@@ -507,12 +577,12 @@ Run the job
 
 # Roadmap
 
-- Ambari Agent for job dynamic interaction (REST Api)
+- MLLib components wrappers
 - visual Stream configuration / dashboards through Ambari views
 - Auto-scaling to optimize cluster resources 
-- Density based automatic Usage profiling 
+- Density based automatic system usage profiling 
 - Pattern discovery through Deep Learning
-- App store, per use-case knowledge bundles (cybersecurity, fraud, ...)
+- vertical bundles (cybersecurity, fraud, ...)
 
 ---
 # Resources
