@@ -46,7 +46,7 @@ if [ "$dry_run" = true ]; then
      grep -r -n -i --exclude-dir=\*{.idea,.git} --exclude="*.iml"  "$old_version" .
 else
 
-    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git} --exclude=*.iml  "$old_version" .` ; do
+    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git,target,test} --exclude=\*.{iml,csv,dat,log,pcap,class,pdf,doctree,lock,svg} "$old_version" .` ; do
         echo  $i;
         sed -i '' "$SED_REPLACE" $i
      done
