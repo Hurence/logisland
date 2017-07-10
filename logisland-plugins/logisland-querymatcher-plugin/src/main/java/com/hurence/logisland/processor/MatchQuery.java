@@ -87,11 +87,9 @@ public class MatchQuery extends AbstractProcessor {
             .name("policy.onmatch")
             .description("the policy applied to match events: " +
                          "'" + OnMatchPolicy.first.toString() + "' (default value)" +
-                         "'first' (default value) match events are tagged with the name and value of the first query " +
-                             "that matched;" +
-
+                         " match events are tagged with the name and value of the first query that matched;" +
                          "'" + OnMatchPolicy.all.toString() + "' match events are tagged with all names and values of" +
-                             " the queries that matched;")
+                             " the queries that matched.")
             .required(false)
             .addValidator(new StandardValidators.EnumValidator(OnMatchPolicy.class))
             .defaultValue(OnMatchPolicy.first.toString())
