@@ -5,6 +5,47 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 ----------
 
+.. _com.hurence.logisland.processor.ApplyRegexp: 
+
+ApplyRegexp
+-----------
+This processor is used to create a new set of fields from one field (using regexp).
+
+Class
+_____
+com.hurence.logisland.processor.ApplyRegexp
+
+Tags
+____
+parser, regex, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.ApplyRegexp`_ 
+
+----------
+
 .. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
 
 BulkAddElasticsearch
@@ -233,16 +274,16 @@ elasticsearch
 Properties
 __________
 In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
 
 .. csv-table:: allowable-values
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
    "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
-   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", ""
-   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", ""
-   "es.type", "The name of the ES type to use in multiget query. ", "", "null", "", ""
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", "**true**"
+   "es.type", "The name of the ES type to use in multiget query. ", "", "null", "", "**true**"
    "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", ""
    "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
 
@@ -654,7 +695,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
 
 ----------
 
@@ -688,7 +729,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
    "output.record.type", "the output type of the record", "", "netflowevent", "", ""
    "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "", ""
 
@@ -876,7 +917,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "script.code.imports", "For inline mode only. This is the pyhton code that should hold the import statements if required.", "", "null", "", ""
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "", ""
    "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "", ""
    "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "", ""
    "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "", ""

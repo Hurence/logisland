@@ -38,6 +38,15 @@ Then you can generate the HTML version of the docs:
 
     make html
 
+If you got "ImportError: No module named 'recommonmark'" error, you can try commenting this part of conf.py file:
+"
+from recommonmark.parser import CommonMarkParser
+
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+"
+
 The root of the documentation will be at `_build/html/index.html`
 
 While editing the documentation, you can get a live preview using python-livepreview. Install the Python library:
@@ -50,3 +59,16 @@ Then run the monitoring script in the background:
 
 If you install the [browser extensions](http://livereload.com/) then everything should update every time any files are
 saved without any manual steps on your part.
+
+If you want to install this extension. One way to do it is to install gem (on linux) with apt-get
+
+    apt-get install gem
+
+verify your version is >= 2.3, then make a new directory, create a "Gemfile" file in this directory, go in it
+
+    cd <directory_name>
+
+refer to the https://github.com/guard/guard-livereload for content of Gemfile. But in my case I had to do that for
+the command 'bundle' to work (I am not a ruby developer...).
+
+apt install clang make ruby-dev libffi-dev

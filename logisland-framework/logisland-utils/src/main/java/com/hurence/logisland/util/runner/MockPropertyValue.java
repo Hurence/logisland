@@ -16,9 +16,7 @@
 package com.hurence.logisland.util.runner;
 
 
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessException;
@@ -55,8 +53,8 @@ public class MockPropertyValue implements PropertyValue {
 
     private MockPropertyValue(final String rawValue, final ControllerServiceLookup serviceLookup, final PropertyDescriptor propertyDescriptor, final boolean alreadyEvaluated,
                               final VariableRegistry variableRegistry) {
-        this.stdPropValue = new StandardPropertyValue(rawValue);
-
+        //this.stdPropValue = new StandardPropertyValue(rawValue);
+        this.stdPropValue = PropertyValueFactory.getInstance(propertyDescriptor, rawValue, serviceLookup);
         this.rawValue = rawValue;
         this.serviceLookup = serviceLookup;
         this.expectExpressions = propertyDescriptor == null ? null : propertyDescriptor.isExpressionLanguageSupported();
@@ -162,5 +160,17 @@ public class MockPropertyValue implements PropertyValue {
     @Override
     public String toString() {
         return asString();
+    }
+
+    @Override
+    public PropertyValue evaluate(Record record) {
+
+        markEvaluated();
+
+        if (stdPropValue instanceof InterpretedPropertyValue) {
+            return stdPropValue.evaluate(record);
+        }
+
+        return stdPropValue;
     }
 }

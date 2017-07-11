@@ -401,7 +401,7 @@ public class Elasticsearch_2_3_3_ClientService extends AbstractControllerService
                 if (response != null && response.isExists()) {
                     Map<String,Object> responseMap = response.getSourceAsMap();
                     Map<String,String> retrievedFields = new HashMap<>();
-                    responseMap.forEach((k,v) -> retrievedFields.put(k,v.toString()));
+                    responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
                     multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
                 }
             }

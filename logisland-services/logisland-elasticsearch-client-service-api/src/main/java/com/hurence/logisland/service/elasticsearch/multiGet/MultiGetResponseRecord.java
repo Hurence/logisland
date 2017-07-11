@@ -48,4 +48,16 @@ public class MultiGetResponseRecord {
     public Map<String, String> getRetrievedFields() {
         return retrievedfields;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(indexName)
+                .append(' ')
+                .append(typeName)
+                .append(' ')
+                .append(retrievedfields == null?"null":retrievedfields.toString());
+
+        return sb.toString();
+    }
 }

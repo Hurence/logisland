@@ -72,6 +72,7 @@ public class ParseNetflowEvent extends AbstractProcessor {
             .description("Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
+            .defaultValue("false")
             .build();
 
     public static final PropertyDescriptor OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()

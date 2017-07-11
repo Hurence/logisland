@@ -21,6 +21,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -451,4 +452,32 @@ public class StandardValidators {
         }
     }
 
+    /**
+     * This class validates a value against an enumeration by checking that the raw value can be transformed to an
+     * item of the enumeration class.
+     *
+     * @param <E> the class of the enumeration to validate.
+     */
+    public static class EnumValidator<E extends Enum<E>> implements Validator {
+        private final Class<E> enumClass;
+
+        public EnumValidator(final Class<E> enumClass) {
+            Objects.requireNonNull(enumClass);
+            this.enumClass = enumClass;
+        }
+
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            ValidationResult.Builder builder = new ValidationResult.Builder().subject(subject).input(value);
+            try {
+                Enum.valueOf(this.enumClass, value);
+                builder.valid(true);
+            }
+            catch(final Exception e) {
+                builder.explanation(e.getLocalizedMessage()).valid(false);
+            }
+
+            return builder.build();
+        }
+    }
 }

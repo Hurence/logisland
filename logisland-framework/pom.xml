@@ -31,6 +31,7 @@
         <module>logisland-utils</module>
         <module>logisland-bootstrap</module>
         <module>logisland-hadoop-utils</module>
+        <module>logisland-scripting</module>
     </modules>
 
     <profiles>

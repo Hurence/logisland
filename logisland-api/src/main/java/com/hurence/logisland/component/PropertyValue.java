@@ -18,6 +18,7 @@ package com.hurence.logisland.component;
 
 
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.record.Record;
 
 import java.io.Serializable;
 
@@ -116,5 +117,12 @@ public interface PropertyValue extends Serializable {
      */
     <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException;
 
+    /**
+     * In the case of PropertyDescriptors that do support expression language, the fill method allows to
+     * obtain a PropertyValue that is filled in with record content.
+     * @param record
+     * @return
+     */
+    public PropertyValue evaluate(Record record);
 
 }
