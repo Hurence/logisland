@@ -52,7 +52,7 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return PropertyValueFactory.getInstance(descriptor, setPropertyValue, controllerServiceLookup);
+        return PropertyValueFactory.getInstance(descriptor, propValue, controllerServiceLookup);
     }
 
     @Override
