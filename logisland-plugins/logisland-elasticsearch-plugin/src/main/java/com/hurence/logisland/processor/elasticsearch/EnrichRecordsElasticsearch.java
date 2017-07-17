@@ -73,6 +73,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .name("es.type")
             .description("The name of the ES type to use in multiget query.")
             .required(false)
+            .defaultValue("default")
             .expressionLanguageSupported(true)
             .build();
 
@@ -92,6 +93,9 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("N/A")
             .build();
+
+    private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
+    private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*"+ATTRIBUTE_MAPPING_SEPARATOR+"\\s*";
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -118,7 +122,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         List<Record> outputRecords = new ArrayList<>();
-        List<Triple<Record,String, String[]>> recordsToEnrich = new ArrayList<>();
+        List<Triple<Record,String, IncludeFields>> recordsToEnrich = new ArrayList<>();
 
         if (records.size() != 0) {
             String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
@@ -161,16 +165,17 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                         if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
                             includesArray = includesFieldName.split("\\s*,\\s*");
                         }
-                        mgqrBuilder.add(indexName, typeName, includesArray, recordKeyName);
-                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includesArray));
+                        IncludeFields includeFields = new IncludeFields(includesArray);
+                        mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
+                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includeFields));
                     } catch (Throwable t) {
                         record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
                         outputRecords.add(record);
                     }
                 } else {
-                    record.setStringField(FieldDictionary.RECORD_ERRORS, "Interpreted EL returned null for recordKeyName");
+                    //record.setStringField(FieldDictionary.RECORD_ERRORS, "Interpreted EL returned null for recordKeyName");
                     outputRecords.add(record);
-                    logger.error("Interpreted EL returned null for recordKeyName");
+                    //logger.error("Interpreted EL returned null for recordKeyName");
                 }
             }
 
@@ -196,13 +201,12 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
             recordsToEnrich.forEach(recordToEnrich -> {
 
-                Triple<Record, String, String[]> triple = recordToEnrich;
+                Triple<Record, String, IncludeFields> triple = recordToEnrich;
                 Record outputRecord = triple.getLeft();
 
                 // TODO: should probably store the resulting recordKeyName during previous invocation above
                 String key = triple.getMiddle();
-                String[] includesArray = triple.getRight();
-                IncludeFields includeFields = new IncludeFields(includesArray);
+                IncludeFields includeFields = triple.getRight();
 
                 MultiGetResponseRecord responseRecord = responses.get(key);
                 if ((responseRecord != null) && (responseRecord.getRetrievedFields() != null)) {
@@ -210,7 +214,15 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                     responseRecord.getRetrievedFields().forEach((k, v) -> {
                         String fieldName = k.toString();
                         if (includeFields.includes(fieldName)) {
-                            outputRecord.setStringField(fieldName, v.toString());
+                            // Now check if there is an attribute mapping rule to apply
+                            if (includeFields.hasMappingFor(fieldName)){
+                                String mappedAttributeName = includeFields.getAttributeToMap(fieldName);
+                                // Replace the attribute name
+                                outputRecord.setStringField(mappedAttributeName, v.toString());
+                            }
+                            else {
+                                outputRecord.setStringField(fieldName, v.toString());
+                            }
                         }
                     });
                 }
@@ -219,6 +231,18 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             });
         }
         return outputRecords;
+    }
+    /*
+     * Returns true if the array of attributes to include contains at least one attribute mapping
+     */
+    private boolean hasAttributeMapping(String[] includesArray){
+        boolean attrMapping = false;
+        for (String includePattern : includesArray){
+            if (includePattern.contains(":")){
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String asUniqueKey(MultiGetResponseRecord mgrr) {
@@ -236,6 +260,16 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
     }
 
     class IncludeFields {
+        private HashMap<String, String> attributesMapping = null;
+        boolean hasAttributeMapping = false;
+        private Set<String> attrsToIncludeList = null;
+
+        public String[] getAttrsToIncludeArray() {
+            return attrsToIncludeArray;
+        }
+
+        private String[] attrsToIncludeArray = null;
+
         private boolean containsAll = false;
         private boolean containsSubstring = false;
         private boolean containsEquality = false;
@@ -243,14 +277,30 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         Set<String> equalityFields = null;
         Map<String, Pattern> substringFields = null;
 
+        /*
+         * Constructor
+         */
         public IncludeFields(String[] includesArray){
             if (includesArray == null || includesArray.length <= 0){
                 containsAll = true;
+                this.attrsToIncludeArray = includesArray;
             }
             else {
+                for (String includePattern : includesArray){
+                    if (includePattern.contains(ATTRIBUTE_MAPPING_SEPARATOR)){
+                        hasAttributeMapping = true;
+                        attrsToIncludeList = new HashSet<String>();
+                        attributesMapping = new HashMap<String, String>();
+                        break;
+                    }
+                }
+
                 Arrays.stream(includesArray).forEach((k) -> {
                     if (k.equals("*")){
                         containsAll = true;
+                        if (hasAttributeMapping) {
+                            attrsToIncludeList.add(k);
+                        }
                     }
                     else if (k.contains("*")){
                         // It is a substring
@@ -261,16 +311,55 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                         String buildCompileStr = k.replaceAll("\\*", ".\\*");
                         Pattern pattern = Pattern.compile(buildCompileStr);
                         substringFields.put(k, pattern);
+                        if (hasAttributeMapping) {
+                            attrsToIncludeList.add(k);
+                        }
                     }
                     else {
                         if (containsEquality == false){
                             equalityFields = new HashSet<String>();
                             containsEquality = true;
                         }
-                        equalityFields.add(k);
+                        if (hasAttributeMapping) {
+                            if (k.contains(ATTRIBUTE_MAPPING_SEPARATOR)) {
+                                String[] splited = k.split(ATTRIBUTE_MAPPING_SEPARATOR_REGEXP);
+                                if (splited.length == 2) {
+                                    attrsToIncludeList.add(splited[1]);
+                                    attributesMapping.put(splited[1], splited[0]);
+                                    equalityFields.add(splited[1]);
+                                }
+                            }
+                            else {
+                                equalityFields.add(k);
+                                attrsToIncludeList.add(k);
+                            }
+                        }
+                        else {
+                            equalityFields.add(k);
+                        }
                     }
                 });
+                if (hasAttributeMapping){
+                    this.attrsToIncludeArray = (String [])attrsToIncludeList.toArray(new String[attrsToIncludeList.size()]);
+                }
+                else {
+                    this.attrsToIncludeArray = includesArray;
+                }
             }
+        }
+
+        public boolean hasMappingFor(String attr){
+            if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
+                return false;
+            }
+            return attributesMapping.containsKey(attr);
+        }
+
+        public String getAttributeToMap(String attr){
+            if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
+                return null;
+            }
+            return attributesMapping.get(attr);
         }
 
         public boolean matchesAll() {
