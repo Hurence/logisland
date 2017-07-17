@@ -6,7 +6,7 @@ USER root
 
 
 # Kafka
-RUN curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar -xz -C /usr/local/
+RUN curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar --owner=root --group=root -xz -C /usr/local/
 RUN cd /usr/local && ln -s kafka_2.11-0.10.0.0 kafka
 ENV KAFKA_HOME /usr/local/kafka
 EXPOSE 2181 9092
@@ -15,7 +15,7 @@ COPY server.properties $KAFKA_HOME/config/server.properties
 
 
 # Spark
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar --owner=root --group=root -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-2.1.0-bin-hadoop2.7 spark
 ENV SPARK_HOME /usr/local/spark
 ENV PATH $PATH:$SPARK_HOME/bin
@@ -23,7 +23,7 @@ EXPOSE 4040
 
 
 # Kibana
-RUN curl -s https://download.elastic.co/kibana/kibana/kibana-4.5.1-linux-x64.tar.gz | tar -xz -C /usr/local/
+RUN curl -s https://download.elastic.co/kibana/kibana/kibana-4.5.1-linux-x64.tar.gz | tar --owner=root --group=root -xz -C /usr/local/
 RUN cd /usr/local && ln -s kibana-4.5.1-linux-x64 kibana
 ENV KIBANA_HOME /usr/local/kibana
 EXPOSE 5601
@@ -82,7 +82,7 @@ RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
 
 # update boot script
 COPY bootstrap.sh /etc/bootstrap.sh
-RUN chown root.root /etc/bootstrap.sh
+RUN chown root:root /etc/bootstrap.sh
 RUN chmod 700 /etc/bootstrap.sh
 
 ENTRYPOINT ["/etc/bootstrap.sh"]

@@ -25,33 +25,47 @@
                         <version>0.4.13</version>
                         <executions>
                             <execution>
+                                <id>build-logisland</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
+                                <configuration>
+                                    <imageName>hurence/logisland-hdp${hdp}</imageName>
+                                    <dockerDirectory>${project.basedir}/full-container</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${project.version}</imageTag>
+                                    </imageTags>
+                                    <!--buildArgs>
+                                        <LOGISLAND_VERSION>${project.version}</LOGISLAND_VERSION>
+                                    </buildArgs-->
+                                    <resources>
+                                        <resource>
+                                            <targetPath>/</targetPath>
+                                            <directory>${project.basedir}/../logisland-assembly/target</directory>
+                                            <include>logisland-${project.version}-bin-hdp${hdp}.tar.gz</include>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-elasticsearch-2.4</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <imageName>hurence/elasticsearch-2.4</imageName>
+                                    <dockerDirectory>${project.basedir}/elasticsearch-2.4</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${project.version}</imageTag>
+                                    </imageTags>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <imageName>hurence/logisland-hdp${hdp}</imageName>
-                            <dockerDirectory>${project.basedir}/full-container</dockerDirectory>
-                            <imageTags>
-                                <imageTag>${project.version}</imageTag>
-                            </imageTags>
-                            <!--buildArgs>
-                                <LOGISLAND_VERSION>${project.version}</LOGISLAND_VERSION>
-                            </buildArgs-->
-                            <resources>
-                                <resource>
-                                    <targetPath>/</targetPath>
-                                    <directory>${project.basedir}/../logisland-assembly/target</directory>
-                                    <include>logisland-${project.version}-bin-hdp${hdp}.tar.gz</include>
-                                </resource>
-                            </resources>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
-
 </project>

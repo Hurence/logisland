@@ -1,0 +1,447 @@
+#########################################################################################################
+# Logisland configuration script template
+#########################################################################################################
+
+version: 0.10.0-SNAPSHOT
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: IntegrationTests
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service_3
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+      type: service
+      documentation: elasticsearch 2.3.3 service implementation
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: elasticsearch-2.3
+        batch.size: 20000
+
+    - controllerService: elasticsearch_service_4
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: elasticsearch24:9300
+        cluster.name: elasticsearch-2.4
+        batch.size: 20000
+
+    - controllerService: elasticsearch_service_5
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch 5 service implementation
+      configuration:
+        hosts: elasticsearch5:9300
+        cluster.name: elasticsearch-5
+        batch.size: 20000
+
+    - controllerService: hbase_service
+      component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
+      type: service
+      documentation: a processor that links
+      configuration:
+        hadoop.configuration.files:
+        kafka.zookeeper.quorum: sandbox
+        zookeeper.client.port: 2181
+        zookeeper.znode.parent: /hbase
+        hbase.client.retries: 3
+
+  streamConfigurations:
+#  _           _                                       _                _
+# (_)_ __   __| | _____  __      __ _ _ __   __ _  ___| |__   ___      | | ___   __ _ ___
+# | | '_ \ / _` |/ _ \ \/ /____ / _` | '_ \ / _` |/ __| '_ \ / _ \_____| |/ _ \ / _` / __|
+# | | | | | (_| |  __/>  <_____| (_| | |_) | (_| | (__| | | |  __/_____| | (_) | (_| \__ \
+# |_|_| |_|\__,_|\___/_/\_\     \__,_| .__/ \__,_|\___|_| |_|\___|     |_|\___/ \__, |___/
+#                                    |_|                                        |___/
+
+    # parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: index-apache-logs_raw
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: index-apache-logs
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+
+
+    # indexing elasticsearch 2.3
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES 2.3
+      configuration:
+        kafka.input.topics: save_to_es
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_3
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+
+    # indexing elasticsearch 2.4
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES 2.4
+      configuration:
+        kafka.input.topics: save_to_es
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_4
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+
+    # indexing
+    - stream: indexing_stream5
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES 5
+      configuration:
+        kafka.input.topics: save_to_es
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_5
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+#------------------------------------------------------------
+#                  _      _                                  _                _
+#   ___ _ __  _ __(_) ___| |__         __ _ _ __   __ _  ___| |__   ___      | | ___   __ _ ___
+#  / _ \ '_ \| '__| |/ __| '_ \ _____ / _` | '_ \ / _` |/ __| '_ \ / _ \_____| |/ _ \ / _` / __|
+# |  __/ | | | |  | | (__| | | |_____| (_| | |_) | (_| | (__| | | |  __/_____| | (_) | (_| \__ \
+#  \___|_| |_|_|  |_|\___|_| |_|      \__,_| .__/ \__,_|\___|_| |_|\___|     |_|\___/ \__, |___/
+#                                          |_|                                        |___/
+#
+
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: enrich-apache-logs_raw
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: enrich-apache-logs
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)\s+"(\S+)"\s+"([^\"]+)"
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out,http_referer,http_user_agent
+
+        - processor: user_agent_analyzer
+          component: com.hurence.logisland.processor.useragent.ParseUserAgent
+          type: processor
+          documentation: decompose the user_agent field into meaningful attributes
+          configuration:
+            useragent.field: http_user_agent
+            fields: DeviceClass,DeviceName,DeviceBrand,DeviceCpu,DeviceFirmwareVersion,DeviceVersion,OperatingSystemClass,OperatingSystemName,OperatingSystemVersion,OperatingSystemNameVersion,OperatingSystemVersionBuild,LayoutEngineClass,LayoutEngineName,LayoutEngineVersion,LayoutEngineVersionMajor,LayoutEngineNameVersion,LayoutEngineNameVersionMajor,LayoutEngineBuild,AgentClass,AgentName,AgentVersion,AgentVersionMajor,AgentNameVersion,AgentNameVersionMajor,AgentBuild,AgentLanguage,AgentLanguageCode,AgentInformationEmail,AgentInformationUrl,AgentSecurity,AgentUuid,FacebookCarrier,FacebookDeviceClass,FacebookDeviceName,FacebookDeviceVersion,FacebookFBOP,FacebookFBSS,FacebookOperatingSystemName,FacebookOperatingSystemVersion,Anonymized,HackerAttackVector,HackerToolkit,KoboAffiliate,KoboPlatformId,IECompatibilityVersion,IECompatibilityVersionMajor,IECompatibilityNameVersion,IECompatibilityNameVersionMajor,GSAInstallationID,WebviewAppName,WebviewAppNameVersionMajor,WebviewAppVersion,WebviewAppVersionMajor
+
+#------------------------------------------------------------
+#              _   _ _                    _      _            _   _
+#   ___  _   _| |_| (_) ___ _ __       __| | ___| |_ ___  ___| |_(_) ___  _ __
+#  / _ \| | | | __| | |/ _ \ '__|____ / _` |/ _ \ __/ _ \/ __| __| |/ _ \| '_ \
+# | (_) | |_| | |_| | |  __/ | |_____| (_| |  __/ ||  __/ (__| |_| | (_) | | | |
+#  \___/ \__,_|\__|_|_|\___|_|        \__,_|\___|\__\___|\___|\__|_|\___/|_| |_|
+#
+
+#  streamConfigurations:
+
+    # 1. parse time series
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: outlier-detection_raw
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        avro.output.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.cpu_usage",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "record_value",      "type": ["double","null"] } ]}
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: outlier-detection
+            value.regex: (\S*\s*\S*),(\S*)
+            value.fields: record_time,record_value
+
+
+    # detect outliers
+    - stream: detect_outliers
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_sensor_events
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: match_query
+          component: com.hurence.logisland.processor.DetectOutliers
+          type: processor
+          documentation: a processor that detection something exotic in a continuous time series values
+          configuration:
+            rotation.policy.type: by_amount
+            rotation.policy.amount: 100
+            rotation.policy.unit: points
+            chunking.policy.type: by_amount
+            chunking.policy.amount: 10
+            chunking.policy.unit: points
+            global.statistics.min: -100000
+            min.amount.to.predict: 100
+            zscore.cutoffs.normal: 3.5
+            zscore.cutoffs.moderate: 5
+            record.value.field: record_value
+            record.time.field: record_time
+            output.record.type: sensor_outlier
+
+    # sample time series
+    - stream: detect_outliers
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_sensor_events
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: sampler
+          component: com.hurence.logisland.processor.SampleRecords
+          type: processor
+          documentation: a processor that reduce the number of time series values
+          configuration:
+            record.value.field: record_value
+            record.time.field: record_time
+            sampling.algorithm: average
+            sampling.parameter: 10
+
+#------------------------------------------------------------
+#               _                             _       _   _
+# __      _____| |__         __ _ _ __   __ _| |_   _| |_(_) ___ ___
+# \ \ /\ / / _ \ '_ \ _____ / _` | '_ \ / _` | | | | | __| |/ __/ __|
+#  \ V  V /  __/ |_) |_____| (_| | | | | (_| | | |_| | |_| | (__\__ \
+#   \_/\_/ \___|_.__/       \__,_|_| |_|\__,_|_|\__, |\__|_|\___|___/
+#                                               |___/
+#
+# Parse using SplitText
+# Put to HBase
+# Get from HBase
+# Put to elasticsearch
+
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: webanalytics_raw
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        - processor: webanalytics_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: webanalytics-logs
+            value.regex: ([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)
+            value.fields: h2kTimestamp,remoteHost,record_type,record_id,location,hitType,eventCategory,eventAction,eventLabel,localPath,q,n,referer,viewportPixelWidth,viewportPixelHeight,screenPixelWidth,screenPixelHeight,partyId,sessionId,pageViewId,is_newSession,userAgentString,pageType,Userid,B2BUnit,pointOfService,companyID,GroupCode,userRoles,is_PunchOut,codeProduct,categoryProductId,categoryName,categoryCode,is_Link,clickText,clickURL,newCustomerWebOnly,newCustomerWebOrAgency,productPrice,stockInfo,transactionId,transactionTotal,transactionCurrency,productQuantity,Alt
+
+        # put to HBase
+        - processor: hbase_put
+          component: com.hurence.logisland.processor.hbase.PutHBaseCell
+          type: sink
+          documentation: a processor that put incomming records to HBase
+          configuration:
+            hbase.client.service: hbase_service
+            batch.size: 20000
+            row.identifier.encoding.strategy: String
+            table.name.default: logisland_analytics
+            table.name.field: hbase_table_name
+            row.identifier.field: sessionId
+            column.family.field: hbase_column_family
+            column.family.default: e
+            column.qualifier.field: record_id
+            column.qualifier.default: c
+            record.serializer: com.hurence.logisland.serializer.KryoSerializer
+
+        # fetch from HBase
+        - processor: hbase_fetch
+          component: com.hurence.logisland.processor.hbase.FetchHBaseRow
+          type: sink
+          documentation: a processor that fetch Record from HBase
+          configuration:
+            hbase.client.service: hbase_service
+            batch.size: 1000
+            row.identifier.encoding.strategy: String
+            table.name.default: logisland_analytics
+            row.identifier.field: sessionId
+            table.name.field: hbase_table_name
+            record.serializer: com.hurence.logisland.serializer.KryoSerializer

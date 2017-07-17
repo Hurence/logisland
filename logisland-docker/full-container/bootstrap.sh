@@ -2,7 +2,7 @@
 
 :
 
-rm /tmp/*.pid
+rm /tmp/*.pid &>/dev/null
 
 # altering the core-site configuration
 #sed s/HOSTNAME/$HOSTNAME/ /usr/local/hadoop/etc/hadoop/core-site.xml.template > /usr/local/hadoop/etc/hadoop/core-site.xml
@@ -11,7 +11,7 @@ rm /tmp/*.pid
 /etc/init.d/nginx start
 service sshd start
 
-echo "starting kafka"
+echo "Starting kafka"
 cd $KAFKA_HOME
 #echo "host.name=sandbox" >> config/server.properties
 nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
@@ -21,12 +21,12 @@ JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.
 #cd $KAFKA_MGR_HOME
 #nohup bin/kafka-manager > kafka-manager.log 2>&1 &
 
-echo "starting kibana"
+echo "Starting kibana"
 cd $KIBANA_HOME
 nohup bin/kibana > kibana.log 2>&1 &
 
 
-echo "starting grafana"
+echo "Starting grafana"
 sudo service grafana-server start
 grafana-server --config=/usr/local/etc/grafana/grafana.ini --homepath /usr/local/share/grafana cfg:default.paths.logs=/usr/local/var/log/grafana cfg:default.paths.data=/usr/local/var/lib/grafana cfg:default.paths.plugins=/usr/local/var/lib/grafana/plugins
 
@@ -49,10 +49,50 @@ echo "to start go to /usr/local/logisland"
 #nohup bin/logindexer > log/logindexer.log 2>&1 &
 
 
-echo "starting elasticsearch"
-runuser -l  elastic -c '/usr/local/elasticsearch/bin/elasticsearch -d'
+echo -n "Starting elasticsearch"
+runuser -l elastic -c '/usr/local/elasticsearch/bin/elasticsearch -d'
+
+attempt=0
+while [ $attempt -le 30 ]
+do
+    attempt=$(( $attempt + 1 ))
+    echo -n "."
+    if curl -s http://sandbox:9200/ > /dev/null
+    then
+      echo "OK"
+      break
+    fi
+    sleep 1
+done
+
 sleep 5
-curl -XPUT http://localhost:9200/_template/logisland-template -d @$LOGISLAND_HOME/conf/es-template.json
+
+if [[ -n "${LOGISLAND_TUTORIALS}" ]]
+then
+    IFS=',' read -r -a LOGISLAND_TUTORIAL <<< "${LOGISLAND_TUTORIALS}"
+
+    for TUTORIAL in "${LOGISLAND_TUTORIAL[@]}"
+    do
+        echo "Registering logisland tutorial '${TUTORIAL}'";
+
+        if [[ "${TUTORIAL:0:1}" == "/" ]]
+        then
+          # Absolute path
+          LOGISLAND_CONF="${TUTORIAL}.yml"
+        else
+          # Relative path
+          LOGISLAND_CONF="$LOGISLAND_HOME/conf/${TUTORIAL}.yml"
+        fi
+
+        if [[ ! -f "${LOGISLAND_CONF}" ]]
+        then
+            echo "Logisland tutorial not found ${LOGISLAND_CONF}"
+        else
+            $LOGISLAND_HOME/bin/logisland.sh --conf ${LOGISLAND_CONF} &
+            sleep 20
+        fi
+    done
+fi
 
 
 
