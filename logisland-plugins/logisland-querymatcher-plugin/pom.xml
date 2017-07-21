@@ -34,10 +34,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <properties>
         <!-- Versions -->
-        git
-
-
-
+        <lucene.version>6.5.0</lucene.version>
+        <luwak.version>1.5.0</luwak.version>
 
         <!-- Configuration -->
         <shaded.package>${logisland.shade.packageName}.querymatcher</shaded.package>
