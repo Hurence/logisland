@@ -19,11 +19,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRefBuilder;
+import org.apache.lucene.util.LegacyNumericUtils;
 import org.apache.lucene.util.NumericUtils;
 import uk.co.flax.luwak.MonitorQueryParser;
 
@@ -60,7 +61,7 @@ public class NumericQueryParser implements MonitorQueryParser {
                                       boolean endInclusive) {
 
             if (numericFields.contains(field)) {
-                return NumericRangeQuery.newDoubleRange(field, Double.parseDouble(part1), Double.parseDouble(part2),
+                return LegacyNumericRangeQuery.newDoubleRange(field, Double.parseDouble(part1), Double.parseDouble(part2),
                         startInclusive, endInclusive);
             }
             return (TermRangeQuery) super.newRangeQuery(field, part1, part2, startInclusive, endInclusive);
@@ -71,7 +72,7 @@ public class NumericQueryParser implements MonitorQueryParser {
             if (numericFields.contains(term.field())) {
 
                 BytesRefBuilder byteRefBuilder = new BytesRefBuilder();
-                NumericUtils.intToPrefixCoded(Integer.parseInt(term.text()), 0, byteRefBuilder);
+                LegacyNumericUtils.intToPrefixCoded(Integer.parseInt(term.text()), 0, byteRefBuilder);
                 TermQuery tq = new TermQuery(new Term(term.field(), byteRefBuilder.get()));
 
                 return tq;

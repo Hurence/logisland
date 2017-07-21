@@ -39,6 +39,35 @@ engine:
     spark.ui.port: 4051
   streamConfigurations:
 
+    # parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw apache logs into structured log records
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: apache_log
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+
     # grab metrics
     - stream: metrics_by_host
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator

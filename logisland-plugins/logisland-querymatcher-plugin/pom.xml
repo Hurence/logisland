@@ -34,8 +34,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <properties>
         <!-- Versions -->
-        <lucene.version>5.4.0</lucene.version>
-        <luwak.version>1.4.0</luwak.version>
+        git
+
+
+
 
         <!-- Configuration -->
         <shaded.package>${logisland.shade.packageName}.querymatcher</shaded.package>
@@ -69,7 +71,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
@@ -80,8 +86,9 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <build>
         <plugins>
             <plugin>
+                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>${shade-plugin.version}</version>
+                <version>4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -89,6 +96,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+
                             <artifactSet>
                                 <includes>
                                     <include>com.hurence.logisland:logisland-querymatcher-plugin</include>
@@ -97,13 +106,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <include>com.fasterxml.jackson:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
-                                    <include>com.twitter:*</include>
-                                    <include>com.tdunning:*</include>
-                                    <include>com.spatial4j:*</include>
-                                    <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
                                     <include>io.netty:*</include>
+                                    <include>org.jboss.netty:*</include>
                                     <include>com.thoughtworks.paranamer:*</include>
+                                    <include>org.tartarus.snowball:*</include>
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -144,19 +151,21 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <pattern>com.fasterxml</pattern>
                                     <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
                                 </relocation>
-
-
                                 <relocation>
-                                    <pattern>com.ning</pattern>
-                                    <shadedPattern>${shaded.package}.com.ning</shadedPattern>
+                                    <pattern>com.thoughtworks.paranamer</pattern>
+                                    <shadedPattern>${shaded.package}.com.thoughtworks.paranamer</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jboss.netty</pattern>
+                                    <shadedPattern>${shaded.package}.org.jboss.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.tartarus.snowball</pattern>
+                                    <shadedPattern>${shaded.package}.org.tartarus.snowball</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.lucene</pattern>
                                     <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
                                 </relocation>
 
 
