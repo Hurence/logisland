@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.10.1</version>
+        <version>0.11.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>logisland-cyber-security-plugin</artifactId>

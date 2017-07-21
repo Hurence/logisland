@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.10.1
+version: 0.11.0-SNAPSHOT
 documentation: This tutorial job sends apache logs to an HBase table
 
 #########################################################################################################

@@ -542,7 +542,7 @@ The injection is done through yaml config files by injecting the instance of `lr
 
 Download the latest release from [github](https://github.com/Hurence/logisland/releases)
 
-	tar -xzf logisland-0.10.1-bin.tar.gz
+	tar -xzf logisland-0.11.0-SNAPSHOT-bin.tar.gz
 
 Create a job configuration
 

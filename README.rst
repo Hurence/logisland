@@ -51,7 +51,7 @@ to build from the source just clone source and package with maven
     cd logisland
     mvn install
 
-the final package is available at `logisland-assembly/target/logisland-0.10.1-bin-hdp2.5.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-0.11.0-SNAPSHOT-bin-hdp2.5.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -72,9 +72,9 @@ basically **logisland** depends on Kafka and Spark, you can deploy it on any lin
     curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
     export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
 
-    # install Logisland 0.10.1
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.10.1-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-0.10.1
+    # install Logisland 0.11.0-SNAPSHOT
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.11.0-SNAPSHOT-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-0.11.0-SNAPSHOT
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
@@ -99,7 +99,7 @@ The first part is the `ProcessingEngine` configuration (here a Spark streaming e
 
 .. code-block:: yaml
 
-    version: 0.10.1
+    version: 0.11.0-SNAPSHOT
     documentation: LogIsland job config file
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine

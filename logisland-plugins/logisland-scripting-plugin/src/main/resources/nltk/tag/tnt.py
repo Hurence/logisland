@@ -10,7 +10,7 @@
 Implementation of 'TnT - A Statisical Part of Speech Tagger'
 by Thorsten Brants
 
-http://acl.ldc.upenn.edu/A/A00/A00-1031.pdf
+http://acl.ldc.upenn.edu/A/A00/A00.11.0-SNAPSHOT.pdf
 '''
 from __future__ import print_function, division
 from math import log

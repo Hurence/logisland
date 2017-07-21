@@ -2,7 +2,7 @@
 # Logisland configuration script example: parse network packets and display them in Kibana
 #########################################################################################################
 
-version: 0.10.1
+version: 0.11.0-SNAPSHOT
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################

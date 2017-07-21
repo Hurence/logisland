@@ -699,26 +699,6 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
-.. _com.hurence.logisland.engine.spark.ModelTrainingProcessing: 
-
-ModelTrainingProcessing
------------------------
-No description provided.
-
-Class
-_____
-com.hurence.logisland.engine.spark.ModelTrainingProcessing
-
-Tags
-____
-None.
-
-Properties
-__________
-This component has no required or optional properties.
-
-----------
-
 .. _com.hurence.logisland.processor.ModifyId: 
 
 ModifyId
@@ -1423,6 +1403,34 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.binetflow.TagBinetflow: 
+
+TagBinetflow
+------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.processor.binetflow.TagBinetflow
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**ml.model.client.service**", "The instance of the Controller Service to use for accessing Machine Learning model.", "", "null", "", ""
+   "**ml.scaler.client.service**", "The instance of the Controller Service to use for accessing Machine Learning scaler model.", "", "null", "", ""
 
 ----------
 

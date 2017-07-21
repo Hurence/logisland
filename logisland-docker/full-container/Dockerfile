@@ -49,7 +49,7 @@ COPY logisland-*.tar.gz /usr/local/
 RUN ls /usr/local/
 RUN cd /usr/local; \
     tar -xzf logisland-*.tar.gz; \
-    ln -s /usr/local/logisland-0.10.1 /usr/local/logisland; \
+    ln -s /usr/local/logisland-0.11.0-SNAPSHOT /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/*.gz
 ENV LOGISLAND_HOME /usr/local/logisland

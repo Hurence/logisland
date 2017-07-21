@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.10.1</version>
+    <version>0.11.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -1266,19 +1266,6 @@
             </properties>
 
 
-            <dependencies>
-                <dependency>
-                    <groupId>org.deeplearning4j</groupId>
-                    <artifactId>dl4j-spark-nlp_${scala.binary.version}</artifactId>
-                    <version>0.8.0_spark_2</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.deeplearning4j</groupId>
-                    <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
-                    <version>0.8.0_spark_2</version>
-                </dependency>
-            </dependencies>
-
         </profile>
 
         <!--  hdp 2.4 -->
@@ -1300,19 +1287,6 @@
                 <jackson.version>2.4.4</jackson.version>
                 <hdp>2.4</hdp>
             </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>org.deeplearning4j</groupId>
-                    <artifactId>dl4j-spark-nlp_${scala.binary.version}</artifactId>
-                    <version>0.8.0_spark_1</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.deeplearning4j</groupId>
-                    <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
-                    <version>0.8.0_spark_1</version>
-                </dependency>
-            </dependencies>
         </profile>
 
 
