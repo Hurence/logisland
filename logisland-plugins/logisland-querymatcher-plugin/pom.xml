@@ -180,6 +180,20 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution>
+                        <id>some-execution</id>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>cd ${basedir}/src/main/resources; jar uf ${build.directory}/logisland-querymatcher-plugin-${project.version}.jar META-INF/services/*</executable>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
