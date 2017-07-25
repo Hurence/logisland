@@ -43,6 +43,7 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.time.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +77,7 @@ public class JsonSerializer implements RecordSerializer {
             jgen.writeStartObject();
             jgen.writeStringField("id", record.getId());
             jgen.writeStringField("type", record.getType());
-            jgen.writeStringField("creationDate", record.getTime().toString());
+            jgen.writeNumberField("creationDate", record.getTime().getTime());
 
             jgen.writeObjectFieldStart("fields");
             for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
@@ -162,8 +163,6 @@ public class JsonSerializer implements RecordSerializer {
         public Record deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             JsonToken t = jp.getCurrentToken();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             String id = null;
             String type = null;
             Date creationDate = null;
@@ -218,8 +217,8 @@ public class JsonSerializer implements RecordSerializer {
                                     break;
                                 case "creationDate":
                                     try {
-                                        creationDate = sdf.parse(jp.getValueAsString()); // "Thu Sep 08 12:11:08 CEST 2016\"
-                                    } catch (ParseException e) {
+                                        creationDate = new Date(jp.getValueAsLong());
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                     }
                                     break;

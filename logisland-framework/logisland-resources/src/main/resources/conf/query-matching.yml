@@ -49,7 +49,7 @@ engine:
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -77,8 +77,8 @@ engine:
         kafka.input.topics: logisland_events
         kafka.output.topics: logisland_aggregations
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -122,8 +122,8 @@ engine:
         kafka.input.topics: logisland_aggregations
         kafka.output.topics: logisland_alerts
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -151,8 +151,8 @@ engine:
         kafka.input.topics: logisland_events
         kafka.output.topics: logisland_alerts
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -165,6 +165,6 @@ engine:
           type: processor
           documentation: a parser that produce events from an apache log REGEX
           configuration:
-            blacklisted_host: src_ip:slip-5.io.com
+            blacklisted_host: src_ip:bertppp1.cybernw.com
             edu_host: src_ip:edu
             output.record.type: connection_alert
