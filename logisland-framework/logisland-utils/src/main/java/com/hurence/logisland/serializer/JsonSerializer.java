@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -184,58 +184,69 @@ public class JsonSerializer implements RecordSerializer {
                         try {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.INT, jp.getIntValue()));
                         } catch (JsonParseException ex) {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
-                        }
-                        break;
 
-                    case VALUE_NUMBER_FLOAT:
-                        try {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
-                        } catch (JsonParseException ex) {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
-                        }
-                        break;
-                    case VALUE_FALSE:
-                    case VALUE_TRUE:
-                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
-                        break;
-                    case START_ARRAY:
-                        logger.info(jp.getCurrentName());
-                        break;
-
-                    case END_ARRAY:
-                        break;
-                    case VALUE_STRING:
-
-                        if (jp.getCurrentName() != null) {
-                            switch (jp.getCurrentName()) {
-                                case "id":
-                                    id = jp.getValueAsString();
-                                    break;
-                                case "type":
-                                    type = jp.getValueAsString();
-                                    break;
-                                case "creationDate":
-                                    try {
-                                        creationDate = new Date(jp.getValueAsLong());
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    break;
-                                default:
-                                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
-
-                                    break;
+                            // special case for creationDate (not a field)
+                            if (jp.getCurrentName() != null && jp.getCurrentName().equals("creationDate")) {
+                                try {
+                                    creationDate = new Date(jp.getValueAsLong());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
                             }
                         }
+                        break;
 
-                        break;
-                    default:
-                        break;
-                }
+
+                case VALUE_NUMBER_FLOAT:
+                    try {
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
+                    } catch (JsonParseException ex) {
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
+                    }
+                    break;
+                case VALUE_FALSE:
+                case VALUE_TRUE:
+                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
+                    break;
+                case START_ARRAY:
+                    logger.info(jp.getCurrentName());
+                    break;
+
+                case END_ARRAY:
+                    break;
+                case VALUE_STRING:
+
+                    if (jp.getCurrentName() != null) {
+                        switch (jp.getCurrentName()) {
+                            case "id":
+                                id = jp.getValueAsString();
+                                break;
+                            case "type":
+                                type = jp.getValueAsString();
+                                break;
+                         /*   case "creationDate":
+                                try {
+                                    creationDate = new Date(jp.getValueAsLong());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                break;*/
+                            default:
+                                fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
+
+                                break;
+                        }
+                    }
+
+                    break;
+                default:
+                    break;
             }
+        }
 
-            Record record = new StandardRecord(type);
+        Record record = new StandardRecord(type);
             record.setId(id);
             record.setType(type);
             record.setTime(creationDate);
@@ -243,9 +254,9 @@ public class JsonSerializer implements RecordSerializer {
 
             return record;
 
-        }
-
     }
+
+}
 
 
     @Override

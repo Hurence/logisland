@@ -53,7 +53,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.github.flaxsearch</groupId>
             <artifactId>luwak</artifactId>
@@ -69,6 +68,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <scope>test</scope>
         </dependency>
 
+        <!-- IMPORTANT WARING !!!
+
+            due to a bug in maven shading plugin : we have to rename manually
+            META-INF/services/* files with the correst pattern ${shaded.package}.org....
+
+            this is done in a post processing step with jar uf
+            this will fail if you update lucene version without updating src/main/resources files
+            -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
@@ -144,7 +151,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                 </relocation>
 
 
-
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
                                     <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
@@ -191,7 +197,9 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </execution>
                 </executions>
                 <configuration>
-                    <executable>cd ${basedir}/src/main/resources; jar uf ${build.directory}/logisland-querymatcher-plugin-${project.version}.jar META-INF/services/*</executable>
+                    <executable>cd ${basedir}/src/main/resources; jar uf
+                        ${build.directory}/logisland-querymatcher-plugin-${project.version}.jar META-INF/services/*
+                    </executable>
                 </configuration>
             </plugin>
         </plugins>
