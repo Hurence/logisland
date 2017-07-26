@@ -33,7 +33,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <artifactId>logisland-querymatcher-plugin</artifactId>
 
     <properties>
-        <!-- Versions -->
+
+        <!-- IMPORTANT WARING !!!
+
+             due to a bug in maven shading plugin : we have to rename manually
+             META-INF/services/* files with the correst pattern ${shaded.package}.org....
+
+             this is done in a post processing step with jar uf
+             this will fail if you update lucene version without updating src/main/resources files     -->
         <lucene.version>6.5.0</lucene.version>
         <luwak.version>1.5.0</luwak.version>
 
@@ -67,15 +74,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- IMPORTANT WARING !!!
-
-            due to a bug in maven shading plugin : we have to rename manually
-            META-INF/services/* files with the correst pattern ${shaded.package}.org....
-
-            this is done in a post processing step with jar uf
-            this will fail if you update lucene version without updating src/main/resources files
-            -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
