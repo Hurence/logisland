@@ -1,0 +1,106 @@
+#  Licensed to the Apache Software Foundation (ASF) under one or more
+#  contributor license agreements.  See the NOTICE file distributed with
+#  this work for additional information regarding copyright ownership.
+#  The ASF licenses this file to You under the Apache License, Version 2.0
+#  (the "License"); you may not use this file except in compliance with
+#  the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+shade.logisland.querymatcher.org.apache.lucene.analysis.tr.ApostropheFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ar.ArabicNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ar.ArabicStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.bg.BulgarianStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.br.BrazilianStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.cjk.CJKBigramFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.cjk.CJKWidthFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ckb.SoraniNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ckb.SoraniStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.commongrams.CommonGramsFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.commongrams.CommonGramsQueryFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.compound.DictionaryCompoundWordTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.compound.HyphenationCompoundWordTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.DecimalDigitFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.LowerCaseFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.StopFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.TypeTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.UpperCaseFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.cz.CzechStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.de.GermanLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.de.GermanMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.de.GermanNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.de.GermanStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.el.GreekLowerCaseFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.el.GreekStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.en.EnglishMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.en.EnglishPossessiveFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.en.KStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.en.PorterStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.es.SpanishLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.fa.PersianNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.fi.FinnishLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.fr.FrenchLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.fr.FrenchMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ga.IrishLowerCaseFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.gl.GalicianMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.gl.GalicianStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.hi.HindiNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.hi.HindiStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.hu.HungarianLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.hunspell.HunspellStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.id.IndonesianStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.in.IndicNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.it.ItalianLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.lv.LatvianStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.minhash.MinHashFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.CapitalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.CodepointCountFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.DateRecognizerFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.FingerprintFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.HyphenatedWordsFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.KeepWordFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.KeywordMarkerFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.KeywordRepeatFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.LengthFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.LimitTokenCountFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.LimitTokenOffsetFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.LimitTokenPositionFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.TrimFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.TruncateTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.WordDelimiterGraphFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.ScandinavianFoldingFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.miscellaneous.ScandinavianNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ngram.NGramFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.no.NorwegianLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.no.NorwegianMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.pattern.PatternReplaceFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.pattern.PatternCaptureGroupFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.payloads.DelimitedPayloadTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.payloads.NumericPayloadTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.payloads.TokenOffsetPayloadTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.payloads.TypeAsPayloadTokenFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.pt.PortugueseLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.pt.PortugueseMinimalStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.pt.PortugueseStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.reverse.ReverseStringFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.ru.RussianLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.shingle.ShingleFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.snowball.SnowballPorterFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.sr.SerbianNormalizationFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.standard.ClassicFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.standard.StandardFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.sv.SwedishLightStemFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.synonym.SynonymFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.synonym.SynonymGraphFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.core.FlattenGraphFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.tr.TurkishLowerCaseFilterFactory
+shade.logisland.querymatcher.org.apache.lucene.analysis.util.ElisionFilterFactory

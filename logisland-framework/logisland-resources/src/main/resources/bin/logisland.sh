@@ -1,8 +1,22 @@
-#!/bin/sh
+#!/bin/bash
 
 #. $(dirname $0)/launcher.sh
-lib_dir="$(readlink -f "$(dirname $0)/../lib")"
-CONF_DIR="$(readlink -f "$(dirname $0)/../conf")"
+
+case "$(uname -s)" in
+
+   Darwin)
+     echo "I've detected that you're running Mac OS X, using greadlink instead of readlink"
+     lib_dir="$(greadlink -f "$(dirname $0)/../lib")"
+     CONF_DIR="$(greadlink -f "$(dirname $0)/../conf")"
+     ;;
+
+   *)
+     lib_dir="$(readlink -f "$(dirname $0)/../lib")"
+     CONF_DIR="$(readlink -f "$(dirname $0)/../conf")"
+     ;;
+esac
+
+
 
 app_classpath=""
 for entry in "$lib_dir"/*

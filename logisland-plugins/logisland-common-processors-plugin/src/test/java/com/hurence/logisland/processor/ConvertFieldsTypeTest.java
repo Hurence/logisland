@@ -93,7 +93,7 @@ public class ConvertFieldsTypeTest extends BaseSyslogTest {
         testRunner.assertOutputRecordsCount(1);
         MockRecord outputRecord = testRunner.getOutputRecords().get(0);
         outputRecord.assertRecordSizeEquals(5);
-        outputRecord.assertFieldEquals("string1",  "value1");
+        outputRecord.assertFieldEquals("string1",  0);
         outputRecord.assertFieldEquals("int1",  1);
         outputRecord.assertFieldNotEquals("int1",  "1");
         outputRecord.assertFieldEquals("long1",  1L);

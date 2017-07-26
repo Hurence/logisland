@@ -283,8 +283,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
    "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
    "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", "**true**"
-   "es.type", "The name of the ES type to use in multiget query. ", "", "null", "", "**true**"
-   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", ""
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
    "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
 
 ----------
@@ -452,6 +452,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "", ""
    "output.record.type", "the output type of the record", "", "alert_match", "", ""
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "", ""
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "", ""
    "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
 
 Dynamic Properties

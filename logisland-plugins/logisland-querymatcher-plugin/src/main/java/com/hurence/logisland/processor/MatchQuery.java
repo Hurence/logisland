@@ -24,8 +24,8 @@ import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.LegacyDoubleField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
@@ -199,6 +199,8 @@ public class MatchQuery extends AbstractProcessor {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (UpdateException e) {
+            e.printStackTrace();
         }
 
 
@@ -225,16 +227,16 @@ public class MatchQuery extends AbstractProcessor {
                         docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
                         break;
                     case INT:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
+                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
                         break;
                     case LONG:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
+                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
                         break;
                     case FLOAT:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
+                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
                         break;
                     case DOUBLE:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
+                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
                         break;
                     default:
                         docbuilder.addField(fieldName, record.getField(fieldName).asString(), keywordAnalyzer);
