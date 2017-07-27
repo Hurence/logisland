@@ -221,25 +221,26 @@ public class MatchQuery extends AbstractProcessor {
         for (final Record record : records) {
             final InputDocument.Builder docbuilder = InputDocument.builder(record.getId());
             for (final String fieldName : record.getAllFieldNames()) {
-
-                switch (record.getField(fieldName).getType()) {
-                    case STRING:
-                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
-                        break;
-                    case INT:
-                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
-                        break;
-                    case LONG:
-                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
-                        break;
-                    case FLOAT:
-                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
-                        break;
-                    case DOUBLE:
-                        docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
-                        break;
-                    default:
-                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), keywordAnalyzer);
+                if (record.getField(fieldName).getRawValue() != null) {
+                    switch (record.getField(fieldName).getType()) {
+                        case STRING:
+                            docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
+                            break;
+                        case INT:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
+                            break;
+                        case LONG:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
+                            break;
+                        case FLOAT:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
+                            break;
+                        case DOUBLE:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
+                            break;
+                        default:
+                            docbuilder.addField(fieldName, record.getField(fieldName).asString(), keywordAnalyzer);
+                    }
                 }
             }
 
