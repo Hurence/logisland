@@ -20,8 +20,6 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.util.JSONUtil;
 import com.hurence.logisland.util.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,45 +46,45 @@ public class RotationTest {
     @Multiline
     public static String amountConfig;
 
-    public static DataPoint nextDataPoint(Random r, LongWritable ts, long delta, List<DataPoint> points) {
+    public static DataPoint nextDataPoint(Random r, long ts, long delta, List<DataPoint> points) {
         double val = r.nextDouble() * 1000;
-        DataPoint dp = (new DataPoint(ts.get(), val, null, "foo"));
+        DataPoint dp = (new DataPoint(ts, val, null, "foo"));
         if(points != null) {
             points.add(dp);
         }
-        ts.set(ts.get() + delta);
+        ts +=  delta;
         return dp;
     }
 
     @Test
     public void rotationTest() throws Exception {
         OutlierConfig config = JSONUtil.INSTANCE.load(amountConfig, OutlierConfig.class);
-        final IntWritable numChunksAdded = new IntWritable(0);
-        final IntWritable numRotations= new IntWritable(0);
+        final int[] numChunksAdded = {0};
+        final int[] numRotations = {0};
         Distribution.Context context = new Distribution.Context(0, 0) {
             @Override
             protected void addChunk(Distribution d) {
                 super.addChunk(d);
-                numChunksAdded.set(numChunksAdded.get() + 1);
+                numChunksAdded[0] += 1;
             }
 
             @Override
             protected void rotate() {
                 super.rotate();
-                numRotations.set(numRotations.get() + 1);
+                numRotations[0] += 1;
             }
         };
         GlobalStatistics globalStats= new GlobalStatistics();
         Random r = new Random(0);
         List<DataPoint> points = new ArrayList<>();
         DescriptiveStatistics stats = new DescriptiveStatistics();
-        LongWritable ts = new LongWritable(0L);
+        long ts = 0L;
         Assert.assertEquals(context.getAmount(), 0);
         context.addDataPoint(nextDataPoint(r, ts, 1, points), config.getRotationPolicy(), config.getChunkingPolicy(), config.getScalingFunction(), globalStats);
         Assert.assertEquals(context.getAmount(), 1);
         Assert.assertEquals(context.getChunks().size(), 1);
-        Assert.assertEquals(numChunksAdded.get(), 1);
-        Assert.assertEquals(numRotations.get(), 0);
+        Assert.assertEquals(numChunksAdded[0], 1);
+        Assert.assertEquals(numRotations[0], 0);
         for(int i = 1; i < 10;++i) {
             context.addDataPoint(nextDataPoint(r, ts, 1, points), config.getRotationPolicy(), config.getChunkingPolicy(), config.getScalingFunction(), globalStats);
             Assert.assertEquals(context.getChunks().size(), 1);
@@ -94,19 +92,19 @@ public class RotationTest {
         //at the 11th point, we should create a new chunk
         context.addDataPoint(nextDataPoint(r, ts, 1, points), config.getRotationPolicy(), config.getChunkingPolicy(), config.getScalingFunction(), globalStats);
         Assert.assertEquals(context.getChunks().size(), 2);
-        Assert.assertEquals(numChunksAdded.get(), 2);
+        Assert.assertEquals(numChunksAdded[0], 2);
         Assert.assertEquals(context.getAmount(), 11);
-        Assert.assertEquals(numRotations.get(), 0);
+        Assert.assertEquals(numRotations[0], 0);
         for(int i = 12;i <= 110;++i) {
             context.addDataPoint(nextDataPoint(r, ts, 1, points), config.getRotationPolicy(), config.getChunkingPolicy(), config.getScalingFunction(), globalStats);
         }
-        Assert.assertEquals(11, numChunksAdded.get());
-        Assert.assertEquals(0, numRotations.get());
+        Assert.assertEquals(11, numChunksAdded[0]);
+        Assert.assertEquals(0, numRotations[0]);
         //at the 111th point, we should create a rotation
         context.addDataPoint(nextDataPoint(r, ts, 1, points), config.getRotationPolicy(), config.getChunkingPolicy(), config.getScalingFunction(), globalStats);
-        Assert.assertEquals(12, numChunksAdded.get());
+        Assert.assertEquals(12, numChunksAdded[0]);
         Assert.assertEquals(11, context.getChunks().size());
-        Assert.assertEquals(1, numRotations.get());
+        Assert.assertEquals(1, numRotations[0]);
         //rotates just past the rotation cutoff (ensuring that we keep at least the last 100 entries in there)
         Assert.assertEquals(context.getAmount(), 101);
         for(int i = 111;i <= 150;++i) {

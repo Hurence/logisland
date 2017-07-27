@@ -19,7 +19,10 @@ import com.caseystella.analytics.converters.MappingConverter;
 import com.caseystella.analytics.converters.TimestampConverter;
 import com.caseystella.analytics.converters.MeasurementConverter;
 import com.google.common.base.Function;
-import org.apache.hadoop.hbase.util.Bytes;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
+import org.apache.commons.lang3.Conversion;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,25 +34,27 @@ public class PrimitiveConverter {
         DOUBLE(new Function<byte[], Object>() {
             @Override
             public Object apply(byte[] bytes) {
-                return Bytes.toDouble(bytes);
+
+                return Double.longBitsToDouble(
+                        Conversion.byteArrayToLong(bytes, 0, 0, 0, Long.SIZE / Byte.SIZE) );
             }
         })
         ,LONG(new Function<byte[], Object>() {
             @Override
             public Object apply(byte[] bytes) {
-                return Bytes.toLong(bytes);
+                return Longs.fromByteArray(bytes);
             }
         })
         ,INTEGER(new Function<byte[], Object>() {
             @Override
             public Object apply(byte[] bytes) {
-                return Bytes.toInt(bytes);
+                return Ints.fromByteArray(bytes);
             }
         })
         ,STRING(new Function<byte[], Object>() {
             @Override
             public Object apply(byte[] bytes) {
-                return Bytes.toString(bytes);
+                return new String(bytes);
             }
         })
         ;

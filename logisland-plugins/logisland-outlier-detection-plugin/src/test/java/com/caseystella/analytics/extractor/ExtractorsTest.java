@@ -17,9 +17,11 @@ package com.caseystella.analytics.extractor;
 
 import com.caseystella.analytics.DataPoint;
 import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.hurence.logisland.util.string.Multiline;
+import org.apache.commons.lang3.Conversion;
 import org.junit.Assert;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -64,11 +66,11 @@ public class ExtractorsTest {
         DataPointExtractorConfig config = DataPointExtractorConfig.load(extractorConfig);
         DataPointExtractor extractor = new DataPointExtractor().withConfig(config);
         {
-            Iterable<DataPoint> dataPoints = extractor.extract(Bytes.toBytes(0L), Bytes.toBytes("   #0,100,foo,bar,50,7,grok,plant_1,baz"), true);
+            Iterable<DataPoint> dataPoints = extractor.extract(Longs.toByteArray(0L), "   #0,100,foo,bar,50,7,grok,plant_1,baz".getBytes(), true);
             Assert.assertEquals(0, Iterables.size(dataPoints));
         }
         {
-            Iterable<DataPoint> dataPoints = extractor.extract(Bytes.toBytes(0L), Bytes.toBytes("0,100,foo,bar,50,7,grok,plant_1,baz"), true);
+            Iterable<DataPoint> dataPoints = extractor.extract(Longs.toByteArray(0L), "0,100,foo,bar,50,7,grok,plant_1,baz".getBytes(), true);
             Assert.assertEquals(2, Iterables.size(dataPoints));
             {
                 DataPoint dp = Iterables.getFirst(dataPoints, null);
@@ -124,7 +126,7 @@ public class ExtractorsTest {
         DataPointExtractorConfig config = DataPointExtractorConfig.load(fraudExtractorConfig);
         DataPointExtractor extractor = new DataPointExtractor().withConfig(config);
         {
-            Iterable<DataPoint> dataPoints = extractor.extract(Bytes.toBytes(0L), Bytes.toBytes("\"id_1\",\"optometrist\",\"2016-02-16\",\"75.00\",\"Food\""), true);
+            Iterable<DataPoint> dataPoints = extractor.extract(Longs.toByteArray(0L), "\"id_1\",\"optometrist\",\"2016-02-16\",\"75.00\",\"Food\"".getBytes(), true);
             Assert.assertEquals(1, Iterables.size(dataPoints));
             DataPoint dp = Iterables.get(dataPoints, 0);
             Assert.assertEquals("optometrist.Food", dp.getSource());

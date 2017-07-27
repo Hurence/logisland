@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.10.1</version>
+    <version>0.10.2</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -70,9 +70,11 @@
 
     <modules>
         <module>logisland-api</module>
+        <module>logisland-framework</module>
+
         <module>logisland-plugins</module>
         <module>logisland-services</module>
-        <module>logisland-framework</module>
+
         <module>logisland-documentation</module>
         <module>logisland-engines</module>
         <module>logisland-assembly</module>
