@@ -41,12 +41,12 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
         hosts: sandbox:9300
-        cluster.name: elasticsearch
+        cluster.name: es-logisland
         batch.size: 5000
 
   streamConfigurations:
@@ -61,7 +61,7 @@ engine:
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
@@ -90,7 +90,7 @@ engine:
         kafka.input.topics: logisland_events,logisland_metrics
         kafka.output.topics: none
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: sandbox:9092
