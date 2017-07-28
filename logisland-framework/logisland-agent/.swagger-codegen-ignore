@@ -16,6 +16,8 @@
 #foo/**/qux
 # This matches foo/bar/qux, foo/baz/qux, and foo/bar/baz/qux
 
+
+#**/com/hurence/logisland/agent/rest/api/impl/*
 # You can also negate patterns with an exclamation (!).
 # For example, you can ignore all files in a docs folder with the file extension .md:
 #docs/*.md
