@@ -21,11 +21,19 @@ package com.hurence.logisland.processor;
 class MatchingRule {
     private final String name;
     private final String query;
+    private final String legacyQuery;
 
 
     public MatchingRule(final String name, final String query) {
         this.name = name;
         this.query = query;
+        this.legacyQuery = this.query;
+    }
+
+    public MatchingRule(final String name, final String revisitedQuery, final String legacyQuery) {
+        this.name = name;
+        this.query = revisitedQuery;
+        this.legacyQuery = legacyQuery;
     }
 
     public String getName() {
@@ -34,5 +42,9 @@ class MatchingRule {
 
     public String getQuery() {
         return query;
+    }
+
+    public String getLegacyQuery() {
+        return legacyQuery;
     }
 }
