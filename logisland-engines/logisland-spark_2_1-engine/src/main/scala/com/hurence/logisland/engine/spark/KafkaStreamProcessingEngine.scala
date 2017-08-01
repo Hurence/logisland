@@ -43,6 +43,7 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
+import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
 
 import scala.collection.JavaConversions._
 
@@ -400,6 +401,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         SparkUtils.customizeLogLevels
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
+        UserMetricsSystem.initialize(sc, "logisland")
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
@@ -412,7 +414,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()

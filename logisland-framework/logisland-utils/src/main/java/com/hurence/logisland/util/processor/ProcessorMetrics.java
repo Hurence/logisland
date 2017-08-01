@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,29 +51,27 @@ public class ProcessorMetrics {
             final long processingDurationInMillis) {
 
 
-        if ( (outgoingEvents != null) && (outgoingEvents.size() != 0) ) {
+        if ((outgoingEvents != null) && (outgoingEvents.size() != 0)) {
             Record metrics = new StandardRecord(METRICS_EVENT_TYPE);
 
             metrics.setField("spark_app_name", FieldType.STRING, appName);
-            metrics.setField("spark_partition_id", FieldType.INT, partitionId);
+            metrics.setField("spark_partition_id", FieldType.LONG, partitionId);
             metrics.setField("component_name", FieldType.STRING, componentName);
             metrics.setField("input_topics", FieldType.STRING, inputTopics);
             metrics.setField("output_topics", FieldType.STRING, outputTopics);
             metrics.setField("topic_offset_from", FieldType.LONG, fromOffset);
             metrics.setField("topic_offset_until", FieldType.LONG, untilOffset);
-            metrics.setField("num_incoming_messages", FieldType.INT, untilOffset - fromOffset);
-            metrics.setField("num_incoming_records", FieldType.INT, incomingEvents.size());
-            metrics.setField("num_outgoing_records", FieldType.INT, outgoingEvents.size());
-
+            metrics.setField("num_incoming_messages", FieldType.LONG, untilOffset - fromOffset);
+            metrics.setField("num_incoming_records", FieldType.LONG, incomingEvents.size());
+            metrics.setField("num_outgoing_records", FieldType.LONG, outgoingEvents.size());
 
 
             float errorCount = outgoingEvents.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
-            metrics.setField("num_errors_records", FieldType.LONG, errorCount );
+            metrics.setField("num_errors_records", FieldType.LONG, errorCount);
             if (outgoingEvents.size() != 0)
-                metrics.setField("error_percentage", FieldType.FLOAT, 100.0f * errorCount / outgoingEvents.size());
-
-
-
+                metrics.setField("error_percentage", FieldType.LONG, 100.0f * errorCount / outgoingEvents.size());
+            else
+                metrics.setField("error_percentage", FieldType.LONG, 0L);
 
             final List<Integer> recordSizesInBytes = new ArrayList<>();
             final List<Integer> recordNumberOfFields = new ArrayList<>();
@@ -87,17 +85,22 @@ public class ProcessorMetrics {
             final int numberOfProcessedFields = recordNumberOfFields.stream().mapToInt(Integer::intValue).sum();
 
             if (numberOfProcessedFields != 0) {
-                metrics.setField("average_bytes_per_field", INT, numberOfProcessedBytes / numberOfProcessedFields);
+                metrics.setField("average_bytes_per_field", LONG, numberOfProcessedBytes / numberOfProcessedFields);
+            }else{
+                metrics.setField("average_bytes_per_field", LONG, 0);
             }
             if (processingDurationInMillis != 0) {
-                metrics.setField("average_bytes_per_second", INT, (int) (numberOfProcessedBytes * 1000 / processingDurationInMillis));
-                metrics.setField("average_num_records_per_second", INT, (int) (outgoingEvents.size() * 1000 / processingDurationInMillis));
+                metrics.setField("average_bytes_per_second", LONG, numberOfProcessedBytes * 1000 / processingDurationInMillis);
+                metrics.setField("average_num_records_per_second", LONG, outgoingEvents.size() * 1000 / processingDurationInMillis);
+            }else{
+                metrics.setField("average_bytes_per_second", LONG, 0);
+                metrics.setField("average_num_records_per_second", LONG, 0);
             }
 
-            metrics.setField("average_fields_per_record", INT, numberOfProcessedFields / outgoingEvents.size());
-            metrics.setField("average_bytes_per_record", INT, numberOfProcessedBytes / outgoingEvents.size());
-            metrics.setField("total_bytes", INT, numberOfProcessedBytes);
-            metrics.setField("total_fields", INT, numberOfProcessedFields);
+            metrics.setField("average_fields_per_record", LONG, numberOfProcessedFields / outgoingEvents.size());
+            metrics.setField("average_bytes_per_record", LONG, numberOfProcessedBytes / outgoingEvents.size());
+            metrics.setField("total_bytes", LONG, numberOfProcessedBytes);
+            metrics.setField("total_fields", LONG, numberOfProcessedFields);
             metrics.setField("total_processing_time_in_ms", LONG, processingDurationInMillis);
 
             metrics.setField(FieldDictionary.RECORD_TIME, LONG, new Date().getTime());

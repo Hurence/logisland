@@ -37,7 +37,7 @@ import java.util.Collections
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, BytesArraySerializer, RecordSerializer}
+import com.hurence.logisland.serializer.{AvroSerializer, BytesArraySerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
@@ -50,6 +50,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.{Assign, Subscribe}
@@ -282,9 +283,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         SparkUtils.customizeLogLevels
     }
 
-    override def getStreamContext() : StreamingContext = {
-        return(this.ssc);
-    }
+    override def getStreamContext() : StreamingContext = this.ssc
 
     override def start() = {
         if (ssc == null)

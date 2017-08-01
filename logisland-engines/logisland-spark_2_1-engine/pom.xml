@@ -60,7 +60,11 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.groupon.dse</groupId>
+            <artifactId>spark-metrics</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
         <!-- spark dependencies -->
         <dependency>

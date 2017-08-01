@@ -90,7 +90,7 @@ public final class ComponentFactory {
             final RecordStream recordStream =
                     (RecordStream) Class.forName(configuration.getComponent()).newInstance();
             final StreamContext instance =
-                    new StandardStreamContext(recordStream, Long.toString(currentId.incrementAndGet()));
+                    new StandardStreamContext(recordStream, configuration.getStream());
 
             // instanciate each related processor
             configuration.getProcessorConfigurations().forEach(processConfig -> {
@@ -115,7 +115,7 @@ public final class ComponentFactory {
         try {
             final Processor processor = (Processor) Class.forName(configuration.getComponent()).newInstance();
             final ProcessContext processContext =
-                    new StandardProcessContext(processor, Long.toString(currentId.incrementAndGet()));
+                    new StandardProcessContext(processor, configuration.getProcessor());
 
             // set all properties
             configuration.getConfiguration()

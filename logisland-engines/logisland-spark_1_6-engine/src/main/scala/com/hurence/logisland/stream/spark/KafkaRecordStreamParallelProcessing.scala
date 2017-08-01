@@ -44,6 +44,7 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
 import org.apache.spark.TaskContext
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.slf4j.LoggerFactory
@@ -120,6 +121,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
+                        val pipelineTimerContext = UserMetricsSystem.timer("partition." + partitionId + "." +
+                            streamContext.getIdentifier + ".processingTime").time()
 
                         /**
                           * create serializers
@@ -134,7 +137,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
                         val metricsSerializer = SerializerProvider.getSerializer(
-                            AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue,
+                            AbstractKafkaRecordStream.JSON_SERIALIZER.getValue,
                             null)
 
                         /**
@@ -148,6 +151,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         streamContext.getProcessContexts.foreach(processorContext => {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
+                            val processorTimerContext = UserMetricsSystem.timer(
+                                processorContext.getName + ".processingTime").time()
 
 
                             if (firstPass) {
@@ -199,6 +204,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                 offsetRange.untilOffset,
                                 System.currentTimeMillis() - startTime))
 
+                            processorTimerContext.stop()
                         })
 
 
@@ -235,16 +241,27 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                            processingMetrics.toList,
-                            metricsSerializer
-                        )
+                        processingMetrics.foreach(metrics => {
+                            UserMetricsSystem.meter("NumIncomingMessages").mark(metrics.getField("num_incoming_messages").asLong())
+                            UserMetricsSystem.meter("NumIncomingRecords").mark(metrics.getField("num_incoming_records").asLong())
+                            UserMetricsSystem.meter("NumOutgoingMessages").mark(metrics.getField("num_outgoing_records").asLong())
+                            UserMetricsSystem.meter("NumErrorRecords").mark(metrics.getField("num_errors_records").asLong())
+                            UserMetricsSystem.meter("ErrorPercentage").mark(metrics.getField("error_percentage").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerField").mark(metrics.getField("average_bytes_per_field").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerSecond").mark(metrics.getField("average_bytes_per_second").asLong())
+                            UserMetricsSystem.meter("AverageNumRecordsPerSecond").mark(metrics.getField("average_num_records_per_second").asLong())
+                            UserMetricsSystem.meter("AverageFieldsPerRecord").mark(metrics.getField("average_fields_per_record").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerRecord").mark(metrics.getField("average_bytes_per_record").asLong())
+                            UserMetricsSystem.meter("TotalBytes").mark(metrics.getField("total_bytes").asLong())
+                            UserMetricsSystem.meter("TotalFields").mark(metrics.getField("total_fields").asLong())
+                            UserMetricsSystem.meter("TotalProcessingTime").mark(metrics.getField("total_processing_time_in_ms").asLong())
+                        })
 
                         /**
                           * save latest offset to Zookeeper
                           */
                         zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
+                        pipelineTimerContext.stop()
                     }
                 } catch {
                     case ex: OffsetOutOfRangeException =>

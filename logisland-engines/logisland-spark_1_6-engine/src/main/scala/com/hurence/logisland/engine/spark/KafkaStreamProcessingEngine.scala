@@ -25,6 +25,7 @@ import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.stream.spark.KafkaRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
@@ -385,6 +386,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         SparkUtils.customizeLogLevels
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
+        UserMetricsSystem.initialize(sc, "logisland")
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +

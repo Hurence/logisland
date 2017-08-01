@@ -12,7 +12,7 @@ engine:
   type: engine
   documentation: Index some apache logs with logisland
   configuration:
-    spark.app.name: IndexApacheLogsDemo
+    spark.app.name: IndexApacheLogs
     spark.master: local[4]
     spark.driver.memory: 1G
     spark.driver.cores: 1
@@ -40,7 +40,7 @@ engine:
 
   controllerServiceConfigurations:
 
-    - controllerService: elasticsearch_service
+    - controllerService: ElasticsearchService
       component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
@@ -52,7 +52,7 @@ engine:
   streamConfigurations:
 
     # parsing
-    - stream: parsing_stream
+    - stream: ParsingStream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
       documentation: a processor that converts raw apache logs into structured log records
@@ -68,10 +68,12 @@ engine:
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
+        # smallest, largest
+       # kafka.manual.offset.reset: smallest
       processorConfigurations:
 
         # parse apache logs
-        - processor: apache_parser
+        - processor: ApacheLogParser
           component: com.hurence.logisland.processor.SplitText
           type: parser
           documentation: a parser that produce events from an apache log REGEX
@@ -81,32 +83,13 @@ engine:
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
 
-    # indexing
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: a processor that push events to ES
-      configuration:
-        kafka.input.topics: logisland_events,logisland_metrics
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
         # Bulk add to elasticsearch
-        - processor: es_publisher
+        - processor: BulkAddElasticsearch
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:
-            elasticsearch.client.service: elasticsearch_service
+            elasticsearch.client.service: ElasticsearchService
             default.index: logisland
             default.type: event
             timebased.index: yesterday

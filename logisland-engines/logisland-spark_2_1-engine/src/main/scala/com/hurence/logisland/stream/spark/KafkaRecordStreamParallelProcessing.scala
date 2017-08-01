@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import java.util
@@ -20,15 +20,13 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.schema.{SchemaManager, StandardSchemaManager}
-import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
-import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
 import org.apache.spark.TaskContext
+import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
@@ -37,22 +35,6 @@ import scala.collection.JavaConversions._
 
 
 object KafkaRecordStreamParallelProcessing {
-
-
-    val SQL_QUERY = new PropertyDescriptor.Builder()
-        .name("sql.query")
-        .description("The SQL query to execute")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
-
-    val MAX_RESULTS_COUNT = new PropertyDescriptor.Builder()
-        .name("max.results.count")
-        .description("the max number of rows to output. (-1 for no limit)")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("-1")
-        .build
 
 }
 
@@ -85,6 +67,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
             rdd.foreachPartition(partition => {
                 try {
                     if (partition.nonEmpty) {
+
                         /**
                           * index to get the correct offset range for the rdd partition we're working on
                           * This is safe because we haven't shuffled or otherwise disrupted partitioning,
@@ -92,6 +75,10 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
+
+                        val pipelineTimerContext = UserMetricsSystem.timer("partition." + partitionId + "." +
+                            streamContext.getIdentifier + ".processingTime").time()
+
 
                         /**
                           * create serializers
@@ -105,9 +92,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val errorSerializer = getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                        val metricsSerializer = SerializerProvider.getSerializer(
-                            AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue,
-                            null)
+
                         /**
                           * process events by chaining output records
                           */
@@ -120,6 +105,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
 
+                            val processorTimerContext = UserMetricsSystem.timer(
+                                processorContext.getName + ".processingTime").time()
                             /**
                               * convert incoming Kafka messages into Records
                               * if there's no serializer we assume that we need to compute a Record from K/V
@@ -169,6 +156,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                                 offsetRange.untilOffset,
                                 System.currentTimeMillis() - startTime))
 
+                            processorTimerContext.stop()
                         })
 
 
@@ -193,13 +181,12 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * push outgoing events and errors to Kafka
                           */
-                        if(!streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString.contains("none")){
-                            kafkaSink.value.produce(
-                                streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
-                                outgoingEvents.toList,
-                                serializer
-                            )
-                        }
+
+                        kafkaSink.value.produce(
+                            streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
+                            outgoingEvents.toList,
+                            serializer
+                        )
 
                         kafkaSink.value.produce(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString,
@@ -207,18 +194,30 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                            processingMetrics.toList,
-                            metricsSerializer
-                        )
+                        processingMetrics.foreach(metrics => {
+                            UserMetricsSystem.meter("NumIncomingMessages").mark(metrics.getField("num_incoming_messages").asLong())
+                            UserMetricsSystem.meter("NumIncomingRecords").mark(metrics.getField("num_incoming_records").asLong())
+                            UserMetricsSystem.meter("NumOutgoingMessages").mark(metrics.getField("num_outgoing_records").asLong())
+                            UserMetricsSystem.meter("NumErrorRecords").mark(metrics.getField("num_errors_records").asLong())
+                            UserMetricsSystem.meter("ErrorPercentage").mark(metrics.getField("error_percentage").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerField").mark(metrics.getField("average_bytes_per_field").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerSecond").mark(metrics.getField("average_bytes_per_second").asLong())
+                            UserMetricsSystem.meter("AverageNumRecordsPerSecond").mark(metrics.getField("average_num_records_per_second").asLong())
+                            UserMetricsSystem.meter("AverageFieldsPerRecord").mark(metrics.getField("average_fields_per_record").asLong())
+                            UserMetricsSystem.meter("AverageBytesPerRecord").mark(metrics.getField("average_bytes_per_record").asLong())
+                            UserMetricsSystem.meter("TotalBytes").mark(metrics.getField("total_bytes").asLong())
+                            UserMetricsSystem.meter("TotalFields").mark(metrics.getField("total_fields").asLong())
+                            UserMetricsSystem.meter("TotalProcessingTime").mark(metrics.getField("total_processing_time_in_ms").asLong())
+                        })
 
                         /**
                           * save latest offset to Zookeeper
                           */
                         zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
+                        pipelineTimerContext.stop()
                     }
-                } catch {
+                }
+                catch {
                     case ex: OffsetOutOfRangeException =>
                         val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
                         val latestOffsetsString = zkSink.value.loadOffsetRangesFromZookeeper(
@@ -234,11 +233,14 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         logger.error(s"unable to process partition. current Offsets $offestsString latest offsets $latestOffsetsString")
 
                 }
-            })
+            }
+            )
             return Some(offsetRanges)
         }
+
         None
     }
+
 }
 
 

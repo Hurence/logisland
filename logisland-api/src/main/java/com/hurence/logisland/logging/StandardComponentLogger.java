@@ -26,7 +26,7 @@ public class StandardComponentLogger implements ComponentLog {
     private final Object component;
 
     public StandardComponentLogger(final String componentId, final Object component) {
-        this.logger = LoggerFactory.getLogger(component.getClass());
+        this.logger = LoggerFactory.getLogger(component.getClass().getName());
         this.logRepository = LogRepositoryFactory.getRepository(componentId);
         this.component = component;
     }

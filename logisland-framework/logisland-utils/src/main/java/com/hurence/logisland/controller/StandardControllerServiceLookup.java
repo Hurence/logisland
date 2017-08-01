@@ -64,6 +64,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
                 controllerServiceMap.put(controllerServiceConfiguration.getControllerService(), service);
                 service.initialize(context);
+                logger.info("service initialization complete {}", new Object[]{service});
             } catch (IllegalAccessException |
                     IllegalArgumentException |
                     ClassNotFoundException |
@@ -79,6 +80,9 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
     @Override
     public ControllerService getControllerService(String serviceIdentifier) {
+
+        if(!controllerServiceMap.containsKey(serviceIdentifier))
+            logger.error("service {} is not available", new Object[]{serviceIdentifier});
 
         logger.debug("getting controller service {}", new Object[]{serviceIdentifier});
         return controllerServiceMap.get(serviceIdentifier);
