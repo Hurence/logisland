@@ -22,8 +22,7 @@ import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Ta
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.SerializerProvider
-import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.util.spark.{ProcessorMetrics, SparkUtils}
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
@@ -90,7 +89,6 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
         descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
         descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
@@ -176,21 +174,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
 
-                        /**
-                          * send metrics if requested
-                          */
-                        val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
-                        processingMetrics.addAll(ProcessorMetrics.computeMetrics(
-                            appName,
-                            streamContext.getName,
-                            inputTopics,
-                            outputTopics,
-                            -1,
-                            outgoingEvents,
-                            outgoingEvents,
-                            0,
-                            0,
-                            System.currentTimeMillis() - startTime))
+
 
                         /**
                           * push outgoing events and errors to Kafka
@@ -207,11 +191,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                            processingMetrics.toList,
-                            serializer
-                        )
+
                     })
 
 

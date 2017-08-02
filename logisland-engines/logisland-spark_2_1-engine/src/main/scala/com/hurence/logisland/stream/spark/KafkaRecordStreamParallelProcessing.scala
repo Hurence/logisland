@@ -20,8 +20,8 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
+import com.hurence.logisland.util.spark.ProcessorMetrics
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
@@ -76,8 +76,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
 
-                        val pipelineTimerContext = UserMetricsSystem.timer("partition." + partitionId + "." +
-                            streamContext.getIdentifier + ".processingTime").time()
+                        val pipelineMetricPrefix = "pipeline." + streamContext.getIdentifier + "."
+                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "processingTime").time()
 
 
                         /**
@@ -99,13 +99,12 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         var firstPass = true
                         var incomingEvents: util.Collection[Record] = Collections.emptyList()
                         var outgoingEvents: util.Collection[Record] = Collections.emptyList()
-                        val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
 
                         streamContext.getProcessContexts.foreach(processorContext => {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
 
-                            val processorTimerContext = UserMetricsSystem.timer(
+                            val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
                                 processorContext.getName + ".processingTime").time()
                             /**
                               * convert incoming Kafka messages into Records
@@ -142,19 +141,15 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             outgoingEvents = processor.process(processorContext, incomingEvents)
 
                             /**
-                              * send metrics if requested
+                              * compute metrics
                               */
-                            processingMetrics.addAll(ProcessorMetrics.computeMetrics(
-                                appName,
-                                processorContext.getName,
-                                inputTopics,
-                                outputTopics,
-                                partitionId,
+                            val processorMetrics = ProcessorMetrics.computeMetrics(
+                                pipelineMetricPrefix + processorContext.getName + ".",
                                 incomingEvents,
                                 outgoingEvents,
                                 offsetRange.fromOffset,
                                 offsetRange.untilOffset,
-                                System.currentTimeMillis() - startTime))
+                                System.currentTimeMillis() - startTime)
 
                             processorTimerContext.stop()
                         })
@@ -181,7 +176,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         /**
                           * push outgoing events and errors to Kafka
                           */
-
                         kafkaSink.value.produce(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
                             outgoingEvents.toList,
@@ -194,21 +188,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        processingMetrics.foreach(metrics => {
-                            UserMetricsSystem.meter("NumIncomingMessages").mark(metrics.getField("num_incoming_messages").asLong())
-                            UserMetricsSystem.meter("NumIncomingRecords").mark(metrics.getField("num_incoming_records").asLong())
-                            UserMetricsSystem.meter("NumOutgoingMessages").mark(metrics.getField("num_outgoing_records").asLong())
-                            UserMetricsSystem.meter("NumErrorRecords").mark(metrics.getField("num_errors_records").asLong())
-                            UserMetricsSystem.meter("ErrorPercentage").mark(metrics.getField("error_percentage").asLong())
-                            UserMetricsSystem.meter("AverageBytesPerField").mark(metrics.getField("average_bytes_per_field").asLong())
-                            UserMetricsSystem.meter("AverageBytesPerSecond").mark(metrics.getField("average_bytes_per_second").asLong())
-                            UserMetricsSystem.meter("AverageNumRecordsPerSecond").mark(metrics.getField("average_num_records_per_second").asLong())
-                            UserMetricsSystem.meter("AverageFieldsPerRecord").mark(metrics.getField("average_fields_per_record").asLong())
-                            UserMetricsSystem.meter("AverageBytesPerRecord").mark(metrics.getField("average_bytes_per_record").asLong())
-                            UserMetricsSystem.meter("TotalBytes").mark(metrics.getField("total_bytes").asLong())
-                            UserMetricsSystem.meter("TotalFields").mark(metrics.getField("total_fields").asLong())
-                            UserMetricsSystem.meter("TotalProcessingTime").mark(metrics.getField("total_processing_time_in_ms").asLong())
-                        })
 
                         /**
                           * save latest offset to Zookeeper

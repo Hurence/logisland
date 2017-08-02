@@ -159,13 +159,6 @@ object AbstractKafkaRecordStream {
         .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
         .build
 
-    val METRICS_TOPIC = new PropertyDescriptor.Builder()
-        .name("kafka.metrics.topic")
-        .description("a topic to send metrics of processing. no output if not set")
-        .required(false)
-        .defaultValue(DEFAULT_METRICS_TOPIC.getValue)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
 
     val KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
         .name("kafka.topic.autoCreate")
@@ -257,7 +250,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
         descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
@@ -328,12 +320,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                createTopicsIfNeeded(
-                    zkUtils,
-                    Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
-                    topicDefaultPartitions,
-                    topicDefaultReplicationFactor)
-
             }
 
 
