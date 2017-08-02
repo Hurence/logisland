@@ -253,7 +253,14 @@ case $MODE in
     ;;
 esac
 
-java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${YARN_APP_NAME_OPTIONS} \
+PROPERTIES_FILE=""
+PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
+if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+then
+     PROPERTIES_FILE=" --properties-file ${PROPERTIES_FILE_PATH} "
+fi
+
+java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${PROPERTIES_FILE} ${YARN_APP_NAME_OPTIONS} \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark*-engine*.jar \
