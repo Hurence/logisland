@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.util.spark
+package com.hurence.logisland.util.kafka
 
 import java.io.ByteArrayOutputStream
 

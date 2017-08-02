@@ -75,7 +75,7 @@ public class ProgrammaticStreamProcessingIntegrationTest extends AbstractStreamP
         properties.put(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
         properties.put(AbstractKafkaRecordStream.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
         properties.put(AbstractKafkaRecordStream.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
-        properties.put(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET().getName(), AbstractKafkaRecordStream.LARGEST_OFFSET().getValue());
+        properties.put(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET().getName(), AbstractKafkaRecordStream.LATEST_OFFSET().getValue());
 
         properties.put(AbstractKafkaRecordStream.INPUT_TOPICS().getName(), INPUT_TOPIC);
         properties.put(AbstractKafkaRecordStream.OUTPUT_TOPICS().getName(), OUTPUT_TOPIC);

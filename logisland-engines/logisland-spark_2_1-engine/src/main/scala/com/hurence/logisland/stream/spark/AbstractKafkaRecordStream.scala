@@ -1,20 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/**
-  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+  * Copyright (C) 2016 Hurence (support@hurence.com)
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
@@ -28,6 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
+
 package com.hurence.logisland.stream.spark
 
 import java.io.ByteArrayInputStream
@@ -39,13 +25,14 @@ import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer.{AvroSerializer, BytesArraySerializer, JsonSerializer, KryoSerializer, RecordSerializer}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
+import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.message.MessageAndMetadata
 import kafka.utils.ZkUtils
 import org.apache.avro.Schema.Parser
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
@@ -200,17 +187,21 @@ object AbstractKafkaRecordStream {
         .defaultValue("sandbox:2181")
         .build
 
-    val LARGEST_OFFSET = new AllowableValue("largest", "largest offset", "the offset to the largest offset")
-    val SMALLEST_OFFSET = new AllowableValue("smallest", "smallest offset", "the offset to the smallest offset")
+    val LATEST_OFFSET = new AllowableValue("latest", "latest", "the offset to the latest offset")
+    val EARLIEST_OFFSET = new AllowableValue("earliest", "earliest offset", "the offset to the earliest offset")
+    val NONE_OFFSET = new AllowableValue("none", "none offset", "the latest saved  offset")
 
     val KAFKA_MANUAL_OFFSET_RESET = new PropertyDescriptor.Builder()
         .name("kafka.manual.offset.reset")
-        .description("Sets manually an initial offset in ZooKeeper: "
-            + "smallest (automatically reset the offset to the smallest offset), "
-            + "largest (automatically reset the offset to the largest offset), "
-            + "anything else (throw exception to the consumer)")
+        .description("What to do when there is no initial offset in Kafka or if the current offset does not exist " +
+            "any more on the server (e.g. because that data has been deleted):\n" +
+            "earliest: automatically reset the offset to the earliest offset\n" +
+            "latest: automatically reset the offset to the latest offset\n" +
+            "none: throw exception to the consumer if no previous offset is found for the consumer's group\n" +
+            "anything else: throw exception to the consumer.")
         .required(false)
-        .allowableValues(LARGEST_OFFSET, SMALLEST_OFFSET)
+        .allowableValues(LATEST_OFFSET, EARLIEST_OFFSET, NONE_OFFSET)
+        .defaultValue(NONE_OFFSET.getValue)
         .build
 
     val LOGISLAND_AGENT_QUORUM = new PropertyDescriptor.Builder()
@@ -228,6 +219,62 @@ object AbstractKafkaRecordStream {
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .defaultValue("10")
         .build
+
+
+    val KAFKA_BATCH_SIZE = new PropertyDescriptor.Builder()
+        .name("kafka.batch.size")
+        .description("measures batch size in total bytes instead of the number of messages. " +
+            "It controls how many bytes of data to collect before sending messages to the Kafka broker. " +
+            "Set this as high as possible, without exceeding available memory. The default value is 16384.\n\n" +
+            "If you increase the size of your buffer, it might never get full." +
+            "The Producer sends the information eventually, based on other triggers, such as linger time in milliseconds. " +
+            "Although you can impair memory usage by setting the buffer batch size too high, " +
+            "this does not impact latency.\n\n" +
+            "If your producer is sending all the time, " +
+            "you are probably getting the best throughput possible. If the producer is often idle, " +
+            "you might not be writing enough data to warrant the current allocation of resources.")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("16384")
+        .build
+
+
+    val KAFKA_LINGER_MS = new PropertyDescriptor.Builder()
+        .name("kafka.linger.ms")
+        .description("linger.ms sets the maximum time to buffer data in asynchronous mode. " +
+            "For example, a setting of 100 batches 100ms of messages to send at once. " +
+            "This improves throughput, but the buffering adds message delivery latency.\n\n" +
+            "By default, the producer does not wait. It sends the buffer any time data is available.\n\n" +
+            "Instead of sending immediately, you can set linger.ms to 5 and send more messages in one batch." +
+            " This would reduce the number of requests sent, but would add up to 5 milliseconds of latency to records " +
+            "sent, even if the load on the system does not warrant the delay.\n\n" +
+            "The farther away the broker is from the producer, the more overhead required to send messages. " +
+            "Increase linger.ms for higher latency and higher throughput in your producer.")
+        .required(false)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .defaultValue("5")
+        .build
+
+    val KAFKA_ACKS = new PropertyDescriptor.Builder()
+        .name("kafka.acks")
+        .description("The number of acknowledgments the producer requires the leader to have received before considering a request complete. This controls the "
+            + " durability of records that are sent. The following settings are common: "
+            + " <ul>"
+            + " <li><code>acks=0</code> If set to zero then the producer will not wait for any acknowledgment from the"
+            + " server at all. The record will be immediately added to the socket buffer and considered sent. No guarantee can be"
+            + " made that the server has received the record in this case, and the <code>retries</code> configuration will not"
+            + " take effect (as the client won't generally know of any failures). The offset given back for each record will"
+            + " always be set to -1."
+            + " <li><code>acks=1</code> This will mean the leader will write the record to its local log but will respond"
+            + " without awaiting full acknowledgement from all followers. In this case should the leader fail immediately after"
+            + " acknowledging the record but before the followers have replicated it then the record will be lost."
+            + " <li><code>acks=all</code> This means the leader will wait for the full set of in-sync replicas to"
+            + " acknowledge the record. This guarantees that the record will not be lost as long as at least one in-sync replica"
+            + " remains alive. This is the strongest available guarantee.")
+        .required(false)
+        .defaultValue("all")
+        .build
+
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -263,6 +310,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
         descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_BATCH_SIZE)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_LINGER_MS)
+        descriptors.add(AbstractKafkaRecordStream.KAFKA_ACKS)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -275,7 +325,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         SparkUtils.customizeLogLevels
     }
 
-    override def getStreamContext() : StreamingContext = this.ssc
+    override def getStreamContext(): StreamingContext = this.ssc
 
     override def start() = {
         if (ssc == null)
@@ -295,16 +345,21 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
             val agentQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM).asString
             val throttling = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
+            val kafkaBatchSize = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_BATCH_SIZE).asString
+            val kafkaLingerMs = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_LINGER_MS).asString
+            val kafkaAcks = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ACKS).asString
+            val kafkaOffset = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).asString
+
 
             val kafkaSinkParams = Map(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
                 ProducerConfig.CLIENT_ID_CONFIG -> appName,
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getCanonicalName,
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getName,
-                ProducerConfig.ACKS_CONFIG -> "all",
+                ProducerConfig.ACKS_CONFIG -> kafkaAcks,
                 ProducerConfig.RETRIES_CONFIG -> "3",
-                ProducerConfig.LINGER_MS_CONFIG -> "5",
-                ProducerConfig.BATCH_SIZE_CONFIG -> "20000",
+                ProducerConfig.LINGER_MS_CONFIG -> kafkaLingerMs,
+                ProducerConfig.BATCH_SIZE_CONFIG -> kafkaBatchSize,
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
@@ -324,42 +379,48 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
 
             val kafkaParams = Map[String, Object](
-                "bootstrap.servers" -> brokerList,
-                "key.deserializer" -> classOf[ByteArrayDeserializer],
-                "value.deserializer" -> classOf[ByteArrayDeserializer],
-                "group.id" -> appName,
-                "refresh.leader.backoff.ms" -> "5000",
-                "auto.offset.reset" -> "latest",
-                "enable.auto.commit" -> (false: java.lang.Boolean)
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
+                ConsumerConfig.GROUP_ID_CONFIG -> appName,
+                ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
+                ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
+                ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"
             )
 
 
+            logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
+            @transient val kafkaStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
+                ssc,
+                PreferConsistent,
+                Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
+            )
 
+            /* val fromOffsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
+             @transient val kafkaStream = if (
+                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
+                     || fromOffsets.isEmpty) {
 
+                 logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
+                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
+                     ssc,
+                     PreferConsistent,
+                     Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
+                 )
+             }
+             else {
+                 val messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => (Array[Byte], Array[Byte]) =
+                     (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
 
-            val fromOffsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
-            @transient val kafkaStream = if (
-                streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
-                    || fromOffsets.isEmpty) {
-
-                logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
-                KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
-                    ssc,
-                    PreferConsistent,
-                    Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
-                )
-            }
-            else {
-                val messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => (Array[Byte], Array[Byte]) =
-                    (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
-
-                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $fromOffsets")
-                KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
-                    ssc,
-                    PreferConsistent,
-                    Assign[Array[Byte], Array[Byte]](fromOffsets.keys.toList, kafkaParams, fromOffsets)
-                )
-            }
+                 logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $fromOffsets")
+                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
+                     ssc,
+                     PreferConsistent,
+                     Assign[Array[Byte], Array[Byte]](fromOffsets.keys.toList, kafkaParams, fromOffsets)
+                 )
+             }*/
 
             // store current configuration version
             currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
@@ -398,7 +459,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 }
 
                 lastCheckCount += 1
-
 
 
                 val offsetRanges = process(rdd)

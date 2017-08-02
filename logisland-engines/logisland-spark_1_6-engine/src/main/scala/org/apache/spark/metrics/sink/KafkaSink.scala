@@ -1,13 +1,11 @@
 package org.apache.spark.metrics.sink
 
-import java.util.{Locale, Properties}
 import java.util.concurrent.TimeUnit
+import java.util.{Locale, Properties}
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import com.codahale.metrics.MetricRegistry
 import com.hurence.logisland.util.kafka.KafkaReporter
-import org.apache.spark.SecurityManager
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
   * A Kafka metric sink for Apache Spark

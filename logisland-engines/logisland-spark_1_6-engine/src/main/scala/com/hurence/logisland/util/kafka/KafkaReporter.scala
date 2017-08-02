@@ -1,25 +1,18 @@
-package com.hurence.logisland.util.spark
+package com.hurence.logisland.util.kafka
 
-
+import java.util.Properties
 import java.util.concurrent.TimeUnit
-import java.util.{Date, Properties}
-import java.util.Map.Entry
+
+import com.codahale.metrics._
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.json4s.JsonAST.JObject
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
-
-import scala.util.{Try, Success, Failure}
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-
-import org.json4s.JsonDSL._
-import org.json4s.jackson.JsonMethods._
-import org.json4s.JsonAST.JObject
-
-import com.codahale.metrics._
+import scala.util.{Failure, Success, Try}
 
 class KafkaReporter(
                        registry: MetricRegistry,
