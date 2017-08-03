@@ -45,9 +45,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
 
         descriptors.addAll(super.getSupportedPropertyDescriptors())
-
-        descriptors.add(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT)
-        descriptors.add(KafkaRecordStreamSQLAggregator.SQL_QUERY)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -61,13 +58,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-            val inputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_TOPICS).asString
-            val outputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString
-
             rdd.foreachPartition(partition => {
                 try {
                     if (partition.nonEmpty) {
-
                         /**
                           * index to get the correct offset range for the rdd partition we're working on
                           * This is safe because we haven't shuffled or otherwise disrupted partitioning,
@@ -143,7 +136,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             /**
                               * compute metrics
                               */
-                            val processorMetrics = ProcessorMetrics.computeMetrics(
+                            ProcessorMetrics.computeMetrics(
                                 pipelineMetricPrefix + processorContext.getName + ".",
                                 incomingEvents,
                                 outgoingEvents,
@@ -188,16 +181,12 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-
-                        /**
-                          * save latest offset to Zookeeper
-                          */
-                        zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
                         pipelineTimerContext.stop()
                     }
                 }
                 catch {
                     case ex: OffsetOutOfRangeException =>
+                        val inputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_TOPICS).asString
                         val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
                         val latestOffsetsString = zkSink.value.loadOffsetRangesFromZookeeper(
                             brokerList,
@@ -210,16 +199,11 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             .mkString(", ")
                         logger.error(s"exception : ${ex.toString}")
                         logger.error(s"unable to process partition. current Offsets $offestsString latest offsets $latestOffsetsString")
-
                 }
-            }
-            )
-            return Some(offsetRanges)
+            })
+            Some(offsetRanges)
         }
-
-        None
+        else None
     }
-
 }
-
 

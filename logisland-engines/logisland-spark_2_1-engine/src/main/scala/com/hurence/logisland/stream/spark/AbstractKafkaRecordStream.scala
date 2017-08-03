@@ -23,13 +23,12 @@ import java.util.Collections
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.Record
-import com.hurence.logisland.serializer.{AvroSerializer, BytesArraySerializer, JsonSerializer, KryoSerializer, RecordSerializer}
+import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
-import kafka.message.MessageAndMetadata
 import kafka.utils.ZkUtils
 import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
@@ -37,14 +36,15 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.{Assign, Subscribe}
+import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.kafka010.{CanCommitOffsets, KafkaUtils, OffsetRange}
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConversions._
 
 object AbstractKafkaRecordStream {
 
@@ -291,6 +291,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
     protected var currentJobVersion: Int = 0
     protected var lastCheckCount: Int = 0
+    protected var needMetricsReset = false
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -463,8 +464,32 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
                 val offsetRanges = process(rdd)
                 // some time later, after outputs have completed
-                if (offsetRanges.isDefined)
+                if (offsetRanges.nonEmpty){
                     kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+                    needMetricsReset = true
+                }
+                else if (needMetricsReset) {
+                    try {
+
+                        val pipelineMetricPrefix = "pipeline." + streamContext.getIdentifier + "."
+                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "processingTime").time()
+
+                        streamContext.getProcessContexts.foreach(processorContext => {
+                            UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processingTime")
+                                .time()
+                                .stop()
+
+                            ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                        })
+                        pipelineTimerContext.stop()
+                    } catch {
+                        case ex: Throwable =>
+                            logger.error(s"exception : ${ex.toString}")
+                            None
+                    } finally {
+                        needMetricsReset = false
+                    }
+                }
             })
         } catch {
             case ex: Throwable =>
