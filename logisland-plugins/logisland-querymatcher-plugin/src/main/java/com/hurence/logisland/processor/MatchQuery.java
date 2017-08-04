@@ -71,6 +71,14 @@ public class MatchQuery extends AbstractProcessor {
             .defaultValue("alert_match")
             .build();
 
+    public static final PropertyDescriptor RECORD_TYPE_UPDATE_POLICY = new PropertyDescriptor.Builder()
+            .name("record.type.updatePolicy")
+            .description("the policy that controls whether the type of the record should be overwritten (default behavior) or not.")
+            .required(false)
+            .addValidator(new StandardValidators.EnumValidator(RecordTypeUpdatePolicy.class))
+            .defaultValue(RecordTypeUpdatePolicy.overwrite.toString())
+            .build();
+
     public static final PropertyDescriptor ON_MISS_POLICY = new PropertyDescriptor.Builder()
             .name("policy.onmiss")
             .description("the policy applied to miss events: " +
@@ -100,6 +108,7 @@ public class MatchQuery extends AbstractProcessor {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(NUMERIC_FIELDS);
         descriptors.add(OUTPUT_RECORD_TYPE);
+        descriptors.add(RECORD_TYPE_UPDATE_POLICY);
         descriptors.add(ON_MATCH_POLICY);
         descriptors.add(ON_MISS_POLICY);
         descriptors.add(AbstractProcessor.INCLUDE_INPUT_RECORDS);
@@ -148,6 +157,20 @@ public class MatchQuery extends AbstractProcessor {
         forward
     }
 
+    /**
+     * The policy that defines the behaviour when a record did not match any query.
+     */
+    enum RecordTypeUpdatePolicy {
+        /**
+         * If the record matches a query, then replace its type (record_type). This is the default value.
+         */
+        overwrite, /* legacy */
+        /**
+         * Retain the original record type (the one present in the incoming record)
+         */
+        keep
+    }
+
     private Monitor monitor;
     private KeywordAnalyzer keywordAnalyzer;
     private StandardAnalyzer standardAnalyzer;
@@ -155,6 +178,7 @@ public class MatchQuery extends AbstractProcessor {
     private Map<String, MatchingRule> matchingRules;
     private OnMissPolicy onMissPolicy;
     private OnMatchPolicy onMatchPolicy;
+    private RecordTypeUpdatePolicy recordTypeUpdatePolicy;
 
     @Override
     public void init(final ProcessContext context) {
@@ -166,6 +190,7 @@ public class MatchQuery extends AbstractProcessor {
         matchingRules = new HashMap<>();
         onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
         onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
+        recordTypeUpdatePolicy = RecordTypeUpdatePolicy.valueOf(context.getPropertyValue(RECORD_TYPE_UPDATE_POLICY).asString());
         NumericQueryParser queryMatcher = new NumericQueryParser("field");
 
 
@@ -259,6 +284,7 @@ public class MatchQuery extends AbstractProcessor {
 
         MatchHandlers.MatchHandler _matchHandler = null;
 
+
         if (onMatchPolicy==OnMatchPolicy.first && onMissPolicy==OnMissPolicy.discard) {
             // Legacy behaviour
             _matchHandler = new MatchHandlers.LegacyMatchHandler();
@@ -277,7 +303,8 @@ public class MatchQuery extends AbstractProcessor {
             docMatch.getMatches().forEach(queryMatch ->
                 matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
                                          context,
-                                         matchingRules.get(queryMatch.getQueryId()))
+                                         matchingRules.get(queryMatch.getQueryId()),
+                                         recordTypeUpdatePolicy)
             );
 
         }
