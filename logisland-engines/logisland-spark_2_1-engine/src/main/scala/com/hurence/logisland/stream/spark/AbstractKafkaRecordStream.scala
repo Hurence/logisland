@@ -338,6 +338,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val inputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_TOPICS).asString.split(",").toSet
             val outputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString.split(",").toSet
             val errorTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString.split(",").toSet
+            val metricsTopics = AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC.getValue.split(",").toSet
+
             val topicAutocreate = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_AUTOCREATE).asBoolean().booleanValue()
             val topicDefaultPartitions = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_PARTITIONS).asInteger().intValue()
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
@@ -376,6 +378,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
+                createTopicsIfNeeded(zkUtils, metricsTopics, 1, 1)
             }
 
 
@@ -471,17 +474,20 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 else if (needMetricsReset) {
                     try {
 
-                        val pipelineMetricPrefix = "pipeline." + streamContext.getIdentifier + "."
-                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "processingTime").time()
+                        for( partitionId <- 0 to rdd.getNumPartitions) {
+                            val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                                "partition" + partitionId + "."
+                            val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-                        streamContext.getProcessContexts.foreach(processorContext => {
-                            UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processingTime")
-                                .time()
-                                .stop()
+                            streamContext.getProcessContexts.foreach(processorContext => {
+                                UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                    .time()
+                                    .stop()
 
-                            ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
-                        })
-                        pipelineTimerContext.stop()
+                                ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                            })
+                            pipelineTimerContext.stop()
+                        }
                     } catch {
                         case ex: Throwable =>
                             logger.error(s"exception : ${ex.toString}")

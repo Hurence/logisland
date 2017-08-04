@@ -120,8 +120,9 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
-                        val pipelineMetricPrefix = "pipeline." + streamContext.getIdentifier + "."
-                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "processingTime").time()
+                        val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                            "partition" + partitionId + "."
+                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
 
 
                         /**
@@ -151,7 +152,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             val processor = processorContext.getProcessor
                             val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
                                 processorContext.getName + ".processingTime").time()
-
 
                             if (firstPass) {
                                 /**
