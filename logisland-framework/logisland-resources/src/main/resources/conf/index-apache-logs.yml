@@ -68,8 +68,8 @@ engine:
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
-        # smallest, largest
-       # kafka.manual.offset.reset: smallest
+        # earliest, latest
+        kafka.manual.offset.reset: latest
       processorConfigurations:
 
         # parse apache logs

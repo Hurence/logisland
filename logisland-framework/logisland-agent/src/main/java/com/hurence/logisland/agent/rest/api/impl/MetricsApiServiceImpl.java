@@ -4,41 +4,30 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hurence.logisland.agent.rest.api.*;
+import com.hurence.logisland.agent.rest.api.MetricsApiService;
+import com.hurence.logisland.agent.rest.api.NotFoundException;
+import com.hurence.logisland.kafka.registry.KafkaRegistry;
+import com.hurence.logisland.kafka.registry.KafkaRegistryConfig;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.hurence.logisland.agent.rest.api.NotFoundException;
-
-import com.hurence.logisland.kafka.registry.KafkaRegistry;
-import com.hurence.logisland.kafka.registry.KafkaRegistryConfig;
-import kafka.admin.ConsumerGroupCommand;
-import kafka.api.OffsetRequest;
-import kafka.common.TopicAndPartition;
-import kafka.utils.ZkUtils;
-import org.apache.commons.collections.map.HashedMap;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.errors.WakeupException;
-import org.apache.kafka.common.security.JaasUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import scala.Option;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-07-28T16:23:56.034+02:00")
 public class MetricsApiServiceImpl extends MetricsApiService {
 
     private static final int DEFAULT_ZK_SESSION_TIMEOUT_MS = 10 * 1000;
     private static final int DEFAULT_ZK_CONNECTION_TIMEOUT_MS = 8 * 1000;
-    private static final int DEFAULT_POLLING_TIMEOUT_MS = 5 * 1000;
+    private static final int DEFAULT_POLLING_TIMEOUT_MS = 2 * 1000;
 
-    private static final int METRICS_CLEAR_MS = 10 * 1000;
     private static final String DEFAULT_GROUP_IP = "LogislandAgent";
 
 
@@ -69,18 +58,8 @@ public class MetricsApiServiceImpl extends MetricsApiService {
         @Override
         public void run() {
 
-
-            TimerTask timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    metrics.clear();
-                }
-            };
-            Timer timer = new Timer("MetricsClearedTimer");//create a new Timer
-            timer.scheduleAtFixedRate(timerTask, METRICS_CLEAR_MS, METRICS_CLEAR_MS);//this line starts the timer at the same time its executed
-
-
-            Pattern p = Pattern.compile("(.*?)[.](.*?)[.](.*)");
+            Pattern mainPattern = Pattern.compile("(.*?)[.](.*?)[.](.*)");
+            Pattern logislandPattern = Pattern.compile("(.*?)[.](.*?)[.](.*?)[.]partition(.*?)[.](.*?)[.](.*)");
             ObjectMapper objectMapper = new ObjectMapper();
             Properties configProperties = new Properties();
             configProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
@@ -137,17 +116,29 @@ public class MetricsApiServiceImpl extends MetricsApiService {
                         }
 
 
-                        Matcher m = p.matcher(record.key());
-                        if (m.matches()) {
+                        Matcher mainMatcher = mainPattern.matcher(record.key());
+                        if (mainMatcher.matches()) {
                             StringBuilder sbuf = new StringBuilder();
                             Formatter fmt = new Formatter(sbuf);
 
-                            int dot1 = record.key().indexOf(".");
-                            int dot2 = record.key().indexOf(".", dot1 + 1);
-                            String metricName = record.key().substring(dot2 +1 );
+                            if(mainMatcher.group(3).contains("partition")){
+                                Matcher secondaryMatcher = logislandPattern.matcher(mainMatcher.group(3));
+                                if(secondaryMatcher.matches()){
+                                    fmt.format("logisland_%s{ app_id=\"%s\", app_handler=\"%s\", job=\"%s\", pipeline=\"%s\", component=\"%s\", partition=\"%s\" } %s",
+                                            secondaryMatcher.group(6),
+                                            mainMatcher.group(1),
+                                            mainMatcher.group(2),
+                                            secondaryMatcher.group(1),
+                                            secondaryMatcher.group(3),
+                                            secondaryMatcher.group(5),
+                                            secondaryMatcher.group(4),
+                                            value);
+                                }
+                            }else {
+                                String metricName = mainMatcher.group(3).replaceAll("\\.", "_");
+                                fmt.format("%s{ app_id=\"%s\", app_handler=\"%s\" } %s", metricName, mainMatcher.group(1), mainMatcher.group(2), value);
+                            }
 
-
-                            fmt.format("%s{ app_id=\"%s\", app_handler=\"%s\" } %s", metricName, m.group(1), m.group(2), value);
 
                             metrics.put(record.key(), sbuf.toString());
                         }
@@ -190,7 +181,7 @@ public class MetricsApiServiceImpl extends MetricsApiService {
             stringBuilder.append(value != null ? value : "");
 
         }
-
+        stringBuilder.append("\n");
         return stringBuilder.toString();
     }
 
