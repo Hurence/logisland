@@ -474,7 +474,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 else if (needMetricsReset) {
                     try {
 
-                        for( partitionId <- 0 to rdd.getNumPartitions) {
+                      /*  for( partitionId <- 0 to rdd.getNumPartitions) {
                             val pipelineMetricPrefix = streamContext.getIdentifier + "." +
                                 "partition" + partitionId + "."
                             val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
@@ -487,7 +487,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                                 ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
                             })
                             pipelineTimerContext.stop()
-                        }
+                        }*/
                     } catch {
                         case ex: Throwable =>
                             logger.error(s"exception : ${ex.toString}")
