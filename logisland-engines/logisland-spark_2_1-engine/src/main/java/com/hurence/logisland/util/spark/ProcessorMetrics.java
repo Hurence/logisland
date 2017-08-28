@@ -22,8 +22,9 @@ import org.apache.spark.groupon.metrics.UserMetricsSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -34,7 +35,7 @@ public class ProcessorMetrics {
 
     public synchronized static void resetMetrics(final String metricPrefix) {
 
-        logger.info("reseting metrics " +metricPrefix );
+        logger.info("reseting metrics " + metricPrefix);
         UserMetricsSystem.gauge(metricPrefix + "incoming_messages").set(0);
         UserMetricsSystem.gauge(metricPrefix + "incoming_records").set(0);
         UserMetricsSystem.gauge(metricPrefix + "outgoing_records").set(0);
@@ -47,9 +48,8 @@ public class ProcessorMetrics {
         UserMetricsSystem.gauge(metricPrefix + "error_percentage").set(0);
         UserMetricsSystem.gauge(metricPrefix + "fields_per_record_average").set(0);
         UserMetricsSystem.gauge(metricPrefix + "bytes_per_second_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(0);
+        //UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(0);
     }
-
 
 
     /**
@@ -117,7 +117,7 @@ public class ProcessorMetrics {
                 UserMetricsSystem.gauge(metricPrefix + "error_percentage").set(0L);
 
 
-            UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(processingDurationInMillis);
+            //   UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(processingDurationInMillis);
 
         }
     }
