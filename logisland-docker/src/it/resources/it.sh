@@ -290,7 +290,7 @@ init_env()
     done
 
     DEFAULT_KAFKA_BROKER_HOST=${LOGISLAND_DOCKER_IMAGE_NAME}
-    IFS=: read ES_HOST ES_PORT <<< ${ES23_EXPOSED_9200}
+    IFS=':' read  ES_HOST ES_PORT <<< "${ES23_EXPOSED_9200}"
   else
     default_value JAVA_BIN `which java 2> /dev/null`
     default_value KAFKACAT_BIN `which kafkacat 2> /dev/null`

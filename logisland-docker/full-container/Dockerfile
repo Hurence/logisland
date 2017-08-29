@@ -1,5 +1,5 @@
-FROM hurence/kafka-spark
-MAINTAINER Hurence
+FROM hurence/kafka-spark:latest
+MAINTAINER support@hurence.com
 
 USER root
 

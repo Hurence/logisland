@@ -3,7 +3,7 @@ version: '3'
 
 services:
 
-  # Logisland + Elasticsearch 2.3
+  # Logisland
   logisland:
     image: hurence/logisland-hdp${hdp}
     container_name: logisland-hdp${hdp}
