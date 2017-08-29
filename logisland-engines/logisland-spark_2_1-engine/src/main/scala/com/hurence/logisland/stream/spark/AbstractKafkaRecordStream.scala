@@ -201,7 +201,7 @@ object AbstractKafkaRecordStream {
             "anything else: throw exception to the consumer.")
         .required(false)
         .allowableValues(LATEST_OFFSET, EARLIEST_OFFSET, NONE_OFFSET)
-        .defaultValue(NONE_OFFSET.getValue)
+        .defaultValue(EARLIEST_OFFSET.getValue)
         .build
 
     val LOGISLAND_AGENT_QUORUM = new PropertyDescriptor.Builder()
