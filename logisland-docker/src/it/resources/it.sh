@@ -275,7 +275,7 @@ init_env()
     default_value LOGISLAND_DOCKER_IMAGE_NAME "logisland-hdp${hdp}"
     default_value HBASE_DOCKER_IMAGE_NAME "hbase112"
     # elasticsearch 2.3.3 runs in logisland docker image
-    default_value ES23_DOCKER_IMAGE_NAME "${LOGISLAND_DOCKER_IMAGE_NAME}"
+    default_value ES23_DOCKER_IMAGE_NAME "elasticsearch23"
     default_value ES24_DOCKER_IMAGE_NAME "elasticsearch24"
     default_value ES5_DOCKER_IMAGE_NAME "elasticsearch5"
 
@@ -341,10 +341,14 @@ init_docker_env()
   require_non_null "DOCKER_CONTAINER_IP" "Unable to obtain ip address of docker container '${IMAGE_NAME}'"
   eval "${TAG}_DOCKER_CONTAINER_IP=${DOCKER_CONTAINER_IP}"
 
-  # Retrieve port mapped from <container>:9200 on localhost.
-  local ES_EXPOSED_9200=`${DOCKER_BIN} port "${IMAGE_NAME}" 9200/tcp`
-  require_non_null "ES_EXPOSED_9200" "Unable to obtain elasticsearch port to query 9200/tcp in docker container '${ES_EXPOSED_9200}'"
-  eval "${TAG}_EXPOSED_9200=${ES_EXPOSED_9200}"
+  if [[ "${1}" != "LOGISLAND" ]]
+  then
+    # Retrieve port mapped from <container>:9200 on localhost.
+    local ES_EXPOSED_9200=`${DOCKER_BIN} port "${IMAGE_NAME}" 9200/tcp`
+    require_non_null "ES_EXPOSED_9200" "Unable to obtain elasticsearch port to query 9200/tcp in docker container '${ES_EXPOSED_9200}'"
+    eval "${TAG}_EXPOSED_9200=${ES_EXPOSED_9200}"
+  fi
+
 }
 
 # Prints the provided log if DEBUG is set.

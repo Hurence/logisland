@@ -28,9 +28,8 @@ services:
       - 9092:9092
       - 9000:9000
       - 4050-4060:4050-4060
-      - 9203:9200
-      - 9303:9300
     links:
+      - "elasticsearch23"
       - "elasticsearch24"
       - "elasticsearch5"
     networks:
@@ -57,7 +56,7 @@ services:
 
   # Elasticsearch 2.4
   elasticsearch24:
-    image: hurence/elasticsearch-2.4
+    image: hurence/elasticsearch24
     container_name: elasticsearch24
     environment:
       # The cluster.name matches the one in all-tutorials.yml
@@ -69,6 +68,23 @@ services:
     ports:
       - 9204:9200
       - 9304:9300
+    networks:
+      - itnet
+
+  # Elasticsearch 2.3
+  elasticsearch23:
+    image: hurence/elasticsearch23
+    container_name: elasticsearch23
+    environment:
+      # The cluster.name matches the one in all-tutorials.yml
+      - cluster.name=elasticsearch-2.3
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9203:9200
+      - 9303:9300
     networks:
       - itnet
 
