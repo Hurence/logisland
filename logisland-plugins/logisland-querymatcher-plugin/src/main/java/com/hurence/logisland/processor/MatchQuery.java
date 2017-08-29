@@ -55,6 +55,15 @@ public class MatchQuery extends AbstractProcessor {
 
     public final static String ALERT_MATCH_NAME = "alert_match_name";
     public final static String ALERT_MATCH_QUERY = "alert_match_query";
+    protected Monitor monitor;
+    protected KeywordAnalyzer keywordAnalyzer;
+    protected StandardAnalyzer standardAnalyzer;
+    protected StopAnalyzer stopAnalyzer;
+    protected Map<String, MatchingRule> matchingRules;
+    protected OnMissPolicy onMissPolicy;
+    protected OnMatchPolicy onMatchPolicy;
+    protected RecordTypeUpdatePolicy recordTypeUpdatePolicy;
+    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
 
     public static final PropertyDescriptor NUMERIC_FIELDS = new PropertyDescriptor.Builder()
             .name("numeric.fields")
@@ -83,6 +92,14 @@ public class MatchQuery extends AbstractProcessor {
             .defaultValue(OnMissPolicy.discard.toString())
             .build();
 
+    public static final PropertyDescriptor RECORD_TYPE_UPDATE_POLICY = new PropertyDescriptor.Builder()
+            .name("record.type.updatePolicy")
+            .description("Record type update policy")
+            .required(false)
+            .addValidator(new StandardValidators.EnumValidator(RecordTypeUpdatePolicy.class))
+            .defaultValue(RecordTypeUpdatePolicy.overwrite.toString())
+            .build();
+
     public static final PropertyDescriptor ON_MATCH_POLICY = new PropertyDescriptor.Builder()
             .name("policy.onmatch")
             .description("the policy applied to match events: " +
@@ -100,6 +117,7 @@ public class MatchQuery extends AbstractProcessor {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(NUMERIC_FIELDS);
         descriptors.add(OUTPUT_RECORD_TYPE);
+        descriptors.add(RECORD_TYPE_UPDATE_POLICY);
         descriptors.add(ON_MATCH_POLICY);
         descriptors.add(ON_MISS_POLICY);
         descriptors.add(AbstractProcessor.INCLUDE_INPUT_RECORDS);
@@ -118,7 +136,7 @@ public class MatchQuery extends AbstractProcessor {
                 .build();
     }
 
-    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
+
 
     /**
      * The policy that defines the behaviour when a record matches a query.
@@ -148,13 +166,19 @@ public class MatchQuery extends AbstractProcessor {
         forward
     }
 
-    private Monitor monitor;
-    private KeywordAnalyzer keywordAnalyzer;
-    private StandardAnalyzer standardAnalyzer;
-    private StopAnalyzer stopAnalyzer;
-    private Map<String, MatchingRule> matchingRules;
-    private OnMissPolicy onMissPolicy;
-    private OnMatchPolicy onMatchPolicy;
+    /**
+     * The policy that defines the behaviour when a record did not match any query.
+     */
+    enum RecordTypeUpdatePolicy {
+        /**
+         * If the record matches a query, then replace its type (record_type). This is the default value.
+         */
+        overwrite, /* legacy */
+        /**
+         * Retain the original record type (the one present in the incoming record)
+         */
+        keep
+    }
 
     @Override
     public void init(final ProcessContext context) {
@@ -277,7 +301,8 @@ public class MatchQuery extends AbstractProcessor {
             docMatch.getMatches().forEach(queryMatch ->
                 matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
                                          context,
-                                         matchingRules.get(queryMatch.getQueryId()))
+                                         matchingRules.get(queryMatch.getQueryId()),
+                                         recordTypeUpdatePolicy)
             );
 
         }

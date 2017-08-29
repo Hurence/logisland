@@ -49,7 +49,8 @@ class MatchHandlers {
          */
         void handleMatch(Record record,
                          ProcessContext context,
-                         MatchingRule matchingRule);
+                         MatchingRule matchingRule,
+                         MatchQuery.RecordTypeUpdatePolicy recordTypeUpdatePolicy);
 
         /**
          * Returns the processed records.
@@ -71,11 +72,16 @@ class MatchHandlers {
         @Override
         public void handleMatch(final Record record,
                                 final ProcessContext context,
-                                final MatchingRule matchingRule) {
+                                final MatchingRule matchingRule,
+                                MatchQuery.RecordTypeUpdatePolicy recordTypeUpdatePolicy) {
             this.outRecords.add(
-                    new StandardRecord(record).setType(context.getPropertyValue(MatchQuery.OUTPUT_RECORD_TYPE).asString())
-                                              .setStringField(ALERT_MATCH_NAME, matchingRule.getName())
-                                              .setStringField(ALERT_MATCH_QUERY, matchingRule.getQuery()));
+                    new StandardRecord(record)
+                            .setType(
+                                (recordTypeUpdatePolicy == MatchQuery.RecordTypeUpdatePolicy.overwrite) ?
+                                        context.getPropertyValue(MatchQuery.OUTPUT_RECORD_TYPE).asString() : record.getType()
+                            )
+                            .setStringField(ALERT_MATCH_NAME, matchingRule.getName())
+                            .setStringField(ALERT_MATCH_QUERY, matchingRule.getLegacyQuery()));
         }
 
         @Override
@@ -97,7 +103,8 @@ class MatchHandlers {
         @Override
         public void handleMatch(final Record record,
                                 final ProcessContext context,
-                                final MatchingRule matchingRule) {
+                                final MatchingRule matchingRule,
+                                MatchQuery.RecordTypeUpdatePolicy recordTypeUpdatePolicy) {
             com.hurence.logisland.record.Field nameField = null;
             com.hurence.logisland.record.Field queryField = null;
 
@@ -105,12 +112,16 @@ class MatchHandlers {
 
             if ( outRecord == null ) {
                 // First match. Clone record and set query information.
-                outRecord = new StandardRecord(record).setType(context.getPropertyValue(MatchQuery.OUTPUT_RECORD_TYPE).asString());
+                outRecord = new StandardRecord(record)
+                        .setType(
+                                (recordTypeUpdatePolicy == MatchQuery.RecordTypeUpdatePolicy.overwrite) ?
+                                        context.getPropertyValue(MatchQuery.OUTPUT_RECORD_TYPE).asString() : record.getType()
+                        );
                 this.outRecords.put(record.getId(), outRecord);
 
                 // Keep all matched query information.
                 nameField = new com.hurence.logisland.record.Field(ALERT_MATCH_NAME, FieldType.ARRAY, new String[]{matchingRule.getName()});
-                queryField = new com.hurence.logisland.record.Field(ALERT_MATCH_QUERY, FieldType.ARRAY, new String[]{matchingRule.getQuery()});
+                queryField = new com.hurence.logisland.record.Field(ALERT_MATCH_QUERY, FieldType.ARRAY, new String[]{matchingRule.getLegacyQuery()});
             }
             else {
                 // Append query information to existing one(s).
@@ -121,7 +132,7 @@ class MatchHandlers {
 
                 String[] queries = (String[])outRecord.getField(ALERT_MATCH_QUERY).getRawValue();
                 queries = Arrays.copyOf(queries, queries.length+1);
-                queries[names.length-1] = matchingRule.getQuery();
+                queries[names.length-1] = matchingRule.getLegacyQuery();
                 queryField = new com.hurence.logisland.record.Field(ALERT_MATCH_QUERY, FieldType.ARRAY, queries);
             }
 
@@ -167,9 +178,10 @@ class MatchHandlers {
         @Override
         public void handleMatch(final Record record,
                                 final ProcessContext context,
-                                final MatchingRule matchingRule) {
+                                final MatchingRule matchingRule,
+                                MatchQuery.RecordTypeUpdatePolicy recordTypeUpdatePolicy) {
             // Forward processing of tagging to either only first or concat matchHandler.
-            this.matchHandler.handleMatch(record, context, matchingRule);
+            this.matchHandler.handleMatch(record, context, matchingRule, recordTypeUpdatePolicy);
             // Remove the processed record from the records to append in case of non-match.
             inputRecords.remove(record.getId());
         }

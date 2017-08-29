@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 
 public class SplitFieldTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SplitFieldTest.class);
-
     private Record getRecord() {
         Record record1 = new StandardRecord();
         record1.setField("location", FieldType.STRING, "https://www.mycompany.com/fr/search");
