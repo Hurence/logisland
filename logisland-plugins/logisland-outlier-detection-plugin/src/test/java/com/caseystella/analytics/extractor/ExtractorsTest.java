@@ -17,10 +17,8 @@ package com.caseystella.analytics.extractor;
 
 import com.caseystella.analytics.DataPoint;
 import com.google.common.collect.Iterables;
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.hurence.logisland.util.string.Multiline;
-import org.apache.commons.lang3.Conversion;
 import org.junit.Assert;
 import org.junit.Test;
 

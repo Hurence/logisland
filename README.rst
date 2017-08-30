@@ -9,6 +9,9 @@ Logisland
    :target: https://gitter.im/logisland/logisland?utm_source=share-link&utm_medium=link&utm_campaign=share-link
    :alt: Gitter
 
+.. image:: https://api.codacy.com/project/badge/Grade/da0d2b72486b41a591767881b8978bba
+   :target: https://www.codacy.com/app/oalam/logisland?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hurence/logisland&amp;utm_campaign=Badge_Grade)
+   :alt: Codacy Badge
 
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_  and
 chat with us on `gitter <https://gitter.im/logisland/logisland>`_

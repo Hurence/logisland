@@ -34,9 +34,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
 
-object KafkaRecordStreamParallelProcessing {
-
-}
+object KafkaRecordStreamParallelProcessing
 
 class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
     val logger = LoggerFactory.getLogger(KafkaRecordStreamParallelProcessing.getClass.getName)
