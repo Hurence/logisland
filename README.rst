@@ -1,6 +1,10 @@
 Logisland
 =========
 
+.. image:: https://api.codacy.com/project/badge/Grade/da0d2b72486b41a591767881b8978bba
+   :alt: Codacy Badge
+   :target: https://www.codacy.com/app/oalam/logisland?utm_source=github.com&utm_medium=referral&utm_content=Hurence/logisland&utm_campaign=badger
+
 .. image:: https://travis-ci.org/Hurence/logisland.svg?branch=master
    :target: https://travis-ci.org/Hurence/logisland
 
