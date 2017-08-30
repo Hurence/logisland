@@ -1,20 +1,29 @@
 package com.hurence.logisland.kafka.utils;
 
 
+import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.cluster.Broker;
 import kafka.common.ErrorMapping;
 import kafka.common.TopicAndPartition;
+
+import kafka.javaapi.FetchRequest;
+import kafka.javaapi.FetchResponse;
 import kafka.javaapi.OffsetRequest;
 import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
+import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.utils.ZkUtils;
+import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.security.JaasUtils;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.util.parsing.json.JSON;
 
+import java.io.IOException;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +31,13 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class KafkaOffsetUtils {
 
+    private static final int AVG_LINE_SIZE_IN_BYTES = 1000;
+
     private static final int DEFAULT_ZK_SESSION_TIMEOUT_MS = 30 * 1000;
     private static final int DEFAULT_ZK_CONNECTION_TIMEOUT_MS = 30 * 1000;
     private ZkUtils zkUtils;
+    private SimpleConsumer consumer = null;
+    private Broker leaderBroker;
 
     private static final Logger log = LoggerFactory.getLogger(KafkaOffsetUtils.class);
 

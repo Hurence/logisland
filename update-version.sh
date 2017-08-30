@@ -48,13 +48,15 @@ fi
 
 
 
-SED_REPLACE="s/${old_version}/${new_version}/g"
+SED_REPLACE="s/$old_version/$new_version/g"
 
 ## now loop through the above array
 if [ "$dry_run" = true ]; then
+
+
      grep -r -n -i -l \
         --exclude-dir=\*{.idea,.git,target,nltk} \
-        --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap} "${old_version}" .
+        --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap} "$old_version" .
 else
 
     if [ -z "${new_version}" ]
@@ -64,8 +66,8 @@ else
       exit 1
     fi
 
-    for i in $( grep -r -n -i -l --exclude-dir=\*{.idea,.git,target,nltk} --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap}  "${old_version}" . ) ; do
-        echo  "${i}";
-        sed -i '' "${SED_REPLACE}" "${i}"
+    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git,target,nltk} --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap}  "$old_version" .` ; do
+        echo  $i;
+        sed -i '' "$SED_REPLACE" $i
      done
 fi
