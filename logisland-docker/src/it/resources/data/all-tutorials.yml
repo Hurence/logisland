@@ -45,7 +45,7 @@ engine:
       type: service
       documentation: elasticsearch 2.3.3 service implementation
       configuration:
-        hosts: sandbox:9300
+        hosts: elasticsearch23:9300
         cluster.name: elasticsearch-2.3
         batch.size: 20000
 
@@ -148,26 +148,6 @@ engine:
             es.index.field: search_index
             es.type.field: record_type
 
-
-    # indexing elasticsearch 2.4
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: a processor that push events to ES 2.4
-      configuration:
-        kafka.input.topics: save_to_es
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
         # Bulk add to elasticsearch
         - processor: es_publisher
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
@@ -180,26 +160,6 @@ engine:
             timebased.index: yesterday
             es.index.field: search_index
             es.type.field: record_type
-
-
-    # indexing
-    - stream: indexing_stream5
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: a processor that push events to ES 5
-      configuration:
-        kafka.input.topics: save_to_es
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
 
         # Bulk add to elasticsearch
         - processor: es_publisher

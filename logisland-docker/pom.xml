@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.1</version>
+        <version>0.10.2</version>
     </parent>
     <packaging>pom</packaging>
     <artifactId>logisland-docker</artifactId>
@@ -48,24 +48,24 @@
                                     </resources>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>build-elasticsearch-2.4</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                                <configuration>
-                                    <imageName>hurence/elasticsearch-2.4</imageName>
-                                    <dockerDirectory>${project.basedir}/elasticsearch-2.4</dockerDirectory>
-                                    <imageTags>
-                                        <imageTag>${project.version}</imageTag>
-                                    </imageTags>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+                            <!--<execution>
+                               <id>build-elasticsearch-2.4</id>
+                               <phase>package</phase>
+                               <goals>
+                                   <goal>build</goal>
+                               </goals>
+                               <configuration>
+                                   <imageName>hurence/elasticsearch-2.4</imageName>
+                                   <dockerDirectory>${project.basedir}/elasticsearch-2.4</dockerDirectory>
+                                   <imageTags>
+                                       <imageTag>${project.version}</imageTag>
+                                   </imageTags>
+                               </configuration>
+                           </execution>-->
+                       </executions>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+   </profiles>
 </project>

@@ -469,9 +469,9 @@ err-code@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/err-code/-/err-code-1.1.1.tgz#739d71b6851f24d050ea18c79a5b722420771d59"
 
-es5-ext@^0.10.12, es5-ext@^0.10.7, es5-ext@^0.10.9, es5-ext@~0.10.11, es5-ext@~0.10.2:
-  version "0.10.13"
-  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.13.tgz#a390ab717bde1ce3b4cbaeabe23ca8fbddcb06f6"
+es5-ext@^0.10.22, es5-ext@^0.10.7, es5-ext@^0.10.9, es5-ext@~0.10.21, es5-ext@~0.10.2:
+  version "0.10.23"
+  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.23.tgz#a390ab717bde1ce3b4cbaeabe23ca8fbddcb06f6"
   dependencies:
     es6-iterator "2"
     es6-symbol "~3.1"
@@ -489,13 +489,13 @@ es6-symbol@3, es6-symbol@~3.1:
   resolved "https://registry.yarnpkg.com/es6-symbol/-/es6-symbol-3.1.0.tgz#94481c655e7a7cad82eba832d97d5433496d7ffa"
   dependencies:
     d "~0.1.1"
-    es5-ext "~0.10.11"
+    es5-ext "~0.10.21"
 
 es6-template-strings@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/es6-template-strings/-/es6-template-strings-2.0.1.tgz#b166c6a62562f478bb7775f6ca96103a599b4b2c"
   dependencies:
-    es5-ext "^0.10.12"
+    es5-ext "^0.10.22"
     esniff "^1.1"
 
 escape-html@~1.0.3:
@@ -511,7 +511,7 @@ esniff@^1.1:
   resolved "https://registry.yarnpkg.com/esniff/-/esniff-1.1.0.tgz#c66849229f91464dede2e0d40201ed6abf65f2ac"
   dependencies:
     d "1"
-    es5-ext "^0.10.12"
+    es5-ext "^0.10.22"
 
 esutils@^2.0.2:
   version "2.0.2"
@@ -1451,8 +1451,8 @@ resolve@^1.1.6, resolve@^1.1.7:
     path-parse "^1.0.5"
 
 retry@^0.10.0:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/retry/-/retry-0.10.1.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/retry/-/retry-0.10.2.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
 
 right-align@^0.1.1:
   version "0.1.3"

@@ -24,7 +24,7 @@ import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.util.JSONUtil;
 import com.google.common.base.Function;
-import org.apache.hadoop.hbase.util.Bytes;
+
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -55,7 +55,7 @@ public class OutlierRunner {
         int numLines = 0;
         for(String line = null;(line = br.readLine()) != null;numLines++){
             if(numLines >= linesToSkip) {
-                for(DataPoint dp : extractor.extract(null, Bytes.toBytes(line), true)) {
+                for(DataPoint dp : extractor.extract(null, line.getBytes(), true)) {
                     Outlier o = config.getSketchyOutlierAlgorithm().analyze(dp);
                     callback.apply(new AbstractMap.SimpleEntry<>(dp, o));
                     if(reportedSeverities.contains(o.getSeverity())) {

@@ -52,8 +52,10 @@ public class KafkaRegistryRestApplication extends Application<KafkaRegistryConfi
         config.register(new DefaultApi(kafkaRegistry));
         config.register(new JobsApi(kafkaRegistry));
         config.register(new TopicsApi(kafkaRegistry));
-        config.register(new ConfigsApi(kafkaRegistry));
+
         config.register(new ProcessorsApi(kafkaRegistry));
+        config.register(new MetricsApi(kafkaRegistry));
+        config.register(new ConfigsApi(kafkaRegistry));
     }
 
     @Override

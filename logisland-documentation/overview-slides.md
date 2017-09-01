@@ -342,7 +342,7 @@ you configure here your Spark job parameters
 
 Download the latest release from [github](https://github.com/Hurence/logisland/releases)
 
-	tar -xzf logisland-0.10.1-bin.tar.gz
+	tar -xzf logisland-0.10.2-bin.tar.gz
 
 Create a job configuration
 

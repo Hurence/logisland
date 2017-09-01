@@ -19,11 +19,17 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>0.10.1</version>
+        <version>0.10.2</version>
     </parent>
 
     <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+
+        <shaded.package>${logisland.shade.packageName}.logisland-hadoop27</shaded.package>
+    </properties>
+
 
     <dependencies>
    <!--     <dependency>
@@ -52,7 +58,10 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
-
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -75,6 +84,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>
@@ -94,12 +108,36 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase-client-service-api</artifactId>
-            <version>0.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hadoop-utils</artifactId>
-            <version>0.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -111,9 +149,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -121,21 +159,73 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.guava:guava</include>
-                                </includes>
-                            </artifactSet>
+                           <!-- <promoteTransitiveDependencies>true</promoteTransitiveDependencies>-->
 
-                            <relocations>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.hurence.logisland:logisland-api</exclude>
+                                    <exclude>com.hurence.logisland:logisland-utils</exclude>
+                                    <exclude>com.hurence.logisland:logisland-hbase-client-service-api</exclude>
+                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>junit:junit</exclude>
+                                    <exclude>jmock:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
+                                    <exclude>org.scala-lang:*</exclude>
+                                    <exclude>org.apache.zookeeper:*</exclude>
+                                    <exclude>commons-io:*</exclude>
+                                    <exclude>commons-cli:*</exclude>
+                                    <exclude>commons-codec:*</exclude>
+                                    <exclude>commons-collections:*</exclude>
+                                    <exclude>joda-time:*</exclude>
+                                    <exclude>org.json:*</exclude>
+                                    <exclude>org.apache.curator:*</exclude>
+                                    <exclude>org.apache.avro:*</exclude>
+                                    <exclude>org.codehaus.jackson:*</exclude>
+                                    <exclude>com.fasterxml.jackson.dataformat:*</exclude>
+                                    <exclude>com.googlecode.json:*</exclude>
+                                    <exclude>org.apache.commons.beanutils:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
+                                    <manifestEntries>
+                                        <Change>GIT commit ID</Change>
+                                        <Build-Date>${maven.build.timestamp}</Build-Date>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                           <!-- <relocations>
+
                                 <relocation>
                                     <pattern>com.google</pattern>
-                                    <shadedPattern>com.hurence.logisland.com.google</shadedPattern>
+                                    <shadedPattern>${shaded.package}.com.google</shadedPattern>
                                 </relocation>
-                            </relocations>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
-                            </transformers>
+
+                                <relocation>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache</shadedPattern>
+                                </relocation>
+
+                            </relocations>-->
+
                         </configuration>
                     </execution>
                 </executions>

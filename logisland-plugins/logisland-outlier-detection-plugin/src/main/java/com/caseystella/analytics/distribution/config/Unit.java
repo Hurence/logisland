@@ -17,10 +17,12 @@ package com.caseystella.analytics.distribution.config;
 
 import com.caseystella.analytics.distribution.TimeRange;
 import com.google.common.base.Function;
-import org.joda.time.*;
+
+import org.joda.time.DateTime;
+import org.joda.time.Months;
+import org.joda.time.Years;
 
 import javax.annotation.Nullable;
-import java.util.Date;
 
 public enum Unit implements Function<TimeRange, Long> {
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.util.spark
+package com.hurence.logisland.util.kafka
 
 import java.io.ByteArrayOutputStream
 
@@ -38,22 +38,25 @@ class KafkaSink(createProducer: () => KafkaProducer[Array[Byte], Array[Byte]]) e
       */
     def produce(topic: String, events: List[Record], serializer:RecordSerializer) = {
 
-        val messages = events.map(event => {
-            // messages are serialized with kryo first
-            val baos: ByteArrayOutputStream = new ByteArrayOutputStream
-            serializer.serialize(baos, event)
+        // do nothing if topic name is 'none'
+        if (!topic.equals("none")) {
+            val messages = events.map(event => {
+                // messages are serialized with kryo first
+                val baos: ByteArrayOutputStream = new ByteArrayOutputStream
+                serializer.serialize(baos, event)
 
-            // and then converted to KeyedMessage
-            val key = if( event.hasField(FieldDictionary.RECORD_ID))
-                event.getField(FieldDictionary.RECORD_ID).asString()
-            else
-                ""
-            val message = new ProducerRecord(topic, key.getBytes(), baos.toByteArray)
-            baos.close()
+                // and then converted to KeyedMessage
+                val key = if (event.hasField(FieldDictionary.RECORD_ID))
+                    event.getField(FieldDictionary.RECORD_ID).asString()
+                else
+                    ""
+                val message = new ProducerRecord(topic, key.getBytes(), baos.toByteArray)
+                baos.close()
 
 
-            producer.send(message)
-        })
+                producer.send(message)
+            })
+        }
     }
 }
 

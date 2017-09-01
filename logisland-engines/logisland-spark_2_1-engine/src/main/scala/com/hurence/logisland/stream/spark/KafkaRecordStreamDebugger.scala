@@ -34,8 +34,8 @@ import java.util
 import java.util.Collections
 
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
-import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
+import com.hurence.logisland.util.spark.ProcessorMetrics
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.TaskContext
@@ -132,20 +132,6 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                           */
                         outgoingEvents = processor.process(processorContext, incomingEvents)
 
-                        /**
-                          * send metrics if requested
-                          */
-                        processingMetrics.addAll(ProcessorMetrics.computeMetrics(
-                            appName,
-                            streamContext.getName,
-                            inputTopics,
-                            outputTopics,
-                            partitionId,
-                            incomingEvents,
-                            outgoingEvents,
-                            offsetRange.fromOffset,
-                            offsetRange.untilOffset,
-                            System.currentTimeMillis() - startTime))
 
                     })
 
@@ -186,11 +172,6 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                         errorSerializer
                     )
 
-                    kafkaSink.value.produce(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                        processingMetrics.toList,
-                        serializer
-                    )
                     logger.info("saving offsets")
 
                     /**

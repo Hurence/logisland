@@ -43,6 +43,7 @@ import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
+import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
 
 import scala.collection.JavaConversions._
 
@@ -281,6 +282,25 @@ object KafkaStreamProcessingEngine {
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .defaultValue("8")
         .build
+
+    val SPARK_MEMORY_STORAGE_FRACTION = new PropertyDescriptor.Builder()
+        .name("spark.memory.storageFraction")
+        .description("expresses the size of R as a fraction of M (default 0.5). " +
+            "R is the storage space within M where cached blocks immune to being evicted by execution.")
+        .required(false)
+        .addValidator(StandardValidators.FLOAT_VALIDATOR)
+        .defaultValue("0.5")
+        .build
+
+    val SPARK_MEMORY_FRACTION = new PropertyDescriptor.Builder()
+        .name("spark.memory.fraction")
+        .description("expresses the size of M as a fraction of the (JVM heap space - 300MB) (default 0.75). " +
+            "The rest of the space (25%) is reserved for user data structures, internal metadata in Spark, " +
+            "and safeguarding against OOM errors in the case of sparse and unusually large records.")
+        .required(false)
+        .addValidator(StandardValidators.FLOAT_VALIDATOR)
+        .defaultValue("0.6")
+        .build
 }
 
 
@@ -316,6 +336,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_MAX_EXECUTOR_FAILURES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -390,6 +412,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_MAX_EXECUTOR_FAILURES)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
 
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
@@ -400,6 +424,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         SparkUtils.customizeLogLevels
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
+        UserMetricsSystem.initialize(sc, "LogislandMetrics")
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
@@ -412,7 +437,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()

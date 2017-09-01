@@ -15,11 +15,9 @@
  */
 package com.caseystella.analytics.converters.csv;
 
-import com.caseystella.analytics.converters.Converter;
 import com.caseystella.analytics.converters.MappingConverter;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
-import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -48,7 +46,7 @@ public class CSVConverter implements MappingConverter, Serializable {
         if(parser == null) {
            initialize(config) ;
         }
-        String line = Bytes.toString(in);
+        String line = new String(in);
         if(line.trim().startsWith("#")) {
            return null;
         }

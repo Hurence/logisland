@@ -39,14 +39,34 @@ done
 
 
 
+if [ -z "${old_version}" ]
+then
+  echo "Please provide old version parameter"
+  usage
+  exit 1
+fi
+
+
+
 SED_REPLACE="s/$old_version/$new_version/g"
 
 ## now loop through the above array
 if [ "$dry_run" = true ]; then
-     grep -r -n -i --exclude-dir=\*{.idea,.git} --exclude="*.iml"  "$old_version" .
+
+
+     grep -r -n -i -l \
+        --exclude-dir=\*{.idea,.git,target,nltk} \
+        --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap} "$old_version" .
 else
 
-    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git} --exclude=*.iml  "$old_version" .` ; do
+    if [ -z "${new_version}" ]
+    then
+      echo "Please provide new version parameter or use dry run mode with -d"
+      usage
+      exit 1
+    fi
+
+    for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git,target,nltk} --exclude=\*{.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap}  "$old_version" .` ; do
         echo  $i;
         sed -i '' "$SED_REPLACE" $i
      done
