@@ -141,7 +141,7 @@ class KafkaReporter(
 
     private def counterJSON(counter: Counter): Option[String] = {
         val tpe = "type" -> "counter"
-        Some(compact(render(tpe ~ ("value" -> counter.getCount))))
+        Some(compact(render(tpe ~ ("value" -> counter.getCount)))
     }
 
     private def histJSON(hist: Histogram): Option[String] = {
