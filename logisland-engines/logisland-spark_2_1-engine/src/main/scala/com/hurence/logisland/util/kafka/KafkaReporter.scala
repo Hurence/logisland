@@ -36,7 +36,7 @@ class KafkaReporter(
     private def setUserProperties(props: Properties) {
         for {
             entry <- properties.entrySet().asScala
-            if entry.getKey().asInstanceOf[String].startsWith("prodconf_")
+            if (entry.getKey().asInstanceOf[String].startsWith("prodconf_"))
         } {
             val kv = entry.getValue().asInstanceOf[String].split('=')
             if (kv.length != 2) {
@@ -55,7 +55,7 @@ class KafkaReporter(
                 val props = new Properties()
 
                 // Set these, but may be overridden in setUserProperties
-                props.put("client.id", s"KafkaReporter-$kafkaEndpoint-$kafkaTopic".replace(':', '-'))
+                props.put("client.id", (s"KafkaReporter-$kafkaEndpoint-$kafkaTopic").replace(':', '-'))
 
                 // load any KafkaProducer conf settings passed in from metrics config
                 setUserProperties(props)
@@ -101,23 +101,21 @@ class KafkaReporter(
             logger.error(s"Failed Kafka client for $kafkaEndpoint: metric output ignored")
         } else {
             // dump metric output to the kafka topic
-            producer match {
-                case Some(prod) =>
-                    for {entry <- gauges.entrySet().asScala} {
-                        gaugeJSON(entry.getValue).foreach { jv => prod.send(metricRec(entry.getKey, jv)) }
-                    }
-                    for {entry <- counters.entrySet().asScala} {
-                        counterJSON(entry.getValue).foreach { jv => prod.send(metricRec(entry.getKey, jv)) }
-                    }
-                    for {entry <- histograms.entrySet().asScala} {
-                        histJSON(entry.getValue).foreach { jv => prod.send(metricRec(entry.getKey, jv)) }
-                    }
-                    for {entry <- meters.entrySet().asScala} {
-                        meterJSON(entry.getValue).foreach { jv => prod.send(metricRec(entry.getKey, jv)) }
-                    }
-                    for {entry <- timers.entrySet().asScala} {
-                        timerJSON(entry.getValue).foreach { jv => prod.send(metricRec(entry.getKey, jv)) }
-                    }
+            val prod = producer.get
+            for {entry <- gauges.entrySet().asScala} {
+                gaugeJSON(entry.getValue()).foreach { jv => prod.send(metricRec(entry.getKey(), jv)) }
+            }
+            for {entry <- counters.entrySet().asScala} {
+                counterJSON(entry.getValue()).foreach { jv => prod.send(metricRec(entry.getKey(), jv)) }
+            }
+            for {entry <- histograms.entrySet().asScala} {
+                histJSON(entry.getValue()).foreach { jv => prod.send(metricRec(entry.getKey(), jv)) }
+            }
+            for {entry <- meters.entrySet().asScala} {
+                meterJSON(entry.getValue()).foreach { jv => prod.send(metricRec(entry.getKey(), jv)) }
+            }
+            for {entry <- timers.entrySet().asScala} {
+                timerJSON(entry.getValue()).foreach { jv => prod.send(metricRec(entry.getKey(), jv)) }
             }
         }
     }
@@ -126,8 +124,8 @@ class KafkaReporter(
         new ProducerRecord[String, String](kafkaTopic, key, value)
 
     private def gaugeJSON(gauge: Gauge[_]): Option[String] = {
-        val tpe = "type" -> "gauge"
-        gauge.getValue match {
+        val tpe = ("type" -> "gauge")
+        gauge.getValue() match {
             case v: Int => Some(compact(render(tpe ~ ("value" -> v))))
             case v: Long => Some(compact(render(tpe ~ ("value" -> v))))
             case v: Float => Some(compact(render(tpe ~ ("value" -> v))))
@@ -140,14 +138,14 @@ class KafkaReporter(
     }
 
     private def counterJSON(counter: Counter): Option[String] = {
-        val tpe = "type" -> "counter"
-        Some(compact(render(tpe ~ ("value" -> counter.getCount))))
+        val tpe = ("type" -> "counter")
+        Some(compact(render(tpe ~ ("value" -> counter.getCount()))))
     }
 
     private def histJSON(hist: Histogram): Option[String] = {
         for {
             hsub <- samplingAST(hist, "histquantiles")
-            nsub <- Some("n" -> hist.getCount)
+            nsub <- Some(("n" -> hist.getCount()))
         } yield {
             compact(render(("type" -> "histogram") ~ ("value" -> (nsub ~ hsub))))
         }
@@ -157,7 +155,7 @@ class KafkaReporter(
         for {
 
             msub <- meteredAST(meter)
-            nsub <- Some("n" -> meter.getCount)
+            nsub <- Some(("n" -> meter.getCount()))
         } yield {
             compact(render(("type" -> "meter") ~ ("value" -> (nsub ~ msub))))
         }
@@ -174,7 +172,7 @@ class KafkaReporter(
     }
 
     private def samplingAST(hist: Sampling, qsetting: String): Option[JObject] = {
-        val snapshot = hist.getSnapshot
+        val snapshot = hist.getSnapshot()
         Try {
             val hqs = Option(properties.getProperty(qsetting)).getOrElse(
                 "0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0")
@@ -191,10 +189,10 @@ class KafkaReporter(
                 val hsub =
                     ("q" -> q) ~
                         ("x" -> x) ~
-                        ("min" -> snapshot.getMin) ~
-                        ("max" -> snapshot.getMax) ~
-                        ("mean" -> snapshot.getMean) ~
-                        ("stdv" -> snapshot.getStdDev)
+                        ("min" -> snapshot.getMin()) ~
+                        ("max" -> snapshot.getMax()) ~
+                        ("mean" -> snapshot.getMean()) ~
+                        ("stdv" -> snapshot.getStdDev())
                 Some(hsub)
             }
         }
