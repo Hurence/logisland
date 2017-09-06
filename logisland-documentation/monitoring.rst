@@ -143,8 +143,11 @@ Edit `$SPARK_HOME/conf/metrics.properties` file to look like this:
     *.sink.kafka.period=10
     *.sink.kafka.unit=seconds
 
-Monitoring console setup
-------------------------
+
+
+
+Step 2: Monitoring console setup
+--------------------------------
 The second part deals with the monitoring tools in the docker compose. Theses software shall be installed in an autonomous VM or linux host, able to access the cluster nodes like a edge node.
 
 All the binaries can be found in th `$LOGISLAND_HOME/monitoring` folder. So get the latest release, extract it on your edge node and `install Docker & docker-compose <https://docs.docker.com/compose/install/>`_ on the edge node (the one that wil run the docker compose monitoring stack : prometheus/grafana) as well.
@@ -239,9 +242,9 @@ Grafana
 +++++++
 
 Go to the Grafana `login page <http://localhost:3000/?orgId=1>`_ to login with *admin/admin* (feel free to change that).
-Click on add data source named **logisland_prometheus** of type **Prometheus** with url **http://localhost:9090** and **direct** access.
 
-Go to "Dashboards > Import" and import all the json dashboards you'll find under `$LOGISLAND_HOME/monitoring/grafana`
+1. Click on add data source named **logisland_prometheus** of type **Prometheus** with url **http://localhost:9090** and **direct** access.
+2. Go to "Dashboards > Import" and import all the json dashboards you'll find under `$LOGISLAND_HOME/monitoring/grafana`
 
 Metrics and alerts
 ------------------
