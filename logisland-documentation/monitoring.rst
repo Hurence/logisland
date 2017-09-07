@@ -2,13 +2,13 @@
 Monitoring Guide
 ================
 
-This document summarizes information relevant to Logisland monitoring.
+This document summarizes information relevant to LogIsland monitoring.
 
 
 Concepts & architecture
 -----------------------
 
-Logisland monitoring is based on the couple prometheus/grafana. Prometheus is used to store all metrics coming from all monitored services by polling those services at a regular interval.
+LogIsland monitoring is based on the couple prometheus/grafana. Prometheus is used to store all metrics coming from all monitored services by polling those services at a regular interval.
 
 The setup is split into 2 parts, one is for metrics instrumentation (system, kafka, zookeeper, hbase) on each node of the cluster and the other is for the configuration of the docker monitoring components.
 
@@ -42,9 +42,7 @@ Grafana is an open source, feature rich metrics dashboard and graph editor for G
 Step 1 : Cluster setup
 ----------------------
 
-The following commands should be launched on each node of your cluster handling Logisland infrastructure services.
-
-
+The following commands should be launched on each node of your cluster handling LogIsland infrastructure services.
 
 
 
@@ -54,7 +52,12 @@ System metrics with Node Exporter
 
 https://github.com/prometheus/node_exporter
 
-On each hardware node which runs a logisland related service (Zookeeper, Kafka, HBase, Yarn) we want to grab system metrics. Prometheus was developed for the purpose of monitoring web services. In order to monitor the metrics of your linux server, you should install a tool called Node Exporter. Node Exporter, as its name suggests, exports lots of metrics (such as disk I/O statistics, CPU load, memory usage, network statistics, and more) in a format Prometheus understands.
+On each hardware node which runs a LogIsland related service (Zookeeper, Kafka, HBase, Yarn) we want to grab system metrics. Prometheus was developed for the purpose of monitoring web services. In order to monitor the metrics of your linux server, you should install a tool called Node Exporter. Node Exporter, as its name suggests, exports lots of metrics (such as disk I/O statistics, CPU load, memory usage, network statistics, and more) in a format Prometheus understands.
+
+Node exporter can be either installed manually or launched as a Docker container :
+
+Manual mode :
+#############
 
 .. code-block:: sh
 
@@ -89,8 +92,17 @@ At this point, Node Exporter is available as a service which can be started usin
 
     sudo service node_exporter start
 
-After Node Exporter starts, use a browser to view its web interface available at `http://your_server_ip:9100/metrics <http://your_server_ip:9100/metrics>`_ You should see a page with some metrics.
+Docker mode :
+#############
 
+Node exporter can also be launched as a docker container :
+
+    docker run -d -p 9100:9100 -v "/proc:/host/proc" -v "/sys:/host/sys" -v "/:/rootfs" --net="host" prom/node-exporter -collector.procfs /host/proc -collector.sysfs /host/proc -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+
+Display the metrics :
+#####################
+
+After Node Exporter starts, use a browser to view its web interface available at `http://your_server_ip:9100/metrics <http://your_server_ip:9100/metrics>`_ You should see a page with some metrics.
 
 
 Zookeeper instrumentation
@@ -98,18 +110,64 @@ Zookeeper instrumentation
 
 We will use the jmx_prometheus_javaagent tool to publish zookeeper metrics on a given port ($ZK_JMX_PORT here). Prometheus will then scrap the metrics here.
 
-First download the `jmx_prometheus_javaagent-0.10.jar <https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.10/jmx_prometheus_javaagent-0.10.jar>`_ jar file and copy it on every node of the cluster.
+Install files
+#############
+
+- First download the `jmx_prometheus_javaagent-0.10.jar <https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.10/jmx_prometheus_javaagent-0.10.jar>`_ jar file and copy it on every node of the cluster (for example in /opt/jmx/ folder) :
+    wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.10/jmx_prometheus_javaagent-0.10.jar
+
+- Then copy the file jmx_zookeeper.yml on every zookeeper node in the cluster (for example in /opt/jmx/ folder)
+
+Set appropriate flags
+#####################
 
 Zookeeper must be launched with the following flags
 
-    -javaagent:/opt/jmx/jmx_prometheus_javaagent-0.9.jar=$ZK_JMX_PORT:/opt/jmx/jmx_prometheus.yml -Dcom.sun.management.jmxremote
+    -javaagent:/opt/jmx/jmx_prometheus_javaagent-0.10.jar=$ZK_JMX_PORT:/opt/jmx/jmx_zookeeper.yml -Dcom.sun.management.jmxremote
+
+These flags can be set in two different ways :
+
+- They can be added in the zookeeper file zkServer.sh using the following command (please make sure to backup the original zkServer.sh file before) :
+
+    sudo sed -i 's|-Dcom.sun.management.jmxremote |-javaagent:/opt/jmx/jmx_prometheus_javaagent-0.10.jar=$ZK_JMX_PORT:/opt/jmx/jmx_zookeeper.yml -Dcom.sun.management.jmxremote |g' zkServer.sh
+
+- If you are using Ambari, you can enrich the ZOOMAIN environment variable in "zookeeper-env template" section as below :
+
+    export ZOOMAIN="-javaagent:/opt/jmx/jmx_prometheus_javaagent-0.10.jar=$ZK_JMX_PORT:/opt/jmx/jmx_zookeeper.yml ${ZOOMAIN}"
+
+Restart services and check metrics
+##################################
+
+Restart zookeeper services.
+The metrics should be available for each node and reached via <node_host_name_or_IP>:$ZK_JMX_PORT/metrics
 
 Kafka instrumentation
 +++++++++++++++++++++
 
 We will use the jmx_prometheus_javaagent tool to publish kafka metrics on a given port ($KAFKA_JMX_PORT here). Prometheus will then scrap the metrics here.
 
-    export KAFKA_OPTS="$KAFKA_OPTS -javaagent:/usr/bin/jmx_prometheus_javaagent-0.9.jar=$KAFKA_JMX_PORT:/usr/bin/jmx-prometheus.yml"
+Install files
+#############
+
+- First download the `jmx_prometheus_javaagent-0.10.jar <https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.10/jmx_prometheus_javaagent-0.10.jar>`_ jar file and copy it on every node of the cluster if not already done in a previous step (for example in /opt/jmx/ folder) :
+    wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.10/jmx_prometheus_javaagent-0.10.jar
+
+- Then copy the file jmx_kafka.yml on every kafka node in the cluster (for example in /opt/jmx/ folder)
+
+Set appropriate flags
+#####################
+
+In Ambari, enrich the KAFKA_OPTS environment variable in "kafka-env template" section as below :
+
+    export KAFKA_OPTS=" -javaagent:/opt/jmx/jmx_prometheus_javaagent-0.10.jar=$KAFKA_JMX_PORT:/opt/jmx/jmx_kafka.yml "
+
+
+Restart services and check metrics
+##################################
+
+Restart kafka services.
+The metrics should be available for each node and reached via <node_host_name_or_IP>:$KAFKA_JMX_PORT/metrics
+
 
 Spark instrumentation
 +++++++++++++++++++++
@@ -126,7 +184,7 @@ Spark’s metrics are decoupled into different instances corresponding to Spark 
 - executor: A Spark executor.
 - driver: The Spark driver process (the process in which your SparkContext is created).
 - shuffleService: The Spark shuffle service.
-- logisland: all the logisland processing
+- logisland: all the LogIsland processing
 
 Edit `$SPARK_HOME/conf/metrics.properties` file to look like this:
 
@@ -148,9 +206,10 @@ Edit `$SPARK_HOME/conf/metrics.properties` file to look like this:
 
 Step 2: Monitoring console setup
 --------------------------------
+
 The second part deals with the monitoring tools in the docker compose. Theses software shall be installed in an autonomous VM or linux host, able to access the cluster nodes like a edge node.
 
-All the binaries can be found in th `$LOGISLAND_HOME/monitoring` folder. So get the latest release, extract it on your edge node and `install Docker & docker-compose <https://docs.docker.com/compose/install/>`_ on the edge node (the one that wil run the docker compose monitoring stack : prometheus/grafana) as well.
+All the binaries can be found in th `$LOGISLAND_HOME/monitoring` folder. So get the latest release, extract it on your edge node and `install Docker & docker-compose <https://docs.docker.com/compose/install/>`_ on the edge node (the one that will run the docker compose monitoring stack : prometheus/grafana) as well.
 
 Services ports list
 +++++++++++++++++++
@@ -165,6 +224,7 @@ there are many web services by host so that can a good idea to carefully note ev
 - burrow-exporter :        7075
 - kafka-broker :           7071
 - zookeeper :              7073
+- node-exporter :          9100
 
 
 Elasticsearch exporter
@@ -176,8 +236,18 @@ this tool is used to get metrics from elasticsearch nodes through the REST api a
 
 make sure to edit the `$LOGISLAND_HOME/monitoring/.env` file with the correct ES_HOST and ES_PORT values.
 
-Prometheus
-++++++++++
+Burrow
+++++++
+
+Burrow is a monitoring companion for Apache Kafka that provides consumer lag checking as a service without the need for specifying thresholds. It monitors committed offsets for all consumers and calculates the status of those consumers on demand. An HTTP endpoint is provided to request status on demand, as well as provide other Kafka cluster information. There are also configurable notifiers that can send status out via email or HTTP calls to another service.
+
+https://github.com/linkedin/Burrow
+
+additionnal configuration can be set in `$LOGISLAND_HOME/monitoring/burrow/conf/burrow.cfg` but you can leave the default
+
+
+Configure Prometheus
+++++++++++++++++++++
 
 edit `$LOGISLAND_HOME/monitoring/prometheus/conf/prometheus.yml` with the following (according to the previous port number list)
 
@@ -217,40 +287,43 @@ edit `$LOGISLAND_HOME/monitoring/prometheus/conf/prometheus.yml` with the follow
           - LOGISLAND_APP1:9100
 
 
-
-Burrow
-++++++
-
-Burrow is a monitoring companion for Apache Kafka that provides consumer lag checking as a service without the need for specifying thresholds. It monitors committed offsets for all consumers and calculates the status of those consumers on demand. An HTTP endpoint is provided to request status on demand, as well as provide other Kafka cluster information. There are also configurable notifiers that can send status out via email or HTTP calls to another service.
-
-https://github.com/linkedin/Burrow
-
-additionnal configuration can be set in `$LOGISLAND_HOME/monitoring/burrow/conf/burrow.cfg` but you can leave the default
-
-
-
-Launch docker console
+Launch Docker console
 +++++++++++++++++++++
+
+Start Docker-compose
+####################
+
 Launch all the tools tools (prometheus, burrow, es-exporter, grafana) are packaged into a docker composite bundle.
 
     cd $LOGISLAND_HOME/monitoring
     docker-compose up -d
 
+Display the metrics in Prometheus
+#################################
+
+Once all the containers have started, use a browser to view metrics displayed in Prometheus web interface `http://prometheus_host:9090/graph <http://prometheus_host:9090/graph>`_ .
 
 
 Grafana
 +++++++
 
-Go to the Grafana `login page <http://localhost:3000/?orgId=1>`_ to login with *admin/admin* (feel free to change that).
+Run Grafana as a Docker container
+#################################
+
+Grafana can be run as a Docker container (admin password needs to be chosen):
+
+docker run -d -p 3000:3000 -e "GF_SECURITY_ADMIN_PASSWORD=admin_password" -v ~/grafana_db:/var/lib/grafana grafana/grafana
+
+Add Prometheus Datasource
+#########################
+
+Go to the Grafana `login page <http://grafana_host:3000/?orgId=1>`_ to login with *admin/admin_password* (feel free to change that).
 
 1. Click on add data source named **logisland_prometheus** of type **Prometheus** with url **http://localhost:9090** and **direct** access.
 2. Go to "Dashboards > Import" and import all the json dashboards you'll find under `$LOGISLAND_HOME/monitoring/grafana`
 
 Metrics and alerts
 ------------------
-
-
-
 
 Elasticsearch alerts
 ++++++++++++++++++++
