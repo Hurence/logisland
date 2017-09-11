@@ -128,20 +128,28 @@ Spark’s metrics are decoupled into different instances corresponding to Spark 
 - shuffleService: The Spark shuffle service.
 - logisland: all the logisland processing
 
-Edit `$SPARK_HOME/conf/metrics.properties` file to look like this:
+
+
+
+ENABLE SPARK METRICS REPORT TO JMX
+----------------------------------
+Spark has a configurable metrics system. By default, it doesn’t expose its metrics, but only through the web UI, as mentioned above. To enable exposing metrics as JMX MBeans, you should edit `$SPARK_HOME/conf/metrics.properties` file.
+
+Add (or uncomment) the row:
+
+metrics.properties
+
+*.sink.jmx.class=org.apache.spark.metrics.sink.JmxSink
+
+
 
 .. code-block:: sh
 
+    *.sink.jmx.class=org.apache.spark.metrics.sink.JmxSink
     master.source.jvm.class=org.apache.spark.metrics.source.JvmSource
     worker.source.jvm.class=org.apache.spark.metrics.source.JvmSource
     driver.source.jvm.class=org.apache.spark.metrics.source.JvmSource
     executor.source.jvm.class=org.apache.spark.metrics.source.JvmSource
-
-    *.sink.kafka.class=org.apache.spark.metrics.sink.KafkaSink
-    *.sink.kafka.broker=127.0.0.1:9092
-    *.sink.kafka.topic=test
-    *.sink.kafka.period=10
-    *.sink.kafka.unit=seconds
 
 
 
