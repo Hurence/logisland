@@ -46,7 +46,6 @@ usage() {
   echo "Options:"
   echo
   echo "  --conf <yml-configuguration-file> : provides the configuration file"
-  echo "  --app-name <yarn-app-name> : provides the yarn application name in yarn-cluster mode"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
@@ -64,10 +63,6 @@ do
   case $KEY in
     --conf)
       CONF_FILE="$2"
-      shift
-      ;;
-    --app-name)
-      YARN_APP_NAME="$2"
       shift
       ;;
     --verbose)
@@ -151,7 +146,10 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,file:${CONF_DIR}/log4j.properties --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+
+
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,/opt/jmx/jmx_prometheus_javaagent-0.9.jar#jmx_prometheus_javaagent-0.9.jar,/opt/jmx/spark_prometheus.yml#spark_prometheus.yml,${SPARK_HOME}/conf/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf spark.metrics.conf=./metrics.properties --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+
 
     if [ ! -z "$YARN_APP_NAME" ]
     then
@@ -230,6 +228,13 @@ case $MODE in
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}"
     fi
 
+
+    PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
+    fi
+
     CONF_FILE="logisland-configuration.yml"
     ;;
   yarn-client)
@@ -250,17 +255,17 @@ case $MODE in
     then
  	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
     fi
+
+    PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
+    fi
     ;;
 esac
 
-PROPERTIES_FILE=""
-PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
-if [ ! -z "${PROPERTIES_FILE_PATH}" ]
-then
-     PROPERTIES_FILE=" --properties-file ${PROPERTIES_FILE_PATH} "
-fi
 
-java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${PROPERTIES_FILE} ${YARN_APP_NAME_OPTIONS} \
+java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark*-engine*.jar \
