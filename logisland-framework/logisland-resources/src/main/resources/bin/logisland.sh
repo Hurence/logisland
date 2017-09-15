@@ -237,7 +237,7 @@ case $MODE in
 
 
     SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
-    if [ ! -z "${SPARK_MONITORING_DRIVER_PORT}" ]
+    if [ -z "${SPARK_MONITORING_DRIVER_PORT}" ]
     then
          SPARK_MONITORING_DRIVER_PORT="7094"
     fi
