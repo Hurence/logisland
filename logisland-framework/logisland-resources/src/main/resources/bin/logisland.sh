@@ -148,7 +148,7 @@ case $MODE in
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
 
 
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../bin/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.9.jar,${CONF_DIR}/spark_prometheus.yml#spark_prometheus.yml,${CONF_DIR}/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../bin/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
 
 
     if [ ! -z "$YARN_APP_NAME" ]
@@ -239,7 +239,7 @@ case $MODE in
     SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${SPARK_MONITORING_DRIVER_PORT}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  -javaagent:./jmx_prometheus_javaagent-0.10.jar=${SPARK_MONITORING_DRIVER_PORT}:./spark_prometheus.yml\" --conf spark.metrics.conf=./metrics.properties"
+         SPARK_MONITORING_DRIVER_PORT="7094"
     fi
 
     CONF_FILE="logisland-configuration.yml"
@@ -273,6 +273,8 @@ esac
 
 
 java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
+    --conf spark.metrics.conf=./metrics.properties \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark*-engine*.jar \
@@ -283,4 +285,13 @@ then
   echo $java_cmd
 fi
 
-exec $java_cmd
+#exec $java_cmd
+
+
+${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
+    --conf spark.metrics.conf=./metrics.properties \
+    --class ${app_mainclass} \
+    --jars ${app_classpath} \
+    ${lib_dir}/logisland-spark*-engine*.jar \
+    -conf ${CONF_FILE}
