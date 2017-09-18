@@ -46,7 +46,6 @@ usage() {
   echo "Options:"
   echo
   echo "  --conf <yml-configuguration-file> : provides the configuration file"
-  echo "  --app-name <yarn-app-name> : provides the yarn application name in yarn-cluster mode"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
@@ -64,10 +63,6 @@ do
   case $KEY in
     --conf)
       CONF_FILE="$2"
-      shift
-      ;;
-    --app-name)
-      YARN_APP_NAME="$2"
       shift
       ;;
     --verbose)
@@ -144,14 +139,23 @@ then
 fi
 
 case $MODE in
-  default)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-elasticsearch-plugin-[^,]*.jar,#,#'`
+  local*)
+
+    ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+    --class ${app_mainclass} \
+    --jars ${app_classpath} \
+    ${lib_dir}/logisland-spark*-engine*.jar \
+    -conf ${CONF_FILE}
+
     ;;
   yarn-cluster)
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,file:${CONF_DIR}/log4j.properties --conf \"spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+
+
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+
 
     if [ ! -z "$YARN_APP_NAME" ]
     then
@@ -230,7 +234,30 @@ case $MODE in
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}"
     fi
 
+
+    PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
+    fi
+
+
+    SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
+    if [ -z "${SPARK_MONITORING_DRIVER_PORT}" ]
+    then
+         SPARK_MONITORING_DRIVER_PORT="7094"
+    fi
+
     CONF_FILE="logisland-configuration.yml"
+
+    ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
+    --conf spark.metrics.conf=./metrics.properties \
+    --class ${app_mainclass} \
+    --jars ${app_classpath} \
+    ${lib_dir}/logisland-spark*-engine*.jar \
+    -conf ${CONF_FILE}
+
     ;;
   yarn-client)
 
@@ -250,25 +277,24 @@ case $MODE in
     then
  	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
     fi
-    ;;
-esac
 
-PROPERTIES_FILE=""
-PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
-if [ ! -z "${PROPERTIES_FILE_PATH}" ]
-then
-     PROPERTIES_FILE=" --properties-file ${PROPERTIES_FILE_PATH} "
-fi
+    PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+    then
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
+    fi
 
-java_cmd="${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} ${PROPERTIES_FILE} ${YARN_APP_NAME_OPTIONS} \
+    ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
+    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
+    --conf spark.metrics.conf=./metrics.properties \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark*-engine*.jar \
-    -conf ${CONF_FILE}"
+    -conf ${CONF_FILE}
+    ;;
+esac
 
-if [ ! -z "${VERBOSE_OPTIONS}" ]
-then
-  echo $java_cmd
-fi
 
-exec $java_cmd
+
+
+

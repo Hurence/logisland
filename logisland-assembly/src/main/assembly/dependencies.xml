@@ -99,8 +99,35 @@
                 </includes>
             </unpackOptions>
         </dependencySet>
+
+        <dependencySet>
+            <scope>runtime</scope>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>./</outputDirectory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0770</fileMode>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+                <include>logisland-resources</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <filtered>false</filtered>
+                <includes>
+                    <include>monitoring/*</include>
+                </includes>
+            </unpackOptions>
+        </dependencySet>
     </dependencySets>
     <fileSets>
+
+        <fileSet>
+            <directory>./logisland-framework/logisland-resources/src/main/resources/monitoring</directory>
+            <outputDirectory>./monitoring</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
         <fileSet>
             <directory>./logisland-documentation</directory>
             <outputDirectory>./docs</outputDirectory>
