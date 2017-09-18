@@ -34,6 +34,8 @@ then
         then
             echo "Logisland tutorial not found ${LOGISLAND_CONF}"
         else
+            echo "Starting logisland tutorial:"
+            echo "$LOGISLAND_HOME/bin/logisland.sh --conf ${LOGISLAND_CONF} &"
             $LOGISLAND_HOME/bin/logisland.sh --conf ${LOGISLAND_CONF} &
             sleep 20
         fi
