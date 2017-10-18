@@ -22,9 +22,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   prerequisites
    index-apache-logs
+   match-queries
+   aggregate-events
    enrich-apache-logs
-   query-matching
    outlier-detection
    indexing-bro-events
    indexing-netflow-events

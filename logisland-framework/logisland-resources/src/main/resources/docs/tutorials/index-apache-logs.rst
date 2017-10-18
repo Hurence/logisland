@@ -1,106 +1,48 @@
-Index Apache logs
-=================
+Apache logs indexing
+====================
 
 In the following getting started tutorial we'll drive you through the process of Apache log mining with LogIsland platform.
 
-We will start a Docker container hosting all the LogIsland services, launch two streaming processes and send some apache logs
-to the system in order to analyze them in a dashboard.
-
-
 .. note::
 
-    You can download the `latest release <https://github.com/Hurence/logisland/releases>`_ of logisland and the `YAML configuration file <https://github.com/Hurence/logisland/blob/master/logisland-framework/logisland-resources/src/main/resources/conf/index-apache-logs.yml>`_ for this tutorial which can be also found under `$LOGISLAND_HOME/conf` directory.
+    Be sure to know of to launch a logisland Docker environment by reading the `prerequisites <./prerequisites.html>`_ section
 
-
-1. Start LogIsland as a Docker container
-----------------------------------------
-LogIsland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
-The docker container is built from a Centos 6.4 image with the following tools enabled
-
-- Kafka
-- Spark
-- Elasticsearch
-- Kibana
-- Logstash
-- Flume
-- Nginx
-- LogIsland
-
-Pull the image from Docker Repository (it may take some time)
+1. Logisland job setup
+----------------------
+The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here :
 
 .. code-block:: sh
 
-    docker pull hurence/logisland
-
-You should be aware that this Docker container is quite eager in RAM and will need at least 8G of memory to run smoothly.
-Now run the container
-
-.. code-block:: sh
-
-    # run container
-    docker run \
-        -it \
-        -p 80:80 \
-        -p 8080:8080 \
-        -p 3000:3000 \
-        -p 9200-9300:9200-9300 \
-        -p 5601:5601 \
-        -p 2181:2181 \
-        -p 9092:9092 \
-        -p 9000:9000 \
-        -p 4050-4060:4050-4060 \
-        --name logisland \
-        -h sandbox \
-        hurence/logisland bash
-
-    # get container ip
-    docker inspect logisland
-
-    # or if your are on mac os
-    docker-machine ip default
-
-you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
+    docker exec -i -t logisland vim conf/index-apache-logs.yml
 
 
-.. note::
+We will start by explaining each part of the config file.
 
-    If you have your own Spark and Kafka cluster, you can download the `latest release <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
-
-2. Parse the logs records
--------------------------
-For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
-Connect a shell to your logisland container to launch the following streaming jobs.
-
-.. code-block:: sh
-
-    docker exec -ti logisland bash
-    cd $LOGISLAND_HOME
-    bin/logisland.sh --conf conf/index-apache-logs.yml
-
-
-
-Setup Spark/Kafka streaming engine
-__________________________________
 An Engine is needed to handle the stream processing. This ``conf/index-apache-logs.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor.
+The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) to run in local mode with 2 cpu cores and 2G of RAM.
 
 .. code-block:: yaml
 
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
       type: engine
-      documentation: Main Logisland job entry point
+      documentation: Index some apache logs with logisland
       configuration:
-        spark.app.name: LogislandTutorial
-        spark.master: local[4]
+        spark.app.name: IndexApacheLogsDemo
+        spark.master: local[2]
         spark.driver.memory: 1G
         spark.driver.cores: 1
-        spark.executor.memory: 3G
+        spark.executor.memory: 2G
         spark.executor.instances: 4
         spark.executor.cores: 2
         spark.yarn.queue: default
+        spark.yarn.maxAppAttempts: 4
+        spark.yarn.am.attemptFailuresValidityInterval: 1h
+        spark.yarn.max.executor.failures: 20
+        spark.yarn.executor.failuresValidityInterval: 1h
+        spark.task.maxFailures: 8
         spark.serializer: org.apache.spark.serializer.KryoSerializer
-        spark.streaming.batchDuration: 4000
+        spark.streaming.batchDuration: 1000
         spark.streaming.backpressure.enabled: false
         spark.streaming.unpersist: false
         spark.streaming.blockInterval: 500
@@ -112,21 +54,20 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
         spark.streaming.receiver.writeAheadLog.enable: false
         spark.ui.port: 4050
 
-      controllerServiceConfigurations:
+The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkAddElasticsearch`` processor.
 
-        - controllerService: elasticsearch_service
-          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
-          type: service
-          documentation: elasticsearch 2.4.0 service implementation
-          configuration:
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
-            batch.size: 20000
+.. code-block:: yaml
 
-      streamConfigurations:
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch service
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: es-logisland
+        batch.size: 5000
 
-Stream 1 : parse incoming apache log lines
-__________________________________________
+
 Inside this engine you will run a Kafka stream of processing, so we setup input/output topics and Kafka/Zookeeper hosts.
 Here the stream will read all the logs sent in ``logisland_raw`` topic and push the processing output into ``logisland_events`` topic.
 
@@ -139,11 +80,10 @@ We can define some serializers to marshall all records from and to a topic.
 
 .. code-block:: yaml
 
-    # parsing
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: a processor that converts raw apache logs into structured log records
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events
@@ -151,32 +91,11 @@ We can define some serializers to marshall all records from and to a topic.
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.apache_log",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "src_ip",      "type": ["string","null"] },
-               { "name": "http_method", "type": ["string","null"] },
-               { "name": "bytes_out",   "type": ["long","null"] },
-               { "name": "http_query",  "type": ["string","null"] },
-               { "name": "http_version","type": ["string","null"] },
-               { "name": "http_status", "type": ["string","null"] },
-               { "name": "identd",      "type": ["string","null"] },
-               { "name": "user",        "type": ["string","null"] }    ]}
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
 
 Within this stream a ``SplitText`` processor takes a log line as a String and computes a ``Record`` as a sequence of fields.
 
@@ -194,45 +113,32 @@ Within this stream a ``SplitText`` processor takes a log line as a String and co
 This stream will process log entries as soon as they will be queued into `logisland_raw` Kafka topics, each log will
 be parsed as an event which will be pushed back to Kafka in the ``logisland_events`` topic.
 
-
-Stream 2 :Index the processed records to Elasticsearch
-______________________________________________________
-The second Kafka stream will handle ``Records`` pushed into ``logisland_events`` topic to index them into elasticsearch
+The second processor  will handle ``Records`` produced by the ``SplitText`` to index them into elasticsearch
 
 .. code-block:: yaml
 
-    - stream: indexing_stream
-      component: com.hurence.logisland.processor.chain.KafkaRecordStream
+    # add to elasticsearch
+    - processor: es_publisher
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
-      documentation: a processor that pushes events to ES
+      documentation: a processor that trace the processed events
       configuration:
-        kafka.input.topics: logisland_events
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
-        # add to elasticsearch
-        - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
-          type: processor
-          documentation: a processor that trace the processed events
-          configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
-            default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+        elasticsearch.client.service: elasticsearch_service
+        default.index: logisland
+        default.type: event
+        timebased.index: yesterday
+        es.index.field: search_index
+        es.type.field: record_type
 
 
+2. Launch the script
+--------------------
+For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
+Connect a shell to your logisland container to launch the following streaming jobs.
+
+.. code-block:: sh
+
+    docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs.yml
 
 3. Inject some Apache logs into the system
 ------------------------------------------
@@ -253,7 +159,6 @@ Let's send the first 500000 lines of NASA http access over July 1995 to LogIslan
 
 .. code-block:: sh
 
-    docker exec -ti logisland bash
     cd /tmp
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz

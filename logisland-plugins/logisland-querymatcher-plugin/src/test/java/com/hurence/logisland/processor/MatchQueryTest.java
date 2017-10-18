@@ -94,6 +94,30 @@ public class MatchQueryTest {
 
 
     @Test
+    public void testDotMatch() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new MatchQuery());
+        testRunner.setProperty("too_many_attempts_exception", "exception:(+too +many +sushi)");
+        testRunner.assertValid();
+
+        Record[] records = {
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id1")
+                        .setStringField("exception", "NullPointerException"),
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id2")
+                        .setStringField("exception", "too.many.sushi"),
+                new StandardRecord(EXCEPTION_RECORD)
+                        .setId("id3")
+                        .setStringField("exception", "too.many.attempts")
+        };
+        testRunner.clearQueues();
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+    }
+
+    @Test
     public void testWildcardMatch() {
         final TestRunner testRunner = TestRunners.newTestRunner(new MatchQuery());
         testRunner.setProperty("some_message", "message:wrong");

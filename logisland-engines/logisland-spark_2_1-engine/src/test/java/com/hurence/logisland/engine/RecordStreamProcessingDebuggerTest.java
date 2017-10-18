@@ -47,7 +47,7 @@ public class RecordStreamProcessingDebuggerTest {
 
         logger.info("starting StreamProcessingRunner");
 
-        ProcessorConfiguration processorConf = getSplitTextProcessorConfiguration();
+      //  ProcessorConfiguration processorConf = getSplitTextProcessorConfiguration();
         StreamConfiguration chainConf = getSQLStreamConfiguration();
         EngineConfiguration engineConf = getStandardEngineConfiguration();
         engineConf.addPipelineConfigurations(chainConf);
@@ -190,40 +190,46 @@ public class RecordStreamProcessingDebuggerTest {
 
     private StreamConfiguration getSQLStreamConfiguration() {
         Map<String, String> streamProperties = new HashMap<>();
+        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_RECORD_TYPE().getName(), "product_metric");
         streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_METADATA_BROKER_LIST().getName(),
-                "sandbox:9092");
+                "sd-84190:6667,sd-84191:6667,sd-84192:6667,sd-84186:6667");
         streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_ZOOKEEPER_QUORUM().getName(),
-                "sandbox:2181");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_TOPICS().getName(), "logisland_events");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_TOPICS().getName(), "logisland_aggregations");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
+                "sd-76387:2181,sd-84186:2181,sd-84189:2181");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_TOPICS().getName(), "ffact_products");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_TOPICS().getName(), "ffact_metrics");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.INPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.JSON_SERIALIZER().getValue());
 
-        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.KRYO_SERIALIZER().getValue());
+        streamProperties.put(KafkaRecordStreamSQLAggregator.OUTPUT_SERIALIZER().getName(), AbstractKafkaRecordStream.JSON_SERIALIZER().getValue());
         streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR().getName(), "1");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "2");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.KAFKA_TOPIC_DEFAULT_PARTITIONS().getName(), "1");
 
         streamProperties.put(KafkaRecordStreamSQLAggregator.MAX_RESULTS_COUNT().getName(), "10");
-        streamProperties.put(KafkaRecordStreamSQLAggregator.SQL_QUERY().getName(), "SELECT count(*) AS connections_count, avg(bytes_out) AS avg_bytes_out, src_ip, first(record_time) FROM logisland_events GROUP BY src_ip ORDER BY connections_count DESC LIMIT 20");
+        streamProperties.put(KafkaRecordStreamSQLAggregator.SQL_QUERY().getName(), "SELECT count(*)/first(theoretical_cadence) AS product_trs, count(*) as product_count, factory, line, first(product_type) as product_type, first(theoretical_cadence) as theoretical_cadence, max(record_time) as record_time\n" +
+                "          FROM ffact_products\n" +
+                "          GROUP BY factory, line\n" +
+                "          LIMIT 20");
 
 
         streamProperties.put(KafkaRecordStreamSQLAggregator.AVRO_INPUT_SCHEMA().getName(),
-                "{  \"version\":1,\n" +
+                "{  \"version\": 1,\n" +
                         "             \"type\": \"record\",\n" +
-                        "             \"name\": \"com.hurence.logisland.record.apache_log\",\n" +
+                        "             \"name\": \"com.hurence.logisland.ffact.product\",\n" +
                         "             \"fields\": [\n" +
-                        "               { \"name\": \"record_raw_value\",   \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"record_errors\",   \"type\": [ {\"type\": \"array\", \"items\": \"string\"},\"null\"] },\n" +
-                        "               { \"name\": \"record_id\",   \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"record_time\", \"type\": [\"long\",\"null\"] },\n" +
-                        "               { \"name\": \"record_type\", \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"src_ip\",      \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"http_method\", \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"bytes_out\",   \"type\": [\"long\",\"null\"] },\n" +
-                        "               { \"name\": \"http_query\",  \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"http_version\",\"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"http_status\", \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"identd\", \"type\": [\"string\",\"null\"] },\n" +
-                        "               { \"name\": \"user\",        \"type\": [\"string\",\"null\"] }    ]}");
+                        "               { \"name\": \"record_errors\",    \"type\": [ {\"type\": \"array\", \"items\": \"string\"},\"null\"] },\n" +
+                        "               { \"name\": \"record_raw_key\",   \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"record_raw_value\", \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"record_id\",        \"type\": [\"string\"] },\n" +
+                        "               { \"name\": \"record_time\",      \"type\": [\"long\"] },\n" +
+                        "               { \"name\": \"record_type\",      \"type\": [\"string\"] },\n" +
+                        "               { \"name\": \"label\",            \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"product_type\",     \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"operator\",         \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"factory\",          \"type\": [\"string\",\"null\"] },\n" +
+                        "               { \"name\": \"latitude\",         \"type\": [\"float\",\"null\"] },\n" +
+                        "               { \"name\": \"longitude\",        \"type\": [\"float\",\"null\"] },\n" +
+                        "               { \"name\": \"theoretical_cadence\",\"type\": [\"float\",\"null\"] },\n" +
+                        "               { \"name\": \"line\",             \"type\": [\"string\",\"null\"] }   \n" +
+                        "              ]}");
 
         StreamConfiguration chainConf = new StreamConfiguration();
         chainConf.setComponent(KafkaRecordStreamSQLAggregator.class.getName());

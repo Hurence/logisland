@@ -177,7 +177,7 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                     /**
                       * save latest offset to Zookeeper
                       */
-                    zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
+                  //  zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
                     logger.info("processed " + outgoingEvents.size() + " messages")
                 }
             })
