@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.10.2
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -26,7 +26,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 4000
+    spark.streaming.batchDuration: 1000
     spark.streaming.backpressure.enabled: false
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
@@ -47,7 +47,7 @@ engine:
       configuration:
         hosts: elasticsearch23:9300
         cluster.name: elasticsearch-2.3
-        batch.size: 20000
+        batch.size: 500
 
     - controllerService: elasticsearch_service_4
       component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
@@ -56,7 +56,7 @@ engine:
       configuration:
         hosts: elasticsearch24:9300
         cluster.name: elasticsearch-2.4
-        batch.size: 20000
+        batch.size: 500
 
     - controllerService: elasticsearch_service_5
       component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
@@ -65,7 +65,7 @@ engine:
       configuration:
         hosts: elasticsearch5:9300
         cluster.name: elasticsearch-5
-        batch.size: 20000
+        batch.size: 500
 
     - controllerService: hbase_service
       component: com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
@@ -219,120 +219,7 @@ engine:
             useragent.field: http_user_agent
             fields: DeviceClass,DeviceName,DeviceBrand,DeviceCpu,DeviceFirmwareVersion,DeviceVersion,OperatingSystemClass,OperatingSystemName,OperatingSystemVersion,OperatingSystemNameVersion,OperatingSystemVersionBuild,LayoutEngineClass,LayoutEngineName,LayoutEngineVersion,LayoutEngineVersionMajor,LayoutEngineNameVersion,LayoutEngineNameVersionMajor,LayoutEngineBuild,AgentClass,AgentName,AgentVersion,AgentVersionMajor,AgentNameVersion,AgentNameVersionMajor,AgentBuild,AgentLanguage,AgentLanguageCode,AgentInformationEmail,AgentInformationUrl,AgentSecurity,AgentUuid,FacebookCarrier,FacebookDeviceClass,FacebookDeviceName,FacebookDeviceVersion,FacebookFBOP,FacebookFBSS,FacebookOperatingSystemName,FacebookOperatingSystemVersion,Anonymized,HackerAttackVector,HackerToolkit,KoboAffiliate,KoboPlatformId,IECompatibilityVersion,IECompatibilityVersionMajor,IECompatibilityNameVersion,IECompatibilityNameVersionMajor,GSAInstallationID,WebviewAppName,WebviewAppNameVersionMajor,WebviewAppVersion,WebviewAppVersionMajor
 
-#------------------------------------------------------------
-#              _   _ _                    _      _            _   _
-#   ___  _   _| |_| (_) ___ _ __       __| | ___| |_ ___  ___| |_(_) ___  _ __
-#  / _ \| | | | __| | |/ _ \ '__|____ / _` |/ _ \ __/ _ \/ __| __| |/ _ \| '_ \
-# | (_) | |_| | |_| | |  __/ | |_____| (_| |  __/ ||  __/ (__| |_| | (_) | | | |
-#  \___/ \__,_|\__|_|_|\___|_|        \__,_|\___|\__\___|\___|\__|_|\___/|_| |_|
-#
 
-#  streamConfigurations:
-
-    # 1. parse time series
-    - stream: parsing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: stream
-      documentation: a processor that links
-      configuration:
-        kafka.input.topics: outlier-detection_raw
-        kafka.output.topics: save_to_es
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.cpu_usage",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "record_value",      "type": ["double","null"] } ]}
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 4
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-        - processor: apache_parser
-          component: com.hurence.logisland.processor.SplitText
-          type: parser
-          documentation: a parser that produce events from an apache log REGEX
-          configuration:
-            record.type: outlier-detection
-            value.regex: (\S*\s*\S*),(\S*)
-            value.fields: record_time,record_value
-
-
-    # detect outliers
-    - stream: detect_outliers
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: stream
-      documentation: a processor that match query in parrallel
-      configuration:
-        kafka.input.topics: logisland_sensor_events
-        kafka.output.topics: save_to_es
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-        - processor: match_query
-          component: com.hurence.logisland.processor.DetectOutliers
-          type: processor
-          documentation: a processor that detection something exotic in a continuous time series values
-          configuration:
-            rotation.policy.type: by_amount
-            rotation.policy.amount: 100
-            rotation.policy.unit: points
-            chunking.policy.type: by_amount
-            chunking.policy.amount: 10
-            chunking.policy.unit: points
-            global.statistics.min: -100000
-            min.amount.to.predict: 100
-            zscore.cutoffs.normal: 3.5
-            zscore.cutoffs.moderate: 5
-            record.value.field: record_value
-            record.time.field: record_time
-            output.record.type: sensor_outlier
-
-    # sample time series
-    - stream: detect_outliers
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: stream
-      documentation: a processor that match query in parrallel
-      configuration:
-        kafka.input.topics: logisland_sensor_events
-        kafka.output.topics: save_to_es
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-        - processor: sampler
-          component: com.hurence.logisland.processor.SampleRecords
-          type: processor
-          documentation: a processor that reduce the number of time series values
-          configuration:
-            record.value.field: record_value
-            record.time.field: record_time
-            sampling.algorithm: average
-            sampling.parameter: 10
 
 #------------------------------------------------------------
 #               _                             _       _   _
