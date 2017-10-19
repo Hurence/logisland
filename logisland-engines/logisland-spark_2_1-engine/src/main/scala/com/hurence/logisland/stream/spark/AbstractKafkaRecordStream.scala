@@ -469,37 +469,40 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 lastCheckCount += 1
 
 
-                val offsetRanges = process(rdd)
-                // some time later, after outputs have completed
-                if (offsetRanges.nonEmpty) {
-                    kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
-                    needMetricsReset = true
-                }
-                else if (needMetricsReset) {
-                    try {
+                if(!rdd.isEmpty()){
+                    val offsetRanges = process(rdd)
+                    // some time later, after outputs have completed
+                    if (offsetRanges.nonEmpty) {
+                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+                        needMetricsReset = true
+                    }
+                    else if (needMetricsReset) {
+                        try {
 
-                        for (partitionId <- 0 to rdd.getNumPartitions) {
-                            val pipelineMetricPrefix = streamContext.getIdentifier + "." +
-                                "partition" + partitionId + "."
-                            val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
+                            for (partitionId <- 0 to rdd.getNumPartitions) {
+                                val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                                    "partition" + partitionId + "."
+                                val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-                            streamContext.getProcessContexts.foreach(processorContext => {
-                                UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
-                                    .time()
-                                    .stop()
+                                streamContext.getProcessContexts.foreach(processorContext => {
+                                    UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                        .time()
+                                        .stop()
 
-                                ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
-                            })
-                            pipelineTimerContext.stop()
+                                    ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                                })
+                                pipelineTimerContext.stop()
+                            }
+                        } catch {
+                            case ex: Throwable =>
+                                logger.error(s"exception : ${ex.toString}")
+                                None
+                        } finally {
+                            needMetricsReset = false
                         }
-                    } catch {
-                        case ex: Throwable =>
-                            logger.error(s"exception : ${ex.toString}")
-                            None
-                    } finally {
-                        needMetricsReset = false
                     }
                 }
+
             })
         } catch {
             case ex: Throwable =>

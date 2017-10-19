@@ -11,7 +11,7 @@ services:
     command: tail -f /dev/null
     environment:
       # Indicate bootstrap script to load all-tutorials.yml.
-      - LOGISLAND_TUTORIALS=/data/all-tutorials
+      - LOGISLAND_TUTORIALS=/data/debug
     extra_hosts:
       # Add entry for sandbox in /etc/hosts of container
       - "sandbox:127.0.0.1"
