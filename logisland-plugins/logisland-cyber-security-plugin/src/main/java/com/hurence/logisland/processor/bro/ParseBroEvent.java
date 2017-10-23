@@ -114,6 +114,7 @@ public class ParseBroEvent extends AbstractProcessor {
             .build();
 
     private static final String FIELD_TS = "ts";
+    private static final String FIELD_VERSION = "version";
 
     @Override
     public void init(final ProcessContext context)
@@ -277,6 +278,17 @@ public class ParseBroEvent extends AbstractProcessor {
         {
             String key = jsonEntry.getKey();
             Object value = jsonEntry.getValue();
+
+            // Id this is a version field, bu sure it is a string
+            if (key.equals(FIELD_VERSION))
+            {
+                if (normalizeVersionField(record, value))
+                {
+                    // Field processed, go to next
+                    continue;
+                }
+            }
+
             if (value instanceof String)
             {
                 record.setStringField(key, value.toString());
@@ -320,6 +332,44 @@ public class ParseBroEvent extends AbstractProcessor {
                 record.setStringField(key, JsonUtil.convertToJson(value));
             }
         }
+    }
+
+    /**
+     * Set the version field as being always a string. SSH and SSL both have a version field, but one is a number
+     * whereas the other one is a string. As we save every events in the same ES index (even if not the same ES type),
+     * one cannot have more than one type for a field in the same index, so we need to choose one.
+     * As SSL version  may be for instance "TLSv12", we choose to represent the version always with a string as
+     * it also support a number represenetation (i.e "12"). So here we transform the version field into a string
+     * even if the input type was a number
+     * @param record Record to update
+     * @param value Effective value to transform
+     * @return true if the field was processed, false otherwise
+     */
+    private static boolean normalizeVersionField(Record record, Object value)
+    {
+        if (value instanceof String)
+        {
+            record.setStringField(FIELD_VERSION, value.toString());
+            return true;
+        } else if (value instanceof Integer)
+        {
+            record.setField(new Field(FIELD_VERSION, FieldType.STRING, value.toString()));
+            return true;
+        } else if (value instanceof Long)
+        {
+            record.setField(new Field(FIELD_VERSION, FieldType.STRING, value.toString()));
+            return true;
+        } else if (value instanceof Float)
+        {
+            record.setField(new Field(FIELD_VERSION, FieldType.STRING, value.toString()));
+            return true;
+        } else if (value instanceof Double)
+        {
+            record.setField(new Field(FIELD_VERSION, FieldType.STRING, value.toString()));
+            return true;
+        }
+
+        return false;
     }
     
     /**
