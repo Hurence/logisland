@@ -113,6 +113,8 @@ public class ParseBroEvent extends AbstractProcessor {
             .defaultValue("false")
             .build();
 
+    private static final String FIELD_TS = "ts";
+
     @Override
     public void init(final ProcessContext context)
     {
@@ -220,7 +222,7 @@ public class ParseBroEvent extends AbstractProcessor {
             
             /**
              * Normalize Bro fields and set first level fields of the record.
-             * Our previous Bro event exemple will give the following Logisland record:
+             * Our previous Bro event example will give the following Logisland record:
              * 
              * "@timestamp": "2017-02-20T13:36:32Z"
              * "record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
@@ -252,7 +254,7 @@ public class ParseBroEvent extends AbstractProcessor {
             // in processors following in the current processors stream.
             setBroEventFieldsAsFirstLevelFields(finalBroEvent, record);
 
-            // Overwrite default reord_type field to indicate to ES processor which index type to use 
+            // Overwrite default record_type field to indicate to ES processor which index type to use
             // (index type is the bro event type)
             record.setStringField(FieldDictionary.RECORD_TYPE, broEventType);
         }
@@ -292,7 +294,20 @@ public class ParseBroEvent extends AbstractProcessor {
                 record.setField(new Field(key, FieldType.FLOAT, value));
             } else if (value instanceof Double)
             {
-                record.setField(new Field(key, FieldType.DOUBLE, value));
+                /**
+                 * Replace "ts": 1508450363.389543, with "ts": 1508450363389 (from double seconds to long milliseconds)
+                 * Change double version to long version because elasticsearch dates do only support longs and
+                 * we will use this field in dashboards as this is the closest time of the real event as this is the
+                 * value for the time set by bro himself.
+                 */
+                if (key.equals(FIELD_TS)) {
+                    double doubleEpochMilliSeconds = (Double)((double)value * (double)1000); // Number of seconds to number of milliseconds
+                    Long longEpochMilliSeconds = (long)doubleEpochMilliSeconds;
+                    value = longEpochMilliSeconds;
+                    record.setField(new Field(key, FieldType.LONG, value));
+                } else {
+                    record.setField(new Field(key, FieldType.DOUBLE, value));
+                }
             } else if (value instanceof Map)
             {
                 record.setField(new Field(key, FieldType.MAP, value));
@@ -330,11 +345,12 @@ public class ParseBroEvent extends AbstractProcessor {
     }
     
     /**
-     * Normalize keys in the JSON Bro event. For the moment, the only mandatory thing to do is to replace any '.'
-     * character in the field names with an acceptable character for ES indexing (currently '_' so for instance
-     * id.orig_h becomes id_orig_h). This must be done up to the highest depth of the event (event may contain sub maps).
+     * Normalize keys in the JSON Bro event:
+     * - replace any '.' character in the field names with an acceptable character for ES indexing (currently '_' so for
+     * instance id.orig_h becomes id_orig_h). This must be done up to the highest depth of the event (event may contain
+     * sub maps).
      * @param broEvent Bro event to normalize.
-     * @param oldToNew Potential mapping of keys to change into another key (old key -> new key). May be null.
+     * @param oldToNewKeys Potential mapping of keys to change into another key (old key -> new key). May be null.
      */
     private static void normalizeFields(Map<String, Object> broEvent, Map<String, String> oldToNewKeys)
     {
@@ -376,7 +392,7 @@ public class ParseBroEvent extends AbstractProcessor {
             {
                 broEvent.remove(key);
                 broEvent.put(newKey, newValue);
-            }   
+            }
         }
     }
     

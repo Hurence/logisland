@@ -145,7 +145,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)27.3);
+        out.assertFieldEquals("ts", 27300L);
         
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "anId");
@@ -201,7 +201,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "notice");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1320435875.879278);
+        out.assertFieldEquals("ts", 1320435875879L);
         
         out.assertFieldExists("note");
         out.assertFieldEquals("note", "SSH::Password_Guessing");
@@ -247,8 +247,8 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "dns");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1487603382.840372);
-        
+        out.assertFieldEquals("ts", 1487603382840L);
+
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "Csevsb0Kzff0gvXDe");
 
@@ -324,7 +324,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "conn");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1487603366.277002);
+        out.assertFieldEquals("ts", 1487603366277L);
         
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "Coo3g71UUMM2AyxWB");
@@ -373,6 +373,6 @@ public class ParseBroEventTest {
         
         out.assertFieldExists("tunnel_parents");
         List<String> tunnelParents = (List<String>)out.getField("tunnel_parents").getRawValue();
-        assertEquals(0, tunnelParents.size());       
+        assertEquals(0, tunnelParents.size());
     }
 }
