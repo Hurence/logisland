@@ -152,7 +152,11 @@ public class ParseGitlabLog extends AbstractProcessor {
             String key = jsonEntry.getKey();
             Object value = jsonEntry.getValue();
 
-            if (value instanceof String)
+            if (value == null)
+            {
+                record.setStringField(key, null);
+            }
+            else if (value instanceof String)
             {
                 record.setStringField(key, value.toString());
             } else if (value instanceof Integer)
