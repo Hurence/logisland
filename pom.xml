@@ -633,6 +633,11 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-common-logs-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>

@@ -34,7 +34,7 @@
         <!--<module>logisland-botsearch-plugin</module>-->
         <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
-
+        <module>logisland-common-logs-plugin</module>
         <module>logisland-sampling-plugin</module>
         <module>logisland-useragent-plugin</module>
         <module>logisland-consolidate-session-plugin</module>

@@ -339,7 +339,7 @@ public class ParseBroEvent extends AbstractProcessor {
      * whereas the other one is a string. As we save every events in the same ES index (even if not the same ES type),
      * one cannot have more than one type for a field in the same index, so we need to choose one.
      * As SSL version  may be for instance "TLSv12", we choose to represent the version always with a string as
-     * it also support a number represenetation (i.e "12"). So here we transform the version field into a string
+     * it also support a number representation (i.e "12"). So here we transform the version field into a string
      * even if the input type was a number
      * @param record Record to update
      * @param value Effective value to transform
