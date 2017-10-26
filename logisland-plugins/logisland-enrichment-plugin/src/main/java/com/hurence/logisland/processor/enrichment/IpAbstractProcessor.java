@@ -41,9 +41,15 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
 
         String ip = null;
         for (final Record record : records) {
-            if (record.hasField(context.getPropertyValue(IP_ADDRESS_FIELD).asString()))
-                ip = record.getField(ipAddrField).asString().trim();
-            else {
+            if (record.hasField(context.getPropertyValue(IP_ADDRESS_FIELD).asString())) {
+                String ipAsString = record.getField(ipAddrField).asString();
+                if (ipAsString == null)
+                {
+                    logger.debug("record has a null IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
+                    continue;
+                }
+                ip = ipAsString.trim();
+            } else {
                 logger.debug("record has no IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
                 continue;
             }
@@ -55,6 +61,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
                 logger.debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{ip, record});
                 continue;
             }
+            // ip cannot be null from here
             processIp(record, ip, context);
         }
 
@@ -65,6 +72,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
         return records;
     }
 
+    // ip is never null when passed
     protected abstract void processIp(Record record, String ip, ProcessContext context);
 
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
