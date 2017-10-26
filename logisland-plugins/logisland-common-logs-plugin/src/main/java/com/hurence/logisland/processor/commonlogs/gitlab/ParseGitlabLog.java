@@ -42,7 +42,9 @@ import java.util.Map;
 @Tags({"logs", "gitlab"})
 @CapabilityDescription(
         "The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs."
-        + "Basically the events coming from Gitlab are JSON documents")
+        + " This allows for instance to monitor activities in your Gitlab server."
+        + " The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records."
+        + " You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.")
 public class ParseGitlabLog extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ParseGitlabLog.class);
