@@ -22,5 +22,6 @@
         <module>logisland-cache-service-api</module>
         <module>logisland-cache_key_value-service-api</module>
         <module>logisland-ip-to-geo-service</module>
+        <module>logisland-ip-to-geo-service-api</module>
     </modules>
 </project>
