@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by gregoire on 09/05/17.
  */
-@Tags({"dns", "ip", "fqdn", "domain", "address", "fqhn", "reverse", "resolution"})
+@Tags({"dns", "ip", "fqdn", "domain", "address", "fqhn", "reverse", "resolution", "enrich"})
 @CapabilityDescription("find full domain name corresponding to an ip")
 public class IpToFqdn extends IpAbstractProcessor {
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpToFqdn.class);
@@ -60,7 +60,6 @@ public class IpToFqdn extends IpAbstractProcessor {
         if(cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
-
     }
 
     protected void processIp(Record record, String ip, ProcessContext context) {
