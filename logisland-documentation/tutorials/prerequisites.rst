@@ -74,7 +74,7 @@ To facilitate integration testing and to easily run tutorials, you can create a 
         - kafka
         - elasticsearch
       ports:
-        - "4040:4040"
+        - "4050:4050"
       volumes:
         - ./conf/logisland:/conf
         - ./data/logisland:/data
