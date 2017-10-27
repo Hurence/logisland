@@ -27,28 +27,41 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.Subdivision;
+import com.hurence.logisland.component.PropertyValue;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import java.net.URI;
 
 @Tags({"ip", "service", "geo", "maxmind"})
 @CapabilityDescription("Implementation of the IP 2 GEO Service using maxmind lite db file")
 public class MaxmindIpToGeoService extends AbstractControllerService implements IpToGeoService {
 
-    public static final PropertyDescriptor MAXMIND_DATABASE_FILE_URL = new PropertyDescriptor.Builder()
-            .name("maxmind.database.url")
+    public static final PropertyDescriptor MAXMIND_DATABASE_FILE_URI = new PropertyDescriptor.Builder()
+            .name("maxmind.database.uri")
             .displayName("URL to the Maxmind Geo Database File")
-            .description("Path to the Maxmind Geo Enrichment Database File")
-            .required(true)
+            .description("Path to the Maxmind Geo Enrichment Database File.")
+            .required(false)
             .addValidator(StandardValidators.URI_VALIDATOR)
             .build();
+
+    public static final PropertyDescriptor MAXMIND_DATABASE_FILE_PATH = new PropertyDescriptor.Builder()
+            .name("maxmind.database.path")
+            .displayName("Local path to the Maxmind Geo Database File")
+            .description("Local Path to the Maxmind Geo Enrichment Database File.")
+            .required(false)
+            .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+            .build();
+
+    protected String dbUri = null;
+    protected String dbPath = null;
 
     final AtomicReference<DatabaseReader> databaseReaderRef = new AtomicReference<>(null);
 
@@ -56,48 +69,81 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
         try {
+            // Custom validator insures only one of both modes is set
 
-//            String dbUri = context.getPropertyValue(MAXMIND_DATABASE_FILE_URL).asString();
+            PropertyValue propertyValue = context.getPropertyValue(MAXMIND_DATABASE_FILE_URI);
+            if (propertyValue != null) {
+                dbUri = propertyValue.asString();
+            }
 
-//            Configuration conf = new Configuration();
-//
-//            String hdfsUri = conf.get("fs.defaultFS");
-//            logger.info("Default HDFS URI: " + hdfsUri);
-//
-//            // Set HADOOP user to same as current suer
-//            String hadoopUser = System.getProperty("user.name");
-//            System.setProperty("HADOOP_USER_NAME", hadoopUser);
-//            System.setProperty("hadoop.home.dir", "/");
-//
-//            // Get the HDFS filesystem
-//            FileSystem fs = FileSystem.get(URI.create(hdfsUri), conf);
-//
-//            // Create a path to config file and init input stream
-//            Path hdfsreadpath = new Path(configFilePath);
-//            logger.info("Reading config file from HDFS at: " + configFilePath);
-//            FSDataInputStream inputStream = fs.open(hdfsreadpath);
+            propertyValue = context.getPropertyValue(MAXMIND_DATABASE_FILE_PATH);
+            if (propertyValue != null) {
+                dbPath = propertyValue.asString();
+            }
 
+            if ( (dbUri == null) && (dbPath == null) ) {
+                throw new Exception("You must declare " + MAXMIND_DATABASE_FILE_URI.getName() +
+                        " or " + MAXMIND_DATABASE_FILE_PATH.getName());
+            }
 
-//            final String dbFileString = dbUri;
-            final String dbFileString = "/local/tests/maxmind/GeoLite2-City_20171003/GeoLite2-City.mmdb";
-            final File dbFile = new File(dbFileString);
+            if (dbUri != null)
+            {
+                initFromUri(dbUri);
+            }
 
-            long start = System.currentTimeMillis();
-            final DatabaseReader databaseReader = new DatabaseReader.Builder(dbFile).build();
-            long stop = System.currentTimeMillis();
-            getLogger().debug("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
-            databaseReaderRef.set(databaseReader);
-
+            if (dbPath != null)
+            {
+                initFromPath(dbPath);
+            }
         } catch (Exception e){
             getLogger().error("Could not load maxmind database file: {}", new Object[]{e.getMessage()});
             throw new InitializationException(e);
         }
     }
 
+    private void initFromPath(String dbPath) throws Exception
+    {
+        final File dbFile = new File(dbPath);
+        long start = System.currentTimeMillis();
+        final DatabaseReader databaseReader = new DatabaseReader.Builder(dbFile).build();
+        getLogger().info("Reading Maxmind DB file from local filesystem at: " + dbFile.getAbsolutePath());
+        long stop = System.currentTimeMillis();
+        getLogger().info("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
+        databaseReaderRef.set(databaseReader);
+    }
+
+    private void initFromUri(String dbUri) throws Exception
+    {
+        Configuration conf = new Configuration();
+
+        String hdfsUri = conf.get("fs.defaultFS");
+        getLogger().info("Default HDFS URI: " + hdfsUri);
+
+        // Set HADOOP user to same as current suer
+        String hadoopUser = System.getProperty("user.name");
+        System.setProperty("HADOOP_USER_NAME", hadoopUser);
+        System.setProperty("hadoop.home.dir", "/");
+
+        // Get the HDFS filesystem
+        FileSystem fs = FileSystem.get(URI.create(hdfsUri), conf);
+
+        // Create a path to config file and init input stream
+        Path hdfsReadpath = new Path(dbUri);
+        getLogger().info("Reading Maxmind DB file from HDFS at: " + dbUri);
+        FSDataInputStream inputStream = fs.open(hdfsReadpath);
+
+        long start = System.currentTimeMillis();
+        final DatabaseReader databaseReader = new DatabaseReader.Builder(inputStream).build();
+        long stop = System.currentTimeMillis();
+        getLogger().info("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
+        databaseReaderRef.set(databaseReader);
+    }
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> props = new ArrayList<>();
-        props.add(MAXMIND_DATABASE_FILE_URL);
+        props.add(MAXMIND_DATABASE_FILE_URI);
+        props.add(MAXMIND_DATABASE_FILE_PATH);
         return Collections.unmodifiableList(props);
     }
 

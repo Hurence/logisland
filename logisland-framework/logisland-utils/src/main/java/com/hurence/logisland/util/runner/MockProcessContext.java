@@ -177,7 +177,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public String getProperty(PropertyDescriptor property) {
-        return null;
+        return properties.get(property);
     }
 
     /**

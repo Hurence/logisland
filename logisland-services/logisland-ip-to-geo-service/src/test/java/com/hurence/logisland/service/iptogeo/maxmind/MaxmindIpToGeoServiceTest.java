@@ -16,24 +16,19 @@
 package com.hurence.logisland.service.iptogeo.maxmind;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import org.junit.Before;
+import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
 
-public class MaxmindIpToGeoServiceTest {
+import static org.junit.Assert.assertEquals;
 
-    @Before
-    public void setup() {
-        // needed for calls to UserGroupInformation.setConfiguration() to work when passing in
-        // config with Kerberos authentication enabled
-        System.setProperty("java.security.krb5.realm", "logisland.com");
-        System.setProperty("java.security.krb5.kdc", "logisland.kdc");
-    }
+public class MaxmindIpToGeoServiceTest {
 
     @Test
     public void testIpToGeoService() throws InitializationException, IOException {
@@ -41,16 +36,40 @@ public class MaxmindIpToGeoServiceTest {
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor
-        final IpToGeoService service = (IpToGeoService)new MaxmindIpToGeoService();
+        final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService();
         runner.addControllerService("ipToGeoService", service);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.IP_TO_GEO_SERVICE, "ipToGeoService");
-//        runner.assertValid(service);
+        runner.assertValid(service);
 
         final IpToGeoService ipToGeoService = runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
                 .asControllerService(IpToGeoService.class);
 
-        Map<String, String> result = ipToGeoService.getGeoInfo("207.97.227.239");
-        System.out.println(result);
+        Map<String, String> result = ipToGeoService.getGeoInfo("207.97.227.239"); // Github IP
+
+        assertEquals("San Antonio", result.get(GEO_FIELD_CITY));
+        assertEquals("29.4889", result.get(GEO_FIELD_LATITUDE));
+        assertEquals("-98.3987", result.get(GEO_FIELD_LONGITUDE));
+        assertEquals("Texas", result.get(GEO_FIELD_SUBDIVISION + "0"));
+        assertEquals("TX", result.get(GEO_FIELD_SUBDIVISION_ISOCODE + "0"));
+        assertEquals("United States", result.get(GEO_FIELD_COUNTRY));
+        assertEquals("US", result.get(GEO_FIELD_COUNTRY_ISOCODE));
+        assertEquals("78218", result.get(GEO_FIELD_POSTALCODE));
+    }
+
+    /**
+     * Just because
+     * runner.setProperty(service, MaxmindIpToGeoService.MAXMIND_DATABASE_FILE_PATH, "ipToGeoService");
+     * does not work if called after
+     * runner.addControllerService("ipToGeoService", service);
+     * and vice versa (runner controller service not implemented, so workaround for the moment)
+     */
+    private class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
+    {
+
+        public void init(ControllerServiceInitializationContext context) throws InitializationException {
+            dbPath = "/local/cybersecu/maxmind/GeoLite2-City_20171003/GeoLite2-City.mmdb";
+            super.init(context);
+        }
     }
 }

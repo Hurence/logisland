@@ -41,7 +41,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
 
         String ip = null;
         for (final Record record : records) {
-            if (record.hasField(context.getPropertyValue(IP_ADDRESS_FIELD).asString())) {
+            if (record.hasField(ipAddrField)) {
                 String ipAsString = record.getField(ipAddrField).asString();
                 if (ipAsString == null)
                 {

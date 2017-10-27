@@ -52,7 +52,7 @@ public class IpToGeo extends IpAbstractProcessor {
     private boolean debug = false;
 
     public static final PropertyDescriptor IP_TO_GEO_SERVICE = new PropertyDescriptor.Builder()
-            .name("ip-to-geo.service")
+            .name("iptogeo.service")
             .description("The IP to Geo service to use.")
             .required(true)
             .identifiesControllerService(IpToGeoService.class)
