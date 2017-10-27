@@ -1,8 +1,8 @@
 #########################################################################################################
-# Logisland configuration script tempate
+# Logisland configuration script template
 #########################################################################################################
 
-version: 0.10.1
+version: 0.10.2
 documentation: This tutorial job sends apache logs to an HBase table
 
 #########################################################################################################
@@ -64,27 +64,8 @@ engine:
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        avro.output.schema: >
-          {  "version":1,
-             "type": "record",
-             "name": "com.hurence.logisland.record.apache_log",
-             "fields": [
-               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
-               { "name": "record_raw_key", "type": ["string","null"] },
-               { "name": "record_raw_value", "type": ["string","null"] },
-               { "name": "record_id",   "type": ["string"] },
-               { "name": "record_time", "type": ["long"] },
-               { "name": "record_type", "type": ["string"] },
-               { "name": "src_ip",      "type": ["string","null"] },
-               { "name": "http_method", "type": ["string","null"] },
-               { "name": "bytes_out",   "type": ["long","null"] },
-               { "name": "http_query",  "type": ["string","null"] },
-               { "name": "http_version","type": ["string","null"] },
-               { "name": "http_status", "type": ["string","null"] },
-               { "name": "identd",      "type": ["string","null"] },
-               { "name": "user",        "type": ["string","null"] }    ]}
         kafka.metadata.broker.list: sandbox:9092
         kafka.zookeeper.quorum: sandbox:2181
         kafka.topic.autoCreate: true
@@ -133,11 +114,3 @@ engine:
             table.name.field: hbase_table_name
             row.identifier.field: hbase_row_id
             columns.field: hbase_columns
-
-        # eventually debug
-        - processor: debug
-          component: com.hurence.logisland.processor.DebugStream
-          type: parser
-          documentation: a debugger
-          configuration:
-            event.serializer: json

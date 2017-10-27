@@ -15,18 +15,10 @@
  */
 package com.hurence.logisland.component;
 
-
-//import com.hurence.logisland.utils.time.FormatUtils;
-
-import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.registry.VariableRegistry;
 
-public class StandardPropertyValue implements PropertyValue {
-
-    private final String rawValue;
-    private final ControllerServiceLookup serviceLookup;
-    private final VariableRegistry variableRegistry;
+public class StandardPropertyValue extends AbstractPropertyValue {
 
     public StandardPropertyValue(final String rawValue, final ControllerServiceLookup serviceLookup) {
         this(rawValue, serviceLookup, VariableRegistry.EMPTY_REGISTRY);
@@ -34,8 +26,8 @@ public class StandardPropertyValue implements PropertyValue {
 
     /**
      * Constructs a new StandardPropertyValue with the given value & service
-     * lookup and indicates whether or not the rawValue contains any NiFi
-     * Expressions. If it is unknown whether or not the value contains any NiFi
+     * lookup and indicates whether or not the rawValue contains any ExpressionLanguage
+     * Expressions. If it is unknown whether or not the value contains any ExpressionLanguage
      * Expressions, the
      * {@link #StandardPropertyValue(String, ControllerServiceLookup, VariableRegistry)}
      * constructor should be used or <code>true</code> should be passed.
@@ -52,85 +44,12 @@ public class StandardPropertyValue implements PropertyValue {
     }
 
     /**
-     * Constructs a new StandardPropertyValue with the given value. If it is unknown whether or not the value
+     * Constructs a new StandardPropertyValue with the given value.
      *
      * @param rawValue value
      */
     public StandardPropertyValue(final String rawValue) {
-
         this(rawValue, null, VariableRegistry.EMPTY_REGISTRY);
     }
 
-    public String getRawValue() {
-        return rawValue;
-    }
-
-    @Override
-    public String asString() {
-        return rawValue;
-    }
-
-    @Override
-    public Integer asInteger() {
-        return (rawValue == null) ? null : Integer.parseInt(rawValue.trim());
-    }
-
-    @Override
-    public Long asLong() {
-        return (rawValue == null) ? null : Long.parseLong(rawValue.trim());
-    }
-
-    @Override
-    public Boolean asBoolean() {
-        return (rawValue == null) ? null : Boolean.parseBoolean(rawValue.trim());
-    }
-
-    @Override
-    public Float asFloat() {
-        return (rawValue == null) ? null : Float.parseFloat(rawValue.trim());
-    }
-
-    @Override
-    public Double asDouble() {
-        return (rawValue == null) ? null : Double.parseDouble(rawValue.trim());
-    }
-
-  /*  @Override
-    public Long asTimePeriod(final TimeUnit timeUnit) {
-        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.trim(), timeUnit);
-    }*/
-
-
-    @Override
-    public boolean isSet() {
-        return rawValue != null;
-    }
-
-    @Override
-    public ControllerService asControllerService() {
-        if (rawValue == null || rawValue.equals("") || serviceLookup == null) {
-            return null;
-        }
-
-        return serviceLookup.getControllerService(rawValue);
-    }
-
-    @Override
-    public <T extends ControllerService> T asControllerService(final Class<T> serviceType) throws IllegalArgumentException {
-        if (!serviceType.isInterface()) {
-            throw new IllegalArgumentException("ControllerServices may be referenced only via their interfaces; " + serviceType + " is not an interface");
-        }
-        if (rawValue == null || rawValue.equals("") || serviceLookup == null) {
-            return null;
-        }
-
-        final ControllerService service = serviceLookup.getControllerService(rawValue);
-        if (service == null) {
-            return null;
-        }
-        if (serviceType.isAssignableFrom(service.getClass())) {
-            return serviceType.cast(service);
-        }
-        throw new IllegalArgumentException("Controller Service with identifier " + rawValue + " is of type " + service.getClass() + " and cannot be cast to " + serviceType);
-    }
 }

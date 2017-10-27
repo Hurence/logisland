@@ -19,6 +19,9 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
@@ -292,6 +295,72 @@ public class TestElasticsearch_5_4_0_ClientService {
 
     }
 
+
+    @Test
+    public void testBulkPutGeopoint() throws InitializationException, IOException, InterruptedException {
+        final String index = "future_factory";
+        final String type = "factory";
+        final String docId = "modane_factory";
+        Record record = new StandardRecord("factory")
+                .setId(docId)
+                .setStringField("address", "rue du Frejus")
+                .setField("latitude", FieldType.FLOAT, 45.4f)
+                .setField("longitude", FieldType.FLOAT, 45.4f);
+
+        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+
+        // create the controller service and link it to the test processor :
+        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
+
+        // Verify the index does not exist
+        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
+
+        // Create the index
+        elasticsearchClientService.createIndex(2, 1, index);
+        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
+
+        // Put a document in the bulk processor :
+        String document1 = ElasticsearchRecordConverter.convertToString(record);
+        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
+        // Flush the bulk processor :
+        elasticsearchClientService.flushBulkProcessor();
+        Thread.sleep(2000);
+        try {
+            // Refresh the index :
+            elasticsearchClientService.refreshIndex(index);
+        } catch (Exception e) {
+            logger.error("Error while refreshing the index : " + e.toString());
+        }
+
+        long documentsNumber = 0;
+
+        try {
+            documentsNumber = elasticsearchClientService.countIndex(index);
+        } catch (Exception e) {
+            logger.error("Error while counting the number of documents in the index : " + e.toString());
+        }
+
+        Assert.assertEquals(1, documentsNumber);
+
+        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+        ArrayList<String> documentIds = new ArrayList<>();
+        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+
+
+        // Make sure a dummy query returns no result :
+        documentIds.add(docId);
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord(index, type,new String[]{"location", "id"},new String[]{}, documentIds));
+        } catch (InvalidMultiGetQueryRecordException e) {
+            e.printStackTrace();
+        }
+        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
+        Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
+
+    }
+
+
+
     @Test
     public void testMultiGet() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
         final String index1 = "index1";
@@ -378,7 +447,7 @@ public class TestElasticsearch_5_4_0_ClientService {
 
         // Make sure a dummy query returns no result :
         documentIds.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "", documentIds,new String[]{"dummy"},new String[]{}));
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
         Assert.assertEquals(0, multiGetResponseRecords.size()); // number of documents retrieved
 
@@ -406,7 +475,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         documentIds.add(docId1);
         documentIds.add(docId2);
         documentIds.add(docId3);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, documentIds, fieldsToInclude, fieldsToExclude));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, fieldsToInclude, fieldsToExclude, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
@@ -439,11 +508,11 @@ public class TestElasticsearch_5_4_0_ClientService {
         //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
         documentIds.add(docId1);
         documentIds.add(docId2);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds, fieldsToInclude, fieldsToExclude));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, fieldsToInclude, fieldsToExclude, documentIds));
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , documentIds_2, fieldsToInclude, null));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved

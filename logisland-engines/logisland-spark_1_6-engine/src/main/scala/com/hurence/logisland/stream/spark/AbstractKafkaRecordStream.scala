@@ -58,10 +58,9 @@ import org.slf4j.LoggerFactory
 
 object AbstractKafkaRecordStream {
 
-    val DEFAULT_RAW_TOPIC = new AllowableValue("logisland_raw", "default raw topic", "the incoming non structured topic")
-    val DEFAULT_EVENTS_TOPIC = new AllowableValue("logisland_events", "default events topic", "the outgoing structured topic")
-    val DEFAULT_ERRORS_TOPIC = new AllowableValue("logisland_errors", "default raw topic", "the outgoing structured error topic")
-    val DEFAULT_METRICS_TOPIC = new AllowableValue("logisland_metrics", "default metrics topic", "the topic to place processing metrics")
+    val DEFAULT_RAW_TOPIC = new AllowableValue("_raw", "default raw topic", "the incoming non structured topic")
+    val DEFAULT_EVENTS_TOPIC = new AllowableValue("_events", "default events topic", "the outgoing structured topic")
+    val DEFAULT_ERRORS_TOPIC = new AllowableValue("_errors", "default raw topic", "the outgoing structured error topic")
 
     val INPUT_TOPICS = new PropertyDescriptor.Builder()
         .name("kafka.input.topics")
@@ -135,13 +134,6 @@ object AbstractKafkaRecordStream {
         .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
         .build
 
-    val METRICS_TOPIC = new PropertyDescriptor.Builder()
-        .name("kafka.metrics.topic")
-        .description("a topic to send metrics of processing. no output if not set")
-        .required(false)
-        .defaultValue(DEFAULT_METRICS_TOPIC.getValue)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
 
     val KAFKA_TOPIC_AUTOCREATE = new PropertyDescriptor.Builder()
         .name("kafka.topic.autoCreate")
@@ -228,7 +220,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
         descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
@@ -292,13 +283,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 createTopicsIfNeeded(zkClient, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkClient, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkClient, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
-                if (streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).isSet) {
-                    createTopicsIfNeeded(
-                        zkClient,
-                        Set(streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString),
-                        topicDefaultPartitions,
-                        topicDefaultReplicationFactor)
-                }
             }
 
             /**

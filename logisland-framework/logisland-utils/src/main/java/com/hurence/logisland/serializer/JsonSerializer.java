@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,7 @@ import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.time.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +77,7 @@ public class JsonSerializer implements RecordSerializer {
             jgen.writeStartObject();
             jgen.writeStringField("id", record.getId());
             jgen.writeStringField("type", record.getType());
-            jgen.writeStringField("creationDate", record.getTime().toString());
+            jgen.writeNumberField("creationDate", record.getTime().getTime());
 
             jgen.writeObjectFieldStart("fields");
             for (Map.Entry<String, Field> entry : record.getFieldsEntrySet()) {
@@ -162,8 +163,6 @@ public class JsonSerializer implements RecordSerializer {
         public Record deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             JsonToken t = jp.getCurrentToken();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             String id = null;
             String type = null;
             Date creationDate = null;
@@ -185,58 +184,69 @@ public class JsonSerializer implements RecordSerializer {
                         try {
                             fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.INT, jp.getIntValue()));
                         } catch (JsonParseException ex) {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
-                        }
-                        break;
 
-                    case VALUE_NUMBER_FLOAT:
-                        try {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
-                        } catch (JsonParseException ex) {
-                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
-                        }
-                        break;
-                    case VALUE_FALSE:
-                    case VALUE_TRUE:
-                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
-                        break;
-                    case START_ARRAY:
-                        logger.info(jp.getCurrentName());
-                        break;
-
-                    case END_ARRAY:
-                        break;
-                    case VALUE_STRING:
-
-                        if (jp.getCurrentName() != null) {
-                            switch (jp.getCurrentName()) {
-                                case "id":
-                                    id = jp.getValueAsString();
-                                    break;
-                                case "type":
-                                    type = jp.getValueAsString();
-                                    break;
-                                case "creationDate":
-                                    try {
-                                        creationDate = sdf.parse(jp.getValueAsString()); // "Thu Sep 08 12:11:08 CEST 2016\"
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
-                                    }
-                                    break;
-                                default:
-                                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
-
-                                    break;
+                            // special case for creationDate (not a field)
+                            if (jp.getCurrentName() != null && jp.getCurrentName().equals("creationDate")) {
+                                try {
+                                    creationDate = new Date(jp.getValueAsLong());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
                             }
                         }
+                        break;
 
-                        break;
-                    default:
-                        break;
-                }
+
+                case VALUE_NUMBER_FLOAT:
+                    try {
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
+                    } catch (JsonParseException ex) {
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
+                    }
+                    break;
+                case VALUE_FALSE:
+                case VALUE_TRUE:
+                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
+                    break;
+                case START_ARRAY:
+                    logger.info(jp.getCurrentName());
+                    break;
+
+                case END_ARRAY:
+                    break;
+                case VALUE_STRING:
+
+                    if (jp.getCurrentName() != null) {
+                        switch (jp.getCurrentName()) {
+                            case "id":
+                                id = jp.getValueAsString();
+                                break;
+                            case "type":
+                                type = jp.getValueAsString();
+                                break;
+                         /*   case "creationDate":
+                                try {
+                                    creationDate = new Date(jp.getValueAsLong());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                break;*/
+                            default:
+                                fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
+
+                                break;
+                        }
+                    }
+
+                    break;
+                default:
+                    break;
             }
+        }
 
-            Record record = new StandardRecord(type);
+        Record record = new StandardRecord(type);
             record.setId(id);
             record.setType(type);
             record.setTime(creationDate);
@@ -244,9 +254,9 @@ public class JsonSerializer implements RecordSerializer {
 
             return record;
 
-        }
-
     }
+
+}
 
 
     @Override

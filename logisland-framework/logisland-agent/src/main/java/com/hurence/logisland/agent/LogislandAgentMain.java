@@ -42,6 +42,8 @@ public class LogislandAgentMain {
             KafkaRegistryConfig config = new KafkaRegistryConfig(args[0]);
             KafkaRegistryRestApplication app = new KafkaRegistryRestApplication(config);
             Server server = app.createServer();
+
+
             server.start();
             log.info("Server started, listening for requests...");
             server.join();

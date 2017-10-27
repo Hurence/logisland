@@ -31,6 +31,9 @@ import java.util.LinkedHashMap;
  * <p>You specify maximum number of element to cache in the map by specifying maxElement parameter.
  * When using put on the map when the size is >= maxElement then last recently used entry is deleted automatically</p>
  *
+ *
+ * This cache is not threadsafe ! We do not care about missing one update for a key.
+ *
  * @see LinkedHashMap
  */
 @Tags({"cache", "service", "key", "value", "pair", "LRU"})
@@ -45,9 +48,12 @@ public class LRUCache<K, V> implements Cache<K,V> {
     }
 
     public LRUCache(int capacityCache) {
+        this(capacityCache, 0.3f);
+    }
+
+    public LRUCache(int capacityCache, float loadFactor) {
         int capacityLinkedHashMap = getClosestPowerOf2Lt(capacityCache);
-        float loadFactorLinkedHashMap = 0.3f;
-        map = new LRULinkedHashMap<K, V>(capacityLinkedHashMap, loadFactorLinkedHashMap, capacityCache);
+        map = new LRULinkedHashMap<K, V>(capacityLinkedHashMap, loadFactor, capacityCache);
     }
 
     /**

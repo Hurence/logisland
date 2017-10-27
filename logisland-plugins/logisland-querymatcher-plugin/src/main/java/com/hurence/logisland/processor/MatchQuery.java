@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
+ * Copyright (C) 2016-2017 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.LegacyDoubleField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
@@ -54,6 +53,17 @@ import java.util.*;
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
 public class MatchQuery extends AbstractProcessor {
 
+    public final static String ALERT_MATCH_NAME = "alert_match_name";
+    public final static String ALERT_MATCH_QUERY = "alert_match_query";
+    protected Monitor monitor;
+    protected KeywordAnalyzer keywordAnalyzer;
+    protected StandardAnalyzer standardAnalyzer;
+    protected StopAnalyzer stopAnalyzer;
+    protected Map<String, MatchingRule> matchingRules;
+    protected OnMissPolicy onMissPolicy;
+    protected OnMatchPolicy onMatchPolicy;
+    protected RecordTypeUpdatePolicy recordTypeUpdatePolicy;
+    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
 
     public static final PropertyDescriptor NUMERIC_FIELDS = new PropertyDescriptor.Builder()
             .name("numeric.fields")
@@ -70,11 +80,46 @@ public class MatchQuery extends AbstractProcessor {
             .defaultValue("alert_match")
             .build();
 
+    public static final PropertyDescriptor ON_MISS_POLICY = new PropertyDescriptor.Builder()
+            .name("policy.onmiss")
+            .description("the policy applied to miss events: " +
+                         "'" + OnMissPolicy.discard.toString() + "' (default value)" +
+                             " drop events that did not match any query;" +
+                         "'" + OnMissPolicy.forward.toString() + "'" +
+                             " include also events that did not match any query.")
+            .required(false)
+            .addValidator(new StandardValidators.EnumValidator(OnMissPolicy.class))
+            .defaultValue(OnMissPolicy.discard.toString())
+            .build();
+
+    public static final PropertyDescriptor RECORD_TYPE_UPDATE_POLICY = new PropertyDescriptor.Builder()
+            .name("record.type.updatePolicy")
+            .description("Record type update policy")
+            .required(false)
+            .addValidator(new StandardValidators.EnumValidator(RecordTypeUpdatePolicy.class))
+            .defaultValue(RecordTypeUpdatePolicy.overwrite.toString())
+            .build();
+
+    public static final PropertyDescriptor ON_MATCH_POLICY = new PropertyDescriptor.Builder()
+            .name("policy.onmatch")
+            .description("the policy applied to match events: " +
+                         "'" + OnMatchPolicy.first.toString() + "' (default value)" +
+                         " match events are tagged with the name and value of the first query that matched;" +
+                         "'" + OnMatchPolicy.all.toString() + "' match events are tagged with all names and values of" +
+                             " the queries that matched.")
+            .required(false)
+            .addValidator(new StandardValidators.EnumValidator(OnMatchPolicy.class))
+            .defaultValue(OnMatchPolicy.first.toString())
+            .build();
+
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(NUMERIC_FIELDS);
         descriptors.add(OUTPUT_RECORD_TYPE);
+        descriptors.add(RECORD_TYPE_UPDATE_POLICY);
+        descriptors.add(ON_MATCH_POLICY);
+        descriptors.add(ON_MISS_POLICY);
         descriptors.add(AbstractProcessor.INCLUDE_INPUT_RECORDS);
 
         return Collections.unmodifiableList(descriptors);
@@ -91,14 +136,49 @@ public class MatchQuery extends AbstractProcessor {
                 .build();
     }
 
-    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
 
 
-    private Monitor monitor;
-    private KeywordAnalyzer keywordAnalyzer;
-    private StandardAnalyzer standardAnalyzer;
-    private StopAnalyzer stopAnalyzer;
-    private Map<String, MatchingRule> matchingRules;
+    /**
+     * The policy that defines the behaviour when a record matches a query.
+     */
+    enum OnMatchPolicy {
+        /**
+         * Tag the matching records with only the first query name and query value. This is the default value.
+         */
+        first, /* legacy */
+        /**
+         * Tag the matching records with all query names and query values expressed as String arrays.
+         */
+        all
+    }
+
+    /**
+     * The policy that defines the behaviour when a record did not match any query.
+     */
+    enum OnMissPolicy {
+        /**
+         * Discard non-matching records. Only tagged records are sent by this processor. This is the default value.
+         */
+        discard, /* legacy */
+        /**
+         * Forward also records.
+         */
+        forward
+    }
+
+    /**
+     * The policy that defines the behaviour when a record did not match any query.
+     */
+    enum RecordTypeUpdatePolicy {
+        /**
+         * If the record matches a query, then replace its type (record_type). This is the default value.
+         */
+        overwrite, /* legacy */
+        /**
+         * Retain the original record type (the one present in the incoming record)
+         */
+        keep
+    }
 
     @Override
     public void init(final ProcessContext context) {
@@ -108,6 +188,8 @@ public class MatchQuery extends AbstractProcessor {
         standardAnalyzer = new StandardAnalyzer();
         stopAnalyzer = new StopAnalyzer();
         matchingRules = new HashMap<>();
+        onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
+        onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
         NumericQueryParser queryMatcher = new NumericQueryParser("field");
 
 
@@ -141,6 +223,8 @@ public class MatchQuery extends AbstractProcessor {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (UpdateException e) {
+            e.printStackTrace();
         }
 
 
@@ -155,31 +239,32 @@ public class MatchQuery extends AbstractProcessor {
 
 
         // convert all numeric fields to double to get numeric range working ...
-        List<Record> outRecords = new ArrayList<>();
-        List<InputDocument> inputDocs = new ArrayList<>();
-        Map<String, Record> inputRecords = new HashMap<>();
-        for (Record record : records) {
-            InputDocument.Builder docbuilder = InputDocument.builder(record.getId());
-            for (String fieldName : record.getAllFieldNames()) {
-
-                switch (record.getField(fieldName).getType()) {
-                    case STRING:
-                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
-                        break;
-                    case INT:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
-                        break;
-                    case LONG:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
-                        break;
-                    case FLOAT:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
-                        break;
-                    case DOUBLE:
-                        docbuilder.addField(new DoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
-                        break;
-                    default:
-                        docbuilder.addField(fieldName, record.getField(fieldName).asString(), keywordAnalyzer);
+        final List<Record> outRecords = new ArrayList<>();
+        final List<InputDocument> inputDocs = new ArrayList<>();
+        final Map<String, Record> inputRecords = new HashMap<>();
+        for (final Record record : records) {
+            final InputDocument.Builder docbuilder = InputDocument.builder(record.getId());
+            for (final String fieldName : record.getAllFieldNames()) {
+                if (record.getField(fieldName).getRawValue() != null) {
+                    switch (record.getField(fieldName).getType()) {
+                        case STRING:
+                            docbuilder.addField(fieldName, record.getField(fieldName).asString(), stopAnalyzer);
+                            break;
+                        case INT:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asInteger(), Field.Store.YES));
+                            break;
+                        case LONG:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asLong(), Field.Store.YES));
+                            break;
+                        case FLOAT:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asFloat(), Field.Store.YES));
+                            break;
+                        case DOUBLE:
+                            docbuilder.addField(new LegacyDoubleField(fieldName, record.getField(fieldName).asDouble(), Field.Store.YES));
+                            break;
+                        default:
+                            docbuilder.addField(fieldName, record.getField(fieldName).asString(), keywordAnalyzer);
+                    }
                 }
             }
 
@@ -188,7 +273,7 @@ public class MatchQuery extends AbstractProcessor {
         }
 
         // match a batch of documents
-        Matches<QueryMatch> matches = null;
+        Matches<QueryMatch> matches;
         try {
             matches = monitor.match(DocumentBatch.of(inputDocs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
@@ -196,22 +281,32 @@ public class MatchQuery extends AbstractProcessor {
             return outRecords;
         }
 
-        String outputRecordType = context.getPropertyValue(OUTPUT_RECORD_TYPE).asString();
+        MatchHandlers.MatchHandler _matchHandler = null;
 
+        if (onMatchPolicy==OnMatchPolicy.first && onMissPolicy==OnMissPolicy.discard) {
+            // Legacy behaviour
+            _matchHandler = new MatchHandlers.LegacyMatchHandler();
+        }
+        else if (onMissPolicy==OnMissPolicy.discard) {
+            // Ignore non matching records. Concat all query information (name, value) instead of first one only.
+            _matchHandler = new MatchHandlers.ConcatMatchHandler();
+        }
+        else {
+            // All records in, all records out. Concat all query information (name, value) instead of first one only.
+            _matchHandler = new MatchHandlers.AllInAllOutMatchHandler(records, this.onMatchPolicy);
+        }
+
+        final MatchHandlers.MatchHandler matchHandler = _matchHandler;
         for (DocumentMatches<QueryMatch> docMatch : matches) {
-            docMatch.getMatches().forEach(queryMatch -> {
-                outRecords.add(
-                        new StandardRecord(inputRecords.get(docMatch.getDocId()))
-                                .setType(outputRecordType)
-                                .setStringField("alert_match_name", queryMatch.getQueryId())
-                                .setStringField("alert_match_query", matchingRules.get(queryMatch.getQueryId()).getQuery())
-                );
-            });
+            docMatch.getMatches().forEach(queryMatch ->
+                matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
+                                         context,
+                                         matchingRules.get(queryMatch.getQueryId()),
+                                         recordTypeUpdatePolicy)
+            );
 
         }
 
-        return outRecords;
+        return matchHandler.outputRecords();
     }
-
-
 }

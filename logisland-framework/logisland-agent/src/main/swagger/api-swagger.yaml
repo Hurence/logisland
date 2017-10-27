@@ -42,6 +42,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+  /metrics:
+    get:
+      tags:
+        - metrics
+      operationId: getMetrics
+      summary: retrieve all job metrics in Prometheus format
+      description: get Prometheus metrics.
+        have a look to https://prometheus.io/docs/instrumenting/exposition_formats/
+      produces:
+        - text/plain
+      responses:
+        "200":
+          description: metrics
+          schema:
+            type: string
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
   # Job API
   /configs:
     get:

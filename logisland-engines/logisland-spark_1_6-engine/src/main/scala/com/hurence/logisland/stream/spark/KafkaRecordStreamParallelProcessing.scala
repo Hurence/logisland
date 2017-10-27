@@ -38,12 +38,13 @@ import com.hurence.logisland.processor.AbstractProcessor
 import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
 import com.hurence.logisland.registry.VariableRegistry
 import com.hurence.logisland.serializer.SerializerProvider
-import com.hurence.logisland.util.processor.ProcessorMetrics
 import com.hurence.logisland.util.record.RecordSchemaUtil
+import com.hurence.logisland.util.spark.ProcessorMetrics
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
 import org.apache.spark.TaskContext
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.slf4j.LoggerFactory
@@ -79,7 +80,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
         descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
         descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)
@@ -120,6 +120,10 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                           */
                         val partitionId = TaskContext.get.partitionId()
                         val offsetRange = offsetRanges(TaskContext.get.partitionId)
+                        val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                            "partition" + partitionId + "."
+                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
+
 
                         /**
                           * create serializers
@@ -133,9 +137,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         val errorSerializer = SerializerProvider.getSerializer(
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
                             streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
-                        val metricsSerializer = SerializerProvider.getSerializer(
-                            AbstractKafkaRecordStream.KRYO_SERIALIZER.getValue,
-                            null)
+
 
                         /**
                           * process events by chaining output records
@@ -148,7 +150,8 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         streamContext.getProcessContexts.foreach(processorContext => {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
-
+                            val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
+                                processorContext.getName + ".processingTime").time()
 
                             if (firstPass) {
                                 /**
@@ -185,20 +188,17 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             outgoingEvents = processor.process(processorContext, incomingEvents)
 
                             /**
-                              * send metrics if requested
+                              * compute metrics
                               */
-                            processingMetrics.addAll(ProcessorMetrics.computeMetrics(
-                                appName,
-                                processorContext.getName,
-                                inputTopics,
-                                outputTopics,
-                                partitionId,
+                            val processorMetrics = ProcessorMetrics.computeMetrics(
+                                pipelineMetricPrefix + processorContext.getName + ".",
                                 incomingEvents,
                                 outgoingEvents,
                                 offsetRange.fromOffset,
                                 offsetRange.untilOffset,
-                                System.currentTimeMillis() - startTime))
+                                System.currentTimeMillis() - startTime)
 
+                            processorTimerContext.stop()
                         })
 
 
@@ -235,16 +235,12 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                            processingMetrics.toList,
-                            metricsSerializer
-                        )
 
                         /**
                           * save latest offset to Zookeeper
                           */
                         zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange)
+                        pipelineTimerContext.stop()
                     }
                 } catch {
                     case ex: OffsetOutOfRangeException =>

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.1</version>
+        <version>0.10.2</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
     <dependencies>
@@ -68,6 +68,15 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-outlier-detection-plugin_${scala.binary.version}</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
@@ -96,14 +105,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-useragent-plugin</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
-        </dependency>
+
 
     </dependencies>
     <build>

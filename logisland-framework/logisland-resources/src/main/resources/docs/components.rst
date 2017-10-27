@@ -5,6 +5,47 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 ----------
 
+.. _com.hurence.logisland.processor.ApplyRegexp: 
+
+ApplyRegexp
+-----------
+This processor is used to create a new set of fields from one field (using regexp).
+
+Class
+_____
+com.hurence.logisland.processor.ApplyRegexp
+
+Tags
+____
+parser, regex, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.ApplyRegexp`_ 
+
+----------
+
 .. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
 
 BulkAddElasticsearch
@@ -233,17 +274,17 @@ elasticsearch
 Properties
 __________
 In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
 
 .. csv-table:: allowable-values
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
    "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
-   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", ""
-   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", ""
-   "es.type", "The name of the ES type to use in multiget query. ", "", "null", "", ""
-   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", ""
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
+   "**es.index**", "The name of the ES index to use in multiget query. ", "", "null", "", "**true**"
+   "es.type", "The name of the ES type to use in multiget query.", "", "default", "", "**true**"
+   "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
    "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
 
 ----------
@@ -368,6 +409,66 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.MatchIP: 
+
+MatchIP
+-------
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
+
+Class
+_____
+com.hurence.logisland.processor.MatchIP
+
+Tags
+____
+analytic, percolator, record, record, query, lucene
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "", ""
+   "output.record.type", "the output type of the record", "", "alert_match", "", ""
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "", ""
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "", ""
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "", ""
+   "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "query", "some Lucene query", "generate a new record when this query is matched", **true**
+
+----------
+
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery
@@ -411,6 +512,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "numeric.fields", "a comma separated string of numeric field to be matched", "", "null", "", ""
    "output.record.type", "the output type of the record", "", "alert_match", "", ""
+   "record.type.updatePolicy", "Record type update policy", "", "overwrite", "", ""
+   "policy.onmatch", "the policy applied to match events: 'first' (default value) match events are tagged with the name and value of the first query that matched;'all' match events are tagged with all names and values of the queries that matched.", "", "first", "", ""
+   "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "", ""
    "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
 
 Dynamic Properties
@@ -654,7 +758,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
 
 ----------
 
@@ -688,7 +792,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "null", "", ""
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
    "output.record.type", "the output type of the record", "", "netflowevent", "", ""
    "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "", ""
 
@@ -876,7 +980,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "script.code.imports", "For inline mode only. This is the pyhton code that should hold the import statements if required.", "", "null", "", ""
+   "script.code.imports", "For inline mode only. This is the python code that should hold the import statements if required.", "", "null", "", ""
    "script.code.init", "The python code to be called when the processor is initialized. This is the python equivalent of the init method code for a java processor. This is not mandatory but can only be used if **script.code.process** is defined (inline mode).", "", "null", "", ""
    "script.code.process", "The python code to be called to process the records. This is the pyhton equivalent of the process method code for a java processor. For inline mode, this is the only minimum required configuration property. Using this property, you may also optionally define the **script.code.init** and **script.code.imports** properties.", "", "null", "", ""
    "script.path", "The path to the user's python processor script. Use this property for file mode. Your python code must be in a python file with the following constraints: let's say your pyhton script is named MyProcessor.py. Then MyProcessor.py is a module file that must contain a class named MyProcessor which must inherits from the Logisland delivered class named AbstractProcessor. You can then define your code in the process method and in the other traditional methods (init...) as you would do in java in a class inheriting from the AbstractProcessor java class.", "", "null", "", ""
@@ -1006,6 +1110,50 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
    "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
    "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SplitField: 
+
+SplitField
+----------
+This processor is used to create a new set of fields from one field (using split).
+
+Class
+_____
+com.hurence.logisland.processor.SplitField
+
+Tags
+____
+parser, split, log, record
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
+   "split.limit", "Specify the maximum number of split to allow", "", "10", "", ""
+   "split.counter.enable", "Enable the counter of items returned by the split", "", "false", "", ""
+   "split.counter.suffix", "Enable the counter of items returned by the split", "", "Counter", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative split field", "another split that could match", "This processor is used to create a new set of fields from one field (using split).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.SplitField`_ 
 
 ----------
 

@@ -36,8 +36,7 @@ import java.util.Collections
 import com.hurence.logisland.annotation.documentation.{CapabilityDescription, Tags}
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, Record}
-import com.hurence.logisland.util.processor.ProcessorMetrics
-import com.hurence.logisland.util.spark.SparkUtils
+import com.hurence.logisland.util.spark.{ProcessorMetrics, SparkUtils}
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -98,7 +97,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
-            val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+          //  val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
             // Get the singleton instance of SQLContext
             //val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
@@ -169,21 +168,6 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
 
-                        /**
-                          * send metrics if requested
-                          */
-                        val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
-                        processingMetrics.addAll(ProcessorMetrics.computeMetrics(
-                            appName,
-                            streamContext.getName,
-                            inputTopics,
-                            outputTopics,
-                            -1,
-                            outgoingEvents,
-                            outgoingEvents,
-                            0,
-                            0,
-                            System.currentTimeMillis() - startTime))
 
                         /**
                           * push outgoing events and errors to Kafka
@@ -200,16 +184,11 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                             errorSerializer
                         )
 
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(AbstractKafkaRecordStream.METRICS_TOPIC).asString,
-                            processingMetrics.toList,
-                            serializer
-                        )
                     })
 
 
             }
-            return Some(offsetRanges)
+            return None //Some(offsetRanges)
         }
         None
     }

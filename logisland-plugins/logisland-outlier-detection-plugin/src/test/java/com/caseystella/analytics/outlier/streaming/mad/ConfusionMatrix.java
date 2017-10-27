@@ -17,7 +17,6 @@ package com.caseystella.analytics.outlier.streaming.mad;
 
 import com.caseystella.analytics.outlier.Outlier;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 
 import java.util.HashMap;
@@ -118,7 +117,7 @@ public class ConfusionMatrix {
     }
     public static Map<ConfusionEntry, Long> getConfusionMatrix( Set<Long> expectedOutliers
                                                               , Set<Long> computedOutliers
-                                                              , LongWritable numObservations
+                                                              , long numObservations
                                                               , long meanDiffBetweenTs
                                                               , int timeBounds
                                                               , Map<Long, Outlier> outlierMap
@@ -172,8 +171,8 @@ public class ConfusionMatrix {
             }
         }
         printStats("Computed Outlier Scores", computedOutlierScoreStats);
-        ret.put(new ConfusionEntry(ResultType.NON_OUTLIER, ResultType.NON_OUTLIER), numObservations.get() - unionSize);
-        Assert.assertEquals(numObservations.get(), getTotalNum(ret));
+        ret.put(new ConfusionEntry(ResultType.NON_OUTLIER, ResultType.NON_OUTLIER), numObservations - unionSize);
+        Assert.assertEquals(numObservations, getTotalNum(ret));
         return ret;
     }
 

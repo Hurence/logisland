@@ -103,7 +103,6 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         descriptors.add(AbstractKafkaRecordStream.ERROR_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.INPUT_TOPICS)
         descriptors.add(AbstractKafkaRecordStream.OUTPUT_TOPICS)
-        descriptors.add(AbstractKafkaRecordStream.METRICS_TOPIC)
         descriptors.add(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA)
         descriptors.add(AbstractKafkaRecordStream.INPUT_SERIALIZER)

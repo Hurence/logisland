@@ -18,10 +18,8 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerServiceLookup;
-import com.hurence.logisland.registry.VariableRegistry;
 
 public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
-
 
     private ControllerServiceLookup controllerServiceLookup;
 
@@ -54,7 +52,7 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new StandardPropertyValue(propValue,controllerServiceLookup, VariableRegistry.EMPTY_REGISTRY);
+        return PropertyValueFactory.getInstance(descriptor, propValue, controllerServiceLookup);
     }
 
     @Override

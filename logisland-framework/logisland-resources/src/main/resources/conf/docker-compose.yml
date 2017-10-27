@@ -1,0 +1,17 @@
+zookeeper:
+    image: hurence/zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+kafka:
+    image: hurence/kafka
+    hostname: kafka
+    links:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ADVERTISED_HOST_NAME: sandbox
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_JMX_PORT: 7071

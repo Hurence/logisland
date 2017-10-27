@@ -206,7 +206,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public Collection<ValidationResult> getValidationErrors() {
-        return null;
+        return validate();
     }
 
 

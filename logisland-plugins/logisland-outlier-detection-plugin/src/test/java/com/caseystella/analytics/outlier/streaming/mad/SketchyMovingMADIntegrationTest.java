@@ -26,7 +26,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.hurence.logisland.util.string.Multiline;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -156,8 +155,8 @@ public class SketchyMovingMADIntegrationTest {
             Assert.assertTrue(dataFile.exists());
             Set<Long> expectedOutliers = Sets.newHashSet(Iterables.transform(kv.getValue(), STR_TO_TS));
             OutlierRunner runner = new OutlierRunner(outlierConfig, extractorConfigStr);
-            final LongWritable numObservations = new LongWritable(0);
-            final LongWritable lastTimestamp = new LongWritable(Long.MIN_VALUE);
+            final long[] numObservations = {0L};
+            final long[] lastTimestamp = {Long.MIN_VALUE};
             final DescriptiveStatistics timeDiffStats = new DescriptiveStatistics();
             final Map<Long, Outlier> outlierMap = new HashMap<>();
             final PrintWriter pw = new PrintWriter(plotFile);
@@ -171,23 +170,23 @@ public class SketchyMovingMADIntegrationTest {
                             Outlier outlier = kv.getValue();
                             pw.println(dataPoint.getTimestamp() + " " + outlier.getDataPoint().getValue() + " " + ((outlier.getSeverity() == Severity.SEVERE_OUTLIER)?"outlier":"normal"));
                             outlierMap.put(dataPoint.getTimestamp(), outlier);
-                            numObservations.set(numObservations.get() + 1);
-                            if(lastTimestamp.get() != Long.MIN_VALUE) {
-                                timeDiffStats.addValue(dataPoint.getTimestamp() - lastTimestamp.get());
+                            numObservations[0] += 1;
+                            if(lastTimestamp[0] != Long.MIN_VALUE) {
+                                timeDiffStats.addValue(dataPoint.getTimestamp() - lastTimestamp[0]);
                             }
-                            lastTimestamp.set(dataPoint.getTimestamp());
+                            lastTimestamp[0] = dataPoint.getTimestamp();
                             return null;
                         }
                     }
             );
             pw.close();
-            total += numObservations.get();
+            total += numObservations[0];
             Set<Long> calculatedOutliers = Sets.newHashSet(Iterables.transform(outliers, OutlierRunner.OUTLIER_TO_TS));
             double stdDevDiff = Math.sqrt(timeDiffStats.getVariance());
             System.out.println("Running data from " + kv.getKey() + " - E[time delta]: " + ConfusionMatrix.timeConversion((long) timeDiffStats.getMean()) + ", StdDev[time delta]: " + ConfusionMatrix.timeConversion((long) stdDevDiff) + " mean: " + runner.getMean());
             Map<ConfusionMatrix.ConfusionEntry, Long> confusionMatrix = ConfusionMatrix.getConfusionMatrix( expectedOutliers
                                                                                                           , calculatedOutliers
-                                                                                                          , numObservations
+                                                                                                          , numObservations[0]
                                                                                                           , (long)timeDiffStats.getMean()
                                                                                                           , 3 //stdDevDiff > 30000?0:3
                                                                                                           , outlierMap

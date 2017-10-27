@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ import java.util.TimeZone;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
-public class ElasticsearchRecordConverter {
+class ElasticsearchRecordConverter {
 
     private static Logger logger = LoggerFactory.getLogger(ElasticsearchRecordConverter.class);
 
@@ -36,14 +36,15 @@ public class ElasticsearchRecordConverter {
      * Converts an Event into an Elasticsearch document
      * to be indexed later
      *
-     * @param record
-     * @return
+     * @param record to convert
+     * @return the json converted record
      */
-    public static String convertToString(Record record) {
+    static String convertToString(Record record) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             XContentBuilder document = jsonBuilder().startObject();
+            final float[] geolocation = new float[2];
 
             // convert event_time as ISO for ES
             if (record.hasField(FieldDictionary.RECORD_TIME)) {
@@ -61,6 +62,7 @@ public class ElasticsearchRecordConverter {
                     // cleanup invalid es fields characters like '.'
                     String fieldName = field.getName().replaceAll("\\.", "_");
 
+
                     switch (field.getType()) {
 
                         case STRING:
@@ -74,9 +76,19 @@ public class ElasticsearchRecordConverter {
                             break;
                         case FLOAT:
                             document.field(fieldName, field.asFloat().floatValue());
+                            if( fieldName.equals("lat") || fieldName.equals("latitude"))
+                                geolocation[0] = field.asFloat();
+                            if( fieldName.equals("long") || fieldName.equals("longitude"))
+                                geolocation[1] = field.asFloat();
+
                             break;
                         case DOUBLE:
                             document.field(fieldName, field.asDouble().doubleValue());
+                            if( fieldName.equals("lat") || fieldName.equals("latitude"))
+                                geolocation[0] = field.asFloat();
+                            if( fieldName.equals("long") || fieldName.equals("longitude"))
+                                geolocation[1] = field.asFloat();
+
                             break;
                         case BOOLEAN:
                             document.field(fieldName, field.asBoolean().booleanValue());
@@ -90,6 +102,13 @@ public class ElasticsearchRecordConverter {
                     logger.error("unable to process a field in record : {}, {}", record, ex.toString());
                 }
             });
+
+
+            if((geolocation[0] != 0) && (geolocation[1] != 0)){
+                GeoPoint point = new GeoPoint(geolocation[0], geolocation[1]);
+                document.latlon("location", geolocation[0], geolocation[1]);
+            }
+
 
             String result = document.endObject().string();
             document.flush();

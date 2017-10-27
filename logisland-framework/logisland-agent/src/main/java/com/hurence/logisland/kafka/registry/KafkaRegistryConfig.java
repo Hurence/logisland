@@ -58,6 +58,14 @@ public class KafkaRegistryConfig extends RestConfig {
     public static final String KAFKASTORE_TOPIC_JOBS_CONFIG = "kafkastore.topic.jobs";
     public static final String DEFAULT_KAFKASTORE_TOPIC_JOBS = "_jobs";
 
+
+    /**
+     * <code>kafkastore.topic.metrics</code>
+     */
+    public static final String KAFKASTORE_TOPIC_METRICS_CONFIG = "kafkastore.topic.metrics";
+    public static final String DEFAULT_KAFKASTORE_TOPIC_METRICS = "_metrics";
+
+
     /**
      * <code>kafka.metadata.broker.list</code>
      */
@@ -273,7 +281,8 @@ public class KafkaRegistryConfig extends RestConfig {
                         ConfigDef.Importance.LOW, KAFKASTORE_ZK_SESSION_TIMEOUT_MS_DOC)
                 .define(KAFKASTORE_TOPIC_TOPICS_CONFIG, ConfigDef.Type.STRING, DEFAULT_KAFKASTORE_TOPIC_TOPICS,
                         ConfigDef.Importance.HIGH, KAFKASTORE_TOPIC_DOC)
-
+                .define(KAFKASTORE_TOPIC_METRICS_CONFIG, ConfigDef.Type.STRING, DEFAULT_KAFKASTORE_TOPIC_METRICS,
+                        ConfigDef.Importance.MEDIUM, KAFKASTORE_TOPIC_DOC)
                 .define(KAFKA_METADATA_BROKER_LIST_CONFIG, ConfigDef.Type.STRING, DEFAULT_KAFKA_METADATA_BROKER_LIST,
                         ConfigDef.Importance.HIGH, KAFKA_METADATA_BROKER_LIST_DOC)
                 .define(KAFKA_TOPIC_AUTOCREATE_CONFIG, ConfigDef.Type.BOOLEAN, DEFAULT_KAFKA_TOPIC_AUTOCREATE,

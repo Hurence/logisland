@@ -22,11 +22,11 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.1</version>
+        <version>0.10.2</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
-    <description>This is the assembly logisland</description>
+    <description>This is the logisland assembly</description>
     <build>
         <plugins>
             <plugin>
@@ -66,23 +66,31 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-resources</artifactId>
+            <classifier>resources</classifier>
+            <scope>runtime</scope>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-bootstrap</artifactId>
+            <artifactId>logisland-scripting-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-scripting-mvel</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-consolidate-session-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-scripting-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -104,30 +112,25 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
-     <!--   <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-botsearch-plugin</artifactId>
-        </dependency>-->
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch-plugin</artifactId>
+            <artifactId>logisland-enrichment-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-resources</artifactId>
-            <classifier>resources</classifier>
-            <scope>runtime</scope>
-            <type>zip</type>
+            <artifactId>logisland-cache_key_value-service-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-documentation</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hadoop-utils</artifactId>
         </dependency>
-        <dependency>
+
+
+
+     <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase-plugin</artifactId>
         </dependency>
@@ -135,19 +138,38 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
-        </dependency>
+         <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-bootstrap</artifactId>
+           </dependency>
 
+           <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-elasticsearch-plugin</artifactId>
+           </dependency>
+
+           <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-documentation</artifactId>
+           </dependency>
+
+           <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
+           </dependency>
+           <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
+           </dependency>
+           <dependency>
+               <groupId>com.hurence.logisland</groupId>
+               <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
+           </dependency>
+
+        <!--   <dependency>
+         <groupId>com.hurence.logisland</groupId>
+         <artifactId>logisland-botsearch-plugin</artifactId>
+     </dependency>-->
     </dependencies>
 
     <properties>
@@ -184,8 +206,8 @@
                     <value>2.5</value>
                 </property>
             </activation>
-            <dependencies>
-                <dependency>
+         <dependencies>
+                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 </dependency>

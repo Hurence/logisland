@@ -26,7 +26,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 4000
+    spark.streaming.batchDuration: 1000
     spark.streaming.backpressure.enabled: false
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
@@ -41,17 +41,17 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
         hosts: sandbox:9300
-        cluster.name: elasticsearch
+        cluster.name: es-logisland
         batch.size: 5000
 
   streamConfigurations:
 
-    # parsing
+    # main processing stream
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
@@ -70,7 +70,7 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-        # parse apache logs
+        # parse apache logs into logisland records
         - processor: apache_parser
           component: com.hurence.logisland.processor.SplitText
           type: parser
@@ -80,27 +80,7 @@ engine:
             value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
-
-    # indexing
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
-      type: processor
-      documentation: a processor that push events to ES
-      configuration:
-        kafka.input.topics: logisland_events,logisland_metrics
-        kafka.output.topics: none
-        kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        kafka.output.topics.serializer: none
-        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
-        kafka.topic.autoCreate: true
-        kafka.topic.default.partitions: 2
-        kafka.topic.default.replicationFactor: 1
-      processorConfigurations:
-
-        # Bulk add to elasticsearch
+        # all the parsed records are added to elasticsearch by bulk
         - processor: es_publisher
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor

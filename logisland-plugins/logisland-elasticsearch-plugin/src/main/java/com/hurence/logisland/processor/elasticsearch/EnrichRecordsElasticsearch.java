@@ -22,17 +22,24 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
+import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Tags({"elasticsearch"})
 @CapabilityDescription("Enrich input records with content indexed in elasticsearch using multiget queries.\n" +
-        "Each incoming record must be possibly enriched with information stored in elasticsearch. \n"+
+        "Each incoming record must be possibly enriched with information stored in elasticsearch. \n" +
         "The plugin properties are :\n" +
         "- es.index (String)            : Name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
         "- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.\n" +
@@ -42,13 +49,15 @@ import java.util.stream.Collectors;
         "\n" +
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document."
 )
-public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor
-{
+public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
+    private static Logger logger = LoggerFactory.getLogger(EnrichRecordsElasticsearch.class);
+
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
             .name("record.key")
             .description("The name of field in the input record containing the document id to use in ES multiget query")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
 
     public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
@@ -56,13 +65,16 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor
             .description("The name of the ES index to use in multiget query. ")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
 
 
     public static final PropertyDescriptor ES_TYPE_FIELD = new PropertyDescriptor.Builder()
             .name("es.type")
-            .description("The name of the ES type to use in multiget query. ")
+            .description("The name of the ES type to use in multiget query.")
             .required(false)
+            .defaultValue("default")
+            .expressionLanguageSupported(true)
             .build();
 
     public static final PropertyDescriptor ES_INCLUDES_FIELD = new PropertyDescriptor.Builder()
@@ -70,6 +82,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor
             .description("The name of the ES fields to include in the record.")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .defaultValue("*")
             .build();
 
@@ -80,6 +93,9 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("N/A")
             .build();
+
+    private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
+    private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*"+ATTRIBUTE_MAPPING_SEPARATOR+"\\s*";
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -105,85 +121,286 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
-        List<Record> outputRecords   = new ArrayList<>();
-        List<Record> recordsToEnrich = new ArrayList<>();
+        List<Record> outputRecords = new ArrayList<>();
+        List<Triple<Record,String, IncludeFields>> recordsToEnrich = new ArrayList<>();
 
         if (records.size() != 0) {
-
-            String recordKeyName     = context.getPropertyValue(RECORD_KEY_FIELD).asString();
-            String indexName         = context.getPropertyValue(ES_INDEX_FIELD).asString();
-            String typeName         = context.getPropertyValue(ES_TYPE_FIELD).asString();
-            String includesFieldName = context.getPropertyValue(ES_INCLUDES_FIELD).asString();
             String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
-
-            List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
-            List<MultiGetResponseRecord> multiGetResponseRecords;
-            HashSet<String> ids = new HashSet<>(); // Use a Set to avoid duplicates
-
-            for (Record record : records) {
-                if(!record.hasField(recordKeyName) ||
-                        record.getField(recordKeyName) == null ||
-                        record.getField(recordKeyName).getRawValue() == null ||
-                        record.getField(recordKeyName).asString().isEmpty() ) {
-                    // The record will not be enriched
-                    // Register the record and process the next one
-                    outputRecords.add(record);
-                    continue;
-                }
-                else {
-                    // The record will potentially be enriched
-                    ids.add(record.getField(recordKeyName).asString());
-                    recordsToEnrich.add(record);
-                }
-            }
-
-            if (ids.isEmpty()){
-                return records;
-            }
-
-            // Includes :
-            String[] includesArray = null;
-            if((includesFieldName != null) && (! includesFieldName.isEmpty())) {
-                includesArray = includesFieldName.split("\\s*,\\s*");
-            }
 
             // Excludes :
             String[] excludesArray = null;
-            if((excludesFieldName != null) && (! excludesFieldName.isEmpty())) {
+            if ((excludesFieldName != null) && (!excludesFieldName.isEmpty())) {
                 excludesArray = excludesFieldName.split("\\s*,\\s*");
             }
 
+            //List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+            MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
+
+            mgqrBuilder.excludeFields(excludesArray);
+
+            List<MultiGetResponseRecord> multiGetResponseRecords = null;
+            // HashSet<String> ids = new HashSet<>(); // Use a Set to avoid duplicates
+
+            for (Record record : records) {
+
+                String recordKeyName = null;
+                String indexName = null;
+                String typeName = null;
+                String includesFieldName = null;
+
+                try {
+                    recordKeyName = context.getPropertyValue(RECORD_KEY_FIELD).evaluate(record).asString();
+                    indexName = context.getPropertyValue(ES_INDEX_FIELD).evaluate(record).asString();
+                    typeName = context.getPropertyValue(ES_TYPE_FIELD).evaluate(record).asString();
+                    includesFieldName = context.getPropertyValue(ES_INCLUDES_FIELD).evaluate(record).asString();
+                } catch (Throwable t) {
+                    record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in executing EL. Error: " + t.getMessage());
+                    logger.error("Cannot interpret EL : " + record, t);
+                }
+
+                if (recordKeyName != null) {
+                    try {
+                        // Includes :
+                        String[] includesArray = null;
+                        if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
+                            includesArray = includesFieldName.split("\\s*,\\s*");
+                        }
+                        IncludeFields includeFields = new IncludeFields(includesArray);
+                        mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
+                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includeFields));
+                    } catch (Throwable t) {
+                        record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
+                        outputRecords.add(record);
+                    }
+                } else {
+                    //record.setStringField(FieldDictionary.RECORD_ERRORS, "Interpreted EL returned null for recordKeyName");
+                    outputRecords.add(record);
+                    //logger.error("Interpreted EL returned null for recordKeyName");
+                }
+            }
+
             try {
-                multiGetQueryRecords.add(new MultiGetQueryRecord(indexName, typeName, new ArrayList(ids), includesArray, excludesArray));
-            } catch (InvalidMultiGetQueryRecordException e) {
-                // Cannot enrich any records
-                // Return input records
+                List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
+
+                multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
+            } catch (InvalidMultiGetQueryRecordException e ){
+                // should never happen
+                e.printStackTrace();
+                // TODO : Fix above
+            }
+
+            if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
                 return records;
             }
 
-            multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-
-            if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()){
-                return records;
-            }
 
             // Transform the returned documents from ES in a Map
             Map<String, MultiGetResponseRecord> responses = multiGetResponseRecords.
                     stream().
-                    collect(Collectors.toMap(MultiGetResponseRecord::getDocumentId, Function.identity()));
+                    collect(Collectors.toMap(EnrichRecordsElasticsearch::asUniqueKey, Function.identity()));
 
             recordsToEnrich.forEach(recordToEnrich -> {
-                Record outputRecord = recordToEnrich;
-                MultiGetResponseRecord responseRecord = responses.get(outputRecord.getField(recordKeyName).asString());
-                if((responseRecord != null) && (responseRecord.getRetrievedFields() != null))
-                {
-                    responseRecord.getRetrievedFields().forEach((k,v) -> {
-                        outputRecord.setStringField(k.toString(), v.toString());
+
+                Triple<Record, String, IncludeFields> triple = recordToEnrich;
+                Record outputRecord = triple.getLeft();
+
+                // TODO: should probably store the resulting recordKeyName during previous invocation above
+                String key = triple.getMiddle();
+                IncludeFields includeFields = triple.getRight();
+
+                MultiGetResponseRecord responseRecord = responses.get(key);
+                if ((responseRecord != null) && (responseRecord.getRetrievedFields() != null)) {
+                    // Retrieve the fields from responseRecord that matches the ones in the recordToEnrich.
+                    responseRecord.getRetrievedFields().forEach((k, v) -> {
+                        String fieldName = k.toString();
+                        if (includeFields.includes(fieldName)) {
+                            // Now check if there is an attribute mapping rule to apply
+                            if (includeFields.hasMappingFor(fieldName)){
+                                String mappedAttributeName = includeFields.getAttributeToMap(fieldName);
+                                // Replace the attribute name
+                                outputRecord.setStringField(mappedAttributeName, v.toString());
+                            }
+                            else {
+                                outputRecord.setStringField(fieldName, v.toString());
+                            }
+                        }
                     });
                 }
                 outputRecords.add(outputRecord);
+
             });
         }
         return outputRecords;
+    }
+    /*
+     * Returns true if the array of attributes to include contains at least one attribute mapping
+     */
+    private boolean hasAttributeMapping(String[] includesArray){
+        boolean attrMapping = false;
+        for (String includePattern : includesArray){
+            if (includePattern.contains(":")){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String asUniqueKey(MultiGetResponseRecord mgrr) {
+        return asUniqueKey(mgrr.getIndexName(), mgrr.getTypeName(), mgrr.getDocumentId());
+    }
+
+    private static String asUniqueKey(String indexName, String typeName, String documentId) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(indexName)
+                .append(":")
+                .append(typeName)
+                .append(":")
+                .append(documentId);
+        return sb.toString();
+    }
+
+    class IncludeFields {
+        private HashMap<String, String> attributesMapping = null;
+        boolean hasAttributeMapping = false;
+        private Set<String> attrsToIncludeList = null;
+
+        public String[] getAttrsToIncludeArray() {
+            return attrsToIncludeArray;
+        }
+
+        private String[] attrsToIncludeArray = null;
+
+        private boolean containsAll = false;
+        private boolean containsSubstring = false;
+        private boolean containsEquality = false;
+
+        Set<String> equalityFields = null;
+        Map<String, Pattern> substringFields = null;
+
+        /*
+         * Constructor
+         */
+        public IncludeFields(String[] includesArray){
+            if (includesArray == null || includesArray.length <= 0){
+                containsAll = true;
+                this.attrsToIncludeArray = includesArray;
+            }
+            else {
+                for (String includePattern : includesArray){
+                    if (includePattern.contains(ATTRIBUTE_MAPPING_SEPARATOR)){
+                        hasAttributeMapping = true;
+                        attrsToIncludeList = new HashSet<String>();
+                        attributesMapping = new HashMap<String, String>();
+                        break;
+                    }
+                }
+
+                Arrays.stream(includesArray).forEach((k) -> {
+                    if (k.equals("*")){
+                        containsAll = true;
+                        if (hasAttributeMapping) {
+                            attrsToIncludeList.add(k);
+                        }
+                    }
+                    else if (k.contains("*")){
+                        // It is a substring
+                        if (containsSubstring == false){
+                            substringFields = new HashMap<>();
+                            containsSubstring = true;
+                        }
+                        String buildCompileStr = k.replaceAll("\\*", ".\\*");
+                        Pattern pattern = Pattern.compile(buildCompileStr);
+                        substringFields.put(k, pattern);
+                        if (hasAttributeMapping) {
+                            attrsToIncludeList.add(k);
+                        }
+                    }
+                    else {
+                        if (containsEquality == false){
+                            equalityFields = new HashSet<String>();
+                            containsEquality = true;
+                        }
+                        if (hasAttributeMapping) {
+                            if (k.contains(ATTRIBUTE_MAPPING_SEPARATOR)) {
+                                String[] splited = k.split(ATTRIBUTE_MAPPING_SEPARATOR_REGEXP);
+                                if (splited.length == 2) {
+                                    attrsToIncludeList.add(splited[1]);
+                                    attributesMapping.put(splited[1], splited[0]);
+                                    equalityFields.add(splited[1]);
+                                }
+                            }
+                            else {
+                                equalityFields.add(k);
+                                attrsToIncludeList.add(k);
+                            }
+                        }
+                        else {
+                            equalityFields.add(k);
+                        }
+                    }
+                });
+                if (hasAttributeMapping){
+                    this.attrsToIncludeArray = (String [])attrsToIncludeList.toArray(new String[attrsToIncludeList.size()]);
+                }
+                else {
+                    this.attrsToIncludeArray = includesArray;
+                }
+            }
+        }
+
+        public boolean hasMappingFor(String attr){
+            if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
+                return false;
+            }
+            return attributesMapping.containsKey(attr);
+        }
+
+        public String getAttributeToMap(String attr){
+            if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
+                return null;
+            }
+            return attributesMapping.get(attr);
+        }
+
+        public boolean matchesAll() {
+            return containsAll;
+        }
+
+        public boolean containsSubstring(){
+            return containsSubstring;
+        }
+
+        public boolean containsEquality(){
+            return containsEquality;
+        }
+
+        public boolean includes(String fieldName){
+            if (containsAll){
+                return true;
+            }
+            if (containsEquality) {
+                if (equalityFields.contains(fieldName)) {
+                    return true;
+                }
+            }
+            if (containsSubstring){
+                // Must go through each substring expresssion
+                for (String key : substringFields.keySet()) {
+                    Pattern expr = substringFields.get(key);
+                    Matcher valueMatcher = expr.matcher(fieldName);
+                    if (expr != null){
+                        try{
+                            if (valueMatcher.lookingAt()){
+                                return true;
+                            }
+                        }
+                        catch(Exception e){
+                            logger.warn("issue while matching on fieldname, exception {}", fieldName, e.getMessage());
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

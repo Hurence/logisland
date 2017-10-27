@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@ package com.hurence.logisland.record;
 
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -34,6 +36,9 @@ import java.io.Serializable;
  * string: unicode character sequence
  */
 public class Field implements PropertyValue, Serializable {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(Field.class);
 
     private final String name;
     private final FieldType type;
@@ -118,8 +123,9 @@ public class Field implements PropertyValue, Serializable {
         } else {
             try {
                 return Integer.parseInt(rawValue.toString());
-            }catch (Exception ex){
-                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as an integer");
+            } catch (Exception ex) {
+                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a int, returning 0");
+                return 0;
             }
         }
     }
@@ -134,8 +140,9 @@ public class Field implements PropertyValue, Serializable {
             } else {
                 try {
                     return Long.parseLong(rawValue.toString());
-                }catch (Exception ex){
-                    throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a long");
+                } catch (Exception ex) {
+                    logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a long, returning 0");
+                    return 0L;
                 }
             }
         }
@@ -156,8 +163,9 @@ public class Field implements PropertyValue, Serializable {
         } else {
             try {
                 return Float.parseFloat(rawValue.toString());
-            }catch (Exception ex){
-                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a float");
+            } catch (Exception ex) {
+                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a float, returning 0");
+                return 0.0f;
             }
         }
     }
@@ -171,8 +179,9 @@ public class Field implements PropertyValue, Serializable {
         } else {
             try {
                 return Double.parseDouble(rawValue.toString());
-            }catch (Exception ex){
-                throw new IllegalArgumentException("unable to convert " + rawValue.toString() + " as a double");
+            } catch (Exception ex) {
+                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
+                return 0.0;
             }
         }
     }
@@ -185,8 +194,8 @@ public class Field implements PropertyValue, Serializable {
     @Override
     public ControllerService asControllerService() {
         try {
-            return (ControllerService)rawValue;
-        }catch (Exception ex){
+            return (ControllerService) rawValue;
+        } catch (Exception ex) {
             throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
         }
     }
@@ -194,10 +203,14 @@ public class Field implements PropertyValue, Serializable {
     @Override
     public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
         try {
-            return (T)rawValue;
-        }catch (Exception ex){
+            return (T) rawValue;
+        } catch (Exception ex) {
             throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
         }
     }
 
+    @Override
+    public PropertyValue evaluate(Record record) {
+        throw new UnsupportedOperationException("The evaluate(record) method is not available for this type of PropertyValue");
+    }
 }

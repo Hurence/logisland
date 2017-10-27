@@ -39,6 +39,8 @@ import java.util.*;
  * <p>You specify maximum number of element to cache in the map by specifying maxElement parameter.
  * When using put on the map when the size is >= maxElement then last recently used entry is deleted automatically</p>
  *
+ * This cache is not threadsafe ! We do not care about missing one update for a key.
+ *
  * @see LinkedHashMap
  */
 @Tags({"cache", "service", "key", "value", "pair", "LRU"})

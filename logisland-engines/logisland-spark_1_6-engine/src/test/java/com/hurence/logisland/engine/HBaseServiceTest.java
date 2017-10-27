@@ -77,7 +77,6 @@ public class HBaseServiceTest {
         kafkaContext.getKafkaUnitServer().createTopic(AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue());
         kafkaContext.getKafkaUnitServer().createTopic(AbstractKafkaRecordStream.DEFAULT_EVENTS_TOPIC().getValue());
         kafkaContext.getKafkaUnitServer().createTopic(AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue());
-        kafkaContext.getKafkaUnitServer().createTopic(AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue());
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
         // see https://stackoverflow.com/questions/14935755/how-to-get-data-from-old-offset-point-in-kafka
