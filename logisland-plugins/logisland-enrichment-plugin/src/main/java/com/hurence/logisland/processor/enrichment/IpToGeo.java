@@ -35,18 +35,19 @@ import java.util.Map;
 @CapabilityDescription("Looks up geolocation information for an IP address and adds the geo information to FlowFile attributes. The "
         + "geo data is provided as a MaxMind database. The attribute that contains the IP address to lookup is provided by the "
         + "'IP Address Attribute' property. If the name of the attribute provided is 'X', then the the attributes added by enrichment "
-        + "will take the form X.geo.<fieldName>")
+        + "will take the form X_geo_<fieldName>")
 @WritesAttributes({
-        @WritesAttribute(attribute = "X.geo.lookup.micros", description = "The number of microseconds that the geo lookup took"),
-        @WritesAttribute(attribute = "X.geo.city", description = "The city identified for the IP address"),
-        @WritesAttribute(attribute = "X.geo.latitude", description = "The latitude identified for this IP address"),
-        @WritesAttribute(attribute = "X.geo.longitude", description = "The longitude identified for this IP address"),
-        @WritesAttribute(attribute = "X.geo.subdivision.N",
+        @WritesAttribute(attribute = "X_geo_lookup_micros", description = "The number of microseconds that the geo lookup took"),
+        @WritesAttribute(attribute = "X_geo_city", description = "The city identified for the IP address"),
+        @WritesAttribute(attribute = "X_geo_latitude", description = "The latitude identified for this IP address"),
+        @WritesAttribute(attribute = "X_geo_longitude", description = "The longitude identified for this IP address"),
+        @WritesAttribute(attribute = "X_geo_location", description = "The location identified for this IP address, defined as Geo-point expressed as a string with the format: \"lat,lon\""),
+        @WritesAttribute(attribute = "X_geo_subdivision_N",
                 description = "Each subdivision that is identified for this IP address is added with a one-up number appended to the attribute name, starting with 0"),
-        @WritesAttribute(attribute = "X.geo.subdivision.isocode.N", description = "The ISO code for the subdivision that is identified by X.geo.subdivision.N"),
-        @WritesAttribute(attribute = "X.geo.country", description = "The country identified for this IP address"),
-        @WritesAttribute(attribute = "X.geo.country.isocode", description = "The ISO Code for the country identified"),
-        @WritesAttribute(attribute = "X.geo.postalcode", description = "The postal code for the country identified"),})
+        @WritesAttribute(attribute = "X_geo_subdivision_isocode_N", description = "The ISO code for the subdivision that is identified by X_geo_subdivision_N"),
+        @WritesAttribute(attribute = "X_geo_country", description = "The country identified for this IP address"),
+        @WritesAttribute(attribute = "X_geo_country_isocode", description = "The ISO Code for the country identified"),
+        @WritesAttribute(attribute = "X_geo_postalcode", description = "The postal code for the country identified"),})
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);
@@ -99,7 +100,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_LOOKUP_TIME_MICROS).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_LOOKUP_TIME_MICROS).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -108,7 +109,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_CITY).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_CITY).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -117,7 +118,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_LATITUDE).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_LATITUDE).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -127,7 +128,16 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_LONGITUDE).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_LONGITUDE).toString(),
+                    FieldType.STRING,
+                    value);
+        }
+
+        value = geoInfo.get(GEO_FIELD_LOCATION);
+        if (value != null)
+        {
+            record.setField(
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_LOCATION).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -139,7 +149,7 @@ public class IpToGeo extends IpAbstractProcessor {
             if (value != null)
             {
                 record.setField(
-                        new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_SUBDIVISION + i).toString(),
+                        new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_SUBDIVISION + i).toString(),
                         FieldType.STRING,
                         value);
             } else
@@ -150,7 +160,7 @@ public class IpToGeo extends IpAbstractProcessor {
             if (value != null)
             {
                 record.setField(
-                        new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_SUBDIVISION_ISOCODE + i).toString(),
+                        new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_SUBDIVISION_ISOCODE + i).toString(),
                         FieldType.STRING,
                         value);
             }
@@ -161,7 +171,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_COUNTRY).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_COUNTRY).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -170,7 +180,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_COUNTRY_ISOCODE).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_COUNTRY_ISOCODE).toString(),
                     FieldType.STRING,
                     value);
         }
@@ -179,7 +189,7 @@ public class IpToGeo extends IpAbstractProcessor {
         if (value != null)
         {
             record.setField(
-                    new StringBuilder(ipAttributeName).append(".").append(GEO_FIELD_POSTALCODE).toString(),
+                    new StringBuilder(ipAttributeName).append(SEPARATOR).append(GEO_FIELD_POSTALCODE).toString(),
                     FieldType.STRING,
                     value);
         }

@@ -41,29 +41,32 @@ public class IpToGeoTest {
 
         final MockRecord outputRecord = runner.getOutputRecords().get(0);
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_CITY);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_CITY, "San Antonio");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_CITY);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_CITY, "San Antonio");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_LATITUDE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_LATITUDE, "29.4889");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LATITUDE);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LATITUDE, "29.4889");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_LONGITUDE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_LONGITUDE, "-98.3987");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LONGITUDE);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LONGITUDE, "-98.3987");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_SUBDIVISION + "0");
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_SUBDIVISION + "0", "Texas");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LOCATION);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LOCATION, "29.4889,-98.3987");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_SUBDIVISION_ISOCODE + "0");
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_SUBDIVISION_ISOCODE + "0", "TX");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION + "0");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION + "0", "Texas");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_COUNTRY);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_COUNTRY, "United States");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION_ISOCODE + "0");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION_ISOCODE + "0", "TX");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_COUNTRY_ISOCODE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_COUNTRY_ISOCODE, "US");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY, "United States");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_POSTALCODE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + "." + GEO_FIELD_POSTALCODE, "78218");
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY_ISOCODE);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY_ISOCODE, "US");
+
+        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE);
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE, "78218");
 
         outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
     }

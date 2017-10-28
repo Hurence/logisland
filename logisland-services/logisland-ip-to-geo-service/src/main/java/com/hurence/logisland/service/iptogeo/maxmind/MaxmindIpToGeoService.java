@@ -186,8 +186,13 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         result.put(GEO_FIELD_LOOKUP_TIME_MICROS, (new Long((stop - start)*1000L)).toString());
 
         result.put(GEO_FIELD_CITY, response.getCity().getName());
-        result.put(GEO_FIELD_LATITUDE, response.getLocation().getLatitude().toString());
-        result.put(GEO_FIELD_LONGITUDE, response.getLocation().getLongitude().toString());
+
+        String latitude = response.getLocation().getLatitude().toString();
+        result.put(GEO_FIELD_LATITUDE, latitude);
+        String longitude = response.getLocation().getLongitude().toString();
+        result.put(GEO_FIELD_LONGITUDE, longitude);
+        String location = latitude + "," + longitude;
+        result.put(GEO_FIELD_LOCATION, location);
 
         int i = 0;
         for (final Subdivision subd : response.getSubdivisions()) {
