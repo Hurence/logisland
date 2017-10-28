@@ -179,7 +179,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         long stop = System.currentTimeMillis();
 
         if (response == null) {
-            getLogger().error("Could not find geo data for {} due to null result", new Object[]{ip});
+            getLogger().debug("Could not find geo data for {} due to null result", new Object[]{ip});
             return result;
         }
 
