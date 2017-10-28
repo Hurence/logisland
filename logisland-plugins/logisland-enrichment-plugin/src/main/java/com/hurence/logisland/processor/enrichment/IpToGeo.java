@@ -24,6 +24,7 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,11 @@ public class IpToGeo extends IpAbstractProcessor {
         final List<PropertyDescriptor> properties = super.getSupportedPropertyDescriptors();
         properties.add(IP_TO_GEO_SERVICE);
         return properties;
+    }
+
+    @Override
+    public boolean hasControllerService() {
+        return true;
     }
 
     @Override
