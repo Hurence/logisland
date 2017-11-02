@@ -23,7 +23,8 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
 
     public static final PropertyDescriptor IP_ADDRESS_FIELD = new PropertyDescriptor.Builder()
             .name("ip.address.field")
-            .description("The field containing the ip address we want to discover FQDN (full qualified domain name)")
+            .displayName("IP field")
+            .description("The name of the field containing the ip address to translate.")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();

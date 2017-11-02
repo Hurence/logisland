@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 @Tags({"geo", "enrich", "ip"})
-@CapabilityDescription("Looks up geolocation information for an IP address and adds the geo information to FlowFile attributes. The "
-        + "geo data is provided as a MaxMind database. The attribute that contains the IP address to lookup is provided by the "
+@CapabilityDescription("Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup is provided by the "
         + "'IP Address Attribute' property. If the name of the attribute provided is 'X', then the the attributes added by enrichment "
         + "will take the form X_geo_<fieldName>")
 @WritesAttributes({
@@ -41,6 +40,7 @@ import java.util.Map;
         @WritesAttribute(attribute = "X_geo_latitude", description = "The latitude identified for this IP address"),
         @WritesAttribute(attribute = "X_geo_longitude", description = "The longitude identified for this IP address"),
         @WritesAttribute(attribute = "X_geo_location", description = "The location identified for this IP address, defined as Geo-point expressed as a string with the format: \"lat,lon\""),
+        @WritesAttribute(attribute = "X_geo_accuracy_radius", description = "The approximate accuracy radius, in kilometers, around the latitude and longitude for the geographical entity"),
         @WritesAttribute(attribute = "X_geo_subdivision_N",
                 description = "Each subdivision that is identified for this IP address is added with a one-up number appended to the attribute name, starting with 0"),
         @WritesAttribute(attribute = "X_geo_subdivision_isocode_N", description = "The ISO code for the subdivision that is identified by X_geo_subdivision_N"),

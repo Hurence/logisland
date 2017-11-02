@@ -21,7 +21,9 @@ import com.hurence.logisland.controller.ControllerService;
 import java.util.Map;
 
 @Tags({"ip", "service", "geo"})
-@CapabilityDescription("Looks up geolocation information for an IP address and gets the geo information for it.")
+@CapabilityDescription("Looks up geolocation information for an IP address and gets the geo information for it. An IP address" +
+        " is passed as parameter to the getGeoInfo method. The returned map is filled with found information with the fields defined here" +
+        " as keys.")
 public interface IpToGeoService extends ControllerService {
 
     public static final String SEPARATOR = "_";
@@ -30,6 +32,14 @@ public interface IpToGeoService extends ControllerService {
      * The number of microseconds that the geo lookup took
      */
     public static final String GEO_FIELD_LOOKUP_TIME_MICROS = "geo" + SEPARATOR + "lookup" + SEPARATOR + "micros";
+    /**
+     * The continent identified for the IP address
+     */
+    public static final String GEO_FIELD_CONTINENT = "geo" + SEPARATOR + "continent";
+    /**
+     * The continent code identified for the IP address
+     */
+    public static final String GEO_FIELD_CONTINENT_CODE = "geo" + SEPARATOR + "continent" + SEPARATOR + "code";
     /**
      * The city identified for the IP address
      */
@@ -46,6 +56,14 @@ public interface IpToGeoService extends ControllerService {
      * The location identified for the IP address, defined as Geo-point expressed as a string with the format: "lat,lon"
      */
     public static final String GEO_FIELD_LOCATION = "geo" + SEPARATOR + "location";
+    /**
+     * The timezone for the IP address
+     */
+    public static final String GEO_FIELD_TIME_ZONE = "geo" + SEPARATOR + "time"  + SEPARATOR + "zone";
+    /**
+     * The approximate accuracy radius, in kilometers, around the latitude and longitude for the geographical entity
+     */
+    public static final String GEO_FIELD_ACCURACY_RADIUS = "geo" + SEPARATOR + "accuracy" + SEPARATOR + "radius";
     /**
      * Each subdivision that is identified for the IP address is added with a one-up number
      * appended to the attribute name, starting with 0
@@ -74,5 +92,5 @@ public interface IpToGeoService extends ControllerService {
      * @return A Map containing matching geo information for the passed IP (if found). Possible keys a defined in the
      * IpToGeoService service as static fields starting with the GEO_FIELD prefix.
      */
-    public Map<String, String> getGeoInfo(String ip);
+    public Map<String, Object> getGeoInfo(String ip);
 }

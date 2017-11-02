@@ -28,7 +28,7 @@ import com.maxmind.db.CHMCache;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
-import com.maxmind.geoip2.record.Subdivision;
+import com.maxmind.geoip2.record.*;
 import com.hurence.logisland.component.PropertyValue;
 
 import java.io.File;
@@ -196,9 +196,9 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
      * @return A Map containing matching geo information for the passed IP (if found). Possible keys a defined in the
      * IpToGeoService service as static fields starting with the GEO_FIELD prefix.
      */
-    public Map<String, String> getGeoInfo(String ip)
+    public Map<String, Object> getGeoInfo(String ip)
     {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, Object> result = new HashMap<String, Object>();
 
         final DatabaseReader dbReader = databaseReaderRef.get();
 
@@ -226,17 +226,29 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             return result;
         }
 
-        result.put(GEO_FIELD_LOOKUP_TIME_MICROS, (new Long((stop - start)*1000L)).toString());
+        result.put(GEO_FIELD_LOOKUP_TIME_MICROS, (int)((stop - start)*1000L));
 
-        result.put(GEO_FIELD_CITY, response.getCity().getName());
+        // Continent
+        Continent continent = response.getContinent();
+        result.put(GEO_FIELD_CONTINENT, continent.getName());
+        result.put(GEO_FIELD_CONTINENT_CODE, continent.getCode());
 
-        String latitude = response.getLocation().getLatitude().toString();
+        // City
+        City city = response.getCity();
+        result.put(GEO_FIELD_CITY, city.getName());
+
+        // Location
+        Location location = response.getLocation();
+        Double latitude = location.getLatitude();
         result.put(GEO_FIELD_LATITUDE, latitude);
-        String longitude = response.getLocation().getLongitude().toString();
+        Double longitude = location.getLongitude();
         result.put(GEO_FIELD_LONGITUDE, longitude);
-        String location = latitude + "," + longitude;
-        result.put(GEO_FIELD_LOCATION, location);
+        String geopoint_location = latitude.toString() + "," + longitude.toString();
+        result.put(GEO_FIELD_LOCATION, geopoint_location);
+        result.put(GEO_FIELD_ACCURACY_RADIUS, location.getAccuracyRadius());
+        result.put(GEO_FIELD_TIME_ZONE, location.getTimeZone());
 
+        // Subdivisions
         int i = 0;
         for (final Subdivision subd : response.getSubdivisions()) {
             result.put(GEO_FIELD_SUBDIVISION + i, subd.getName());
@@ -244,9 +256,14 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             i++;
         }
 
-        result.put(GEO_FIELD_COUNTRY, response.getCountry().getName());
-        result.put(GEO_FIELD_COUNTRY_ISOCODE, response.getCountry().getIsoCode());
-        result.put(GEO_FIELD_POSTALCODE, response.getPostal().getCode());
+        // Country
+        Country country = response.getCountry();
+        result.put(GEO_FIELD_COUNTRY, country.getName());
+        result.put(GEO_FIELD_COUNTRY_ISOCODE, country.getIsoCode());
+
+        // Postal code
+        Postal postal = response.getPostal();
+        result.put(GEO_FIELD_POSTALCODE, postal.getCode());
 
         return result;
     }

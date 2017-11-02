@@ -21,26 +21,125 @@ import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
+
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
+@RunWith(DataProviderRunner.class)
 public class MaxmindIpToGeoServiceTest {
 
+    @DataProvider
+    public static Object[][] testIpToGeoServiceProvider() {
+
+        Map<String, Object> enResult = new HashMap<String, Object>();
+        enResult.put(GEO_FIELD_CONTINENT, "Europe");
+        enResult.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        enResult.put(GEO_FIELD_CITY, "Boxford");
+        enResult.put(GEO_FIELD_LATITUDE, new Double("51.75"));
+        enResult.put(GEO_FIELD_LONGITUDE, new Double("-1.25"));
+        enResult.put(GEO_FIELD_LOCATION, "51.75,-1.25");
+        enResult.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        enResult.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        enResult.put(GEO_FIELD_SUBDIVISION + "0", "England");
+        enResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
+        enResult.put(GEO_FIELD_SUBDIVISION + "1", "West Berkshire");
+        enResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + "1", "WBK");
+        enResult.put(GEO_FIELD_COUNTRY, "United Kingdom");
+        enResult.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        enResult.put(GEO_FIELD_POSTALCODE, "OX1");
+
+        Map<String, Object> frResult = new HashMap<String, Object>();
+        frResult.put(GEO_FIELD_CONTINENT, "Europe");
+        frResult.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        frResult.put(GEO_FIELD_CITY, null);
+        frResult.put(GEO_FIELD_LATITUDE, new Double("51.75"));
+        frResult.put(GEO_FIELD_LONGITUDE, new Double("-1.25"));
+        frResult.put(GEO_FIELD_LOCATION, "51.75,-1.25");
+        frResult.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        frResult.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        frResult.put(GEO_FIELD_SUBDIVISION + "0", "Angleterre");
+        frResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
+        frResult.put(GEO_FIELD_SUBDIVISION + "1", null);
+        frResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + "1", "WBK");
+        frResult.put(GEO_FIELD_COUNTRY, "Royaume-Uni");
+        frResult.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        frResult.put(GEO_FIELD_POSTALCODE, "OX1");
+
+        Map<String, Object> enResult2 = new HashMap<String, Object>();
+        enResult2.put(GEO_FIELD_CONTINENT, "Europe");
+        enResult2.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        enResult2.put(GEO_FIELD_CITY, "London");
+        enResult2.put(GEO_FIELD_LATITUDE, new Double("51.5142"));
+        enResult2.put(GEO_FIELD_LONGITUDE, new Double("-0.0931"));
+        enResult2.put(GEO_FIELD_LOCATION, "51.5142,-0.0931");
+        enResult2.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        enResult2.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        enResult2.put(GEO_FIELD_SUBDIVISION + "0", "England");
+        enResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
+        enResult2.put(GEO_FIELD_COUNTRY, "United Kingdom");
+        enResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        enResult2.put(GEO_FIELD_POSTALCODE, null);
+
+        Map<String, Object> frResult2 = new HashMap<String, Object>();
+        frResult2.put(GEO_FIELD_CONTINENT, "Europe");
+        frResult2.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        frResult2.put(GEO_FIELD_CITY, "Londres");
+        frResult2.put(GEO_FIELD_LATITUDE, new Double("51.5142"));
+        frResult2.put(GEO_FIELD_LONGITUDE, new Double("-0.0931"));
+        frResult2.put(GEO_FIELD_LOCATION, "51.5142,-0.0931");
+        frResult2.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        frResult2.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        frResult2.put(GEO_FIELD_SUBDIVISION + "0", "Angleterre");
+        frResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
+        frResult2.put(GEO_FIELD_COUNTRY, "Royaume-Uni");
+        frResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        frResult2.put(GEO_FIELD_POSTALCODE, null);
+
+        Map<String, Object> deResult2 = new HashMap<String, Object>();
+        deResult2.put(GEO_FIELD_CONTINENT, "Europa");
+        deResult2.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        deResult2.put(GEO_FIELD_CITY, "London");
+        deResult2.put(GEO_FIELD_LATITUDE, new Double("51.5142"));
+        deResult2.put(GEO_FIELD_LONGITUDE, new Double("-0.0931"));
+        deResult2.put(GEO_FIELD_LOCATION, "51.5142,-0.0931");
+        deResult2.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        deResult2.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        deResult2.put(GEO_FIELD_SUBDIVISION + "0", null);
+        deResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
+        deResult2.put(GEO_FIELD_COUNTRY, "Vereinigtes Königreich");
+        deResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        deResult2.put(GEO_FIELD_POSTALCODE, null);
+
+        Object[][] inputs = {
+                {"2.125.160.216", "en", enResult},
+                {"2.125.160.216", "fr", frResult},
+                {"81.2.69.160", "en", enResult2},
+                {"81.2.69.160", "fr", frResult2},
+                {"81.2.69.160", "de", deResult2}
+        };
+
+        return inputs;
+    }
+
+
     @Test
-    public void testIpToGeoService() throws InitializationException, IOException {
+    @UseDataProvider("testIpToGeoServiceProvider")
+    public void testIpToGeoService(String ip, String locale, Map<String, Object> expectedResult) throws InitializationException, IOException {
 
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor
-        final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService();
+        final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService(locale);
         runner.addControllerService("ipToGeoService", service);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.IP_TO_GEO_SERVICE, "ipToGeoService");
@@ -49,16 +148,17 @@ public class MaxmindIpToGeoServiceTest {
         final IpToGeoService ipToGeoService = runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
                 .asControllerService(IpToGeoService.class);
 
-        Map<String, String> result = ipToGeoService.getGeoInfo("81.2.69.142");
+        Map<String, Object> result = ipToGeoService.getGeoInfo(ip);
 
-        assertEquals("London", result.get(GEO_FIELD_CITY));
-        assertEquals("51.5142", result.get(GEO_FIELD_LATITUDE));
-        assertEquals("-0.0931", result.get(GEO_FIELD_LONGITUDE));
-        assertEquals("England", result.get(GEO_FIELD_SUBDIVISION + "0"));
-        assertEquals("ENG", result.get(GEO_FIELD_SUBDIVISION_ISOCODE + "0"));
-        assertEquals("United Kingdom", result.get(GEO_FIELD_COUNTRY));
-        assertEquals("GB", result.get(GEO_FIELD_COUNTRY_ISOCODE));
-        assertEquals(null, result.get(GEO_FIELD_POSTALCODE));
+        // Check that a time has been added
+        int searchTimeMicros = (int)result.get(GEO_FIELD_LOOKUP_TIME_MICROS);
+        assertTrue("Should return non strictly positive search time but was " + searchTimeMicros + " micros", searchTimeMicros >= 0);
+
+        // Of course, remove time to be able to compare maps
+        result.remove(GEO_FIELD_LOOKUP_TIME_MICROS);
+
+        // Compare maps
+        assertEquals("Expected and result maps should be identical", expectedResult, result);
     }
 
     /**
@@ -70,6 +170,11 @@ public class MaxmindIpToGeoServiceTest {
      */
     public class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
     {
+        public MockMaxmindIpToGeoService(String locale)
+        {
+            super.locale = locale;
+        }
+
         // Use a small test DB file we got from https://github.com/maxmind/MaxMind-DB/tree/master/test-data
         // to avoid embedding a big maxmind db in our workspace
         public void init(ControllerServiceInitializationContext context) throws InitializationException {
