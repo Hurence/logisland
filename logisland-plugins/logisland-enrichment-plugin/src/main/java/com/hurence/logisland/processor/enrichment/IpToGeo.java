@@ -24,7 +24,6 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
-import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

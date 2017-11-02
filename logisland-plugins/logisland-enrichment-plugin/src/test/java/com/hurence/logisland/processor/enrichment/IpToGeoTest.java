@@ -14,6 +14,9 @@ import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 
 public class IpToGeoTest {
@@ -34,7 +37,7 @@ public class IpToGeoTest {
     public void testValidIp() throws InitializationException {
         final TestRunner runner = getTestRunner();
 
-        final Record inputRecord = getRecordWithStringIp("207.97.227.239"); // Github IP
+        final Record inputRecord = getRecordWithStringIp("81.2.69.142");
         runner.enqueue(inputRecord);
         runner.run();
         runner.assertAllInputRecordsProcessed();
@@ -42,31 +45,31 @@ public class IpToGeoTest {
         final MockRecord outputRecord = runner.getOutputRecords().get(0);
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_CITY);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_CITY, "San Antonio");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_CITY, "London");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LATITUDE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LATITUDE, "29.4889");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LATITUDE, "51.5142");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LONGITUDE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LONGITUDE, "-98.3987");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LONGITUDE, "-0.0931");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LOCATION);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LOCATION, "29.4889,-98.3987");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_LOCATION, "51.5142,-0.0931");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION + "0");
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION + "0", "Texas");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION + "0", "England");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION_ISOCODE + "0");
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION_ISOCODE + "0", "TX");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_SUBDIVISION_ISOCODE + "0", "ENG");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY, "United States");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY, "United Kingdom");
 
         outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY_ISOCODE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY_ISOCODE, "US");
+        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_COUNTRY_ISOCODE, "GB");
 
-        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE);
-        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE, "78218");
+//        outputRecord.assertFieldExists(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE);
+//        outputRecord.assertFieldEquals(IP_ADDRESS_FIELD_NAME + SEPARATOR + GEO_FIELD_POSTALCODE, "78218");
 
         outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
     }
@@ -96,8 +99,12 @@ public class IpToGeoTest {
     private class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
     {
 
+        // Use a small test DB file we got from https://github.com/maxmind/MaxMind-DB/tree/master/test-data
+        // to avoid embedding a big maxmind db in our workspace
         public void init(ControllerServiceInitializationContext context) throws InitializationException {
-            dbPath = "/local/cybersecu/maxmind/GeoLite2-City_20171003/GeoLite2-City.mmdb";
+
+            File file = new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
+            dbPath = file.getAbsolutePath();
             super.init(context);
         }
     }

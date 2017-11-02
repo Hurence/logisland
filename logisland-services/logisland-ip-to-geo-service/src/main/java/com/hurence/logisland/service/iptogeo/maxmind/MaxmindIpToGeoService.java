@@ -24,6 +24,8 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.validator.StandardValidators;
+import com.maxmind.db.CHMCache;
+import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.Subdivision;
@@ -60,8 +62,26 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor LOCALE = new PropertyDescriptor.Builder()
+            .name("locale")
+            .displayName("Locale to use for geo information")
+            .description("Locale to use for geo information. Defaults to 'en'.")
+            .required(false)
+            .defaultValue("en")
+            .build();
+
+    public static final PropertyDescriptor CACHE_CAPACITY = new PropertyDescriptor.Builder()
+            .name("cache.capacity")
+            .displayName("Capacity of the internal cache")
+            .description("Capacity of the internal cache. This is a number of IP addresses. Defaults to 10000")
+            .required(false)
+            .defaultValue("10000")
+            .build();
+
     protected String dbUri = null;
     protected String dbPath = null;
+    protected String locale = "en";
+    protected int cacheCapacity = 10000;
 
     final AtomicReference<DatabaseReader> databaseReaderRef = new AtomicReference<>(null);
 
@@ -95,6 +115,16 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             {
                 initFromPath(dbPath);
             }
+
+            propertyValue = context.getPropertyValue(LOCALE);
+            if (propertyValue != null) {
+                locale = propertyValue.asString();
+            }
+
+            propertyValue = context.getPropertyValue(LOCALE);
+            if (propertyValue != null) {
+                cacheCapacity = propertyValue.asInteger();
+            }
         } catch (Exception e){
             getLogger().error("Could not load maxmind database file: {}", new Object[]{e.getMessage()});
             throw new InitializationException(e);
@@ -105,7 +135,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     {
         final File dbFile = new File(dbPath);
         long start = System.currentTimeMillis();
-        final DatabaseReader databaseReader = new DatabaseReader.Builder(dbFile).build();
+        final DatabaseReader databaseReader = createReader(new DatabaseReader.Builder(dbFile));
         getLogger().info("Reading Maxmind DB file from local filesystem at: " + dbFile.getAbsolutePath());
         long stop = System.currentTimeMillis();
         getLogger().info("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
@@ -133,10 +163,21 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         FSDataInputStream inputStream = fs.open(hdfsReadpath);
 
         long start = System.currentTimeMillis();
-        final DatabaseReader databaseReader = new DatabaseReader.Builder(inputStream).build();
+        final DatabaseReader databaseReader = createReader(new DatabaseReader.Builder(inputStream));
         long stop = System.currentTimeMillis();
         getLogger().info("Completed loading of Maxmind Geo Database in {} milliseconds.", new Object[]{stop - start});
         databaseReaderRef.set(databaseReader);
+    }
+
+    /**
+     * Creates a DB reader with the provided builder
+     * @param builder Builder to use.
+     * @return The new DB reader
+     */
+    private DatabaseReader createReader(DatabaseReader.Builder builder) throws Exception
+    {
+        // Use a maxmind provided cache system with the passed capacity and use the passed locale
+        return builder.withCache(new CHMCache(cacheCapacity)).locales(Arrays.asList(locale)).build();
     }
 
     @Override
@@ -144,6 +185,8 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(MAXMIND_DATABASE_FILE_URI);
         props.add(MAXMIND_DATABASE_FILE_PATH);
+        props.add(LOCALE);
+        props.add(CACHE_CAPACITY);
         return Collections.unmodifiableList(props);
     }
 

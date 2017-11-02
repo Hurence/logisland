@@ -23,10 +23,14 @@ import com.hurence.logisland.util.runner.TestRunners;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class MaxmindIpToGeoServiceTest {
 
@@ -45,30 +49,33 @@ public class MaxmindIpToGeoServiceTest {
         final IpToGeoService ipToGeoService = runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
                 .asControllerService(IpToGeoService.class);
 
-        Map<String, String> result = ipToGeoService.getGeoInfo("207.97.227.239"); // Github IP
+        Map<String, String> result = ipToGeoService.getGeoInfo("81.2.69.142");
 
-        assertEquals("San Antonio", result.get(GEO_FIELD_CITY));
-        assertEquals("29.4889", result.get(GEO_FIELD_LATITUDE));
-        assertEquals("-98.3987", result.get(GEO_FIELD_LONGITUDE));
-        assertEquals("Texas", result.get(GEO_FIELD_SUBDIVISION + "0"));
-        assertEquals("TX", result.get(GEO_FIELD_SUBDIVISION_ISOCODE + "0"));
-        assertEquals("United States", result.get(GEO_FIELD_COUNTRY));
-        assertEquals("US", result.get(GEO_FIELD_COUNTRY_ISOCODE));
-        assertEquals("78218", result.get(GEO_FIELD_POSTALCODE));
+        assertEquals("London", result.get(GEO_FIELD_CITY));
+        assertEquals("51.5142", result.get(GEO_FIELD_LATITUDE));
+        assertEquals("-0.0931", result.get(GEO_FIELD_LONGITUDE));
+        assertEquals("England", result.get(GEO_FIELD_SUBDIVISION + "0"));
+        assertEquals("ENG", result.get(GEO_FIELD_SUBDIVISION_ISOCODE + "0"));
+        assertEquals("United Kingdom", result.get(GEO_FIELD_COUNTRY));
+        assertEquals("GB", result.get(GEO_FIELD_COUNTRY_ISOCODE));
+        assertEquals(null, result.get(GEO_FIELD_POSTALCODE));
     }
 
     /**
      * Just because
-     * runner.setProperty(service, MaxmindIpToGeoService.MAXMIND_DATABASE_FILE_PATH, "ipToGeoService");
+     * runner.setProperty(service, MaxmindIpToGeoService.MAXMIND_DATABASE_FILE_PATH, "pathToDbFile");
      * does not work if called after
      * runner.addControllerService("ipToGeoService", service);
      * and vice versa (runner controller service not implemented, so workaround for the moment)
      */
-    private class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
+    public class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
     {
-
+        // Use a small test DB file we got from https://github.com/maxmind/MaxMind-DB/tree/master/test-data
+        // to avoid embedding a big maxmind db in our workspace
         public void init(ControllerServiceInitializationContext context) throws InitializationException {
-            dbPath = "/local/cybersecu/maxmind/GeoLite2-City_20171003/GeoLite2-City.mmdb";
+
+            File file = new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
+            dbPath = file.getAbsolutePath();
             super.init(context);
         }
     }
