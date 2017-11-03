@@ -253,7 +253,7 @@ public class IpToGeo extends IpAbstractProcessor {
              *   ...
              * }
              */
-            record.setField(ipAttributeName + hierarchicalSuffix, FieldType.MAP, toFieldMap(geoInfo));
+            record.setField(ipAttributeName + hierarchicalSuffix, FieldType.MAP, geoInfo);
 
         } else
         {
@@ -319,28 +319,6 @@ public class IpToGeo extends IpAbstractProcessor {
                 }
             }
         }
-    }
-
-    /**
-     * Converts a map of values to a map of fields
-     * @param geoInfo Map to convert
-     */
-    private Map<String, Field> toFieldMap(Map<String, Object> geoInfo)
-    {
-        Map<String, Field> fieldMap = new HashMap<String, Field>();
-        for (Map.Entry<String, Object> entry : geoInfo.entrySet())
-        {
-            String fieldName = entry.getKey();
-            Object fieldValue = entry.getValue();
-            FieldType fieldType = supportedGeoFieldNames.get(fieldName);
-            if (fieldType == null) // Handle subdivision and subdivision_isocode fields (geo_subdivision_0 is not geo_subdivision)
-            {
-                fieldType = FieldType.STRING;
-            }
-            Field field = new Field(fieldName, fieldType, fieldValue);
-            fieldMap.put(fieldName, field);
-        }
-        return fieldMap;
     }
 
     /**

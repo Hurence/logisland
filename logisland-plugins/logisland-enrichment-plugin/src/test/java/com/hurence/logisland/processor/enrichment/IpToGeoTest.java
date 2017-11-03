@@ -202,56 +202,18 @@ public class IpToGeoTest {
         outputRecord.assertFieldExists(fatherField);
 
         Field fatherFieldValue = outputRecord.getField(fatherField);
-        Map<String, Field> geoFieldsFromFather = (Map<String, Field>)fatherFieldValue.getRawValue();
+        Map<String, Object> geoFieldsFromFather = (Map<String, Object>)fatherFieldValue.getRawValue();
 
         // Check that a time has been added
-        int searchTimeMicros = geoFieldsFromFather.get(GEO_FIELD_LOOKUP_TIME_MICROS).asInteger();
+        int searchTimeMicros = (int)geoFieldsFromFather.get(GEO_FIELD_LOOKUP_TIME_MICROS);
         assertTrue("Should return non strictly positive search time but was " + searchTimeMicros + " micros", searchTimeMicros >= 0);
         // Of course, remove time to be able to compare maps
         geoFieldsFromFather.remove(GEO_FIELD_LOOKUP_TIME_MICROS);
 
         // Compare maps
-        compareMaps(geoFieldsFromFather, expectedResult);
+        assertEquals("Hierarchical and expected maps should be identical", expectedResult, geoFieldsFromFather);
 
         outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
-    }
-
-    /**
-     * Compares maps of geo fields with the expected ones
-     * @param geoFieldsFromFather
-     * @param expectedResult
-     */
-    private void compareMaps(Map<String, Field> geoFieldsFromFather, Map<String, Object> expectedResult)
-    {
-       assertEquals("Both maps should have the same number of fields\nExpected: " +
-                       expectedResult + "\nGot: " + geoFieldsFromFather
-               , expectedResult.size(), geoFieldsFromFather.size());
-
-       for (Map.Entry<String, Object> entry : expectedResult.entrySet())
-       {
-           String expectedFieldName = entry.getKey();
-           FieldType expectedFieldType = IpToGeo.supportedGeoFieldNames.get(expectedFieldName);
-           if (expectedFieldType == null)
-           {
-               // Handle subdivision and subdivision_isocode fields (geo_subdivision_0 is not geo_subdivision)
-               expectedFieldType = FieldType.STRING;
-           }
-
-           // Check field name
-           Field actualField = geoFieldsFromFather.get(expectedFieldName);
-           assertNotNull("Father map should contain a field named: " + expectedFieldName, actualField);
-
-           // Check field type
-           FieldType actualFieldType = actualField.getType();
-           assertEquals("Geo field " + expectedFieldName + " should be of type: " + expectedFieldType,
-                   expectedFieldType, actualFieldType);
-
-           // Check field value
-           Object expectedFieldValue = entry.getValue();
-           Object actualFieldValue = actualField.getRawValue();
-           assertEquals("Geo field " + expectedFieldName + " should have value: " + expectedFieldValue,
-                   expectedFieldValue, actualFieldValue);
-       }
     }
 
     @DataProvider
