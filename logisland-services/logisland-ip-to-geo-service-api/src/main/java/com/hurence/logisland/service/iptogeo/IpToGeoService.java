@@ -28,63 +28,65 @@ public interface IpToGeoService extends ControllerService {
 
     public static final String SEPARATOR = "_";
 
+    public static final String PREFIX = "geo";
+
     /**
      * The number of microseconds that the geo lookup took
      */
-    public static final String GEO_FIELD_LOOKUP_TIME_MICROS = "geo" + SEPARATOR + "lookup" + SEPARATOR + "micros";
+    public static final String GEO_FIELD_LOOKUP_TIME_MICROS = PREFIX + SEPARATOR + "lookup" + SEPARATOR + "micros";
     /**
      * The continent identified for the IP address
      */
-    public static final String GEO_FIELD_CONTINENT = "geo" + SEPARATOR + "continent";
+    public static final String GEO_FIELD_CONTINENT = PREFIX + SEPARATOR + "continent";
     /**
      * The continent code identified for the IP address
      */
-    public static final String GEO_FIELD_CONTINENT_CODE = "geo" + SEPARATOR + "continent" + SEPARATOR + "code";
+    public static final String GEO_FIELD_CONTINENT_CODE = PREFIX + SEPARATOR + "continent" + SEPARATOR + "code";
     /**
      * The city identified for the IP address
      */
-    public static final String GEO_FIELD_CITY = "geo" + SEPARATOR + "city";
+    public static final String GEO_FIELD_CITY = PREFIX + SEPARATOR + "city";
     /**
      * The longitude identified for the IP address
      */
-    public static final String GEO_FIELD_LATITUDE = "geo" + SEPARATOR + "latitude";
+    public static final String GEO_FIELD_LATITUDE = PREFIX + SEPARATOR + "latitude";
     /**
      * The longitude identified for the IP address
      */
-    public static final String GEO_FIELD_LONGITUDE = "geo" + SEPARATOR + "longitude";
+    public static final String GEO_FIELD_LONGITUDE = PREFIX + SEPARATOR + "longitude";
     /**
      * The location identified for the IP address, defined as Geo-point expressed as a string with the format: "lat,lon"
      */
-    public static final String GEO_FIELD_LOCATION = "geo" + SEPARATOR + "location";
+    public static final String GEO_FIELD_LOCATION = PREFIX + SEPARATOR + "location";
     /**
      * The timezone for the IP address
      */
-    public static final String GEO_FIELD_TIME_ZONE = "geo" + SEPARATOR + "time"  + SEPARATOR + "zone";
+    public static final String GEO_FIELD_TIME_ZONE = PREFIX + SEPARATOR + "time"  + SEPARATOR + "zone";
     /**
      * The approximate accuracy radius, in kilometers, around the latitude and longitude for the geographical entity
      */
-    public static final String GEO_FIELD_ACCURACY_RADIUS = "geo" + SEPARATOR + "accuracy" + SEPARATOR + "radius";
+    public static final String GEO_FIELD_ACCURACY_RADIUS = PREFIX + SEPARATOR + "accuracy" + SEPARATOR + "radius";
     /**
      * Each subdivision that is identified for the IP address is added with a one-up number
      * appended to the attribute name, starting with 0
      */
-    public static final String GEO_FIELD_SUBDIVISION = "geo" + SEPARATOR + "subdivision" + SEPARATOR;
+    public static final String GEO_FIELD_SUBDIVISION = PREFIX + SEPARATOR + "subdivision";
     /**
      * The ISO code for the subdivision that is identified by GEO_FIELD_SUBDIVISION
      */
-    public static final String GEO_FIELD_SUBDIVISION_ISOCODE = "geo" + SEPARATOR + "subdivision" + SEPARATOR + "isocode" + SEPARATOR;
+    public static final String GEO_FIELD_SUBDIVISION_ISOCODE = PREFIX + SEPARATOR + "subdivision" + SEPARATOR + "isocode";
     /**
      * The country identified for the IP address
      */
-    public static final String GEO_FIELD_COUNTRY = "geo" + SEPARATOR + "country";
+    public static final String GEO_FIELD_COUNTRY = PREFIX + SEPARATOR + "country";
     /**
      * The ISO Code for the identified country
      */
-    public static final String GEO_FIELD_COUNTRY_ISOCODE = "geo" + SEPARATOR + "country" + SEPARATOR + "isocode";
+    public static final String GEO_FIELD_COUNTRY_ISOCODE = PREFIX + SEPARATOR + "country" + SEPARATOR + "isocode";
     /**
      * The postal code for the identified country
      */
-    public static final String GEO_FIELD_POSTALCODE = "geo" + SEPARATOR + "postalcode";
+    public static final String GEO_FIELD_POSTALCODE = PREFIX + SEPARATOR + "postalcode";
 
     /**
      * Gets geo informations matching the passed ip address.

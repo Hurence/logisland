@@ -251,8 +251,8 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         // Subdivisions
         int i = 0;
         for (final Subdivision subd : response.getSubdivisions()) {
-            result.put(GEO_FIELD_SUBDIVISION + i, subd.getName());
-            result.put(GEO_FIELD_SUBDIVISION_ISOCODE + i, subd.getIsoCode());
+            result.put(GEO_FIELD_SUBDIVISION + SEPARATOR + i, subd.getName());
+            result.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + i, subd.getIsoCode());
             i++;
         }
 
