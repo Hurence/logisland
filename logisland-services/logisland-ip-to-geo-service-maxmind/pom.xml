@@ -2,15 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-plugins</artifactId>
+        <artifactId>logisland-services</artifactId>
         <version>0.10.2</version>
     </parent>
 
-    <artifactId>logisland-enrichment-plugin</artifactId>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>logisland-ip-to-geo-service-maxmind</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -20,34 +20,32 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cache-service-api</artifactId>
-            <version>0.10.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-ip-to-geo-service-api</artifactId>
             <version>0.10.2</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cache_key_value-service-api</artifactId>
-            <version>0.10.2</version>
+            <artifactId>logisland-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- We currently do not use the lastest version of maxmind as it requires jackson and we currently have troubles
+        having jackson 2.9.2 working. If we add dependencies to jackson bits versions 2.9.2, then, build and
+        tests are ok but at runtime on the cluster the dependency used is not 2.9.2 and there is a conflict version.
+        Until this problem is fixed, we keep using the 2.5.0 and do not add jackson dependencies. -->
+        <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+            <version>2.5.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-ip-to-geo-service-maxmind</artifactId>
-            <version>0.10.2</version>
-            <scope>test</scope>
+            <scope>provided</scope> <!--  Do not embed in the fat jar as this dependency should be present on the running cluster -->
         </dependency>
 
         <dependency>
@@ -57,4 +55,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>

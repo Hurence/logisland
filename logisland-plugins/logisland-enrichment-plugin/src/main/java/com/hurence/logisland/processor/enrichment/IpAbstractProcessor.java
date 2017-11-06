@@ -21,9 +21,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class IpAbstractProcessor extends AbstractProcessor {
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpAbstractProcessor.class);
 
+    protected static final String PROP_IP_ADDRESS_FIELD = "ip.address.field";
+
     public static final PropertyDescriptor IP_ADDRESS_FIELD = new PropertyDescriptor.Builder()
-            .name("ip.address.field")
-            .description("The field containing the ip address we want to discover FQDN (full qualified domain name)")
+            .name(PROP_IP_ADDRESS_FIELD)
+            .description("The name of the field containing the ip address to use.")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -41,7 +43,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
 
         String ip = null;
         for (final Record record : records) {
-            if (record.hasField(context.getPropertyValue(IP_ADDRESS_FIELD).asString())) {
+            if (record.hasField(ipAddrField)) {
                 String ipAsString = record.getField(ipAddrField).asString();
                 if (ipAsString == null)
                 {
