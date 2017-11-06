@@ -106,7 +106,7 @@ public class IpToFqdn extends IpAbstractProcessor {
          */
         String fqdn = null;
         if (cacheEntry != null) { // Something in the cache?
-            fqdn = cacheEntry.getFqdn(); // May be null, in which case this means there was no FQDN found at last attempt
+            fqdn = cacheEntry.getFqdn();
             if (cacheValidityPeriod > 0) { // Cache validity period enabled?
                 long cacheTime = cacheEntry.getTime();
                 long now = System.currentTimeMillis();
