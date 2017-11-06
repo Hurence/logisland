@@ -33,51 +33,65 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Tags({"geo", "enrich", "ip"})
-@CapabilityDescription("Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup is provided by the "
-        + "'IP Address Attribute' property. If the name of the attribute provided is 'X', then the the attributes added by enrichment "
-        + "will take the form X_geo_<fieldName>")
-@WritesAttributes({
-        @WritesAttribute(attribute = "lookup_micros", description = "The number of microseconds that the geo lookup took"),
-        @WritesAttribute(attribute = "continent", description = "The continent identified for this IP address"),
-        @WritesAttribute(attribute = "continent_code", description = "The continent code identified for this IP address"),
-        @WritesAttribute(attribute = "city", description = "The city identified for the IP address"),
-        @WritesAttribute(attribute = "latitude", description = "The latitude identified for this IP address"),
-        @WritesAttribute(attribute = "longitude", description = "The longitude identified for this IP address"),
-        @WritesAttribute(attribute = "location", description = "The location identified for this IP address, defined as Geo-point expressed as a string with the format: \"lat,lon\""),
-        @WritesAttribute(attribute = "accuracy_radius", description = "The approximate accuracy radius, in kilometers, around the latitude and longitude for the location"),
-        @WritesAttribute(attribute = "time_zone", description = "The time zone identified for this IP address"),
-        @WritesAttribute(attribute = "subdivision_N",
-                description = "Each subdivision that is identified for this IP address is added with a one-up number appended to the attribute name, starting with 0"),
-        @WritesAttribute(attribute = "subdivision_isocode_N", description = "The ISO code for the subdivision that is identified by X_subdivision_N"),
-        @WritesAttribute(attribute = "country", description = "The country identified for this IP address"),
-        @WritesAttribute(attribute = "country_isocode", description = "The ISO Code for the country identified"),
-        @WritesAttribute(attribute = "postalcode", description = "The postal code for the country identified"),})
+@CapabilityDescription("Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **"
+        + IpAbstractProcessor.PROP_IP_ADDRESS_FIELD + "** property. By default, the geo information are put in a hierarchical structure. " +
+        "That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field" +
+        " named X_geo. \"_geo\" is the default hierarchical suffix that may be changed with the **" + IpToGeo.PROP_HIERARCHICAL_SUFFIX  +
+        "** property. If one wants to put the geo fields at the same level as the IP field, then the **" + IpToGeo.PROP_HIERARCHICAL + "** property should be set to false and then the geo attributes are " +
+        " created at the same level as him with the naming pattern X_geo_<geo_field>. \"_geo_\" is the default flat suffix but this may be changed with the **" +
+        IpToGeo.PROP_FLAT_SUFFIX + "** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **" +
+        IpToGeo.PROP_IP_TO_GEO_SERVICE + "** property. The added geo fields are dependant on the underlying Ip to Geo service. The **" +
+        IpToGeo.PROP_GEO_FIELDS + "** property must contain the list of geo fields that should be created if data is available for " +
+        " the IP to resolve. This property defaults to \"*\" which means to add every available fields. If one only wants a subset of the fields, " +
+        " one must define a comma separated list of fields as a value for the **" + IpToGeo.PROP_GEO_FIELDS + "** property. The list of the available geo fields" +
+        " is in the description of the **" + IpToGeo.PROP_GEO_FIELDS + "** property."
+)
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);
     private boolean debug = false;
 
+    protected static final String PROP_IP_TO_GEO_SERVICE = "iptogeo.service";
+    protected static final String PROP_GEO_FIELDS = "geo.fields";
+    protected static final String PROP_HIERARCHICAL = "geo.hierarchical";
+    protected static final String PROP_HIERARCHICAL_SUFFIX = "geo.hierarchical.suffix";
+    protected static final String PROP_FLAT_SUFFIX = "geo.flat.suffix";
+
     public static final PropertyDescriptor IP_TO_GEO_SERVICE = new PropertyDescriptor.Builder()
-            .name("iptogeo.service")
-            .displayName("The IP to Geo service to use")
+            .name(PROP_IP_TO_GEO_SERVICE)
             .description("The reference to the IP to Geo service to use.")
             .required(true)
             .identifiesControllerService(IpToGeoService.class)
             .build();
 
     public static final PropertyDescriptor GEO_FIELDS = new PropertyDescriptor.Builder()
-            .name("geo.fields")
-            .displayName("List of geo information fields to add")
-            .description("Comma separated list of geo information fields to add to the record. * for all available. If a list" +
-                    " of fields is specified and the data is not available, the geo field is not created.")
+            .name(PROP_GEO_FIELDS)
+            .description("Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list " +
+                    "of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. " +
+                    "The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently " +
+                    "supported list of geo fields is the following:" +
+                    "**continent**: the identified continent for this IP address. " +
+                    "**continent_code**: the identified continent code for this IP address. " +
+                    "**city**: the identified city for this IP address. " +
+                    "**latitude**: the identified latitude for this IP address. " +
+                    "**longitude**: the identified longitude for this IP address. " +
+                    "**location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. " +
+                    "**accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. " +
+                    "**time_zone**: the identified time zone for this IP address. " +
+                    "**subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. " +
+                    "**subdivision_isocode_N**: the iso code matching the identified subdivision_N. " +
+                    "**country**: the identified country for this IP address. " +
+                    "**country_isocode**: the iso code for the identified country for this IP address. " +
+                    "**postalcode**: the identified postal code for this IP address. " +
+                    "**lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the " + IpToGeoService.GEO_FIELD_LOOKUP_TIME_MICROS + " property enabled in order to have this field available."
+            )
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .defaultValue("*")
             .build();
 
     public static final PropertyDescriptor HIERARCHICAL = new PropertyDescriptor.Builder()
-            .name("geo.hierarchical")
-            .displayName("Add geo fields under a hierarchical attribute or not.")
+            .name(PROP_HIERARCHICAL)
             .description("Should the additional geo information fields be added under a hierarchical father field or not.")
             .required(false)
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
@@ -85,24 +99,26 @@ public class IpToGeo extends IpAbstractProcessor {
             .build();
 
     public static final PropertyDescriptor HIERARCHICAL_SUFFIX = new PropertyDescriptor.Builder()
-            .name("geo.hierarchical.suffix")
-            .displayName("Suffix to use for the field holding geo information")
-            .description("If hierarchical is true, then use this suffix appended to the ip field name to define the father" +
-                    " field name.")
+            .name(PROP_HIERARCHICAL_SUFFIX)
+            .description("Suffix to use for the field holding geo information. If " + PROP_HIERARCHICAL +
+                    " is true, then use this suffix appended to the IP field name to define the father field name." +
+                    " This may be used for instance to distinguish between geo fields with various locales using many" +
+                    " Ip to Geo service instances.")
             .required(false)
             .defaultValue("_geo")
             .build();
 
     public static final PropertyDescriptor FLAT_SUFFIX = new PropertyDescriptor.Builder()
-            .name("geo.flat.suffix")
-            .displayName("Suffix to use for geo information fields when they are flat")
-            .description("If hierarchical is false, then use this suffix appended to the ip field name but before the geo field name." +
-                    " This may be used for instance to distinguish between geo fields with various locales using many ip to geo service instances.")
+            .name(PROP_FLAT_SUFFIX)
+            .description("Suffix to use for geo information fields when they are flat. If " + PROP_HIERARCHICAL +
+                    " is false, then use this suffix appended to the IP field name but before the geo field name." +
+                    " This may be used for instance to distinguish between geo fields with various locales using many" +
+                    " Ip to Geo service instances.")
             .required(false)
             .defaultValue("_geo_")
             .build();
 
-    // IP to GEO service to use to perform the translation requests
+    // Ip to Geo service to use to perform the translation requests
     private IpToGeoService ipToGeoService = null;
     // List of fields to add (* means all available fields)
     private String geoFields = "*";
@@ -272,8 +288,8 @@ public class IpToGeo extends IpAbstractProcessor {
     }
 
     /**
-     * Filter fields returned by the IP to GEO service according to the configured ones
-     * @param geoInfo Map containing the fields returned by the IP to GEO service
+     * Filter fields returned by the Ip to Geo service according to the configured ones
+     * @param geoInfo Map containing the fields returned by the Ip to Geo service
      * @throws Exception
      */
     private void filterFields(Map<String, Object> geoInfo) throws Exception

@@ -21,10 +21,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class IpAbstractProcessor extends AbstractProcessor {
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpAbstractProcessor.class);
 
+    protected static final String PROP_IP_ADDRESS_FIELD = "ip.address.field";
+
     public static final PropertyDescriptor IP_ADDRESS_FIELD = new PropertyDescriptor.Builder()
-            .name("ip.address.field")
-            .displayName("IP field")
-            .description("The name of the field containing the ip address to translate.")
+            .name(PROP_IP_ADDRESS_FIELD)
+            .description("The name of the field containing the ip address to use.")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
