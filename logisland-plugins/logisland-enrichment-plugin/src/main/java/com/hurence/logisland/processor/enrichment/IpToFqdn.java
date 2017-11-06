@@ -20,8 +20,8 @@ import java.util.List;
 /**
  * Created by gregoire on 09/05/17.
  */
-@Tags({"dns", "ip", "fqdn", "domain", "address", "fqhn", "reverse", "resolution", "enrich"})
-@CapabilityDescription("find full domain name corresponding to an ip")
+@Tags({"dns", "ip", "fqdn", "domain", "address", "fqhn", "reverse", "resolution"})
+@CapabilityDescription("Translates an IP address into a FQDN (Fully Qualified Domain Name)")
 public class IpToFqdn extends IpAbstractProcessor {
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpToFqdn.class);
 
@@ -42,12 +42,27 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     public static final PropertyDescriptor CACHE_SERVICE = new PropertyDescriptor.Builder()
             .name("cache.service")
-            .description("The maximum number of element in the cache.")
+            .description("The name of the cache service to use.")
             .required(true)
             .identifiesControllerService(CacheService.class)
             .build();
 
-    protected CacheService<String, String> cacheService;
+    public static final PropertyDescriptor CACHE_MAX_TIME = new PropertyDescriptor.Builder()
+            .name("cache.max.time")
+            .description("The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, " +
+                    "the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the" +
+                    " result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into" +
+                    " a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated," +
+                    " if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated. " +
+                    " A value of 0 seconds disables this expiration mechanism. The default value is 86400 seconds, which corresponds " +
+                    " to new requests triggered every day if a record with the same IP passes every day in the processor."
+            )
+            .required(false)
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .defaultValue("84600")
+            .build();
+
+    protected CacheService<String, CacheEntry> cacheService;
 
     @Override
     public boolean hasControllerService() {
@@ -60,12 +75,14 @@ public class IpToFqdn extends IpAbstractProcessor {
         if(cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
+
     }
 
     protected void processIp(Record record, String ip, ProcessContext context) {
 
         String fqdnField = context.getPropertyValue(FQDN_FIELD).asString();
         Boolean override = context.getPropertyValue(OVERRIDE_FQDN).asBoolean();
+        long cacheValidityPeriod = (long)context.getPropertyValue(CACHE_MAX_TIME).asInteger();
 
         if (!override && record.hasField(fqdnField)) {
             logger.trace("skipped domain name resolution for Record (Field is already set and override is set to false):" + record,
@@ -74,11 +91,30 @@ public class IpToFqdn extends IpAbstractProcessor {
             return;
         }
 
-        String fqdn = null;
+        /**
+         * Attempt to find info from the cache
+         */
+        CacheEntry cacheEntry = null;
         try {
-            fqdn = cacheService.get(ip);
+            cacheEntry = cacheService.get(ip);
         } catch (Exception e) {
             logger.trace("Could not use cache!");
+        }
+
+        /**
+         * If something in the cache, get it and be sure it is not obsolete
+         */
+        String fqdn = null;
+        if (cacheEntry != null) { // Something in the cache?
+            fqdn = cacheEntry.getFqdn(); // May be null, in which case this means there was no FQDN found at last attempt
+            if (cacheValidityPeriod > 0) { // Cache validity period enabled?
+                long cacheTime = cacheEntry.getTime();
+                long now = System.currentTimeMillis();
+                long cacheAge = now - cacheTime;
+                if (cacheAge > (cacheValidityPeriod * 1000L)) { // Cache entry older than allowed max age?
+                    fqdn = null; // Cache entry expired, force triggering a new request
+                }
+            }
         }
 
         if (fqdn == null) {
@@ -88,7 +124,9 @@ public class IpToFqdn extends IpAbstractProcessor {
                 //the textual representation of the IP address.
                 fqdn = addr.getCanonicalHostName();
                 try {
-                    cacheService.set(ip, fqdn);
+                    // Store the found FQDN (or the ip if the FQDN could not be found)
+                    cacheEntry = new CacheEntry(fqdn, System.currentTimeMillis());
+                    cacheService.set(ip, cacheEntry);
                 } catch (Exception e) {
                     logger.trace("Could not use cache!");
                 }
@@ -117,7 +155,35 @@ public class IpToFqdn extends IpAbstractProcessor {
         properties.add(FQDN_FIELD);
         properties.add(OVERRIDE_FQDN);
         properties.add(CACHE_SERVICE);
+        properties.add(CACHE_MAX_TIME);
         return properties;
+    }
+
+    /**
+     * Cached entity
+     */
+    private static class CacheEntry
+    {
+        // FQDN translated from the ip (or the ip if the FQDN could not be found)
+        private String fqdn = null;
+        // Time at which this cache entry has been stored in the cache service
+        private long time = 0L;
+
+        public CacheEntry(String fqdn, long time)
+        {
+            this.fqdn = fqdn;
+            this.time = time;
+        }
+
+        public String getFqdn()
+        {
+            return fqdn;
+        }
+
+        public long getTime()
+        {
+            return time;
+        }
     }
 }
 
