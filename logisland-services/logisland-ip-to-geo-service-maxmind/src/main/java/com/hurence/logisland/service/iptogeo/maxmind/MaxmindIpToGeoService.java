@@ -78,10 +78,20 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             .defaultValue("10000")
             .build();
 
+    public static final PropertyDescriptor LOOKUP_TIME = new PropertyDescriptor.Builder()
+            .name("lookup.time")
+            .displayName("Add a " + GEO_FIELD_LOOKUP_TIME_MICROS + " field giving the lookup time in microseconds")
+            .description("Should the additional " + GEO_FIELD_LOOKUP_TIME_MICROS + " field be returned or not.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
     protected String dbUri = null;
     protected String dbPath = null;
     protected String locale = "en";
     protected int cacheCapacity = 10000;
+    protected boolean lookupTime = false;
 
     final AtomicReference<DatabaseReader> databaseReaderRef = new AtomicReference<>(null);
 
@@ -121,9 +131,14 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
                 locale = propertyValue.asString();
             }
 
-            propertyValue = context.getPropertyValue(LOCALE);
+            propertyValue = context.getPropertyValue(CACHE_CAPACITY);
             if (propertyValue != null) {
                 cacheCapacity = propertyValue.asInteger();
+            }
+
+            propertyValue = context.getPropertyValue(LOOKUP_TIME);
+            if (propertyValue != null) {
+                lookupTime = propertyValue.asBoolean();
             }
         } catch (Exception e){
             getLogger().error("Could not load maxmind database file: {}", new Object[]{e.getMessage()});
@@ -187,6 +202,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         props.add(MAXMIND_DATABASE_FILE_PATH);
         props.add(LOCALE);
         props.add(CACHE_CAPACITY);
+        props.add(LOOKUP_TIME);
         return Collections.unmodifiableList(props);
     }
 
@@ -212,58 +228,116 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             return result;
         }
 
-        long start = System.currentTimeMillis();
+
+        long start = 0L;
+        if (lookupTime) {
+            start = System.currentTimeMillis();
+        }
         try {
             response = dbReader.city(inetAddress);
         } catch (final IOException | GeoIp2Exception ex) {
             getLogger().error("Could not find geo data for {} ({}) due to {}", new Object[]{inetAddress, ip, ex.getMessage()});
             return result;
         }
-        long stop = System.currentTimeMillis();
+        long stop = 0L;
+        if (lookupTime) {
+            stop = System.currentTimeMillis();
+        }
 
         if (response == null) {
             getLogger().debug("Could not find geo data for {} due to null result", new Object[]{ip});
             return result;
         }
 
-        result.put(GEO_FIELD_LOOKUP_TIME_MICROS, (int)((stop - start)*1000L));
+        if (lookupTime) {
+            result.put(GEO_FIELD_LOOKUP_TIME_MICROS, (int) ((stop - start) * 1000L));
+        }
 
         // Continent
         Continent continent = response.getContinent();
-        result.put(GEO_FIELD_CONTINENT, continent.getName());
-        result.put(GEO_FIELD_CONTINENT_CODE, continent.getCode());
+        if (continent != null) {
+            String continentName = continent.getName();
+            if (continentName != null) {
+                result.put(GEO_FIELD_CONTINENT, continentName);
+            }
+            String continentCode = continent.getCode();
+            if (continentCode != null) {
+                result.put(GEO_FIELD_CONTINENT_CODE, continentCode);
+            }
+        }
 
         // City
         City city = response.getCity();
-        result.put(GEO_FIELD_CITY, city.getName());
+        if (city != null) {
+            String cityName = city.getName();
+            if (cityName != null) {
+                result.put(GEO_FIELD_CITY, cityName);
+            }
+        }
 
         // Location
         Location location = response.getLocation();
-        Double latitude = location.getLatitude();
-        result.put(GEO_FIELD_LATITUDE, latitude);
-        Double longitude = location.getLongitude();
-        result.put(GEO_FIELD_LONGITUDE, longitude);
-        String geopoint_location = latitude.toString() + "," + longitude.toString();
-        result.put(GEO_FIELD_LOCATION, geopoint_location);
-        result.put(GEO_FIELD_ACCURACY_RADIUS, location.getAccuracyRadius());
-        result.put(GEO_FIELD_TIME_ZONE, location.getTimeZone());
+        if (location != null) {
+            Double latitude = location.getLatitude();
+            if (latitude != null) {
+                result.put(GEO_FIELD_LATITUDE, latitude);
+            }
+            Double longitude = location.getLongitude();
+            if (longitude != null) {
+                result.put(GEO_FIELD_LONGITUDE, longitude);
+            }
+            if ((latitude != null) &&  (longitude != null)) {
+                String geopoint_location = latitude.toString() + "," + longitude.toString();
+                result.put(GEO_FIELD_LOCATION, geopoint_location);
+            }
+            Integer accuracyRadius = location.getAccuracyRadius();
+            if (accuracyRadius != null) {
+                result.put(GEO_FIELD_ACCURACY_RADIUS, accuracyRadius);
+            }
+            String timeZone = location.getTimeZone();
+            if (timeZone != null) {
+                result.put(GEO_FIELD_TIME_ZONE, timeZone);
+            }
+        }
 
         // Subdivisions
-        int i = 0;
-        for (final Subdivision subd : response.getSubdivisions()) {
-            result.put(GEO_FIELD_SUBDIVISION + SEPARATOR + i, subd.getName());
-            result.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + i, subd.getIsoCode());
-            i++;
+        List<Subdivision> subdivisions = response.getSubdivisions();
+        if (subdivisions != null) {
+            int i = 0;
+            for (final Subdivision subd : subdivisions) {
+                String subdName = subd.getName();
+                if (subdName != null) {
+                    result.put(GEO_FIELD_SUBDIVISION + SEPARATOR + i, subdName);
+                }
+                String subdIsoCode = subd.getIsoCode();
+                if (subdIsoCode != null) {
+                    result.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + i, subdIsoCode);
+                }
+                i++;
+            }
         }
 
         // Country
         Country country = response.getCountry();
-        result.put(GEO_FIELD_COUNTRY, country.getName());
-        result.put(GEO_FIELD_COUNTRY_ISOCODE, country.getIsoCode());
+        if (country != null) {
+            String countryName = country.getName();
+            if (countryName != null) {
+                result.put(GEO_FIELD_COUNTRY, countryName);
+            }
+            String countryIsoCode = country.getIsoCode();
+            if (countryIsoCode != null) {
+                result.put(GEO_FIELD_COUNTRY_ISOCODE, countryIsoCode);
+            }
+        }
 
         // Postal code
         Postal postal = response.getPostal();
-        result.put(GEO_FIELD_POSTALCODE, postal.getCode());
+        if (postal != null) {
+            String postalCode = postal.getCode();
+            if (postalCode != null) {
+                result.put(GEO_FIELD_POSTALCODE, postalCode);
+            }
+        }
 
         return result;
     }

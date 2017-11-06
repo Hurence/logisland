@@ -61,7 +61,6 @@ public class MaxmindIpToGeoServiceTest {
         Map<String, Object> frResult = new HashMap<String, Object>();
         frResult.put(GEO_FIELD_CONTINENT, "Europe");
         frResult.put(GEO_FIELD_CONTINENT_CODE, "EU");
-        frResult.put(GEO_FIELD_CITY, null);
         frResult.put(GEO_FIELD_LATITUDE, new Double("51.75"));
         frResult.put(GEO_FIELD_LONGITUDE, new Double("-1.25"));
         frResult.put(GEO_FIELD_LOCATION, "51.75,-1.25");
@@ -69,7 +68,6 @@ public class MaxmindIpToGeoServiceTest {
         frResult.put(GEO_FIELD_TIME_ZONE, "Europe/London");
         frResult.put(GEO_FIELD_SUBDIVISION + SEPARATOR + "0", "Angleterre");
         frResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "0", "ENG");
-        frResult.put(GEO_FIELD_SUBDIVISION + SEPARATOR + "1", null);
         frResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "1", "WBK");
         frResult.put(GEO_FIELD_COUNTRY, "Royaume-Uni");
         frResult.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
@@ -88,7 +86,6 @@ public class MaxmindIpToGeoServiceTest {
         enResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "0", "ENG");
         enResult2.put(GEO_FIELD_COUNTRY, "United Kingdom");
         enResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
-        enResult2.put(GEO_FIELD_POSTALCODE, null);
 
         Map<String, Object> frResult2 = new HashMap<String, Object>();
         frResult2.put(GEO_FIELD_CONTINENT, "Europe");
@@ -103,7 +100,6 @@ public class MaxmindIpToGeoServiceTest {
         frResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "0", "ENG");
         frResult2.put(GEO_FIELD_COUNTRY, "Royaume-Uni");
         frResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
-        frResult2.put(GEO_FIELD_POSTALCODE, null);
 
         Map<String, Object> deResult2 = new HashMap<String, Object>();
         deResult2.put(GEO_FIELD_CONTINENT, "Europa");
@@ -114,11 +110,9 @@ public class MaxmindIpToGeoServiceTest {
         deResult2.put(GEO_FIELD_LOCATION, "51.5142,-0.0931");
         deResult2.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
         deResult2.put(GEO_FIELD_TIME_ZONE, "Europe/London");
-        deResult2.put(GEO_FIELD_SUBDIVISION + SEPARATOR + "0", null);
         deResult2.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "0", "ENG");
         deResult2.put(GEO_FIELD_COUNTRY, "Vereinigtes Königreich");
         deResult2.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
-        deResult2.put(GEO_FIELD_POSTALCODE, null);
 
         Object[][] inputs = {
                 {"2.125.160.216", "en", enResult},
@@ -181,6 +175,7 @@ public class MaxmindIpToGeoServiceTest {
 
             File file = new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
             dbPath = file.getAbsolutePath();
+            lookupTime = true;
             super.init(context);
         }
     }

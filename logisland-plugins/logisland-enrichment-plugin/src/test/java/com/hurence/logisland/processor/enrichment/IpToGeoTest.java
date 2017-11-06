@@ -438,6 +438,7 @@ public class IpToGeoTest {
 
             File file = new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
             dbPath = file.getAbsolutePath();
+            lookupTime = true;
             super.init(context);
         }
     }
