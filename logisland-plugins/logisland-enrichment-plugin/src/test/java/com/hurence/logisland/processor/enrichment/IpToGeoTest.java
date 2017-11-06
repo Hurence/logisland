@@ -312,16 +312,16 @@ public class IpToGeoTest {
         Object[][] inputs = {
                 {"2.125.160.216", null, null, fullFields},
                 {"2.125.160.216", "*", null, fullFields},
-                {"2.125.160.216", null, "_suffix", fullFields},
-                {"2.125.160.216", "*", "_suffix", fullFields},
+                {"2.125.160.216", null, "_suffix_", fullFields},
+                {"2.125.160.216", "*", "_suffix_", fullFields},
                 {"2.125.160.216", fullFieldsList, null, fullFields},
-                {"2.125.160.216", fullFieldsList, "_suffix", fullFields},
+                {"2.125.160.216", fullFieldsList, "_suffix_", fullFields},
                 {"2.125.160.216", subFieldsIsocodeList, null, subFieldsIsocode},
-                {"2.125.160.216", subFieldsIsocodeList, "_suffix", subFieldsIsocode},
+                {"2.125.160.216", subFieldsIsocodeList, "_suffix_", subFieldsIsocode},
                 {"2.125.160.216", subFieldsSubdivList, null, subFieldsSubdiv},
-                {"2.125.160.216", subFieldsSubdivList, "_suffix", subFieldsSubdiv},
+                {"2.125.160.216", subFieldsSubdivList, "_suffix_", subFieldsSubdiv},
                 {"2.125.160.216", subFieldsBothList, null, subFieldsBoth},
-                {"2.125.160.216", subFieldsBothList, "_suffix", subFieldsBoth}
+                {"2.125.160.216", subFieldsBothList, "_suffix_", subFieldsBoth}
         };
 
         return inputs;
@@ -348,7 +348,7 @@ public class IpToGeoTest {
         final MockRecord outputRecord = runner.getOutputRecords().get(0);
 
         // Compute prefix for flat geo field names
-        final String fieldPrefix = IP_ADDRESS_FIELD_NAME + ((flatSuffix != null) ? flatSuffix : "") + SEPARATOR;
+        final String fieldPrefix = IP_ADDRESS_FIELD_NAME + ((flatSuffix != null) ? flatSuffix : "_geo_");
 
 
         // Check that a time has been added

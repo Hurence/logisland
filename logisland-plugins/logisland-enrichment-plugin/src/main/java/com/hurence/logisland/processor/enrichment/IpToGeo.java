@@ -37,21 +37,21 @@ import java.util.*;
         + "'IP Address Attribute' property. If the name of the attribute provided is 'X', then the the attributes added by enrichment "
         + "will take the form X_geo_<fieldName>")
 @WritesAttributes({
-        @WritesAttribute(attribute = "geo_lookup_micros", description = "The number of microseconds that the geo lookup took"),
-        @WritesAttribute(attribute = "geo_continent", description = "The continent identified for this IP address"),
-        @WritesAttribute(attribute = "geo_continent_code", description = "The continent code identified for this IP address"),
-        @WritesAttribute(attribute = "geo_city", description = "The city identified for the IP address"),
-        @WritesAttribute(attribute = "geo_latitude", description = "The latitude identified for this IP address"),
-        @WritesAttribute(attribute = "geo_longitude", description = "The longitude identified for this IP address"),
-        @WritesAttribute(attribute = "geo_location", description = "The location identified for this IP address, defined as Geo-point expressed as a string with the format: \"lat,lon\""),
-        @WritesAttribute(attribute = "geo_accuracy_radius", description = "The approximate accuracy radius, in kilometers, around the latitude and longitude for the location"),
-        @WritesAttribute(attribute = "geo_time_zone", description = "The time zone identified for this IP address"),
-        @WritesAttribute(attribute = "geo_subdivision_N",
+        @WritesAttribute(attribute = "lookup_micros", description = "The number of microseconds that the geo lookup took"),
+        @WritesAttribute(attribute = "continent", description = "The continent identified for this IP address"),
+        @WritesAttribute(attribute = "continent_code", description = "The continent code identified for this IP address"),
+        @WritesAttribute(attribute = "city", description = "The city identified for the IP address"),
+        @WritesAttribute(attribute = "latitude", description = "The latitude identified for this IP address"),
+        @WritesAttribute(attribute = "longitude", description = "The longitude identified for this IP address"),
+        @WritesAttribute(attribute = "location", description = "The location identified for this IP address, defined as Geo-point expressed as a string with the format: \"lat,lon\""),
+        @WritesAttribute(attribute = "accuracy_radius", description = "The approximate accuracy radius, in kilometers, around the latitude and longitude for the location"),
+        @WritesAttribute(attribute = "time_zone", description = "The time zone identified for this IP address"),
+        @WritesAttribute(attribute = "subdivision_N",
                 description = "Each subdivision that is identified for this IP address is added with a one-up number appended to the attribute name, starting with 0"),
-        @WritesAttribute(attribute = "geo_subdivision_isocode_N", description = "The ISO code for the subdivision that is identified by X_geo_subdivision_N"),
-        @WritesAttribute(attribute = "geo_country", description = "The country identified for this IP address"),
-        @WritesAttribute(attribute = "geo_country_isocode", description = "The ISO Code for the country identified"),
-        @WritesAttribute(attribute = "geo_postalcode", description = "The postal code for the country identified"),})
+        @WritesAttribute(attribute = "subdivision_isocode_N", description = "The ISO code for the subdivision that is identified by X_subdivision_N"),
+        @WritesAttribute(attribute = "country", description = "The country identified for this IP address"),
+        @WritesAttribute(attribute = "country_isocode", description = "The ISO Code for the country identified"),
+        @WritesAttribute(attribute = "postalcode", description = "The postal code for the country identified"),})
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);
@@ -99,7 +99,7 @@ public class IpToGeo extends IpAbstractProcessor {
             .description("If hierarchical is false, then use this suffix appended to the ip field name but before the geo field name." +
                     " This may be used for instance to distinguish between geo fields with various locales using many ip to geo service instances.")
             .required(false)
-            .defaultValue("")
+            .defaultValue("_geo_")
             .build();
 
     // IP to GEO service to use to perform the translation requests
@@ -113,7 +113,7 @@ public class IpToGeo extends IpAbstractProcessor {
     // Suffix to append to the ip field name for defining the the father field name if hierarchical is true
     private String hierarchicalSuffix = "_geo";
     // Suffix to append to the ip field name and before the geo field name if hierarchical is false
-    private String flatSuffix = "_geo";
+    private String flatSuffix = "_geo_";
 
     private boolean needSubdivision = false;
     private boolean needSubdivisionIsocode = false;
@@ -264,7 +264,7 @@ public class IpToGeo extends IpAbstractProcessor {
             for (Map.Entry<String, Object> entry : geoInfo.entrySet())
             {
                 addRecordField(record,
-                        ipAttributeName + flatSuffix + SEPARATOR + entry.getKey(),
+                        ipAttributeName + flatSuffix + entry.getKey(),
                         entry.getKey(),
                         entry.getValue());
             }
