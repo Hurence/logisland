@@ -211,7 +211,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                     /**
                       * save latest offset to Zookeeper
                       */
-                    offsetRanges.foreach(offsetRange => zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange))
+                //    offsetRanges.foreach(offsetRange => zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange))
                 }
 
             }

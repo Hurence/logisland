@@ -34,8 +34,6 @@ public class ProcessorMetrics {
     private static Logger logger = LoggerFactory.getLogger(ProcessorMetrics.class.getName());
 
     public synchronized static void resetMetrics(final String metricPrefix) {
-
-        logger.info("reseting metrics " + metricPrefix);
         UserMetricsSystem.gauge(metricPrefix + "incoming_messages").set(0);
         UserMetricsSystem.gauge(metricPrefix + "incoming_records").set(0);
         UserMetricsSystem.gauge(metricPrefix + "outgoing_records").set(0);

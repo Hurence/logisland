@@ -38,10 +38,10 @@ import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySe
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.kafka010.{CanCommitOffsets, KafkaUtils, OffsetRange}
+import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -204,10 +204,10 @@ object AbstractKafkaRecordStream {
         .defaultValue(EARLIEST_OFFSET.getValue)
         .build
 
-    val LOGISLAND_AGENT_QUORUM = new PropertyDescriptor.Builder()
-        .name("logisland.agent.quorum")
+    val LOGISLAND_AGENT_HOST = new PropertyDescriptor.Builder()
+        .name("logisland.agent.host")
         .description("the stream needs to know how to reach Agent REST api in order to live update its processors")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue("sandbox:8081")
         .build
@@ -275,6 +275,21 @@ object AbstractKafkaRecordStream {
         .defaultValue("all")
         .build
 
+
+    val WINDOW_DURATION = new PropertyDescriptor.Builder()
+        .name("window.duration")
+        .description("all the elements in seen in a sliding window of time over. windowDuration = width of the window; must be a multiple of batching interval")
+        .addValidator(StandardValidators.LONG_VALIDATOR)
+        .required(false)
+        .build
+
+    val SLIDE_DURATION = new PropertyDescriptor.Builder()
+        .name("slide.duration")
+        .description("sliding interval of the window (i.e., the interval after which  the new DStream will generate RDDs); must be a multiple of batching interval")
+        .addValidator(StandardValidators.LONG_VALIDATOR)
+        .required(false)
+        .build
+
 }
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with KafkaRecordStream {
@@ -282,7 +297,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
     val NONE_TOPIC: String = "none"
     private val logger = LoggerFactory.getLogger(classOf[AbstractKafkaRecordStream])
     protected var kafkaSink: Broadcast[KafkaSink] = null
-    protected var zkSink: Broadcast[ZookeeperSink] = null
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
@@ -309,11 +323,13 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         descriptors.add(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
-        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM)
+        descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_HOST)
         descriptors.add(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_BATCH_SIZE)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_LINGER_MS)
         descriptors.add(AbstractKafkaRecordStream.KAFKA_ACKS)
+        descriptors.add(AbstractKafkaRecordStream.WINDOW_DURATION)
+        descriptors.add(AbstractKafkaRecordStream.SLIDE_DURATION)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -345,8 +361,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
             val topicDefaultReplicationFactor = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR).asInteger().intValue()
             val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_ZOOKEEPER_QUORUM).asString
-            val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
-            val agentQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_QUORUM).asString
+
+            val agentQuorum = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_HOST).asString
             val throttling = streamContext.getPropertyValue(AbstractKafkaRecordStream.LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
             val kafkaBatchSize = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_BATCH_SIZE).asString
             val kafkaLingerMs = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_LINGER_MS).asString
@@ -367,7 +383,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
-            zkSink = ssc.sparkContext.broadcast(ZookeeperSink(zkQuorum))
             restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
             controllerServiceLookupSink = ssc.sparkContext.broadcast(
                 ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
@@ -375,6 +390,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             // TODO deprecate topic creation here (must be done through the agent)
             if (topicAutocreate) {
+                val zkUtils = ZkUtils.apply(zkQuorum, 10000, 10000, JaasUtils.isZkSecurityEnabled)
                 createTopicsIfNeeded(zkUtils, inputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, outputTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
                 createTopicsIfNeeded(zkUtils, errorTopics, topicDefaultPartitions, topicDefaultReplicationFactor)
@@ -402,35 +418,23 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
             )
 
-            /* val fromOffsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
-             @transient val kafkaStream = if (
-                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
-                     || fromOffsets.isEmpty) {
-
-                 logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
-                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
-                     ssc,
-                     PreferConsistent,
-                     Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
-                 )
-             }
-             else {
-                 val messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => (Array[Byte], Array[Byte]) =
-                     (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) => (mmd.key, mmd.message)
-
-                 logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $fromOffsets")
-                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
-                     ssc,
-                     PreferConsistent,
-                     Assign[Array[Byte], Array[Byte]](fromOffsets.keys.toList, kafkaParams, fromOffsets)
-                 )
-             }*/
-
             // store current configuration version
             currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
 
             // do the parallel processing
-            kafkaStream.foreachRDD(rdd => {
+
+            val stream = if (streamContext.getPropertyValue(AbstractKafkaRecordStream.WINDOW_DURATION).isSet) {
+                if (streamContext.getPropertyValue(AbstractKafkaRecordStream.SLIDE_DURATION).isSet)
+                    kafkaStream.window(
+                        Seconds(streamContext.getPropertyValue(AbstractKafkaRecordStream.WINDOW_DURATION).asLong()),
+                        Seconds(streamContext.getPropertyValue(AbstractKafkaRecordStream.SLIDE_DURATION).asLong())
+                    )
+                else
+                    kafkaStream.window(Seconds(streamContext.getPropertyValue(AbstractKafkaRecordStream.WINDOW_DURATION).asLong()))
+
+            } else kafkaStream
+
+            stream.foreachRDD(rdd => {
                 /**
                   * check if conf needs to be refreshed
                   */
@@ -465,37 +469,40 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 lastCheckCount += 1
 
 
-                val offsetRanges = process(rdd)
-                // some time later, after outputs have completed
-                if (offsetRanges.nonEmpty){
-                    kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
-                    needMetricsReset = true
-                }
-                else if (needMetricsReset) {
-                    try {
+                if(!rdd.isEmpty()){
+                    val offsetRanges = process(rdd)
+                    // some time later, after outputs have completed
+                    if (offsetRanges.nonEmpty) {
+                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+                        needMetricsReset = true
+                    }
+                    else if (needMetricsReset) {
+                        try {
 
-                        for( partitionId <- 0 to rdd.getNumPartitions) {
-                            val pipelineMetricPrefix = streamContext.getIdentifier + "." +
-                                "partition" + partitionId + "."
-                            val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
+                            for (partitionId <- 0 to rdd.getNumPartitions) {
+                                val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                                    "partition" + partitionId + "."
+                                val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-                            streamContext.getProcessContexts.foreach(processorContext => {
-                                UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
-                                    .time()
-                                    .stop()
+                                streamContext.getProcessContexts.foreach(processorContext => {
+                                    UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                        .time()
+                                        .stop()
 
-                                ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
-                            })
-                            pipelineTimerContext.stop()
+                                    ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                                })
+                                pipelineTimerContext.stop()
+                            }
+                        } catch {
+                            case ex: Throwable =>
+                                logger.error(s"exception : ${ex.toString}")
+                                None
+                        } finally {
+                            needMetricsReset = false
                         }
-                    } catch {
-                        case ex: Throwable =>
-                            logger.error(s"exception : ${ex.toString}")
-                            None
-                    } finally {
-                        needMetricsReset = false
                     }
                 }
+
             })
         } catch {
             case ex: Throwable =>

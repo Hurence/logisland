@@ -97,7 +97,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
-            val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+          //  val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
             // Get the singleton instance of SQLContext
             //val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
@@ -188,7 +188,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
             }
-            return Some(offsetRanges)
+            return None //Some(offsetRanges)
         }
         None
     }

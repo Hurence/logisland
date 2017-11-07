@@ -5,44 +5,6 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 ----------
 
-.. _com.hurence.logisland.processor.AddFields: 
-
-AddFields
----------
-Add one or more field with a default value
-...
-
-Class
-_____
-com.hurence.logisland.processor.AddFields
-
-Tags
-____
-record, fields, Add
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
-
-Dynamic Properties
-__________________
-Dynamic Properties allow the user to specify both the name and value of a property.
-
-.. csv-table:: dynamic-properties
-   :header: "Name","Value","Description","EL"
-   :widths: 20,20,40,10
-
-   "field to add", "a default value", "Add a field to the record with the default value", ""
-
-----------
-
 .. _com.hurence.logisland.processor.ApplyRegexp: 
 
 ApplyRegexp
@@ -447,69 +409,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
-
-IpToFqdn
---------
-Translates an IP into a FQDN (Fully Qualified Domain Name)
-
-Class
-_____
-com.hurence.logisland.processor.enrichment.IpToFqdn
-
-Tags
-____
-dns, ip, fqdn, domain, address, fqhn, reverse, resolution
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
-   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "", ""
-   "override.fqdn.field", "If the field should be overridden when it already exists.", "", "true", "", ""
-   "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
-   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 86400 seconds, which corresponds  to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
-
-IpToGeo
--------
-Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
-
-Class
-_____
-com.hurence.logisland.processor.enrichment.IpToGeo
-
-Tags
-____
-geo, enrich, ip
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
-   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "", ""
-   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "", ""
-   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "", ""
-   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "", ""
-   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "", ""
-
-----------
-
 .. _com.hurence.logisland.processor.MatchIP: 
 
 MatchIP
@@ -849,33 +748,6 @@ com.hurence.logisland.processor.bro.ParseBroEvent
 Tags
 ____
 bro, security, IDS, NIDS
-
-Properties
-__________
-In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
-.
-
-.. csv-table:: allowable-values
-   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
-   :widths: 20,60,30,20,10,10
-
-   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
-
-----------
-
-.. _com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog: 
-
-ParseGitlabLog
---------------
-The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
-
-Class
-_____
-com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog
-
-Tags
-____
-logs, gitlab
 
 Properties
 __________
