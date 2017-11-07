@@ -451,7 +451,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 IpToFqdn
 --------
-find full domain name corresponding to an ip
+Translates an IP into a FQDN (Fully Qualified Domain Name)
 
 Class
 _____
@@ -459,7 +459,7 @@ com.hurence.logisland.processor.enrichment.IpToFqdn
 
 Tags
 ____
-dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution
 
 Properties
 __________
@@ -473,7 +473,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
    "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "", ""
    "override.fqdn.field", "If the field should be overridden when it already exists.", "", "true", "", ""
-   "**cache.service**", "The maximum number of element in the cache.", "", "null", "", ""
+   "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 86400 seconds, which corresponds  to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "", ""
 
 ----------
 
