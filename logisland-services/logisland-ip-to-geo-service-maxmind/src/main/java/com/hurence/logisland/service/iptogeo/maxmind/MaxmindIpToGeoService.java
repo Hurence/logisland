@@ -235,8 +235,12 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         }
         try {
             response = dbReader.city(inetAddress);
-        } catch (final IOException | GeoIp2Exception ex) {
+        } catch (final IOException ex) {
             getLogger().error("Could not find geo data for {} ({}) due to {}", new Object[]{inetAddress, ip, ex.getMessage()});
+            return result;
+        } catch (final GeoIp2Exception ex) {
+            // Mainly when the address is not in the database
+            getLogger().debug("Could not find geo data for {} ({}) due to {}", new Object[]{inetAddress, ip, ex.getMessage()});
             return result;
         }
         long stop = 0L;
