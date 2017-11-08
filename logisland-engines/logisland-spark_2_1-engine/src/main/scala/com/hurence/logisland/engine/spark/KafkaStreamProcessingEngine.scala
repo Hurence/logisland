@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 /**
   * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
   *
@@ -35,15 +35,15 @@ import java.util
 import java.util.Collections
 import java.util.regex.Pattern
 
-import com.hurence.logisland.component.PropertyDescriptor
+import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.stream.spark.KafkaRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
-import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
 
 import scala.collection.JavaConversions._
 
@@ -301,6 +301,19 @@ object KafkaStreamProcessingEngine {
         .addValidator(StandardValidators.FLOAT_VALIDATOR)
         .defaultValue("0.6")
         .build
+
+    val FAIR = new AllowableValue("FAIR", "FAIR", "fair sharing")
+    val FIFO = new AllowableValue("FIFO", "FIFO", "queueing jobs one after another")
+
+    val SPARK_SCHEDULER_MODE = new PropertyDescriptor.Builder()
+        .name("spark.scheduler.mode")
+        .description("The scheduling mode between jobs submitted to the same SparkContext. " +
+            "Can be set to FAIR to use fair sharing instead of queueing jobs one after another. " +
+            "Useful for multi-user services.")
+        .required(false)
+        .allowableValues(FAIR, FIFO)
+        .defaultValue(FAIR.getValue)
+        .build
 }
 
 
@@ -338,6 +351,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -384,6 +398,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
+
         def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
 
             // Need to check if the properties are set because those properties are not "requires"
@@ -414,6 +429,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
+        setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
 
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
