@@ -204,14 +204,14 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-    mvn versions:set -DnewVersion=0.10.2
+    mvn versions:set -DnewVersion=0.10.3
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
-    git tag -a v0.10.2 -m "new logisland release 0.10.2"
-    git push origin v0.10.2
+    git tag -a v0.10.3 -m "new logisland release 0.10.3"
+    git push origin v0.10.3
 
 follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 

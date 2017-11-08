@@ -31,8 +31,9 @@ import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.avro.Schema.Parser
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
@@ -406,8 +407,10 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
                 ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
-                ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
+                ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "30000"
+                /*,
+                ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
             )
 
 
@@ -434,46 +437,61 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             } else kafkaStream
 
+
             stream.foreachRDD(rdd => {
-                /**
-                  * check if conf needs to be refreshed
-                  */
-                if (lastCheckCount > throttling) {
-                    lastCheckCount = 0
-                    val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
-                    if (currentJobVersion != version) {
-                        logger.info("Job version change detected from {} to {}, proceeding to update",
-                            currentJobVersion,
-                            version)
 
-                        val componentFactory = new RestComponentFactory(agentQuorum)
-                        val updatedEngineContext = componentFactory.getEngineContext(appName)
-                        if (updatedEngineContext.isPresent) {
 
-                            // find the corresponding stream
-                            val it = updatedEngineContext.get().getStreamContexts.iterator()
-                            while (it.hasNext) {
-                                val updatedStreamingContext = it.next()
+                if (!rdd.isEmpty()) {
 
-                                // if we found a streamContext with the same name from the factory
-                                if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                    logger.info("new conf for stream {}", updatedStreamingContext.getName)
-                                    this.streamContext = updatedStreamingContext
+                    /**
+                      * check if conf needs to be refreshed
+                      */
+                    if (lastCheckCount > throttling) {
+                        lastCheckCount = 0
+                        val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
+                        if (currentJobVersion != version) {
+                            logger.info("Job version change detected from {} to {}, proceeding to update",
+                                currentJobVersion,
+                                version)
+
+                            val componentFactory = new RestComponentFactory(agentQuorum)
+                            val updatedEngineContext = componentFactory.getEngineContext(appName)
+                            if (updatedEngineContext.isPresent) {
+
+                                // find the corresponding stream
+                                val it = updatedEngineContext.get().getStreamContexts.iterator()
+                                while (it.hasNext) {
+                                    val updatedStreamingContext = it.next()
+
+                                    // if we found a streamContext with the same name from the factory
+                                    if (updatedStreamingContext.getName == this.streamContext.getName) {
+                                        logger.info("new conf for stream {}", updatedStreamingContext.getName)
+                                        this.streamContext = updatedStreamingContext
+                                    }
                                 }
                             }
+                            currentJobVersion = version
                         }
-                        currentJobVersion = version
                     }
-                }
 
-                lastCheckCount += 1
+                    lastCheckCount += 1
 
 
-                if(!rdd.isEmpty()){
                     val offsetRanges = process(rdd)
                     // some time later, after outputs have completed
                     if (offsetRanges.nonEmpty) {
-                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+                       // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+
+
+                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
+                            def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
+                                if (null != e) {
+                                    logger.error("error commiting offsets", e)
+                                }
+                            }
+                        })
+
+
                         needMetricsReset = true
                     }
                     else if (needMetricsReset) {
