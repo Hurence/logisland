@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>0.10.2</version>
+        <version>0.10.3</version>
     </parent>
 
     <artifactId>logisland-hbase_1_1_2-client-service</artifactId>

@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 0.10.2
+version: 0.10.3
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################

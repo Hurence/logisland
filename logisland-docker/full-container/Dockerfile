@@ -7,7 +7,7 @@ USER root
 COPY logisland-*.tar.gz /usr/local/
 RUN cd /usr/local; \
     tar -xzf logisland-*.tar.gz; \
-    ln -s /usr/local/logisland-0.10.2 /usr/local/logisland; \
+    ln -s /usr/local/logisland-0.10.3 /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/*.gz
 ENV LOGISLAND_HOME /usr/local/logisland
