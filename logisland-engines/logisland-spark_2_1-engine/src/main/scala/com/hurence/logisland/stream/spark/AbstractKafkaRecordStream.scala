@@ -31,8 +31,9 @@ import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.avro.Schema.Parser
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
@@ -406,7 +407,9 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
                 ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false"/*,
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
+                ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> s"${Integer.MAX_VALUE}"
+                /*,
                 ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
             )
 
@@ -477,7 +480,18 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                     val offsetRanges = process(rdd)
                     // some time later, after outputs have completed
                     if (offsetRanges.nonEmpty) {
-                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+                       // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
+
+
+                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
+                            def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
+                                if (null != e) {
+                                    logger.error("error commiting offsets", e)
+                                }
+                            }
+                        })
+
+
                         needMetricsReset = true
                     }
                     else if (needMetricsReset) {
