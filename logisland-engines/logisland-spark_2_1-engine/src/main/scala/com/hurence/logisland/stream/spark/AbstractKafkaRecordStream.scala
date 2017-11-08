@@ -408,7 +408,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
                 ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
-                ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> s"${Integer.MAX_VALUE}"
+                ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "30000"
                 /*,
                 ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
             )
