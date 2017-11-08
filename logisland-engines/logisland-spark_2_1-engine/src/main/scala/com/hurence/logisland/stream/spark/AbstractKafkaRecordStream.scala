@@ -406,8 +406,8 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
                 ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "50",
                 ConsumerConfig.RETRY_BACKOFF_MS_CONFIG -> "100",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> kafkaOffset,
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
-                ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false"/*,
+                ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "5000"*/
             )
 
 
@@ -434,42 +434,46 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             } else kafkaStream
 
+
             stream.foreachRDD(rdd => {
-                /**
-                  * check if conf needs to be refreshed
-                  */
-                if (lastCheckCount > throttling) {
-                    lastCheckCount = 0
-                    val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
-                    if (currentJobVersion != version) {
-                        logger.info("Job version change detected from {} to {}, proceeding to update",
-                            currentJobVersion,
-                            version)
 
-                        val componentFactory = new RestComponentFactory(agentQuorum)
-                        val updatedEngineContext = componentFactory.getEngineContext(appName)
-                        if (updatedEngineContext.isPresent) {
 
-                            // find the corresponding stream
-                            val it = updatedEngineContext.get().getStreamContexts.iterator()
-                            while (it.hasNext) {
-                                val updatedStreamingContext = it.next()
+                if (!rdd.isEmpty()) {
 
-                                // if we found a streamContext with the same name from the factory
-                                if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                    logger.info("new conf for stream {}", updatedStreamingContext.getName)
-                                    this.streamContext = updatedStreamingContext
+                    /**
+                      * check if conf needs to be refreshed
+                      */
+                    if (lastCheckCount > throttling) {
+                        lastCheckCount = 0
+                        val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
+                        if (currentJobVersion != version) {
+                            logger.info("Job version change detected from {} to {}, proceeding to update",
+                                currentJobVersion,
+                                version)
+
+                            val componentFactory = new RestComponentFactory(agentQuorum)
+                            val updatedEngineContext = componentFactory.getEngineContext(appName)
+                            if (updatedEngineContext.isPresent) {
+
+                                // find the corresponding stream
+                                val it = updatedEngineContext.get().getStreamContexts.iterator()
+                                while (it.hasNext) {
+                                    val updatedStreamingContext = it.next()
+
+                                    // if we found a streamContext with the same name from the factory
+                                    if (updatedStreamingContext.getName == this.streamContext.getName) {
+                                        logger.info("new conf for stream {}", updatedStreamingContext.getName)
+                                        this.streamContext = updatedStreamingContext
+                                    }
                                 }
                             }
+                            currentJobVersion = version
                         }
-                        currentJobVersion = version
                     }
-                }
 
-                lastCheckCount += 1
+                    lastCheckCount += 1
 
 
-                if(!rdd.isEmpty()){
                     val offsetRanges = process(rdd)
                     // some time later, after outputs have completed
                     if (offsetRanges.nonEmpty) {
