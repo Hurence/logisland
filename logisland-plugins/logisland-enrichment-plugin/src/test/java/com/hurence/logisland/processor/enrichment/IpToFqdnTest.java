@@ -296,16 +296,49 @@ public class IpToFqdnTest {
         return end-start;
     }
 
+//    @Test
+//    public void testDebug() throws InitializationException {
+//        final TestRunner runner = getTestRunner();
+//
+//        final Record inputRecord = getRecordWithStringIp("216.58.209.238");
+//
+//        long runTime = processRecordIn(inputRecord, runner);
+//
+//        runner.assertAllInputRecordsProcessed();
+//
+//        MockRecord outputRecord = runner.getOutputRecords().get(0);
+//        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
+//        outputRecord.assertFieldExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
+//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX, "false");
+//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "false");
+//        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+//
+//        // Rerun same ip resolution
+//
+//        runTime = processRecordIn(inputRecord, runner);
+//
+//        runner.assertAllInputRecordsProcessed();
+//
+//        outputRecord = runner.getOutputRecords().get(1);
+//        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
+//        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
+//        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX);
+//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "true");
+//        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+//    }
+
     private TestRunner getTestRunner() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(IpToFqdn.class);
-        runner.setProperty(IpToFqdn.FQDN_FIELD, FQDN_FIELD_NAME);
+        runner.setProperty(IpToFqdn.CONFIG_FQDN_FIELD, FQDN_FIELD_NAME);
         runner.setProperty(IpToFqdn.IP_ADDRESS_FIELD, IP_ADDRESS_FIELD_NAME);
-        runner.setProperty(IpToFqdn.OVERRIDE_FQDN, OVERRIDE_FQDN);
+        runner.setProperty(IpToFqdn.CONFIG_OVERWRITE_FQDN, OVERRIDE_FQDN);
+        runner.setProperty(IpToFqdn.CONFIG_RESOLUTION_TIMEOUT, "1000");
+        runner.setProperty(IpToFqdn.CONFIG_DEBUG, "true");
 
         final MockCacheService<String, String> cacheService = new MockCacheService(20);
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
-        runner.setProperty(IpToFqdn.CACHE_SERVICE, "cacheService");
+        runner.setProperty(IpToFqdn.CONFIG_CACHE_SERVICE, "cacheService");
 
         return runner;
     }
