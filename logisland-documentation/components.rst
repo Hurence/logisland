@@ -451,7 +451,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 IpToFqdn
 --------
-Translates an IP address into a FQDN (Fully Qualified Domain Name)
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
 
 Class
 _____
@@ -459,7 +459,7 @@ com.hurence.logisland.processor.enrichment.IpToFqdn
 
 Tags
 ____
-dns, ip, fqdn, domain, address, fqhn, reverse, resolution
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
 
 Properties
 __________
@@ -472,9 +472,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
    "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "", ""
-   "override.fqdn.field", "If the field should be overridden when it already exists.", "", "true", "", ""
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "", ""
    "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
-   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 86400 seconds, which corresponds  to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "", ""
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "", ""
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "", ""
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "", ""
 
 ----------
 
