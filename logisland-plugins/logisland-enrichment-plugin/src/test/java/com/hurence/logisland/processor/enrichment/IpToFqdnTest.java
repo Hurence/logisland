@@ -296,36 +296,91 @@ public class IpToFqdnTest {
         return end-start;
     }
 
-//    @Test
-//    public void testDebug() throws InitializationException {
-//        final TestRunner runner = getTestRunner();
-//
-//        final Record inputRecord = getRecordWithStringIp("216.58.209.238");
-//
-//        long runTime = processRecordIn(inputRecord, runner);
-//
-//        runner.assertAllInputRecordsProcessed();
-//
-//        MockRecord outputRecord = runner.getOutputRecords().get(0);
-//        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
-//        outputRecord.assertFieldExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
-//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX, "false");
-//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "false");
-//        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
-//
-//        // Rerun same ip resolution
-//
-//        runTime = processRecordIn(inputRecord, runner);
-//
-//        runner.assertAllInputRecordsProcessed();
-//
-//        outputRecord = runner.getOutputRecords().get(1);
-//        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
-//        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
-//        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX);
-//        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "true");
-//        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
-//    }
+    @Test
+    public void testDebug() throws InitializationException {
+        final TestRunner runner = getTestRunner();
+
+        Record inputRecord = getRecordWithStringIp("216.58.209.238");
+
+        long runTime = processRecordIn(inputRecord, runner);
+
+        runner.assertAllInputRecordsProcessed();
+
+        MockRecord outputRecord = runner.getOutputRecords().get(0);
+        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
+        outputRecord.assertFieldExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX, "false");
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "false");
+        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+
+        // Rerun same ip resolution
+
+        inputRecord = getRecordWithStringIp("216.58.209.238");
+        runTime = processRecordIn(inputRecord, runner);
+
+        runner.assertAllInputRecordsProcessed();
+
+        outputRecord = runner.getOutputRecords().get(1);
+        outputRecord.assertFieldExists(FQDN_FIELD_NAME);
+        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX);
+        outputRecord.assertFieldNotExists(FQDN_FIELD_NAME + IpToFqdn.DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX);
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "true");
+        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+    }
+
+    @Test
+    public void testCacheEntryExpiration() throws InitializationException {
+        final TestRunner runner = getTestRunner();
+
+        runner.setProperty(IpToFqdn.CONFIG_CACHE_MAX_TIME, "2"); // Cache entry timeout set to 2 seconds
+
+        /**
+         * Fill the cache
+         */
+        Record inputRecord = getRecordWithStringIp("78.109.84.114");
+        long runTime = processRecordIn(inputRecord, runner);
+
+        runner.assertAllInputRecordsProcessed();
+
+        MockRecord outputRecord = runner.getOutputRecords().get(0);
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME, "wikimedia2.typhon.net");
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "false");
+        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+
+        /**
+         * Check cache usage
+         */
+
+        inputRecord = getRecordWithStringIp("78.109.84.114");
+        runTime = processRecordIn(inputRecord, runner);
+
+        runner.assertAllInputRecordsProcessed();
+
+        outputRecord = runner.getOutputRecords().get(1);
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME, "wikimedia2.typhon.net");
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "true");
+        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+
+        /**
+         * Wait for cache entry expiration , rerun resolution and check cache was not used
+         */
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        inputRecord = getRecordWithStringIp("78.109.84.114");
+        runTime = processRecordIn(inputRecord, runner);
+
+        runner.assertAllInputRecordsProcessed();
+
+        outputRecord = runner.getOutputRecords().get(2);
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME, "wikimedia2.typhon.net");
+        outputRecord.assertFieldEquals(FQDN_FIELD_NAME + IpToFqdn.DEBUG_FROM_CACHE_SUFFIX, "false");
+        outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+    }
 
     private TestRunner getTestRunner() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(IpToFqdn.class);

@@ -42,7 +42,7 @@ public class IpToFqdn extends IpAbstractProcessor {
     protected boolean overwrite = false;
     protected static final long DEFAULT_CACHE_VALIDITY_PERIOD = 84600L;
     protected long cacheValidityPeriodSec = DEFAULT_CACHE_VALIDITY_PERIOD;
-    protected static final long DEFAULT_RESOLUTION_TIMEOUT = 2000L;
+    protected static final long DEFAULT_RESOLUTION_TIMEOUT = 1000L;
     protected long resolutionTimeoutMs = DEFAULT_RESOLUTION_TIMEOUT;
     protected boolean debug = false;
 
