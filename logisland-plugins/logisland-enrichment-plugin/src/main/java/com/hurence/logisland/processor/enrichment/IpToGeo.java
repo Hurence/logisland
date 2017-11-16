@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package com.hurence.logisland.processor.enrichment;
-import static com.hurence.logisland.processor.enrichment.IpToFqdn.PROP_CACHE_MAX_TIME;
-import static com.hurence.logisland.processor.enrichment.IpToFqdn.PROP_CACHE_SERVICE;
-import static com.hurence.logisland.processor.enrichment.IpToFqdn.PROP_DEBUG;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
@@ -57,6 +54,7 @@ public class IpToGeo extends IpAbstractProcessor {
     protected static final String PROP_HIERARCHICAL = "geo.hierarchical";
     protected static final String PROP_HIERARCHICAL_SUFFIX = "geo.hierarchical.suffix";
     protected static final String PROP_FLAT_SUFFIX = "geo.flat.suffix";
+    protected static final String PROP_DEBUG = "debug";
     protected static final long DEFAULT_CACHE_VALIDITY_PERIOD = 0;
     protected long cacheValidityPeriodSec = DEFAULT_CACHE_VALIDITY_PERIOD;
     protected CacheService<String, IpToGeo.CacheEntry> cacheService;
@@ -456,7 +454,7 @@ public class IpToGeo extends IpAbstractProcessor {
      */
     private static class CacheEntry
     {
-        // FQDN translated from the ip (or the ip if the FQDN could not be found)
+        // geoInfo translated from the ip (or the ip if the geoInfo could not be found)
         private Map<String, Object> geoInfo = null;
         // Time at which this cache entry has been stored in the cache service
         private long time = 0L;
