@@ -24,7 +24,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.validator.StandardValidators;
-import com.maxmind.db.CHMCache;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
@@ -70,14 +69,6 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             .defaultValue("en")
             .build();
 
-    public static final PropertyDescriptor CACHE_CAPACITY = new PropertyDescriptor.Builder()
-            .name("cache.capacity")
-            .displayName("Capacity of the internal cache")
-            .description("Capacity of the internal cache. This is a number of IP addresses. Defaults to 10000")
-            .required(false)
-            .defaultValue("10000")
-            .build();
-
     public static final PropertyDescriptor LOOKUP_TIME = new PropertyDescriptor.Builder()
             .name("lookup.time")
             .displayName("Add a " + GEO_FIELD_LOOKUP_TIME_MICROS + " field giving the lookup time in microseconds")
@@ -90,7 +81,6 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     protected String dbUri = null;
     protected String dbPath = null;
     protected String locale = "en";
-    protected int cacheCapacity = 10000;
     protected boolean lookupTime = false;
 
     final AtomicReference<DatabaseReader> databaseReaderRef = new AtomicReference<>(null);
@@ -129,11 +119,6 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
             propertyValue = context.getPropertyValue(LOCALE);
             if (propertyValue != null) {
                 locale = propertyValue.asString();
-            }
-
-            propertyValue = context.getPropertyValue(CACHE_CAPACITY);
-            if (propertyValue != null) {
-                cacheCapacity = propertyValue.asInteger();
             }
 
             propertyValue = context.getPropertyValue(LOOKUP_TIME);
@@ -192,7 +177,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     private DatabaseReader createReader(DatabaseReader.Builder builder) throws Exception
     {
         // Use a maxmind provided cache system with the passed capacity and use the passed locale
-        return builder.withCache(new CHMCache(cacheCapacity)).locales(Arrays.asList(locale)).build();
+        return builder.locales(Arrays.asList(locale)).build();
     }
 
     @Override
@@ -201,7 +186,6 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
         props.add(MAXMIND_DATABASE_FILE_URI);
         props.add(MAXMIND_DATABASE_FILE_PATH);
         props.add(LOCALE);
-        props.add(CACHE_CAPACITY);
         props.add(LOOKUP_TIME);
         return Collections.unmodifiableList(props);
     }

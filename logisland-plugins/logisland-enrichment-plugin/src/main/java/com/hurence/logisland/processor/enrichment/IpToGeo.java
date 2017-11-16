@@ -15,16 +15,15 @@
  */
 package com.hurence.logisland.processor.enrichment;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
-import com.hurence.logisland.annotation.behavior.WritesAttribute;
-import com.hurence.logisland.annotation.behavior.WritesAttributes;
+
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
@@ -49,13 +48,20 @@ import java.util.*;
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);
-    private boolean debug = false;
 
     protected static final String PROP_IP_TO_GEO_SERVICE = "iptogeo.service";
     protected static final String PROP_GEO_FIELDS = "geo.fields";
     protected static final String PROP_HIERARCHICAL = "geo.hierarchical";
     protected static final String PROP_HIERARCHICAL_SUFFIX = "geo.hierarchical.suffix";
     protected static final String PROP_FLAT_SUFFIX = "geo.flat.suffix";
+    protected static final String PROP_DEBUG = "debug";
+    protected static final long DEFAULT_CACHE_VALIDITY_PERIOD = 0;
+    protected long cacheValidityPeriodSec = DEFAULT_CACHE_VALIDITY_PERIOD;
+    protected CacheService<String, IpToGeo.CacheEntry> cacheService;
+    protected boolean debug = false;
+    static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
+    protected static final String PROP_CACHE_SERVICE = "cache.service";
+
 
     public static final PropertyDescriptor IP_TO_GEO_SERVICE = new PropertyDescriptor.Builder()
             .name(PROP_IP_TO_GEO_SERVICE)
@@ -118,6 +124,39 @@ public class IpToGeo extends IpAbstractProcessor {
             .defaultValue("_geo_")
             .build();
 
+    public static final PropertyDescriptor CONFIG_CACHE_SERVICE = new PropertyDescriptor.Builder()
+            .name(PROP_CACHE_SERVICE)
+            .description("The name of the cache service to use.")
+            .required(true)
+            .identifiesControllerService(CacheService.class)
+            .build();
+
+    /* WARNING: This property is commented as right now we don't support live Geolite db update. */
+//     public static final PropertyDescriptor CONFIG_CACHE_MAX_TIME = new PropertyDescriptor.Builder()
+//            .name(PROP_CACHE_MAX_TIME)
+//            .description("The amount of time, in seconds, for which a cached geoInfo value is valid in the cache service. After this delay, " +
+//                    "the next new request to translate the same IP into geoInfo will trigger a new request in the Geolite db and the" +
+//                    " result will overwrite the entry in the cache. This will facilitate the support in the future for live upgrade of the Geolite database." +
+//                    " A value of 0 seconds disables this expiration mechanism. The default value is " + DEFAULT_CACHE_VALIDITY_PERIOD +
+//                    " seconds, which corresponds to new requests triggered every day if a record with the same IP passes every" +
+//                    " day in the processor."
+//            )
+//            .required(false)
+//            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+//            .defaultValue(new Long(DEFAULT_CACHE_VALIDITY_PERIOD).toString())
+//            .build();
+
+
+    public static final PropertyDescriptor CONFIG_DEBUG = new PropertyDescriptor.Builder()
+            .name(PROP_DEBUG)
+            .description("If true, some additional debug fields are added. If the geoInfo field is named X," +
+                    " a debug field named X" + DEBUG_FROM_CACHE_SUFFIX + " contains a boolean value" +
+                    " to indicate the origin of the geoInfo field. The default value for this property is false (debug is disabled.")
+            .required(false)
+            .defaultValue("false")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
     // Ip to Geo service to use to perform the translation requests
     private IpToGeoService ipToGeoService = null;
     // List of fields to add (* means all available fields)
@@ -160,6 +199,9 @@ public class IpToGeo extends IpAbstractProcessor {
         properties.add(HIERARCHICAL);
         properties.add(HIERARCHICAL_SUFFIX);
         properties.add(FLAT_SUFFIX);
+        properties.add(CONFIG_CACHE_SERVICE);
+//        properties.add(CONFIG_CACHE_MAX_TIME);
+        properties.add(CONFIG_DEBUG);
         return properties;
     }
 
@@ -201,6 +243,11 @@ public class IpToGeo extends IpAbstractProcessor {
         if (propertyValue != null) {
             flatSuffix = propertyValue.asString();
         }
+
+        cacheService = context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService(CacheService.class);
+        if(cacheService == null) {
+            logger.error("Cache service is not initialized!");
+        }
     }
 
     /**
@@ -235,22 +282,60 @@ public class IpToGeo extends IpAbstractProcessor {
     }
 
     protected void processIp(Record record, String ip, ProcessContext context) {
-
+        debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
+        // cacheValidityPeriodSec = (long)context.getPropertyValue(CONFIG_CACHE_MAX_TIME).asInteger();
         /**
-         * Call the Ip to Geo service and fill responses as new fields
+         * Attempt to find info from the cache
          */
-        Map<String, Object> geoInfo = ipToGeoService.getGeoInfo(ip);
-
+        IpToGeo.CacheEntry cacheEntry = null;
+        try {
+            cacheEntry = cacheService.get(ip);
+        } catch (Exception e) {
+            logger.trace("Could not use cache!");
+        }
         /**
-         * Remove unwanted fields if some specific fields configured
+         * If something in the cache, get it and be sure it is not obsolete
          */
-        if (!allFields)
-        {
+        Map<String, Object> geoInfo = null;
+        boolean fromCache = true;
+        if (cacheEntry != null) { // Something in the cache?
+            geoInfo = cacheEntry.getGeoInfo();
+            if (cacheValidityPeriodSec > 0) { // Cache validity period enabled?
+                long cacheTime = cacheEntry.getTime();
+                long now = System.currentTimeMillis();
+                long cacheAge = now - cacheTime;
+                if (cacheAge > (cacheValidityPeriodSec * 1000L)) { // Cache entry older than allowed max age?
+                    geoInfo = null; // Cache entry expired, force triggering a new request
+                }
+            }
+        }
+
+        if (geoInfo == null) {
+            fromCache = false;
+            /**
+             * Not in the cache or cache entry expired
+             * Call the Ip to Geo service and fill responses as new fields
+             */
+            geoInfo = ipToGeoService.getGeoInfo(ip);
+
+            /**
+             * Remove unwanted fields if some specific fields configured
+             */
+            if (!allFields)
+            {
+                try {
+                    filterFields(geoInfo);
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                    return;
+                }
+            }
             try {
-                filterFields(geoInfo);
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-                return;
+                // Store the geoInfo into the cache
+                cacheEntry = new CacheEntry(geoInfo, System.currentTimeMillis());
+                cacheService.set(ip, cacheEntry);
+             } catch (Exception e) {
+            logger.trace("Could not put entry in the cache:" + e.getMessage());
             }
         }
 
@@ -270,7 +355,11 @@ public class IpToGeo extends IpAbstractProcessor {
              * }
              */
             record.setField(ipAttributeName + hierarchicalSuffix, FieldType.MAP, geoInfo);
-
+            if (debug)
+            {
+                // Add some debug fields
+                record.setField(ipAttributeName + hierarchicalSuffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
+            }
         } else
         {
             /**
@@ -284,7 +373,13 @@ public class IpToGeo extends IpAbstractProcessor {
                         entry.getKey(),
                         entry.getValue());
             }
+            if (debug)
+            {
+                // Add some debug fields
+                record.setField(ipAttributeName + flatSuffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
+            }
         }
+
     }
 
     /**
@@ -352,5 +447,32 @@ public class IpToGeo extends IpAbstractProcessor {
             fieldType = FieldType.STRING;
         }
         record.setField(attributeName, fieldType, value);
+    }
+
+    /**
+     * Cached entity
+     */
+    private static class CacheEntry
+    {
+        // geoInfo translated from the ip (or the ip if the geoInfo could not be found)
+        private Map<String, Object> geoInfo = null;
+        // Time at which this cache entry has been stored in the cache service
+        private long time = 0L;
+
+        public CacheEntry(Map<String, Object> geoInfo, long time)
+        {
+            this.geoInfo = geoInfo;
+            this.time = time;
+        }
+
+        public Map<String, Object> getGeoInfo()
+        {
+            return geoInfo;
+        }
+
+        public long getTime()
+        {
+            return time;
+        }
     }
 }
