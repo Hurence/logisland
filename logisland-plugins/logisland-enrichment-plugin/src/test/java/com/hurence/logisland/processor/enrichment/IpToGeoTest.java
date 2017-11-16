@@ -5,6 +5,9 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
+import com.hurence.logisland.service.cache.model.Cache;
+import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService;
 import com.hurence.logisland.util.runner.MockRecord;
@@ -19,8 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
+import static com.hurence.logisland.processor.enrichment.IpToGeo.DEBUG_FROM_CACHE_SUFFIX;
 import static com.hurence.logisland.record.RecordUtils.KV_RECORD_KEY_FIELD;
 import static com.hurence.logisland.record.RecordUtils.KV_RECORD_VALUE_FIELD;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
@@ -214,6 +219,65 @@ public class IpToGeoTest {
         assertEquals("Hierarchical and expected maps should be identical", expectedResult, geoFieldsFromFather);
 
         outputRecord.assertFieldNotExists(ProcessError.RUNTIME_ERROR.toString());
+    }
+
+    @Test
+    public void testHierarchicalWithCache() throws InitializationException {
+        final TestRunner runner = getTestRunner();
+        runner.setProperty("cache.size", "5");
+        runner.setProperty("debug", "true");
+
+        final Record inputRecord =  getRecordWithStringIp("2.125.160.216");
+        final Record inputRecord2 = getRecordWithStringIp("2.125.160.216");
+
+        String hierarchicalSuffix = null;
+
+        Map<String, Object> expectedResult = new HashMap<String, Object>();
+        expectedResult.put(GEO_FIELD_CONTINENT, "Europe");
+        expectedResult.put(GEO_FIELD_CONTINENT_CODE, "EU");
+        expectedResult.put(GEO_FIELD_CITY, "Boxford");
+        expectedResult.put(GEO_FIELD_LATITUDE, new Double("51.75"));
+        expectedResult.put(GEO_FIELD_LONGITUDE, new Double("-1.25"));
+        expectedResult.put(GEO_FIELD_LOCATION, "51.75,-1.25");
+        expectedResult.put(GEO_FIELD_ACCURACY_RADIUS, new Integer(100));
+        expectedResult.put(GEO_FIELD_TIME_ZONE, "Europe/London");
+        expectedResult.put(GEO_FIELD_SUBDIVISION + SEPARATOR + "0", "England");
+        expectedResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "0", "ENG");
+        expectedResult.put(GEO_FIELD_SUBDIVISION + SEPARATOR + "1", "West Berkshire");
+        expectedResult.put(GEO_FIELD_SUBDIVISION_ISOCODE + SEPARATOR + "1", "WBK");
+        expectedResult.put(GEO_FIELD_COUNTRY, "United Kingdom");
+        expectedResult.put(GEO_FIELD_COUNTRY_ISOCODE, "GB");
+        expectedResult.put(GEO_FIELD_POSTALCODE, "OX1");
+
+        runner.setProperty(IpToGeo.HIERARCHICAL, "true");
+
+        runner.enqueue(inputRecord, inputRecord2);
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+
+        final MockRecord outputRecord = runner.getOutputRecords().get(0);
+
+        // Check the hierarchical field is present (field holding geo fields)
+        final String fatherField = IP_ADDRESS_FIELD_NAME + ((hierarchicalSuffix != null) ? hierarchicalSuffix : "_geo");
+        outputRecord.assertFieldExists(fatherField);
+
+        Field fatherFieldValue = outputRecord.getField(fatherField);
+        Map<String, Object> geoFieldsFromFather = (Map<String, Object>)fatherFieldValue.getRawValue();
+
+        // Of course, remove time to be able to compare maps
+        geoFieldsFromFather.remove(GEO_FIELD_LOOKUP_TIME_MICROS);
+
+        // Compare maps
+        assertEquals("Hierarchical and expected maps should be identical", expectedResult, geoFieldsFromFather);
+
+        // Check the geoInfo has not been retrieved from the cache.
+        String fromCache = fatherField + IpToGeo.DEBUG_FROM_CACHE_SUFFIX;
+        outputRecord.assertFieldEquals(fromCache, false);
+
+        final MockRecord outputRecord2 = runner.getOutputRecords().get(1);
+
+        // Check the geoInfo has been retrieved from cache this time.
+        outputRecord2.assertFieldEquals(fromCache, true);
     }
 
     @DataProvider
@@ -419,6 +483,11 @@ public class IpToGeoTest {
         runner.enableControllerService(service);
         runner.assertValid(service);
 
+        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        runner.addControllerService("cacheService", cacheService);
+        runner.enableControllerService(cacheService);
+        runner.setProperty(IpToGeo.CONFIG_CACHE_SERVICE, "cacheService");
+
         return runner;
     }
 
@@ -440,6 +509,20 @@ public class IpToGeoTest {
             dbPath = file.getAbsolutePath();
             lookupTime = true;
             super.init(context);
+        }
+    }
+
+    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+
+        private int cacheSize;
+
+        public MockCacheService(final int cacheSize) {
+            this.cacheSize = cacheSize;
+        }
+
+        @Override
+        protected Cache<K, V> createCache(ControllerServiceInitializationContext context) throws IOException, InterruptedException {
+            return new LRUCache<K,V>(cacheSize);
         }
     }
 }
