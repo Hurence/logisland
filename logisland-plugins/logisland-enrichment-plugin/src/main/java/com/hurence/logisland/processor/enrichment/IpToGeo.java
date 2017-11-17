@@ -149,9 +149,9 @@ public class IpToGeo extends IpAbstractProcessor {
 
     public static final PropertyDescriptor CONFIG_DEBUG = new PropertyDescriptor.Builder()
             .name(PROP_DEBUG)
-            .description("If true, some additional debug fields are added. If the geoInfo field is named X," +
+            .description("If true, an additional debug field is added. If the geo info fields prefix is X," +
                     " a debug field named X" + DEBUG_FROM_CACHE_SUFFIX + " contains a boolean value" +
-                    " to indicate the origin of the geoInfo field. The default value for this property is false (debug is disabled.")
+                    " to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).")
             .required(false)
             .defaultValue("false")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)

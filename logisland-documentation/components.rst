@@ -509,6 +509,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "", ""
    "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "", ""
    "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "", ""
+   "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "", ""
 
 ----------
 
