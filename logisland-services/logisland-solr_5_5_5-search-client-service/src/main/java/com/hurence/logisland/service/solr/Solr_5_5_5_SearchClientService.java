@@ -30,6 +30,10 @@ import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.response.CoreAdminResponse;
+import org.apache.solr.common.params.CoreAdminParams;
 
 import java.io.File;
 import java.io.IOException;
@@ -207,6 +211,10 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
 //        return transportClient;
 //    }
 
+    private SolrClient getClient() {
+        return solrClient;
+    }
+
 
     /**
      * Get the ElasticSearch hosts.
@@ -255,7 +263,26 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
 
     @Override
     public boolean existsIndex(String indexName) throws IOException {
-        return true;
+        try
+        {
+            // Request core list
+            CoreAdminRequest request = new CoreAdminRequest();
+            request.setAction(CoreAdminParams.CoreAdminAction.STATUS);
+            CoreAdminResponse cores = request.process(solrClient);
+
+            // List of the cores
+            List<String> coreList = new ArrayList<String>();
+            for (int i = 0; i < cores.getCoreStatus().size(); i++) {
+                coreList.add(cores.getCoreStatus().getName(i));
+            }
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(indexName, getClient());
+
+            return aResponse.getCoreStatus(indexName).size() > 1;
+        } catch (Exception e) {
+            System.out.println("plop");
+        }
+
+        return false;
     }
 
     @Override
@@ -281,6 +308,22 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
 
     @Override
     public void createIndex(int numShards, int numReplicas, String indexName) throws IOException {
+        try {
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(indexName, getClient());
+
+            if (aResponse.getCoreStatus(indexName).size() < 1)
+            {
+                CoreAdminRequest.Create aCreateRequest = new CoreAdminRequest.Create();
+                aCreateRequest.setCoreName(indexName);
+                aCreateRequest.setInstanceDir(indexName);
+                aCreateRequest.process(getClient());
+            }
+        } catch (Exception e) {
+
+        }
+
+
+
 
     }
 
