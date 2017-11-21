@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.elasticsearch;
+package com.hurence.logisland.service.solr;
 
 // Author: Simon Kitching
 // This code is in the public domain
@@ -56,11 +56,10 @@ public class SolrRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                File solrHome = new File("/tmp/solr");
+                File solrHome = new File("/home/chok/work/hurence/solr/solr-5.5.5/server/solr");
                 File configFile = new File(solrHome, "solr.xml");
-                NodeConfig config = new NodeConfig();
-                CoreContainer coreContainer = new CoreContainer(config);
-                solrServer = new EmbeddedSolrServer(coreContainer, "Your-Core-Name-in-solr.xml");
+                CoreContainer coreContainer = new CoreContainer(solrHome.toString());
+                solrServer = new EmbeddedSolrServer(coreContainer, null);
 
                 try {
                     base.evaluate(); // execute the unit test
@@ -84,7 +83,7 @@ public class SolrRule implements TestRule {
      */
     public void refresh(String index) {
         try {
-            client.admin().indices().prepareRefresh(index).execute().get();
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to refresh index", e);
         }
