@@ -16,7 +16,14 @@
  */
 package com.hurence.logisland.service.datastore;
 
-public class DatastoreClientServiceException extends RuntimeException{
+public class DatastoreClientServiceException extends RuntimeException {
 
 
+    public DatastoreClientServiceException(Exception e) {
+        super(e);
+    }
+
+    public DatastoreClientServiceException(String message) {
+        super(message);
+    }
 }
