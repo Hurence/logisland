@@ -24,5 +24,6 @@
         <module>logisland-cache_key_value-service-api</module>
         <module>logisland-ip-to-geo-service-maxmind</module>
         <module>logisland-ip-to-geo-service-api</module>
+        <module>logisland-datastore-client-service-api</module>
     </modules>
 </project>
