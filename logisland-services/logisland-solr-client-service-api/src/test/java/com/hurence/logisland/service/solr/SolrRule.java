@@ -51,7 +51,9 @@ public class SolrRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                CoreContainer coreContainer = new CoreContainer("src/test/resources/solr");
+                File solrHome = new File("/home/chok/work/hurence/solr/solr-5.5.5/server/solr");
+                File configFile = new File(solrHome, "solr.xml");
+                CoreContainer coreContainer = new CoreContainer(solrHome.toString());
                 coreContainer.load();
                 solrServer = new EmbeddedSolrServer(coreContainer, "default");
 

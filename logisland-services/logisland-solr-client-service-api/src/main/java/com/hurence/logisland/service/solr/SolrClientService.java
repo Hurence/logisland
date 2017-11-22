@@ -25,7 +25,6 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
@@ -51,11 +50,11 @@ import java.io.IOException;
 import java.util.*;
 
 @Tags({ "solr", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
-public class Solr_5_5_5_ClientService extends AbstractControllerService implements DatastoreClientService {
+@CapabilityDescription("Implementation of SolrClientService")
+abstract public class SolrClientService<SolrClient, CoreAdminResponse, CoreAdminRequest> extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
-    private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_5_5_5_ClientService.class);
+    private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -443,7 +442,7 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
             SolrQuery query = new SolrQuery();
             query.setQuery(queryString);
 
-            QueryResponse response = getClient().query(query);
+            QueryResponse response = solr.query(query);
 
             //response.getResults().forEach(doc -> doc.);
 
@@ -461,7 +460,7 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
             SolrQuery query = new SolrQuery();
             query.setQuery(queryString);
 
-            QueryResponse response = getClient().query(query);
+            QueryResponse response = solr.query(query);
 
             return response.getResults().getNumFound();
 
