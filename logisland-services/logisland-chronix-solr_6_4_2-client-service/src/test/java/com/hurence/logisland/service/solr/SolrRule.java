@@ -23,11 +23,13 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.NodeConfig;
+import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * A JUnit rule which starts an embedded elastic-search instance.
@@ -36,57 +38,37 @@ import java.io.File;
  * not sufficient - eg when testing DAO-specific code.
  * </p>
  */
-public class SolrRule implements TestRule {
-    /**
-     * An elastic-search cluster consisting of one node.
-     */
-    private EmbeddedSolrServer solrServer;
+public class SolrRule extends ExternalResource {
 
-    /**
-     * The internal-transport client that talks to the local node.
-     */
-    private SolrClient client;
+    private EmbeddedSolrServer server;
+    private CoreContainer container;
 
-    /**
-     * Return a closure which starts an embedded ES instance, executes the unit-test, then shuts down the
-     * ES instance.
-     */
     @Override
-    public Statement apply(Statement base, Description description) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                File solrHome = new File("/tmp/solr");
-                File configFile = new File(solrHome, "solr.xml");
-                NodeConfig config = new NodeConfig();
-                CoreContainer coreContainer = new CoreContainer(config);
-                solrServer = new EmbeddedSolrServer(coreContainer, "Your-Core-Name-in-solr.xml");
+    protected void before() throws Throwable {
+        container = new CoreContainer("src/test/resources/solr");
+        container.load();
 
-                try {
-                    base.evaluate(); // execute the unit test
-                } finally {
-                    solrServer.close();
-                }
-            }
-        };
-    }
+        server = new EmbeddedSolrServer(container, "chronix" );
+
+        getClient().deleteByQuery("*:*");
+        getClient().commit();
+    };
+
+    @Override
+    protected void after() {
+        try {
+            server.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    };
 
     /**
      * Return the object through which operations can be performed on the ES cluster.
      */
     public SolrClient getClient() {
-        return solrServer;
+        return server;
     }
 
-    /**
-     * When data is added to an index, it is not visible in searches until the next "refresh" has been performed.
-     * Refreshes are normally done every second, but this makes it explicit..
-     */
-    public void refresh(String index) {
-        try {
-            client.admin().indices().prepareRefresh(index).execute().get();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to refresh index", e);
-        }
-    }
+
 }
