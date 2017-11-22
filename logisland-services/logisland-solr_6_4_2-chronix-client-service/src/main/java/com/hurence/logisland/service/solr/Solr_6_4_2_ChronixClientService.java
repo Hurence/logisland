@@ -25,6 +25,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordDictionary;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -39,16 +40,14 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrInputDocument;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.BinaryOperator;
@@ -56,20 +55,19 @@ import java.util.function.Function;
 
 @Tags({"solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
-public class Solr_5_5_5_ClientService extends AbstractControllerService implements DatastoreClientService {
+public class Solr_6_4_2_ChronixClientService extends AbstractControllerService implements DatastoreClientService {
 
-    private static Logger logger = LoggerFactory.getLogger(Solr_5_5_5_ClientService.class);
-    private static Function<MetricTimeSeries, String> groupBy = MetricTimeSeries::getName;
-    private static BinaryOperator<MetricTimeSeries> reduce = (binaryTimeSeries, binaryTimeSeries2) -> binaryTimeSeries;
+    private static Logger logger = LoggerFactory.getLogger(Solr_6_4_2_ChronixClientService.class);
+    protected static Function<MetricTimeSeries, String> groupBy = MetricTimeSeries::getName;
+    protected static BinaryOperator<MetricTimeSeries> reduce = (binaryTimeSeries, binaryTimeSeries2) -> binaryTimeSeries;
 
-    private volatile SolrClient solr;
+    protected volatile SolrClient solr;
 
     List<SolrUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
-    MetricTimeSeriesConverter converter = new MetricTimeSeriesConverter();
-    //  final SolrQuery solrQuery = new SolrQuery("*:*");
-    ChronixSolrStorage<MetricTimeSeries> storage = new ChronixSolrStorage<>(10, groupBy, reduce);
+    MetricTimeSeriesConverter converter = null;
+    ChronixSolrStorage<MetricTimeSeries> storage = null;
 
 
     PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
@@ -133,7 +131,7 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         synchronized (this) {
             try {
                 createSolrClient(context);
-                //createBulkProcessor(context);
+                createChronixStorage(context);
             } catch (Exception e) {
                 throw new InitializationException(e);
             }
@@ -173,6 +171,18 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
             }
 
 
+        } catch (Exception ex) {
+            logger.error(ex.toString());
+        }
+    }
+
+
+    protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
+        if (storage != null) {
+            return;
+        }
+        try {
+
             // setup a thread pool of solr updaters
             int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
             int numConcurrentRequests = context.getPropertyValue(CONCURRENT_REQUESTS).asInteger();
@@ -194,7 +204,6 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         }
     }
 
-
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         throw new DatastoreClientServiceException("not implemented yet");
@@ -212,7 +221,7 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public boolean existsCollection(String name) throws DatastoreClientServiceException {
-        throw new DatastoreClientServiceException("not implemented yet");
+        return false;
     }
 
     @Override
@@ -256,64 +265,55 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     }
 
-    private MetricTimeSeries convertToMetric(Record record) {
+    MetricTimeSeries convertToMetric(Record record) {
         long recordTS = record.getTime().getTime();
 
-        MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(record.getType(), "metric")
+        MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(
+                record.getField(FieldDictionary.RECORD_NAME).asString(), RecordDictionary.METRIC)
                 .start(recordTS)
                 .end(recordTS + 10)
-                .attribute(FieldDictionary.RECORD_ID, record.getId())
-                .attribute(FieldDictionary.RECORD_TIME, recordTS)
-                .attribute(FieldDictionary.RECORD_TYPE, record.getType())
+                .attribute("id", record.getId())
                 .point(recordTS, record.getField(FieldDictionary.RECORD_VALUE).asDouble());
-
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-
-        // convert event_time as ISO for ES
-        if (record.hasField(FieldDictionary.RECORD_TIME)) {
-            try {
-                DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-                builder.attribute("@timestamp", dateParser.print(record.getField(FieldDictionary.RECORD_TIME).asLong()));
-            } catch (Exception ex) {
-                logger.error("unable to parse record_time iso date for {}", record);
-            }
-        }
 
 
         // add all other records
         record.getAllFieldsSorted().forEach(field -> {
             try {
                 // cleanup invalid es fields characters like '.'
-                String fieldName = field.getName().replaceAll("\\.", "_");
+                String fieldName = field.getName()
+                        .replaceAll("\\.", "_");
+
+                if (!fieldName.equals(FieldDictionary.RECORD_TIME) &&
+                        !fieldName.equals(FieldDictionary.RECORD_NAME) &&
+                        !fieldName.equals(FieldDictionary.RECORD_VALUE) &&
+                        !fieldName.equals(FieldDictionary.RECORD_ID) &&
+                        !fieldName.equals(FieldDictionary.RECORD_TYPE))
 
 
-                switch (field.getType()) {
+                    switch (field.getType()) {
 
-                    case STRING:
-                        builder.attribute(fieldName, field.asString());
-                        break;
-                    case INT:
-                        builder.attribute(fieldName, field.asInteger());
-                        break;
-                    case LONG:
-                        builder.attribute(fieldName, field.asLong());
-                        break;
-                    case FLOAT:
-                        builder.attribute(fieldName, field.asFloat());
-                        break;
-                    case DOUBLE:
-                        builder.attribute(fieldName, field.asDouble());
-                        break;
-                    case BOOLEAN:
-                        builder.attribute(fieldName, field.asBoolean());
-                        break;
-                    default:
-                        builder.attribute(fieldName, field.getRawValue());
-                        break;
-                }
+                        case STRING:
+                            builder.attribute(fieldName, field.asString());
+                            break;
+                        case INT:
+                            builder.attribute(fieldName, field.asInteger());
+                            break;
+                        case LONG:
+                            builder.attribute(fieldName, field.asLong());
+                            break;
+                        case FLOAT:
+                            builder.attribute(fieldName, field.asFloat());
+                            break;
+                        case DOUBLE:
+                            builder.attribute(fieldName, field.asDouble());
+                            break;
+                        case BOOLEAN:
+                            builder.attribute(fieldName, field.asBoolean());
+                            break;
+                        default:
+                            builder.attribute(fieldName, field.getRawValue());
+                            break;
+                    }
 
             } catch (Throwable ex) {
                 logger.error("unable to process a field in record : {}, {}", record, ex.toString());
@@ -328,7 +328,7 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
 
-        bulkPut(collectionName,record);
+        bulkPut(collectionName, record);
 
 
     }

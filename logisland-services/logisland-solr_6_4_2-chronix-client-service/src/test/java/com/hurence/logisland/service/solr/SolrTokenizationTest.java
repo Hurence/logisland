@@ -31,7 +31,7 @@ import java.util.Date;
 
 import static junit.framework.TestCase.assertTrue;
 
-public class TestTokenizerInSolr {
+public class SolrTokenizationTest {
 
     @Rule
     public SolrRule rule = new SolrRule();

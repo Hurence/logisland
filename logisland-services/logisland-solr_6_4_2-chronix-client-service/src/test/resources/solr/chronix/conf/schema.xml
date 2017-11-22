@@ -32,6 +32,8 @@
 
         <!-- Dynamic field -->
         <dynamicField name="*_s" type="string" indexed="true" stored="true"/>
+        <!-- Dynamic logisland field -->
+        <dynamicField name="record_*" type="string" indexed="true" stored="true"/>
 
         <field name="myIntField" type="int" indexed="true" stored="true" required="false"/>
         <field name="myLongField" type="long" indexed="true" stored="true" required="false"/>

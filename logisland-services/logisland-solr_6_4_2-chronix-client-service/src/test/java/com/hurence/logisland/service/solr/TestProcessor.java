@@ -31,10 +31,10 @@ import java.util.List;
 public class TestProcessor extends AbstractProcessor {
 
     public static final PropertyDescriptor SOLR_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("solr.search-client.service")
+            .name("solr.chronix.client.service")
             .description("The instance of the Controller Service to use for accessing Solr.")
             .required(true)
-            .identifiesControllerService(Solr_5_5_5_ClientService.class)
+            .identifiesControllerService(Solr_6_4_2_ChronixClientService.class)
             .build();
 
 

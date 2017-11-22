@@ -10,7 +10,7 @@
         <version>0.10.3</version>
     </parent>
 
-    <artifactId>logisland-chronix-solr_6_4_2-client-service</artifactId>
+    <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -24,6 +24,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+    <repositories>
+        <repository>
+            <id>bintray</id>
+            <name>bintray repo</name>
+            <url>http://dl.bintray.com/chronix/maven</url>
+        </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>

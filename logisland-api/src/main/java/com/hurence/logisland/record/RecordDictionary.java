@@ -16,17 +16,10 @@
 package com.hurence.logisland.record;
 
 
-public class FieldDictionary {
+public class RecordDictionary {
 
-    public static String RECORD_ERRORS = "record_errors";
-    public static String RECORD_TYPE = "record_type";
-    public static String RECORD_ID = "record_id";
-    public static String RECORD_TIME = "record_time";
-    public static String RECORD_DAYTIME = "record_daytime";
-    public static String RECORD_KEY = "record_key";
-    public static String RECORD_VALUE = "record_value";
-    public static String RECORD_RAW_KEY = "record_raw_key";
-    public static String RECORD_RAW_VALUE = "record_raw_value";
-    public static String RECORD_NAME = "record_name";
-    public static String PROCESSOR_NAME = "processor_name";
+    public static String LOG = "log";
+    public static String METRIC = "metric";
+    public static String EVENT = "event";
+    public static String MESSAGE = "message";
 }

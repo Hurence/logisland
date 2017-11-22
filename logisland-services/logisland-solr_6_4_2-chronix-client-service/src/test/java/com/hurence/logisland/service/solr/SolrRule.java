@@ -19,6 +19,7 @@ package com.hurence.logisland.service.solr;
 // This code is in the public domain
 
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
@@ -45,6 +46,8 @@ public class SolrRule extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
+
+        FileUtils.deleteDirectory(new File("src/test/resources/solr/chronix/data"));
         container = new CoreContainer("src/test/resources/solr");
         container.load();
 
