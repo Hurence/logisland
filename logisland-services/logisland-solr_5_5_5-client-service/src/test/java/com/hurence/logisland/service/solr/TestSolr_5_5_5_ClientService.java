@@ -131,8 +131,8 @@ public class TestSolr_5_5_5_ClientService {
     @Test
     public void testBasics() throws Exception {
         Record record1 = new StandardRecord()
-                .setStringField("name", "fred")
-                .setField("val", FieldType.INT, 33)
+                .setId("record1")
+                .setStringField("name_s", "fred");
 
         boolean result;
 
@@ -142,6 +142,7 @@ public class TestSolr_5_5_5_ClientService {
 
         solrClientService.dropCollection("foo");
         solrClientService.dropCollection("bar");
+        solrClientService.dropCollection("baz");
 
 
         // Verify the index does not exist
@@ -160,11 +161,13 @@ public class TestSolr_5_5_5_ClientService {
         Map<String, Object> nameField = new LinkedHashMap<>();
         nameField.put("name", "name");
         nameField.put("type", "string");
+        nameField.put("stored", true);
         mapping1.add(nameField);
 
         Map<String, Object> valField = new LinkedHashMap<>();
         valField.put("name", "val");
-        valField.put("type", "integer");
+        valField.put("type", "int");
+        nameField.put("stored", true);
         mapping1.add(valField);
 
 
@@ -185,9 +188,9 @@ public class TestSolr_5_5_5_ClientService {
 
 
         // Update a mapping with an incompatible mapping -- should fail
-//        result = solrClientService.putMapping("foo", mapping2);
+ //       result = solrClientService.putMapping("foo", mapping2);
 //        Assert.assertEquals(false, result);
-//
+
         // create alias
         // TODO - Manage Solr Cloud mode
 //        solrClientService.createAlias("foo", "aliasFoo");
@@ -197,44 +200,20 @@ public class TestSolr_5_5_5_ClientService {
         Assert.assertEquals(0, solrClientService.countCollection("foo"));
         solrClientService.put("foo", record1, false);
         Assert.assertEquals(1, solrClientService.countCollection("foo"));
-//
-//        // copy index foo to bar - should work
-//        Assert.assertEquals(0, elasticsearchClientService.countIndex("bar"));
-//        elasticsearchClientService.copyIndex(TimeValue.timeValueMinutes(2).toString(), "foo", "bar");
-//        elasticsearchClientService.flushBulkProcessor();
-//        Thread.sleep(2000);
-//        elasticsearchClientService.refreshIndex("bar");
-//        Assert.assertEquals(1, elasticsearchClientService.countIndex("bar"));
-//
-//        // Define incompatible mappings for the same doctype in two different indexes, then try to copy - should fail
-//        // as a document registered with doctype=type1 in index foo cannot be written as doctype=type1 in index baz.
-//        //
-//        // Note: MAPPING2 cannot be added to index foo or bar at all, even under a different doctype, as ES (lucene)
-//        // does not allow two types for the same field-name in different mappings of the same index. However if
-//        // MAPPING2 is added to index baz, then the copyIndex succeeds - because by default ES automatically converts
-//        // integers into strings when necessary. Interestingly, this means MAPPING1 and MAPPING2 are not compatible
-//        // at the "put mapping" level, but are compatible at the "reindex" level..
-//        //
-//        // The document (doc1) of type "type1" already in index "foo" cannot be inserted into index "baz" as type1
-//        // because that means applying its source to MAPPING3 - but MAPPING3 is strict and does not define property
-//        // "val", so the insert fails.
-//        elasticsearchClientService.createIndex(2, 1, "baz");
-//        elasticsearchClientService.putMapping("baz", "type1", MAPPING3.replace('\'', '"'));
-//
-//      /*  try {
-//            elasticsearchClientService.copyIndex(TimeValue.timeValueMinutes(2), "foo", "baz");
-//            Assert.fail("Exception not thrown when expected");
-//        } catch(IOException e) {
-//            Assert.assertTrue(e.getMessage().contains("Reindex failed"));
-//        }*/
-//        elasticsearchClientService.refreshIndex("baz");
-//        Assert.assertEquals(0, elasticsearchClientService.countIndex("baz"));
-//
-//        // Drop index foo
-//        elasticsearchClientService.dropIndex("foo");
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex("foo"));
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex("aliasFoo")); // alias for foo disappears too
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex("bar"));
+
+        // copy index foo to baz - should work
+        Assert.assertEquals(false, solrClientService.existsCollection("baz"));
+        solrClientService.createCollection("baz");
+        Assert.assertEquals(true, solrClientService.existsCollection("baz"));
+        Assert.assertEquals(0, solrClientService.countCollection("baz"));
+        solrClientService.copyCollection("0", "foo", "baz");
+        Assert.assertEquals(1, solrClientService.countCollection("baz"));
+
+        // Drop index foo
+        solrClientService.dropCollection("foo");
+        Assert.assertEquals(false, solrClientService.existsCollection("foo"));
+        Assert.assertEquals(false, solrClientService.existsCollection("aliasFoo")); // alias for foo disappears too
+        Assert.assertEquals(true, solrClientService.existsCollection("baz"));
     }
 
     @Test

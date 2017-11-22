@@ -16,6 +16,12 @@
 package com.hurence.logisland.record;
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class FieldDictionary {
 
     public static String RECORD_ERRORS = "record_errors";
@@ -28,4 +34,23 @@ public class FieldDictionary {
     public static String RECORD_RAW_KEY = "record_raw_key";
     public static String RECORD_RAW_VALUE = "record_raw_value";
     public static String PROCESSOR_NAME = "processor_name";
+
+    public static Boolean contains(String fieldName) {
+        return asList().contains(fieldName);
+    }
+
+    public static List<String> asList() {
+        return Arrays.asList(
+            RECORD_ERRORS,
+            RECORD_TYPE,
+            RECORD_ID,
+            RECORD_TIME,
+            RECORD_DAYTIME,
+            RECORD_KEY,
+            RECORD_VALUE,
+            RECORD_RAW_KEY,
+            RECORD_RAW_VALUE,
+            PROCESSOR_NAME
+        );
+    }
 }
