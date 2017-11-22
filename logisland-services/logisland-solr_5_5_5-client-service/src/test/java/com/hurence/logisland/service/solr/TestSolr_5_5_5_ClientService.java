@@ -130,9 +130,9 @@ public class TestSolr_5_5_5_ClientService {
 
     @Test
     public void testBasics() throws Exception {
-        Map<String, Object> document1 = new HashMap<>();
-        document1.put("name", "fred");
-        document1.put("val", 33);
+        Record record1 = new StandardRecord()
+                .setStringField("name", "fred")
+                .setField("val", FieldType.INT, 33)
 
         boolean result;
 
@@ -154,31 +154,49 @@ public class TestSolr_5_5_5_ClientService {
         // Define another index
         solrClientService.createCollection("bar",1, 0);
         Assert.assertEquals(true, solrClientService.existsCollection("bar"));
+
+        List<Map<String, Object>> mapping1 = new ArrayList<>();
+
+        Map<String, Object> nameField = new LinkedHashMap<>();
+        nameField.put("name", "name");
+        nameField.put("type", "string");
+        mapping1.add(nameField);
+
+        Map<String, Object> valField = new LinkedHashMap<>();
+        valField.put("name", "val");
+        valField.put("type", "integer");
+        mapping1.add(valField);
+
+
+        // Add a mapping to foo
+        result = solrClientService.putMapping("foo", mapping1);
+        Assert.assertEquals(true, result);
+
+        // Add the same mapping again
+        result = solrClientService.putMapping("bar", mapping1);
+        Assert.assertEquals(true, result);
+
+        List<Map<String, Object>> mapping2 = new ArrayList<>();
+
+        Map<String, Object> valStringField = new LinkedHashMap<>();
+        valField.put("name", "val");
+        valField.put("type", "string");
+        mapping2.add(valStringField);
+
+
+        // Update a mapping with an incompatible mapping -- should fail
+//        result = solrClientService.putMapping("foo", mapping2);
+//        Assert.assertEquals(false, result);
 //
-//        // Add a mapping to foo
-//        result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-////        Assert.assertEquals(true, result);
-//
-//        // Add the same mapping again
-//        result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-//        //       Assert.assertEquals(true, result);
-//
-//        // Add the same mapping again under a different doctype
-//        result = elasticsearchClientService.putMapping("foo", "type2", MAPPING1.replace('\'', '"'));
-//        //       Assert.assertEquals(true, result);
-//
-//        // Update a mapping with an incompatible mapping -- should fail
-//        //result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
-//        //Assert.assertEquals(false, result);
-//
-//        // create alias
-//        elasticsearchClientService.createAlias("foo", "aliasFoo");
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex("aliasFoo"));
+        // create alias
+        // TODO - Manage Solr Cloud mode
+//        solrClientService.createAlias("foo", "aliasFoo");
+//        Assert.assertEquals(true, solrClientService.existsCollection("aliasFoo"));
 //
 //        // Insert a record into foo and count foo
-//        Assert.assertEquals(0, elasticsearchClientService.countIndex("foo"));
-//        elasticsearchClientService.saveSync("foo", "type1", document1);
-//        Assert.assertEquals(1, elasticsearchClientService.countIndex("foo"));
+        Assert.assertEquals(0, solrClientService.countCollection("foo"));
+        solrClientService.put("foo", record1, false);
+        Assert.assertEquals(1, solrClientService.countCollection("foo"));
 //
 //        // copy index foo to bar - should work
 //        Assert.assertEquals(0, elasticsearchClientService.countIndex("bar"));

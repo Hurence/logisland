@@ -24,19 +24,26 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.CoreAdminResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.client.solrj.response.schema.SchemaResponse;
+import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.logging.Logger;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
@@ -204,6 +211,10 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         return solrClient;
     }
 
+    public void createCollection(String name) throws DatastoreClientServiceException {
+        createCollection(name, 0, 0);
+    }
+
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         try {
@@ -285,17 +296,48 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
+        if (existsCollection(dst)) {
+            throw new DatastoreClientServiceException("Destination collection \""+ dst +"\" already exists");
+        }
+        createCollection(dst);
+
     }
 
 
     @Override
     public void createAlias(String collection, String alias)throws DatastoreClientServiceException {
+        try {
+            CollectionAdminRequest.CreateAlias createAlias = new CollectionAdminRequest.CreateAlias();
+            createAlias.setAliasedCollections(collection);
+            createAlias.setAliasName(alias);
+            createAlias.process(getClient());
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
+    }
 
+    public boolean putMapping(String collectionName, List<Map<String, Object>> mapping)
+            throws DatastoreClientServiceException {
+
+        try {
+            for (Map<String, Object> field: mapping) {
+                SchemaRequest.AddField schemaRequest = new SchemaRequest.AddField(field);
+                schemaRequest.process(getClient(), collectionName);
+            }
+
+            return true;
+        } catch (Exception e) {
+            //throw new DatastoreClientServiceException(e);
+            System.out.println("plop");
+        }
+
+        return false;
     }
 
     @Override
     public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
             throws DatastoreClientServiceException {
+
         return false;
     }
 
@@ -315,7 +357,18 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            SolrInputDocument document = new SolrInputDocument();
+            for (Field field : record.getAllFields()) {
+                document.addField(field.getName(), field.getRawValue());
+            }
 
+            getClient().add(document);
+
+            getClient().commit();
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     /* ********************************************************************
