@@ -22,7 +22,6 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.junit.Assert;
@@ -34,20 +33,20 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-public class TestSolr_5_5_5_SearchClientService {
+public class TestSolr_5_5_5_ClientService {
 
     private static final String MAPPING1 = "{'properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'val':{'type':'integer'}}}";
     private static final String MAPPING2 = "{'properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'val':{'type': 'string', 'index': 'not_analyzed'}}}";
     private static final String MAPPING3 =
             "{'dynamic':'strict','properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'xyz':{'type': 'string', 'index': 'not_analyzed'}}}";
 
-    private static Logger logger = LoggerFactory.getLogger(TestSolr_5_5_5_SearchClientService.class);
+    private static Logger logger = LoggerFactory.getLogger(TestSolr_5_5_5_ClientService.class);
 
     @Rule
     public final SolrRule solrRule = new SolrRule();
 
 
-    private class MockSolrClientService extends Solr_5_5_5_SearchClientService {
+    private class MockSolrClientService extends Solr_5_5_5_ClientService {
 
         @Override
         protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
@@ -114,7 +113,7 @@ public class TestSolr_5_5_5_SearchClientService {
 
     }
 
-    private Solr_5_5_5_SearchClientService configureSolrClientService(final TestRunner runner) throws InitializationException
+    private Solr_5_5_5_ClientService configureSolrClientService(final TestRunner runner) throws InitializationException
     {
         final MockSolrClientService solrClientService = new MockSolrClientService();
 
@@ -125,13 +124,12 @@ public class TestSolr_5_5_5_SearchClientService {
         runner.assertValid(solrClientService);
 
         // TODO : is this necessary ?
-        final Solr_5_5_5_SearchClientService service = runner.getProcessContext().getPropertyValue(TestProcessor.SOLR_CLIENT_SERVICE).asControllerService(Solr_5_5_5_SearchClientService.class);
+        final Solr_5_5_5_ClientService service = runner.getProcessContext().getPropertyValue(TestProcessor.SOLR_CLIENT_SERVICE).asControllerService(Solr_5_5_5_ClientService.class);
         return service;
     }
 
     @Test
     public void testBasics() throws Exception {
-
         Map<String, Object> document1 = new HashMap<>();
         document1.put("name", "fred");
         document1.put("val", 33);
@@ -140,19 +138,22 @@ public class TestSolr_5_5_5_SearchClientService {
 
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
-        final Solr_5_5_5_SearchClientService solrClientService = configureSolrClientService(runner);
+        final Solr_5_5_5_ClientService solrClientService = configureSolrClientService(runner);
+
+        solrClientService.dropCollection("foo");
+        solrClientService.dropCollection("bar");
 
 
         // Verify the index does not exist
-        Assert.assertEquals(false, solrClientService.existsIndex("foo"));
+        Assert.assertEquals(false, solrClientService.existsCollection("foo"));
 
         // Define the index
-        solrClientService.createIndex(2, 1, "foo");
-        Assert.assertEquals(true, solrClientService.existsIndex("foo"));
-//
-//        // Define another index
-//        elasticsearchClientService.createIndex(2, 1, "bar");
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex("foo"));
+        solrClientService.createCollection("foo", 1, 0);
+        Assert.assertEquals(true, solrClientService.existsCollection("foo"));
+
+        // Define another index
+        solrClientService.createCollection("bar",1, 0);
+        Assert.assertEquals(true, solrClientService.existsCollection("bar"));
 //
 //        // Add a mapping to foo
 //        result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));

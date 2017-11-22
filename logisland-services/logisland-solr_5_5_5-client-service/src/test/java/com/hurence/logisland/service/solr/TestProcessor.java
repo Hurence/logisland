@@ -20,7 +20,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,10 +32,10 @@ import java.util.List;
 public class TestProcessor extends AbstractProcessor {
 
     public static final PropertyDescriptor SOLR_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("solr.search-client.service")
+            .name("solr.client.service")
             .description("The instance of the Controller Service to use for accessing Solr.")
             .required(true)
-            .identifiesControllerService(ElasticsearchClientService.class)
+            .identifiesControllerService(DatastoreClientService.class)
             .build();
 
 

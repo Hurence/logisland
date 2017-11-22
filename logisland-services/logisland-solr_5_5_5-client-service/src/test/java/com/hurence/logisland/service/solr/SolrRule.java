@@ -43,11 +43,6 @@ public class SolrRule implements TestRule {
     private EmbeddedSolrServer solrServer;
 
     /**
-     * The internal-transport client that talks to the local node.
-     */
-    private SolrClient client;
-
-    /**
      * Return a closure which starts an embedded ES instance, executes the unit-test, then shuts down the
      * ES instance.
      */
@@ -59,7 +54,8 @@ public class SolrRule implements TestRule {
                 File solrHome = new File("/home/chok/work/hurence/solr/solr-5.5.5/server/solr");
                 File configFile = new File(solrHome, "solr.xml");
                 CoreContainer coreContainer = new CoreContainer(solrHome.toString());
-                solrServer = new EmbeddedSolrServer(coreContainer, null);
+                coreContainer.load();
+                solrServer = new EmbeddedSolrServer(coreContainer, "default");
 
                 try {
                     base.evaluate(); // execute the unit test

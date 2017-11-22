@@ -25,33 +25,22 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
-import org.apache.commons.lang3.StringUtils;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.response.CoreAdminResponse;
 import org.apache.solr.common.params.CoreAdminParams;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
-public class Solr_5_5_5_SearchClientService extends AbstractControllerService implements ElasticsearchClientService {
+public class Solr_5_5_5_ClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
     private volatile List<InetSocketAddress> esHosts;
@@ -215,54 +204,49 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
         return solrClient;
     }
 
+    @Override
+    public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
+        try {
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
 
-    /**
-     * Get the ElasticSearch hosts.
-     *
-     * @param hosts A comma-separated list of ElasticSearch hosts (host:port,host2:port2, etc.)
-     * @return List of InetSocketAddresses for the ES hosts
-     */
-    private List<InetSocketAddress> getEsHosts(String hosts) {
-
-        if (hosts == null) {
-            return null;
+            if (aResponse.getCoreStatus(name).size() < 1)
+            {
+                CoreAdminRequest.Create aCreateRequest = new CoreAdminRequest.Create();
+                aCreateRequest.setCoreName(name);
+                aCreateRequest.setConfigSet("basic_configs");
+                aCreateRequest.process(getClient());
+            }
+        } catch (Exception e) {
+            System.out.println("plop2");
         }
-        final List<String> esList = Arrays.asList(hosts.split(","));
-        List<InetSocketAddress> esHosts = new ArrayList<>();
+    }
 
-        for (String item : esList) {
+    @Override
+    public void dropCollection(String name)throws DatastoreClientServiceException {
+        try {
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
 
-            String[] addresses = item.split(":");
-            final String hostName = addresses[0].trim();
-            final int port = Integer.parseInt(addresses[1].trim());
-
-            esHosts.add(new InetSocketAddress(hostName, port));
+            if (aResponse.getCoreStatus(name).size() > 0)
+            {
+                CoreAdminRequest.Unload unloadRequest = new CoreAdminRequest.Unload(true);
+                unloadRequest.setCoreName(name);
+                unloadRequest.setDeleteDataDir(true);
+                unloadRequest.setDeleteInstanceDir(true);
+                unloadRequest.process(getClient());
+            }
+        } catch (Exception e) {
+            System.out.println("plop2");
         }
-        return esHosts;
-    }
-
-
-    @Override
-    public void flushBulkProcessor() {
-    }
-
-    @Override
-    public void bulkPut(String docIndex, String docType, String document, Optional<String> OptionalId) {
 
     }
 
     @Override
-    public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
-
+    public long countCollection(String name) throws DatastoreClientServiceException {
+        return 0;
     }
 
     @Override
-    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
-        return null;
-    }
-
-    @Override
-    public boolean existsIndex(String indexName) throws IOException {
+    public boolean existsCollection(String name) throws DatastoreClientServiceException {
         try
         {
             // Request core list
@@ -275,9 +259,9 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
             for (int i = 0; i < cores.getCoreStatus().size(); i++) {
                 coreList.add(cores.getCoreStatus().getName(i));
             }
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(indexName, getClient());
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
 
-            return aResponse.getCoreStatus(indexName).size() > 1;
+            return aResponse.getCoreStatus(name).size() > 1;
         } catch (Exception e) {
             System.out.println("plop");
         }
@@ -286,77 +270,75 @@ public class Solr_5_5_5_SearchClientService extends AbstractControllerService im
     }
 
     @Override
-    public void refreshIndex(String indexName) throws Exception {
-
-    }
-
-    @Override
-    public void saveAsync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
-
-    }
-
-    @Override
-    public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
-
-    }
-
-    @Override
-    public long countIndex(String indexName) throws Exception {
-        return 0;
-
-    }
-
-    @Override
-    public void createIndex(int numShards, int numReplicas, String indexName) throws IOException {
+    public void refreshCollection(String name) throws DatastoreClientServiceException {
         try {
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(indexName, getClient());
+            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
 
-            if (aResponse.getCoreStatus(indexName).size() < 1)
+            if (aResponse.getCoreStatus(name).size() > 0)
             {
-                CoreAdminRequest.Create aCreateRequest = new CoreAdminRequest.Create();
-                aCreateRequest.setCoreName(indexName);
-                aCreateRequest.setInstanceDir(indexName);
-                aCreateRequest.process(getClient());
+                CoreAdminRequest.reloadCore(name, getClient());
             }
         } catch (Exception e) {
-
+            System.out.println("plop2");
         }
-
-
-
-
     }
 
     @Override
-    public void dropIndex(String indexName) throws IOException {
-
+    public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
     }
 
-    @Override
-    public void copyIndex(String reindexScrollTimeout, String srcIndex, String dstIndex)
-            throws IOException {
-    }
 
     @Override
-    public void createAlias(String indexName, String aliasName) throws IOException {
+    public void createAlias(String collection, String alias)throws DatastoreClientServiceException {
 
     }
 
     @Override
     public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
-            throws IOException {
+            throws DatastoreClientServiceException {
         return false;
     }
 
+    /* ********************************************************************
+     * Put handling section
+     * ********************************************************************/
+
     @Override
-    public String convertRecordToString(Record record) {
-        return "";
+    public void bulkFlush() throws DatastoreClientServiceException {
 
     }
 
     @Override
-    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue)
-    {
+    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+
+    }
+
+    /* ********************************************************************
+     * Get handling section
+     * ********************************************************************/
+
+    @Override
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
+        return null;
+    }
+
+    @Override
+    public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
+        return null;
+    }
+
+    @Override
+    public Collection<Record> query(String query) {
+        return null;
+    }
+
+    @Override
+    public long queryCount(String query) {
         return 0;
     }
 

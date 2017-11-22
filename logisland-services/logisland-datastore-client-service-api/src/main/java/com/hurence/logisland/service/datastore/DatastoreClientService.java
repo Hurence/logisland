@@ -174,14 +174,4 @@ public interface DatastoreClientService extends ControllerService {
      * Number of Hits of a given search query.
      */
     long queryCount(String query);
-
-
-
-
-
-
-
-
-
-
 }
