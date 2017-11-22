@@ -24,19 +24,39 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.CoreAdminResponse;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.client.solrj.response.schema.SchemaResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CoreAdminParams;
+import org.apache.solr.common.params.CursorMarkParams;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.logging.Logger;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
@@ -204,6 +224,10 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         return solrClient;
     }
 
+    public void createCollection(String name) throws DatastoreClientServiceException {
+        createCollection(name, 0, 0);
+    }
+
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         try {
@@ -242,7 +266,14 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public long countCollection(String name) throws DatastoreClientServiceException {
-        return 0;
+        try {
+            SolrQuery q = new SolrQuery("*:*");
+            q.setRows(0);  // don't actually request any data
+
+            return getClient().query(name, q).getResults().getNumFound();
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
@@ -285,17 +316,77 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setRows(1000);
+        solrQuery.setQuery("*:*");
+        solrQuery.addSort("id", SolrQuery.ORDER.asc);  // Pay attention to this line
+        String cursorMark = CursorMarkParams.CURSOR_MARK_START;
+        boolean done = false;
+        QueryResponse response;
+        try {
+            do {
+                solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+                response = getClient().query(src, solrQuery);
+                List<SolrInputDocument> documents = new ArrayList<>();
+                for (SolrDocument document: response.getResults()) {
+                    // TODO - Use Backup/Restore in Solr 6 ?
+                    SolrInputDocument inputDocument = ClientUtils.toSolrInputDocument(document);
+                    inputDocument.removeField("_version_");
+                    documents.add(inputDocument);
+                }
+
+
+                getClient().add(dst, documents);
+
+            } while (cursorMark.equals(response.getNextCursorMark()));
+
+
+            getClient().commit(dst);
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
 
     @Override
     public void createAlias(String collection, String alias)throws DatastoreClientServiceException {
+        try {
+            CollectionAdminRequest.CreateAlias createAlias = new CollectionAdminRequest.CreateAlias();
+            createAlias.setAliasedCollections(collection);
+            createAlias.setAliasName(alias);
+            createAlias.process(getClient());
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
+    }
 
+    public boolean putMapping(String collectionName, List<Map<String, Object>> mapping)
+            throws DatastoreClientServiceException {
+        Boolean result = true;
+        try {
+            for (Map<String, Object> field: mapping) {
+                SchemaRequest.AddField schemaRequest = new SchemaRequest.AddField(field);
+                SchemaResponse.UpdateResponse response = schemaRequest.process(getClient(), collectionName);
+                result = result && response.getStatus() == 0 && response.getResponse().get("errors") == null;
+
+            }
+
+            getClient().commit(collectionName);
+            refreshCollection(collectionName);
+
+            return result;
+        } catch (Exception e) {
+            //throw new DatastoreClientServiceException(e);
+            System.out.println("plop");
+        }
+
+        return false;
     }
 
     @Override
     public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
             throws DatastoreClientServiceException {
+
         return false;
     }
 
@@ -313,9 +404,33 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     }
 
+    public String getUniqueKey(String collectionName) throws IOException, SolrServerException {
+        SchemaRequest.UniqueKey keyRequest = new SchemaRequest.UniqueKey();
+        SchemaResponse.UniqueKeyResponse keyResponse = keyRequest.process(getClient(), collectionName);
+
+        return keyResponse.getUniqueKey();
+    }
+
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            SolrInputDocument document = new SolrInputDocument();
 
+            document.addField(getUniqueKey(collectionName), record.getId());
+            for (Field field : record.getAllFields()) {
+                if (field.isReserved()) {
+                    continue;
+                }
+
+                document.addField(field.getName(), field.getRawValue());
+            }
+
+            getClient().add(collectionName, document);
+
+            getClient().commit(collectionName);
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     /* ********************************************************************

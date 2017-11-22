@@ -54,6 +54,10 @@ public class Field implements PropertyValue, Serializable {
         this.rawValue = rawValue;
     }
 
+    public Boolean isReserved() {
+        return FieldDictionary.contains(getName());
+    }
+
     @Override
     public String toString() {
 
