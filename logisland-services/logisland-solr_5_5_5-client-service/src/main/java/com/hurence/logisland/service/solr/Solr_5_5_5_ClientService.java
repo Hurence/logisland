@@ -384,13 +384,30 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
      * Put handling section
      * ********************************************************************/
 
+    public void bulkFlush(String collectionName) throws DatastoreClientServiceException {
+        try {
+            getClient().commit(collectionName);
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
     @Override
     public void bulkFlush() throws DatastoreClientServiceException {
-
+        try {
+            getClient().commit();
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+        try {
+            _put(collectionName, record);
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
 
     }
 
@@ -401,26 +418,34 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         return keyResponse.getUniqueKey();
     }
 
+    public void put(String collectionName, Record record) throws DatastoreClientServiceException {
+        put(collectionName, record, false);
+    }
+
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
         try {
-            SolrInputDocument document = new SolrInputDocument();
-
-            document.addField(getUniqueKey(collectionName), record.getId());
-            for (Field field : record.getAllFields()) {
-                if (field.isReserved()) {
-                    continue;
-                }
-
-                document.addField(field.getName(), field.getRawValue());
-            }
-
-            getClient().add(collectionName, document);
+            _put(collectionName, record);
 
             getClient().commit(collectionName);
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
+    }
+
+    protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
+        SolrInputDocument document = new SolrInputDocument();
+
+        document.addField(getUniqueKey(collectionName), record.getId());
+        for (Field field : record.getAllFields()) {
+            if (field.isReserved()) {
+                continue;
+            }
+
+            document.addField(field.getName(), field.getRawValue());
+        }
+
+        getClient().add(collectionName, document);
     }
 
     /* ********************************************************************
@@ -453,6 +478,21 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
         }
 
         return null;
+    }
+
+    public long queryCount(String collectionName, String queryString) {
+        try {
+            SolrQuery query = new SolrQuery();
+            query.setQuery(queryString);
+
+            QueryResponse response = getClient().query(collectionName, query);
+
+            return response.getResults().getNumFound();
+
+        } catch (SolrServerException | IOException e) {
+            logger.error(e.toString());
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override

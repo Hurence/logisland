@@ -24,6 +24,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,53 +56,6 @@ public class TestSolr_5_5_5_ClientService {
             }
             solrClient = solrRule.getClient();
         }
-
-//        @Override
-//        protected void createBulkProcessor(ControllerServiceInitializationContext context)
-//        {
-//            if (bulkProcessor != null) {
-//                return;
-//            }
-//
-//            /**
-//             * create the bulk processor
-//             */
-//            bulkProcessor = BulkProcessor.builder(
-//                    esClient,
-//                    new BulkProcessor.Listener() {
-//                        @Override
-//                        public void beforeBulk(long l, BulkRequest bulkRequest) {
-//                            getLogger().debug("Going to execute bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-//                        }
-//
-//                        @Override
-//                        public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-//                            getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-//                            if (bulkResponse.hasFailures()) {
-//                                getLogger().warn("There was failures while executing bulk [id:{}]," +
-//                                                " done bulk request in {} ms with failure = {}",
-//                                        new Object[]{l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage()});
-//                                for (BulkItemResponse item : bulkResponse.getItems()) {
-//                                    if (item.isFailed()) {
-//                                        errors.put(item.getId(), item.getFailureMessage());
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-//                            getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
-//                        }
-//
-//                    })
-//                    .setBulkActions(1000)
-//                    .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
-//                    .setFlushInterval(TimeValue.timeValueSeconds(1))
-//                    .setConcurrentRequests(2)
-//                    //.setBackoffPolicy(getBackOffPolicy(context))
-//                    .build();
-//        }
 
         @Override
         public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -198,7 +152,7 @@ public class TestSolr_5_5_5_ClientService {
 //
 //        // Insert a record into foo and count foo
         Assert.assertEquals(0, solrClientService.countCollection("foo"));
-        solrClientService.put("foo", record1, false);
+        solrClientService.put("foo", record1);
         Assert.assertEquals(1, solrClientService.countCollection("foo"));
 
         // copy index foo to baz - should work
@@ -218,70 +172,45 @@ public class TestSolr_5_5_5_ClientService {
 
     @Test
     public void testBulkPut() throws InitializationException, IOException, InterruptedException {
-        final String index = "foo";
-        final String type = "type1";
+        final String collection = "foo";
         final String docId = "id1";
-        final String nameKey = "name";
+        final String docId2 = "id2";
+        final String nameKey = "name_s";
         final String nameValue = "fred";
-        final String ageKey = "age";
+        final String ageKey = "age_i";
         final int ageValue = 33;
 
-        Map<String, Object> document1 = new HashMap<>();
-        document1.put(nameKey, nameValue);
-        document1.put(ageKey, ageValue);
+        Record document1 = new StandardRecord();
+        document1.setId(docId);
+        document1.setStringField(nameKey, nameValue);
+        document1.setField(ageKey, FieldType.INT, ageValue);
 
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor :
-//        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
-//
-//        // Verify the index does not exist
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
-//
-//        // Create the index
-//        elasticsearchClientService.createIndex(2, 1, index);
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
-//
-//        // Put a document in the bulk processor :
-//        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
-//        // Flush the bulk processor :
-//        elasticsearchClientService.flushBulkProcessor();
-//        Thread.sleep(2000);
-//        try {
-//            // Refresh the index :
-//            elasticsearchClientService.refreshIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while refreshing the index : " + e.toString());
-//        }
-//
-//        long documentsNumber = 0;
-//
-//        try {
-//            documentsNumber = elasticsearchClientService.countIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//
-//        Assert.assertEquals(1, documentsNumber);
-//
-//        try {
-//            elasticsearchClientService.saveSync(index, type, document1);
-//        } catch (Exception e) {
-//            logger.error("Error while saving the document in the index : " + e.toString());
-//        }
-//
-//        try {
-//            documentsNumber = elasticsearchClientService.countIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//
-//        Assert.assertEquals(2, documentsNumber);
-//
-//        long numberOfHits = elasticsearchClientService.searchNumberOfHits(index, type, nameKey, nameValue);
-//
-//        Assert.assertEquals(2, numberOfHits);
+        final Solr_5_5_5_ClientService solrClientService = configureSolrClientService(runner);
 
+        solrClientService.dropCollection(collection);
+
+        // Verify the index does not exist
+        Assert.assertEquals(false, solrClientService.existsCollection(collection));
+
+        // Create the index
+        solrClientService.createCollection(collection);
+        Assert.assertEquals(true, solrClientService.existsCollection(collection));
+
+        // Put a document in the bulk processor :
+        solrClientService.bulkPut(collection, document1);
+        // Flush the bulk processor :
+        solrClientService.bulkFlush(collection);
+
+        Assert.assertEquals(1, solrClientService.countCollection(collection));
+
+        document1.setId(docId2);
+        solrClientService.put(collection, document1);
+
+        Assert.assertEquals(2, solrClientService.countCollection(collection));
+        Assert.assertEquals(2, solrClientService.queryCount(collection, nameKey+":"+nameValue));
     }
 
 
