@@ -24,9 +24,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -42,6 +40,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.CursorMarkParams;
@@ -454,12 +453,106 @@ public class Solr_5_5_5_ClientService extends AbstractControllerService implemen
 
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
-        return null;
+        try {
+            List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+            Set<String> documentIds = new HashSet<>();
+
+            for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
+            {
+                String index = multiGetQueryRecord.getIndexName();
+                String type = multiGetQueryRecord.getTypeName();
+                String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
+                String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
+//            if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
+//                for (String documentId : documentIds) {
+//                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
+//                    item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
+//                    multiGetRequestBuilder.add(item);
+//                }
+//            } else {
+//                multiGetRequestBuilder.add(index, type, documentIds);
+//            }
+                SolrDocumentList documents = getClient().getById(index, multiGetQueryRecord.getDocumentIds());
+                String uniqueKeyName = getUniqueKey(index);
+                String uniqueKeyValue = null;
+                Map<String,String> retrievedFields = new HashMap<>();
+                for (SolrDocument document: documents) {
+                    for (Map.Entry<String, Object> entry: document.entrySet()) {
+                        String name = entry.getKey();
+                        Object value = entry.getValue();
+                        if (name.startsWith("_")) {
+                            // reserved keyword
+                            continue;
+                        }
+                        if (name.equals(uniqueKeyName)) {
+                            uniqueKeyValue = (String) value;
+                            continue;
+                        }
+                        // TODO - Discover Type
+                        retrievedFields.put(name, value.toString());
+                    }
+
+                    multiGetResponseRecords.add(
+                            new MultiGetResponseRecord(index, "", uniqueKeyValue, retrievedFields)
+                    );
+                }
+            }
+
+
+//        MultiGetResponse multiGetItemResponses = null;
+//        try {
+//            multiGetItemResponses = multiGetRequestBuilder.get();
+//        } catch (ActionRequestValidationException e) {
+//            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
+//        }
+//
+//        if (multiGetItemResponses != null) {
+//            for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
+//                GetResponse response = itemResponse.getResponse();
+//                if (response != null && response.isExists()) {
+//                    Map<String,Object> responseMap = response.getSourceAsMap();
+//                    Map<String,String> retrievedFields = new HashMap<>();
+//                    responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
+//                    multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
+//                }
+//            }
+//        }
+
+            return multiGetResponseRecords;
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
     public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
-        return null;
+        return get(collectionName, record.getId());
+    }
+
+    public Record get(String collectionName, String id) throws DatastoreClientServiceException {
+        try {
+            SolrDocument document = getClient().getById(collectionName, id);
+            Record record = new StandardRecord();
+            String uniqueKey = getUniqueKey(collectionName);
+            for (Map.Entry<String, Object> entry: document.entrySet()) {
+                String name = entry.getKey();
+                Object value = entry.getValue();
+                if (name.startsWith("_")) {
+                    // reserved keyword
+                    continue;
+                }
+                if (name.equals(uniqueKey)) {
+                    record.setId((String) value);
+                    continue;
+                }
+                // TODO - Discover Type
+                record.setField(name, FieldType.STRING, value);
+            }
+
+            return record;
+        } catch (Exception e) {
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
