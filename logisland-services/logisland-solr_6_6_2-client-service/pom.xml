@@ -33,6 +33,12 @@
             <version>0.10.3</version>
         </dependency>
         <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-solr-client-service-test</artifactId>
+            <version>0.10.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <version>${solr.version}</version>
@@ -42,7 +48,6 @@
             <artifactId>solr-solrj</artifactId>
             <version>${solr.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -80,11 +85,21 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
+            <version>${solr.version}</version>
+        </dependency>
 
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <version>2.5</version>
             <scope>test</scope>
         </dependency>
 
@@ -118,7 +133,6 @@
 
                             <artifactSet>
                                 <includes>
-                                    <include>com.hurence.logisland:logisland-solr-plugin</include>
                                     <include>org.apache.lucene:*</include>
                                     <include>com.google.guava:*</include>
                                     <include>com.twitter:*</include>
@@ -127,7 +141,6 @@
                                     <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
                                     <include>org.apache.solr:*</include>
-                                    <!-- TODO - Add solrj ? -->
                                     <include>com.thoughtworks.paranamer:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
@@ -165,11 +178,6 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
-                                    <manifestEntries>
-                                        <Change>GIT commit ID</Change>
-                                        <Build-Date>${maven.build.timestamp}</Build-Date>
-                                    </manifestEntries>
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
@@ -219,8 +227,8 @@
                                     <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
                                 </relocation>
                                <relocation>
-                                    <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
+                                    <pattern>org.apache.solr</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
                                 </relocation> <!-- -->
                             </relocations>
 

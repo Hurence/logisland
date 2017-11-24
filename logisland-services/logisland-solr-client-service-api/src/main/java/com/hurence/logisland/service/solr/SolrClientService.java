@@ -209,7 +209,7 @@ public class SolrClientService extends AbstractControllerService implements Data
 //        return transportClient;
 //    }
 
-    private SolrClient getClient() {
+    protected SolrClient getClient() {
         return solrClient;
     }
 
@@ -237,6 +237,8 @@ public class SolrClientService extends AbstractControllerService implements Data
     @Override
     public void dropCollection(String name)throws DatastoreClientServiceException {
         try {
+            String implementation = CoreAdminRequest.class.getPackage().getImplementationVersion();
+
             CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
 
             if (aResponse.getCoreStatus(name).size() > 0)
@@ -245,7 +247,8 @@ public class SolrClientService extends AbstractControllerService implements Data
                 unloadRequest.setCoreName(name);
                 unloadRequest.setDeleteDataDir(true);
                 unloadRequest.setDeleteInstanceDir(true);
-                unloadRequest.process(getClient());
+                unloadRequest.setDeleteIndex(true);
+                CoreAdminResponse response = unloadRequest.process(getClient());
             }
         } catch (Exception e) {
             System.out.println("plop2");
@@ -357,7 +360,6 @@ public class SolrClientService extends AbstractControllerService implements Data
                 SchemaRequest.AddField schemaRequest = new SchemaRequest.AddField(field);
                 SchemaResponse.UpdateResponse response = schemaRequest.process(getClient(), collectionName);
                 result = result && response.getStatus() == 0 && response.getResponse().get("errors") == null;
-
             }
 
             getClient().commit(collectionName);
