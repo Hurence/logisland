@@ -27,6 +27,7 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -51,6 +52,10 @@ public class TestSolr_5_5_5_ClientService {
 
 
     private class MockSolrClientService extends Solr_5_5_5_ClientService {
+
+        public SolrClient getClient() {
+            return solrClient;
+        }
 
         @Override
         protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
@@ -86,6 +91,15 @@ public class TestSolr_5_5_5_ClientService {
     }
 
     @Test
+    public void testVersion() throws Exception {
+        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+
+        final MockSolrClientService solrClientService = (MockSolrClientService) configureSolrClientService(runner);
+
+        Assert.assertTrue(solrClientService.getClient().getClass().getPackage().getImplementationVersion().contains("5.5.5"));
+    }
+
+    @Test
     public void testBasics() throws Exception {
         Record record1 = new StandardRecord()
                 .setId("record1")
@@ -100,7 +114,6 @@ public class TestSolr_5_5_5_ClientService {
         solrClientService.dropCollection("foo");
         solrClientService.dropCollection("bar");
         solrClientService.dropCollection("baz");
-
 
         // Verify the index does not exist
         Assert.assertEquals(false, solrClientService.existsCollection("foo"));
