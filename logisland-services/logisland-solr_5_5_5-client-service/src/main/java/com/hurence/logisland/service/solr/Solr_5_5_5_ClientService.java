@@ -54,5 +54,4 @@ import java.util.*;
 public class Solr_5_5_5_ClientService extends SolrClientService implements DatastoreClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_5_5_5_ClientService.class);
 
-
 }

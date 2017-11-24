@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.elasticsearch;
+package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
