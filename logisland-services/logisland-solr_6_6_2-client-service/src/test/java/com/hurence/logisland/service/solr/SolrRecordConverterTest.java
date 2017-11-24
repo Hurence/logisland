@@ -16,38 +16,28 @@
  */
 package com.hurence.logisland.service.solr;
 
-public class GeoPoint {
-    double lat, lon;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
+import org.junit.Assert;
+import org.junit.Test;
 
-    public GeoPoint() {
-    }
+public class SolrRecordConverterTest {
 
-    public GeoPoint(double lat, double lon) {
-        this.lat = lat;
-        this.lon = lon;
-    }
+    @Test
+    public void testBasics() throws Exception {
 
-    public double getLat() {
-        return lat;
-    }
+        Record record = new StandardRecord("factory")
+                .setId("Modane")
+                .setStringField("address", "rue du Frejus")
+                .setField("latitude", FieldType.FLOAT, 45.4f)
+                .setField("longitude", FieldType.FLOAT, 41.4f);
 
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
+        //String  convertedRecord = ElasticsearchRecordConverter.convertToString(record);
 
-    public double getLon() {
-        return lon;
-    }
+        //System.out.println(convertedRecord);
 
-    public void setLon(double lon) {
-        this.lon = lon;
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-                "lat=" + lat +
-                ", lon=" + lon +
-                '}';
+        // Verify the index does not exist
+        //Assert.assertEquals(true, convertedRecord.contains("location"));
     }
 }

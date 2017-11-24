@@ -22,8 +22,13 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +53,10 @@ public class TestSolr_5_5_5_ClientService {
 
     private class MockSolrClientService extends Solr_5_5_5_ClientService {
 
+        public SolrClient getClient() {
+            return solrClient;
+        }
+
         @Override
         protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
             if (solrClient != null) {
@@ -55,53 +64,6 @@ public class TestSolr_5_5_5_ClientService {
             }
             solrClient = solrRule.getClient();
         }
-
-//        @Override
-//        protected void createBulkProcessor(ControllerServiceInitializationContext context)
-//        {
-//            if (bulkProcessor != null) {
-//                return;
-//            }
-//
-//            /**
-//             * create the bulk processor
-//             */
-//            bulkProcessor = BulkProcessor.builder(
-//                    esClient,
-//                    new BulkProcessor.Listener() {
-//                        @Override
-//                        public void beforeBulk(long l, BulkRequest bulkRequest) {
-//                            getLogger().debug("Going to execute bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-//                        }
-//
-//                        @Override
-//                        public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-//                            getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-//                            if (bulkResponse.hasFailures()) {
-//                                getLogger().warn("There was failures while executing bulk [id:{}]," +
-//                                                " done bulk request in {} ms with failure = {}",
-//                                        new Object[]{l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage()});
-//                                for (BulkItemResponse item : bulkResponse.getItems()) {
-//                                    if (item.isFailed()) {
-//                                        errors.put(item.getId(), item.getFailureMessage());
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-//                            getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
-//                        }
-//
-//                    })
-//                    .setBulkActions(1000)
-//                    .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
-//                    .setFlushInterval(TimeValue.timeValueSeconds(1))
-//                    .setConcurrentRequests(2)
-//                    //.setBackoffPolicy(getBackOffPolicy(context))
-//                    .build();
-//        }
 
         @Override
         public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -129,6 +91,15 @@ public class TestSolr_5_5_5_ClientService {
     }
 
     @Test
+    public void testVersion() throws Exception {
+        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+
+        final MockSolrClientService solrClientService = (MockSolrClientService) configureSolrClientService(runner);
+
+        Assert.assertTrue(solrClientService.getClient().getClass().getPackage().getImplementationVersion().contains("5.5.5"));
+    }
+
+    @Test
     public void testBasics() throws Exception {
         Record record1 = new StandardRecord()
                 .setId("record1")
@@ -143,7 +114,6 @@ public class TestSolr_5_5_5_ClientService {
         solrClientService.dropCollection("foo");
         solrClientService.dropCollection("bar");
         solrClientService.dropCollection("baz");
-
 
         // Verify the index does not exist
         Assert.assertEquals(false, solrClientService.existsCollection("foo"));
@@ -198,7 +168,7 @@ public class TestSolr_5_5_5_ClientService {
 //
 //        // Insert a record into foo and count foo
         Assert.assertEquals(0, solrClientService.countCollection("foo"));
-        solrClientService.put("foo", record1, false);
+        solrClientService.put("foo", record1);
         Assert.assertEquals(1, solrClientService.countCollection("foo"));
 
         // copy index foo to baz - should work
@@ -218,293 +188,199 @@ public class TestSolr_5_5_5_ClientService {
 
     @Test
     public void testBulkPut() throws InitializationException, IOException, InterruptedException {
-        final String index = "foo";
-        final String type = "type1";
+        final String collection = "foo";
         final String docId = "id1";
-        final String nameKey = "name";
+        final String docId2 = "id2";
+        final String nameKey = "name_s";
         final String nameValue = "fred";
-        final String ageKey = "age";
+        final String ageKey = "age_i";
         final int ageValue = 33;
 
-        Map<String, Object> document1 = new HashMap<>();
-        document1.put(nameKey, nameValue);
-        document1.put(ageKey, ageValue);
+        Record document1 = new StandardRecord();
+        document1.setId(docId);
+        document1.setStringField(nameKey, nameValue);
+        document1.setField(ageKey, FieldType.INT, ageValue);
 
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor :
-//        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
-//
-//        // Verify the index does not exist
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
-//
-//        // Create the index
-//        elasticsearchClientService.createIndex(2, 1, index);
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
-//
-//        // Put a document in the bulk processor :
-//        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
-//        // Flush the bulk processor :
-//        elasticsearchClientService.flushBulkProcessor();
-//        Thread.sleep(2000);
-//        try {
-//            // Refresh the index :
-//            elasticsearchClientService.refreshIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while refreshing the index : " + e.toString());
-//        }
-//
-//        long documentsNumber = 0;
-//
-//        try {
-//            documentsNumber = elasticsearchClientService.countIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//
-//        Assert.assertEquals(1, documentsNumber);
-//
-//        try {
-//            elasticsearchClientService.saveSync(index, type, document1);
-//        } catch (Exception e) {
-//            logger.error("Error while saving the document in the index : " + e.toString());
-//        }
-//
-//        try {
-//            documentsNumber = elasticsearchClientService.countIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//
-//        Assert.assertEquals(2, documentsNumber);
-//
-//        long numberOfHits = elasticsearchClientService.searchNumberOfHits(index, type, nameKey, nameValue);
-//
-//        Assert.assertEquals(2, numberOfHits);
+        final Solr_5_5_5_ClientService solrClientService = configureSolrClientService(runner);
 
+        solrClientService.dropCollection(collection);
+
+        // Verify the index does not exist
+        Assert.assertEquals(false, solrClientService.existsCollection(collection));
+
+        // Create the index
+        solrClientService.createCollection(collection);
+        Assert.assertEquals(true, solrClientService.existsCollection(collection));
+
+        // Put a document in the bulk processor :
+        solrClientService.bulkPut(collection, document1);
+        // Flush the bulk processor :
+        solrClientService.bulkFlush(collection);
+
+        Assert.assertEquals(1, solrClientService.countCollection(collection));
+
+        document1.setId(docId2);
+        solrClientService.put(collection, document1);
+
+        Assert.assertEquals(2, solrClientService.countCollection(collection));
+        Assert.assertEquals(2, solrClientService.queryCount(collection, nameKey+":"+nameValue));
     }
 
-
     @Test
-    public void testBulkPutGeopoint() throws InitializationException, IOException, InterruptedException {
-        final String index = "future_factory";
-        final String type = "factory";
-        final String docId = "modane_factory";
-        Record record = new StandardRecord("factory")
-                .setId(docId)
-                .setStringField("address", "rue du Frejus")
-                .setField("latitude", FieldType.FLOAT, 45.4f)
-                .setField("longitude", FieldType.FLOAT, 45.4f);
-
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
-
-        // create the controller service and link it to the test processor :
-//        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
-//
-//        // Verify the index does not exist
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
-//
-//        // Create the index
-//        elasticsearchClientService.createIndex(2, 1, index);
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
-//
-//        // Put a document in the bulk processor :
-//        String document1 = ElasticsearchRecordConverter.convertToString(record);
-//        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
-//        // Flush the bulk processor :
-//        elasticsearchClientService.flushBulkProcessor();
-//        Thread.sleep(2000);
-//        try {
-//            // Refresh the index :
-//            elasticsearchClientService.refreshIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while refreshing the index : " + e.toString());
-//        }
-//
-//        long documentsNumber = 0;
-//
-//        try {
-//            documentsNumber = elasticsearchClientService.countIndex(index);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//
-//        Assert.assertEquals(1, documentsNumber);
-//
-//        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
-//        ArrayList<String> documentIds = new ArrayList<>();
-//        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
-//
-//
-//        // Make sure a dummy query returns no result :
-//        documentIds.add(docId);
-//        try {
-//            multiGetQueryRecords.add(new MultiGetQueryRecord(index, type,new String[]{"location", "id"},new String[]{}, documentIds));
-//        } catch (InvalidMultiGetQueryRecordException e) {
-//            e.printStackTrace();
-//        }
-//        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-//        Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
-
-    }
-
-
-
-    @Test
-    public void testMultiGet() throws InitializationException, IOException, InterruptedException {
+    public void testMultiGet() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
         final String index1 = "index1";
         final String index2 = "index2";
         final String type1 = "type1";
         final String type2 = "type2";
         final String type3 = "type3";
 
-        Map<String, Object> document1 = new HashMap<>();
+        Record document1 = new StandardRecord();
         final String docId1 = "id1";
-        document1.put("field_beg_1", "field_beg_1_document1_value");
-        document1.put("field_beg_2", "field_beg_2_document1_value");
-        document1.put("field_beg_3", "field_beg_3_document1_value");
-        document1.put("field_fin_1", "field_fin_1_document1_value");
-        document1.put("field_fin_2", "field_fin_2_document1_value");
+        document1.setId(docId1);
+        document1.setStringField("field_beg_1_s", "field_beg_1_document1_value");
+        document1.setStringField("field_beg_2_s", "field_beg_2_document1_value");
+        document1.setStringField("field_beg_3_s", "field_beg_3_document1_value");
+        document1.setStringField("field_fin_1_s", "field_fin_1_document1_value");
+        document1.setStringField("field_fin_2_s", "field_fin_2_document1_value");
 
-        Map<String, Object> document2 = new HashMap<>();
+        Record document2 = new StandardRecord();
         final String docId2 = "id2";
-        document2.put("field_beg_1", "field_beg_1_document2_value");
-        document2.put("field_beg_2", "field_beg_2_document2_value");
-        document2.put("field_beg_3", "field_beg_3_document2_value");
-        document2.put("field_fin_1", "field_fin_1_document2_value");
-        document2.put("field_fin_2", "field_fin_2_document2_value");
+        document2.setId(docId2);
+        document2.setStringField("field_beg_1_s", "field_beg_1_document2_value");
+        document2.setStringField("field_beg_2_s", "field_beg_2_document2_value");
+        document2.setStringField("field_beg_3_s", "field_beg_3_document2_value");
+        document2.setStringField("field_fin_1_s", "field_fin_1_document2_value");
+        document2.setStringField("field_fin_2_s", "field_fin_2_document2_value");
 
-        Map<String, Object> document3 = new HashMap<>();
+        Record document3 = new StandardRecord();
         final String docId3 = "id3";
-        document3.put("field_beg_1", "field_beg_1_document3_value");
-        document3.put("field_beg_2", "field_beg_2_document3_value");
+        document3.setId(docId3);
+        document3.setStringField("field_beg_1_s", "field_beg_1_document3_value");
+        document3.setStringField("field_beg_2_s", "field_beg_2_document3_value");
         // this 3rd field is intentionally removed :
-        // document3.put("field_beg_3", "field_beg_3_document3_value");
-        document3.put("field_fin_1", "field_fin_1_document3_value");
-        document3.put("field_fin_2", "field_fin_2_document3_value");
+        // document3.setStringField("field_beg_3", "field_beg_3_document3_value");
+        document3.setStringField("field_fin_1_s", "field_fin_1_document3_value");
+        document3.setStringField("field_fin_2_s", "field_fin_2_document3_value");
 
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor :
-//        final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
-//
-//        // Verify the indexes do not exist
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index1));
-//        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index2));
-//
-//        // Create the indexes
-//        elasticsearchClientService.createIndex(2, 1, index1);
-//        elasticsearchClientService.createIndex(2, 1, index2);
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index1));
-//        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index2));
-//
-//        // Put documents in the bulk processor :
-//        elasticsearchClientService.bulkPut(index1, type1, document1, Optional.of(docId1));
-//        elasticsearchClientService.bulkPut(index1, type1, document2, Optional.of(docId2));
-//        elasticsearchClientService.bulkPut(index1, type1, document3, Optional.of(docId3));
-//        elasticsearchClientService.bulkPut(index2, type1, document1, Optional.of(docId1));
-//        elasticsearchClientService.bulkPut(index2, type2, document2, Optional.of(docId2));
-//        elasticsearchClientService.bulkPut(index2, type3, document3, Optional.of(docId3));
-//        // Flush the bulk processor :
-//        elasticsearchClientService.flushBulkProcessor();
-//        Thread.sleep(2000);
-//        try {
-//            // Refresh the indexes :
-//            elasticsearchClientService.refreshIndex(index1);
-//            elasticsearchClientService.refreshIndex(index2);
-//        } catch (Exception e) {
-//            logger.error("Error while refreshing the indexes : " + e.toString());
-//        }
-//
-//        long countIndex1 = 0;
-//        long countIndex2 = 0;
-//        try {
-//            countIndex1 = elasticsearchClientService.countIndex(index1);
-//            countIndex2 = elasticsearchClientService.countIndex(index2);
-//        } catch (Exception e) {
-//            logger.error("Error while counting the number of documents in the index : " + e.toString());
-//        }
-//        Assert.assertEquals(3, countIndex1);
-//        Assert.assertEquals(3, countIndex2);
-//
-//        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
-//        ArrayList<String> documentIds = new ArrayList<>();
-//        ArrayList<String> documentIds_2 = new ArrayList<>();
-//        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
-//        String[] fieldsToInclude = {"field_b*", "field*1"};
-//        String[] fieldsToExclude = {"field_*2"};
-//
-//        // Make sure a dummy query returns no result :
-//        documentIds.add(docId1);
-//        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
-//        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-//        Assert.assertEquals(0, multiGetResponseRecords.size()); // number of documents retrieved
-//
-//        multiGetQueryRecords.clear();
-//        documentIds.clear();
-//        multiGetResponseRecords.clear();
-//
-//        // Test : 1 MultiGetQueryRecord record, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
-//        documentIds.add(docId1);
-//        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds));
-//        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-//
-//        Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
-//        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getIndexName());
-//        Assert.assertEquals(type1, multiGetResponseRecords.get(0).getTypeName());
-//        Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
-//        Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
-//        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k,v) -> document1.get(k).equals(v.toString()));
-//
-//        multiGetQueryRecords.clear();
-//        documentIds.clear();
-//        multiGetResponseRecords.clear();
-//
-//        // Test : 1 MultiGetQueryRecord record, with 1 index, 0 type, 3 ids, WITH include, WITH exclude :
-//        documentIds.add(docId1);
-//        documentIds.add(docId2);
-//        documentIds.add(docId3);
-//        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, fieldsToInclude, fieldsToExclude, documentIds));
-//        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-//
-//        Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
-//        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getIndexName())); // verify that all retrieved are in index1
-//        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(type1, responseRecord.getTypeName())); // verify that the type of all retrieved documents is type1
-//        multiGetResponseRecords.forEach(responseRecord -> {
-//                if (responseRecord.getDocumentId() == docId1) {
-//                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
-//                    // verify that the 3 retrieved fields are the correct ones :
-//                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
-//                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
-//                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
-//                    // verify that the values of the 3 retrieved fields are the correct ones :
-//                    Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
-//                    Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
-//                    Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
-//                }
-//                if (responseRecord.getDocumentId() == docId2)
-//                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
-//                if (responseRecord.getDocumentId() == docId3)
-//                    Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
-//            });
-//
-//        multiGetQueryRecords.clear();
-//        documentIds.clear();
-//        multiGetResponseRecords.clear();
-//
-//        // Test : 2 MultiGetQueryRecord records :
-//        //    - 1st : 1 index (index1), 1 type, 2 ids, WITH include, WITH exclude    --> expecting : 2 docs retrieved (from index1), 3 fields each (except doc3 : 2 fields)
-//        //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
-//        documentIds.add(docId1);
-//        documentIds.add(docId2);
-//        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, fieldsToInclude, fieldsToExclude, documentIds));
-//        documentIds_2.add(docId1);
-//        documentIds_2.add(docId1);
-//        documentIds_2.add(docId1);
-//        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
-//        multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
-//
-//        Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
+        final Solr_5_5_5_ClientService solrClientService = configureSolrClientService(runner);
+
+        solrClientService.dropCollection(index1);
+        solrClientService.dropCollection(index2);
+
+        // Verify the indexes do not exist
+        Assert.assertEquals(false, solrClientService.existsCollection(index1));
+        Assert.assertEquals(false, solrClientService.existsCollection(index2));
+
+        // Create the indexes
+        solrClientService.createCollection(index1);
+        solrClientService.createCollection(index2);
+        Assert.assertEquals(true, solrClientService.existsCollection(index1));
+        Assert.assertEquals(true, solrClientService.existsCollection(index2));
+
+        // Put documents in the bulk processor :
+        solrClientService.bulkPut(index1, document1);
+        solrClientService.bulkPut(index1, document2);
+        solrClientService.bulkPut(index1, document3);
+        solrClientService.bulkPut(index2, document1);
+        solrClientService.bulkPut(index2, document2);
+        solrClientService.bulkPut(index2, document3);
+        // Flush the bulk processor :
+        solrClientService.bulkFlush(index1);
+        solrClientService.bulkFlush(index2);
+
+        Assert.assertEquals(3, solrClientService.countCollection(index1));
+        Assert.assertEquals(3, solrClientService.countCollection(index2));
+
+        Assert.assertEquals(true, solrClientService.get(index1, docId1).getId().equals(document1.getId()));
+
+        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+        ArrayList<String> documentIds = new ArrayList<>();
+        ArrayList<String> documentIds_2 = new ArrayList<>();
+        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+        String[] fieldsToInclude = {"field_b*", "field*1"};
+        String[] fieldsToExclude = {"field_*2"};
+
+        // Make sure a dummy query returns no result :
+        documentIds.add(docId1);
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
+
+        try {
+            multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
+            Assert.fail("Should throw an exception for invalid core");
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("No such core"));
+        }
+
+        multiGetQueryRecords.clear();
+        documentIds.clear();
+        multiGetResponseRecords.clear();
+
+        // Test : 1 MultiGetQueryRecord record, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
+        documentIds.add(docId1);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds));
+        multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
+
+        Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
+        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getIndexName());
+        Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
+        Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
+        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k,v) -> document1.getField(k).asString().equals(v.toString()));
+
+        multiGetQueryRecords.clear();
+        documentIds.clear();
+        multiGetResponseRecords.clear();
+
+        // Test : 1 MultiGetQueryRecord record, with 1 index, 0 type, 3 ids, WITH include, WITH exclude :
+        documentIds.add(docId1);
+        documentIds.add(docId2);
+        documentIds.add(docId3);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, fieldsToInclude, fieldsToExclude, documentIds));
+        multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
+
+        Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
+        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getIndexName())); // verify that all retrieved are in index1
+        multiGetResponseRecords.forEach(responseRecord -> {
+                if (responseRecord.getDocumentId() == docId1) {
+                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
+                    // verify that the 3 retrieved fields are the correct ones :
+                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
+                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
+                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
+                    // verify that the values of the 3 retrieved fields are the correct ones :
+                    Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
+                    Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
+                    Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
+                }
+                if (responseRecord.getDocumentId() == docId2)
+                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
+                if (responseRecord.getDocumentId() == docId3)
+                    Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
+            });
+
+        multiGetQueryRecords.clear();
+        documentIds.clear();
+        multiGetResponseRecords.clear();
+
+        // Test : 2 MultiGetQueryRecord records :
+        //    - 1st : 1 index (index1), 1 type, 2 ids, WITH include, WITH exclude    --> expecting : 2 docs retrieved (from index1), 3 fields each (except doc3 : 2 fields)
+        //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
+        documentIds.add(docId1);
+        documentIds.add(docId2);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, fieldsToInclude, fieldsToExclude, documentIds));
+        documentIds_2.add(docId1);
+        documentIds_2.add(docId1);
+        documentIds_2.add(docId1);
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
+        multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
+
+        Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
+        // TODO - Include fields and Exclude fields not supported
 //        multiGetResponseRecords.forEach(responseRecord -> {
 //            if (responseRecord.getIndexName() == index1 && !responseRecord.getDocumentId().equals(docId3))
 //                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for documents from index1 (except doc3), verify that 3 fields has been retrieved
@@ -520,7 +396,7 @@ public class TestSolr_5_5_5_ClientService {
 
     @Test
     public void testMultiGetInvalidRecords() throws InitializationException, IOException, InterruptedException {
-
+//
 //        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
 //
 //        String errorMessage ="";
