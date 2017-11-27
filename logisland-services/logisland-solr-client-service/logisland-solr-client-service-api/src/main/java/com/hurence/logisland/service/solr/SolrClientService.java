@@ -189,7 +189,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         try {
-            if (!existsCollection())
+            if (!existsCollection(name))
             {
                 CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
 
@@ -569,10 +569,4 @@ abstract public class SolrClientService extends AbstractControllerService implem
             throw new DatastoreClientServiceException(e);
         }
     }
-
-    @OnDisabled
-    public void shutdown() {
-
-    }
-
 }
