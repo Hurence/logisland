@@ -133,7 +133,6 @@
                                     <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
                                     <include>org.apache.solr:*</include>
-                                    <!-- TODO - Add solrj ? -->
                                     <include>com.thoughtworks.paranamer:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
@@ -158,24 +157,10 @@
                                         <exclude>build.properties</exclude>
                                     </excludes>
                                 </filter>
-
-                                <!-- Ensure the custom JarHell is excluded -->
-                                <!-- TODO - Remove for Solr ? -->
-                                <filter>
-                                    <artifact>org.apache.solr:solr</artifact>
-                                    <excludes>
-                                        <exclude>org/apache/solr/bootstrap/JarHell.class</exclude>
-                                    </excludes>
-                                </filter>
                             </filters>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
-                                    <manifestEntries>
-                                        <Change>GIT commit ID</Change>
-                                        <Build-Date>${maven.build.timestamp}</Build-Date>
-                                    </manifestEntries>
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>

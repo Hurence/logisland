@@ -165,15 +165,6 @@
                                         <exclude>build.properties</exclude>
                                     </excludes>
                                 </filter>
-
-                                <!-- Ensure the custom JarHell is excluded -->
-                                <!-- TODO - Remove for Solr ? -->
-                                <filter>
-                                    <artifact>org.apache.solr:solr</artifact>
-                                    <excludes>
-                                        <exclude>org/apache/solr/bootstrap/JarHell.class</exclude>
-                                    </excludes>
-                                </filter>
                             </filters>
                             <transformers>
                                 <transformer
@@ -231,13 +222,10 @@
                                     <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
                                 </relocation> <!-- -->
                             </relocations>
-
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
-    
 </project>
