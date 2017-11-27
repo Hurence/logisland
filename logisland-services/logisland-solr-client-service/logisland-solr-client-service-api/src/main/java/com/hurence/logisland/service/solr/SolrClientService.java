@@ -30,6 +30,7 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -59,6 +60,7 @@ import java.util.concurrent.BlockingQueue;
 abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
+    protected Boolean isCloud;
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
     List<SolrUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
@@ -102,6 +104,15 @@ abstract public class SolrClientService extends AbstractControllerService implem
             .defaultValue("500")
             .build();
 
+    public Boolean isCloud(Boolean isCloud) {
+        this.isCloud = isCloud;
+
+        return this.isCloud;
+    }
+
+    public Boolean isCloud() {
+        return isCloud;
+    }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -124,7 +135,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
         synchronized(this) {
             try {
                 createSolrClient(context);
-                //createBulkProcessor(context);
             }catch (Exception e){
                 throw new InitializationException(e);
             }

@@ -57,11 +57,22 @@ abstract public class TestSolrClientService {
         }
 
         @Override
+        protected void createCloudClient(String connectionString, String collection) {
+            solrClient = solrRule.getClient();
+        }
+
+        @Override
+        protected void createHttpClient(String connectionString, String collection) {
+            solrClient = solrRule.getClient();
+        }
+
+        @Override
         protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
             if (solrClient != null) {
                 return;
             }
-            solrClient = solrRule.getClient();
+
+            createHttpClient("none", "default");
         }
 
         @Override
