@@ -35,6 +35,8 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
@@ -76,5 +78,20 @@ public class Solr_6_6_2_ClientService extends SolrClientService implements Datas
         SolrInputDocument document = new SolrInputDocument(fields);
 
         getClient().add(collectionName, document);
+    }
+
+    @Override
+    protected void createCloudClient(String connectionString, String collection) {
+        CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
+        cloudSolrClient.setDefaultCollection(collection);
+        cloudSolrClient.setZkClientTimeout(30000);
+        cloudSolrClient.setZkConnectTimeout(30000);
+
+        solrClient = cloudSolrClient;
+    }
+
+    @Override
+    protected void createHttpClient(String connectionString, String collection) {
+        solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
     }
 }

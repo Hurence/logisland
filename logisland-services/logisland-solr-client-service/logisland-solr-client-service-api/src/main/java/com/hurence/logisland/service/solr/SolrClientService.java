@@ -56,7 +56,7 @@ import java.util.concurrent.BlockingQueue;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
-public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
+abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
@@ -131,6 +131,10 @@ public class SolrClientService extends AbstractControllerService implements Data
         }
     }
 
+    abstract protected void createCloudClient(String connectionString, String collection);
+    abstract protected void createHttpClient(String connectionString, String collection);
+
+
     /**
      * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
      * if one does not yet exist. If called when scheduled, closeClient() should be called by the subclasses' @OnStopped
@@ -152,15 +156,9 @@ public class SolrClientService extends AbstractControllerService implements Data
 
 
             if (isCloud) {
-                //logInfo("creating solrCloudClient on $solrUrl for collection $collection");
-                CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
-                cloudSolrClient.setDefaultCollection(collection);
-                cloudSolrClient.setZkClientTimeout(30000);
-                cloudSolrClient.setZkConnectTimeout(30000);
-                solrClient = cloudSolrClient;
+                createCloudClient(connectionString, collection);
             } else {
-                // logInfo(s"creating HttpSolrClient on $solrUrl for collection $collection")
-                solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
+                createHttpClient(connectionString, collection);
             }
 
 
@@ -191,14 +189,13 @@ public class SolrClientService extends AbstractControllerService implements Data
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
         try {
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
-
-            if (aResponse.getCoreStatus(name).size() < 1)
+            if (!existsCollection())
             {
-                CoreAdminRequest.Create aCreateRequest = new CoreAdminRequest.Create();
-                aCreateRequest.setCoreName(name);
-                aCreateRequest.setConfigSet("basic_configs");
-                aCreateRequest.process(getClient());
+                CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+
+                createRequest.setCoreName(name);
+                createRequest.setConfigSet("basic_configs");
+                createRequest.process(getClient());
             }
         } catch (Exception e) {
             System.out.println("plop2");
@@ -208,11 +205,7 @@ public class SolrClientService extends AbstractControllerService implements Data
     @Override
     public void dropCollection(String name)throws DatastoreClientServiceException {
         try {
-            String implementation = CoreAdminRequest.class.getPackage().getImplementationVersion();
-
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
-
-            if (aResponse.getCoreStatus(name).size() > 0)
+            if (existsCollection(name))
             {
                 CoreAdminRequest.Unload unloadRequest = new CoreAdminRequest.Unload(true);
                 unloadRequest.setCoreName(name);
