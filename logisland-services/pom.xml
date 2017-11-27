@@ -19,9 +19,7 @@
         <module>logisland-elasticsearch_2_3_3-client-service</module>
         <module>logisland-elasticsearch_2_4_0-client-service</module>
         <module>logisland-elasticsearch_5_4_0-client-service</module>
-        <module>logisland-solr-client-service-api</module>
-        <module>logisland-solr_5_5_5-client-service</module>
-        <module>logisland-solr_6_6_2-client-service</module>
+        <module>logisland-solr-client-service</module>
         <module>logisland-cache-service-api</module>
         <module>logisland-cache_key_value-service-api</module>
         <module>logisland-ip-to-geo-service-maxmind</module>
