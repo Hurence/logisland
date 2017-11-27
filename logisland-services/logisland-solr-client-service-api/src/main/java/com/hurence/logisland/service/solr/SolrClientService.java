@@ -29,9 +29,12 @@ import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.validator.StandardValidators;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
@@ -48,6 +51,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
@@ -55,27 +60,60 @@ public class SolrClientService extends AbstractControllerService implements Data
 
     protected volatile SolrClient solrClient;
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
+    List<SolrUpdater> updaters = null;
+    final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
+
+    PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
+            .name("solr.cloud")
+            .description("is slor cloud enabled")
+            .required(true)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
+    PropertyDescriptor SOLR_CONNECTION_STRING = new PropertyDescriptor.Builder()
+            .name("solr.connection.string")
+            .description("zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("localhost:8983/solr")
+            .build();
+
+    PropertyDescriptor SOLR_COLLECTION = new PropertyDescriptor.Builder()
+            .name("solr.collection")
+            .description("name of the collection to use")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    PropertyDescriptor CONCURRENT_REQUESTS = new PropertyDescriptor.Builder()
+            .name("solr.concurrent.requests")
+            .description("setConcurrentRequests")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("2")
+            .build();
+
+    PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
+            .name("flush.interval")
+            .description("flush interval in ms")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("500")
+            .build();
+
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
 
         List<PropertyDescriptor> props = new ArrayList<>();
-//        props.add(BULK_BACK_OFF_POLICY);
-//        props.add(BULK_THROTTLING_DELAY);
-//        props.add(BULK_RETRY_NUMBER);
-//        props.add(BATCH_SIZE);
-//        props.add(BULK_SIZE);
-//        props.add(FLUSH_INTERVAL);
-//        props.add(CONCURRENT_REQUESTS);
-//        props.add(CLUSTER_NAME);
-//        props.add(PING_TIMEOUT);
-//        props.add(SAMPLER_INTERVAL);
-//        props.add(USERNAME);
-//        props.add(PASSWORD);
-//        props.add(PROP_SHIELD_LOCATION);
-//        props.add(HOSTS);
-//        props.add(PROP_SSL_CONTEXT_SERVICE);
-//        props.add(CHARSET);
+        props.add(BATCH_SIZE);
+        props.add(BULK_SIZE);
+        props.add(SOLR_CLOUD);
+        props.add(SOLR_COLLECTION);
+        props.add(SOLR_CONNECTION_STRING);
+        props.add(CONCURRENT_REQUESTS);
+        props.add(FLUSH_INTERVAL);
 
         return Collections.unmodifiableList(props);
     }
@@ -105,109 +143,42 @@ public class SolrClientService extends AbstractControllerService implements Data
         if (solrClient != null) {
             return;
         }
+        try {
 
-//        try {
-//            final String clusterName = context.getPropertyValue(CLUSTER_NAME).asString();
-//            final String pingTimeout = context.getPropertyValue(PING_TIMEOUT).asString();
-//            final String samplerInterval = context.getPropertyValue(SAMPLER_INTERVAL).asString();
-//            final String username = context.getPropertyValue(USERNAME).asString();
-//            final String password = context.getPropertyValue(PASSWORD).asString();
-//
-//          /*  final SSLContextService sslService =
-//                    context.getPropertyValue(PROP_SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
-//*/
-//            Settings.Builder settingsBuilder = Settings.builder()
-//                    .put("cluster.name", clusterName)
-//                    .put("client.transport.ping_timeout", pingTimeout)
-//                    .put("client.transport.nodes_sampler_interval", samplerInterval);
-//
-//            String shieldUrl = context.getPropertyValue(PROP_SHIELD_LOCATION).asString();
-//          /*  if (sslService != null) {
-//                settingsBuilder.setField("shield.transport.ssl", "true")
-//                        .setField("shield.ssl.keystore.path", sslService.getKeyStoreFile())
-//                        .setField("shield.ssl.keystore.password", sslService.getKeyStorePassword())
-//                        .setField("shield.ssl.truststore.path", sslService.getTrustStoreFile())
-//                        .setField("shield.ssl.truststore.password", sslService.getTrustStorePassword());
-//            }*/
-//
-//            // Set username and password for Shield
-//            if (!StringUtils.isEmpty(username)) {
-//                StringBuffer shieldUser = new StringBuffer(username);
-//                if (!StringUtils.isEmpty(password)) {
-//                    shieldUser.append(":");
-//                    shieldUser.append(password);
-//                }
-//                settingsBuilder.put("shield.user", shieldUser);
-//
-//            }
-//
-//            TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);
-//
-//            final String hosts = context.getPropertyValue(HOSTS).asString();
-//            esHosts = getEsHosts(hosts);
-//
-//            if (esHosts != null) {
-//                for (final InetSocketAddress host : esHosts) {
-//                    try {
-//                        transportClient.addTransportAddress(new InetSocketTransportAddress(host));
-//                    } catch (IllegalArgumentException iae) {
-//                        getLogger().error("Could not add transport address {}", new Object[]{host});
-//                    }
-//                }
-//            }
-//            esClient = transportClient;
-//
-//        } catch (Exception e) {
-//            getLogger().error("Failed to create Elasticsearch client due to {}", new Object[]{e}, e);
-//            throw new RuntimeException(e);
-//        }
+            // create a solr client
+            final boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
+            final String connectionString = context.getPropertyValue(SOLR_CONNECTION_STRING).asString();
+            final String collection = context.getPropertyValue(SOLR_COLLECTION).asString();
+
+
+            if (isCloud) {
+                //logInfo("creating solrCloudClient on $solrUrl for collection $collection");
+                CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
+                cloudSolrClient.setDefaultCollection(collection);
+                cloudSolrClient.setZkClientTimeout(30000);
+                cloudSolrClient.setZkConnectTimeout(30000);
+                solrClient = cloudSolrClient;
+            } else {
+                // logInfo(s"creating HttpSolrClient on $solrUrl for collection $collection")
+                solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
+            }
+
+
+            // setup a thread pool of solr updaters
+            int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
+            int numConcurrentRequests = context.getPropertyValue(CONCURRENT_REQUESTS).asInteger();
+            long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
+            updaters = new ArrayList<>(numConcurrentRequests);
+            for (int i = 0; i < numConcurrentRequests; i++) {
+                SolrUpdater updater = new SolrUpdater(solrClient, queue, batchSize, flushInterval);
+                new Thread(updater).start();
+                updaters.add(updater);
+            }
+
+        } catch (Exception ex) {
+            logger.error(ex.toString());
+        }
     }
-
-//    private TransportClient getTransportClient(Settings.Builder settingsBuilder, String shieldUrl,
-//                                               String username, String password)
-//            throws MalformedURLException {
-//
-//        // See if the Elasticsearch Shield JAR location was specified, and add the plugin if so. Also create the
-//        // authorization token if username and password are supplied.
-//        final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-//        if (!StringUtils.isBlank(shieldUrl)) {
-//            ClassLoader shieldClassLoader =
-//                    new URLClassLoader(new URL[]{new File(shieldUrl).toURI().toURL()}, this.getClass().getClassLoader());
-//            Thread.currentThread().setContextClassLoader(shieldClassLoader);
-//
-//            try {
-//                //Class shieldPluginClass = Class.forName("org.elasticsearch.shield.ShieldPlugin", true, shieldClassLoader);
-//                //builder = builder.addPlugin(shieldPluginClass);
-//
-//                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
-//
-//                    // Need a couple of classes from the Shield plugin to build the token
-//                    Class usernamePasswordTokenClass =
-//                            Class.forName("org.elasticsearch.shield.authc.support.UsernamePasswordToken", true, shieldClassLoader);
-//
-//                    Class securedStringClass =
-//                            Class.forName("org.elasticsearch.shield.authc.support.SecuredString", true, shieldClassLoader);
-//
-//                    Constructor<?> securedStringCtor = securedStringClass.getConstructor(char[].class);
-//                    Object securePasswordString = securedStringCtor.newInstance(password.toCharArray());
-//
-//                    Method basicAuthHeaderValue = usernamePasswordTokenClass.getMethod("basicAuthHeaderValue", String.class, securedStringClass);
-//                    authToken = (String) basicAuthHeaderValue.invoke(null, username, securePasswordString);
-//                }
-//            } catch (ClassNotFoundException
-//                    | NoSuchMethodException
-//                    | InstantiationException
-//                    | IllegalAccessException
-//                    | InvocationTargetException shieldLoadException) {
-//                getLogger().debug("Did not detect Elasticsearch Shield plugin, secure connections and/or authorization will not be available");
-//            }
-//        } else {
-//            //logger.debug("No Shield plugin location specified, secure connections and/or authorization will not be available");
-//        }
-//        TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
-//        Thread.currentThread().setContextClassLoader(originalClassLoader);
-//        return transportClient;
-//    }
 
     protected SolrClient getClient() {
         return solrClient;
