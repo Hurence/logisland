@@ -30,12 +30,9 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
@@ -190,6 +187,9 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
     protected SolrClient getClient() {
         return solrClient;
+    }
+    protected void setClient(SolrClient client) {
+        solrClient = client;
     }
 
     public void createCollection(String name) throws DatastoreClientServiceException {
@@ -353,10 +353,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
         return false;
     }
-
-    /* ********************************************************************
-     * Put handling section
-     * ********************************************************************/
 
     public void bulkFlush(String collectionName) throws DatastoreClientServiceException {
         try {

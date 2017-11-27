@@ -110,7 +110,7 @@
 
                             <artifactSet>
                                 <includes>
-                                    <include>com.hurence.logisland:logisland-solr-plugin</include>
+                                    <include>com.hurence.logisland:logisland-datastore-client-service-api</include>
                                     <include>org.apache.lucene:*</include>
                                     <include>com.google.guava:*</include>
                                     <include>com.twitter:*</include>

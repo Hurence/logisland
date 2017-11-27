@@ -39,6 +39,25 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-datastore-client-service-api</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.esotericsoftware.kryo</groupId>
+                    <artifactId>kryo</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <version>${solr.version}</version>
@@ -62,25 +81,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-datastore-client-service-api</artifactId>
-            <version>0.10.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-utils</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.esotericsoftware.kryo</groupId>
-                    <artifactId>kryo</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -124,15 +124,16 @@
 
                             <artifactSet>
                                 <includes>
-                                    <include>com.hurence.logisland:logisland-solr-plugin</include>
+                                    <include>com.hurence.logisland:logisland-solr-client-service-api</include>
+                                    <include>com.hurence.logisland:logisland-solr-client-service-test</include>
                                     <include>org.apache.lucene:*</include>
+                                    <include>org.apache.solr:*</include>
                                     <include>com.google.guava:*</include>
                                     <include>com.twitter:*</include>
                                     <include>com.tdunning:*</include>
                                     <include>com.spatial4j:*</include>
                                     <include>com.carrotsearch:*</include>
                                     <include>org.hdrhistogram:HdrHistogram</include>
-                                    <include>org.apache.solr:*</include>
                                     <include>com.thoughtworks.paranamer:*</include>
                                     <include>com.fasterxml.jackson.core:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
@@ -210,17 +211,14 @@
                                     <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
                                 </relocation>
                                <relocation>
-                                    <pattern>org.elasticsearch</pattern>
-                                    <shadedPattern>${shaded.package}.org.elasticsearch</shadedPattern>
-                                </relocation> <!-- -->
+                                    <pattern>org.apache.solr</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
+                                </relocation>
                             </relocations>
-
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
-    
 </project>
