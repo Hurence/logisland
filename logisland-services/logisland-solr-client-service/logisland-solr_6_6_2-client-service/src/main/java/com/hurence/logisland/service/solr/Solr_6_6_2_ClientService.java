@@ -57,7 +57,7 @@ import java.util.*;
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
-public class Solr_6_6_2_ClientService extends SolrClientService implements DatastoreClientService {
+public class Solr_6_6_2_ClientService extends SolrClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
     protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
         Map<String,SolrInputField> fields = new HashMap<>();

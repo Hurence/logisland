@@ -28,6 +28,7 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +50,6 @@ abstract public class TestSolrClientService {
     @Rule
     public final SolrRule solrRule = new SolrRule();
 
-
     private class MockSolrClientService extends SolrClientService {
 
         public SolrClient getClient() {
@@ -68,11 +68,7 @@ abstract public class TestSolrClientService {
 
         @Override
         protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
-            if (solrClient != null) {
-                return;
-            }
-
-            createHttpClient("none", "default");
+            setClient(solrRule.getClient());
         }
 
         @Override
@@ -82,7 +78,6 @@ abstract public class TestSolrClientService {
 
             return Collections.unmodifiableList(props);
         }
-
     }
 
     private SolrClientService configureSolrClientService(final TestRunner runner) throws InitializationException
@@ -117,7 +112,7 @@ abstract public class TestSolrClientService {
     public void testBasics() throws Exception {
         Record record1 = new StandardRecord()
                 .setId("record1")
-                .setStringField("name", "fred");
+                .setStringField("name_s", "fred");
 
         boolean result;
 
