@@ -117,7 +117,7 @@ abstract public class TestSolrClientService {
     public void testBasics() throws Exception {
         Record record1 = new StandardRecord()
                 .setId("record1")
-                .setStringField("name_s", "fred");
+                .setStringField("name", "fred");
 
         boolean result;
 

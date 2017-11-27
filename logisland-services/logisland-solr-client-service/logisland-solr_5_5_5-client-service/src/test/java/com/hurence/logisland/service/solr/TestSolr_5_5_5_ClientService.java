@@ -15,8 +15,16 @@
  */
 package com.hurence.logisland.service.solr;
 
+import org.junit.Test;
+
 public class TestSolr_5_5_5_ClientService extends TestSolrClientService {
     public String getVersion() {
         return "5.5.5";
+    }
+
+    @Test
+    @Override
+    public void testBasics() throws Exception {
+        super.testBasics();
     }
 }

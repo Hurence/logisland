@@ -208,7 +208,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 createRequest.process(getClient());
             }
         } catch (Exception e) {
-            System.out.println("plop2");
+            throw new DatastoreClientServiceException(e);
         }
     }
 
@@ -225,7 +225,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 CoreAdminResponse response = unloadRequest.process(getClient());
             }
         } catch (Exception e) {
-            System.out.println("plop2");
+            throw new DatastoreClientServiceException(e);
         }
 
     }
@@ -260,7 +260,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
             return aResponse.getCoreStatus(name).size() > 1;
         } catch (Exception e) {
-            System.out.println("plop");
+            logger.error(e.getMessage());
         }
 
         return false;
@@ -276,7 +276,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 CoreAdminRequest.reloadCore(name, getClient());
             }
         } catch (Exception e) {
-            System.out.println("plop2");
+            throw new DatastoreClientServiceException(e);
         }
     }
 
@@ -341,8 +341,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
             return result;
         } catch (Exception e) {
-            //throw new DatastoreClientServiceException(e);
-            System.out.println("plop");
+            logger.error(e.getMessage());
         }
 
         return false;
