@@ -20,21 +20,21 @@ import java.util.Map;
 
 public class MultiGetResponseRecord {
 
-    private final String indexName;
+    private final String collectionName;
     private final String typeName;
     private final String documentId;
     private final Map<String, String> retrievedfields;
 
 
-    public MultiGetResponseRecord(final String indexName, final String typeName, final String documentId, final Map<String, String> retrievedfields) {
-        this.indexName = indexName;
+    public MultiGetResponseRecord(final String collectionName, final String typeName, final String documentId, final Map<String, String> retrievedfields) {
+        this.collectionName = collectionName;
         this.typeName = typeName;
         this.documentId = documentId;
         this.retrievedfields = retrievedfields;
     }
 
-    public String getIndexName() {
-        return indexName;
+    public String getCollectionName() {
+        return collectionName;
     }
 
     public String getTypeName() {
@@ -52,7 +52,7 @@ public class MultiGetResponseRecord {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(indexName)
+        sb.append(collectionName)
                 .append(' ')
                 .append(typeName)
                 .append(' ')
