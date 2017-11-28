@@ -3,6 +3,13 @@ What's new in logisland ?
 
 
 
+v0.11.0
+-------
+
+- add support for SOLR
+- add support for Chronix timeseries
+- review Datastore API
+
 v0.10.0
 -------
 

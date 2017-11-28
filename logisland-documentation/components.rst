@@ -116,6 +116,37 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.datastore.BulkPut: 
+
+BulkPut
+-------
+Indexes the content of a Record in a Datastore using bulk processor
+
+Class
+_____
+com.hurence.logisland.processor.datastore.BulkPut
+
+Tags
+____
+datastore, record, put, bulk
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**default.collection**", "The name of the collection/index/table to insert into", "", "null", "", "**true**"
+   "**timebased.collection**", "do we add a date suffix", "No date (no date added to default index), Today's date (today's date added to default index), yesterday's date (yesterday's date added to default index)", "no", "", ""
+   "date.format", "simple date format for date suffix. default : yyyy.MM.dd", "", "yyyy.MM.dd", "", ""
+   "collection.field", "the name of the event field containing es index name => will override index value if set", "", "null", "", "**true**"
+
+----------
+
 .. _com.hurence.logisland.processor.consolidateSession.ConsolidateSession: 
 
 ConsolidateSession
@@ -663,6 +694,52 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hash.algorithm**", "the algorithme to use to hash id string (e.g. 'SHA-256'", "SHA-384, SHA-224, SHA-256, MD2, SHA, SHA-512, MD5", "SHA-256", "", ""
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "", ""
    "**language.tag**", "the language to use to format numbers in string", "aa, ab, ae, af, ak, am, an, ar, as, av, ay, az, ba, be, bg, bh, bi, bm, bn, bo, br, bs, ca, ce, ch, co, cr, cs, cu, cv, cy, da, de, dv, dz, ee, el, en, eo, es, et, eu, fa, ff, fi, fj, fo, fr, fy, ga, gd, gl, gn, gu, gv, ha, he, hi, ho, hr, ht, hu, hy, hz, ia, id, ie, ig, ii, ik, in, io, is, it, iu, iw, ja, ji, jv, ka, kg, ki, kj, kk, kl, km, kn, ko, kr, ks, ku, kv, kw, ky, la, lb, lg, li, ln, lo, lt, lu, lv, mg, mh, mi, mk, ml, mn, mo, mr, ms, mt, my, na, nb, nd, ne, ng, nl, nn, no, nr, nv, ny, oc, oj, om, or, os, pa, pi, pl, ps, pt, qu, rm, rn, ro, ru, rw, sa, sc, sd, se, sg, si, sk, sl, sm, sn, so, sq, sr, ss, st, su, sv, sw, ta, te, tg, th, ti, tk, tl, tn, to, tr, ts, tt, tw, ty, ug, uk, ur, uz, ve, vi, vo, wa, wo, xh, yi, yo, za, zh, zu", "en", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.datastore.MultiGet: 
+
+MultiGet
+--------
+Retrieves a content from datastore using datastore multiget queries.
+Each incoming record contains information regarding the datastore multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+- collection (String) : name of the datastore collection on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- type (String) : name of the datastore type on which the multiget query will be performed. This field is not mandatory.
+- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one datastore retrieved document. This data is stored in these fields :
+- collection (same field name as the incoming record) : name of the datastore collection.
+- type (same field name as the incoming record) : name of the datastore type.
+- id (same field name as the incoming record) : retrieved document id.
+- a list of String fields containing :
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Class
+_____
+com.hurence.logisland.processor.datastore.MultiGet
+
+Tags
+____
+datastore, get, multiget
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**collection.field**", "the name of the incoming records field containing es collection name to use in multiget query. ", "", "null", "", ""
+   "**type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "", ""
+   "**ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "", ""
+   "**includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "", ""
+   "**excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "", ""
 
 ----------
 

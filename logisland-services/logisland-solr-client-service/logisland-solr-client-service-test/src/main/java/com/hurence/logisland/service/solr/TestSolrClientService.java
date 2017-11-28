@@ -28,7 +28,6 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -336,7 +335,7 @@ abstract public class TestSolrClientService {
         multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
-        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getIndexName());
+        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getCollectionName());
         Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
         Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
         multiGetResponseRecords.get(0).getRetrievedFields().forEach((k,v) -> document1.getField(k).asString().equals(v.toString()));
@@ -353,7 +352,7 @@ abstract public class TestSolrClientService {
         multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
-        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getIndexName())); // verify that all retrieved are in index1
+        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getCollectionName())); // verify that all retrieved are in index1
         multiGetResponseRecords.forEach(responseRecord -> {
                 if (responseRecord.getDocumentId() == docId1) {
                     Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved

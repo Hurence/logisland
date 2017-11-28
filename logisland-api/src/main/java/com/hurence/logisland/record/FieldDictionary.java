@@ -33,6 +33,7 @@ public class FieldDictionary {
     public static String RECORD_VALUE = "record_value";
     public static String RECORD_RAW_KEY = "record_raw_key";
     public static String RECORD_RAW_VALUE = "record_raw_value";
+    public static String RECORD_NAME = "record_name";
     public static String PROCESSOR_NAME = "processor_name";
 
     public static Boolean contains(String fieldName) {

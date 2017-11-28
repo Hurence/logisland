@@ -17,7 +17,6 @@ package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
