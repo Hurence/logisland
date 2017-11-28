@@ -89,16 +89,13 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
         try {
-            // Custom validator insures only one of both modes is set
 
-            PropertyValue propertyValue = context.getPropertyValue(MAXMIND_DATABASE_FILE_URI);
-            if (propertyValue != null) {
-                dbUri = propertyValue.asString();
+            if (context.getPropertyValue(MAXMIND_DATABASE_FILE_URI).isSet()) {
+                dbUri = context.getPropertyValue(MAXMIND_DATABASE_FILE_URI).asString();
             }
 
-            propertyValue = context.getPropertyValue(MAXMIND_DATABASE_FILE_PATH);
-            if (propertyValue != null) {
-                dbPath = propertyValue.asString();
+            if (context.getPropertyValue(MAXMIND_DATABASE_FILE_PATH).isSet()) {
+                dbPath = context.getPropertyValue(MAXMIND_DATABASE_FILE_PATH).asString();
             }
 
             if ( (dbUri == null) && (dbPath == null) ) {
@@ -116,14 +113,12 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
                 initFromPath(dbPath);
             }
 
-            propertyValue = context.getPropertyValue(LOCALE);
-            if (propertyValue != null) {
-                locale = propertyValue.asString();
+            if (context.getPropertyValue(LOCALE).isSet()) {
+                locale = context.getPropertyValue(LOCALE).asString();
             }
 
-            propertyValue = context.getPropertyValue(LOOKUP_TIME);
-            if (propertyValue != null) {
-                lookupTime = propertyValue.asBoolean();
+            if (context.getPropertyValue(LOOKUP_TIME).isSet()) {
+                lookupTime = context.getPropertyValue(LOOKUP_TIME).asBoolean();
             }
         } catch (Exception e){
             getLogger().error("Could not load maxmind database file: {}", new Object[]{e.getMessage()});

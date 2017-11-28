@@ -369,6 +369,10 @@ public class StandardProcessorTestRunner implements TestRunner {
 
         final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
         initContext.addControllerServices(context);
+
+        for(PropertyDescriptor prop :  context.getProperties().keySet()) {
+            initContext.setProperty(prop.getName(), context.getPropertyValue(prop.getName()).asString());
+        }
         service.initialize(initContext);
 
         final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
@@ -410,6 +414,8 @@ public class StandardProcessorTestRunner implements TestRunner {
     public void assertValid(final ControllerService service) {
 
         final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
+
+
         final Collection<ValidationResult> results = context.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
