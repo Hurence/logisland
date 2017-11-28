@@ -26,7 +26,6 @@ import com.hurence.logisland.util.runner.TestRunners;
 import de.qaware.chronix.converter.MetricTimeSeriesConverter;
 import de.qaware.chronix.solr.client.ChronixSolrStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
