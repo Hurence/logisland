@@ -317,6 +317,47 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.datastore.EnrichRecords: 
+
+EnrichRecords
+-------------
+Enrich input records with content indexed in datastore using multiget queries.
+Each incoming record must be possibly enriched with information stored in datastore. 
+The plugin properties are :
+- es.index (String)            : Name of the datastore index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
+- es.key (String)              : Name of the datastore key on which the multiget query will be performed. This field is mandatory.
+- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document.
+
+Class
+_____
+com.hurence.logisland.processor.datastore.EnrichRecords
+
+Tags
+____
+datastore, enricher
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
+   "**collection.field**", "The name of the field containing the collection to use in multiget query. ", "", "null", "", "**true**"
+   "type.field", "The name of the ES type to use in multiget query.", "", "default", "", "**true**"
+   "includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
+   "excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
 
 EnrichRecordsElasticsearch

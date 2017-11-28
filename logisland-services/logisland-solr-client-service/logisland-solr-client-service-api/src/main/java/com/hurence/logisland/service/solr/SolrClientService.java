@@ -295,9 +295,9 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 List<SolrInputDocument> documents = new ArrayList<>();
                 for (SolrDocument document: response.getResults()) {
                     // TODO - Use Backup/Restore in Solr 6 ?
-                    SolrInputDocument inputDocument = ClientUtils.toSolrInputDocument(document);
-                    inputDocument.removeField("_version_");
-                    documents.add(inputDocument);
+//                    SolrInputDocument inputDocument = ClientUtils.toSolrInputDocument(document);
+//                    inputDocument.removeField("_version_");
+//                    documents.add(inputDocument);
                 }
 
 
