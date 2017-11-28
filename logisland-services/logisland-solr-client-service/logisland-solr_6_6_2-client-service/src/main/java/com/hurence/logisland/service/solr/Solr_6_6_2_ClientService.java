@@ -19,11 +19,17 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
+import org.apache.solr.common.params.CursorMarkParams;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -35,21 +41,17 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
     protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
         Map<String,SolrInputField> fields = new HashMap<>();
+        SolrInputDocument document = new SolrInputDocument(fields);
 
-        SolrInputField solrField = new SolrInputField(getUniqueKey(collectionName));
-        solrField.setValue((Object) record.getId(), 0);
-        fields.put(getUniqueKey(collectionName), solrField);
+        document.addField(getUniqueKey(collectionName), record.getId());
+
         for (Field field : record.getAllFields()) {
             if (field.isReserved()) {
                 continue;
             }
 
-            solrField = new SolrInputField(field.getName());
-            solrField.setValue((Object) field.getRawValue(), 1.0f);
-            fields.put(field.getName(), solrField);
+            document.addField(field.getName(), field.getRawValue());
         }
-
-        SolrInputDocument document = new SolrInputDocument(fields);
 
         getClient().add(collectionName, document);
     }
@@ -67,5 +69,10 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
     @Override
     protected void createHttpClient(String connectionString, String collection) {
         solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
+    }
+
+    @Override
+    protected SolrInputDocument toSolrInputDocument(SolrDocument document) {
+        return Solr_6_6_2_RecordConverter.toSolrInputDocument(document);
     }
 }

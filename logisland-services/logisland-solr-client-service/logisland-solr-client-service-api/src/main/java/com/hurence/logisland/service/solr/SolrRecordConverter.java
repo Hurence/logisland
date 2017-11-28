@@ -17,6 +17,9 @@ package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
@@ -29,6 +32,10 @@ import java.util.TimeZone;
 class SolrRecordConverter {
 
     private static Logger logger = LoggerFactory.getLogger(SolrRecordConverter.class);
+
+    static SolrInputDocument toSolrInputDocument(SolrDocument document) {
+        return ClientUtils.toSolrInputDocument(document);
+    }
 
     /**
      * Converts an Event into an Elasticsearch document
