@@ -31,7 +31,7 @@ public class PropertyValueFactory {
             final String rawValue,
             final ControllerServiceLookup controllerServiceLookup,
             final VariableRegistry variableRegistry) {
-        if (descriptor.isExpressionLanguageSupported() && InterpreterEngine.isExpressionLanguage(rawValue)) {
+        if (descriptor != null && descriptor.isExpressionLanguageSupported() && InterpreterEngine.isExpressionLanguage(rawValue)) {
             InterpreterEngine ie = InterpreterEngineFactory.get();
 
             return new InterpretedPropertyValue(descriptor, rawValue, controllerServiceLookup, variableRegistry);
