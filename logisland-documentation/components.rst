@@ -350,11 +350,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
-   "**record.key**", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
-   "**collection.field**", "The name of the field containing the collection to use in multiget query. ", "", "null", "", "**true**"
-   "type.field", "The name of the ES type to use in multiget query.", "", "default", "", "**true**"
+   "record.key", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
    "includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
    "excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
+   "type.name", "The typle of record to look for", "", "null", "", "**true**"
+   "**collection.name**", "The name of the collection to look for", "", "null", "", "**true**"
 
 ----------
 

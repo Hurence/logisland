@@ -371,36 +371,36 @@ abstract public class TestSolrClientService {
 
     @Test
     public void testMultiGetInvalidRecords() throws InitializationException, IOException, InterruptedException {
-//
-//        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
-//
-//        String errorMessage ="";
-//
-//        // Validate null index behaviour :
-//        try {
-//            multiGetQueryRecords.add(new MultiGetQueryRecord(null, null, null, null, null));
-//        }  catch (InvalidMultiGetQueryRecordException e) {
-//            errorMessage = e.getMessage();
-//        }
-//        Assert.assertEquals(errorMessage,"The index name cannot be null");
-//
-//        // Validate empty index behaviour :
-//        try {
-//            multiGetQueryRecords.add(new MultiGetQueryRecord("", null, null, null, null));
-//        }  catch (InvalidMultiGetQueryRecordException e) {
-//            errorMessage = e.getMessage();
-//        }
-//        Assert.assertEquals(errorMessage,"The index name cannot be empty");
-//
-//        // Validate null documentIds behaviour :
-//        try {
-//            multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", null, null, null, null));
-//        }  catch (InvalidMultiGetQueryRecordException e) {
-//            errorMessage = e.getMessage();
-//        }
-//        Assert.assertEquals(errorMessage,"The list of document ids cannot be null");
-//
-//        // Make sure no invalid MultiGetQueryRecord has been added to multiGetQueryRecords list :
-//        Assert.assertEquals(0, multiGetQueryRecords.size());
+
+        List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
+
+        String errorMessage ="";
+
+        // Validate null index behaviour :
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord(null, null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals(errorMessage,"The index name cannot be null");
+
+        // Validate empty index behaviour :
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord("", null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals(errorMessage,"The index name cannot be empty");
+
+        // Validate null documentIds behaviour :
+        try {
+            multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", null, null, null, null));
+        }  catch (InvalidMultiGetQueryRecordException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals(errorMessage,"The list of document ids cannot be null");
+
+        // Make sure no invalid MultiGetQueryRecord has been added to multiGetQueryRecords list :
+        Assert.assertEquals(0, multiGetQueryRecords.size());
     }
 }
