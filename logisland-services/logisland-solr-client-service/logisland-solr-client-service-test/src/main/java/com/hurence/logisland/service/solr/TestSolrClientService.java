@@ -109,9 +109,6 @@ abstract public class TestSolrClientService {
         Map<String, Object> nameField = new LinkedHashMap<>();
         nameField.put("name", "name");
         nameField.put("type", "string");
-        nameField.put("stored", true);
-        nameField.put("indexed", true);
-        nameField.put("omitNorms", false);
         mapping1.add(nameField);
 
         Map<String, Object> valField = new LinkedHashMap<>();
@@ -124,7 +121,6 @@ abstract public class TestSolrClientService {
         // Add a mapping to foo
         solrClientService.removeMapping("foo", mapping1);
         result = solrClientService.putMapping("foo", mapping1);
-
         Assert.assertEquals(true, result);
 
         // Add the same mapping again
@@ -140,16 +136,12 @@ abstract public class TestSolrClientService {
         mapping2.add(valStringField);
 
 
-        // Update a mapping with an incompatible mapping -- should fail
- //       result = solrClientService.putMapping("foo", mapping2);
-//        Assert.assertEquals(false, result);
+        // create alias - Test are not run in cloud mode !
+        // solrClientService.createAlias("foo", "aliasFoo");
+        // No way to know if exists in solr 5.5.5
+        //Assert.assertEquals(true, solrClientService.existsCollection("aliasFoo"));
 
-        // create alias
-        // TODO - Manage Solr Cloud mode
-//        solrClientService.createAlias("foo", "aliasFoo");
-//        Assert.assertEquals(true, solrClientService.existsCollection("aliasFoo"));
-//
-//        // Insert a record into foo and count foo
+        // Insert a record into foo and count foo
         Assert.assertEquals(0, solrClientService.countCollection("foo"));
         solrClientService.put("foo", record1);
         Assert.assertEquals(1, solrClientService.countCollection("foo"));

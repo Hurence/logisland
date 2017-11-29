@@ -24,6 +24,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.CollectionAdminRequest;
+import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
@@ -39,6 +41,22 @@ import java.util.*;
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
 public class Solr_6_6_2_ClientService extends SolrClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
+
+    protected boolean existsCloudAliasCollection(String name) throws IOException, SolrServerException {
+        CollectionAdminRequest.ListAliases listAliasesRequest = new CollectionAdminRequest.ListAliases();
+        CollectionAdminResponse response = listAliasesRequest.process(getClient(), name);
+        if (response.getErrorMessages() != null) {
+            throw new DatastoreClientServiceException("Unable to fetch collection list");
+        }
+
+        return ((ArrayList) response.getResponse().get("aliases")).contains(name);
+    }
+
+    @Override
+    protected boolean existsCloudCollection(String name) throws  IOException, SolrServerException {
+        return super.existsCloudCollection(name) && existsCloudAliasCollection(name);
+    }
+
     protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
         Map<String,SolrInputField> fields = new HashMap<>();
         SolrInputDocument document = new SolrInputDocument(fields);

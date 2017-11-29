@@ -19,6 +19,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.junit.Test;
 
 import java.util.ArrayList;
