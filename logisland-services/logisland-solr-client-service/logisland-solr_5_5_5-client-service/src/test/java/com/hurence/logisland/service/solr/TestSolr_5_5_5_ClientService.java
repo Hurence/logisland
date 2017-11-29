@@ -19,8 +19,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,11 +52,5 @@ public class TestSolr_5_5_5_ClientService extends TestSolrClientService {
     @Override
     protected SolrClientService getMockClientService() {
         return new MockSolrClientService();
-    }
-
-    @Test
-    @Override
-    public void testBasics() throws Exception {
-        super.testBasics();
     }
 }

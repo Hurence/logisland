@@ -54,10 +54,4 @@ public class TestSolr_6_6_2_ClientService extends TestSolrClientService {
     protected SolrClientService getMockClientService() {
         return new MockSolrClientService();
     }
-
-    @Test
-    @Override
-    public void testBasics() throws Exception {
-        super.testBasics();
-    }
 }

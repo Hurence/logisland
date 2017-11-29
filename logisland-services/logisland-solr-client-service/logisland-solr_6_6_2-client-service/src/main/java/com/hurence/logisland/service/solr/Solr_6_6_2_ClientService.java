@@ -42,6 +42,15 @@ import java.util.*;
 public class Solr_6_6_2_ClientService extends SolrClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
 
+    @Override
+    public SolrRecordConverter getConverter() {
+        if (converter == null) {
+            converter = new Solr_6_6_2_RecordConverter();
+        }
+
+        return super.getConverter();
+    }
+
     protected boolean existsCloudAliasCollection(String name) throws IOException, SolrServerException {
         CollectionAdminRequest.ListAliases listAliasesRequest = new CollectionAdminRequest.ListAliases();
         CollectionAdminResponse response = listAliasesRequest.process(getClient(), name);
@@ -87,10 +96,5 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
     @Override
     protected void createHttpClient(String connectionString, String collection) {
         solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
-    }
-
-    @Override
-    protected SolrInputDocument toSolrInputDocument(SolrDocument document) {
-        return Solr_6_6_2_RecordConverter.toSolrInputDocument(document);
     }
 }

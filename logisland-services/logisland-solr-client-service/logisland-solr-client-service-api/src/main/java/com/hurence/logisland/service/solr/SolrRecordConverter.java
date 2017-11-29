@@ -16,7 +16,9 @@
 package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.Map;
 import java.util.TimeZone;
 
 
@@ -33,7 +36,29 @@ class SolrRecordConverter {
 
     private static Logger logger = LoggerFactory.getLogger(SolrRecordConverter.class);
 
-    static SolrInputDocument toSolrInputDocument(SolrDocument document) {
+    public Record toRecord(SolrDocument document, String uniqueKey) {
+        Record record = new StandardRecord();
+
+        for (Map.Entry<String, Object> entry: document.entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
+            if (name.startsWith("_")) {
+                // reserved keyword
+                continue;
+            }
+            if (name.equals(uniqueKey)) {
+                record.setId((String) value);
+                continue;
+            }
+
+            // TODO - Discover Type
+            record.setField(name, FieldType.STRING, value);
+        }
+
+        return record;
+    }
+
+    public SolrInputDocument toSolrInputDocument(SolrDocument document) {
         return ClientUtils.toSolrInputDocument(document);
     }
 
@@ -44,7 +69,7 @@ class SolrRecordConverter {
      * @param record to convert
      * @return the json converted record
      */
-    static String convertToString(Record record) {
+    public String convertToString(Record record) {
 //        try {
 //            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 //            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));

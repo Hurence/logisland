@@ -201,7 +201,7 @@ abstract public class TestSolrClientService {
         solrClientService.put(collection, document1);
 
         Assert.assertEquals(2, solrClientService.countCollection(collection));
-        Assert.assertEquals(2, solrClientService.queryCount(collection, nameKey+":"+nameValue));
+        Assert.assertEquals(2, solrClientService.queryCount(nameKey+":"+nameValue, collection));
     }
 
     @Test
