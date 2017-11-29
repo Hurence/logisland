@@ -23,8 +23,13 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -41,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Tags({"csv", "service", "cache"})
 @CapabilityDescription("A cache that store csv lines as records loaded from a file")
-public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> {
+public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService{
 
 
     public static AllowableValue CSV_DEFAULT = new AllowableValue("default", "default", "Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(true)");
@@ -110,6 +115,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     protected String dbUri = null;
     protected String dbPath = null;
     final AtomicReference<Map<String, String>> headers = new AtomicReference<>(new HashMap<>());
+    protected String rowKey = null;
 
     @Override
    // @OnEnabled
@@ -237,4 +243,103 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     }
 
 
+    @Override
+    public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void dropCollection(String name) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public long countCollection(String name) throws DatastoreClientServiceException {
+        return 0;
+    }
+
+    @Override
+    public boolean existsCollection(String name) throws DatastoreClientServiceException {
+        return false;
+    }
+
+    @Override
+    public void refreshCollection(String name) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void createAlias(String collection, String alias) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws DatastoreClientServiceException {
+        return false;
+    }
+
+    @Override
+    public void bulkFlush() throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+
+        set(record.getField(rowKey).asString(), record);
+    }
+
+    @Override
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
+
+        List<MultiGetResponseRecord> results = new ArrayList<>();
+        for (MultiGetQueryRecord mgqr : multiGetQueryRecords) {
+            String collectionName = mgqr.getIndexName();
+            String typeName = mgqr.getTypeName();
+            for (String id : mgqr.getDocumentIds()) {
+                Record record = get(collectionName, new StandardRecord().setId(id));
+                Map<String, String> retrievedFields = new HashMap<>();
+                if (record != null) {
+
+                    if (mgqr.getFieldsToInclude()[0].equals("*")) {
+                        for (Field field : record.getAllFieldsSorted()) {
+                            retrievedFields.put(field.getName(), field.asString());
+                        }
+                    }else{
+                        for (String prop : mgqr.getFieldsToInclude()) {
+                            retrievedFields.put(prop, record.getField(prop).asString());
+                        }
+                    }
+                }
+                results.add(new MultiGetResponseRecord(collectionName, typeName, id, retrievedFields));
+            }
+        }
+
+        return results;
+    }
+
+    @Override
+    public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
+        return get(record.getField(rowKey).asString());
+    }
+
+    @Override
+    public Collection<Record> query(String query) {
+        return null;
+    }
+
+    @Override
+    public long queryCount(String query) {
+        return 0;
+    }
 }

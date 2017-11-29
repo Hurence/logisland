@@ -56,25 +56,23 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
             .name("record.key")
             .description("The name of field in the input record containing the document id to use in ES multiget query")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
-
-    public static final PropertyDescriptor COLLECTION_FIELD = new PropertyDescriptor.Builder()
-            .name("collection.field")
-            .description("The name of the field containing the collection to use in multiget query. ")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
-
-
-    public static final PropertyDescriptor TYPE_FIELD = new PropertyDescriptor.Builder()
-            .name("type.field")
-            .description("The name of the ES type to use in multiget query.")
             .required(false)
-            .defaultValue("default")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor COLLECTION_NAME = new PropertyDescriptor.Builder()
+            .name("collection.name")
+            .description("The name of the collection to look for")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor TYPE_NAME = new PropertyDescriptor.Builder()
+            .name("type.name")
+            .description("The typle of record to look for")
+            .required(false)
             .expressionLanguageSupported(true)
             .build();
 
@@ -96,7 +94,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
             .build();
 
     private static final String ATTRIBUTE_MAPPING_SEPARATOR = ":";
-    private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*"+ATTRIBUTE_MAPPING_SEPARATOR+"\\s*";
+    private static final String ATTRIBUTE_MAPPING_SEPARATOR_REGEXP = "\\s*" + ATTRIBUTE_MAPPING_SEPARATOR + "\\s*";
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -104,10 +102,10 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(DATASTORE_CLIENT_SERVICE);
         props.add(RECORD_KEY_FIELD);
-        props.add(COLLECTION_FIELD);
-        props.add(TYPE_FIELD);
         props.add(INCLUDES_FIELD);
         props.add(EXCLUDES_FIELD);
+        props.add(TYPE_NAME);
+        props.add(COLLECTION_NAME);
 
         return Collections.unmodifiableList(props);
     }
@@ -123,7 +121,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
     public Collection<Record> process(final ProcessContext context, final Collection<Record> records) {
 
         List<Record> outputRecords = new ArrayList<>();
-        List<Triple<Record,String, IncludeFields>> recordsToEnrich = new ArrayList<>();
+        List<Triple<Record, String, IncludeFields>> recordsToEnrich = new ArrayList<>();
 
         if (records.size() != 0) {
             String excludesFieldName = context.getPropertyValue(EXCLUDES_FIELD).asString();
@@ -146,31 +144,36 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
 
                 String recordKeyName = null;
                 String indexName = null;
-                String typeName = null;
+                String typeName = FieldDictionary.RECORD_TYPE;
                 String includesFieldName = null;
 
                 try {
                     recordKeyName = context.getPropertyValue(RECORD_KEY_FIELD).evaluate(record).asString();
-                    indexName = context.getPropertyValue(COLLECTION_FIELD).evaluate(record).asString();
-                    typeName = context.getPropertyValue(TYPE_FIELD).evaluate(record).asString();
+                    indexName = context.getPropertyValue(COLLECTION_NAME).evaluate(record).asString();
+                    if (context.getPropertyValue(TYPE_NAME).isSet())
+                        typeName = context.getPropertyValue(TYPE_NAME).evaluate(record).asString();
                     includesFieldName = context.getPropertyValue(INCLUDES_FIELD).evaluate(record).asString();
                 } catch (Throwable t) {
                     record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in executing EL. Error: " + t.getMessage());
                     logger.error("Cannot interpret EL : " + record, t);
                 }
 
+
                 if (recordKeyName != null) {
                     try {
+                        String key = record.getField(recordKeyName).asString();
                         // Includes :
                         String[] includesArray = null;
                         if ((includesFieldName != null) && (!includesFieldName.isEmpty())) {
                             includesArray = includesFieldName.split("\\s*,\\s*");
                         }
                         IncludeFields includeFields = new IncludeFields(includesArray);
-                        mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), recordKeyName);
-                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includeFields));
+                        mgqrBuilder.add(indexName, typeName, includeFields.getAttrsToIncludeArray(), key);
+
+
+                        recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, key), includeFields));
                     } catch (Throwable t) {
-                        record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request datastore with " + indexName + " "  + typeName + " " + recordKeyName);
+                        record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request datastore with " + indexName + " " + typeName + " " + recordKeyName);
                         outputRecords.add(record);
                     }
                 } else {
@@ -184,7 +187,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                 List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
 
                 multiGetResponseRecords = datastoreClientService.multiGet(mgqrs);
-            } catch (InvalidMultiGetQueryRecordException e ){
+            } catch (InvalidMultiGetQueryRecordException e) {
                 // should never happen
                 e.printStackTrace();
                 // TODO : Fix above
@@ -216,12 +219,11 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                         String fieldName = k.toString();
                         if (includeFields.includes(fieldName)) {
                             // Now check if there is an attribute mapping rule to apply
-                            if (includeFields.hasMappingFor(fieldName)){
+                            if (includeFields.hasMappingFor(fieldName)) {
                                 String mappedAttributeName = includeFields.getAttributeToMap(fieldName);
                                 // Replace the attribute name
                                 outputRecord.setStringField(mappedAttributeName, v.toString());
-                            }
-                            else {
+                            } else {
                                 outputRecord.setStringField(fieldName, v.toString());
                             }
                         }
@@ -233,13 +235,14 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
         }
         return outputRecords;
     }
+
     /*
      * Returns true if the array of attributes to include contains at least one attribute mapping
      */
-    private boolean hasAttributeMapping(String[] includesArray){
+    private boolean hasAttributeMapping(String[] includesArray) {
         boolean attrMapping = false;
-        for (String includePattern : includesArray){
-            if (includePattern.contains(":")){
+        for (String includePattern : includesArray) {
+            if (includePattern.contains(":")) {
                 return true;
             }
         }
@@ -281,14 +284,13 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
         /*
          * Constructor
          */
-        public IncludeFields(String[] includesArray){
-            if (includesArray == null || includesArray.length <= 0){
+        public IncludeFields(String[] includesArray) {
+            if (includesArray == null || includesArray.length <= 0) {
                 containsAll = true;
                 this.attrsToIncludeArray = includesArray;
-            }
-            else {
-                for (String includePattern : includesArray){
-                    if (includePattern.contains(ATTRIBUTE_MAPPING_SEPARATOR)){
+            } else {
+                for (String includePattern : includesArray) {
+                    if (includePattern.contains(ATTRIBUTE_MAPPING_SEPARATOR)) {
                         hasAttributeMapping = true;
                         attrsToIncludeList = new HashSet<String>();
                         attributesMapping = new HashMap<String, String>();
@@ -297,15 +299,14 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                 }
 
                 Arrays.stream(includesArray).forEach((k) -> {
-                    if (k.equals("*")){
+                    if (k.equals("*")) {
                         containsAll = true;
                         if (hasAttributeMapping) {
                             attrsToIncludeList.add(k);
                         }
-                    }
-                    else if (k.contains("*")){
+                    } else if (k.contains("*")) {
                         // It is a substring
-                        if (containsSubstring == false){
+                        if (containsSubstring == false) {
                             substringFields = new HashMap<>();
                             containsSubstring = true;
                         }
@@ -315,9 +316,8 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                         if (hasAttributeMapping) {
                             attrsToIncludeList.add(k);
                         }
-                    }
-                    else {
-                        if (containsEquality == false){
+                    } else {
+                        if (containsEquality == false) {
                             equalityFields = new HashSet<String>();
                             containsEquality = true;
                         }
@@ -329,34 +329,31 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                                     attributesMapping.put(splited[1], splited[0]);
                                     equalityFields.add(splited[1]);
                                 }
-                            }
-                            else {
+                            } else {
                                 equalityFields.add(k);
                                 attrsToIncludeList.add(k);
                             }
-                        }
-                        else {
+                        } else {
                             equalityFields.add(k);
                         }
                     }
                 });
-                if (hasAttributeMapping){
-                    this.attrsToIncludeArray = (String [])attrsToIncludeList.toArray(new String[attrsToIncludeList.size()]);
-                }
-                else {
+                if (hasAttributeMapping) {
+                    this.attrsToIncludeArray = (String[]) attrsToIncludeList.toArray(new String[attrsToIncludeList.size()]);
+                } else {
                     this.attrsToIncludeArray = includesArray;
                 }
             }
         }
 
-        public boolean hasMappingFor(String attr){
+        public boolean hasMappingFor(String attr) {
             if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
                 return false;
             }
             return attributesMapping.containsKey(attr);
         }
 
-        public String getAttributeToMap(String attr){
+        public String getAttributeToMap(String attr) {
             if ((attributesMapping == null) || attributesMapping.isEmpty() || (attr == null)) {
                 return null;
             }
@@ -367,16 +364,16 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
             return containsAll;
         }
 
-        public boolean containsSubstring(){
+        public boolean containsSubstring() {
             return containsSubstring;
         }
 
-        public boolean containsEquality(){
+        public boolean containsEquality() {
             return containsEquality;
         }
 
-        public boolean includes(String fieldName){
-            if (containsAll){
+        public boolean includes(String fieldName) {
+            if (containsAll) {
                 return true;
             }
             if (containsEquality) {
@@ -384,18 +381,17 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                     return true;
                 }
             }
-            if (containsSubstring){
+            if (containsSubstring) {
                 // Must go through each substring expresssion
                 for (String key : substringFields.keySet()) {
                     Pattern expr = substringFields.get(key);
                     Matcher valueMatcher = expr.matcher(fieldName);
-                    if (expr != null){
-                        try{
-                            if (valueMatcher.lookingAt()){
+                    if (expr != null) {
+                        try {
+                            if (valueMatcher.lookingAt()) {
                                 return true;
                             }
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             logger.warn("issue while matching on fieldname, exception {}", fieldName, e.getMessage());
                         }
                     }
