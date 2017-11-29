@@ -320,30 +320,28 @@ abstract public class SolrClientService extends AbstractControllerService implem
         return false;
     }
 
-    protected void refreshCloudCollection(String name) {
+    protected void refreshCloudCollection(String name) throws IOException, SolrServerException{
+        CollectionAdminRequest.Reload reloadRequest = new CollectionAdminRequest.Reload();
 
+        reloadRequest.process(getClient(), name);
     }
 
-    protected void refreshCore(String name) {
-
+    protected void refreshCore(String name) throws IOException, SolrServerException{
+        CoreAdminRequest.reloadCore(name, getClient());
     }
 
     @Override
     public void refreshCollection(String name) throws DatastoreClientServiceException {
+        if (!existsCollection(name)) {
+            return;
+        }
+
         try {
-            if (existsCollection(name)) {
-                if (isCloud()) {
-                    return;
-                }
-
-                CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
-
-                if (aResponse.getCoreStatus(name).size() > 0)
-                {
-                    CoreAdminRequest.reloadCore(name, getClient());
-                }
+            if (isCloud()) {
+                refreshCloudCollection(name);
+            } else {
+                refreshCore(name);
             }
-
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
@@ -368,7 +366,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 response = getClient().query(src, solrQuery);
                 List<SolrInputDocument> documents = new ArrayList<>();
                 for (SolrDocument document: response.getResults()) {
-                    // TODO - Use Backup/Restore in Solr 6 ?
                     SolrInputDocument inputDocument = toSolrInputDocument(document);
                     inputDocument.removeField("_version_");
                     documents.add(inputDocument);
