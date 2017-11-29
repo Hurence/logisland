@@ -40,6 +40,7 @@ import java.util.*;
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
 public class Solr_6_6_2_ClientService extends SolrClientService {
+    protected SolrRecordConverter converter = new Solr_6_6_2_RecordConverter();
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
 
     protected boolean existsCloudAliasCollection(String name) throws IOException, SolrServerException {

@@ -9,7 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Solr_6_6_2_RecordConverter extends  SolrRecordConverter{
-    static SolrInputDocument toSolrInputDocument(SolrDocument document) {
+
+    @Override
+    public SolrInputDocument toSolrInputDocument(SolrDocument document) {
         Map<String,SolrInputField> fields = new HashMap<>();
         SolrInputDocument inputDocument = new SolrInputDocument(fields);
 

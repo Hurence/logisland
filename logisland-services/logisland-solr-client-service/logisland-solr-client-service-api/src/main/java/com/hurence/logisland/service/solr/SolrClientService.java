@@ -59,6 +59,7 @@ import java.util.concurrent.BlockingQueue;
 abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
+    protected SolrRecordConverter converter = new SolrRecordConverter();
     protected int schemaUpdateTimeout;
 
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
@@ -111,6 +112,14 @@ abstract public class SolrClientService extends AbstractControllerService implem
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .defaultValue("15")
             .build();
+
+    public SolrRecordConverter getConverter() {
+        return converter;
+    }
+
+    public void setConverter(SolrRecordConverter converter) {
+        this.converter = converter;
+    }
 
     public Boolean isCloud() {
         return solrClient instanceof CloudSolrClient;
@@ -347,10 +356,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
         }
     }
 
-    protected SolrInputDocument toSolrInputDocument(SolrDocument document) {
-        return SolrRecordConverter.toSolrInputDocument(document);
-    }
-
     @Override
     public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
         SolrQuery solrQuery = new SolrQuery();
@@ -366,7 +371,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 response = getClient().query(src, solrQuery);
                 List<SolrInputDocument> documents = new ArrayList<>();
                 for (SolrDocument document: response.getResults()) {
-                    SolrInputDocument inputDocument = toSolrInputDocument(document);
+                    SolrInputDocument inputDocument = getConverter().toSolrInputDocument(document);
                     inputDocument.removeField("_version_");
                     documents.add(inputDocument);
                 }
@@ -608,38 +613,25 @@ abstract public class SolrClientService extends AbstractControllerService implem
     public Record get(String collectionName, String id) throws DatastoreClientServiceException {
         try {
             SolrDocument document = getClient().getById(collectionName, id);
-            Record record = new StandardRecord();
-            String uniqueKey = getUniqueKey(collectionName);
-            for (Map.Entry<String, Object> entry: document.entrySet()) {
-                String name = entry.getKey();
-                Object value = entry.getValue();
-                if (name.startsWith("_")) {
-                    // reserved keyword
-                    continue;
-                }
-                if (name.equals(uniqueKey)) {
-                    record.setId((String) value);
-                    continue;
-                }
-                // TODO - Discover Type
-                record.setField(name, FieldType.STRING, value);
-            }
 
-            return record;
+            return getConverter().toRecord(document, getUniqueKey(collectionName))
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
     }
 
-    @Override
-    public Collection<Record> query(String queryString) {
+    public Collection<Record> query(String queryString, String collectionName) {
         try {
+            String uniqueKey = getUniqueKey(collectionName);
             SolrQuery query = new SolrQuery();
             query.setQuery(queryString);
 
-            QueryResponse response = getClient().query(query);
+            QueryResponse response = getClient().query(collectionName, query);
 
-            //response.getResults().forEach(doc -> doc.);
+            Collection<Record> results = new ArrayList<>();
+            response.getResults().forEach(document -> {
+                results.add(getConverter().toRecord(document, uniqueKey));
+            });
 
         } catch (SolrServerException | IOException e) {
             logger.error(e.toString());
@@ -649,7 +641,12 @@ abstract public class SolrClientService extends AbstractControllerService implem
         return null;
     }
 
-    public long queryCount(String collectionName, String queryString) {
+    @Override
+    public Collection<Record> query(String queryString) {
+        return query(queryString, null);
+    }
+
+    public long queryCount(String queryString, String collectionName) {
         try {
             SolrQuery query = new SolrQuery();
             query.setQuery(queryString);
@@ -666,17 +663,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
     @Override
     public long queryCount(String queryString) {
-        try {
-            SolrQuery query = new SolrQuery();
-            query.setQuery(queryString);
-
-            QueryResponse response = getClient().query(query);
-
-            return response.getResults().getNumFound();
-
-        } catch (SolrServerException | IOException e) {
-            logger.error(e.toString());
-            throw new DatastoreClientServiceException(e);
-        }
+        return queryCount(queryString, null);
     }
 }
