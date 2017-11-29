@@ -279,6 +279,10 @@ abstract public class SolrClientService extends AbstractControllerService implem
         }
     }
 
+    protected SolrInputDocument toSolrInputDocument(SolrDocument document) {
+        return SolrRecordConverter.toSolrInputDocument(document);
+    }
+
     @Override
     public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
         SolrQuery solrQuery = new SolrQuery();
@@ -295,11 +299,10 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 List<SolrInputDocument> documents = new ArrayList<>();
                 for (SolrDocument document: response.getResults()) {
                     // TODO - Use Backup/Restore in Solr 6 ?
-//                    SolrInputDocument inputDocument = ClientUtils.toSolrInputDocument(document);
-//                    inputDocument.removeField("_version_");
-//                    documents.add(inputDocument);
+                    SolrInputDocument inputDocument = toSolrInputDocument(document);
+                    inputDocument.removeField("_version_");
+                    documents.add(inputDocument);
                 }
-
 
                 getClient().add(dst, documents);
 
@@ -323,6 +326,34 @@ abstract public class SolrClientService extends AbstractControllerService implem
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
+    }
+
+    public List<Map<String, Object>> getMapping(String collectionName) throws IOException, SolrServerException {
+        SchemaRequest.Fields request = new SchemaRequest.Fields();
+        SchemaResponse.FieldsResponse response = request.process(getClient(), collectionName);
+
+        return response.getFields();
+    }
+
+    public boolean removeMapping(String collectionName, List<Map<String, Object>> mapping)
+            throws DatastoreClientServiceException {
+        Boolean result = true;
+        try {
+            for (Map<String, Object> field: mapping) {
+                SchemaRequest.DeleteField schemaRequest = new SchemaRequest.DeleteField((String) field.get("name"));
+                SchemaResponse.UpdateResponse response = schemaRequest.process(getClient(), collectionName);
+                result = result && response.getStatus() == 0 && response.getResponse().get("errors") == null;
+            }
+
+            getClient().commit(collectionName);
+            refreshCollection(collectionName);
+
+            return result;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+
+        return false;
     }
 
     public boolean putMapping(String collectionName, List<Map<String, Object>> mapping)

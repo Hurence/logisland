@@ -15,11 +15,44 @@
  */
 package com.hurence.logisland.service.solr;
 
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.processor.ProcessException;
+import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class TestSolr_5_5_5_ClientService extends TestSolrClientService {
+    private class MockSolrClientService extends Solr_5_5_5_ClientService {
+
+        public SolrClient getClient() {
+            return solrClient;
+        }
+
+        @Override
+        protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
+            setClient(solrRule.getClient());
+        }
+
+        @Override
+        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+
+            List<PropertyDescriptor> props = new ArrayList<>();
+
+            return Collections.unmodifiableList(props);
+        }
+    }
+
     public String getVersion() {
         return "5.5.5";
+    }
+
+    @Override
+    protected SolrClientService getMockClientService() {
+        return new MockSolrClientService();
     }
 
     @Test

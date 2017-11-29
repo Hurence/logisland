@@ -49,39 +49,12 @@ abstract public class TestSolrClientService {
     @Rule
     public final SolrRule solrRule = new SolrRule();
 
-    private class MockSolrClientService extends SolrClientService {
-
-        public SolrClient getClient() {
-            return solrClient;
-        }
-
-        @Override
-        protected void createCloudClient(String connectionString, String collection) {
-            solrClient = solrRule.getClient();
-        }
-
-        @Override
-        protected void createHttpClient(String connectionString, String collection) {
-            solrClient = solrRule.getClient();
-        }
-
-        @Override
-        protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
-            setClient(solrRule.getClient());
-        }
-
-        @Override
-        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-
-            List<PropertyDescriptor> props = new ArrayList<>();
-
-            return Collections.unmodifiableList(props);
-        }
-    }
+    abstract public String getVersion();
+    abstract protected SolrClientService getMockClientService();
 
     private SolrClientService configureSolrClientService(final TestRunner runner) throws InitializationException
     {
-        final MockSolrClientService solrClientService = new MockSolrClientService();
+        final SolrClientService solrClientService = getMockClientService();
 
         runner.addControllerService("solrClient", solrClientService);
 
@@ -95,14 +68,11 @@ abstract public class TestSolrClientService {
         return service;
     }
 
-    abstract public String getVersion();
-
-
     @Test
     public void testVersion() throws Exception {
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
-        final MockSolrClientService solrClientService = (MockSolrClientService) configureSolrClientService(runner);
+        final SolrClientService solrClientService = configureSolrClientService(runner);
 
         Assert.assertTrue(solrClientService.getClient().getClass().getPackage().getImplementationVersion().contains(getVersion()));
     }
@@ -140,6 +110,8 @@ abstract public class TestSolrClientService {
         nameField.put("name", "name");
         nameField.put("type", "string");
         nameField.put("stored", true);
+        nameField.put("indexed", true);
+        nameField.put("omitNorms", false);
         mapping1.add(nameField);
 
         Map<String, Object> valField = new LinkedHashMap<>();
@@ -150,10 +122,13 @@ abstract public class TestSolrClientService {
 
 
         // Add a mapping to foo
+        solrClientService.removeMapping("foo", mapping1);
         result = solrClientService.putMapping("foo", mapping1);
+
         Assert.assertEquals(true, result);
 
         // Add the same mapping again
+        solrClientService.removeMapping("bar", mapping1);
         result = solrClientService.putMapping("bar", mapping1);
         Assert.assertEquals(true, result);
 
