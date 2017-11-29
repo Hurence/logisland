@@ -64,7 +64,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
     public static final PropertyDescriptor COLLECTION_NAME = new PropertyDescriptor.Builder()
             .name("collection.name")
             .description("The name of the collection to look for")
-            .required(true)
+            .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
