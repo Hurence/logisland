@@ -29,16 +29,19 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
+import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.CoreAdminResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -56,7 +59,8 @@ import java.util.concurrent.BlockingQueue;
 abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
-    protected Boolean isCloud;
+    protected int schemaUpdateTimeout;
+
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
     List<SolrUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
@@ -100,14 +104,16 @@ abstract public class SolrClientService extends AbstractControllerService implem
             .defaultValue("500")
             .build();
 
-    public Boolean isCloud(Boolean isCloud) {
-        this.isCloud = isCloud;
-
-        return this.isCloud;
-    }
+    PropertyDescriptor SCHEMA_UPDATE_TIMEOUT = new PropertyDescriptor.Builder()
+            .name("schema.update_timeout")
+            .description("Schema update timeout interval in s")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("15")
+            .build();
 
     public Boolean isCloud() {
-        return isCloud;
+        return solrClient instanceof CloudSolrClient;
     }
 
     @Override
@@ -121,6 +127,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
         props.add(SOLR_CONNECTION_STRING);
         props.add(CONCURRENT_REQUESTS);
         props.add(FLUSH_INTERVAL);
+        props.add(SCHEMA_UPDATE_TIMEOUT);
 
         return Collections.unmodifiableList(props);
     }
@@ -140,6 +147,13 @@ abstract public class SolrClientService extends AbstractControllerService implem
     abstract protected void createCloudClient(String connectionString, String collection);
     abstract protected void createHttpClient(String connectionString, String collection);
 
+    public void setSchemaUpdateTimeout(int schemaUpdateTimeout) {
+        this.schemaUpdateTimeout = schemaUpdateTimeout;
+    }
+
+    public int getSchemaUpdateTimeout() {
+        return schemaUpdateTimeout;
+    }
 
     /**
      * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
@@ -156,17 +170,16 @@ abstract public class SolrClientService extends AbstractControllerService implem
         try {
 
             // create a solr client
-            final boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
+            final Boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
             final String connectionString = context.getPropertyValue(SOLR_CONNECTION_STRING).asString();
             final String collection = context.getPropertyValue(SOLR_COLLECTION).asString();
-
+            setSchemaUpdateTimeout(context.getPropertyValue(SOLR_COLLECTION).asInteger());
 
             if (isCloud) {
                 createCloudClient(connectionString, collection);
             } else {
                 createHttpClient(connectionString, collection);
             }
-
 
             // setup a thread pool of solr updaters
             int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
@@ -192,36 +205,70 @@ abstract public class SolrClientService extends AbstractControllerService implem
     }
 
     public void createCollection(String name) throws DatastoreClientServiceException {
-        createCollection(name, 0, 0);
+        createCollection(name, 1, 0);
+    }
+
+    protected void createCloudCollection(String name, int numShards) throws IOException, SolrServerException {
+        CollectionAdminRequest.Create createRequest = new CollectionAdminRequest.Create();
+        createRequest.setCollectionName(name);
+        createRequest.setNumShards(numShards);
+
+        createRequest.process(getClient());
+    }
+
+    protected void createCore(String name) throws IOException, SolrServerException {
+        CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+        createRequest.setCoreName(name);
+        createRequest.setConfigSet("basic_configs");
+
+        createRequest.process(getClient());
     }
 
     @Override
-    public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
-        try {
-            if (!existsCollection(name))
-            {
-                CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+    public void createCollection(String name, int numShards, int replicationFactor) throws DatastoreClientServiceException {
+        if (existsCollection(name)) {
+            return;
+        }
 
-                createRequest.setCoreName(name);
-                createRequest.setConfigSet("basic_configs");
-                createRequest.process(getClient());
+        try {
+            if (isCloud()) {
+                createCloudCollection(name, numShards);
+            } else {
+                createCore(name);
             }
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
     }
 
+    protected void dropCloudCollection(String name) throws IOException, SolrServerException {
+        CollectionAdminRequest.Delete deleteRequest = new CollectionAdminRequest.Delete();
+        deleteRequest.setCollectionName(name);
+
+        deleteRequest.process(getClient());
+    }
+
+    protected void dropCore(String name) throws IOException, SolrServerException {
+        CoreAdminRequest.Unload unloadRequest = new CoreAdminRequest.Unload(true);
+        unloadRequest.setCoreName(name);
+        unloadRequest.setDeleteDataDir(true);
+        unloadRequest.setDeleteInstanceDir(true);
+        unloadRequest.setDeleteIndex(true);
+
+        unloadRequest.process(getClient());
+    }
+
     @Override
     public void dropCollection(String name)throws DatastoreClientServiceException {
+        if (!existsCollection(name)) {
+            return;
+        }
+
         try {
-            if (existsCollection(name))
-            {
-                CoreAdminRequest.Unload unloadRequest = new CoreAdminRequest.Unload(true);
-                unloadRequest.setCoreName(name);
-                unloadRequest.setDeleteDataDir(true);
-                unloadRequest.setDeleteInstanceDir(true);
-                unloadRequest.setDeleteIndex(true);
-                CoreAdminResponse response = unloadRequest.process(getClient());
+            if (isCloud()) {
+                dropCloudCollection(name);
+            } else {
+                dropCore(name);
             }
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
@@ -241,23 +288,31 @@ abstract public class SolrClientService extends AbstractControllerService implem
         }
     }
 
+    protected boolean existsCloudCollection(String name) throws  IOException, SolrServerException {
+        CollectionAdminRequest.List listRequest = new CollectionAdminRequest.List();
+        CollectionAdminResponse response = listRequest.process(getClient(), name);
+        if (response.getErrorMessages() != null) {
+            throw new DatastoreClientServiceException("Unable to fetch collection list");
+        }
+
+        return ((ArrayList) response.getResponse().get("collections")).contains(name);
+    }
+
+    protected boolean existsCore(String name) throws IOException, SolrServerException {
+        CoreAdminResponse response = CoreAdminRequest.getStatus(name, getClient());
+
+        return response.getCoreStatus(name).size() > 1;
+    }
+
     @Override
     public boolean existsCollection(String name) throws DatastoreClientServiceException {
         try
         {
-            // Request core list
-            CoreAdminRequest request = new CoreAdminRequest();
-            request.setAction(CoreAdminParams.CoreAdminAction.STATUS);
-            CoreAdminResponse cores = request.process(solrClient);
-
-            // List of the cores
-            List<String> coreList = new ArrayList<String>();
-            for (int i = 0; i < cores.getCoreStatus().size(); i++) {
-                coreList.add(cores.getCoreStatus().getName(i));
+            if (isCloud()) {
+                return existsCloudCollection(name);
+            } else {
+                return existsCore(name);
             }
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
-
-            return aResponse.getCoreStatus(name).size() > 1;
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -265,14 +320,27 @@ abstract public class SolrClientService extends AbstractControllerService implem
         return false;
     }
 
+    protected void refreshCloudCollection(String name) throws IOException, SolrServerException{
+        CollectionAdminRequest.Reload reloadRequest = new CollectionAdminRequest.Reload();
+
+        reloadRequest.process(getClient(), name);
+    }
+
+    protected void refreshCore(String name) throws IOException, SolrServerException{
+        CoreAdminRequest.reloadCore(name, getClient());
+    }
+
     @Override
     public void refreshCollection(String name) throws DatastoreClientServiceException {
-        try {
-            CoreAdminResponse aResponse = CoreAdminRequest.getStatus(name, getClient());
+        if (!existsCollection(name)) {
+            return;
+        }
 
-            if (aResponse.getCoreStatus(name).size() > 0)
-            {
-                CoreAdminRequest.reloadCore(name, getClient());
+        try {
+            if (isCloud()) {
+                refreshCloudCollection(name);
+            } else {
+                refreshCore(name);
             }
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
@@ -298,7 +366,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 response = getClient().query(src, solrQuery);
                 List<SolrInputDocument> documents = new ArrayList<>();
                 for (SolrDocument document: response.getResults()) {
-                    // TODO - Use Backup/Restore in Solr 6 ?
                     SolrInputDocument inputDocument = toSolrInputDocument(document);
                     inputDocument.removeField("_version_");
                     documents.add(inputDocument);
@@ -307,7 +374,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
                 getClient().add(dst, documents);
 
             } while (cursorMark.equals(response.getNextCursorMark()));
-
 
             getClient().commit(dst);
         } catch (Exception e) {
@@ -322,7 +388,9 @@ abstract public class SolrClientService extends AbstractControllerService implem
             CollectionAdminRequest.CreateAlias createAlias = new CollectionAdminRequest.CreateAlias();
             createAlias.setAliasedCollections(collection);
             createAlias.setAliasName(alias);
-            createAlias.process(getClient());
+
+            CollectionAdminResponse response = createAlias.process(getClient());
+            response.isSuccess();
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
@@ -362,6 +430,13 @@ abstract public class SolrClientService extends AbstractControllerService implem
         try {
             for (Map<String, Object> field: mapping) {
                 SchemaRequest.AddField schemaRequest = new SchemaRequest.AddField(field);
+
+                if (isCloud()) {
+                    Set<String> params = new HashSet<>();
+                    params.add("updateTimeoutSecs="+getSchemaUpdateTimeout());
+                    schemaRequest.setQueryParams(params);
+                }
+
                 SchemaResponse.UpdateResponse response = schemaRequest.process(getClient(), collectionName);
                 result = result && response.getStatus() == 0 && response.getResponse().get("errors") == null;
             }
