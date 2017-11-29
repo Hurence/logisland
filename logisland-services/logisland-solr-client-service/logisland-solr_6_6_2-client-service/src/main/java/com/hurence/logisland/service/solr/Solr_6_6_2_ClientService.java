@@ -40,8 +40,16 @@ import java.util.*;
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
 public class Solr_6_6_2_ClientService extends SolrClientService {
-    protected SolrRecordConverter converter = new Solr_6_6_2_RecordConverter();
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_6_6_2_ClientService.class);
+
+    @Override
+    public SolrRecordConverter getConverter() {
+        if (converter == null) {
+            converter = new Solr_6_6_2_RecordConverter();
+        }
+
+        return super.getConverter();
+    }
 
     protected boolean existsCloudAliasCollection(String name) throws IOException, SolrServerException {
         CollectionAdminRequest.ListAliases listAliasesRequest = new CollectionAdminRequest.ListAliases();
@@ -88,10 +96,5 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
     @Override
     protected void createHttpClient(String connectionString, String collection) {
         solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
-    }
-
-    @Override
-    protected SolrInputDocument toSolrInputDocument(SolrDocument document) {
-        return Solr_6_6_2_RecordConverter.toSolrInputDocument(document);
     }
 }

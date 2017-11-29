@@ -29,8 +29,6 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -45,7 +43,6 @@ import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.CursorMarkParams;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +56,7 @@ import java.util.concurrent.BlockingQueue;
 abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
-    protected SolrRecordConverter converter = new SolrRecordConverter();
+    protected SolrRecordConverter converter;
     protected int schemaUpdateTimeout;
 
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SolrClientService.class);
@@ -114,6 +111,10 @@ abstract public class SolrClientService extends AbstractControllerService implem
             .build();
 
     public SolrRecordConverter getConverter() {
+        if (converter == null) {
+            converter = new SolrRecordConverter();
+        }
+
         return converter;
     }
 
@@ -614,7 +615,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
         try {
             SolrDocument document = getClient().getById(collectionName, id);
 
-            return getConverter().toRecord(document, getUniqueKey(collectionName))
+            return getConverter().toRecord(document, getUniqueKey(collectionName));
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
