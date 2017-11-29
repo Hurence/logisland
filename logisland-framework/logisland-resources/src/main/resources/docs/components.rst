@@ -354,7 +354,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
    "excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
    "type.name", "The typle of record to look for", "", "null", "", "**true**"
-   "**collection.name**", "The name of the collection to look for", "", "null", "", "**true**"
+   "collection.name", "The name of the collection to look for", "", "null", "", "**true**"
 
 ----------
 

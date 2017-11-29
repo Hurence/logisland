@@ -1,0 +1,135 @@
+version: 0.10.3
+documentation: >
+  LogIsland stream that parses historian csv files as records,
+  enrich them by joining a csv file and
+  store them as chronix records
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: "Spark streaming engine"
+  configuration:
+    spark.app.name: EvoaHistorian
+    spark.master: local[4]
+    spark.driver.memory: 2g
+    spark.driver.cores: 2
+    spark.executor.memory: 3g
+    spark.executor.cores: 2
+    spark.executor.instances: 20
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.streaming.batchDuration: 2000
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 6000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 60
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+
+  controllerServiceConfigurations:
+
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
+      type: service
+      documentation: "SolR Chronix service"
+      configuration:
+        solr.cloud: false
+        solr.connection.string: http://sandbox:8983/solr
+        solr.collection: chronix
+        solr.concurrent.requests: 4
+        flush.interval: 2000
+        batch.size: 1000
+
+    - controllerService: lookup_service
+      component: com.hurence.logisland.service.cache.CSVKeyValueCacheService
+      type: service
+      documentation: "store an in-memory cache coming from CSV"
+      configuration:
+        csv.format: excel_fr
+        csv.file.path: "logisland-assembly/target/logisland-0.11.0-bin-hdp2.5/logisland-0.11.0/conf/timeseries-lookup.csv"
+        first.line.header: true
+        row.key: tagname
+
+
+  streamConfigurations:
+
+    - stream: historian_processing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: >
+        a processor that parses csv lines like the following into Records:
+
+          timestamp;tagname;value;quality
+          16/11/2017 18:36:01;067_PI01;0;0
+          16/11/2017 18:36:01;067_PI02;0;0
+          16/11/2017 18:36:01;067_SI01;0;0
+          16/11/2017 18:36:01;067_TI01;0;0
+          16/11/2017 18:36:01;068_PI01;20,9782939455882;100
+      configuration:
+        kafka.input.topics: evoa_historian
+        kafka.output.topics: evoa_series
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 3
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        - processor: historian_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: "a parser that produces events from httpd logs"
+          configuration:
+            record.type: historian_serie
+            key.regex: (\S*):(\S*)
+            key.fields: filename,nifi_uuid
+            value.regex: (\S+\s+\S+);(\S+);(\S+);(\S+)
+            value.fields: record_time,tagname,record_value,quality
+
+        - processor: fields_enricher
+          component: com.hurence.logisland.processor.datastore.EnrichRecords
+          type: processor
+          documentation: "enrich the tagname field against the K/V store"
+          configuration:
+            datastore.client.service: lookup_service
+            record.key: tagname
+            collection.name: chronix
+
+        - processor: fields_types_converter
+          component: com.hurence.logisland.processor.ConvertFieldsType
+          type: processor
+          documentation: "converts some field to a given type"
+          configuration:
+            record_value: double
+            quality: float
+
+        - processor: create_aliases
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
+          configuration:
+            conflict.resolution.policy: keep_both_fields
+            record_name: tagname
+
+        - processor: chronix_publisher
+          component: com.hurence.logisland.processor.datastore.BulkPut
+          type: processor
+          documentation: "indexes processed events in SolR/Chronix"
+          configuration:
+            datastore.client.service: datastore_service
+
+
+

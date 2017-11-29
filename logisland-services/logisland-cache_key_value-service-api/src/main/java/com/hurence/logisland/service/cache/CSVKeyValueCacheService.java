@@ -38,6 +38,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
@@ -48,6 +50,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @CapabilityDescription("A cache that store csv lines as records loaded from a file")
 public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService{
 
+
+    private static Logger logger = LoggerFactory.getLogger(CSVKeyValueCacheService.class);
 
     public static AllowableValue CSV_DEFAULT = new AllowableValue("default", "default", "Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(true)");
 
@@ -84,6 +88,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             .name("first.line.header")
             .displayName("csv headers first line")
             .description("csv headers grabbed from first line")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .required(false)
             .build();
 
@@ -110,6 +115,20 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
+
+
+    @Override
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        List<PropertyDescriptor> props = new ArrayList<>();
+        props.add(CSV_FORMAT);
+        props.add(CSV_HEADER);
+        props.add(DATABASE_FILE_URI);
+        props.add(DATABASE_FILE_PATH);
+        props.add(ROW_KEY);
+        props.add(CACHE_SIZE);
+        props.add(FIRST_LINE_HEADER);
+        return Collections.unmodifiableList(props);
+    }
 
 
     protected String dbUri = null;
@@ -175,7 +194,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             }
 
 
-            String rowKey = context.getPropertyValue(ROW_KEY).asString();
+            rowKey = context.getPropertyValue(ROW_KEY).asString();
             CSVParser parser = new CSVParser(reader, format);
             try {
                 final Set<String> columnNames = parser.getHeaderMap().keySet();
@@ -230,17 +249,6 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     }
 
 
-    @Override
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        List<PropertyDescriptor> props = new ArrayList<>();
-        props.add(CSV_FORMAT);
-        props.add(CSV_HEADER);
-        props.add(DATABASE_FILE_URI);
-        props.add(DATABASE_FILE_PATH);
-        props.add(ROW_KEY);
-        props.add(CACHE_SIZE);
-        return Collections.unmodifiableList(props);
-    }
 
 
     @Override
@@ -330,7 +338,13 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
     @Override
     public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
-        return get(record.getField(rowKey).asString());
+        if(record.hasField(rowKey)){
+            return get(record.getField(rowKey).asString());
+        }else{
+            logger.error("field " + rowKey + " not found in record " + record.toString());
+            return null;
+        }
+
     }
 
     @Override

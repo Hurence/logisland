@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
@@ -128,7 +130,9 @@ public class ChronixClientServiceTest {
                 .setTime(now)
                 .setField(FieldDictionary.RECORD_VALUE, FieldType.FLOAT, 12.345);
 
-        final Solr_6_4_2_ChronixClientService service = new Solr_6_4_2_ChronixClientService();
+        final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
+
+        final ChronixUpdater service = new ChronixUpdater(solrRule.getClient(), queue, 10, 1000);
         MetricTimeSeries metric = service.convertToMetric(record);
 
         assertTrue(metric.getName().equals("cpu.wait"));
