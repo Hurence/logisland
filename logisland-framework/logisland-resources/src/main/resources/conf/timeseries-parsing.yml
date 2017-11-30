@@ -47,7 +47,7 @@ engine:
         solr.collection: chronix
         solr.concurrent.requests: 4
         flush.interval: 2000
-        batch.size: 1000
+        batch.size: 500
 
     - controllerService: lookup_service
       component: com.hurence.logisland.service.cache.CSVKeyValueCacheService
@@ -99,14 +99,16 @@ engine:
             value.regex: (\S+\s+\S+);(\S+);(\S+);(\S+)
             value.fields: record_time,tagname,record_value,quality
 
-        - processor: fields_enricher
-          component: com.hurence.logisland.processor.datastore.EnrichRecords
-          type: processor
-          documentation: "enrich the tagname field against the K/V store"
-          configuration:
-            datastore.client.service: lookup_service
-            record.key: tagname
-            collection.name: chronix
+
+
+#        - processor: fields_enricher
+#          component: com.hurence.logisland.processor.datastore.EnrichRecords
+#          type: processor
+#          documentation: "enrich the tagname field against the K/V store"
+#          configuration:
+#            datastore.client.service: lookup_service
+#            record.key: tagname
+#            collection.name: chronix
 
         - processor: fields_types_converter
           component: com.hurence.logisland.processor.ConvertFieldsType

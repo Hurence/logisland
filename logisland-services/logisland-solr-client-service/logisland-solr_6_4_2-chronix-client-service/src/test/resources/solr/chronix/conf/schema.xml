@@ -30,6 +30,13 @@
         <field name="group" type="string" indexed="true" stored="true" required="false"/>
         <field name="date" type="string" indexed="true" stored="true" required="false"/>
 
+
+        <field name="tagname" type="string" indexed="true" stored="true" required="false"/>
+        <field name="quality" type="double" indexed="true" stored="true" required="false"/>
+        <field name="description" type="string" indexed="true" stored="true" required="false"/>
+        <field name="engunits" type="double" indexed="true" stored="true" required="false"/>
+        <field name="lastmodified" type="string" indexed="true" stored="true" required="false"/>
+
         <!-- Dynamic field -->
         <dynamicField name="*_s" type="string" indexed="true" stored="true"/>
         <!-- Dynamic logisland field -->
