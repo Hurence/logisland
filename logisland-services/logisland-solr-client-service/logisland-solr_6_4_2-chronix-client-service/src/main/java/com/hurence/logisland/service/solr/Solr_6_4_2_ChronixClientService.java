@@ -23,9 +23,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.RecordDictionary;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -63,7 +61,7 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
 
     protected volatile SolrClient solr;
 
-    List<SolrUpdater> updaters = null;
+    List<ChronixUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
     MetricTimeSeriesConverter converter = null;
@@ -189,15 +187,15 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
             updaters = new ArrayList<>(numConcurrentRequests);
             for (int i = 0; i < numConcurrentRequests; i++) {
-                SolrUpdater updater = new SolrUpdater(solr, queue, batchSize, flushInterval);
+                ChronixUpdater updater = new ChronixUpdater(solr, queue, batchSize, flushInterval);
                 new Thread(updater).start();
                 updaters.add(updater);
             }
 
 
-            converter = new MetricTimeSeriesConverter();
+         /*   converter = new MetricTimeSeriesConverter();
             storage = new ChronixSolrStorage<>(batchSize, groupBy, reduce);
-
+*/
 
         } catch (Exception ex) {
             logger.error(ex.toString());
@@ -251,79 +249,27 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
 
-
-        try {
+        queue.add(record);
+      /*  try {
             MetricTimeSeries metric = convertToMetric(record);
 
             List<MetricTimeSeries> timeSeries = new ArrayList<>();
             timeSeries.add(metric);
             storage.add(converter, timeSeries, solr);
 
+            solr.commit();
+
+
         } catch (DatastoreClientServiceException ex) {
-            logger.error(ex.toString());
-        }
+            logger.error(ex.toString() + " for record " + record.toString());
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
 
     }
 
-    MetricTimeSeries convertToMetric(Record record) {
-        long recordTS = record.getTime().getTime();
-
-        MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(
-                record.getField(FieldDictionary.RECORD_NAME).asString(), RecordDictionary.METRIC)
-                .start(recordTS)
-                .end(recordTS + 10)
-                .attribute("id", record.getId())
-                .point(recordTS, record.getField(FieldDictionary.RECORD_VALUE).asDouble());
-
-
-        // add all other records
-        record.getAllFieldsSorted().forEach(field -> {
-            try {
-                // cleanup invalid es fields characters like '.'
-                String fieldName = field.getName()
-                        .replaceAll("\\.", "_");
-
-                if (!fieldName.equals(FieldDictionary.RECORD_TIME) &&
-                        !fieldName.equals(FieldDictionary.RECORD_NAME) &&
-                        !fieldName.equals(FieldDictionary.RECORD_VALUE) &&
-                        !fieldName.equals(FieldDictionary.RECORD_ID) &&
-                        !fieldName.equals(FieldDictionary.RECORD_TYPE))
-
-
-                    switch (field.getType()) {
-
-                        case STRING:
-                            builder.attribute(fieldName, field.asString());
-                            break;
-                        case INT:
-                            builder.attribute(fieldName, field.asInteger());
-                            break;
-                        case LONG:
-                            builder.attribute(fieldName, field.asLong());
-                            break;
-                        case FLOAT:
-                            builder.attribute(fieldName, field.asFloat());
-                            break;
-                        case DOUBLE:
-                            builder.attribute(fieldName, field.asDouble());
-                            break;
-                        case BOOLEAN:
-                            builder.attribute(fieldName, field.asBoolean());
-                            break;
-                        default:
-                            builder.attribute(fieldName, field.getRawValue());
-                            break;
-                    }
-
-            } catch (Throwable ex) {
-                logger.error("unable to process a field in record : {}, {}", record, ex.toString());
-            }
-
-
-        });
-
-        return builder.build();
-    }
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
