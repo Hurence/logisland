@@ -15,10 +15,7 @@
  */
 package com.hurence.logisland.service.solr;
 
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
@@ -28,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -36,118 +34,80 @@ class SolrRecordConverter {
 
     private static Logger logger = LoggerFactory.getLogger(SolrRecordConverter.class);
 
-    public Record toRecord(SolrDocument document, String uniqueKey) {
-        Record record = new StandardRecord();
+    protected SolrInputDocument createNewSolrInputDocument() {
+        return new SolrInputDocument();
+    }
 
+    protected boolean isSolrDocumentFieldIgnored(String name) {
+        // Begin with _ is reserved name
+        return name.startsWith("_");
+    }
+
+    public Map<String, Map<String, String>> toMap(SolrDocument document, String uniqueKey) {
+        Map<String, Map<String, String>> map = new HashMap<>();
+        Map<String, String> retrievedFields = new HashMap<>();
+        String uniqueKeyValue = null;
         for (Map.Entry<String, Object> entry: document.entrySet()) {
             String name = entry.getKey();
-            Object value = entry.getValue();
-            if (name.startsWith("_")) {
-                // reserved keyword
-                continue;
-            }
-            if (name.equals(uniqueKey)) {
-                record.setId((String) value);
+            String value = entry.getValue().toString();
+
+            if (isSolrDocumentFieldIgnored(name)) {
                 continue;
             }
 
-            // TODO - Discover Type
-            record.setField(name, FieldType.STRING, value);
+            if (name.equals(uniqueKey)) {
+                uniqueKeyValue = value;
+                continue;
+            }
+
+            retrievedFields.put(name, value);
         }
+
+        if (uniqueKeyValue != null) {
+            map.put(uniqueKeyValue, retrievedFields);
+        }
+
+        return map;
+    }
+
+    public Record toRecord(SolrDocument document, String uniqueKey) {
+        Map<String, Map<String, String>> map = toMap(document, uniqueKey);
+        Map.Entry<String,Map<String, String>> entry = map.entrySet().iterator().next();
+
+        Record record = new StandardRecord();
+        record.setId(entry.getKey());
+
+        entry.getValue().forEach((key, value) -> {
+            // TODO - Discover Type
+            record.setField(key, FieldType.STRING, value);
+        });
+
 
         return record;
     }
 
+    public SolrInputDocument toSolrInputDocument(Record record, String uniqueKey) {
+        SolrInputDocument document = createNewSolrInputDocument();
+
+        document.addField(uniqueKey, record.getId());
+        for (Field field : record.getAllFields()) {
+            if (field.isReserved()) {
+                continue;
+            }
+
+            document.addField(field.getName(), field.getRawValue());
+        }
+
+        return document;
+    }
+
     public SolrInputDocument toSolrInputDocument(SolrDocument document) {
-        return ClientUtils.toSolrInputDocument(document);
-    }
+        SolrInputDocument inputDocument = createNewSolrInputDocument();
 
-    /**
-     * Converts an Event into an Elasticsearch document
-     * to be indexed later
-     *
-     * @param record to convert
-     * @return the json converted record
-     */
-    public String convertToString(Record record) {
-//        try {
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-//            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-//
-//            //XContentBuilder document = jsonBuilder().startObject();
-//            final float[] geolocation = new float[2];
-//
-//            // convert event_time as ISO for ES
-//            if (record.hasField(FieldDictionary.RECORD_TIME)) {
-//                try {
-//                    DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-//                    //document.field("@timestamp", dateParser.print(record.getField(FieldDictionary.RECORD_TIME).asLong()));
-//                } catch (Exception ex) {
-//                    logger.error("unable to parse record_time iso date for {}", record);
-//                }
-//            }
-//
-//            // add all other records
-//            record.getAllFieldsSorted().forEach(field -> {
-//                try {
-//                    // cleanup invalid es fields characters like '.'
-//                    String fieldName = field.getName().replaceAll("\\.", "_");
-//
-//
-//                    switch (field.getType()) {
-//
-//                        case STRING:
-//                            document.field(fieldName, field.asString());
-//                            break;
-//                        case INT:
-//                            document.field(fieldName, field.asInteger().intValue());
-//                            break;
-//                        case LONG:
-//                            document.field(fieldName, field.asLong().longValue());
-//                            break;
-//                        case FLOAT:
-//                            document.field(fieldName, field.asFloat().floatValue());
-//                            if( fieldName.equals("lat") || fieldName.equals("latitude"))
-//                                geolocation[0] = field.asFloat();
-//                            if( fieldName.equals("long") || fieldName.equals("longitude"))
-//                                geolocation[1] = field.asFloat();
-//
-//                            break;
-//                        case DOUBLE:
-//                            document.field(fieldName, field.asDouble().doubleValue());
-//                            if( fieldName.equals("lat") || fieldName.equals("latitude"))
-//                                geolocation[0] = field.asFloat();
-//                            if( fieldName.equals("long") || fieldName.equals("longitude"))
-//                                geolocation[1] = field.asFloat();
-//
-//                            break;
-//                        case BOOLEAN:
-//                            document.field(fieldName, field.asBoolean().booleanValue());
-//                            break;
-//                        default:
-//                            document.field(fieldName, field.getRawValue());
-//                            break;
-//                    }
-//
-//                } catch (Throwable ex) {
-//                    logger.error("unable to process a field in record : {}, {}", record, ex.toString());
-//                }
-//            });
-//
-//
-//            if((geolocation[0] != 0) && (geolocation[1] != 0)){
-//                GeoPoint point = new GeoPoint(geolocation[0], geolocation[1]);
-//                document.latlon("location", geolocation[0], geolocation[1]);
-//            }
-//
-//
-//            String result = document.endObject().string();
-//            document.flush();
-//            return result;
-//        } catch (Throwable ex) {
-//            logger.error("unable to convert record : {}, {}", record, ex.toString());
-//        }
-        return null;
-    }
+        for (String name : document.getFieldNames()) {
+            inputDocument.addField(name, document.getFieldValue(name));
+        }
 
+        return inputDocument;
+    }
 }

@@ -44,6 +44,9 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CursorMarkParams;
+import org.apache.solr.common.params.MapSolrParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.SolrParams;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -212,6 +215,13 @@ abstract public class SolrClientService extends AbstractControllerService implem
     }
     protected void setClient(SolrClient client) {
         solrClient = client;
+    }
+
+    public String getUniqueKey(String collectionName) throws IOException, SolrServerException {
+        SchemaRequest.UniqueKey keyRequest = new SchemaRequest.UniqueKey();
+        SchemaResponse.UniqueKeyResponse keyResponse = keyRequest.process(getClient(), collectionName);
+
+        return keyResponse.getUniqueKey();
     }
 
     public void createCollection(String name) throws DatastoreClientServiceException {
@@ -387,7 +397,6 @@ abstract public class SolrClientService extends AbstractControllerService implem
         }
     }
 
-
     @Override
     public void createAlias(String collection, String alias)throws DatastoreClientServiceException {
         try {
@@ -484,121 +493,68 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        try {
-            _put(collectionName, record);
-        } catch (Exception e) {
-            throw new DatastoreClientServiceException(e);
-        }
-
-    }
-
-    public String getUniqueKey(String collectionName) throws IOException, SolrServerException {
-        SchemaRequest.UniqueKey keyRequest = new SchemaRequest.UniqueKey();
-        SchemaResponse.UniqueKeyResponse keyResponse = keyRequest.process(getClient(), collectionName);
-
-        return keyResponse.getUniqueKey();
+        put(collectionName, record, false, false);
     }
 
     public void put(String collectionName, Record record) throws DatastoreClientServiceException {
-        put(collectionName, record, false);
+        put(collectionName, record, false, true);
     }
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
-        try {
-            _put(collectionName, record);
+        put(collectionName, record, asynchronous, true);
+    }
 
-            getClient().commit(collectionName);
+    public void put(String collectionName, Record record, boolean asynchronous, boolean autoCommit) throws DatastoreClientServiceException {
+        try {
+            SolrInputDocument document = getConverter().toSolrInputDocument(record, getUniqueKey(collectionName));
+
+            getClient().add(collectionName, document);
+
+            if (autoCommit) {
+                getClient().commit(collectionName);
+            }
         } catch (Exception e) {
             throw new DatastoreClientServiceException(e);
         }
     }
-
-    protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
-        SolrInputDocument document = new SolrInputDocument();
-
-        document.addField(getUniqueKey(collectionName), record.getId());
-        for (Field field : record.getAllFields()) {
-            if (field.isReserved()) {
-                continue;
-            }
-
-            document.addField(field.getName(), field.getRawValue());
-        }
-
-        getClient().add(collectionName, document);
-    }
-
-    /* ********************************************************************
-     * Get handling section
-     * ********************************************************************/
 
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
         try {
             List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
-            Set<String> documentIds = new HashSet<>();
 
             for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
             {
                 String index = multiGetQueryRecord.getIndexName();
-                String type = multiGetQueryRecord.getTypeName();
-                String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
-                String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
-//            if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
-//                for (String documentId : documentIds) {
-//                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
-//                    item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
-//                    multiGetRequestBuilder.add(item);
-//                }
-//            } else {
-//                multiGetRequestBuilder.add(index, type, documentIds);
-//            }
-                SolrDocumentList documents = getClient().getById(index, multiGetQueryRecord.getDocumentIds());
                 String uniqueKeyName = getUniqueKey(index);
-                String uniqueKeyValue = null;
-                Map<String,String> retrievedFields = new HashMap<>();
-                for (SolrDocument document: documents) {
-                    for (Map.Entry<String, Object> entry: document.entrySet()) {
-                        String name = entry.getKey();
-                        Object value = entry.getValue();
-                        if (name.startsWith("_")) {
-                            // reserved keyword
-                            continue;
-                        }
-                        if (name.equals(uniqueKeyName)) {
-                            uniqueKeyValue = (String) value;
-                            continue;
-                        }
-                        // TODO - Discover Type
-                        retrievedFields.put(name, value.toString());
+
+                String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
+                Map<String, String[]> params = new HashMap<>();
+                if (fieldsToInclude != null && fieldsToInclude.length > 0) {
+                    ArrayList<String> fields = new ArrayList<>();
+                    fields.addAll(Arrays.asList(fieldsToInclude));
+                    if (!fields.contains(uniqueKeyName)) {
+                        fields.add(uniqueKeyName);
                     }
 
+                    params.put("fl", fields.toArray(new String[fields.size()]));
+                }
+
+
+                SolrParams solrParams = new ModifiableSolrParams(params);
+
+                SolrDocumentList documents = getClient().getById(index, multiGetQueryRecord.getDocumentIds(), solrParams);
+
+                for (SolrDocument document: documents) {
+                    Map<String, Map<String, String>> map = getConverter().toMap(document, uniqueKeyName);
+                    Map.Entry<String,Map<String, String>> mapDocument = map.entrySet().iterator().next();
+
                     multiGetResponseRecords.add(
-                            new MultiGetResponseRecord(index, "", uniqueKeyValue, retrievedFields)
+                            new MultiGetResponseRecord(index, "", mapDocument.getKey(), mapDocument.getValue())
                     );
                 }
             }
-
-
-//        MultiGetResponse multiGetItemResponses = null;
-//        try {
-//            multiGetItemResponses = multiGetRequestBuilder.get();
-//        } catch (ActionRequestValidationException e) {
-//            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
-//        }
-//
-//        if (multiGetItemResponses != null) {
-//            for (MultiGetItemResponse itemResponse : multiGetItemResponses) {
-//                GetResponse response = itemResponse.getResponse();
-//                if (response != null && response.isExists()) {
-//                    Map<String,Object> responseMap = response.getSourceAsMap();
-//                    Map<String,String> retrievedFields = new HashMap<>();
-//                    responseMap.forEach((k,v) -> {if (v!=null) retrievedFields.put(k, v.toString());});
-//                    multiGetResponseRecords.add(new MultiGetResponseRecord(response.getIndex(), response.getType(), response.getId(), retrievedFields));
-//                }
-//            }
-//        }
 
             return multiGetResponseRecords;
         } catch (Exception e) {
