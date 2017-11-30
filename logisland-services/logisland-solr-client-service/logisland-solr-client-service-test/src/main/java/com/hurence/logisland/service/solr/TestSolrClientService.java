@@ -279,7 +279,7 @@ abstract public class TestSolrClientService {
         ArrayList<String> documentIds_2 = new ArrayList<>();
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
         String[] fieldsToInclude = {"field_b*", "field*1"};
-        String[] fieldsToExclude = {"field_*2"};
+        String[] fieldsToExclude = null;
 
         // Make sure a dummy query returns no result :
         documentIds.add(docId1);
@@ -355,17 +355,17 @@ abstract public class TestSolrClientService {
         multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
-        // TODO - Include fields and Exclude fields not supported
-//        multiGetResponseRecords.forEach(responseRecord -> {
-//            if (responseRecord.getIndexName() == index1 && !responseRecord.getDocumentId().equals(docId3))
-//                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for documents from index1 (except doc3), verify that 3 fields has been retrieved
-//            if (responseRecord.getIndexName() == index1 && responseRecord.getDocumentId().equals(docId3))
-//                Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3 from index1, verify that 2 fields has been retrieved
-//            if (responseRecord.getDocumentId() == index2 && !responseRecord.getDocumentId().equals(docId3))
-//                Assert.assertEquals(4, responseRecord.getRetrievedFields().size()); // for documents from index2 (except doc3), verify that 4 fields has been retrieved
-//            if (responseRecord.getDocumentId() == index2 && responseRecord.getDocumentId().equals(docId3))
-//                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document3 from index2, verify that 3 fields has been retrieved
-//        });
+        // Exclude fields not supported in Solr
+        multiGetResponseRecords.forEach(responseRecord -> {
+            if (responseRecord.getCollectionName() == index1 && !responseRecord.getDocumentId().equals(docId3))
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for documents from index1 (except doc3), verify that 3 fields has been retrieved
+            if (responseRecord.getCollectionName() == index1 && responseRecord.getDocumentId().equals(docId3))
+                Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3 from index1, verify that 2 fields has been retrieved
+            if (responseRecord.getCollectionName() == index2 && !responseRecord.getDocumentId().equals(docId3))
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for documents from index2 (except doc3), verify that 4 fields has been retrieved
+            if (responseRecord.getCollectionName() == index2 && responseRecord.getDocumentId().equals(docId3))
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document3 from index2, verify that 3 fields has been retrieved
+        });
 
     }
 

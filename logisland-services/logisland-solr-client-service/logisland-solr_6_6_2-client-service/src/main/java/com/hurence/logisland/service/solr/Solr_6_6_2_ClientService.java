@@ -66,23 +66,6 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
         return super.existsCloudCollection(name) && existsCloudAliasCollection(name);
     }
 
-    protected void _put(String collectionName, Record record) throws IOException, SolrServerException {
-        Map<String,SolrInputField> fields = new HashMap<>();
-        SolrInputDocument document = new SolrInputDocument(fields);
-
-        document.addField(getUniqueKey(collectionName), record.getId());
-
-        for (Field field : record.getAllFields()) {
-            if (field.isReserved()) {
-                continue;
-            }
-
-            document.addField(field.getName(), field.getRawValue());
-        }
-
-        getClient().add(collectionName, document);
-    }
-
     @Override
     protected void createCloudClient(String connectionString, String collection) {
         CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();

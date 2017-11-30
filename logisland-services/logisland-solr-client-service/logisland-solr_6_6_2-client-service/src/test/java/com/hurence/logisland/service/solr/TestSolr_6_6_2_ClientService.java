@@ -15,12 +15,15 @@
  */
 package com.hurence.logisland.service.solr;
 
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
 import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,5 +56,11 @@ public class TestSolr_6_6_2_ClientService extends TestSolrClientService {
     @Override
     protected SolrClientService getMockClientService() {
         return new MockSolrClientService();
+    }
+
+    @Override
+    @Test
+    public void testMultiGet() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
+        super.testMultiGet();
     }
 }
