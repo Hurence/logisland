@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -114,6 +115,14 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor ENCODING_CHARSET = new PropertyDescriptor.Builder()
+            .name("encoding.charset")
+            .displayName("Encoding charset")
+            .description("charset")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("UTF-8")
+            .build();
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -125,6 +134,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
         props.add(ROW_KEY);
         props.add(CACHE_SIZE);
         props.add(FIRST_LINE_HEADER);
+        props.add(ENCODING_CHARSET);
         return Collections.unmodifiableList(props);
     }
 
@@ -171,7 +181,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
                         DATABASE_FILE_URI.getName() + " or " + DATABASE_FILE_PATH.getName());
             }
 
-            final Reader reader = new InputStreamReader(is);
+           // final Reader reader = new InputStreamReader(is);
             CSVFormat format = CSVFormat.DEFAULT;
             if (context.getPropertyValue(CSV_FORMAT).asString().equals(CSV_EXCEL.getValue())) {
                 format = CSVFormat.EXCEL;
@@ -199,8 +209,25 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             }
 
 
+            Charset charset = Charset.forName("UTF-8");
+            if (context.getPropertyValue(ENCODING_CHARSET).isSet()) {
+                String encoding = context.getPropertyValue(ENCODING_CHARSET).asString();
+                charset =  Charset.forName(encoding);
+            }
+
             rowKey = context.getPropertyValue(ROW_KEY).asString();
-            CSVParser parser = new CSVParser(reader, format);
+            CSVParser parser = CSVParser.parse(is, charset, format); //new CSVParser(reader, format);
+
+            /*
+            *    CSVParser parser = null;
+
+            if (context.getPropertyValue(ENCODING_CHARSET).isSet()) {
+                String encoding = context.getPropertyValue(ENCODING_CHARSET).asString();
+                parser = CSVParser.parse(reader, Charset.forName(encoding), format);
+            } else {
+                parser = CSVParser.parse(reader, format);
+            }
+            */
             long count = 0;
             try {
                 final Set<String> columnNames = parser.getHeaderMap().keySet();
@@ -218,7 +245,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
                 logger.info("successfully loaded " + count + " records from CSV file");
 
                 parser.close();
-                reader.close();
+                is.close();
             }
 
 
@@ -341,7 +368,9 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
                     if (mgqr.getFieldsToInclude()[0].equals("*")) {
                         for (Field field : record.getAllFieldsSorted()) {
-                            if (!field.getName().equals(FieldDictionary.RECORD_TIME))
+                            if (!field.getName().equals(FieldDictionary.RECORD_TIME) &&
+                                    !field.getName().equals(FieldDictionary.RECORD_TYPE) &&
+                                    !field.getName().equals(FieldDictionary.RECORD_ID))
                                 retrievedFields.put(field.getName(), field.asString());
                         }
                     } else {
