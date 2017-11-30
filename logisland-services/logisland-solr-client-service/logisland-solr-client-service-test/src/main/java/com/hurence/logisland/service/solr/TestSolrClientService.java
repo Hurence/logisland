@@ -289,7 +289,7 @@ abstract public class TestSolrClientService {
             multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
             Assert.fail("Should throw an exception for invalid core");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("No such core"));
+            Assert.assertTrue(e.getMessage().contains("No such core") || e.getMessage().contains("Not Found"));
         }
 
         multiGetQueryRecords.clear();
