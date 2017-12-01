@@ -44,7 +44,7 @@ public class CSVKeyValueCacheServiceTest {
         runner.setProperty(CSVKeyValueCacheService.CSV_FORMAT, "excel_fr");
         runner.setProperty(CSVKeyValueCacheService.FIRST_LINE_HEADER, "true");
         runner.setProperty(CSVKeyValueCacheService.ROW_KEY, "tagname");
-        runner.setProperty(CSVKeyValueCacheService.ENCODING_CHARSET, "UTF-8");
+        runner.setProperty(CSVKeyValueCacheService.ENCODING_CHARSET, "ISO-8859-1");
         runner.setProperty(CacheService.CACHE_SIZE, "20000");
 
         // create the controller service and link it to the test processor
@@ -68,7 +68,7 @@ public class CSVKeyValueCacheServiceTest {
 
         result = lookupService.get("D112.M_TI15.F_CV");
         assertEquals("D112.M_TI15.F_CV", result.getField("tagname").asString());
-        assertEquals("Tra�age (F_CV)", result.getField("description").asString());
+        assertEquals("Traçage (F_CV)", result.getField("description").asString());
         assertEquals("DEG", result.getField("engunits").asString());
         assertEquals("03/06/2014 10:32:18", result.getField("lastmodified").asString());
 

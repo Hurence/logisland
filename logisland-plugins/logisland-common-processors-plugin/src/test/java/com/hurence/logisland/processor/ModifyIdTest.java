@@ -31,9 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import static org.hamcrest.Matchers.*;
 
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
+
+import static com.hurence.logisland.processor.ModifyId.CHARSET_TO_USE_FOR_HASH;
 
 /**
  * Created by gregoire on 08/02/17.
@@ -81,7 +86,7 @@ public class ModifyIdTest {
         outputRecord.assertFieldEquals("string2",  "value2");
         outputRecord.assertFieldEquals("long1",  1);
         outputRecord.assertFieldEquals("long2",  2);
-        outputRecord.assertFieldEquals("record_id",  "<��\u0001\u007F�K�=\u000F��&�\u0014?�-��\u0014TA�_\u0006\u0004\u0004~��");
+        outputRecord.assertFieldEquals("record_id",  "3c968317f9e4bf33dfbedd26bf143fd72de9b9dd145441b75f6447ea28e");
 
     }
 
@@ -273,5 +278,43 @@ public class ModifyIdTest {
         long processingTimeByRecord = (endTime - startTime) / records.length;
         logger.info("timeProcessByRecordWas '{}'", processingTimeByRecord);
         Assert.assertTrue("maxTimeByRecord should be inferior to " + maxTimeByRecord, processingTimeByRecord <= maxTimeByRecord);
+    }
+
+    @Test
+    public void testEncoding() throws NoSuchAlgorithmException {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
+        testRunner.setProperty(CHARSET_TO_USE_FOR_HASH, "US-ASCII");
+        testRunner.assertValid();
+
+        /**
+         * ERRORS
+         */
+        String rawValue = "a,b,c,12.5";
+        Record record1 = getRecord1().setStringField(FieldDictionary.RECORD_RAW_VALUE,rawValue);
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        StringBuilder stb = new StringBuilder();
+        stb.append(rawValue);
+        final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        final Charset charset = Charset.forName("US-ASCII");
+        digest.update(stb.toString().getBytes(charset));
+        byte[] digested = digest.digest();
+
+
+        StringBuffer hexString = new StringBuffer();
+        for (int i=0;i<digested.length;i++) {
+            hexString.append(Integer.toHexString(0xFF & digested[i]));
+        }
+
+        String id = hexString.toString();
+
+        outputRecord.assertFieldEquals(FieldDictionary.RECORD_ID,  id);
+
+
     }
 }
