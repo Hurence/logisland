@@ -16,18 +16,15 @@
 package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.service.solr.api.SolrClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,7 +71,7 @@ abstract public class TestSolrClientService {
 
         final SolrClientService solrClientService = configureSolrClientService(runner);
 
-        Assert.assertTrue(solrClientService.getClient().getClass().getPackage().getImplementationVersion().contains(getVersion()));
+        Assert.assertTrue(solrClientService.getSolrVersion().contains(getVersion()));
     }
 
     @Test

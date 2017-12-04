@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.solr;
+package com.hurence.logisland.service.solr.api;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
@@ -44,7 +44,6 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CursorMarkParams;
-import org.apache.solr.common.params.MapSolrParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 @Tags({ "solr", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
+@CapabilityDescription("Abstract implementation of SolrClientService for Solr")
 abstract public class SolrClientService extends AbstractControllerService implements DatastoreClientService {
 
     protected volatile SolrClient solrClient;
@@ -150,15 +149,15 @@ abstract public class SolrClientService extends AbstractControllerService implem
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
         synchronized(this) {
             try {
-                createSolrClient(context);
+                setClient(createSolrClient(context));
             }catch (Exception e){
                 throw new InitializationException(e);
             }
         }
     }
 
-    abstract protected void createCloudClient(String connectionString, String collection);
-    abstract protected void createHttpClient(String connectionString, String collection);
+    abstract protected SolrClient createCloudClient(String connectionString, String collection);
+    abstract protected SolrClient createHttpClient(String connectionString, String collection);
 
     public void setSchemaUpdateTimeout(int schemaUpdateTimeout) {
         this.schemaUpdateTimeout = schemaUpdateTimeout;
@@ -176,22 +175,22 @@ abstract public class SolrClientService extends AbstractControllerService implem
      * @param context The context for this processor
      * @throws ProcessException if an error occurs while creating an Elasticsearch client
      */
-    protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
+    protected SolrClient createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
         if (solrClient != null) {
-            return;
+            return solrClient;
         }
         try {
-
+            SolrClient client;
             // create a solr client
             final Boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
             final String connectionString = context.getPropertyValue(SOLR_CONNECTION_STRING).asString();
             final String collection = context.getPropertyValue(SOLR_COLLECTION).asString();
-            setSchemaUpdateTimeout(context.getPropertyValue(SOLR_COLLECTION).asInteger());
+            setSchemaUpdateTimeout(context.getPropertyValue(SCHEMA_UPDATE_TIMEOUT).asInteger());
 
             if (isCloud) {
-                createCloudClient(connectionString, collection);
+                client = createCloudClient(connectionString, collection);
             } else {
-                createHttpClient(connectionString, collection);
+                client = createHttpClient(connectionString, collection);
             }
 
             // setup a thread pool of solr updaters
@@ -200,14 +199,18 @@ abstract public class SolrClientService extends AbstractControllerService implem
             long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
             updaters = new ArrayList<>(numConcurrentRequests);
             for (int i = 0; i < numConcurrentRequests; i++) {
-                SolrUpdater updater = new SolrUpdater(solrClient, queue, batchSize, flushInterval);
+                SolrUpdater updater = new SolrUpdater(client, queue, batchSize, flushInterval);
                 new Thread(updater).start();
                 updaters.add(updater);
             }
 
+            return client;
+
         } catch (Exception ex) {
             logger.error(ex.toString());
         }
+
+        return null;
     }
 
     protected SolrClient getClient() {
@@ -215,6 +218,10 @@ abstract public class SolrClientService extends AbstractControllerService implem
     }
     protected void setClient(SolrClient client) {
         solrClient = client;
+    }
+
+    public String getSolrVersion() {
+        return getClient().getClass().getPackage().getImplementationVersion();
     }
 
     public String getUniqueKey(String collectionName) throws IOException, SolrServerException {
@@ -484,11 +491,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
 
     @Override
     public void bulkFlush() throws DatastoreClientServiceException {
-        try {
-            getClient().commit();
-        } catch (Exception e) {
-            throw new DatastoreClientServiceException(e);
-        }
+        bulkFlush(null);
     }
 
     @Override

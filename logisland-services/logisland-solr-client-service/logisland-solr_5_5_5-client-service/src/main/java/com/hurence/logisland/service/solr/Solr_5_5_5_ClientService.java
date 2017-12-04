@@ -17,28 +17,28 @@ package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.service.solr.api.SolrClientService;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.slf4j.LoggerFactory;
-
 
 @Tags({ "solr", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
 public class Solr_5_5_5_ClientService extends SolrClientService {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(Solr_5_5_5_ClientService.class);
 
-    @Override
-    protected void createCloudClient(String connectionString, String collection) {
+
+    protected SolrClient createCloudClient(String connectionString, String collection) {
         CloudSolrClient cloudSolrClient = new CloudSolrClient(connectionString);
         cloudSolrClient.setDefaultCollection(collection);
         cloudSolrClient.setZkClientTimeout(30000);
         cloudSolrClient.setZkConnectTimeout(30000);
 
-        solrClient = cloudSolrClient;
+        return cloudSolrClient;
     }
 
-    @Override
-    protected void createHttpClient(String connectionString, String collection) {
-        solrClient = new HttpSolrClient(connectionString + "/" + collection);
+    protected SolrClient createHttpClient(String connectionString, String collection) {
+        return new HttpSolrClient(connectionString + "/" + collection);
     }
 }

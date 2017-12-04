@@ -10,7 +10,6 @@
         <version>0.11.0</version>
     </parent>
 
-
     <artifactId>logisland-solr_5_5_5-client-service</artifactId>
     <packaging>jar</packaging>
 
@@ -57,7 +56,6 @@
                     <argLine>-Dtests.security.manager=false</argLine>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -74,7 +72,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.hurence.logisland:logisland-solr-client-service-api</include>
-                                    <include>com.hurence.logisland:logisland-solr-client-service-test</include>
                                     <include>org.apache.lucene:*</include>
                                     <include>org.apache.solr:*</include>
                                     <include>com.google.guava:*</include>
@@ -163,6 +160,10 @@
                                     <pattern>org.apache.solr</pattern>
                                     <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
                                 </relocation>
+                               <relocation>
+                                   <pattern>com.hurence.logisland.service.solr.api</pattern>
+                                   <shadedPattern>${shaded.package}.com.hurence.logisland.service.solr.api</shadedPattern>
+                               </relocation>
                             </relocations>
                         </configuration>
                     </execution>

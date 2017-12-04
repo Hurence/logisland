@@ -17,21 +17,15 @@ package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
-import org.apache.solr.client.solrj.SolrQuery;
+import com.hurence.logisland.service.solr.api.SolrClientService;
+import com.hurence.logisland.service.solr.api.SolrRecordConverter;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.util.ClientUtils;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
-import org.apache.solr.common.params.CursorMarkParams;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -67,17 +61,17 @@ public class Solr_6_6_2_ClientService extends SolrClientService {
     }
 
     @Override
-    protected void createCloudClient(String connectionString, String collection) {
+    protected SolrClient createCloudClient(String connectionString, String collection) {
         CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
         cloudSolrClient.setDefaultCollection(collection);
         cloudSolrClient.setZkClientTimeout(30000);
         cloudSolrClient.setZkConnectTimeout(30000);
 
-        solrClient = cloudSolrClient;
+        return cloudSolrClient;
     }
 
     @Override
-    protected void createHttpClient(String connectionString, String collection) {
-        solrClient = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
+    protected SolrClient createHttpClient(String connectionString, String collection) {
+        return new HttpSolrClient.Builder(connectionString + "/" + collection).build();
     }
 }

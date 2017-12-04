@@ -18,6 +18,7 @@ package com.hurence.logisland.service.solr;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.service.solr.api.SolrClientService;
 import org.apache.solr.client.solrj.SolrClient;
 
 import java.util.ArrayList;
@@ -32,8 +33,8 @@ public class TestSolr_5_5_5_ClientService extends TestSolrClientService {
         }
 
         @Override
-        protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
-            setClient(solrRule.getClient());
+        protected SolrClient createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
+            return solrRule.getClient();
         }
 
         @Override

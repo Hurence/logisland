@@ -134,6 +134,8 @@ public class BulkPut extends AbstractDatastoreProcessor
                 }
                 datastoreClientService.bulkPut(collection, record);
             }
+
+            datastoreClientService.bulkFlush();
         }
         return records;
     }
