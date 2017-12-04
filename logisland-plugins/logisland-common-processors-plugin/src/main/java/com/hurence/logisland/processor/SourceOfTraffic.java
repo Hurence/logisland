@@ -154,11 +154,46 @@ public class SourceOfTraffic extends AbstractProcessor {
 
         for (Record record : records) {
             // Check if this is a custom campaign
+            boolean organic_searches = false; 
             if (record.getField(utm_source) != null){
-                // This is a custom campaign
+                if (record.getField(utm_campaign) != null){
+                }
+                if (record.getField(utm_medium) != null){
+                }
+                if (record.getField(utm_content) != null){
+                }
+                if (record.getField(utm_term) != null){
+                }
             }
-            else if(){
-
+            else if(record.getField(referer) != null){
+                // Analyse the referer
+                String referer_val = record.getField(referer).asString();
+                // Is the referer a known search engine ?
+                String hostname = record.getField(referer_hostname).asString();   
+                if (is_search_engine(hostname)){
+                    // This is an organic search engine
+                    String source = hostname;
+                    String medium = "organic";
+                    boolean organic_searches = true; 
+                }
+                else if (is_social_network(hostname)){
+                    // This is social network
+                    String source = hostname;
+                    String medium = "social network";
+                }
+                else if (referer != null){
+                    // This is a referring site
+                    String source = hostname;
+                    String medium = "referral";
+                    String content = referer;
+                    String referral_path = referer;
+                }
+            }
+            else {
+                // Direct access
+                String source = "direct";
+                String medium = "";
+                String campaign = "direct";
             }
         }
         return records;
