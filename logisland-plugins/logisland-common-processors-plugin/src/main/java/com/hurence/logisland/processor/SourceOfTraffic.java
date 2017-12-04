@@ -153,8 +153,13 @@ public class SourceOfTraffic extends AbstractProcessor {
         final String referer       = context.getProperty(REFERER_FIELD);
 
         for (Record record : records) {
+            // Check if this is a custom campaign
+            if (record.getField(utm_source) != null){
+                // This is a custom campaign
+            }
+            else if(){
 
-            //
+            }
         }
         return records;
     }
