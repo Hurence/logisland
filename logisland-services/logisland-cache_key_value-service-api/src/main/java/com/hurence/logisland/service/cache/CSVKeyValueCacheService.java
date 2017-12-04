@@ -17,13 +17,12 @@ package com.hurence.logisland.service.cache;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
@@ -35,7 +34,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
@@ -43,12 +41,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Tags({"csv", "service", "cache"})
 @CapabilityDescription("A cache that store csv lines as records loaded from a file")
-public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService{
+public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService {
 
 
     private static Logger logger = LoggerFactory.getLogger(CSVKeyValueCacheService.class);
@@ -116,6 +115,14 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor ENCODING_CHARSET = new PropertyDescriptor.Builder()
+            .name("encoding.charset")
+            .displayName("Encoding charset")
+            .description("charset")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("UTF-8")
+            .build();
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -127,6 +134,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
         props.add(ROW_KEY);
         props.add(CACHE_SIZE);
         props.add(FIRST_LINE_HEADER);
+        props.add(ENCODING_CHARSET);
         return Collections.unmodifiableList(props);
     }
 
@@ -137,7 +145,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     protected String rowKey = null;
 
     @Override
-   // @OnEnabled
+    // @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
         super.init(context);
         try {
@@ -158,15 +166,22 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
             InputStream is = null;
             if (dbUri != null) {
+                logger.info("opening csv database from hdfs : " + dbUri);
                 is = initFromUri(dbUri);
             }
 
             if (dbPath != null) {
+                logger.info("opening csv database from local fs : " + dbPath);
                 is = initFromPath(context, dbPath);
             }
 
 
-            final Reader reader = new InputStreamReader(is);
+            if (is == null) {
+                throw new InitializationException("Something went wrong while initializing csv db from " +
+                        DATABASE_FILE_URI.getName() + " or " + DATABASE_FILE_PATH.getName());
+            }
+
+           // final Reader reader = new InputStreamReader(is);
             CSVFormat format = CSVFormat.DEFAULT;
             if (context.getPropertyValue(CSV_FORMAT).asString().equals(CSV_EXCEL.getValue())) {
                 format = CSVFormat.EXCEL;
@@ -194,8 +209,26 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
             }
 
 
+            Charset charset = Charset.forName("UTF-8");
+            if (context.getPropertyValue(ENCODING_CHARSET).isSet()) {
+                String encoding = context.getPropertyValue(ENCODING_CHARSET).asString();
+                charset =  Charset.forName(encoding);
+            }
+
             rowKey = context.getPropertyValue(ROW_KEY).asString();
-            CSVParser parser = new CSVParser(reader, format);
+            CSVParser parser = CSVParser.parse(is, charset, format); //new CSVParser(reader, format);
+
+            /*
+            *    CSVParser parser = null;
+
+            if (context.getPropertyValue(ENCODING_CHARSET).isSet()) {
+                String encoding = context.getPropertyValue(ENCODING_CHARSET).asString();
+                parser = CSVParser.parse(reader, Charset.forName(encoding), format);
+            } else {
+                parser = CSVParser.parse(reader, format);
+            }
+            */
+            long count = 0;
             try {
                 final Set<String> columnNames = parser.getHeaderMap().keySet();
                 for (final CSVRecord record : parser) {
@@ -205,11 +238,14 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
                         logislandRecord.setStringField(column, record.get(column));
                     }
 
-                    set(logislandRecord.getField(rowKey).asString(),logislandRecord );
+                    set(logislandRecord.getField(rowKey).asString(), logislandRecord);
+                    count++;
                 }
             } finally {
+                logger.info("successfully loaded " + count + " records from CSV file");
+
                 parser.close();
-                reader.close();
+                is.close();
             }
 
 
@@ -220,13 +256,19 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     }
 
 
-    private InputStream initFromPath(ControllerServiceInitializationContext context, String dbPath) throws Exception {
+    private InputStream initFromPath(ControllerServiceInitializationContext context, String dbPath) {
         final File dbFile = new File(dbPath);
+        try {
+            return new FileInputStream(dbFile);
+        } catch (FileNotFoundException e) {
+            logger.info(e.toString());
+            return null;
+        }
 
-        return new FileInputStream(dbFile);
+
     }
 
-    private InputStream initFromUri(String dbUri) throws Exception {
+    private InputStream initFromUri(String dbUri) {
         Configuration conf = new Configuration();
 
         String hdfsUri = conf.get("fs.defaultFS");
@@ -238,17 +280,21 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
         System.setProperty("hadoop.home.dir", "/");
 
         // Get the HDFS filesystem
-        FileSystem fs = FileSystem.get(URI.create(hdfsUri), conf);
+        FileSystem fs = null;
+        try {
+            fs = FileSystem.get(URI.create(hdfsUri), conf);
 
-        // Create a path to config file and init input stream
-        Path hdfsReadpath = new Path(dbUri);
-        getLogger().info("Reading DB file from HDFS at: " + dbUri);
-        FSDataInputStream inputStream = fs.open(hdfsReadpath);
 
-        return inputStream;
+            // Create a path to config file and init input stream
+            Path hdfsReadpath = new Path(dbUri);
+            getLogger().info("Reading DB file from HDFS at: " + dbUri);
+            return fs.open(hdfsReadpath);
+        } catch (IOException e) {
+            logger.info(e.toString());
+            return null;
+        }
+
     }
-
-
 
 
     @Override
@@ -314,20 +360,26 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
         for (MultiGetQueryRecord mgqr : multiGetQueryRecords) {
             String collectionName = mgqr.getIndexName();
             String typeName = mgqr.getTypeName();
+
             for (String id : mgqr.getDocumentIds()) {
-                Record record = get(collectionName, new StandardRecord().setId(id));
+                Record record = get(collectionName, new StandardRecord().setStringField(rowKey, id));
                 Map<String, String> retrievedFields = new HashMap<>();
                 if (record != null) {
 
                     if (mgqr.getFieldsToInclude()[0].equals("*")) {
                         for (Field field : record.getAllFieldsSorted()) {
-                            retrievedFields.put(field.getName(), field.asString());
+                            if (!field.getName().equals(FieldDictionary.RECORD_TIME) &&
+                                    !field.getName().equals(FieldDictionary.RECORD_TYPE) &&
+                                    !field.getName().equals(FieldDictionary.RECORD_ID))
+                                retrievedFields.put(field.getName(), field.asString());
                         }
-                    }else{
+                    } else {
                         for (String prop : mgqr.getFieldsToInclude()) {
                             retrievedFields.put(prop, record.getField(prop).asString());
                         }
                     }
+                } else {
+                    logger.debug("unable to retrieve record (id=" + id + ") from collection " + collectionName);
                 }
                 results.add(new MultiGetResponseRecord(collectionName, typeName, id, retrievedFields));
             }
@@ -338,9 +390,9 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
     @Override
     public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
-        if(record.hasField(rowKey)){
+        if (record.hasField(rowKey)) {
             return get(record.getField(rowKey).asString());
-        }else{
+        } else {
             logger.error("field " + rowKey + " not found in record " + record.toString());
             return null;
         }

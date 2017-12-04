@@ -47,7 +47,7 @@ engine:
         solr.collection: chronix
         solr.concurrent.requests: 4
         flush.interval: 2000
-        batch.size: 1000
+        batch.size: 500
 
     - controllerService: lookup_service
       component: com.hurence.logisland.service.cache.CSVKeyValueCacheService
@@ -58,7 +58,7 @@ engine:
         csv.file.path: "logisland-assembly/target/logisland-0.11.0-bin-hdp2.5/logisland-0.11.0/conf/timeseries-lookup.csv"
         first.line.header: true
         row.key: tagname
-
+        encoding.charset: ISO-8859-1
 
   streamConfigurations:
 
@@ -96,8 +96,8 @@ engine:
             record.type: historian_serie
             key.regex: (\S*):(\S*)
             key.fields: filename,nifi_uuid
-            value.regex: (\S+\s+\S+);(\S+);(\S+);(\S+)
-            value.fields: record_time,tagname,record_value,quality
+            value.regex: (\S+\s+\S+);((\w+)\.?(\w+-?\w+-?\w+)?\.?(\w+)?);(\S+);(\S+)
+            value.fields: record_time,tagname,code_install,sensor,numeric_type,record_value,quality
 
         - processor: fields_enricher
           component: com.hurence.logisland.processor.datastore.EnrichRecords
@@ -107,6 +107,7 @@ engine:
             datastore.client.service: lookup_service
             record.key: tagname
             collection.name: chronix
+            includes.field: description,engunits
 
         - processor: fields_types_converter
           component: com.hurence.logisland.processor.ConvertFieldsType
@@ -123,6 +124,14 @@ engine:
           configuration:
             conflict.resolution.policy: keep_both_fields
             record_name: tagname
+
+        - processor: idempotency_maker
+          component: com.hurence.logisland.processor.ModifyId
+          type: parser
+          documentation: "generate an id from hashing values"
+          configuration:
+           id.generation.strategy: hashFields
+           hash.charset: US-ASCII
 
         - processor: chronix_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut

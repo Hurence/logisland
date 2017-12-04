@@ -186,7 +186,12 @@ public class ModifyId extends AbstractProcessor {
                             }
                             digest.update(stb.toString().getBytes(charset));
                             byte[] digested = digest.digest();
-                            record.setId(new String(digested, charset));
+                            StringBuffer hexString = new StringBuffer();
+                            for (int i=0;i<digested.length;i++) {
+                                hexString.append(Integer.toHexString(0xFF & digested[i]));
+                            }
+
+                            record.setId(hexString.toString());
                         }
                     };
                 } catch (NoSuchAlgorithmException e) {

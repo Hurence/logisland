@@ -143,7 +143,7 @@ public class JsonSerializer implements RecordSerializer {
             out.write(jsonString.getBytes());
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+           logger.debug(e.toString());
         }
 
     }

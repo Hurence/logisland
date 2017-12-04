@@ -158,6 +158,8 @@
     <!-- <jmx serviceUrl="service:jmx:rmi:///jndi/rmi://localhost:9999/solr"/>
       -->
 
+
+
     <!-- The default high-performance update handler -->
     <updateHandler class="solr.DirectUpdateHandler2">
 
@@ -625,7 +627,7 @@
 
     <requestHandler name="/compact" class="de.qaware.chronix.solr.compaction.ChronixCompactionHandler"/>
 
-    <!-- Uncomment to activate the rentetion handler.
+    <!-- Uncomment to activate the rentetion handler.  -->
     <requestHandler name="/retention"
                     class="de.qaware.chronix.solr.retention.ChronixRetentionHandler">
         <lst name="invariants">
@@ -637,7 +639,7 @@
             <str name="softCommit">false</str>
         </lst>
     </requestHandler>
-    -->
+
 
     <!-- Legacy config for the admin interface -->
     <admin>

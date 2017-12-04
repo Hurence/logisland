@@ -56,16 +56,11 @@ import java.util.function.Function;
 public class Solr_6_4_2_ChronixClientService extends AbstractControllerService implements DatastoreClientService {
 
     private static Logger logger = LoggerFactory.getLogger(Solr_6_4_2_ChronixClientService.class);
-    protected static Function<MetricTimeSeries, String> groupBy = MetricTimeSeries::getName;
-    protected static BinaryOperator<MetricTimeSeries> reduce = (binaryTimeSeries, binaryTimeSeries2) -> binaryTimeSeries;
-
     protected volatile SolrClient solr;
 
     List<ChronixUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
-    MetricTimeSeriesConverter converter = null;
-    ChronixSolrStorage<MetricTimeSeries> storage = null;
 
 
     PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
@@ -176,7 +171,7 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
 
 
     protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
-        if (storage != null) {
+        if (updaters != null) {
             return;
         }
         try {
@@ -192,10 +187,6 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
                 updaters.add(updater);
             }
 
-
-         /*   converter = new MetricTimeSeriesConverter();
-            storage = new ChronixSolrStorage<>(batchSize, groupBy, reduce);
-*/
 
         } catch (Exception ex) {
             logger.error(ex.toString());

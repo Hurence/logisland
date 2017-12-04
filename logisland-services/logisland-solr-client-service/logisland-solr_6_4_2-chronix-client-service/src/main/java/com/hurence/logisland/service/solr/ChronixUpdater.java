@@ -46,10 +46,11 @@ public class ChronixUpdater implements Runnable {
     private volatile int batchedUpdates = 0;
     private volatile long lastTS = 0;
 
+    private static volatile int threadCount = 0;
     protected static Function<MetricTimeSeries, String> groupBy = MetricTimeSeries::getName;
     protected static BinaryOperator<MetricTimeSeries> reduce = (binaryTimeSeries, binaryTimeSeries2) -> binaryTimeSeries;
 
-    private static Logger logger = LoggerFactory.getLogger(ChronixUpdater.class);
+    private Logger logger = LoggerFactory.getLogger(ChronixUpdater.class.getName() + threadCount);
 
     MetricTimeSeriesConverter converter = null;
     ChronixSolrStorage<MetricTimeSeries> storage = null;
@@ -62,6 +63,7 @@ public class ChronixUpdater implements Runnable {
         this.lastTS = System.nanoTime(); // far in the future ...
         converter = new MetricTimeSeriesConverter();
         storage = new ChronixSolrStorage<>(batchSize, groupBy, reduce);
+        threadCount++;
     }
 
     @Override
