@@ -77,5 +77,14 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cache-service-api</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-plugin</artifactId>
+        </dependency>
     </dependencies>
 </project>
