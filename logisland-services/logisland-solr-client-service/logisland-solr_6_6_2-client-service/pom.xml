@@ -85,6 +85,7 @@
 
                             <artifactSet>
                                 <includes>
+                                    <include>com.hurence.logisland:logisland-solr-client-service-api</include>
                                     <include>org.apache.lucene:*</include>
                                     <include>org.apache.solr:*</include>
                                     <include>com.google.guava:*</include>
@@ -173,6 +174,10 @@
                                     <pattern>org.apache.solr</pattern>
                                     <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
                                 </relocation>
+                               <relocation>
+                                   <pattern>com.hurence.logisland.service.solr.api</pattern>
+                                   <shadedPattern>${shaded.package}.com.hurence.logisland.service.solr.api</shadedPattern>
+                               </relocation>
                             </relocations>
                         </configuration>
                     </execution>

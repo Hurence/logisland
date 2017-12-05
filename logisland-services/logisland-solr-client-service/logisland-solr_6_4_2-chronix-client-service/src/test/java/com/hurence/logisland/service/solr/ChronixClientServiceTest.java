@@ -60,21 +60,21 @@ public class ChronixClientServiceTest {
             solr = solrRule.getClient();
         }
 
-        @Override
-        protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
-            if (storage != null) {
-                return;
-            }
-            try {
-
-                converter = new MetricTimeSeriesConverter();
-                storage = new ChronixSolrStorage<>(20, groupBy, reduce);
-
-
-            } catch (Exception ex) {
-                logger.error(ex.toString());
-            }
-        }
+//        @Override
+//        protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
+//            if (storage != null) {
+//                return;
+//            }
+//            try {
+//
+//                converter = new MetricTimeSeriesConverter();
+//                storage = new ChronixSolrStorage<>(20, groupBy, reduce);
+//
+//
+//            } catch (Exception ex) {
+//                logger.error(ex.toString());
+//            }
+//        }
 
 
         @Override

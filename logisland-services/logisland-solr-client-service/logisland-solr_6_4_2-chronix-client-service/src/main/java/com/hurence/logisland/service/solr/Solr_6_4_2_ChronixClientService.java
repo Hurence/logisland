@@ -61,8 +61,6 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     List<ChronixUpdater> updaters = null;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
-
-
     PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
             .name("solr.cloud")
             .description("is slor cloud enabled")
