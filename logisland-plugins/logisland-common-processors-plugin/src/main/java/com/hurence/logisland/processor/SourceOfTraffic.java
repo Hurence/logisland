@@ -55,6 +55,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
     private static final String SEARCH_ENGINE_SITE = "organic";
     private static final String REFERRING_SITE = "referral";
     private static final String DIRECT_TRAFFIC = "direct";
+    protected boolean debug = false;
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
             .name("record.key")
@@ -85,11 +86,21 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             .identifiesControllerService(CacheService.class)
             .build();
 
+    public static final PropertyDescriptor CONFIG_DEBUG = new PropertyDescriptor.Builder()
+            .name(PROP_DEBUG)
+            .description("If true, an additional debug field is added. If the geo info fields prefix is X," +
+                    " a debug field named X" + DEBUG_FROM_CACHE_SUFFIX + " contains a boolean value" +
+                    " to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).")
+            .required(false)
+            .defaultValue("false")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
     private static final PropertyDescriptor REFERER_FIELD = new PropertyDescriptor.Builder()
-            .name("referer.field")
+            .name("referer_hostname.field")
             .description("Name of the field containing the referer value in the record")
             .required(false)
-            .defaultValue("referer")
+            .defaultValue("referer_hostname")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -199,6 +210,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
         descriptors.add(SOURCE_OF_TRAFFIC_SUFFIX_FIELD);
         descriptors.add(ELASTICSEARCH_CLIENT_SERVICE);
         descriptors.add(CONFIG_CACHE_SERVICE);
+        descriptors.add(CONFIG_DEBUG);
         descriptors.add(RECORD_KEY_FIELD);
         descriptors.add(ES_INDEX_FIELD);
         descriptors.add(ES_TYPE_FIELD);
@@ -207,6 +219,8 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+
+        debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
 
         /**
          * Get source of traffic service (aka Elasticsearch service) and the cache
@@ -221,49 +235,51 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
 
     public void processSession(ProcessContext context, Record record)
     {
-        final String utm_source    = context.getProperty(UTM_SOURCE_FIELD);
-        final String utm_medium    = context.getProperty(UTM_MEDIUM_FIELD);
-        final String utm_campaign  = context.getProperty(UTM_CAMPAIGN_FIELD);
-        final String utm_content   = context.getProperty(UTM_CONTENT_FIELD);
-        final String utm_term      = context.getProperty(UTM_TERM_FIELD);
-        final String output_suffix = context.getProperty(SOURCE_OF_TRAFFIC_SUFFIX_FIELD);
-        final String referer       = context.getProperty(REFERER_FIELD);
+        final String utm_source_field         = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
+        final String utm_medium_field         = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
+        final String utm_campaign_field       = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
+        final String utm_content_field        = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
+        final String utm_term_field           = context.getPropertyValue(UTM_TERM_FIELD).asString();
+        final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String referer_field            = context.getPropertyValue(REFERER_FIELD).asString();
 
         SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
         // Check if this is a custom campaign
-        boolean organic_searches = false;
-        if (record.getField(utm_source) != null){
+        if (record.getField(utm_source_field) != null){
+            String utm_source = record.getField(utm_source_field).asString();
             sourceOfTraffic.setSource(utm_source);
-            if (record.getField(utm_campaign) != null){
+            if (record.getField(utm_campaign_field) != null){
+                String utm_campaign = record.getField(utm_campaign_field).asString();
                 sourceOfTraffic.setCampaign(utm_campaign);
             }
-            if (record.getField(utm_medium) != null){
+            if (record.getField(utm_medium_field) != null){
+                String utm_medium = record.getField(utm_medium_field).asString();
                 sourceOfTraffic.setMedium(utm_medium);
             }
-            if (record.getField(utm_content) != null){
+            if (record.getField(utm_content_field) != null){
+                String utm_content = record.getField(utm_content_field).asString();
                 sourceOfTraffic.setContent(utm_content);
             }
-            if (record.getField(utm_term) != null){
+            if (record.getField(utm_term_field) != null){
+                String utm_term = record.getField(utm_term_field).asString();
                 sourceOfTraffic.setKeyword(utm_term);
             }
         }
-        else if(record.getField(referer) != null){
-            // Analyse the referer
-            String referer_val = record.getField(referer).asString();
+        else if(record.getField(referer_field) != null){
+            String hostname = record.getField(referer_field).asString();
             // Is the referer a known search engine ?
-            String hostname = record.getField(referer).asString();
-            if (is_search_engine(hostname, context)){
+            if (is_search_engine(hostname, context, record)){
                 // This is an organic search engine
                 sourceOfTraffic.setSource(hostname);
                 sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
                 sourceOfTraffic.setOrganic_searches(true);
             }
-            else if (is_social_network(hostname, context)){
+            else if (is_social_network(hostname, context, record)){
                 // This is social network
                 sourceOfTraffic.setSource(hostname);
                 sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
             }
-            else if (referer != null){
+            else if (hostname != null){
                 // This is a referring site
                 sourceOfTraffic.setSource(hostname);
                 sourceOfTraffic.setMedium(REFERRING_SITE);
@@ -275,7 +291,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             sourceOfTraffic.setMedium("");
             sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
         }
-        record.setField(SOURCE_OF_TRAFFIC_SUFFIX_NAME, FieldType.MAP, sourceOfTraffic);
+        record.setField(source_of_traffic_suffix, FieldType.MAP, sourceOfTraffic);
     }
 
 
@@ -292,8 +308,8 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
      * To figure out wether the hostname is a known social network, we first lookup the hostname in our local cache.
      * If the hostname is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
      */
-    private boolean is_social_network(String hostname, ProcessContext context) {
-        return has_hostname_flag(hostname, SOCIAL_NETWORK_SITE, context);
+    private boolean is_social_network(String hostname, ProcessContext context, Record record) {
+        return has_hostname_flag(hostname, SOCIAL_NETWORK_SITE, context, record);
     }
 
     /*
@@ -301,11 +317,12 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
      * To figure out wether the hostname is a known search engine, we first lookup the hostname in our local cache.
      * If the hostname is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
      */
-    private boolean is_search_engine(String hostname, ProcessContext context) {
-        return has_hostname_flag(hostname, SEARCH_ENGINE_SITE, context);
+    private boolean is_search_engine(String hostname, ProcessContext context, Record record) {
+        return has_hostname_flag(hostname, SEARCH_ENGINE_SITE, context, record);
     }
 
-    private boolean has_hostname_flag(String hostname, String flag, ProcessContext context){
+    private boolean has_hostname_flag(String hostname, String flag, ProcessContext context, Record record){
+        final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
         boolean has_flag = false;
         /**
          * Attempt to find hostname related info from the cache
@@ -339,9 +356,9 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
              * Not in the cache or cache entry expired
              * Call the elasticsearch service and fill responses as new fields
              */
-            String recordKeyName = context.getProperty(RECORD_KEY_FIELD);
-            String indexName = context.getProperty(ES_INDEX_FIELD);
-            String typeName = context.getProperty(ES_TYPE_FIELD);
+            String recordKeyName = context.getPropertyValue(RECORD_KEY_FIELD).asString();
+            String indexName = context.getPropertyValue(ES_INDEX_FIELD).asString();
+            String typeName = context.getPropertyValue(ES_TYPE_FIELD).asString();
             MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
             mgqrBuilder.add(indexName, typeName, null, recordKeyName);
             List<MultiGetResponseRecord> multiGetResponseRecords = null;
@@ -352,14 +369,29 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             } catch (InvalidMultiGetQueryRecordException e ){
                 // should never happen
                 e.printStackTrace();
-                // TODO : Fix above
             }
 
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
                 // The hostname is not known in the Elasticsearch special index
                 // Therefore it is neither a search engine nor a social network
-
-                // TODO: We should regiter that info in the cache not to further lookup in ES.
+                sourceInfo = new HashMap();
+                sourceInfo.put(REFERRING_SITE, true);
+            }
+            else {
+                Optional<MultiGetResponseRecord> mgrr = multiGetResponseRecords.stream().findFirst();
+                MultiGetResponseRecord mgrr_record;
+                if (mgrr.isPresent()){
+                    mgrr_record = mgrr.get();
+                    sourceInfo = new HashedMap();
+                    Map[] sourceInfoArray = { sourceInfo };
+                    mgrr_record.getRetrievedFields().forEach((k, v) -> {
+                        String fieldName = k.toString();
+                        String fieldValue = v.toString();
+                        // Initialize sourceInfo; i-e Map<String, Object>
+                        sourceInfoArray[0].put(fieldName,fieldValue);
+                            }
+                    );
+                }
             }
 
             try {
@@ -378,6 +410,11 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             }
         }
 
+        if (debug)
+        {
+            // Add some debug fields
+            record.setField(source_of_traffic_suffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
+        }
         return has_flag;
     }
 
