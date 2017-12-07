@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.hurence.logisland.processor.SourceOfTraffic.ES_INDEX_FIELD;
-import static com.hurence.logisland.processor.SourceOfTraffic.RECORD_KEY_FIELD;
 
 public class SourceOfTrafficTest extends BaseSyslogTest {
 
@@ -44,7 +43,7 @@ public class SourceOfTrafficTest extends BaseSyslogTest {
 
     private Record getRecord1() {
         Record record1 = new StandardRecord();
-        record1.setField("referer_hostname",   FieldType.STRING, "xyz_website");
+        record1.setField("referer",   FieldType.STRING, "xyz_website");
         record1.setField("utm_source",         FieldType.STRING, "mysource");
         record1.setField("utm_campaign",       FieldType.STRING, "mycampaign");
         record1.setField("utm_medium",         FieldType.STRING, "email");
@@ -89,8 +88,6 @@ public class SourceOfTrafficTest extends BaseSyslogTest {
         runner.enableControllerService(cacheService);
         runner.setProperty(SourceOfTraffic.CONFIG_CACHE_SERVICE, "cacheService");
 
-
-        runner.setProperty(RECORD_KEY_FIELD.getName(), "referer_hostname");
         runner.setProperty(ES_INDEX_FIELD.getName(), "index1");
 
         return runner;

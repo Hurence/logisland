@@ -17,15 +17,11 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.elasticsearch.AbstractElasticsearchProcessor;
-import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
@@ -35,6 +31,8 @@ import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 @Tags({"record", "traffic", "source"})
@@ -48,21 +46,14 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
     protected CacheService<String, CacheEntry> cacheService;
     static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
     protected static final String PROP_CACHE_SERVICE = "cache.service";
+    protected static final String PROP_CACHE_VALIDITY_TIMEOUT = "cache.validity.timeout";
     protected static final String PROP_DEBUG = "debug";
-    protected static final long DEFAULT_CACHE_VALIDITY_PERIOD = 0;
-    protected long cacheValidityPeriodSec = DEFAULT_CACHE_VALIDITY_PERIOD;
-    private static final String SOCIAL_NETWORK_SITE = "social network";
-    private static final String SEARCH_ENGINE_SITE = "organic";
+    protected static final String DEFAULT_CACHE_VALIDITY_PERIOD = "0";
+    private static final String SOCIAL_NETWORK_SITE = "social_network";
+    private static final String SEARCH_ENGINE_SITE = "search_engine";
     private static final String REFERRING_SITE = "referral";
     private static final String DIRECT_TRAFFIC = "direct";
     protected boolean debug = false;
-
-    public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
-            .name("record.key")
-            .description("The name of field in the input record containing the document id to use in ES multiget query")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
 
     public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
             .name("es.index")
@@ -76,7 +67,20 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             .description("The name of the ES type to use in multiget query.")
             .required(false)
             .defaultValue("default")
-            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor ES_SEARCH_ENGINE_FIELD = new PropertyDescriptor.Builder()
+            .name("es.search_engine.field")
+            .description("The name of the ES field used to specify that the host is a search engine.")
+            .required(false)
+            .defaultValue(SEARCH_ENGINE_SITE)
+            .build();
+
+    public static final PropertyDescriptor ES_SOCIAL_NETWORK_FIELD = new PropertyDescriptor.Builder()
+            .name("es.social_network.field")
+            .description("The name of the ES field used to specify that the host is a social network.")
+            .required(false)
+            .defaultValue(SOCIAL_NETWORK_SITE)
             .build();
 
     public static final PropertyDescriptor CONFIG_CACHE_SERVICE = new PropertyDescriptor.Builder()
@@ -86,21 +90,29 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             .identifiesControllerService(CacheService.class)
             .build();
 
+    public static final PropertyDescriptor CONFIG_CACHE_VALIDITY_TIMEOUT = new PropertyDescriptor.Builder()
+            .name(PROP_CACHE_VALIDITY_TIMEOUT)
+            .description("The name of the cache service to use.")
+            .required(false)
+            .defaultValue(DEFAULT_CACHE_VALIDITY_PERIOD)
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+
     public static final PropertyDescriptor CONFIG_DEBUG = new PropertyDescriptor.Builder()
             .name(PROP_DEBUG)
-            .description("If true, an additional debug field is added. If the geo info fields prefix is X," +
+            .description("If true, an additional debug field is added. If the source info fields prefix is X," +
                     " a debug field named X" + DEBUG_FROM_CACHE_SUFFIX + " contains a boolean value" +
-                    " to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).")
+                    " to indicate the origin of the source fields. The default value for this property is false (debug is disabled).")
             .required(false)
             .defaultValue("false")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
     private static final PropertyDescriptor REFERER_FIELD = new PropertyDescriptor.Builder()
-            .name("referer_hostname.field")
+            .name("referer.field")
             .description("Name of the field containing the referer value in the record")
             .required(false)
-            .defaultValue("referer_hostname")
+            .defaultValue("referer")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -187,7 +199,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
      */
     public static final String SOURCE_OF_TRAFIC_FIELD_REFERRAL_PATH = "referral_path";
 
-    // Supported field names. Key: geo field name, Value: the field type to use
+    // Supported field names. Key: source field name, Value: the field type to use
     static Map<String, FieldType> supportedSourceOfTrafficFieldNames = new HashMap<String, FieldType>() {{
         put(SOURCE_OF_TRAFIC_FIELD_SOURCE, FieldType.STRING);
         put(SOURCE_OF_TRAFIC_FIELD_MEDIUM, FieldType.STRING);
@@ -210,10 +222,12 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
         descriptors.add(SOURCE_OF_TRAFFIC_SUFFIX_FIELD);
         descriptors.add(ELASTICSEARCH_CLIENT_SERVICE);
         descriptors.add(CONFIG_CACHE_SERVICE);
+        descriptors.add(CONFIG_CACHE_VALIDITY_TIMEOUT);
         descriptors.add(CONFIG_DEBUG);
-        descriptors.add(RECORD_KEY_FIELD);
         descriptors.add(ES_INDEX_FIELD);
         descriptors.add(ES_TYPE_FIELD);
+        descriptors.add(ES_SEARCH_ENGINE_FIELD);
+        descriptors.add(ES_SOCIAL_NETWORK_FIELD);
         return Collections.unmodifiableList(descriptors);
     }
 
@@ -266,24 +280,41 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             }
         }
         else if(record.getField(referer_field) != null){
-            String hostname = record.getField(referer_field).asString();
+            String referer = record.getField(referer_field).asString();
+            URL referer_url = null;
+            try {
+                referer_url = new URL(referer);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return;
+            }
+            String hostname = referer_url.getHost();
+            String[] hostname_splitted = hostname.split("\\.");
+            String domain = null;
+            if (hostname_splitted.length > 1){
+                domain = hostname_splitted[hostname_splitted.length-2];
+            }
+            else if (hostname_splitted.length == 1) {
+                domain = hostname_splitted[0];
+            }
+            else {
+                return;
+            }
             // Is the referer a known search engine ?
-            if (is_search_engine(hostname, context, record)){
+            if (is_search_engine(domain, context, record)){
                 // This is an organic search engine
-                sourceOfTraffic.setSource(hostname);
+                sourceOfTraffic.setSource(domain);
                 sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
                 sourceOfTraffic.setOrganic_searches(true);
             }
-            else if (is_social_network(hostname, context, record)){
+            else if (is_social_network(domain, context, record)){
                 // This is social network
-                sourceOfTraffic.setSource(hostname);
+                sourceOfTraffic.setSource(domain);
                 sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
             }
-            else if (hostname != null){
-                // This is a referring site
-                sourceOfTraffic.setSource(hostname);
-                sourceOfTraffic.setMedium(REFERRING_SITE);
-            }
+            // This is a referring site
+            sourceOfTraffic.setSource(domain);
+            sourceOfTraffic.setMedium(REFERRING_SITE);
         }
         else {
             // Direct access
@@ -291,7 +322,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             sourceOfTraffic.setMedium("");
             sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
         }
-        record.setField(source_of_traffic_suffix, FieldType.MAP, sourceOfTraffic);
+        record.setField(source_of_traffic_suffix, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
     }
 
 
@@ -304,32 +335,35 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
     }
 
     /*
-     * Returns true if the hostname is a known social network website, false otherwise.
-     * To figure out wether the hostname is a known social network, we first lookup the hostname in our local cache.
-     * If the hostname is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
+     * Returns true if the domain is a known social network website, false otherwise.
+     * To figure out wether the domain is a known social network, we first lookup the domain in our local cache.
+     * If the domain is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
      */
-    private boolean is_social_network(String hostname, ProcessContext context, Record record) {
-        return has_hostname_flag(hostname, SOCIAL_NETWORK_SITE, context, record);
+    private boolean is_social_network(String domain, ProcessContext context, Record record) {
+        String es_social_network_field = context.getPropertyValue(ES_SOCIAL_NETWORK_FIELD).asString();
+        return has_domain_flag(domain, es_social_network_field, context, record);
     }
 
     /*
-     * Returns true if the hostname is a known search engine, false otherwise.
-     * To figure out wether the hostname is a known search engine, we first lookup the hostname in our local cache.
-     * If the hostname is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
+     * Returns true if the domain is a known search engine, false otherwise.
+     * To figure out wether the domain is a known search engine, we first lookup the domain in our local cache.
+     * If the domain is present, then we pick up the info from here; otherwise we lookup the info from Elasticsearch.
      */
-    private boolean is_search_engine(String hostname, ProcessContext context, Record record) {
-        return has_hostname_flag(hostname, SEARCH_ENGINE_SITE, context, record);
+    private boolean is_search_engine(String domain, ProcessContext context, Record record) {
+        String es_search_engine_field = context.getPropertyValue(ES_SEARCH_ENGINE_FIELD).asString();
+        return has_domain_flag(domain, es_search_engine_field, context, record);
     }
 
-    private boolean has_hostname_flag(String hostname, String flag, ProcessContext context, Record record){
+    private boolean has_domain_flag(String domain, String flag, ProcessContext context, Record record){
         final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final long cacheValidityPeriodSec = context.getPropertyValue(CONFIG_CACHE_VALIDITY_TIMEOUT).asLong();
         boolean has_flag = false;
         /**
-         * Attempt to find hostname related info from the cache
+         * Attempt to find domain related info from the cache
          */
         SourceOfTraffic.CacheEntry cacheEntry = null;
         try {
-            cacheEntry = cacheService.get(hostname);
+            cacheEntry = cacheService.get(domain);
         } catch (Exception e) {
             logger.trace("Could not use cache!");
         }
@@ -356,7 +390,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
              * Not in the cache or cache entry expired
              * Call the elasticsearch service and fill responses as new fields
              */
-            String recordKeyName = context.getPropertyValue(RECORD_KEY_FIELD).asString();
+            String recordKeyName = domain;
             String indexName = context.getPropertyValue(ES_INDEX_FIELD).asString();
             String typeName = context.getPropertyValue(ES_TYPE_FIELD).asString();
             MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
@@ -372,7 +406,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             }
 
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
-                // The hostname is not known in the Elasticsearch special index
+                // The domain is not known in the Elasticsearch special index
                 // Therefore it is neither a search engine nor a social network
                 sourceInfo = new HashMap();
                 sourceInfo.put(REFERRING_SITE, true);
@@ -395,9 +429,9 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             }
 
             try {
-                // Store the geoInfo into the cache
+                // Store the sourceInfo into the cache
                 cacheEntry = new CacheEntry(sourceInfo, System.currentTimeMillis());
-                cacheService.set(hostname, cacheEntry);
+                cacheService.set(domain, cacheEntry);
             } catch (Exception e) {
                 logger.trace("Could not put entry in the cache:" + e.getMessage());
             }
@@ -405,7 +439,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
 
         if (sourceInfo != null) {
             if (sourceInfo.containsKey(flag)) {
-                boolean val = (boolean) sourceInfo.get(flag);
+                boolean val = Boolean.parseBoolean((String)sourceInfo.get(flag));
                 has_flag = val;
             }
         }
@@ -423,7 +457,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
      */
     private static class CacheEntry
     {
-        // sourceInfo translated from the ip (or the ip if the geoInfo could not be found)
+        // sourceInfo translated from the referer_hostname
         private Map<String, Object> sourceInfo = null;
         // Time at which this cache entry has been stored in the cache service
         private long time = 0L;
@@ -446,7 +480,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
     }
 
     private static class SourceOfTrafficMap {
-        // sourceInfo translated from the ip (or the ip if the geoInfo could not be found)
+        // sourceInfo translated from the ip (or the ip if the sourceInfo could not be found)
         private Map<String, Object> sourceOfTrafficMap = new HashMap();
 
         public Map<String, Object> getSourceOfTrafficMap() {
