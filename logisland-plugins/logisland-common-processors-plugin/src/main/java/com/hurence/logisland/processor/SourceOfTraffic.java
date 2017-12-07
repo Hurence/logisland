@@ -305,7 +305,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
                 // This is an organic search engine
                 sourceOfTraffic.setSource(domain);
                 sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
-                sourceOfTraffic.setOrganic_searches(true);
+                sourceOfTraffic.setOrganic_searches(Boolean.TRUE);
             }
             else if (is_social_network(domain, context, record)){
                 // This is social network
@@ -503,7 +503,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             this.sourceOfTrafficMap.put(SOURCE_OF_TRAFIC_FIELD_KEYWORD, keyword);
         }
 
-        public void setOrganic_searches(boolean organic_searches) {
+        public void setOrganic_searches(Boolean organic_searches) {
             this.sourceOfTrafficMap.put(SOURCE_OF_TRAFIC_FIELD_ORGANIC_SEARCHES, organic_searches);
         }
 
@@ -517,7 +517,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
         }
 
         public SourceOfTrafficMap(){
-            setOrganic_searches(false); // By default we consider source of traffic to not be organic searches.
+            setOrganic_searches(Boolean.FALSE); // By default we consider source of traffic to not be organic searches.
         }
     }
 
