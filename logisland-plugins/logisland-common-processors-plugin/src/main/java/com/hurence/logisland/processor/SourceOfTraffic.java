@@ -42,13 +42,14 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
 
 
     private static final Logger logger = LoggerFactory.getLogger(SourceOfTraffic.class);
-    private static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
-    protected CacheService<String, CacheEntry> cacheService;
-    static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
+    private static final String PROP_HIERARCHICAL = "source_of_traffic.hierarchical";
     protected static final String PROP_CACHE_SERVICE = "cache.service";
     protected static final String PROP_CACHE_VALIDITY_TIMEOUT = "cache.validity.timeout";
     protected static final String PROP_DEBUG = "debug";
+    protected CacheService<String, CacheEntry> cacheService;
+    static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
     protected static final String DEFAULT_CACHE_VALIDITY_PERIOD = "0";
+    private static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
     private static final String SOCIAL_NETWORK_SITE = "social_network";
     private static final String SEARCH_ENGINE_SITE = "search_engine";
     private static final String REFERRING_SITE = "referral";
@@ -116,6 +117,14 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    private static final PropertyDescriptor FIRST_VISITED_PAGE_FIELD = new PropertyDescriptor.Builder()
+            .name("first.visited.page.field")
+            .description("Name of the field containing the first visited page in the session")
+            .required(false)
+            .defaultValue("firstVisitedPage")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
     private static final PropertyDescriptor UTM_SOURCE_FIELD = new PropertyDescriptor.Builder()
             .name("utm_source.field")
             .description("Name of the field containing the utm_source value in the record")
@@ -157,11 +166,19 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             .build();
 
     private static final PropertyDescriptor SOURCE_OF_TRAFFIC_SUFFIX_FIELD = new PropertyDescriptor.Builder()
-            .name("source.out.field")
+            .name("source_of_traffic.suffix")
             .description("Name of the field containing the source of the traffic outcome")
             .required(false)
             .defaultValue(SOURCE_OF_TRAFFIC_SUFFIX_NAME)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor HIERARCHICAL = new PropertyDescriptor.Builder()
+            .name(PROP_HIERARCHICAL)
+            .description("Should the additional source of trafic information fields be added under a hierarchical father field or not.")
+            .required(false)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
             .build();
 
     /**
@@ -214,12 +231,14 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(REFERER_FIELD);
+        descriptors.add(FIRST_VISITED_PAGE_FIELD);
         descriptors.add(UTM_SOURCE_FIELD);
         descriptors.add(UTM_MEDIUM_FIELD);
         descriptors.add(UTM_CAMPAIGN_FIELD);
         descriptors.add(UTM_CONTENT_FIELD);
         descriptors.add(UTM_TERM_FIELD);
         descriptors.add(SOURCE_OF_TRAFFIC_SUFFIX_FIELD);
+        descriptors.add(HIERARCHICAL);
         descriptors.add(ELASTICSEARCH_CLIENT_SERVICE);
         descriptors.add(CONFIG_CACHE_SERVICE);
         descriptors.add(CONFIG_CACHE_VALIDITY_TIMEOUT);
@@ -254,8 +273,10 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
         final String utm_campaign_field       = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
         final String utm_content_field        = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
         final String utm_term_field           = context.getPropertyValue(UTM_TERM_FIELD).asString();
-        final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String FLAT_SEPARATOR           = "_";
         final String referer_field            = context.getPropertyValue(REFERER_FIELD).asString();
+        final boolean hierarchical             = context.getPropertyValue(HIERARCHICAL).asBoolean();
 
         SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
         // Check if this is a custom campaign
@@ -279,7 +300,7 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
                 sourceOfTraffic.setKeyword(utm_term);
             }
         }
-        else if(record.getField(referer_field) != null){
+        else if((record.getField(referer_field) != null) && (record.getField(referer_field).asString() != null)){
             String referer = record.getField(referer_field).asString();
             URL referer_url = null;
             try {
@@ -300,21 +321,30 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             else {
                 return;
             }
-            // Is the referer a known search engine ?
-            if (is_search_engine(domain, context, record)){
-                // This is an organic search engine
-                sourceOfTraffic.setSource(domain);
-                sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
-                sourceOfTraffic.setOrganic_searches(Boolean.TRUE);
+            // Is referer under the webshop domain ?
+            if (is_refer_under_site_domain(domain, context, record)){
+                // This is a direct access
+                sourceOfTraffic.setSource(DIRECT_TRAFFIC);
+                sourceOfTraffic.setMedium("");
+                sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
             }
-            else if (is_social_network(domain, context, record)){
-                // This is social network
+            else {
+                // Is the referer a known search engine ?
+                if (is_search_engine(domain, context, record)) {
+                    // This is an organic search engine
+                    sourceOfTraffic.setSource(domain);
+                    sourceOfTraffic.setMedium(SEARCH_ENGINE_SITE);
+                    sourceOfTraffic.setOrganic_searches(Boolean.TRUE);
+                } else if (is_social_network(domain, context, record)) {
+                    // This is social network
+                    sourceOfTraffic.setSource(domain);
+                    sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
+                }
+                // If the referer is not in the website domain, neither a search engine nor a social network,
+                // then it is a referring site
                 sourceOfTraffic.setSource(domain);
-                sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
+                sourceOfTraffic.setMedium(REFERRING_SITE);
             }
-            // This is a referring site
-            sourceOfTraffic.setSource(domain);
-            sourceOfTraffic.setMedium(REFERRING_SITE);
         }
         else {
             // Direct access
@@ -322,7 +352,49 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
             sourceOfTraffic.setMedium("");
             sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
         }
-        record.setField(source_of_traffic_suffix, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
+        if (hierarchical) {
+            record.setField(SOURCE_OF_TRAFFIC_SUFFIX, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
+        }
+        else {
+            Map<String, Object> sot = sourceOfTraffic.getSourceOfTrafficMap();
+            sot.forEach((k, v) -> {
+                record.setField(SOURCE_OF_TRAFFIC_SUFFIX + FLAT_SEPARATOR + k, supportedSourceOfTrafficFieldNames.get(k), v);
+            });
+        }
+    }
+
+    private boolean is_refer_under_site_domain(String domain, ProcessContext context, Record record) {
+        boolean res = false;
+        String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
+        if (record.hasField(first_visited_page_field)){
+            String first_page = record.getField(first_visited_page_field).asString();
+            URL first_page_url = null;
+            try {
+                first_page_url = new URL(first_page);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return res;
+            }
+            String host = first_page_url.getHost();
+            String[] host_array = host.split("\\.");
+            String first_visited_page_domain;
+            if (host_array.length > 1){
+                first_visited_page_domain = host_array[host_array.length-2];
+            }
+            else if (host_array.length==1){
+                first_visited_page_domain = host_array[0];
+            }
+            else {
+                return res;
+            }
+            if (domain.equals(first_visited_page_domain)){
+                res=true;
+            }
+            else {
+                res = false;
+            }
+        }
+        return res;
     }
 
 
@@ -418,13 +490,21 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
                     mgrr_record = mgrr.get();
                     sourceInfo = new HashedMap();
                     Map[] sourceInfoArray = { sourceInfo };
-                    mgrr_record.getRetrievedFields().forEach((k, v) -> {
-                        String fieldName = k.toString();
-                        String fieldValue = v.toString();
-                        // Initialize sourceInfo; i-e Map<String, Object>
-                        sourceInfoArray[0].put(fieldName,fieldValue);
-                            }
-                    );
+                    if (mgrr_record.getRetrievedFields() != null) {
+                        mgrr_record.getRetrievedFields().forEach((k, v) -> {
+                                    String fieldName = k.toString();
+                                    String fieldValue = v.toString();
+                                    // Initialize sourceInfo; i-e Map<String, Object>
+                                    sourceInfoArray[0].put(fieldName, fieldValue);
+                                }
+                        );
+                    }
+                    else {
+                        // The domain is not known in the Elasticsearch special index
+                        // Therefore it is neither a search engine nor a social network
+                        sourceInfo = new HashMap();
+                        sourceInfo.put(REFERRING_SITE, true);
+                    }
                 }
             }
 
