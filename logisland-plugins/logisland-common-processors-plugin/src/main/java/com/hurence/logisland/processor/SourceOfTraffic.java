@@ -31,8 +31,10 @@ import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 
 @Tags({"record", "traffic", "source"})
@@ -281,22 +283,52 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
         SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
         // Check if this is a custom campaign
         if (record.getField(utm_source_field) != null){
-            String utm_source = record.getField(utm_source_field).asString();
+            String utm_source = null;
+            try {
+                utm_source = URLDecoder.decode(record.getField(utm_source_field).asString(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                utm_source = record.getField(utm_source_field).asString();
+            }
             sourceOfTraffic.setSource(utm_source);
             if (record.getField(utm_campaign_field) != null){
-                String utm_campaign = record.getField(utm_campaign_field).asString();
+                String utm_campaign = null;
+                try {
+                    utm_campaign = URLDecoder.decode(record.getField(utm_campaign_field).asString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    utm_campaign = record.getField(utm_campaign_field).asString();
+                }
                 sourceOfTraffic.setCampaign(utm_campaign);
             }
             if (record.getField(utm_medium_field) != null){
-                String utm_medium = record.getField(utm_medium_field).asString();
+                String utm_medium = null;
+                try {
+                    utm_medium = URLDecoder.decode(record.getField(utm_medium_field).asString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    utm_medium = record.getField(utm_medium_field).asString();
+                }
                 sourceOfTraffic.setMedium(utm_medium);
             }
             if (record.getField(utm_content_field) != null){
-                String utm_content = record.getField(utm_content_field).asString();
+                String utm_content = null;
+                try {
+                    utm_content = URLDecoder.decode(record.getField(utm_content_field).asString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    utm_content = record.getField(utm_content_field).asString();
+                }
                 sourceOfTraffic.setContent(utm_content);
             }
             if (record.getField(utm_term_field) != null){
-                String utm_term = record.getField(utm_term_field).asString();
+                String utm_term = null;
+                try {
+                    utm_term = URLDecoder.decode(record.getField(utm_term_field).asString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    utm_term = record.getField(utm_term_field).asString();
+                }
                 sourceOfTraffic.setKeyword(utm_term);
             }
         }
@@ -340,10 +372,20 @@ public class SourceOfTraffic extends AbstractElasticsearchProcessor {
                     sourceOfTraffic.setSource(domain);
                     sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
                 }
-                // If the referer is not in the website domain, neither a search engine nor a social network,
-                // then it is a referring site
-                sourceOfTraffic.setSource(domain);
-                sourceOfTraffic.setMedium(REFERRING_SITE);
+                else {
+                    // If the referer is not in the website domain, neither a search engine nor a social network,
+                    // then it is a referring site
+                    sourceOfTraffic.setSource(domain);
+                    sourceOfTraffic.setMedium(REFERRING_SITE);
+                    String referral_path = null;
+                    try {
+                        referral_path = URLDecoder.decode(referer, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                        referral_path = referer;
+                    }
+                    sourceOfTraffic.setReferral_path(referral_path);
+                }
             }
         }
         else {
