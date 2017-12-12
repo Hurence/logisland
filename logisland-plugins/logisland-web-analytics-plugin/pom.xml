@@ -25,7 +25,7 @@
         <version>0.10.3</version>
     </parent>
 
-    <artifactId>logisland-consolidate-session-plugin</artifactId>
+    <artifactId>logisland-web-analytics-plugin</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -50,6 +50,30 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cache-service-api</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-common-processors-plugin</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cache_key_value-service-api</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
