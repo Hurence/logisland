@@ -147,7 +147,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.consolidateSession.ConsolidateSession: 
+.. _com.hurence.logisland.processor.webAnalytics.ConsolidateSession: 
 
 ConsolidateSession
 ------------------
@@ -157,7 +157,7 @@ The ConsolidateSession processor is the Logisland entry point to get and process
 
 Class
 _____
-com.hurence.logisland.processor.consolidateSession.ConsolidateSession
+com.hurence.logisland.processor.webAnalytics.ConsolidateSession
 
 Tags
 ____
@@ -1527,3 +1527,54 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic: 
+
+setSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic informations are placed in a flat structure (specified by the **source_of_traffic.suffix** property
+ with a default value of source_of_traffic_). To work properly the setSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Class
+_____
+com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "", ""
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "", ""
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "", ""
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "", ""
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "", ""
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "", ""
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "", ""
+   "source_of_traffic.suffix", "Suffix for the source of the traffic related fields", "", "source_of_traffic", "", ""
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "", ""
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+   "**cache.service**", "Name of the cache service to use.", "", "null", "", ""
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "", ""
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "", ""
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "", ""
+   "es.type", "Name of the ES type to use.", "", "default", "", ""
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "", ""
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "", ""
