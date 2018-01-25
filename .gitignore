@@ -33,3 +33,5 @@ logs/
 **/app/jspm_packages/*
 
 **/log/
+**/chronix/data/
+
