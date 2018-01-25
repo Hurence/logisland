@@ -190,6 +190,7 @@ public class MatchQuery extends AbstractProcessor {
         matchingRules = new HashMap<>();
         onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
         onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
+        recordTypeUpdatePolicy = RecordTypeUpdatePolicy.valueOf(context.getPropertyValue(RECORD_TYPE_UPDATE_POLICY).asString());
         NumericQueryParser queryMatcher = new NumericQueryParser("field");
 
 
