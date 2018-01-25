@@ -144,6 +144,7 @@ Solr
 In the case of Solr, we have to declare another service :
 
 .. code-block:: yaml
+
     # Datastore service using Solr 6.6.2 - 5.5.5 also available
     - controllerService: datastore_service
       component: com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
@@ -166,6 +167,7 @@ With this configuration, Solr is used in standalone mode but you can also use th
 Then, the second processor have to send data to Solr :
 
 .. code-block:: yaml
+
     # all the parsed records are added to solr by bulk
     - processor: solr_publisher
       component: com.hurence.logisland.processor.datastore.BulkPut

@@ -218,6 +218,16 @@ follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#sta
 go to `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ to release manually the artifact
 
 
+
+Publish release assets to github
+--------------------------------
+
+please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
+
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/8905079/assets?name=logisland-0.11.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+
+
+
 Publish Docker image
 --------------------
 Building the image

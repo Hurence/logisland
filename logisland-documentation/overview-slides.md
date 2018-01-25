@@ -66,8 +66,8 @@
 
 # Features 2
 
-- high level extensible framework  
-- stream governance with Avro schema management 
+- high level extensible framework.
+- stream governance with schema management.
 - SQL aggregations
 - Time series sampling 
 - Outliers detection
@@ -89,9 +89,17 @@
 ## [fit] increasingly abstract 
 ## [fit] and meaningfull records.
 
+
 ---
 
-![inline](_static/data-to-knowldege.png)
+# Use cases
+
+- **Monitoring IT** : centralize every log datasources
+- **Event processing** : multi-layer processing, enriching, custom Business Rules activation, anomaly detection, usage profiling
+- **Click stream tracking** : web analytics and sessionization.
+- **Security** : cybersecurity, intrusion & fraud detection.
+- **IoT** : alerting, forcasting and M2M communication.
+
 
 ---
 
@@ -106,23 +114,42 @@ Example of one production cluster
 
 ---
 
-# Use cases
-
-- **Log aggregation** : low latency processing over mutliple log datasources
-- **Stream processing** : multiple stages of processing (enriching, ...)
-- **Complex Event processing** : write custom business Rules to generate alerts, for fraud detection
-- **click stream tracking** : capture user click stream data
-- **SIEM** : security manager for intrusion detection
-- **IoT** : generate alerts based on outliers and forcasting.
-
-
----
 
 ## [fit] Design 
+---
+
+![fit](_static/logisland-architecture.png)
+
+---
+# Log-centric architecture
+
+![inline](_static/logcentric.png)
+
 
 ---
 
-![fit](_static/logisland-workflow.png)
+# Grid computing
+
+![inline](_static/spark-architecture.png)
+
+
+---
+
+# Micro-batch processing
+
+![inline](_static/spark-streaming.png)
+
+---
+
+# OPC UA compliance (HDA)
+
+![inline](_static/logisland-opc.png)
+
+
+
+---
+
+## [fit] API 
 
 ---
 
