@@ -7,13 +7,21 @@ In the following getting started tutorial we'll drive you through the process of
 
     Be sure to know of to launch a logisland Docker environment by reading the `prerequisites <./prerequisites.html>`_ section
 
+Note, it is possible to store data in different datastores. In this tutorial, we will see the case of ElasticSearch and Solr.
+
 1. Logisland job setup
 ----------------------
-The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here :
+The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 
 .. code-block:: sh
 
     docker exec -i -t logisland vim conf/index-apache-logs.yml
+
+And here for Solr :
+
+.. code-block:: sh
+
+    docker exec -i -t logisland vim conf/index-apache-logs-solr.yml
 
 
 We will start by explaining each part of the config file.
@@ -130,15 +138,60 @@ The second processor  will handle ``Records`` produced by the ``SplitText`` to i
         es.index.field: search_index
         es.type.field: record_type
 
+Solr
+""""
+
+In the case of Solr, we have to declare another service :
+
+.. code-block:: yaml
+
+    # Datastore service using Solr 6.6.2 - 5.5.5 also available
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+      type: service
+      documentation: "SolR 6.6.2 service"
+      configuration:
+        solr.cloud: false
+        solr.connection.string: http://sandbox:8983/solr
+        solr.collection: solr-apache-logs
+        solr.concurrent.requests: 4
+        flush.interval: 2000
+        batch.size: 1000
+
+With this configuration, Solr is used in standalone mode but you can also use the cloud mode by changing the corresponding config.
+
+.. note::
+    You have to create the core/collection manually with the following fields : ``src_ip``, ``identd``, ``user``, ``bytes_out``,
+    ``http_method``, ``http_version``, ``http_query``, ``http_status``
+
+Then, the second processor have to send data to Solr :
+
+.. code-block:: yaml
+
+    # all the parsed records are added to solr by bulk
+    - processor: solr_publisher
+      component: com.hurence.logisland.processor.datastore.BulkPut
+      type: processor
+      documentation: "indexes processed events in SolR"
+      configuration:
+        datastore.client.service: datastore_service
 
 2. Launch the script
 --------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
 
+For ElasticSearch :
+
 .. code-block:: sh
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs.yml
+
+For Solr :
+
+.. code-block:: sh
+
+    docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs-solr.yml
 
 3. Inject some Apache logs into the system
 ------------------------------------------
@@ -178,8 +231,14 @@ Another tool can help you to tweak and monitor your processing `http://sandbox:9
 .. image:: /_static/kafka-mgr.png
 
 
-5. Use Kibana to inspect the logs
+5. Inspect the logs
 ---------------------------------
+
+Kibana
+""""""
+
+With ElasticSearch, you can use Kibana.
+
 Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
 
 
@@ -196,5 +255,19 @@ As we explore data logs from july 1995 we'll have to select an absolute time fil
 
 .. image:: /_static/kibana-apache-logs.png
 
+Solr
+""""
+
+With Solr, you can directly use the solr web ui.
+
+Open up your browser and go to `http://sandbox:8983/solr <http://sandbox:8983/solr>`_ and you should be able to view your apache logs.
+
+In non cloud mode, use the core selector, to select the core ```solr-apache-logs``` :
+
+.. image:: /_static/solr-dashboard.png
+
+Then, go to query and by clicking to Execute Query, you will see some data from your Apache logs :
+
+.. image:: /_static/solr-query.png
 
 

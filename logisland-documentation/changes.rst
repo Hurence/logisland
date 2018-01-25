@@ -3,6 +3,16 @@ What's new in logisland ?
 
 
 
+v0.11.0
+-------
+
+- add support for SOLR
+- add support for Chronix timeseries
+- review Datastore API
+- fix matchquery update field policy issue
+- remove elasticsearch 2.3 support
+
+
 v0.10.0
 -------
 

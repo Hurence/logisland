@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ package com.hurence.logisland.util.runner;
 
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
@@ -28,19 +29,22 @@ import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
 
 public class MockControllerServiceInitializationContext extends MockControllerServiceLookup
         implements ControllerServiceInitializationContext, ControllerServiceLookup {
 
     private final String identifier;
     private final ComponentLog logger;
+    private final Map<PropertyDescriptor, String> properties = new HashMap<>();
 
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
         this.logger = new MockComponentLogger();
     }
-
 
 
     @Override
@@ -53,10 +57,6 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     }
 
-    @Override
-    public boolean removeProperty(String name) {
-        return false;
-    }
 
     @Override
     public String getProperty(PropertyDescriptor property) {
@@ -103,29 +103,38 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return null; //this needs to be wired in.
     }
 
+
     @Override
-    public PropertyValue getPropertyValue(PropertyDescriptor descriptor) {
-        return null;
+    public ValidationResult setProperty(final String propertyName, final String propertyValue) {
+        properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
+        return new ValidationResult.Builder().valid(true).build();
     }
 
     @Override
-    public PropertyValue getPropertyValue(String propertyName) {
-        return null;
+    public boolean removeProperty(String name) {
+        return false;
     }
 
     @Override
-    public ValidationResult setProperty(String name, String value) {
-        return null;
+    public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
+        return getPropertyValue(descriptor.getName());
     }
 
     @Override
-    public PropertyValue newPropertyValue(String rawValue) {
-        return null;
+    public PropertyValue getPropertyValue(final String propertyName) {
+
+
+       return new MockPropertyValue(properties.get(new PropertyDescriptor.Builder().name(propertyName).build()));
+    }
+
+    @Override
+    public PropertyValue newPropertyValue(final String rawValue) {
+        return new StandardPropertyValue(rawValue);
     }
 
     @Override
     public Map<PropertyDescriptor, String> getProperties() {
-        return null;
+        return properties;
     }
 
     @Override
