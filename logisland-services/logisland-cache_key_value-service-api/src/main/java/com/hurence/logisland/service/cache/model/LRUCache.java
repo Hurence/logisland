@@ -18,7 +18,9 @@ package com.hurence.logisland.service.cache.model;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -41,7 +43,7 @@ import java.util.LinkedHashMap;
 public class LRUCache<K, V> implements Cache<K,V> {
 
     private static final int DEFAULT_CAPACITY = 1024;
-    private final LRULinkedHashMap<K, V> map;
+    private final Map<K, V> synchronized_map;
 
     public LRUCache() {
         this(DEFAULT_CAPACITY);
@@ -53,7 +55,8 @@ public class LRUCache<K, V> implements Cache<K,V> {
 
     public LRUCache(int capacityCache, float loadFactor) {
         int capacityLinkedHashMap = getClosestPowerOf2Lt(capacityCache);
-        map = new LRULinkedHashMap<K, V>(capacityLinkedHashMap, loadFactor, capacityCache);
+        LRULinkedHashMap<K, V> map = new LRULinkedHashMap<K, V>(capacityLinkedHashMap, loadFactor, capacityCache);
+        synchronized_map = Collections.synchronizedMap(map);
     }
 
     /**
@@ -71,11 +74,11 @@ public class LRUCache<K, V> implements Cache<K,V> {
 
     @Override
     public V get(K k) {
-        return map.get(k);
+        return synchronized_map.get(k);
     }
 
     @Override
     public void set(K k, V v) {
-        map.put(k, v);
+        synchronized_map.put(k, v);
     }
 }

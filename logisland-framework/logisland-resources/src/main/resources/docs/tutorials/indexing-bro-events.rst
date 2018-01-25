@@ -387,7 +387,8 @@ input topic of the ParseBroEvent processor in Logisland:
 This line tells the Bro-Kafka plugin what type of events should be intercepted and sent to Kafka. For this tutorial we
 send Connections, DNS and SSH events. We are also interested in any notice (alert) that Bro can generate.
 For a complete list of possibilities, see the Bro documentation for `events <https://www.bro.org/sphinx/script-reference/log-files.html>`_
-and `notices <https://www.bro.org/sphinx/bro-noticeindex.html>`_:
+and `notices <https://www.bro.org/sphinx/bro-noticeindex.html>`_. If you want all possible events and notices available by default
+to be sent into Kafka, just comment this line:
  
 .. code-block:: bro
 

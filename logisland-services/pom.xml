@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.3</version>
+        <version>0.11.0</version>
     </parent>
     <packaging>pom</packaging>
 
@@ -16,13 +16,11 @@
         <module>logisland-hbase-client-service-api</module>
         <module>logisland-hbase_1_1_2-client-service</module>
         <module>logisland-elasticsearch-client-service-api</module>
-        <module>logisland-elasticsearch_2_3_3-client-service</module>
         <module>logisland-elasticsearch_2_4_0-client-service</module>
         <module>logisland-elasticsearch_5_4_0-client-service</module>
-        <module>logisland-cache-service-api</module>
+        <module>logisland-solr-client-service</module>
         <module>logisland-cache_key_value-service-api</module>
+        <module>logisland-ip-to-geo-service-maxmind</module>
+        <module>logisland-ip-to-geo-service-api</module>
     </modules>
-
-
-
 </project>

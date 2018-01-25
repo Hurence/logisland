@@ -5,6 +5,44 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 ----------
 
+.. _com.hurence.logisland.processor.AddFields: 
+
+AddFields
+---------
+Add one or more field with a default value
+...
+
+Class
+_____
+com.hurence.logisland.processor.AddFields
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
 .. _com.hurence.logisland.processor.ApplyRegexp: 
 
 ApplyRegexp
@@ -78,7 +116,38 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.consolidateSession.ConsolidateSession: 
+.. _com.hurence.logisland.processor.datastore.BulkPut: 
+
+BulkPut
+-------
+Indexes the content of a Record in a Datastore using bulk processor
+
+Class
+_____
+com.hurence.logisland.processor.datastore.BulkPut
+
+Tags
+____
+datastore, record, put, bulk
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**default.collection**", "The name of the collection/index/table to insert into", "", "null", "", "**true**"
+   "**timebased.collection**", "do we add a date suffix", "No date (no date added to default index), Today's date (today's date added to default index), yesterday's date (yesterday's date added to default index)", "no", "", ""
+   "date.format", "simple date format for date suffix. default : yyyy.MM.dd", "", "yyyy.MM.dd", "", ""
+   "collection.field", "the name of the event field containing es index name => will override index value if set", "", "null", "", "**true**"
+
+----------
+
+.. _com.hurence.logisland.processor.webAnalytics.ConsolidateSession: 
 
 ConsolidateSession
 ------------------
@@ -88,7 +157,7 @@ The ConsolidateSession processor is the Logisland entry point to get and process
 
 Class
 _____
-com.hurence.logisland.processor.consolidateSession.ConsolidateSession
+com.hurence.logisland.processor.webAnalytics.ConsolidateSession
 
 Tags
 ____
@@ -245,6 +314,47 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "rpca.min.records", "No Description Provided.", "", "null", "", ""
    "rpca.spenalty", "No Description Provided.", "", "null", "", ""
    "rpca.threshold", "No Description Provided.", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.datastore.EnrichRecords: 
+
+EnrichRecords
+-------------
+Enrich input records with content indexed in datastore using multiget queries.
+Each incoming record must be possibly enriched with information stored in datastore. 
+The plugin properties are :
+- es.index (String)            : Name of the datastore index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
+- es.key (String)              : Name of the datastore key on which the multiget query will be performed. This field is mandatory.
+- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document.
+
+Class
+_____
+com.hurence.logisland.processor.datastore.EnrichRecords
+
+Tags
+____
+datastore, enricher
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "record.key", "The name of field in the input record containing the document id to use in ES multiget query", "", "null", "", "**true**"
+   "includes.field", "The name of the ES fields to include in the record.", "", "*", "", "**true**"
+   "excludes.field", "The name of the ES fields to exclude.", "", "N/A", "", ""
+   "type.name", "The typle of record to look for", "", "null", "", "**true**"
+   "collection.name", "The name of the collection to look for", "", "null", "", "**true**"
 
 ----------
 
@@ -409,6 +519,73 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
+
+IpToFqdn
+--------
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToFqdn
+
+Tags
+____
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
+   "**fqdn.field**", "The field that will contain the full qualified domain name corresponding to the ip address.", "", "null", "", ""
+   "overwrite.fqdn.field", "If the field should be overwritten when it already exists.", "", "false", "", ""
+   "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
+   "cache.max.time", "The amount of time, in seconds, for which a cached FQDN value is valid in the cache service. After this delay, the next new request to translate the same IP into FQDN will trigger a new reverse DNS request and the result will overwrite the entry in the cache. This allows two things: if the IP was not resolved into a FQDN, this will get a chance to obtain a FQDN if the DNS system has been updated, if the IP is resolved into a FQDN, this will allow to be more accurate if the DNS system has been updated.  A value of 0 seconds disables this expiration mechanism. The default value is 84600 seconds, which corresponds to new requests triggered every day if a record with the same IP passes every day in the processor.", "", "84600", "", ""
+   "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "", ""
+   "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.enrichment.IpToGeo: 
+
+IpToGeo
+-------
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
+
+Class
+_____
+com.hurence.logisland.processor.enrichment.IpToGeo
+
+Tags
+____
+geo, enrich, ip
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**ip.address.field**", "The name of the field containing the ip address to use.", "", "null", "", ""
+   "**iptogeo.service**", "The reference to the IP to Geo service to use.", "", "null", "", ""
+   "geo.fields", "Comma separated list of geo information fields to add to the record. Defaults to '*', which means to include all available fields. If a list of fields is specified and the data is not available, the geo field is not created. The geo fields are dependant on the underlying defined Ip to Geo service. The currently only supported type of Ip to Geo service is the Maxmind Ip to Geo service. This means that the currently supported list of geo fields is the following:**continent**: the identified continent for this IP address. **continent_code**: the identified continent code for this IP address. **city**: the identified city for this IP address. **latitude**: the identified latitude for this IP address. **longitude**: the identified longitude for this IP address. **location**: the identified location for this IP address, defined as Geo-point expressed as a string with the format: 'latitude,longitude'. **accuracy_radius**: the approximate accuracy radius, in kilometers, around the latitude and longitude for the location. **time_zone**: the identified time zone for this IP address. **subdivision_N**: the identified subdivision for this IP address. N is a one-up number at the end of the attribute name, starting with 0. **subdivision_isocode_N**: the iso code matching the identified subdivision_N. **country**: the identified country for this IP address. **country_isocode**: the iso code for the identified country for this IP address. **postalcode**: the identified postal code for this IP address. **lookup_micros**: the number of microseconds that the geo lookup took. The Ip to Geo service must have the lookup_micros property enabled in order to have this field available.", "", "*", "", ""
+   "geo.hierarchical", "Should the additional geo information fields be added under a hierarchical father field or not.", "", "true", "", ""
+   "geo.hierarchical.suffix", "Suffix to use for the field holding geo information. If geo.hierarchical is true, then use this suffix appended to the IP field name to define the father field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo", "", ""
+   "geo.flat.suffix", "Suffix to use for geo information fields when they are flat. If geo.hierarchical is false, then use this suffix appended to the IP field name but before the geo field name. This may be used for instance to distinguish between geo fields with various locales using many Ip to Geo service instances.", "", "_geo_", "", ""
+   "**cache.service**", "The name of the cache service to use.", "", "null", "", ""
+   "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.MatchIP: 
 
 MatchIP
@@ -558,6 +735,52 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hash.algorithm**", "the algorithme to use to hash id string (e.g. 'SHA-256'", "SHA-384, SHA-224, SHA-256, MD2, SHA, SHA-512, MD5", "SHA-256", "", ""
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "", ""
    "**language.tag**", "the language to use to format numbers in string", "aa, ab, ae, af, ak, am, an, ar, as, av, ay, az, ba, be, bg, bh, bi, bm, bn, bo, br, bs, ca, ce, ch, co, cr, cs, cu, cv, cy, da, de, dv, dz, ee, el, en, eo, es, et, eu, fa, ff, fi, fj, fo, fr, fy, ga, gd, gl, gn, gu, gv, ha, he, hi, ho, hr, ht, hu, hy, hz, ia, id, ie, ig, ii, ik, in, io, is, it, iu, iw, ja, ji, jv, ka, kg, ki, kj, kk, kl, km, kn, ko, kr, ks, ku, kv, kw, ky, la, lb, lg, li, ln, lo, lt, lu, lv, mg, mh, mi, mk, ml, mn, mo, mr, ms, mt, my, na, nb, nd, ne, ng, nl, nn, no, nr, nv, ny, oc, oj, om, or, os, pa, pi, pl, ps, pt, qu, rm, rn, ro, ru, rw, sa, sc, sd, se, sg, si, sk, sl, sm, sn, so, sq, sr, ss, st, su, sv, sw, ta, te, tg, th, ti, tk, tl, tn, to, tr, ts, tt, tw, ty, ug, uk, ur, uz, ve, vi, vo, wa, wo, xh, yi, yo, za, zh, zu", "en", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.datastore.MultiGet: 
+
+MultiGet
+--------
+Retrieves a content from datastore using datastore multiget queries.
+Each incoming record contains information regarding the datastore multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+- collection (String) : name of the datastore collection on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- type (String) : name of the datastore type on which the multiget query will be performed. This field is not mandatory.
+- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one datastore retrieved document. This data is stored in these fields :
+- collection (same field name as the incoming record) : name of the datastore collection.
+- type (same field name as the incoming record) : name of the datastore type.
+- id (same field name as the incoming record) : retrieved document id.
+- a list of String fields containing :
+   * field name : the retrieved field name
+   * field value : the retrieved field value
+
+Class
+_____
+com.hurence.logisland.processor.datastore.MultiGet
+
+Tags
+____
+datastore, get, multiget
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**collection.field**", "the name of the incoming records field containing es collection name to use in multiget query. ", "", "null", "", ""
+   "**type.field**", "the name of the incoming records field containing es type name to use in multiget query", "", "null", "", ""
+   "**ids.field**", "the name of the incoming records field containing es document Ids to use in multiget query", "", "null", "", ""
+   "**includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "", ""
+   "**excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "", ""
 
 ----------
 
@@ -748,6 +971,33 @@ com.hurence.logisland.processor.bro.ParseBroEvent
 Tags
 ____
 bro, security, IDS, NIDS
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog: 
+
+ParseGitlabLog
+--------------
+The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
+
+Class
+_____
+com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog
+
+Tags
+____
+logs, gitlab
 
 Properties
 __________
@@ -1277,3 +1527,54 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic: 
+
+setSourceOfTraffic
+------------------
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic informations are placed in a flat structure (specified by the **source_of_traffic.suffix** property
+ with a default value of source_of_traffic_). To work properly the setSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
+
+Class
+_____
+com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic
+
+Tags
+____
+session, traffic, source, web, analytics
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "referer.field", "Name of the field containing the referer value in the session", "", "referer", "", ""
+   "first.visited.page.field", "Name of the field containing the first visited page in the session", "", "firstVisitedPage", "", ""
+   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "", ""
+   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "", ""
+   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "", ""
+   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "", ""
+   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "", ""
+   "source_of_traffic.suffix", "Suffix for the source of the traffic related fields", "", "source_of_traffic", "", ""
+   "source_of_traffic.hierarchical", "Should the additional source of trafic information fields be added under a hierarchical father field or not.", "", "false", "", ""
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+   "**cache.service**", "Name of the cache service to use.", "", "null", "", ""
+   "cache.validity.timeout", "Timeout validity (in seconds) of an entry in the cache.", "", "0", "", ""
+   "debug", "If true, an additional debug field is added. If the source info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the source fields. The default value for this property is false (debug is disabled).", "", "false", "", ""
+   "**es.index**", "Name of the ES index containing the list of search engines and social network. ", "", "null", "", ""
+   "es.type", "Name of the ES type to use.", "", "default", "", ""
+   "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "", ""
+   "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "", ""

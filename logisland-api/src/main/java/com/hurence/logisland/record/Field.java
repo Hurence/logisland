@@ -54,6 +54,10 @@ public class Field implements PropertyValue, Serializable {
         this.rawValue = rawValue;
     }
 
+    public Boolean isReserved() {
+        return FieldDictionary.contains(getName());
+    }
+
     @Override
     public String toString() {
 
@@ -164,8 +168,12 @@ public class Field implements PropertyValue, Serializable {
             try {
                 return Float.parseFloat(rawValue.toString());
             } catch (Exception ex) {
-                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a float, returning 0");
-                return 0.0f;
+                try {
+                    return Float.parseFloat(rawValue.toString().replaceAll(",", "."));
+                } catch (Exception ex2) {
+                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a float, returning 0");
+                    return 0.0f;
+                }
             }
         }
     }
@@ -180,8 +188,13 @@ public class Field implements PropertyValue, Serializable {
             try {
                 return Double.parseDouble(rawValue.toString());
             } catch (Exception ex) {
-                logger.error(ex.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
-                return 0.0;
+
+                try{
+                    return Double.parseDouble(rawValue.toString().replaceAll(",", "."));
+                }catch (Exception ex2) {
+                    logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
+                    return 0.0;
+                }
             }
         }
     }

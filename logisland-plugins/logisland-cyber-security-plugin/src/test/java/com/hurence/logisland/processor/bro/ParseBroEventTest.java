@@ -123,6 +123,51 @@ public class ParseBroEventTest {
                 "\"long\": 32345678910" +
             "}" +
         "}";
+
+    // Bro event with version field as string
+    private static final String BRO_VERSION_FIELD_STRING_EVENT =
+        "{" +
+            "\"fake\": {" +
+                "\"ts\": 1487603382.840372," +
+                "\"version\": \"versionString1\"" +
+            "}" +
+        "}";
+
+    // Bro event with version field as integer
+    private static final String BRO_VERSION_FIELD_INT_EVENT =
+            "{" +
+                    "\"fake\": {" +
+                    "\"ts\": 1487603382.840372," +
+                    "\"version\": 12" +
+                    "}" +
+                    "}";
+
+    // Bro event with version field as long
+    private static final String BRO_VERSION_FIELD_LONG_EVENT =
+            "{" +
+                    "\"fake\": {" +
+                    "\"ts\": 1487603382.840372," +
+                    "\"version\": 123456789" +
+                    "}" +
+                    "}";
+
+    // Bro event with version field as float
+    private static final String BRO_VERSION_FIELD_FLOAT_EVENT =
+            "{" +
+                    "\"fake\": {" +
+                    "\"ts\": 1487603382.840372," +
+                    "\"version\": 123456.789" +
+                    "}" +
+                    "}";
+
+    // Bro event with version field as double
+    private static final String BRO_VERSION_FIELD_DOUBLE_EVENT =
+            "{" +
+                    "\"fake\": {" +
+                    "\"ts\": 1487603382.840372," +
+                    "\"version\": 123456123456.25621" +
+                    "}" +
+                    "}";
     
     /**
      * Test fields renaming if deep JSON and also some types
@@ -145,7 +190,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)27.3);
+        out.assertFieldEquals("ts", 27300L);
         
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "anId");
@@ -201,7 +246,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "notice");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1320435875.879278);
+        out.assertFieldEquals("ts", 1320435875879L);
         
         out.assertFieldExists("note");
         out.assertFieldEquals("note", "SSH::Password_Guessing");
@@ -247,8 +292,8 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "dns");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1487603382.840372);
-        
+        out.assertFieldEquals("ts", 1487603382840L);
+
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "Csevsb0Kzff0gvXDe");
 
@@ -324,7 +369,7 @@ public class ParseBroEventTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "conn");
         
         out.assertFieldExists("ts");
-        out.assertFieldEquals("ts", (float)1487603366.277002);
+        out.assertFieldEquals("ts", 1487603366277L);
         
         out.assertFieldExists("uid");
         out.assertFieldEquals("uid", "Coo3g71UUMM2AyxWB");
@@ -373,6 +418,56 @@ public class ParseBroEventTest {
         
         out.assertFieldExists("tunnel_parents");
         List<String> tunnelParents = (List<String>)out.getField("tunnel_parents").getRawValue();
-        assertEquals(0, tunnelParents.size());       
+        assertEquals(0, tunnelParents.size());
+    }
+
+    @Test
+    public void testBroEventWithVersionField() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseBroEvent());
+        testRunner.assertValid();
+        Record record = new StandardRecord("bro_event1");
+        record.setStringField(FieldDictionary.RECORD_VALUE, BRO_VERSION_FIELD_STRING_EVENT);
+        testRunner.enqueue(record);
+        record = new StandardRecord("bro_event2");
+        record.setStringField(FieldDictionary.RECORD_VALUE, BRO_VERSION_FIELD_INT_EVENT);
+        testRunner.enqueue(record);
+        record = new StandardRecord("bro_event3");
+        record.setStringField(FieldDictionary.RECORD_VALUE, BRO_VERSION_FIELD_LONG_EVENT);
+        testRunner.enqueue(record);
+        record = new StandardRecord("bro_event4");
+        record.setStringField(FieldDictionary.RECORD_VALUE, BRO_VERSION_FIELD_FLOAT_EVENT);
+        testRunner.enqueue(record);
+        record = new StandardRecord("bro_event5");
+        record.setStringField(FieldDictionary.RECORD_VALUE, BRO_VERSION_FIELD_DOUBLE_EVENT);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(5);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
+        out.assertFieldEquals("version", "versionString1");
+
+        out = testRunner.getOutputRecords().get(1);
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
+        out.assertFieldEquals("version", (int)12);
+
+        out = testRunner.getOutputRecords().get(2);
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
+        out.assertFieldEquals("version", 123456789L);
+
+        out = testRunner.getOutputRecords().get(3);
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
+        out.assertFieldEquals("version", (float)123456.789);
+
+        out = testRunner.getOutputRecords().get(4);
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "fake");
+        out.assertFieldEquals("version", (double)123456123456.25621);
     }
 }

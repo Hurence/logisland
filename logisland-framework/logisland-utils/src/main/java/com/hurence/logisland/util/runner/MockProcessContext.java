@@ -177,7 +177,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public String getProperty(PropertyDescriptor property) {
-        return null;
+        return properties.get(property);
     }
 
     /**
@@ -238,7 +238,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     public void addControllerService(final String serviceIdentifier, final ControllerService controllerService, final Map<PropertyDescriptor, String> properties, final String annotationData) {
         requireNonNull(controllerService);
-        final ControllerServiceConfiguration config = addControllerService(controllerService);
+        final ControllerServiceConfiguration config = addControllerService(controllerService, serviceIdentifier);
         config.setProperties(properties);
         config.setAnnotationData(annotationData);
     }

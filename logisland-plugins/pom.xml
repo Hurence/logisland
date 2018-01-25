@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.3</version>
+        <version>0.11.0</version>
     </parent>
 
     <artifactId>logisland-plugins</artifactId>
@@ -34,10 +34,10 @@
         <!--<module>logisland-botsearch-plugin</module>-->
         <module>logisland-outlier-detection-plugin</module>
         <module>logisland-common-processors-plugin</module>
-
+        <module>logisland-common-logs-plugin</module>
         <module>logisland-sampling-plugin</module>
         <module>logisland-useragent-plugin</module>
-        <module>logisland-consolidate-session-plugin</module>
+        <module>logisland-web-analytics-plugin</module>
         <module>logisland-enrichment-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-hbase-plugin</module>

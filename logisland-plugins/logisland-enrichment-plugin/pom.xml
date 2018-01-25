@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-plugins</artifactId>
-        <version>0.10.3</version>
+        <version>0.11.0</version>
     </parent>
 
     <artifactId>logisland-enrichment-plugin</artifactId>
@@ -24,13 +24,32 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cache-service-api</artifactId>
-            <version>0.10.3</version>
+            <artifactId>logisland-ip-to-geo-service-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cache_key_value-service-api</artifactId>
-            <version>0.10.3</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>2.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-ip-to-geo-service-maxmind</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tngtech.java</groupId>
+            <artifactId>junit-dataprovider</artifactId>
+            <version>1.13.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

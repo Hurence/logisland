@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.10.3</version>
+    <version>0.11.0</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -247,7 +247,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.2</version>
+                <version>1.5</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
@@ -603,7 +603,7 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-consolidate-session-plugin</artifactId>
+                <artifactId>logisland-web-analytics-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -629,6 +629,11 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-cyber-security-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-common-logs-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -723,7 +728,32 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-ip-to-geo-service-maxmind</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-solr-client-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-solr_5_5_5-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-solr_6_6_2-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

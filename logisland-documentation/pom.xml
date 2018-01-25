@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.3</version>
+        <version>0.11.0</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
     <dependencies>
@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-consolidate-session-plugin</artifactId>
+            <artifactId>logisland-web-analytics-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -63,6 +63,14 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cyber-security-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-common-logs-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-enrichment-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

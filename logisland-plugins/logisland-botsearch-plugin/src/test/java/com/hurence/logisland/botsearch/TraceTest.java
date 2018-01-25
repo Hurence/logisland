@@ -37,12 +37,12 @@ public class TraceTest {
         
         
         String[] flows
-                = {"Thu Jan 02 08:43:39 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.10.326/Images/RightJauge.gif	724	409	false	false",
-                    "Thu Jan 02 08:43:40 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.10.326/Images/fondJauge.gif	723	402	false	false",
+                = {"Thu Jan 02 08:43:39 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.11.026/Images/RightJauge.gif	724	409	false	false",
+                    "Thu Jan 02 08:43:40 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.11.026/Images/fondJauge.gif	723	402	false	false",
                     "Thu Jan 02 08:43:42 CET 2014	GET	10.118.32.164	193.252.23.209	http	static1.lecloud.wanadoo.fr	80	/home/fr_FR/20131202100641/img/sprite-icons.pn	495	92518	false	false",
                     "Thu Jan 02 08:43:43 CET 2014	GET	10.118.32.164	173.194.66.94	https	www.google.fr	443	/complete/search	736	812	false	false",
-                    "Thu Jan 02 08:43:45 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.10.326/Images/digiposte/archiver-btn.png	736	2179	false	false",
-                    "Thu Jan 02 08:43:49 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.10.326/Images/picto_trash.gif	725	544	false	false"};
+                    "Thu Jan 02 08:43:45 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.11.026/Images/digiposte/archiver-btn.png	736	2179	false	false",
+                    "Thu Jan 02 08:43:49 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013090.11.026/Images/picto_trash.gif	725	544	false	false"};
 
         for (String flowString : flows) {
             String[] split = flowString.split("\t");

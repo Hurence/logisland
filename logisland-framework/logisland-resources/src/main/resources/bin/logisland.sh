@@ -251,8 +251,7 @@ case $MODE in
     CONF_FILE="logisland-configuration.yml"
 
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
-    --conf spark.metrics.conf=./metrics.properties \
+    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties' \
     --class ${app_mainclass} \
     --jars ${app_classpath} \
     ${lib_dir}/logisland-spark*-engine*.jar \

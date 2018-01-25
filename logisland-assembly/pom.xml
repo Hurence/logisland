@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.10.3</version>
+        <version>0.11.0</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -90,11 +90,15 @@
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-consolidate-session-plugin</artifactId>
+            <artifactId>logisland-web-analytics-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cyber-security-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-common-logs-plugin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -112,7 +116,6 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-sampling-plugin</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-enrichment-plugin</artifactId>
@@ -121,16 +124,15 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cache_key_value-service-api</artifactId>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-ip-to-geo-service-maxmind</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hadoop-utils</artifactId>
         </dependency>
-
-
-
-     <dependency>
+        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase-plugin</artifactId>
         </dependency>
@@ -138,33 +140,45 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-hbase_1_1_2-client-service</artifactId>
         </dependency>
-         <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-bootstrap</artifactId>
-           </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-bootstrap</artifactId>
+        </dependency>
 
-           <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-elasticsearch-plugin</artifactId>
-           </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch-plugin</artifactId>
+        </dependency>
 
-           <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-documentation</artifactId>
-           </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-documentation</artifactId>
+        </dependency>
 
-           <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
-           </dependency>
-           <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
-           </dependency>
-           <dependency>
-               <groupId>com.hurence.logisland</groupId>
-               <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
-           </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-solr_5_5_5-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-solr_6_6_2-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
+        </dependency>
 
         <!--   <dependency>
          <groupId>com.hurence.logisland</groupId>
@@ -206,8 +220,8 @@
                     <value>2.5</value>
                 </property>
             </activation>
-         <dependencies>
-                 <dependency>
+            <dependencies>
+                <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
                 </dependency>
@@ -289,90 +303,90 @@
                             </preinstallScriptlet>
                         </configuration>
                         <executions>
-                         <!--   <execution>
-                                <id>build-bin-rpm</id>
-                                <goals>
-                                    <goal>attached-rpm</goal>
-                                </goals>
-                                <configuration>
-                                    <classifier>bin</classifier>
-                                    <provides>
-                                        <provide>logisland</provide>
-                                    </provides>
-                                    <mappings>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}</directory>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}</directory>
-                                            <sources>
-                                                <source>
-                                                    <location>./LICENSE</location>
-                                                </source>
-                                                <source>
-                                                    <location>./NOTICE</location>
-                                                </source>
-                                                <source>
-                                                    <location>./README.md</location>
-                                                    <destination>README</destination>
-                                                </source>
-                                            </sources>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland</directory>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}/bin</directory>
-                                            <filemode>750</filemode>
-                                            <sources>
-                                                <source>
-                                                    <location>
-                                                        ${project.build.directory}/generated-resources/bin/logisland.sh
-                                                    </location>
-                                                    <destination>logisland.sh</destination>
-                                                    <filter>true</filter>
-                                                </source>
-                                            </sources>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}/conf</directory>
-                                            <configuration>true</configuration>
-                                            <sources>
-                                                <source>
-                                                    <location>${project.build.directory}/generated-resources/conf
-                                                    </location>
-                                                    <filter>true</filter>
-                                                </source>
-                                            </sources>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}/lib</directory>
-                                        </mapping>
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}/lib</directory>
-                                            <dependency>
-                                                <excludes>
-                                                    <exclude>org.apache.logisland:logisland-resources</exclude>
-                                                    <exclude>commons-io:commons-io</exclude>
-                                                    <exclude>org.apache.commons:commons-lang3</exclude>
-                                                    <exclude>org.antlr:antlr-runtime</exclude>
-                                                    <exclude>javax.activation:activation</exclude>
-                                                    <exclude>javax.mail:mail</exclude>
-                                                </excludes>
-                                            </dependency>
-                                        </mapping>
+                            <!--   <execution>
+                                   <id>build-bin-rpm</id>
+                                   <goals>
+                                       <goal>attached-rpm</goal>
+                                   </goals>
+                                   <configuration>
+                                       <classifier>bin</classifier>
+                                       <provides>
+                                           <provide>logisland</provide>
+                                       </provides>
+                                       <mappings>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}</directory>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}</directory>
+                                               <sources>
+                                                   <source>
+                                                       <location>./LICENSE</location>
+                                                   </source>
+                                                   <source>
+                                                       <location>./NOTICE</location>
+                                                   </source>
+                                                   <source>
+                                                       <location>./README.md</location>
+                                                       <destination>README</destination>
+                                                   </source>
+                                               </sources>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland</directory>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}/bin</directory>
+                                               <filemode>750</filemode>
+                                               <sources>
+                                                   <source>
+                                                       <location>
+                                                           ${project.build.directory}/generated-resources/bin/logisland.sh
+                                                       </location>
+                                                       <destination>logisland.sh</destination>
+                                                       <filter>true</filter>
+                                                   </source>
+                                               </sources>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}/conf</directory>
+                                               <configuration>true</configuration>
+                                               <sources>
+                                                   <source>
+                                                       <location>${project.build.directory}/generated-resources/conf
+                                                       </location>
+                                                       <filter>true</filter>
+                                                   </source>
+                                               </sources>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}/lib</directory>
+                                           </mapping>
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}/lib</directory>
+                                               <dependency>
+                                                   <excludes>
+                                                       <exclude>org.apache.logisland:logisland-resources</exclude>
+                                                       <exclude>commons-io:commons-io</exclude>
+                                                       <exclude>org.apache.commons:commons-lang3</exclude>
+                                                       <exclude>org.antlr:antlr-runtime</exclude>
+                                                       <exclude>javax.activation:activation</exclude>
+                                                       <exclude>javax.mail:mail</exclude>
+                                                   </excludes>
+                                               </dependency>
+                                           </mapping>
 
-                                        <mapping>
-                                            <directory>/opt/logisland/logisland-${project.version}/docs</directory>
-                                            <sources>
-                                                <source>
-                                                    <location>${project.build.directory}/generated-docs</location>
-                                                </source>
-                                            </sources>
-                                        </mapping>
-                                    </mappings>
-                                </configuration>
-                            </execution>-->
+                                           <mapping>
+                                               <directory>/opt/logisland/logisland-${project.version}/docs</directory>
+                                               <sources>
+                                                   <source>
+                                                       <location>${project.build.directory}/generated-docs</location>
+                                                   </source>
+                                               </sources>
+                                           </mapping>
+                                       </mappings>
+                                   </configuration>
+                               </execution>-->
                         </executions>
                     </plugin>
                 </plugins>
