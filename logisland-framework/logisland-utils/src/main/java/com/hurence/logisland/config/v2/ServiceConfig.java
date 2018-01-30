@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.config;
+package com.hurence.logisland.config.v2;
 
 
 /**
@@ -34,15 +34,23 @@ package com.hurence.logisland.config;
  *
  *
  */
-public class ControllerServiceConfiguration extends AbstractComponentConfiguration{
+public class ServiceConfig extends AbstractComponentConfig {
 
-    private String controllerService = "";
+    private String service = "";
 
-    public String getControllerService() {
-        return controllerService;
+    public String getService() {
+        return service;
     }
 
-    public void setControllerService(String controllerService) {
-        this.controllerService = controllerService;
+    public void setService(String service) {
+        this.service = service;
+    }
+
+
+    @Override
+    public String toString() {
+        return "ServiceConfig{" +
+                "service='" + service + '\'' +
+                '}';
     }
 }

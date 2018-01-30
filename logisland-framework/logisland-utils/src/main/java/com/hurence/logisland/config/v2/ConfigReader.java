@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.config;
+package com.hurence.logisland.config.v2;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.hurence.logisland.config.LogislandConfiguration;
+import com.hurence.logisland.config.v2.JobConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +34,7 @@ public class ConfigReader {
      * @return a LogislandSessionConfiguration
      * @throws Exception
      */
-    public static LogislandConfiguration loadConfig(String configFilePath) throws Exception {
+    public static JobConfig loadConfig(String configFilePath) throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File configFile = new File(configFilePath);
 
@@ -42,7 +42,7 @@ public class ConfigReader {
             throw new FileNotFoundException("Error: File " + configFilePath + " not found!");
         }
 
-        return mapper.readValue(configFile, LogislandConfiguration.class);
+        return mapper.readValue(configFile, JobConfig.class);
     }
 
 }

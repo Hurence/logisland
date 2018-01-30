@@ -15,20 +15,13 @@
  */
 package com.hurence.logisland.controller;
 
-import com.hurence.logisland.annotation.lifecycle.OnAdded;
-import com.hurence.logisland.annotation.lifecycle.OnEnabled;
-import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
-import com.hurence.logisland.util.runner.ReflectionUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,8 +48,10 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
         configurations.forEach(controllerServiceConfiguration -> {
 
             try {
-                AbstractControllerService service = (AbstractControllerService) Class.forName(controllerServiceConfiguration.getComponent()).newInstance();
 
+
+                AbstractControllerService service = (AbstractControllerService) Class.forName(controllerServiceConfiguration.getComponent()).newInstance();
+                logger.info("loading controller service {}", new Object[]{controllerServiceConfiguration.getComponent()});
                 ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, Long.toString(currentId.incrementAndGet()));
                 Map<String,String> properties = controllerServiceConfiguration.getConfiguration();
                 properties.keySet().forEach( name -> context.setProperty(name, properties.get(name)));

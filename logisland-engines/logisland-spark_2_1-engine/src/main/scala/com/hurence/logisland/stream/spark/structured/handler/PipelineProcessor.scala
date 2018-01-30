@@ -1,47 +1,69 @@
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-package com.hurence.logisland.stream.spark
+package com.hurence.logisland.stream.spark.structured.handler
 
+import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
-import com.hurence.logisland.record.{FieldDictionary, Record, RecordUtils}
+import com.hurence.logisland.record.{Record, RecordUtils}
+import com.hurence.logisland.serializer._
+import com.hurence.logisland.stream.StreamContext
+import com.hurence.logisland.stream.spark._
 import com.hurence.logisland.util.record.RecordSchemaUtil
-import com.hurence.logisland.util.spark.ProcessorMetrics
+import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.avro.Schema
+import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.errors.OffsetOutOfRangeException
 import org.apache.spark.TaskContext
-import org.apache.spark.groupon.metrics.{SparkMeter, UserMetricsSystem}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges, OffsetRange}
+import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import com.hurence.logisland.stream.StreamProperties._
-
-
-class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+class PipelineProcessor extends StructuredStreamHandler {
     val logger = LoggerFactory.getLogger(this.getClass)
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
-        descriptors.addAll(super.getSupportedPropertyDescriptors())
+        descriptors.add(ERROR_TOPICS)
+        descriptors.add(INPUT_TOPICS)
+        descriptors.add(OUTPUT_TOPICS)
+        descriptors.add(AVRO_INPUT_SCHEMA)
+        descriptors.add(AVRO_OUTPUT_SCHEMA)
+        descriptors.add(INPUT_SERIALIZER)
+        descriptors.add(OUTPUT_SERIALIZER)
+        descriptors.add(ERROR_SERIALIZER)
+        descriptors.add(KAFKA_TOPIC_AUTOCREATE)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_PARTITIONS)
+        descriptors.add(KAFKA_TOPIC_DEFAULT_REPLICATION_FACTOR)
+        descriptors.add(KAFKA_METADATA_BROKER_LIST)
+        descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
+        descriptors.add(KAFKA_MANUAL_OFFSET_RESET)
+        descriptors.add(KAFKA_BATCH_SIZE)
+        descriptors.add(KAFKA_LINGER_MS)
+        descriptors.add(KAFKA_ACKS)
+        descriptors.add(WINDOW_DURATION)
+        descriptors.add(SLIDE_DURATION)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -50,8 +72,12 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
       *
       * @param rdd
       */
-    override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
+    override def process(streamContext: StreamContext,
+                         controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],
+                         rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
+
+
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
@@ -68,7 +94,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
 
                         val pipelineMetricPrefix = streamContext.getIdentifier + "." +
                             "partition" + partitionId + "."
-                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms" ).time()
+                        val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
 
                         /**
@@ -166,19 +192,19 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
 
                         /**
                           * push outgoing events and errors to Kafka
+                          * *
+                          *kafkaSink.value.produce(
+                          *streamContext.getPropertyValue(OUTPUT_TOPICS).asString,
+                          *outgoingEvents.toList,
+                          * serializer
+                          * )
+                          * *
+                          *kafkaSink.value.produce(
+                          *streamContext.getPropertyValue(ERROR_TOPICS).asString,
+                          *outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)).toList,
+                          * errorSerializer
+                          * )
                           */
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(OUTPUT_TOPICS).asString,
-                            outgoingEvents.toList,
-                            serializer
-                        )
-
-                        kafkaSink.value.produce(
-                            streamContext.getPropertyValue(ERROR_TOPICS).asString,
-                            outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)).toList,
-                            errorSerializer
-                        )
-
                         pipelineTimerContext.stop()
                     }
                 }
@@ -186,23 +212,56 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                     case ex: OffsetOutOfRangeException =>
                         val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString
                         val brokerList = streamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
-                       /* val latestOffsetsString = zkSink.value.loadOffsetRangesFromZookeeper(
-                            brokerList,
-                            appName,
-                            inputTopics.split(",").toSet)
-                            .map(t => s"${t._1.topic}_${t._1.partition}:${t._2}")
-                            .mkString(", ")
-                        val offestsString = offsetRanges
-                            .map(o => s"${o.topic}_${o.partition}:${o.fromOffset}/${o.untilOffset}")
-                            .mkString(", ")
-                        logger.error(s"unable to process partition. current Offsets $offestsString latest offsets $latestOffsetsString")*/
                         logger.error(s"exception : ${ex.toString}")
-
                 }
             })
             Some(offsetRanges)
         }
         else None
     }
-}
 
+    /**
+      * build a serializer
+      *
+      * @param inSerializerClass the serializer type
+      * @param schemaContent     an Avro schema
+      * @return the serializer
+      */
+    def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
+        // TODO move this in a utility class
+        inSerializerClass match {
+            case c if c == AVRO_SERIALIZER.getValue =>
+                val parser = new Parser
+                val inSchema = parser.parse(schemaContent)
+                new AvroSerializer(inSchema)
+            case c if c == JSON_SERIALIZER.getValue => new JsonSerializer()
+            case c if c == BYTESARRAY_SERIALIZER.getValue => new BytesArraySerializer()
+            case _ => new KryoSerializer(true)
+        }
+    }
+
+    /**
+      *
+      * @param partition
+      * @param serializer
+      * @return
+      */
+    def deserializeRecords(partition: Iterator[ConsumerRecord[Array[Byte], Array[Byte]]], serializer: RecordSerializer): List[Record] = {
+        partition.flatMap(rawEvent => {
+
+            // TODO handle key also
+            try {
+                val bais = new ByteArrayInputStream(rawEvent.value())
+                val deserialized = serializer.deserialize(bais)
+                bais.close()
+
+                Some(deserialized)
+            } catch {
+                case t: Throwable =>
+                    logger.error(s"exception while deserializing events ${t.getMessage}")
+                    None
+            }
+
+        }).toList
+    }
+}

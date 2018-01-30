@@ -15,9 +15,9 @@
  */
 package com.hurence.logisland.component;
 
-import com.hurence.logisland.config.EngineConfiguration;
-import com.hurence.logisland.config.ProcessorConfiguration;
-import com.hurence.logisland.config.StreamConfiguration;
+import com.hurence.logisland.config.v2.EngineConfig;
+import com.hurence.logisland.config.v2.ProcessorConfig;
+import com.hurence.logisland.config.v2.StreamConfig;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.engine.StandardEngineContext;
@@ -34,23 +34,23 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public final class ComponentFactory {
+public final class ComponentFactoryV2 {
 
-    private static Logger logger = LoggerFactory.getLogger(ComponentFactory.class);
+    private static Logger logger = LoggerFactory.getLogger(ComponentFactoryV2.class);
 
     private static final AtomicLong currentId = new AtomicLong(0);
 
 
-    public static Optional<EngineContext> getEngineContext(EngineConfiguration configuration) {
+    public static Optional<EngineContext> getEngineContext(EngineConfig configuration) {
         try {
             final ProcessingEngine engine =
                     (ProcessingEngine) Class.forName(configuration.getComponent()).newInstance();
             final EngineContext engineContext =
                     new StandardEngineContext(engine, Long.toString(currentId.incrementAndGet()));
 
-
+/*
             // instanciate each related pipelineContext
-            configuration.getStreamConfigurations().forEach(pipelineConfig -> {
+            configuration.getStreamConfig().forEach(pipelineConfig -> {
                 Optional<StreamContext> pipelineContext = getStreamContext(pipelineConfig);
                 pipelineContext.ifPresent(engineContext::addStreamContext);
             });
@@ -65,7 +65,7 @@ public final class ComponentFactory {
 
 
             logger.info("created engine {}", configuration.getComponent());
-
+*/
 
             return Optional.of(engineContext);
 
@@ -81,7 +81,7 @@ public final class ComponentFactory {
      * @param configuration
      * @return
      */
-    public static Optional<StreamContext> getStreamContext(StreamConfiguration configuration) {
+    public static Optional<StreamContext> getStreamContext(StreamConfig configuration) {
         try {
             final RecordStream recordStream =
                     (RecordStream) Class.forName(configuration.getComponent()).newInstance();
@@ -89,10 +89,10 @@ public final class ComponentFactory {
                     new StandardStreamContext(recordStream, configuration.getStream());
 
             // instanciate each related processor
-            configuration.getProcessorConfigurations().forEach(processConfig -> {
+      /*      configuration.getProcessorConfigurations().forEach(processConfig -> {
                 Optional<ProcessContext> processorContext = getProcessContext(processConfig);
                 processorContext.ifPresent(instance::addProcessContext);
-            });
+            });*/
 
             // set the config properties
             configuration.getConfiguration()
@@ -106,7 +106,7 @@ public final class ComponentFactory {
         return Optional.empty();
     }
 
-    public static Optional<ProcessContext> getProcessContext(ProcessorConfiguration configuration) {
+    public static Optional<ProcessContext> getProcessContext(ProcessorConfig configuration) {
         try {
             final Processor processor = (Processor) Class.forName(configuration.getComponent()).newInstance();
             final ProcessContext processContext =
