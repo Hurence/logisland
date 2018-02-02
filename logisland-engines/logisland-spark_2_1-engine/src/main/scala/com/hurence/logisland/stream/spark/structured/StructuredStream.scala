@@ -21,18 +21,16 @@ import java.util.Collections
 
 import com.hurence.logisland.component.{PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.engine.EngineContext
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.stream.spark.structured.handler.StructuredStreamHandler
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
-import com.hurence.logisland.stream.spark.{SparkRecordStream, _}
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.StreamingContext
 import org.slf4j.LoggerFactory
-import com.hurence.logisland.stream.StreamProperties._
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
@@ -56,8 +54,15 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     override def getSupportedPropertyDescriptors() = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
 
-        descriptors.addAll(handler.getSupportedPropertyDescriptors)
+        //        descriptors.addAll(handler.getSupportedPropertyDescriptors)
 
+
+        descriptors.add(READ_TOPICS)
+        descriptors.add(READ_TOPICS_CLIENT_SERVICE)
+        descriptors.add(READ_TOPICS_SERIALIZER)
+        descriptors.add(WRITE_TOPICS)
+        descriptors.add(WRITE_TOPICS_CLIENT_SERVICE)
+        descriptors.add(WRITE_TOPICS_SERIALIZER)
         descriptors.add(LOGISLAND_AGENT_HOST)
         descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
 
@@ -79,7 +84,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             throw new IllegalStateException("stream not initialized")
 
         try {
-
+            Thread.sleep(5000)
             val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
             val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 
@@ -90,7 +95,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
             val spark = SparkSession.builder().getOrCreate()
-            import spark.implicits._
+
+
+            val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
+            streamContext.addControllerServiceLookup(controllerServiceLookup)
 
 
             val readStreamService = streamContext.getPropertyValue(READ_TOPICS_CLIENT_SERVICE)
@@ -118,7 +126,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                     )
             } else readDF*/
 
-         //   val processedDF = handler.process(streamContext, controllerServiceLookupSink, windowedDF)
+            //   val processedDF = handler.process(streamContext, controllerServiceLookupSink, windowedDF)
 
 
             val writeStreamService = streamContext.getPropertyValue(WRITE_TOPICS_CLIENT_SERVICE)
@@ -127,7 +135,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
             // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-            val ds = writeStreamService.write(readDF,streamContext)
+            val ds = writeStreamService.write(readDF, streamContext)
+
+
 
 
         } catch {

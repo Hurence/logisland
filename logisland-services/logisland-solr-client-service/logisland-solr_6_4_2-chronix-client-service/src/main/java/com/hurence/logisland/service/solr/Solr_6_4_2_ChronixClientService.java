@@ -52,7 +52,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 @Tags({"solr", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Solr 5.5.5.")
+@CapabilityDescription("Implementation of ChronixClientService for Solr 6 4 2")
 public class Solr_6_4_2_ChronixClientService extends AbstractControllerService implements DatastoreClientService {
 
     private static Logger logger = LoggerFactory.getLogger(Solr_6_4_2_ChronixClientService.class);

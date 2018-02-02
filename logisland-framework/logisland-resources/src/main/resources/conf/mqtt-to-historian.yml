@@ -1,0 +1,120 @@
+version: 0.11.0
+documentation: LogIsland future factory job
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: FutureFactory
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 1G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
+      configuration:
+        solr.cloud: false
+        solr.connection.string: http://51.15.164.141:8983/solr
+        solr.collection: chronix
+        solr.concurrent.requests: 4
+        flush.interval: 2000
+        batch.size: 500
+
+    - controllerService: mqtt_service
+      component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
+      configuration:
+        mqtt.broker.url: tcp://51.15.164.141:1883
+       # mqtt.broker.url: tcp://localhost:1883
+        mqtt.persistence: memory
+        mqtt.client.id: logisland
+        mqtt.qos: 0
+        mqtt.topic: Account123/W1/A1/opc2
+        mqtt.username: User123
+        mqtt.password: Kapu@12345678
+        mqtt.clean.session: true
+        mqtt.connection.timeout: 30
+        mqtt.keep.alive: 60
+        mqtt.version: 4
+
+    - controllerService: console_service
+      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+
+  streamConfigurations:
+
+    # indexing stream
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: none
+        read.topics.client.service: mqtt_service
+        write.topics: /a/out
+        write.topics.serializer: none
+        write.topics.client.service: console_service
+      processorConfigurations:
+
+        - processor: historian_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: "a parser that produces events from httpd logs"
+          configuration:
+            record.type: historian_serie
+            key.regex: (\S*):(\S*)
+            key.fields: filename,nifi_uuid
+            value.regex: (\S+\s+\S+);((\w+)\.?(\w+-?\w+-?\w+)?\.?(\w+)?);(\S+);(\S+)
+            value.fields: record_time,tagname,code_install,sensor,numeric_type,record_value,quality
+
+
+        - processor: fields_types_converter
+          component: com.hurence.logisland.processor.ConvertFieldsType
+          type: processor
+          documentation: "converts some field to a given type"
+          configuration:
+            record_value: double
+            quality: float
+
+        - processor: create_aliases
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
+          configuration:
+            conflict.resolution.policy: keep_both_fields
+            record_name: tagname
+
+        - processor: idempotency_maker
+          component: com.hurence.logisland.processor.ModifyId
+          type: parser
+          documentation: "generate an id from hashing values"
+          configuration:
+           id.generation.strategy: hashFields
+           hash.charset: US-ASCII
+
+        - processor: chronix_publisher
+          component: com.hurence.logisland.processor.datastore.BulkPut
+          type: processor
+          documentation: "indexes processed events in SolR/Chronix"
+          configuration:
+            datastore.client.service: datastore_service

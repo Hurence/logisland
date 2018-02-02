@@ -16,11 +16,10 @@
 package com.hurence.logisland.stream;
 
 
-import com.hurence.logisland.component.AbstractConfiguredComponent;
-import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
-import com.hurence.logisland.component.StandardPropertyValue;
+import com.hurence.logisland.component.*;
+import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.Processor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +48,14 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
         processContexts.add(processContext);
     }
 
+    private ControllerServiceLookup controllerServiceLookup;
+
+    @Override
+    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+        this.controllerServiceLookup = controllerServiceLookup;
+    }
+
+
 
     @Override
     public PropertyValue getPropertyValue(final PropertyDescriptor descriptor) {
@@ -65,7 +72,7 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new StandardPropertyValue(propValue);
+        return PropertyValueFactory.getInstance(descriptor, propValue, controllerServiceLookup);
     }
 
     @Override

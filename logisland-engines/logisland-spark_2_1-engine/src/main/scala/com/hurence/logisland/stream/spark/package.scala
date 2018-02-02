@@ -316,7 +316,6 @@ object StreamProperties {
             .name("mqtt.username")
             .description(" username Sets the user name to use for the connection to Mqtt Server. " +
                 "Do not set it, if server does not need this. Setting it empty will lead to errors.")
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .required(false)
             .build
 

@@ -101,7 +101,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       */
     override def read(spark: SparkSession, streamContext: StreamContext) = {
 
-        import spark.implicits._
+        getLogger.info("connecting to MQTT")
 
 
         // Create DataFrame representing the stream of input lines from connection to mqtt server
