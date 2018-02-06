@@ -84,7 +84,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             throw new IllegalStateException("stream not initialized")
 
         try {
-            Thread.sleep(5000)
+           // Thread.sleep(5000)
             val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
             val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 

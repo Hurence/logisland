@@ -24,10 +24,12 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import com.hurence.logisland.util.kura.KuraPayloadDecoder
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.eclipse.kura.core.message.protobuf.KuraPayloadProto.KuraPayload
+
 
 
 class MQTTStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
@@ -100,13 +102,13 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       * @return DataFrame currently loaded
       */
     override def read(spark: SparkSession, streamContext: StreamContext) = {
-
+        import spark.implicits._
         getLogger.info("connecting to MQTT")
 
 
         // Create DataFrame representing the stream of input lines from connection to mqtt server
         val lines = spark.readStream
-            .format("org.apache.bahir.sql.streaming.mqtt.MQTTStreamSourceProvider")
+            .format("com.hurence.logisland.util.mqtt.MQTTStreamSourceProvider")
             .option("topic", topic)
             .option("persistence", persistence)
             .option("clientId", clientId)
@@ -118,10 +120,16 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
             .option("keepAlive", keepAlive)
             .option("mqttVersion", mqttVersion)
             .load(brokerUrl)
+            .as[(Array[Byte], Timestamp)]
+            .map(r => {
+               // val payload = r._1.split("\n")(1)
 
+                new KuraPayloadDecoder(r._1).buildFromByteArray().toString
+            } )
+      //      .flatMap(_.split(" "))
+            .toDF("payload")
 
-lines
-
+        lines
     }
 
 

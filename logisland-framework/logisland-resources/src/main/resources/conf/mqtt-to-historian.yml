@@ -20,6 +20,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
+   #spark.serializer: org.apache.spark.serializer.JavaSerializer
     spark.streaming.batchDuration: 2000
     spark.streaming.backpressure.enabled: false
     spark.streaming.blockInterval: 500
@@ -46,18 +47,18 @@ engine:
     - controllerService: mqtt_service
       component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
       configuration:
-        mqtt.broker.url: tcp://51.15.164.141:1883
-       # mqtt.broker.url: tcp://localhost:1883
+       # mqtt.broker.url: tcp://51.15.164.141:1883
+        mqtt.broker.url: tcp://localhost:1883
         mqtt.persistence: memory
         mqtt.client.id: logisland
         mqtt.qos: 0
-        mqtt.topic: Account123/W1/A1/opc2
+        mqtt.topic: Account123/sim-2/data-1/metrics
         mqtt.username: User123
-        mqtt.password: Kapu@12345678
+        mqtt.password: Kapu12345678+
         mqtt.clean.session: true
         mqtt.connection.timeout: 30
         mqtt.keep.alive: 60
-        mqtt.version: 4
+        mqtt.version: 3
 
     - controllerService: console_service
       component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService

@@ -417,6 +417,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
 
+        conf.set("spark.kryo.registrator", "com.hurence.logisland.util.spark.ProtoBufRegistrator")
+
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
             // That's why we do not need to propagate it here
