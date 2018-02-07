@@ -31,7 +31,25 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    def read(spark: SparkSession, streamContext: StreamContext): DataFrame
+    def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record]
+
+
+    /**
+      *
+      *
+      * @param spark
+      * @param streamContext
+      * @return
+      */
+    def load(spark: SparkSession, streamContext: StreamContext): Dataset[Record] = {
+        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+        val df = read(spark, streamContext)
+        df.map( r =>{
+
+            val id = streamContext.getIdentifier
+            r
+        })
+    }
 
 
     /**
@@ -40,6 +58,6 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    def write(df: DataFrame, streamContext: StreamContext)
+    def write(df: Dataset[Record], streamContext: StreamContext)
 
 }

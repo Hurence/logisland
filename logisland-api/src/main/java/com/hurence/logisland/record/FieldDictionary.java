@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,6 @@
 package com.hurence.logisland.record;
 
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +32,8 @@ public class FieldDictionary {
     public static String RECORD_RAW_VALUE = "record_raw_value";
     public static String RECORD_NAME = "record_name";
     public static String PROCESSOR_NAME = "processor_name";
+    public static String RECORD_POSITION = "record_position";
+    public static String RECORD_BODY = "record_body";
 
     public static Boolean contains(String fieldName) {
         return asList().contains(fieldName);
@@ -42,16 +41,18 @@ public class FieldDictionary {
 
     public static List<String> asList() {
         return Arrays.asList(
-            RECORD_ERRORS,
-            RECORD_TYPE,
-            RECORD_ID,
-            RECORD_TIME,
-            RECORD_DAYTIME,
-            RECORD_KEY,
-            RECORD_VALUE,
-            RECORD_RAW_KEY,
-            RECORD_RAW_VALUE,
-            PROCESSOR_NAME
+                RECORD_ERRORS,
+                RECORD_TYPE,
+                RECORD_ID,
+                RECORD_TIME,
+                RECORD_DAYTIME,
+                RECORD_KEY,
+                RECORD_VALUE,
+                RECORD_RAW_KEY,
+                RECORD_RAW_VALUE,
+                PROCESSOR_NAME,
+                RECORD_POSITION,
+                RECORD_BODY
         );
     }
 }

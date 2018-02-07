@@ -138,5 +138,37 @@ public class StandardRecordTest {
 
         assertTrue(rootRecord.getField("record_leaf").asRecord()
                 .getField("request_size").asInteger() == 1399);
+
+
+
+    }
+
+    @Test
+    public void validatePosition() {
+
+        Record rootRecord = new StandardRecord("root");
+        rootRecord.setField("request_str", FieldType.STRING, "zer");
+        assertTrue(rootRecord.isValid());
+
+
+        Position position = Position.from(1.0, 2.0, 3.0, 4.0, 5.0, 6,7, 8.0, new Date(10));
+
+
+
+        assertFalse(rootRecord.hasPosition());
+        rootRecord.setPosition(position);
+        assertTrue(rootRecord.hasPosition());
+
+
+        assertTrue(rootRecord.getPosition().getAltitude() == 1.0 );
+        assertTrue(rootRecord.getPosition().getHeading() == 2.0 );
+        assertTrue(rootRecord.getPosition().getLatitude() == 3.0 );
+        assertTrue(rootRecord.getPosition().getLongitude() == 4.0 );
+        assertTrue(rootRecord.getPosition().getPrecision() == 5.0 );
+        assertTrue(rootRecord.getPosition().getSatellites() == 6 );
+        assertTrue(rootRecord.getPosition().getStatus() == 7 );
+        assertTrue(rootRecord.getPosition().getSpeed() == 8.0 );
+        assertTrue(rootRecord.getPosition().getTimestamp().getTime() == 10L );
+
     }
 }

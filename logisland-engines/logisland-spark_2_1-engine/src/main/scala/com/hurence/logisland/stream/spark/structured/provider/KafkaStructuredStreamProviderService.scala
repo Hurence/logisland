@@ -6,6 +6,7 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.kafka.KafkaSink
@@ -17,7 +18,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 /*
@@ -143,8 +144,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
     override def read(spark: SparkSession, streamContext: StreamContext) = {
 
 
-
-
+        import spark.implicits._
+        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
 
         logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
@@ -154,7 +155,12 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .option("kafka.bootstrap.servers", brokerList)
             .option("subscribe", inputTopics.mkString(","))
             .load()
-
+            .as[(String, String)]
+            .map(r => {
+                new StandardRecord("kura_metric")
+                    .setField(FieldDictionary.RECORD_RAW_KEY, FieldType.BYTES, r._1)
+                    .setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, r._2)
+            } )
         /*   df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
                .as[(String, String)]*/
 
@@ -222,7 +228,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: DataFrame, streamContext: StreamContext) = {
+    override def write(df: Dataset[Record], streamContext: StreamContext) = {
 
 
      df

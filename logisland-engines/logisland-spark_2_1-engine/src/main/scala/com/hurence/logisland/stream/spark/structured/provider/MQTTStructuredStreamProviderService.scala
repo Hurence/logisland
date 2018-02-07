@@ -24,10 +24,11 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.kura.KuraPayloadDecoder
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.eclipse.kura.core.message.protobuf.KuraPayloadProto.KuraPayload
 
 
@@ -103,11 +104,12 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       */
     override def read(spark: SparkSession, streamContext: StreamContext) = {
         import spark.implicits._
+        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
+
         getLogger.info("connecting to MQTT")
 
-
-        // Create DataFrame representing the stream of input lines from connection to mqtt server
-        val lines = spark.readStream
+spark.readStream
             .format("com.hurence.logisland.util.mqtt.MQTTStreamSourceProvider")
             .option("topic", topic)
             .option("persistence", persistence)
@@ -122,14 +124,11 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
             .load(brokerUrl)
             .as[(Array[Byte], Timestamp)]
             .map(r => {
-               // val payload = r._1.split("\n")(1)
-
-                new KuraPayloadDecoder(r._1).buildFromByteArray().toString
+                new StandardRecord("kura_metric")
+                    .setTime(r._2)
+                    .setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, r._1)
             } )
-      //      .flatMap(_.split(" "))
-            .toDF("payload")
 
-        lines
     }
 
 
@@ -139,7 +138,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: DataFrame, streamContext: StreamContext) = {
+    override def write(df: Dataset[Record], streamContext: StreamContext) = {
 
 
         // Create DataFrame representing the stream of input lines from connection to mqtt server

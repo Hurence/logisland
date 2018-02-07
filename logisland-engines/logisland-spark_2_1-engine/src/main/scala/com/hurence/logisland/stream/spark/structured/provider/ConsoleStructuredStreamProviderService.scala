@@ -22,8 +22,9 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.StreamContext
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 class ConsoleStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
@@ -74,7 +75,7 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: DataFrame, streamContext: StreamContext) = {
+    override def write(df: Dataset[Record], streamContext: StreamContext) = {
 
 
         val df2 = df.writeStream

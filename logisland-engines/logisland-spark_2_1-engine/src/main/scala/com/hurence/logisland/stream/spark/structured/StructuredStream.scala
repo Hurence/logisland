@@ -106,7 +106,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 .asInstanceOf[StructuredStreamProviderService]
 
 
-            val readDF = readStreamService.read(spark, streamContext)
+            val readDF = readStreamService.load(spark, streamContext)
 
 
             // store current configuration version

@@ -35,11 +35,11 @@ package com.hurence.logisland.util.kura;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.hurence.logisland.util.GZipUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.eclipse.kura.core.message.protobuf.KuraPayloadProto;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 
 /**

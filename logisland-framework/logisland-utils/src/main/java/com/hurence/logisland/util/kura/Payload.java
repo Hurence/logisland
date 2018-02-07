@@ -16,6 +16,8 @@
  */
 package com.hurence.logisland.util.kura;
 
+import com.hurence.logisland.record.Position;
+
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;

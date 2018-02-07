@@ -29,6 +29,7 @@ package com.hurence.logisland.util.kura;
  *******************************************************************************/
 
 import com.google.protobuf.ByteString;
+import com.hurence.logisland.record.Position;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.eclipse.kura.core.message.protobuf.KuraPayloadProto;
@@ -41,20 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
-
-import com.google.protobuf.ByteString;
 
 public final class Metrics {
 
@@ -144,7 +131,7 @@ public final class Metrics {
         }
 
         if (position.getTimestamp() != null) {
-            result.setTimestamp(position.getTimestamp().toEpochMilli());
+            result.setTimestamp(position.getTimestamp().getTime());
         }
 
         builder.setPosition(result);
