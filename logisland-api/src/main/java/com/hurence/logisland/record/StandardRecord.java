@@ -309,6 +309,9 @@ public class StandardRecord implements Record {
                         case ARRAY:
                             isValid = field.getRawValue() instanceof Collection;
                             break;
+                        case RECORD:
+                            isValid = field.getRawValue() instanceof Record;
+                            break;
                         default:
                             isValid = false;
                             break;

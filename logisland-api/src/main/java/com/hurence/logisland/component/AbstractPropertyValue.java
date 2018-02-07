@@ -17,7 +17,9 @@ package com.hurence.logisland.component;
 
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 
 /**
@@ -71,6 +73,13 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     @Override
     public boolean isSet() {
         return getRawValue() != null;
+    }
+
+    @Override
+    public Record asRecord() {
+        return (getRawValue() == null) ? null : new StandardRecord()
+                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim())
+                .setStringField(FieldDictionary.RECORD_RAW_VALUE,getRawValue().trim());
     }
 
     @Override
