@@ -19,20 +19,17 @@ package com.hurence.logisland.record;
 public final class RecordUtils {
 
 
-    public static final String KV_RECORD_KEY_FIELD = "record_key";
-    public static final String KV_RECORD_VALUE_FIELD = "record_value";
-
     public static Record getKeyValueRecord(String key, String value) {
         final Record record = new StandardRecord("kv_record");
-        record.setStringField(KV_RECORD_KEY_FIELD, key);
-        record.setStringField(KV_RECORD_VALUE_FIELD, value);
+        record.setStringField(FieldDictionary.RECORD_KEY, key);
+        record.setStringField(FieldDictionary.RECORD_VALUE, value);
         return record;
     }
 
     public static Record getKeyValueRecord(byte[] key, byte[] value) {
         final Record record = new StandardRecord("kv_record");
-        record.setField(KV_RECORD_KEY_FIELD, FieldType.BYTES, key);
-        record.setField(KV_RECORD_VALUE_FIELD, FieldType.BYTES, value);
+        record.setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, key);
+        record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, value);
         return record;
     }
 }

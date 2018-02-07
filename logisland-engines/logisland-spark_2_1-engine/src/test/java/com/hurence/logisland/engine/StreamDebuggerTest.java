@@ -27,6 +27,7 @@ import com.hurence.logisland.stream.spark.KafkaRecordStreamHDFSBurner;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing;
 import com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator;
 import com.hurence.logisland.util.runner.MockProcessor;
+import com.hurence.logisland.util.spark.SparkUtils;
 import org.apache.commons.cli.CommandLine;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class StreamDebuggerTest {
     @Ignore
     public void remoteTest() {
 
-
+        SparkUtils.customizeLogLevels();
         logger.info("starting StreamProcessingRunner");
 
         Optional<EngineContext> engineInstance = Optional.empty();

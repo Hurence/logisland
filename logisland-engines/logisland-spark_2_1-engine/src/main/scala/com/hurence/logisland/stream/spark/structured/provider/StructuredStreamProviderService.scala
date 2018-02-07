@@ -1,9 +1,14 @@
 package com.hurence.logisland.stream.spark.structured.provider
 
+import java.io.ByteArrayInputStream
+
 import com.hurence.logisland.controller.ControllerService
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.{FieldDictionary, Record}
+import com.hurence.logisland.serializer.SerializerProvider
 import com.hurence.logisland.stream.StreamContext
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import com.hurence.logisland.stream.StreamProperties._
+import org.apache.spark.sql.{Dataset, SparkSession}
+import org.slf4j.LoggerFactory
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -23,6 +28,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
  */
 trait StructuredStreamProviderService extends ControllerService {
 
+    val logger = LoggerFactory.getLogger(this.getClass)
 
     /**
       * create a streaming DataFrame that represents data received
@@ -42,13 +48,68 @@ trait StructuredStreamProviderService extends ControllerService {
       * @return
       */
     def load(spark: SparkSession, streamContext: StreamContext): Dataset[Record] = {
+        import spark.implicits._
         implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
         val df = read(spark, streamContext)
-        df.map( r =>{
 
-            val id = streamContext.getIdentifier
-            r
+        df.mapPartitions(iterator => {
+
+            /**
+              * create serializers
+              */
+            val serializer = SerializerProvider.getSerializer(
+                streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
+                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+
+
+            val myList = iterator.toList
+            // In a normal user case, we will do the
+            // the initialization(ex : initializing database)
+            // before iterating through each element
+            myList.flatMap(r => {
+
+                // TODO handle key also
+                val incomingEvents = try {
+                    val bais = new ByteArrayInputStream(r.getField(FieldDictionary.RECORD_VALUE).getRawValue.asInstanceOf[Array[Byte]])
+                    val deserialized = serializer.deserialize(bais)
+                    bais.close()
+
+                    Some(deserialized)
+                } catch {
+                    case t: Throwable =>
+                        logger.error(s"exception while deserializing events ${t.getMessage}")
+                        None
+                }
+
+                incomingEvents
+            }).iterator
         })
+
+
+       /* df.map(r => {
+
+
+            /**
+              * create serializers
+              */
+            val serializer = SerializerProvider.getSerializer(
+                streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
+                streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
+            // TODO handle key also
+            val incomingEvents = try {
+                val bais = new ByteArrayInputStream(r.getField(FieldDictionary.RECORD_VALUE).getRawValue.asInstanceOf[Array[Byte]])
+                val deserialized = serializer.deserialize(bais)
+                bais.close()
+
+                Some(deserialized)
+            } catch {
+                case t: Throwable =>
+                    logger.error(s"exception while deserializing events ${t.getMessage}")
+                    None
+            }
+
+            incomingEvents.get
+        })*/
     }
 
 

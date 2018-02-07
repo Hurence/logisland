@@ -70,7 +70,7 @@ engine:
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
         read.topics: /a/in
-        read.topics.serializer: none
+        read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
         read.topics.client.service: mqtt_service
         write.topics: /a/out
         write.topics.serializer: none

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory
  */
 class KafkaStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
 
-    private val logger = LoggerFactory.getLogger(this.getClass)
+   // private val logger = LoggerFactory.getLogger(this.getClass)
 
 
     var appName = ""
@@ -158,8 +158,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .as[(String, String)]
             .map(r => {
                 new StandardRecord("kura_metric")
-                    .setField(FieldDictionary.RECORD_RAW_KEY, FieldType.BYTES, r._1)
-                    .setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, r._2)
+                    .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
+                    .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
             } )
         /*   df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
                .as[(String, String)]*/

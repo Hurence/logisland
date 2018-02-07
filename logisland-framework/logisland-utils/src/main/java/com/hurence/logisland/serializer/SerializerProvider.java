@@ -30,6 +30,7 @@ public class SerializerProvider {
     private static String BYTES_ARRAY_SERIALIZER = BytesArraySerializer.class.getName();
     private static String NOOP_SERIALIZER = NoopSerializer.class.getName();
 
+    private static String KURA_PROTOBUF_SERIALIZER = KuraProtobufSerializer.class.getName();
     /**
      * build a serializer
      *
@@ -50,6 +51,8 @@ public class SerializerProvider {
                 return new KryoSerializer(true);
             } else if (inSerializerClass.equals(BYTES_ARRAY_SERIALIZER)) {
                 return new BytesArraySerializer();
+            } else if (inSerializerClass.equals(KURA_PROTOBUF_SERIALIZER)) {
+                return new KuraProtobufSerializer();
             } else {
                 return new NoopSerializer();
             }

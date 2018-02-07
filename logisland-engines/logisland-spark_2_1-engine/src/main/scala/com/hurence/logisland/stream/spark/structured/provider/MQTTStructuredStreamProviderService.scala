@@ -126,7 +126,7 @@ spark.readStream
             .map(r => {
                 new StandardRecord("kura_metric")
                     .setTime(r._2)
-                    .setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.BYTES, r._1)
+                    .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._1)
             } )
 
     }
