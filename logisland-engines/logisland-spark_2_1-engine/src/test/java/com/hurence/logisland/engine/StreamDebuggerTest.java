@@ -48,7 +48,7 @@ public class StreamDebuggerTest {
     @Ignore
     public void remoteTest() {
 
-        SparkUtils.customizeLogLevels();
+
         logger.info("starting StreamProcessingRunner");
 
         Optional<EngineContext> engineInstance = Optional.empty();
@@ -74,6 +74,7 @@ public class StreamDebuggerTest {
             // start the engine
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
+            SparkUtils.customizeLogLevels();
         } catch (Exception e) {
             logger.error("something went bad while running the job : {}", e);
             System.exit(-1);

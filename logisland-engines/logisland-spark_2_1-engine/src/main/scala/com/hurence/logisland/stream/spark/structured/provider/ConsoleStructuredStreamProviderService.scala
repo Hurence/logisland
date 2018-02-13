@@ -77,7 +77,7 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
       */
     override def write(df: Dataset[Record], streamContext: StreamContext) = {
 
-
+        streamContext.addControllerServiceLookup(null)
         val df2 = df.writeStream
             .format("console")
             .start()

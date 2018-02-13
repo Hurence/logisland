@@ -21,6 +21,7 @@ import java.util.Collections
 
 import com.hurence.logisland.component.{PropertyDescriptor, RestComponentFactory}
 import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.logging.StandardComponentLogger
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.stream.spark.structured.handler.StructuredStreamHandler
@@ -30,7 +31,6 @@ import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.StreamingContext
-import org.slf4j.LoggerFactory
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
@@ -38,11 +38,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     protected var handler: StructuredStreamHandler = _
     protected var provider: StructuredStreamProviderService = _
 
-    private val logger = LoggerFactory.getLogger(this.getClass)
 
     protected var appName: String = ""
     @transient protected var ssc: StreamingContext = _
-    protected var streamContext: StreamContext = _
+    @transient protected var streamContext: StreamContext = _
     protected var engineContext: EngineContext = _
     protected var restApiSink: Broadcast[RestJobsApiClientSink] = _
     protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = _
@@ -51,11 +50,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     protected var needMetricsReset = false
 
 
+    private val logger = new StandardComponentLogger(this.getIdentifier, this.getClass)
+
     override def getSupportedPropertyDescriptors() = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
-
-        //        descriptors.addAll(handler.getSupportedPropertyDescriptors)
-
 
         descriptors.add(READ_TOPICS)
         descriptors.add(READ_TOPICS_CLIENT_SERVICE)
@@ -84,7 +82,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             throw new IllegalStateException("stream not initialized")
 
         try {
-           // Thread.sleep(5000)
+            // Thread.sleep(5000)
             val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
             val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 
@@ -106,7 +104,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 .asInstanceOf[StructuredStreamProviderService]
 
 
-            val readDF = readStreamService.load(spark, streamContext)
+
+
+            val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
 
 
             // store current configuration version
@@ -137,9 +137,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
             val ds = writeStreamService.write(readDF, streamContext)
 
-
-
-
         } catch {
             case ex: Throwable =>
                 ex.printStackTrace()
@@ -156,9 +153,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             lastCheckCount = 0
             val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
             if (currentJobVersion != version) {
-                logger.info("Job version change detected from {} to {}, proceeding to update",
-                    currentJobVersion,
-                    version)
+                logger.info(s"Job version change detected from $currentJobVersion to $version, proceeding to update")
 
                 val componentFactory = new RestComponentFactory(agentQuorum)
                 val updatedEngineContext = componentFactory.getEngineContext(appName)
@@ -171,7 +166,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
                         // if we found a streamContext with the same name from the factory
                         if (updatedStreamingContext.getName == this.streamContext.getName) {
-                            logger.info("new conf for stream {}", updatedStreamingContext.getName)
+                            logger.info(s"new conf for stream ${updatedStreamingContext.getName}")
                             this.streamContext = updatedStreamingContext
                         }
                     }

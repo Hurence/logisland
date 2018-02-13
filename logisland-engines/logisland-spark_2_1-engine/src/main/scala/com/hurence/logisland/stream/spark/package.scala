@@ -1,7 +1,7 @@
 package com.hurence.logisland.stream
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
-import com.hurence.logisland.serializer.{AvroSerializer, BytesArraySerializer, JsonSerializer, KryoSerializer}
+import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
 import com.hurence.logisland.validator.StandardValidators
 
@@ -93,6 +93,8 @@ object StreamProperties {
         "kryo serialization", "serialize events as json blocs")
     val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
         "byte array serialization", "serialize events as byte arrays")
+    val KURA_PROTOCOL_BUFFER_SERIALIZER = new AllowableValue(classOf[KuraProtobufSerializer].getName,
+        "Kura Protobuf serialization", "serialize events as Kura protocol buffer")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
 
@@ -372,7 +374,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER,KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -396,7 +398,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
