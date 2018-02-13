@@ -52,4 +52,12 @@ public interface StreamContext extends ComponentContext {
      */
     void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
 
+    /**
+     * get the given {@link ControllerServiceLookup}  so that the
+     * configured Processor can access it
+     *
+     * @throws InitializationException ie
+     */
+    ControllerServiceLookup getControllerServiceLookup() throws InitializationException;
+
 }
