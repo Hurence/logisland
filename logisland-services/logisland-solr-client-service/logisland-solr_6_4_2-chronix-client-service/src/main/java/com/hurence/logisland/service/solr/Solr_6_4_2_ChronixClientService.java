@@ -29,9 +29,6 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
-import de.qaware.chronix.converter.MetricTimeSeriesConverter;
-import de.qaware.chronix.solr.client.ChronixSolrStorage;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -48,8 +45,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 
 @Tags({"solr", "client"})
 @CapabilityDescription("Implementation of ChronixClientService for Solr 6 4 2")
@@ -238,7 +233,10 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
 
-        queue.add(record);
+        if (record != null)
+            queue.add(record);
+        else
+            logger.debug("trying to add null record in the queue");
       /*  try {
             MetricTimeSeries metric = convertToMetric(record);
 
