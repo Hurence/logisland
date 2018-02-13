@@ -70,48 +70,21 @@ engine:
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
         read.topics: /a/in
-        read.topics.serializer: none
+        read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
         read.topics.client.service: mqtt_service
         write.topics: /a/out
-        write.topics.serializer: none
+        write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.topics.client.service: console_service
       processorConfigurations:
 
-        - processor: historian_parser
-          component: com.hurence.logisland.processor.SplitText
-          type: parser
-          documentation: "a parser that produces events from httpd logs"
-          configuration:
-            record.type: historian_serie
-            key.regex: (\S*):(\S*)
-            key.fields: filename,nifi_uuid
-            value.regex: (\S+\s+\S+);((\w+)\.?(\w+-?\w+-?\w+)?\.?(\w+)?);(\S+);(\S+)
-            value.fields: record_time,tagname,code_install,sensor,numeric_type,record_value,quality
-
-
-        - processor: fields_types_converter
-          component: com.hurence.logisland.processor.ConvertFieldsType
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
           type: processor
-          documentation: "converts some field to a given type"
+          documentation: "extract metrics from root record"
           configuration:
-            record_value: double
-            quality: float
-
-        - processor: create_aliases
-          component: com.hurence.logisland.processor.NormalizeFields
-          type: processor
-          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
-          configuration:
-            conflict.resolution.policy: keep_both_fields
-            record_name: tagname
-
-        - processor: idempotency_maker
-          component: com.hurence.logisland.processor.ModifyId
-          type: parser
-          documentation: "generate an id from hashing values"
-          configuration:
-           id.generation.strategy: hashFields
-           hash.charset: US-ASCII
+            keep.root.record: false
+            copy.root.record.fields: true
+            leaf.record.type: record_metric
 
         - processor: chronix_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut

@@ -490,6 +490,36 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.FlatMap: 
+
+FlatMap
+-------
+Converts each field records into a single flatten record
+...
+
+Class
+_____
+com.hurence.logisland.processor.FlatMap
+
+Tags
+____
+record, fields, flatmap, flatten
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "keep.root.record", "do we add the original record in", "", "true", "", ""
+   "copy.root.record.fields", "do we copy the original record fields into the flattened records", "", "true", "", ""
+   "leaf.record.type", "the new type for the flattened records if present", "", "", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.GenerateRandomRecord: 
 
 GenerateRandomRecord

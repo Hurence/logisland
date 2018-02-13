@@ -17,16 +17,16 @@
 package com.hurence.logisland.processor.datastore;
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public abstract class AbstractDatastoreProcessor extends AbstractProcessor {
 
-    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractDatastoreProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDatastoreProcessor.class);
 
     static final PropertyDescriptor DATASTORE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("datastore.client.service")
@@ -47,12 +47,10 @@ public abstract class AbstractDatastoreProcessor extends AbstractProcessor {
     public void init(final ProcessContext context) {
         logger.info("Datastore client service initialization");
         datastoreClientService = context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService(DatastoreClientService.class);
-        if(datastoreClientService == null) {
+        if (datastoreClientService == null) {
             logger.error("Datastore client service is not initialized!");
         }
     }
-
-
 
 
 }

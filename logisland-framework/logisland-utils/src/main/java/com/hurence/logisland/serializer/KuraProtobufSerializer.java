@@ -125,31 +125,40 @@ public class KuraProtobufSerializer implements RecordSerializer {
                 final String name = protoMsg.getMetric(i).getName();
                 try {
 
-                    Record kuraMetric = new StandardRecord(KURA_METRIC);
+                    Record kuraMetric = new StandardRecord(RecordDictionary.METRIC)
+                            .setStringField(FieldDictionary.RECORD_NAME, name);
 
                     final Object value = this.getProtoKuraMetricValue(protoMsg.getMetric(i),
                             protoMsg.getMetric(i).getType());
 
+
                     switch (protoMsg.getMetric(i).getType()) {
                         case DOUBLE:
+                            kuraMetric.setType( FieldType.DOUBLE.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.DOUBLE, value);
                             break;
                         case BOOL:
+                            kuraMetric.setType( FieldType.BOOLEAN.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.BOOLEAN, value);
                             break;
                         case BYTES:
+                            kuraMetric.setType( FieldType.BYTES.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, value);
                             break;
                         case FLOAT:
+                            kuraMetric.setType( FieldType.FLOAT.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.FLOAT, value);
                             break;
                         case INT32:
+                            kuraMetric.setType( FieldType.INT.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.INT, value);
                             break;
                         case INT64:
+                            kuraMetric.setType( FieldType.LONG.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.LONG, value);
                             break;
                         case STRING:
+                            kuraMetric.setType( FieldType.STRING.getName());
                             kuraMetric.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
                             break;
                         default:
