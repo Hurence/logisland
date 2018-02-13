@@ -1,6 +1,6 @@
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 
 import com.hurence.logisland.controller.ControllerService
@@ -8,7 +8,7 @@ import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.serializer.{RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -37,9 +37,6 @@ trait StructuredStreamProviderService extends ControllerService {
     val logger = LoggerFactory.getLogger(this.getClass)
 
 
-
-
-
     /**
       * create a streaming DataFrame that represents data received
       *
@@ -47,7 +44,7 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record]
+    protected def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record]
 
     /**
       * create a streaming DataFrame that represents data received
@@ -55,7 +52,7 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    def write(df: Dataset[Record], streamContext: StreamContext)
+    protected def write(df: Dataset[Record], streamContext: StreamContext)
 
     /**
       *
@@ -64,11 +61,8 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return
       */
-    def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink],  streamContext: StreamContext): Dataset[Record] = {
+    def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): Dataset[Record] = {
         implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-
-
 
 
         val df = read(spark, streamContext)
@@ -106,7 +100,7 @@ trait StructuredStreamProviderService extends ControllerService {
 
                         // injects controller service lookup into processor context
                         if (processor.hasControllerService) {
-                          //  val controllerServiceLookup = streamContext.getControllerServiceLookup
+                            //  val controllerServiceLookup = streamContext.getControllerServiceLookup
                             processorContext.addControllerServiceLookup(controllerServiceLookup)
                         }
 
@@ -117,13 +111,13 @@ trait StructuredStreamProviderService extends ControllerService {
                         processingRecords = processor.process(processorContext, processingRecords)
 
                         // compute metrics
-                     /*   ProcessorMetrics.computeMetrics(
-                            pipelineMetricPrefix + processorContext.getName + ".",
-                            incomingEvents.toList,
-                            processingRecords,
-                            0,
-                            0,
-                            System.currentTimeMillis() - startTime)*/
+                        /*   ProcessorMetrics.computeMetrics(
+                               pipelineMetricPrefix + processorContext.getName + ".",
+                               incomingEvents.toList,
+                               processingRecords,
+                               0,
+                               0,
+                               System.currentTimeMillis() - startTime)*/
 
                         processorTimerContext.stop()
 
@@ -137,34 +131,66 @@ trait StructuredStreamProviderService extends ControllerService {
         })
 
 
-        /* df.map(r => {
+    }
 
 
-             /**
-               * create serializers
-               */
-             val serializer = SerializerProvider.getSerializer(
-                 streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
-                 streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
-             // TODO handle key also
-             val incomingEvents = try {
-                 val bais = new ByteArrayInputStream(r.getField(FieldDictionary.RECORD_VALUE).getRawValue.asInstanceOf[Array[Byte]])
-                 val deserialized = serializer.deserialize(bais)
-                 bais.close()
+    /**
+      * create a streaming DataFrame that represents data received
+      *
+      * @param streamContext
+      * @return DataFrame currently loaded
+      */
+    def save(df: Dataset[Record], streamContext: StreamContext) = {
 
-                 Some(deserialized)
-             } catch {
-                 case t: Throwable =>
-                     logger.error(s"exception while deserializing events ${t.getMessage}")
-                     None
-             }
+        // make sure controller service lookup won't be serialized !!
+        streamContext.addControllerServiceLookup(null)
 
-             incomingEvents.get
-         })*/
+       /* val spark = SparkSession.builder().getOrCreate()
+        import spark.implicits._
+        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
+
+
+
+        // do the parallel processing
+        df.mapPartitions(partition => {
+
+            // create serializer
+            val serializer = SerializerProvider.getSerializer(
+                streamContext.getPropertyValue(WRITE_TOPICS_SERIALIZER).asString,
+                streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
+
+            partition.toList
+                .flatMap(r => serializeRecords(serializer, r))
+                .iterator
+        })*/
+
+        write(df, streamContext)
+
+    }
+
+
+    protected def serializeRecords(serializer: RecordSerializer, record: Record): Array[Byte] = {
+
+
+        // messages are serialized with kryo first
+        val baos: ByteArrayOutputStream = new ByteArrayOutputStream
+        serializer.serialize(baos, record)
+
+        // and then converted to KeyedMessage
+        val key = if (record.hasField(FieldDictionary.RECORD_ID))
+            record.getField(FieldDictionary.RECORD_ID).asString()
+        else
+            ""
+
+        val bytes = baos.toByteArray
+        baos.close()
+
+        bytes
     }
 
     // TODO handle key also
-    private def deserializeRecords(serializer: RecordSerializer, r: Record) = {
+    protected def deserializeRecords(serializer: RecordSerializer, r: Record) = {
         try {
             val bais = new ByteArrayInputStream(r.getField(FieldDictionary.RECORD_VALUE).getRawValue.asInstanceOf[Array[Byte]])
             val deserialized = serializer.deserialize(bais)

@@ -22,9 +22,9 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.Record
+import com.hurence.logisland.record.{FieldDictionary, Record}
 import com.hurence.logisland.stream.StreamContext
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 
 class ConsoleStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
@@ -77,10 +77,19 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
       */
     override def write(df: Dataset[Record], streamContext: StreamContext) = {
 
-        streamContext.addControllerServiceLookup(null)
-        val df2 = df.writeStream
+        val spark = SparkSession.builder().getOrCreate()
+        import spark.implicits._
+        //  implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+
+
+        val df2 = df
+
+            .map(r => (r.getField(FieldDictionary.RECORD_NAME).asString(), r.getField(FieldDictionary.RECORD_VALUE).asString()))
+            .toDF("metric", "value")
+            .writeStream
             .format("console")
             .start()
+
 
         df2.awaitTermination()
     }
