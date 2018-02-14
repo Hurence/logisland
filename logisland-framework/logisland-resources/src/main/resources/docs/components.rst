@@ -519,6 +519,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "leaf.record.type", "the new type for the flattened records if present", "", "", "", ""
    "concat.fields", "comma separated list of fields to apply concatenation ex : $rootField/$leaffield", "", "null", "", ""
    "concat.separator", "returns $rootField/$leaf/field", "", "/", "", ""
+   "include.position", "do we add the original record position in", "", "true", "", ""
 
 ----------
 

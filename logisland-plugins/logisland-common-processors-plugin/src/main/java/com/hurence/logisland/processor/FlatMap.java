@@ -18,10 +18,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.*;
@@ -36,6 +33,15 @@ public class FlatMap extends AbstractProcessor {
     public static final PropertyDescriptor KEEP_ROOT_RECORD = new PropertyDescriptor.Builder()
             .name("keep.root.record")
             .description("do we add the original record in")
+            .required(false)
+            .defaultValue("true")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
+
+    public static final PropertyDescriptor INCLUDE_POSITION = new PropertyDescriptor.Builder()
+            .name("include.position")
+            .description("do we add the original record position in")
             .required(false)
             .defaultValue("true")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
@@ -80,6 +86,7 @@ public class FlatMap extends AbstractProcessor {
         descriptors.add(LEAF_RECORD_TYPE);
         descriptors.add(CONCAT_FIELDS);
         descriptors.add(CONCAT_SEPARATOR);
+        descriptors.add(INCLUDE_POSITION);
 
         return descriptors;
     }
@@ -90,6 +97,7 @@ public class FlatMap extends AbstractProcessor {
 
         String leafRecordType = context.getPropertyValue(LEAF_RECORD_TYPE).asString();
         boolean addRootRecord = context.getPropertyValue(KEEP_ROOT_RECORD).asBoolean();
+        boolean includePosition = context.getPropertyValue(INCLUDE_POSITION).asBoolean();
         List<String> concatFields = context.getPropertyValue(CONCAT_FIELDS).isSet() ?
                 Arrays.asList(context.getPropertyValue(CONCAT_FIELDS).asString().split(",")) :
                 Collections.emptyList();
@@ -108,7 +116,8 @@ public class FlatMap extends AbstractProcessor {
                     .filter(field -> field.getType().equals(FieldType.RECORD) &&
                             !field.getName().equals(FieldDictionary.RECORD_TYPE) &&
                             !field.getName().equals(FieldDictionary.RECORD_ID) &&
-                            !field.getName().equals(FieldDictionary.RECORD_TIME))
+                            !field.getName().equals(FieldDictionary.RECORD_TIME) &&
+                            !field.getName().equals(FieldDictionary.RECORD_POSITION))
                     .collect(Collectors.toList());
 
             List<Field> rootFields = rootRecord.getAllFields().stream()
@@ -146,6 +155,23 @@ public class FlatMap extends AbstractProcessor {
                                 flattenRecord.setField(rootField);
                             }
                         });
+
+                    }
+
+
+                    // denormalize root record position
+                    if(includePosition && rootRecord.hasPosition()){
+                        Position position = rootRecord.getPosition();
+
+                        flattenRecord.setField(FieldDictionary.RECORD_POSITION_LATITUDE, FieldType.DOUBLE, position.getLatitude())
+                                .setField(FieldDictionary.RECORD_POSITION_LONGITUDE, FieldType.DOUBLE, position.getLongitude())
+                                .setField(FieldDictionary.RECORD_POSITION_ALTITUDE, FieldType.DOUBLE, position.getAltitude())
+                                .setField(FieldDictionary.RECORD_POSITION_HEADING, FieldType.DOUBLE, position.getHeading())
+                                .setField(FieldDictionary.RECORD_POSITION_PRECISION, FieldType.DOUBLE, position.getPrecision())
+                                .setField(FieldDictionary.RECORD_POSITION_SATELLITES, FieldType.INT, position.getSatellites())
+                                .setField(FieldDictionary.RECORD_POSITION_SPEED, FieldType.DOUBLE, position.getSpeed())
+                                .setField(FieldDictionary.RECORD_POSITION_STATUS, FieldType.INT, position.getStatus())
+                                .setField(FieldDictionary.RECORD_POSITION_TIMESTAMP, FieldType.LONG, position.getTimestamp().getTime());
 
                     }
                 }

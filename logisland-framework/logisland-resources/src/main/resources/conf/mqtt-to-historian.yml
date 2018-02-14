@@ -87,6 +87,23 @@ engine:
             leaf.record.type: record_metric
             concat.fields: record_name
 
+        - processor: rename_fields
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "rename fields for dynamic indexation in chronix : add *_s suffix"
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            position_latitude_s: record_position_latitude
+            position_longitude_s: record_position_longitude
+            position_altitude_s: record_position_altitude
+            position_heading_s: record_position_heading
+            position_precision_s: record_position_precision
+            position_satellites_s: record_position_satellites
+            position_speed_s: record_position_speed
+            position_status_s: record_position_status
+            position_timestamp_s: record_position_timestamp
+
+
         - processor: chronix_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor

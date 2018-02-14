@@ -34,16 +34,6 @@ engine:
 
   controllerServiceConfigurations:
 
-    - controllerService: datastore_service
-      component: com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
-      configuration:
-        solr.cloud: false
-        solr.connection.string: http://localhost:8983/solr
-        solr.collection: chronix
-        solr.concurrent.requests: 4
-        flush.interval: 2000
-        batch.size: 500
-
     - controllerService: mqtt_service
       component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
       configuration:
@@ -77,8 +67,6 @@ engine:
         write.topics.client.service: console_service
       processorConfigurations:
 
-
-
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap
           type: processor
@@ -88,10 +76,3 @@ engine:
             copy.root.record.fields: true
             leaf.record.type: record_metric
             concat.fields: record_name
-
-        - processor: chronix_publisher
-          component: com.hurence.logisland.processor.datastore.BulkPut
-          type: processor
-          documentation: "indexes processed events in SolR/Chronix"
-          configuration:
-            datastore.client.service: datastore_service
