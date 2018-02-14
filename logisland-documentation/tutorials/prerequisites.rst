@@ -115,10 +115,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v0.11.0/logisland-0.11.0-bin-hdp2.5.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v0.12.0-SNAPSHOT/logisland-0.12.0-SNAPSHOT-bin-hdp2.5.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-0.11.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-0.12.0-SNAPSHOT/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 
