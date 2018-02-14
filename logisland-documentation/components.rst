@@ -517,6 +517,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "keep.root.record", "do we add the original record in", "", "true", "", ""
    "copy.root.record.fields", "do we copy the original record fields into the flattened records", "", "true", "", ""
    "leaf.record.type", "the new type for the flattened records if present", "", "", "", ""
+   "concat.fields", "comma separated list of fields to apply concatenation ex : $rootField/$leaffield", "", "null", "", ""
+   "concat.separator", "returns $rootField/$leaf/field", "", "/", "", ""
 
 ----------
 

@@ -79,13 +79,15 @@ engine:
 
 
 
-        - processor: idempotency_maker
-          component: com.hurence.logisland.processor.ModifyId
-          type: parser
-          documentation: "generate an id from hashing values"
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract metrics from root record"
           configuration:
-           id.generation.strategy: hashFields
-           hash.charset: US-ASCII
+            keep.root.record: false
+            copy.root.record.fields: true
+            leaf.record.type: record_metric
+            concat.fields: record_name
 
         - processor: chronix_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut

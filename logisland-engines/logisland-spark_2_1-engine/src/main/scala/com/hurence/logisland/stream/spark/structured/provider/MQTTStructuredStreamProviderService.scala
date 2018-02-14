@@ -27,10 +27,7 @@ import com.hurence.logisland.controller.{AbstractControllerService, ControllerSe
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.util.kura.KuraPayloadDecoder
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.eclipse.kura.core.message.protobuf.KuraPayloadProto.KuraPayload
-
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 
 class MQTTStructuredStreamProviderService extends AbstractControllerService with StructuredStreamProviderService {
@@ -109,7 +106,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
 
         getLogger.info("connecting to MQTT")
 
-spark.readStream
+        spark.readStream
             .format("com.hurence.logisland.util.mqtt.MQTTStreamSourceProvider")
             .option("topic", topic)
             .option("persistence", persistence)
@@ -122,12 +119,13 @@ spark.readStream
             .option("keepAlive", keepAlive)
             .option("mqttVersion", mqttVersion)
             .load(brokerUrl)
-            .as[(Array[Byte], Timestamp)]
+            .as[(String, Array[Byte], Timestamp)]
             .map(r => {
                 new StandardRecord("kura_metric")
-                    .setTime(r._2)
-                    .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._1)
-            } )
+                    .setTime(r._3)
+                    .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
+                    .setField(FieldDictionary.RECORD_NAME, FieldType.STRING, r._1)
+            })
 
     }
 

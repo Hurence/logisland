@@ -26,7 +26,7 @@ import java.util.concurrent.CountDownLatch
 import org.apache.bahir.utils.Logging
 import org.apache.spark.sql.execution.streaming.{LongOffset, Offset, Source}
 import org.apache.spark.sql.sources.{DataSourceRegister, StreamSourceProvider}
-import org.apache.spark.sql.types.{StringType, StructField, StructType, TimestampType}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.eclipse.paho.client.mqttv3._
 import org.eclipse.paho.client.mqttv3.persist.{MemoryPersistence, MqttDefaultFilePersistence}
@@ -40,7 +40,8 @@ object MQTTStreamConstants {
 
   val DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-  val SCHEMA_DEFAULT = StructType(StructField("value", StringType)
+  val SCHEMA_DEFAULT = StructType(StructField("topic", StringType)
+      :: StructField("payload", BinaryType)
     :: StructField("timestamp", TimestampType) :: Nil)
 }
 
@@ -66,7 +67,7 @@ object MQTTStreamConstants {
  *            on the subscribe.
  */
 class MQTTTextStreamSource(brokerUrl: String, persistence: MqttClientPersistence,
-    topic: String, clientId: String, messageParser: Array[Byte] => (Array[Byte], Timestamp),
+    topic: String, clientId: String, messageParser: (String, Array[Byte]) => (String, Array[Byte], Timestamp),
     sqlContext: SQLContext, mqttConnectOptions: MqttConnectOptions, qos: Int)
   extends Source with Logging {
 
@@ -74,7 +75,7 @@ class MQTTTextStreamSource(brokerUrl: String, persistence: MqttClientPersistence
 
   private val store = new LocalMessageStore(persistence, sqlContext.sparkContext.getConf)
 
-  private val messages = new TrieMap[Int, (Array[Byte], Timestamp)]
+  private val messages = new TrieMap[Int, (String, Array[Byte], Timestamp)]
 
   private val initLock = new CountDownLatch(1)
 
@@ -101,7 +102,7 @@ class MQTTTextStreamSource(brokerUrl: String, persistence: MqttClientPersistence
       override def messageArrived(topic_ : String, message: MqttMessage): Unit = synchronized {
         initLock.await() // Wait for initialization to complete.
         val temp = offset + 1
-        messages.put(temp, messageParser(message.getPayload))
+        messages.put(temp, messageParser(topic_, message.getPayload))
         offset = temp
         log.trace(s"Message arrived, $topic_ $message")
       }
@@ -149,17 +150,17 @@ class MQTTTextStreamSource(brokerUrl: String, persistence: MqttClientPersistence
   override def getBatch(start: Option[Offset], end: Offset): DataFrame = synchronized {
     val startIndex = start.getOrElse(LongOffset(0L)).asInstanceOf[LongOffset].offset.toInt
     val endIndex = end.asInstanceOf[LongOffset].offset.toInt
-    val data: ArrayBuffer[(Array[Byte], Timestamp)] = ArrayBuffer.empty
+    val data: ArrayBuffer[(String, Array[Byte], Timestamp)] = ArrayBuffer.empty
     // Move consumed messages to persistent store.
     (startIndex + 1 to endIndex).foreach { id =>
-      val element: (Array[Byte], Timestamp) = messages.getOrElse(id, store.retrieve(id))
+      val element: (String, Array[Byte], Timestamp) = messages.getOrElse(id, store.retrieve(id))
       data += element
       store.store(id, element)
       messages.remove(id, element)
     }
     log.trace(s"Get Batch invoked, ${data.mkString}")
     import sqlContext.implicits._
-    data.toDF("value", "timestamp")
+    data.toDF("topic", "payload", "timestamp")
   }
 
 }
@@ -197,6 +198,9 @@ class MQTTStreamSourceProvider extends StreamSourceProvider with DataSourceRegis
     val messageNOPParser = (x: Array[Byte]) => (x,Timestamp.valueOf(
         MQTTStreamConstants.DATE_FORMAT.format(Calendar.getInstance().getTime)))
 
+      val messageKVParser = (topic:String, x: Array[Byte]) => (topic, x,Timestamp.valueOf(
+          MQTTStreamConstants.DATE_FORMAT.format(Calendar.getInstance().getTime)))
+
     // if default is subscribe everything, it leads to getting lot unwanted system messages.
     val topic: String = parameters.getOrElse("topic",
       throw e("Please specify a topic, by .options(\"topic\",...)"))
@@ -231,7 +235,7 @@ class MQTTStreamSourceProvider extends StreamSourceProvider with DataSourceRegis
     }
 
     new MQTTTextStreamSource(brokerUrl, persistence, topic, clientId,
-        messageNOPParser, sqlContext, mqttConnectOptions, qos)
+        messageKVParser, sqlContext, mqttConnectOptions, qos)
   }
 
   override def shortName(): String = "mqtt"

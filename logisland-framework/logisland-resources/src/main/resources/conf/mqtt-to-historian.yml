@@ -85,6 +85,7 @@ engine:
             keep.root.record: false
             copy.root.record.fields: true
             leaf.record.type: record_metric
+            concat.fields: record_name
 
         - processor: chronix_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut

@@ -24,9 +24,7 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Tags({"record", "fields", "flatmap", "flatten"})
@@ -41,6 +39,20 @@ public class FlatMap extends AbstractProcessor {
             .required(false)
             .defaultValue("true")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
+    public static final PropertyDescriptor CONCAT_FIELDS = new PropertyDescriptor.Builder()
+            .name("concat.fields")
+            .description("comma separated list of fields to apply concatenation ex : $rootField/$leaffield")
+            .required(false)
+            .build();
+
+    public static final PropertyDescriptor CONCAT_SEPARATOR = new PropertyDescriptor.Builder()
+            .name("concat.separator")
+            .description("returns $rootField/$leaf/field")
+            .required(false)
+            .defaultValue("/")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor COPY_ROOT_RECORD_FIELDS = new PropertyDescriptor.Builder()
@@ -66,6 +78,8 @@ public class FlatMap extends AbstractProcessor {
         descriptors.add(KEEP_ROOT_RECORD);
         descriptors.add(COPY_ROOT_RECORD_FIELDS);
         descriptors.add(LEAF_RECORD_TYPE);
+        descriptors.add(CONCAT_FIELDS);
+        descriptors.add(CONCAT_SEPARATOR);
 
         return descriptors;
     }
@@ -76,6 +90,10 @@ public class FlatMap extends AbstractProcessor {
 
         String leafRecordType = context.getPropertyValue(LEAF_RECORD_TYPE).asString();
         boolean addRootRecord = context.getPropertyValue(KEEP_ROOT_RECORD).asBoolean();
+        List<String> concatFields = context.getPropertyValue(CONCAT_FIELDS).isSet() ?
+                Arrays.asList(context.getPropertyValue(CONCAT_FIELDS).asString().split(",")) :
+                Collections.emptyList();
+        String concatSeparator = context.getPropertyValue(CONCAT_SEPARATOR).asString();
         boolean copyRootRecordFields = context.getPropertyValue(COPY_ROOT_RECORD_FIELDS).asBoolean();
         List<Record> outputRecords = new ArrayList<>();
 
@@ -108,7 +126,28 @@ public class FlatMap extends AbstractProcessor {
 
                 // denormalize leaf with root values except id and time
                 if (copyRootRecordFields) {
-                    rootFields.forEach(flattenRecord::setField);
+                    if (concatFields.isEmpty()) {
+                        rootFields.forEach(flattenRecord::setField);
+                    } else {
+                        rootFields.forEach(rootField -> {
+
+                            String concatFieldName = rootField.getName();
+                            // do concat if needed
+                            if (concatFields.contains(concatFieldName) &&
+                                    rootField.getType() == FieldType.STRING &&
+                                    flattenRecord.hasField(concatFieldName) &&
+                                    flattenRecord.getField(concatFieldName).getType() == FieldType.STRING) {
+
+
+                                flattenRecord.setStringField(concatFieldName,
+                                        rootField.asString() + concatSeparator +
+                                                flattenRecord.getField(rootField.getName()).asString());
+                            }else {
+                                flattenRecord.setField(rootField);
+                            }
+                        });
+
+                    }
                 }
 
                 outputRecords.add(flattenRecord);

@@ -196,6 +196,10 @@ trait StructuredStreamProviderService extends ControllerService {
             val deserialized = serializer.deserialize(bais)
             bais.close()
 
+            // copy root record field
+            if(r.hasField(FieldDictionary.RECORD_NAME))
+                deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
+
             Some(deserialized)
         } catch {
             case t: Throwable =>
