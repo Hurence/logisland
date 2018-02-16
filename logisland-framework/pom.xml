@@ -39,6 +39,7 @@
         <profile>
             <id>hdp2.5</id>
             <activation>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.5</value>
