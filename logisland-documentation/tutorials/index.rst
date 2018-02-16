@@ -31,4 +31,5 @@ Contents:
    indexing-bro-events
    indexing-netflow-events
    indexing-network-packets
+   mqtt-to-historian
 

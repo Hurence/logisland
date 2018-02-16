@@ -45,8 +45,8 @@ engine:
       type: service
       documentation: elasticsearch service
       configuration:
-        hosts: sandbox:9300
-        cluster.name: es-logisland
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER}
         batch.size: 5000
 
 
@@ -81,8 +81,8 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
