@@ -50,8 +50,8 @@ engine:
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1

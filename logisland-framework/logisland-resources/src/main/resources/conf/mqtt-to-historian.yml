@@ -38,7 +38,7 @@ engine:
       component: com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
       configuration:
         solr.cloud: false
-        solr.connection.string: http://localhost:8983/solr
+        solr.connection.string: ${SOLR_CONNECTION}
         solr.collection: chronix
         solr.concurrent.requests: 4
         flush.interval: 2000
@@ -48,7 +48,7 @@ engine:
       component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
       configuration:
        # mqtt.broker.url: tcp://51.15.164.141:1883
-        mqtt.broker.url: tcp://localhost:1883
+        mqtt.broker.url: ${MQTT_BROKER_URL}
         mqtt.persistence: memory
         mqtt.client.id: logisland
         mqtt.qos: 0

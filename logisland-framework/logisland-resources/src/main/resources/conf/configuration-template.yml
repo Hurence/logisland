@@ -45,7 +45,7 @@ engine:
       type: service
       documentation: elasticsearch 2.4.0 service implementation
       configuration:
-        hosts: sandbox:9300
+        hosts: ${ES_HOSTS}
         cluster.name: elasticsearch
         batch.size: 2000
 
@@ -82,8 +82,8 @@ engine:
                { "name": "http_status", "type": ["string","null"] },
                { "name": "identd",      "type": ["string","null"] },
                { "name": "user",        "type": ["string","null"] }    ]}
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
@@ -110,8 +110,8 @@ engine:
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1
