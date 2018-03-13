@@ -57,11 +57,6 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cache-service-api</artifactId>
-            <version>0.10.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
             <scope>test</scope>
         </dependency>
