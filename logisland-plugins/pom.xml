@@ -41,5 +41,6 @@
         <module>logisland-enrichment-plugin</module>
         <module>logisland-elasticsearch-plugin</module>
         <module>logisland-hbase-plugin</module>
+        <module>logisland-excel-plugin</module>
     </modules>
 </project>
