@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,9 @@ package com.hurence.logisland.record;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +32,6 @@ import static org.junit.Assert.*;
  * @author tom
  */
 public class StandardRecordTest {
-
 
 
     @Test
@@ -115,6 +116,59 @@ public class StandardRecordTest {
 
 
         record.setField("request_size", FieldType.INT, 45);
-        assertTrue(45.0d- record.getField("request_size").asDouble() == 0);
+        assertTrue(45.0d - record.getField("request_size").asDouble() == 0);
+    }
+
+
+    @Test
+    public void validateNestedRecord() {
+
+
+        Record leafRecord = new StandardRecord("leaf");
+        leafRecord.setField("request_size", FieldType.INT, 1399);
+        assertTrue(leafRecord.isValid());
+
+        Record rootRecord = new StandardRecord("root");
+        rootRecord.setField("request_str", FieldType.STRING, "zer");
+        assertTrue(rootRecord.isValid());
+
+        rootRecord.setField("record_leaf", FieldType.RECORD, leafRecord);
+        assertTrue(rootRecord.isValid());
+
+
+        assertTrue(rootRecord.getField("record_leaf").asRecord()
+                .getField("request_size").asInteger() == 1399);
+
+
+
+    }
+
+    @Test
+    public void validatePosition() {
+
+        Record rootRecord = new StandardRecord("root");
+        rootRecord.setField("request_str", FieldType.STRING, "zer");
+        assertTrue(rootRecord.isValid());
+
+
+        Position position = Position.from(1.0, 2.0, 3.0, 4.0, 5.0, 6,7, 8.0, new Date(10));
+
+
+
+        assertFalse(rootRecord.hasPosition());
+        rootRecord.setPosition(position);
+        assertTrue(rootRecord.hasPosition());
+
+
+        assertTrue(rootRecord.getPosition().getAltitude() == 1.0 );
+        assertTrue(rootRecord.getPosition().getHeading() == 2.0 );
+        assertTrue(rootRecord.getPosition().getLatitude() == 3.0 );
+        assertTrue(rootRecord.getPosition().getLongitude() == 4.0 );
+        assertTrue(rootRecord.getPosition().getPrecision() == 5.0 );
+        assertTrue(rootRecord.getPosition().getSatellites() == 6 );
+        assertTrue(rootRecord.getPosition().getStatus() == 7 );
+        assertTrue(rootRecord.getPosition().getSpeed() == 8.0 );
+        assertTrue(rootRecord.getPosition().getTimestamp().getTime() == 10L );
+
     }
 }

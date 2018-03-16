@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.2</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -94,6 +94,7 @@
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.2.2.4.0.0-169</hbase.version>
         <hadoop.guava.version>18.0</hadoop.guava.version>
+        <protobuf.version>2.5.0</protobuf.version>
         <hadoop.http.client.version>4.2.5</hadoop.http.client.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <algebird.version>0.12.0</algebird.version>
@@ -463,6 +464,12 @@
                 <version>${hadoop.guava.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>io.thekraken</groupId>
@@ -513,6 +520,11 @@
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
@@ -704,11 +716,6 @@
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-hbase-client-service-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-elasticsearch_2_3_3-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1225,6 +1232,7 @@
         <profile>
             <id>hdp2.5</id>
             <activation>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.5</value>
@@ -1244,7 +1252,6 @@
         <profile>
             <id>hdp2.4</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
                     <value>2.4</value>

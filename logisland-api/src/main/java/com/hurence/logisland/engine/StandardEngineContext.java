@@ -21,7 +21,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.stream.StreamContext;
 
 import java.util.ArrayList;

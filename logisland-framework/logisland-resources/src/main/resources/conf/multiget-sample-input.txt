@@ -1,3 +1,0 @@
-logisland_new_put_es.2017.05.18; apache_log; 27651258-d20a-4360-82c7-7b55bc4290ec; src_ip,bytes_out,http_*; *version 
-logisland_new_put_es.2017.05.18; apache_log; dfc5e24e-740c-4019-b9cf-b4f5f2f3f04d,3999c534-9898-4b7a-bb4a-9ac11988d77e ; src_ip,http_version;http_query 
-
