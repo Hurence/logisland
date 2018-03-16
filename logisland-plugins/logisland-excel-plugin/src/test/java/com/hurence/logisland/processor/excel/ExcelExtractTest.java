@@ -23,6 +23,7 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.extractor.ExtractorFactory;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -37,8 +38,12 @@ public class ExcelExtractTest {
         }
     }
 
-    private TestRunner initTestRunner(TestRunner testRunner) {
-        testRunner.setProperty(ExcelExtractProperties.FIELD_NAMES, "Product,Date");
+    private TestRunner initTestRunner(TestRunner testRunner, Integer rowHeaderNumber) {
+        if (rowHeaderNumber != null) {
+            testRunner.setProperty(ExcelExtractProperties.HEADER_ROW_NB, rowHeaderNumber.toString());
+        } else {
+            testRunner.setProperty(ExcelExtractProperties.FIELD_NAMES, "Product,Date");
+        }
         testRunner.setProperty(ExcelExtractProperties.ROWS_TO_SKIP, "1");
         testRunner.setProperty(ExcelExtractProperties.COLUMNS_TO_SKIP, "0,1,3,4,5,6,7,8,9,10,11");
         return testRunner;
@@ -50,24 +55,40 @@ public class ExcelExtractTest {
             record.assertFieldExists("Date");
             record.assertFieldTypeEquals("Product", FieldType.STRING);
             record.assertFieldTypeEquals("Date", FieldType.LONG);
+            record.assertFieldExists(Fields.SHEET_NAME);
+            record.assertFieldExists(Fields.ROW_NUMBER);
         });
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testThrowsExceptionWhenFormatInvalid() throws Exception {
+    @Test(expected = AssertionError.class)
+    public void testConfigurationValidationErrorWithoutFieldMapping() throws Exception {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ExcelExtract());
+        testRunner.assertValid();
+    }
 
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
+    @Test(expected = AssertionError.class)
+    public void testConfigurationValidationErrorWithBothHeaderAndFieldMappingSet() throws Exception {
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), null);
+        testRunner.setProperty(ExcelExtractProperties.HEADER_ROW_NB, "0");
+        testRunner.assertValid();
+    }
+
+    @Test()
+    public void testThrowsExceptionWhenFormatInvalid() throws Exception {
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), null);
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 new String("I'm a fake excel file :)").getBytes("UTF-8"));
         testRunner.run();
+        testRunner.assertOutputErrorCount(1);
     }
 
 
     @Test
     public void testExtractAllSheets() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), null);
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
+        testRunner.assertValid();
         testRunner.run();
         testRunner.assertOutputRecordsCount(700);
         assertRecordValid(testRunner.getOutputRecords());
@@ -75,20 +96,33 @@ public class ExcelExtractTest {
 
     @Test
     public void testExtractNothing() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), null);
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
         testRunner.setProperty(ExcelExtractProperties.DESIRED_SHEETS, "Sheet2,Sheet3");
+        testRunner.assertValid();
         testRunner.run();
         testRunner.assertOutputRecordsCount(0);
     }
 
     @Test
     public void testExtractSelected() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), null);
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
         testRunner.setProperty(ExcelExtractProperties.DESIRED_SHEETS, "(?i)sheet.*");
+        testRunner.assertValid();
+        testRunner.run();
+        testRunner.assertOutputRecordsCount(700);
+        assertRecordValid(testRunner.getOutputRecords());
+    }
+
+    @Test
+    public void testExtractWithDynamicMapping() throws Exception {
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()), 0);
+        testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
+                resolveClassPathResource("Financial Sample.xlsx"));
+        testRunner.assertValid();
         testRunner.run();
         testRunner.assertOutputRecordsCount(700);
         assertRecordValid(testRunner.getOutputRecords());

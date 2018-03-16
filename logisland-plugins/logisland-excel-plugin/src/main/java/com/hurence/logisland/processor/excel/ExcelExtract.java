@@ -21,7 +21,11 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.util.stream.io.StreamUtils;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
@@ -60,6 +64,20 @@ public class ExcelExtract extends AbstractProcessor {
         LOGGER.info("ExcelExtract successfully initialized");
     }
 
+
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+        ValidationResult.Builder ret = new ValidationResult.Builder().valid(true);
+        if (!(context.getPropertyValue(ExcelExtractProperties.FIELD_NAMES).isSet() ^
+                context.getPropertyValue(ExcelExtractProperties.HEADER_ROW_NB).isSet())) {
+            ret.explanation(String.format("You must set exactly one of %s or %s.",
+                    ExcelExtractProperties.FIELD_NAMES.getName(), ExcelExtractProperties.HEADER_ROW_NB.getName()))
+                    .subject(getIdentifier())
+                    .valid(false);
+        }
+        return Collections.singletonList(ret.build());
+    }
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -68,6 +86,7 @@ public class ExcelExtract extends AbstractProcessor {
         descriptors.add(ExcelExtractProperties.FIELD_NAMES);
         descriptors.add(ExcelExtractProperties.ROWS_TO_SKIP);
         descriptors.add(ExcelExtractProperties.RECORD_TYPE);
+        descriptors.add(ExcelExtractProperties.HEADER_ROW_NB);
         return Collections.unmodifiableList(descriptors);
     }
 
@@ -127,9 +146,12 @@ public class ExcelExtract extends AbstractProcessor {
             try (Workbook workbook = WorkbookFactory.create(inputStream)) {
                 Iterator<Sheet> iter = workbook.sheetIterator();
                 while (iter.hasNext()) {
+                    String sheetName = "unknown";
+                    List<String> headerNames = null;
+
                     try {
                         Sheet sheet = iter.next();
-                        String sheetName = sheet.getSheetName();
+                        sheetName = sheet.getSheetName();
                         if (toBeSkipped(sheetName)) {
                             LOGGER.info("Skipped sheet {}", sheetName);
                             continue;
@@ -140,21 +162,33 @@ public class ExcelExtract extends AbstractProcessor {
                             if (row == null) {
                                 continue;
                             }
+                            if (configuration.getHeaderRowNumber() != null &&
+                                    configuration.getHeaderRowNumber().equals(row.getRowNum())) {
+                                headerNames = extractFieldNamesFromRow(row);
+
+                            }
                             if (count++ < configuration.getRowsToSkip()) {
                                 continue;
                             }
-                            ret.add(handleRow(row));
+                            Record current = handleRow(row, headerNames);
+                            current.setField(Fields.rowNumber(row.getRowNum()))
+                                    .setField(Fields.sheetName(sheetName));
+                            ret.add(current);
                         }
 
                     } catch (Exception e) {
                         LOGGER.error("Unrecoverable exception occurred while processing excel sheet", e);
+                        ret.add(new StandardRecord().addError(ProcessError.RECORD_CONVERSION_ERROR.getName(),
+                                String.format("Unable to parse sheet %s: %s", sheetName, e.getMessage())));
                     }
                 }
             }
         } catch (InvalidFormatException | NotOfficeXmlFileException ife) {
-            throw new UnsupportedOperationException("Wrong or unsupported file format.", ife);
+            LOGGER.error("Wrong or unsupported file format.", ife);
+            ret.add(new StandardRecord().addError(ProcessError.INVALID_FILE_FORMAT_ERROR.getName(), ife.getMessage()));
         } catch (IOException ioe) {
             LOGGER.error("I/O Exception occurred while processing excel file", ioe);
+            ret.add(new StandardRecord().addError(ProcessError.RUNTIME_ERROR.getName(), ioe.getMessage()));
 
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -169,15 +203,20 @@ public class ExcelExtract extends AbstractProcessor {
      * @param row the {@link Row}
      * @return the transformed {@link Record}
      */
-    private Record handleRow(Row row) {
+    private Record handleRow(Row row, List<String> header) {
         Record ret = new StandardRecord().setTime(new Date());
         int index = 0;
         for (Cell cell : row) {
-            if (configuration.getColumnsToSkip().contains(cell.getColumnIndex()) || index >= configuration.getFieldNames().size()) {
+            if (configuration.getFieldNames() != null && index >= configuration.getFieldNames().size()) {
+                //we've reached the end of mapping. Go to next row.
+                break;
+            }
+            if (configuration.getColumnsToSkip().contains(cell.getColumnIndex())) {
                 //skip this cell.
                 continue;
             }
-            String fieldName = configuration.getFieldNames().get(index++);
+            String fieldName = header != null ? header.get(cell.getColumnIndex()) :
+                    configuration.getFieldNames().get(index++);
             Field field;
             // Alternatively, get the value and format it yourself
             switch (cell.getCellTypeEnum()) {
@@ -205,6 +244,13 @@ public class ExcelExtract extends AbstractProcessor {
             ret.setField(field);
         }
         return ret;
+    }
+
+    private List<String> extractFieldNamesFromRow(Row row) {
+        return StreamUtils.asStream(row.cellIterator())
+                .map(Cell::getStringCellValue)
+                .map(s -> s.replaceAll("\\s+", "_"))
+                .collect(Collectors.toList());
     }
 
 

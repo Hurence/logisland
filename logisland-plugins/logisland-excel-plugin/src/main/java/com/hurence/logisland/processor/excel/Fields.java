@@ -26,20 +26,19 @@ import com.hurence.logisland.record.FieldType;
  */
 public class Fields {
 
-    public static final String SPREADSHEET_NAME = "spreadsheet_name";
+    public static final String SHEET_NAME = "excel_extract_sheet_name";
     public static final String SOURCE_FILE_NAME = "source_file_name";
-    public static final String RAW_FILE_DATA = FieldDictionary.RECORD_VALUE;
-    public static final String ROW_NUMBER = "row_number";
+    public static final String ROW_NUMBER = "excel_extract_row_number";
     public static final String RECORD_TYPE = FieldDictionary.RECORD_TYPE;
 
     /**
-     * Creates a field for the spreadsheet name.
+     * Creates a field for the sheet name.
      *
      * @param name
      * @return
      */
-    public static Field spreadSheetName(String name) {
-        return new Field(SPREADSHEET_NAME, FieldType.STRING, name);
+    public static Field sheetName(String name) {
+        return new Field(SHEET_NAME, FieldType.STRING, name);
     }
 
 

@@ -22,6 +22,7 @@ import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 /**
  * Common options for {@link ExcelExtract} processor.
  */
-public class ExcelExtractProperties {
+public class ExcelExtractProperties implements Serializable {
 
     public static final PropertyDescriptor RECORD_TYPE = new PropertyDescriptor.Builder()
             .name("record.type")
@@ -84,9 +85,22 @@ public class ExcelExtractProperties {
     public static final PropertyDescriptor FIELD_NAMES = new PropertyDescriptor
             .Builder().name("field.names")
             .displayName("Field names mapping")
-            .description("The comma separated list representing the names of columns of extracted cells. Order matters!")
-            .required(true)
+            .description("The comma separated list representing the names of columns of extracted cells. Order matters!" +
+                    " You should use either field.names either field.row.header but not both together.")
+            .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .build();
+
+    /**
+     * The row number to use to extract field name mapping.
+     */
+    public static final PropertyDescriptor HEADER_ROW_NB = new PropertyDescriptor
+            .Builder().name("field.row.header")
+            .displayName("Use a row header as field names mapping")
+            .description("If set, field names mapping will be extracted from the specified row number." +
+                    " You should use either field.names either field.row.header but not both together.")
+            .required(false)
+            .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
             .build();
 
     public static class Configuration {
@@ -114,6 +128,11 @@ public class ExcelExtractProperties {
          */
         private final String recordType;
 
+        /**
+         * The row number to use to extract field name mapping.
+         */
+        private final Integer headerRowNumber;
+
 
         /**
          * Creates a configuration POJO from the {@link ProcessContext}
@@ -126,15 +145,27 @@ public class ExcelExtractProperties {
                     .filter(StringUtils::isNotBlank)
                     .map(Pattern::compile)
                     .collect(Collectors.toList());
+
+            if (context.getPropertyValue(HEADER_ROW_NB).isSet()) {
+                headerRowNumber = context.getPropertyValue(HEADER_ROW_NB).asInteger();
+            } else {
+                headerRowNumber = null;
+            }
+
             columnsToSkip = Arrays.stream(context.getPropertyValue(COLUMNS_TO_SKIP).asString().split(","))
                     .filter(StringUtils::isNotBlank)
                     .map(Integer::parseInt)
                     .collect(Collectors.toList());
             rowsToSkip = context.getPropertyValue(ROWS_TO_SKIP).asInteger();
-            fieldNames = Arrays.stream(context.getPropertyValue(FIELD_NAMES).asString().split(","))
-                    .filter(StringUtils::isNotBlank)
-                    .map(String::trim)
-                    .collect(Collectors.toList());
+
+            if (context.getPropertyValue(FIELD_NAMES).isSet()) {
+                fieldNames = Arrays.stream(context.getPropertyValue(FIELD_NAMES).asString().split(","))
+                        .filter(StringUtils::isNotBlank)
+                        .map(String::trim)
+                        .collect(Collectors.toList());
+            } else {
+                fieldNames = null;
+            }
             recordType = context.getPropertyValue(RECORD_TYPE).asString();
         }
 
@@ -167,6 +198,12 @@ public class ExcelExtractProperties {
             return rowsToSkip;
         }
 
+
+        /**
+         * Mapping between column extracted and field names in a record.
+         *
+         * @return
+         */
         public List<String> getFieldNames() {
             return fieldNames;
         }
@@ -181,6 +218,10 @@ public class ExcelExtractProperties {
         }
 
 
+        public Integer getHeaderRowNumber() {
+            return headerRowNumber;
+        }
+
         @Override
         public String toString() {
             return "Configuration{" +
@@ -189,6 +230,7 @@ public class ExcelExtractProperties {
                     ", rowsToSkip=" + rowsToSkip +
                     ", fieldNames=" + fieldNames +
                     ", recordType='" + recordType + '\'' +
+                    ", headerRowNumber=" + headerRowNumber +
                     '}';
         }
     }

@@ -109,8 +109,8 @@ Within this stream, an ``ExcelExtract`` processor takes a byte array excel file 
           documentation: a parser that produce events from an excel file
           configuration:
             record.type: excel_record
-            excel.extract.skip-rows: 1
-            excel.extract.field-names: segment,country,product,discount_band,units_sold,manufacturing,sale_price,gross_sales,discounts,sales,cogs,profit,record_time,month_number,month_name,year
+            skip.rows: 1
+            field.names: segment,country,product,discount_band,units_sold,manufacturing,sale_price,gross_sales,discounts,sales,cogs,profit,record_time,month_number,month_name,year
 
 
 This stream will process log entries as soon as they will be queued into `logisland_raw` Kafka topics, each log will
