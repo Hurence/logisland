@@ -98,19 +98,19 @@ We assume that the stream will be serializing the input file as a byte array in 
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
 
-Within this stream, a ``ExcelExtractorPlugin`` processor takes a byte array excel file content and computes a list of ``Record``.
+Within this stream, an ``ExcelExtract`` processor takes a byte array excel file content and computes a list of ``Record``.
 
 .. code-block:: yaml
 
     # parse excel cells into records
         - processor: excel_parser
-          component: com.hurence.logisland.processor.excel.ExcelExtractorPlugin
+          component: com.hurence.logisland.processor.excel.ExcelExtract
           type: parser
           documentation: a parser that produce events from an excel file
           configuration:
             record.type: excel_record
-            excel.extract.skip-rows: 1
-            excel.extract.field-names: segment,country,product,discount_band,units_sold,manufacturing,sale_price,gross_sales,discounts,sales,cogs,profit,record_time,month_number,month_name,year
+            skip.rows: 1
+            field.names: segment,country,product,discount_band,units_sold,manufacturing,sale_price,gross_sales,discounts,sales,cogs,profit,record_time,month_number,month_name,year
 
 
 This stream will process log entries as soon as they will be queued into `logisland_raw` Kafka topics, each log will
@@ -120,7 +120,7 @@ be parsed as an event which will be pushed back to Kafka in the ``logisland_even
 
    Please note that we are mapping the excel column *Date* to be the timestamp of the produced record (*record_time* field) in order to use this as time reference in elasticsearch/kibana (see below).
 
-The second processor  will handle ``Records`` produced by the ``ExcelExtractorPlugin`` to index them into elasticsearch
+The second processor  will handle ``Records`` produced by the ``ExcelExtract`` to index them into elasticsearch
 
 .. code-block:: yaml
 
@@ -140,7 +140,7 @@ The second processor  will handle ``Records`` produced by the ``ExcelExtractorPl
 
 2. Launch the script
 --------------------
-For this tutorial we will handle an excel file. We will process it with an ExcelExtractorPlugin that will produce a bunch of Records and we'll send them to Elastiscearch
+For this tutorial we will handle an excel file. We will process it with an ExcelExtract that will produce a bunch of Records and we'll send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
 
 For ElasticSearch :

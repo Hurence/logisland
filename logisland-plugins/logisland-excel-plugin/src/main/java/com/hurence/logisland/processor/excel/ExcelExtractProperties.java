@@ -24,14 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Common options for {@link ExcelExtractorPlugin} processor.
+ * Common options for {@link ExcelExtract} processor.
  */
-public class ExcelExtractorProperties {
+public class ExcelExtractProperties {
 
     public static final PropertyDescriptor RECORD_TYPE = new PropertyDescriptor.Builder()
             .name("record.type")
@@ -41,7 +40,7 @@ public class ExcelExtractorProperties {
             .build();
 
     public static final PropertyDescriptor DESIRED_SHEETS = new PropertyDescriptor
-            .Builder().name("excel.extract.sheets")
+            .Builder().name("sheets")
             .displayName("Sheets to Extract")
             .description("Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property" +
                     " is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions." +
@@ -55,7 +54,7 @@ public class ExcelExtractorProperties {
      * The number of rows to skip. Useful if you want to skip first row (usually the table header).
      */
     public static final PropertyDescriptor ROWS_TO_SKIP = new PropertyDescriptor
-            .Builder().name("excel.extract.skip-rows")
+            .Builder().name("skip.rows")
             .displayName("Number of Rows to Skip")
             .description("The row number of the first row to start processing."
                     + "Use this to skip over rows of data at the top of your worksheet that are not part of the dataset."
@@ -69,7 +68,7 @@ public class ExcelExtractorProperties {
      * List of column numbers to skip. Empty means include anything.
      */
     public static final PropertyDescriptor COLUMNS_TO_SKIP = new PropertyDescriptor
-            .Builder().name("excel.extract.columns-to-skip")
+            .Builder().name("skip.columns")
             .displayName("Columns To Skip")
             .description("Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. "
                     + "Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.")
@@ -83,7 +82,7 @@ public class ExcelExtractorProperties {
      * Mapping between column extracted and field names in a record.
      */
     public static final PropertyDescriptor FIELD_NAMES = new PropertyDescriptor
-            .Builder().name("excel.extract.field-names")
+            .Builder().name("field.names")
             .displayName("Field names mapping")
             .description("The comma separated list representing the names of columns of extracted cells. Order matters!")
             .required(true)

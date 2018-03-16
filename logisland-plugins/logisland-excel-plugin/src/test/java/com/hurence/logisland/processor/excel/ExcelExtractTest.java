@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
-public class ExcelExtractorPluginTest {
+public class ExcelExtractTest {
 
     private byte[] resolveClassPathResource(String name) throws IOException {
         try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(name)) {
@@ -38,9 +38,9 @@ public class ExcelExtractorPluginTest {
     }
 
     private TestRunner initTestRunner(TestRunner testRunner) {
-        testRunner.setProperty(ExcelExtractorProperties.FIELD_NAMES, "Product,Date");
-        testRunner.setProperty(ExcelExtractorProperties.ROWS_TO_SKIP, "1");
-        testRunner.setProperty(ExcelExtractorProperties.COLUMNS_TO_SKIP, "0,1,3,4,5,6,7,8,9,10,11");
+        testRunner.setProperty(ExcelExtractProperties.FIELD_NAMES, "Product,Date");
+        testRunner.setProperty(ExcelExtractProperties.ROWS_TO_SKIP, "1");
+        testRunner.setProperty(ExcelExtractProperties.COLUMNS_TO_SKIP, "0,1,3,4,5,6,7,8,9,10,11");
         return testRunner;
     }
 
@@ -56,7 +56,7 @@ public class ExcelExtractorPluginTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testThrowsExceptionWhenFormatInvalid() throws Exception {
 
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtractorPlugin()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 new String("I'm a fake excel file :)").getBytes("UTF-8"));
         testRunner.run();
@@ -65,7 +65,7 @@ public class ExcelExtractorPluginTest {
 
     @Test
     public void testExtractAllSheets() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtractorPlugin()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
         testRunner.run();
@@ -75,20 +75,20 @@ public class ExcelExtractorPluginTest {
 
     @Test
     public void testExtractNothing() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtractorPlugin()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
-        testRunner.setProperty(ExcelExtractorProperties.DESIRED_SHEETS, "Sheet2,Sheet3");
+        testRunner.setProperty(ExcelExtractProperties.DESIRED_SHEETS, "Sheet2,Sheet3");
         testRunner.run();
         testRunner.assertOutputRecordsCount(0);
     }
 
     @Test
     public void testExtractSelected() throws Exception {
-        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtractorPlugin()));
+        final TestRunner testRunner = initTestRunner(TestRunners.newTestRunner(new ExcelExtract()));
         testRunner.enqueue(FieldDictionary.RECORD_VALUE.getBytes("UTF-8"),
                 resolveClassPathResource("Financial Sample.xlsx"));
-        testRunner.setProperty(ExcelExtractorProperties.DESIRED_SHEETS, "(?i)sheet.*");
+        testRunner.setProperty(ExcelExtractProperties.DESIRED_SHEETS, "(?i)sheet.*");
         testRunner.run();
         testRunner.assertOutputRecordsCount(700);
         assertRecordValid(testRunner.getOutputRecords());

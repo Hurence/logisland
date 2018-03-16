@@ -43,31 +43,31 @@ import java.util.stream.Stream;
 @Tags({"excel", "processor", "poi"})
 @CapabilityDescription("Consumes a Microsoft Excel document and converts each worksheet's line to a structured " +
         "record. The processor is assuming to receive raw excel file as input record.")
-public class ExcelExtractorPlugin extends AbstractProcessor {
+public class ExcelExtract extends AbstractProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExcelExtractorProperties.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExcelExtractProperties.class);
 
     /**
      * The configuration.
      */
-    private ExcelExtractorProperties.Configuration configuration;
+    private ExcelExtractProperties.Configuration configuration;
 
 
     @Override
     public void init(ProcessContext context) {
         super.init(context);
-        configuration = new ExcelExtractorProperties.Configuration(context);
-        LOGGER.info("ExcelExtractorPlugin successfully initialized");
+        configuration = new ExcelExtractProperties.Configuration(context);
+        LOGGER.info("ExcelExtract successfully initialized");
     }
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(ExcelExtractorProperties.DESIRED_SHEETS);
-        descriptors.add(ExcelExtractorProperties.COLUMNS_TO_SKIP);
-        descriptors.add(ExcelExtractorProperties.FIELD_NAMES);
-        descriptors.add(ExcelExtractorProperties.ROWS_TO_SKIP);
-        descriptors.add(ExcelExtractorProperties.RECORD_TYPE);
+        descriptors.add(ExcelExtractProperties.DESIRED_SHEETS);
+        descriptors.add(ExcelExtractProperties.COLUMNS_TO_SKIP);
+        descriptors.add(ExcelExtractProperties.FIELD_NAMES);
+        descriptors.add(ExcelExtractProperties.ROWS_TO_SKIP);
+        descriptors.add(ExcelExtractProperties.RECORD_TYPE);
         return Collections.unmodifiableList(descriptors);
     }
 
