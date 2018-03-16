@@ -9,18 +9,8 @@ In the following getting tutorial we'll drive you through the process of IIoT en
 
 
 
-docker run -td --name kapua-sql  -p 8181:8181 -p 3306:3306 kapua/kapua-sql:0.3.2
-docker run -td --name kapua-elasticsearch  -p 9200:9200 -p 9300:9300 elasticsearch:5.4.0 -Ecluster.name=kapua-datastore -Ediscovery.type=single-node -Etransport.host=_site_ -Etransport.ping_schedule=-1 -Etransport.tcp.connect_timeout=30s
-docker run -td --name kapua-broker  --link kapua-sql:db --link kapua-elasticsearch:es --env commons.db.schema.update=true -p 1883:1883 -p 61614:61614 kapua/kapua-broker:0.3.2
-docker run -td --name kapua-console --link kapua-sql:db --link kapua-broker:broker --link kapua-elasticsearch:es --env commons.db.schema.update=true -p 8080:8080 kapua/kapua-console:0.3.2
-docker run -td --name kapua-api --link kapua-sql:db --link kapua-broker:broker --link kapua-elasticsearch:es --env commons.db.schema.update=true -p 8081:8080 kapua/kapua-api:0.3.2
 
-
-
-docker run -td --name logisland-historian -p 8983:8983 hurence/chronix:latest
-
-
-docker run -it --env MQTT_BROKER_URL=tcp://10.20.20.87:1883   --env  SOLR_CONNECTION=http://10.20.20.87:8983/solr --name kapua-logisland  hurence/logisland:0.12.0 bin/logisland.sh --conf conf/mqtt-to-historian.yml
+docker run -d -p 8008:8008 --name kapua-logisland hurence/logisland:0.12.0 tail -f bin/logisland.sh
 
 
 

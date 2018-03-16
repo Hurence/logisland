@@ -54,6 +54,7 @@ engine:
         mqtt.qos: 0
         mqtt.topic: Account123/#
         mqtt.username: User123
+        # injecter en env var
         mqtt.password: Kapu12345678+
         mqtt.clean.session: true
         mqtt.connection.timeout: 30
