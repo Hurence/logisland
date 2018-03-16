@@ -38,8 +38,6 @@ import java.util.*;
 public class NormalizeFields extends AbstractProcessor {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(NormalizeFields.class);
-
 
     public static final AllowableValue DO_NOTHING =
             new AllowableValue("do_nothing", "nothing to do", "leave record as it was");

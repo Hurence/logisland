@@ -49,6 +49,15 @@ public interface PropertyValue extends Serializable {
      */
     public Integer asInteger();
 
+
+
+    /**
+     * @return a Record representation of the property value, or
+     * <code>null</code> if not set
+     */
+    public Record asRecord();
+
+
     /**
      * @return a Long representation of the property value, or <code>null</code>
      * if not set

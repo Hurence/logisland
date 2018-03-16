@@ -1,8 +1,8 @@
 #########################################################################################################
-# Logisland configuration script template
+# Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.10.0-SNAPSHOT
+version: 0.12.2
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -26,7 +26,7 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-    spark.streaming.batchDuration: 4000
+    spark.streaming.batchDuration: 1000
     spark.streaming.backpressure.enabled: false
     spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
@@ -41,21 +41,39 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
-      documentation: elasticsearch 2.4.0 service implementation
+      documentation: elasticsearch service
       configuration:
-        hosts: sandbox:9300
-        cluster.name: elasticsearch
-        batch.size: 2000
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER}
+        batch.size: 5000
+
+
+    - controllerService: mqtt_service
+      component: com.hurence.logisland.service.mqtt.MQTT_ClientService
+      type: service
+      documentation: mqtt service
+      configuration:
+        brokerUrl: tcp://localhost:1883
+        mqtt.persistence:
+        mqtt.topic:
+        mqtt.clientId:
+        mqtt.QoS:
+        mqtt.username: User123
+        mqtt.password: passwd
+        mqtt.clean.session: false
+        mqtt.connection.timeout: 5000
+        mqtt.keep.alive: true
+        mqtt.version: 3.1.1
 
   streamConfigurations:
 
-    # parsing
+    # main processing stream
     - stream: parsing_stream
       component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
       type: stream
-      documentation: a processor that links
+      documentation: a processor that converts raw apache logs into structured log records
       configuration:
         kafka.input.topics: logisland_raw
         kafka.output.topics: logisland_events
@@ -63,13 +81,30 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
+
+    # main processing stream
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.structured.StructuredStream
+      type: stream
+      documentation: a processor that converts raw apache logs into structured log records
+      configuration:
+        input.topics.client.service: mqtt_provider
+        input.topics: logisland_raw
+        input.topics.serializer: none
+        output.topics: logisland_events
+        output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        output.topics.client.service: kafka_provider
+
+
+
       processorConfigurations:
 
+        # parse apache logs into logisland records
         - processor: apache_parser
           component: com.hurence.logisland.processor.SplitText
           type: parser
@@ -79,6 +114,7 @@ engine:
             value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
+        # all the parsed records are added to elasticsearch by bulk
         - processor: es_publisher
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor

@@ -17,6 +17,7 @@ package com.hurence.logisland.engine;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
+import com.hurence.logisland.stream.StreamProperties;
 import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.util.spark.SparkUtils;
 import kafka.admin.AdminUtils;
@@ -46,7 +47,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
-
 /**
  * Abstract class for integration testing
  */
@@ -115,19 +115,19 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         kafkaServer = TestUtils.createServer(config, mock);
 
         // create topics
-        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue()))
+        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils,
-                AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue(),
+                    StreamProperties.DEFAULT_ERRORS_TOPIC().getValue(),
                 1,
                 1,
                 new Properties(),
                 RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue()))
-            AdminUtils.createTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
+        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
+            AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
 
 
 
@@ -175,14 +175,14 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         }
 
         if (zkUtils != null) {
-            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_ERRORS_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RECORDS_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_RAW_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue()))
-                AdminUtils.deleteTopic(zkUtils, AbstractKafkaRecordStream.DEFAULT_METRICS_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue());
+            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
+                AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue());
             zkUtils.close();
         }
 

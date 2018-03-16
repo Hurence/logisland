@@ -25,9 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static com.hurence.logisland.processor.enrichment.IpToGeo.DEBUG_FROM_CACHE_SUFFIX;
-import static com.hurence.logisland.record.RecordUtils.KV_RECORD_KEY_FIELD;
-import static com.hurence.logisland.record.RecordUtils.KV_RECORD_VALUE_FIELD;
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -423,8 +420,8 @@ public class IpToGeoTest {
         // Remove time and any other useless field to be able to compare maps
         outputRecord.removeField(lookupTimeFieldName);
         outputRecord.removeField(IP_ADDRESS_FIELD_NAME);
-        outputRecord.removeField(KV_RECORD_KEY_FIELD);
-        outputRecord.removeField(KV_RECORD_VALUE_FIELD);
+        outputRecord.removeField(FieldDictionary.RECORD_KEY);
+        outputRecord.removeField(FieldDictionary.RECORD_VALUE);
 
         // Compare maps
         compareMaps(outputRecord, expectedResult, fieldPrefix);
