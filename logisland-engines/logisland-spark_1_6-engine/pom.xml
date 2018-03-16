@@ -23,7 +23,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engines</artifactId>
-        <version>0.12.0-SNAPSHOT</version>
+        <version>0.12.2</version>
     </parent>
     <artifactId>logisland-spark_1_6-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>

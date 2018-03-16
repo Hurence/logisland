@@ -32,5 +32,5 @@ swagger-ui will be directed to that host and not localhost!
 
 
 ```
-swagger-codegen generate --group-id com.hurence.logisland  --artifact-id logisland-agent --artifact-version 0.12.0-SNAPSHOT --api-package com.hurence.logisland.agent.rest.api --model-package com.hurence.logisland.agent.rest.model -o logisland-framework/logisland-agent -l jaxrs --template-dir logisland-framework/logisland-agent/src/main/raml/templates -i logisland-framework/logisland-agent/src/main/raml/api-swagger.yaml
+swagger-codegen generate --group-id com.hurence.logisland  --artifact-id logisland-agent --artifact-version 0.12.2 --api-package com.hurence.logisland.agent.rest.api --model-package com.hurence.logisland.agent.rest.model -o logisland-framework/logisland-agent -l jaxrs --template-dir logisland-framework/logisland-agent/src/main/raml/templates -i logisland-framework/logisland-agent/src/main/raml/api-swagger.yaml
 ```

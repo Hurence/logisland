@@ -2,7 +2,7 @@
 # Logisland configuration for future factory project
 #########################################################################################################
 
-version: 0.12.0-SNAPSHOT
+version: 0.12.2
 documentation: LogIsland future factory job
 
 #########################################################################################################

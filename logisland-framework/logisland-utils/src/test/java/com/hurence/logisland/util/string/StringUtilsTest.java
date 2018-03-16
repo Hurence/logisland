@@ -178,7 +178,7 @@ public class StringUtilsTest {
 
 
         String stringToResolve = "${ES_HOSTS}/data/incoming/work/\n${KAFKA_BROKERS}/data/incoming/work2/";
-        assertEquals(StringUtils.resolveEnvVars(stringToResolve, "tom"), "sandbox:9200/data/incoming/work/\nsandbox:9092/data/incoming/work2/");
+        assertEquals(StringUtils.resolveEnvVars(stringToResolve, "tom"), "sandbox:9300/data/incoming/work/\nsandbox:9092/data/incoming/work2/");
 
     }
 
