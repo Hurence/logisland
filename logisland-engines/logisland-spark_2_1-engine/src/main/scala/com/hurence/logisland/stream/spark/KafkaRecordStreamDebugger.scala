@@ -44,10 +44,10 @@ import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-
+import com.hurence.logisland.stream.StreamProperties._
 
 class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
-    val logger = LoggerFactory.getLogger(KafkaRecordStreamParallelProcessing.getClass.getName)
+    val logger = LoggerFactory.getLogger(this.getClass.getName)
 
 
     /**
@@ -60,10 +60,10 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
-            val inputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_TOPICS).asString
-            val outputTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString
-            val errorTopics = streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString
-            val brokerList = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_METADATA_BROKER_LIST).asString
+            val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString
+            val outputTopics = streamContext.getPropertyValue(OUTPUT_TOPICS).asString
+            val errorTopics = streamContext.getPropertyValue(ERROR_TOPICS).asString
+            val brokerList = streamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
 
 
             rdd.foreachPartition(partition => {
@@ -80,14 +80,14 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                       * create serializers
                       */
                     val deserializer = getSerializer(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString,
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_INPUT_SCHEMA).asString)
+                        streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
+                        streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
                     val serializer = getSerializer(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_SERIALIZER).asString,
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
+                        streamContext.getPropertyValue(OUTPUT_SERIALIZER).asString,
+                        streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
                     val errorSerializer = getSerializer(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_SERIALIZER).asString,
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString)
+                        streamContext.getPropertyValue(ERROR_SERIALIZER).asString,
+                        streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString)
 
                     /**
                       * process events by chaining output records
@@ -109,8 +109,8 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                               * if there's no serializer we assume that we need to compute a Record from K/V
                               */
                             incomingEvents = if (
-                                streamContext.getPropertyValue(AbstractKafkaRecordStream.INPUT_SERIALIZER).asString
-                                    == AbstractKafkaRecordStream.NO_SERIALIZER.getValue) {
+                                streamContext.getPropertyValue(INPUT_SERIALIZER).asString
+                                    == NO_SERIALIZER.getValue) {
                                 // parser
                                 partition.map(rawMessage => {
                                     val key = if (rawMessage.key() != null) new String(rawMessage.key()) else ""
@@ -139,9 +139,9 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                     /**
                       * Do we make records compliant with a given Avro schema ?
                       */
-                    if (streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).isSet) {
+                    if (streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).isSet) {
                         try {
-                            val strSchema = streamContext.getPropertyValue(AbstractKafkaRecordStream.AVRO_OUTPUT_SCHEMA).asString()
+                            val strSchema = streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString()
                             val parser = new Schema.Parser
                             val schema = parser.parse(strSchema)
 
@@ -161,13 +161,13 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                       * push outgoing events and errors to Kafka
                       */
                     kafkaSink.value.produce(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.OUTPUT_TOPICS).asString,
+                        streamContext.getPropertyValue(OUTPUT_TOPICS).asString,
                         outgoingEvents.toList,
                         serializer
                     )
 
                     kafkaSink.value.produce(
-                        streamContext.getPropertyValue(AbstractKafkaRecordStream.ERROR_TOPICS).asString,
+                        streamContext.getPropertyValue(ERROR_TOPICS).asString,
                         outgoingEvents.filter(r => r.hasField(FieldDictionary.RECORD_ERRORS)).toList,
                         errorSerializer
                     )

@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 0.11.0
+version: 0.12.2
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -45,8 +45,8 @@ engine:
       type: service
       documentation: elasticsearch 2.4.0 service implementation
       configuration:
-        hosts: sandbox:9300
-        cluster.name: elasticsearch
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER_NAME}
         batch.size: 20000
 
     - controllerService: lru_cache_service
@@ -145,8 +145,8 @@ engine:
                { "name": "WebviewAppNameVersionMajor",  "type": ["string","null"] },
                { "name": "WebviewAppVersion",  "type": ["string","null"] },
                { "name": "WebviewAppVersionMajor",  "type": ["string","null"]} ]}
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 4
         kafka.topic.default.replicationFactor: 1
@@ -196,8 +196,8 @@ engine:
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 2
         kafka.topic.default.replicationFactor: 1

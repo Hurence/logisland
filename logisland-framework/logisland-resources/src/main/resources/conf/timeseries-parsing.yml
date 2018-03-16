@@ -43,7 +43,7 @@ engine:
       documentation: "SolR Chronix service"
       configuration:
         solr.cloud: false
-        solr.connection.string: http://sandbox:8983/solr
+        solr.connection.string: ${SOLR_CONNECTION}
         solr.collection: chronix
         solr.concurrent.requests: 4
         flush.interval: 2000
@@ -55,7 +55,7 @@ engine:
       documentation: "store an in-memory cache coming from CSV"
       configuration:
         csv.format: excel_fr
-        csv.file.path: "logisland-assembly/target/logisland-0.11.0-bin-hdp2.5/logisland-0.11.0/conf/timeseries-lookup.csv"
+        csv.file.path: "logisland-assembly/target/logisland-0.12.2-bin-hdp2.5/logisland-0.12.2/conf/timeseries-lookup.csv"
         first.line.header: true
         row.key: tagname
         encoding.charset: ISO-8859-1
@@ -81,8 +81,8 @@ engine:
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        kafka.metadata.broker.list: sandbox:9092
-        kafka.zookeeper.quorum: sandbox:2181
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
         kafka.topic.autoCreate: true
         kafka.topic.default.partitions: 3
         kafka.topic.default.replicationFactor: 1

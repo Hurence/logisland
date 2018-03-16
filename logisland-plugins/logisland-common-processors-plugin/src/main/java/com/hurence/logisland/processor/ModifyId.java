@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,8 +55,6 @@ public class ModifyId extends AbstractProcessor {
             "generate a concatenation of type, time and a hash from fields (as for generate_hash strategy)");
 
 
-
-
     public static final PropertyDescriptor STRATEGY = new PropertyDescriptor.Builder()
             .name("id.generation.strategy")
             .description("the strategy to generate new Id")
@@ -64,7 +62,6 @@ public class ModifyId extends AbstractProcessor {
             .allowableValues(RANDOM_UUID_STRATEGY, HASH_FIELDS_STRATEGY, JAVA_FORMAT_STRING_WITH_FIELDS_STRATEGY, TYPE_TIME_HASH_STRATEGY)
             .defaultValue(RANDOM_UUID_STRATEGY.getValue())
             .build();
-
 
 
     /**
@@ -181,13 +178,14 @@ public class ModifyId extends AbstractProcessor {
                         @Override
                         public void buildId(Record record) {
                             StringBuilder stb = new StringBuilder();
-                            for (String fieldName: fieldsForHash) {
-                                stb.append(record.getField(fieldName).asString());
+                            for (String fieldName : fieldsForHash) {
+                                if (record.hasField(fieldName))
+                                    stb.append(record.getField(fieldName).asString());
                             }
                             digest.update(stb.toString().getBytes(charset));
                             byte[] digested = digest.digest();
                             StringBuffer hexString = new StringBuffer();
-                            for (int i=0;i<digested.length;i++) {
+                            for (int i = 0; i < digested.length; i++) {
                                 hexString.append(Integer.toHexString(0xFF & digested[i]));
                             }
 
@@ -205,11 +203,11 @@ public class ModifyId extends AbstractProcessor {
                     @Override
                     public void buildId(Record record) {
                         final Object[] valuesForFormat = new Object[fieldsForFormat.length];
-                        for (int i=0; i < valuesForFormat.length; i++) {
+                        for (int i = 0; i < valuesForFormat.length; i++) {
                             if (!record.hasField(fieldsForFormat[i])) {
-                                List<String> fieldsName =  Lists.newArrayList(fieldsForFormat);
+                                List<String> fieldsName = Lists.newArrayList(fieldsForFormat);
                                 record.addError(ProcessError.CONFIG_SETTING_ERROR.getName(),
-                                        String.format("could not build id with format : '%s' \nfields: '%s' \n because "+
+                                        String.format("could not build id with format : '%s' \nfields: '%s' \n because " +
                                                 "field: '%s' does not exist", format, fieldsName, fieldsForFormat[i]));
                                 return;
                             }
@@ -222,7 +220,7 @@ public class ModifyId extends AbstractProcessor {
                             // insufficient arguments given the format string, or other illegal conditions.
                             // For specification of all possible formatting errors, see the Details section of the formatter class specification.
                             record.addError(ProcessError.STRING_FORMAT_ERROR.getName(), e.getMessage());
-                        } catch (NullPointerException  e) {//should not happen
+                        } catch (NullPointerException e) {//should not happen
                             record.addError(ProcessError.CONFIG_SETTING_ERROR.getName(), e.getMessage());
                         }
                     }
@@ -237,7 +235,7 @@ public class ModifyId extends AbstractProcessor {
                         @Override
                         public void buildId(Record record) {
                             StringBuilder stb = new StringBuilder();
-                            for (String fieldName: fieldsForHash) {
+                            for (String fieldName : fieldsForHash) {
                                 stb.append(record.getField(fieldName).asString());
                             }
                             digest.update(stb.toString().getBytes(charset));

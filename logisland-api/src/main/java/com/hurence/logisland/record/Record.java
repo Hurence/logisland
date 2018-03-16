@@ -24,9 +24,18 @@ import java.util.Map;
 import java.util.Set;
 
 public interface Record extends Serializable {
+
+    Position getPosition();
+
+    Record setPosition(Position position);
+
+    boolean hasPosition();
+
     Date getTime();
 
     Record setTime(Date recordTime);
+
+    Record setTime(long timestamp);
 
     Record setFields(Map<String, Field> fields);
 
