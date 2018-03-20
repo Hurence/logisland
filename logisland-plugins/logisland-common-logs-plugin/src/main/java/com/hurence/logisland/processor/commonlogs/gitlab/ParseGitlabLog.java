@@ -129,6 +129,9 @@ public class ParseGitlabLog extends AbstractProcessor {
 
             // Normalize the map key values (Some special characters like '.' are not possible when indexing in ES)
             normalizeFields(jsonGitlabLog, null);
+
+            // Explode the params field if any and set its values as first level fields
+            explodeParams(jsonGitlabLog);
             
             // Set every first level fields of the Gitlab log as first level fields of the record for easier processing
             // in processors following in the current processors stream.
@@ -141,7 +144,7 @@ public class ParseGitlabLog extends AbstractProcessor {
         }
         return records;
     }
-    
+
     /**
      * Sets the first level fields of the passed Gitlab log as first level fields in the passed Logisland record.
      * @param gitlabLog Gitlab log.
@@ -187,6 +190,101 @@ public class ParseGitlabLog extends AbstractProcessor {
                 // Unrecognized value type, use string
                 record.setStringField(key, JsonUtil.convertToJson(value));
             }
+        }
+    }
+
+    private static final String PARAMS = "params";
+    private static final String PARAMS_KEY = "key";
+    private static final String PARAMS_VALUE = "value";
+    private static final String PARAMS_SEP = "_";
+    /**
+     * Explodes the params field (if any) and set its values as first level fields. This helps having simple queries
+     * in ES once documents are indexed for instance.
+     * Example:
+     *
+     * Input:
+     *
+     * "params": [
+     *    {
+     *      "key": "utf8",
+     *      "value": "✓"
+     *    },
+     *    {
+     *      "key": "authenticity_token",
+     *      "value": "[FILTERED]"
+     *    },
+     *    {
+     *      "key": "user",
+     *      "value": {
+     *         "login": "mathieu.rossignol@hurence.com",
+     *         "password": "[FILTERED]",
+     *         "remember_me": "0"
+     *      }
+     *    }
+     *  ],
+     *
+     * Output:
+     *
+     * "params_utf8": "✓",
+     * "params_authenticity_token": "[FILTERED]",
+     * "params_user_login" : "mathieu.rossignol@hurence.com",
+     * "params_user_password": "[FILTERED]"
+     *
+     * @param gitlabLog
+     */
+    private void explodeParams(Map<String, Object> gitlabLog) {
+
+        Object params = gitlabLog.get(PARAMS);
+        if (params != null)
+        {
+            gitlabLog.remove(PARAMS);
+
+            addFlatParams(PARAMS, gitlabLog, params);
+        }
+    }
+
+    /**
+     * See explodeParams
+     * @param prefix Current prefix tu use for the attributes to add
+     * @param gitlabLog The Map where to add parsed attributes
+     * @param params The current params to parse
+     */
+    private void addFlatParams(String prefix, Map<String, Object> gitlabLog, Object params) {
+
+
+        if (params == null)
+        {
+            // Handle null params values
+            gitlabLog.put(prefix, null);
+            return;
+        }
+
+        if (params instanceof ArrayList)
+        {
+            // This is a list of parameters, recall the method for each of them
+            ArrayList paramsArray = (ArrayList)params;
+            paramsArray.forEach(param -> addFlatParams(prefix, gitlabLog, param));
+        } else if (params instanceof Map)
+        {
+            // This is a map, is there a key field ?
+            Map<String, Object> paramsMap = (Map<String, Object>)params;
+            Object paramKey = paramsMap.get(PARAMS_KEY);
+            if (paramKey != null)
+            {
+                // There is a key, recall the method with the associated value
+                String newPrefix = prefix + PARAMS_SEP + paramKey.toString();
+                Object paramValue = paramsMap.get(PARAMS_VALUE);
+                addFlatParams(newPrefix, gitlabLog, paramValue);
+            } else
+            {
+                // There is no key field field. So this is a final map. Explode it by
+                // recalling the method for eaf internal field
+
+                paramsMap.forEach( (field, value) -> addFlatParams(prefix + PARAMS_SEP + field, gitlabLog, value) );
+            }
+        } else {
+            // This is a simple type, just add the new field with the passed computed prefix
+            gitlabLog.put(prefix, params);
         }
     }
 
