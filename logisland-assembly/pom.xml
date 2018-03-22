@@ -154,6 +154,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-documentation</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
@@ -173,6 +174,10 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-excel-plugin</artifactId>
         </dependency>
 
         <!--   <dependency>

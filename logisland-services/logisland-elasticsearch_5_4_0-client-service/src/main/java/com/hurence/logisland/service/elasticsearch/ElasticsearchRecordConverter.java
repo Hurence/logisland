@@ -35,7 +35,7 @@ class ElasticsearchRecordConverter {
     /**
      * Converts an Event into an Elasticsearch document
      * to be indexed later
-     *
+     *e
      * @param record to convert
      * @return the json converted record
      */
