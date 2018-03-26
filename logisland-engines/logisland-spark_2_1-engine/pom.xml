@@ -97,6 +97,24 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
 
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-runtime</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-json</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
+
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
@@ -122,6 +140,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.kafka</groupId>

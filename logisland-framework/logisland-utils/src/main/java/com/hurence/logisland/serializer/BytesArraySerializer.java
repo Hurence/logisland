@@ -31,20 +31,24 @@
 
 package com.hurence.logisland.serializer;
 
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class BytesArraySerializer implements RecordSerializer {
 
-    /* TODO */
     public void serialize(OutputStream objectDataOutput, Record record) {
-        throw new RuntimeException("BytesArraySerializer serialize method not implemented yet");
+        Field f =  record.getField(FieldDictionary.RECORD_VALUE);
+        if (f != null && f.isSet() && f.getType().equals(FieldType.BYTES)) {
+            try {
+                objectDataOutput.write((byte[])record.getField(FieldDictionary.RECORD_VALUE).getRawValue());
+            } catch (IOException ioe) {
+                throw new RecordSerializationException(ioe.getMessage(), ioe.getCause());
+            }
+        }
     }
 
     public Record deserialize(InputStream objectDataInput) {
@@ -54,7 +58,6 @@ public class BytesArraySerializer implements RecordSerializer {
             record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, bytes);
             return record;
         } catch (Throwable t) {
-         //   t.printStackTrace();
             throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }

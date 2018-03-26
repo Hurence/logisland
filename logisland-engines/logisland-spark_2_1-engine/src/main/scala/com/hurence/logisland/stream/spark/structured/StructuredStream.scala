@@ -58,9 +58,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         descriptors.add(READ_TOPICS)
         descriptors.add(READ_TOPICS_CLIENT_SERVICE)
         descriptors.add(READ_TOPICS_SERIALIZER)
+        descriptors.add(READ_TOPICS_KEY_SERIALIZER)
         descriptors.add(WRITE_TOPICS)
         descriptors.add(WRITE_TOPICS_CLIENT_SERVICE)
         descriptors.add(WRITE_TOPICS_SERIALIZER)
+        descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
         descriptors.add(LOGISLAND_AGENT_HOST)
         descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
 

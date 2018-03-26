@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 
 import com.hurence.logisland.controller.ControllerService
-import com.hurence.logisland.record.{FieldDictionary, Record}
+import com.hurence.logisland.record.{Field, FieldDictionary, FieldType, Record}
 import com.hurence.logisland.serializer.{RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
@@ -79,6 +79,10 @@ trait StructuredStreamProviderService extends ControllerService {
                 streamContext.getPropertyValue(READ_TOPICS_SERIALIZER).asString,
                 streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
+            val keySerializer = SerializerProvider.getSerializer(
+                streamContext.getPropertyValue(READ_TOPICS_KEY_SERIALIZER).asString,
+                null)
+
 
             val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
             val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
@@ -87,7 +91,7 @@ trait StructuredStreamProviderService extends ControllerService {
             // convert to logisland records
             val incomingEvents = iterator.toList
                 .flatMap(r => {
-                    var processingRecords: util.Collection[Record] = deserializeRecords(serializer, r).toList
+                    var processingRecords: util.Collection[Record] = deserializeRecords(serializer, keySerializer, r).toList
 
                     // loop over processor chain
                     streamContext.getProcessContexts.foreach(processorContext => {
@@ -189,16 +193,27 @@ trait StructuredStreamProviderService extends ControllerService {
         bytes
     }
 
-    // TODO handle key also
-    protected def deserializeRecords(serializer: RecordSerializer, r: Record) = {
+    private def doDeserialize(serializer: RecordSerializer, field: Field) : Record = {
+        val f = field.getRawValue
+        val s = if (f.isInstanceOf[String]) f.asInstanceOf[String].getBytes  else f;
+        val bais = new ByteArrayInputStream(s.asInstanceOf[Array[Byte]])
         try {
-            val bais = new ByteArrayInputStream(r.getField(FieldDictionary.RECORD_VALUE).getRawValue.asInstanceOf[Array[Byte]])
-            val deserialized = serializer.deserialize(bais)
+            serializer.deserialize(bais)
+        } finally {
             bais.close()
+        }
+    }
 
+    protected def deserializeRecords(serializer: RecordSerializer, keySerializer:RecordSerializer, r: Record) = {
+        try {
+            val deserialized = doDeserialize(serializer, r.getField(FieldDictionary.RECORD_VALUE))
             // copy root record field
             if(r.hasField(FieldDictionary.RECORD_NAME))
                 deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
+
+            if(r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null)
+                deserialized.setField(FieldDictionary.RECORD_KEY, FieldType.RECORD,
+                    doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY)))
 
             Some(deserialized)
         } catch {
