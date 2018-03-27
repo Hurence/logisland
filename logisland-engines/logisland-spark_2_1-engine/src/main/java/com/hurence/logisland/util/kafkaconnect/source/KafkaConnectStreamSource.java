@@ -39,10 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -126,6 +123,7 @@ public class KafkaConnectStreamSource implements Source {
         offsetBackingStore.start();
         //TODO: add different storage here
         JsonConverter internalConverter = new JsonConverter();
+        internalConverter.configure(Collections.singletonMap("schemas.enable", "false"), false);
         sharedSourceTaskContext = new SharedSourceTaskContext(
                 new OffsetStorageReaderImpl(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter),
                 new OffsetStorageWriter(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter));

@@ -6,7 +6,7 @@ engine:
   type: engine
   documentation: Index some apache logs with logisland
   configuration:
-    spark.app.name: FutureFactory
+    spark.app.name: CMACGM
     spark.master: local[*]
     spark.driver.memory: 512M
     spark.driver.cores: 1
@@ -20,7 +20,6 @@ engine:
     spark.yarn.executor.failuresValidityInterval: 1h
     spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
-   #spark.serializer: org.apache.spark.serializer.JavaSerializer
     spark.streaming.batchDuration: 2000
     spark.streaming.backpressure.enabled: false
     spark.streaming.blockInterval: 500
@@ -42,55 +41,93 @@ engine:
           record.serializer=com.hurence.logisland.serializer.KryoSerializer
         kc.data.key.converter.properties: |
           schemas.enable=false
-        kc.data.key.converter: org.apache.kafka.connect.json.JsonConverter
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
         kc.worker.tasks.max: 1
-        kc.connector.class: com.hurence.logisland.engine.kc.BinarySourceConnector
+        kc.connector.class: com.eneco.trading.kafka.connect.ftp.source.FtpSourceConnector
         kc.connector.properties: |
-          schema.name=test
-          topic=test
-          filename.path=/Users/amarziali/nasa.txt
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+          ftp.address=localhost:8021
+          ftp.user=test
+          ftp.password=test
+          ftp.refresh=PT5S
+          ftp.file.maxage=P1D
+          ftp.keystyle=string
+          ftp.monitor.update=/*.xls*:in_source
+
+    - controllerService: kafka_out_service
+      component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
+      configuration:
+        kafka.output.topics: logisland_raw
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
 
   streamConfigurations:
-
-    # indexing stream
+  ################ indexing stream ###############
     - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw excel file content into structured log records
       configuration:
-        read.topics: /a/in
-        read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
-        read.topics.key.serializer: com.hurence.logisland.serializer.JsonSerializer
-        read.topics.client.service: kc_source_service
-        write.topics: /a/out
-        write.topics.serializer: none
-        write.topics.client.service: console_service
-
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: sandbox:9092
+        kafka.zookeeper.quorum: sandbox:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
       processorConfigurations:
-
-
-        - processor: flatten
-          component: com.hurence.logisland.processor.FlatMap
-          type: processor
-          documentation: "extract from root record"
-          configuration:
-            keep.root.record: false
-            copy.root.record.fields: true
-            leaf.record.type: record_value
-
-        - processor: create_aliases
-          component: com.hurence.logisland.processor.NormalizeFields
-          type: processor
-          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
-          configuration:
-            conflict.resolution.policy: do_nothing
-            record_name: name
-            record_value: binary
-            record_key: name
-
+        # do something useful here
         - processor: stream_debugger
           component: com.hurence.logisland.processor.DebugStream
           type: processor
           documentation: debug records
           configuration:
             event.serializer: json
+
+
+    ######### parsing stream ##############
+    - stream: parsing_stream_source
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.topics.client.service: kc_source_service
+        write.topics: logisland_raw
+        write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        write.topics.client.service: kafka_out_service
+      processorConfigurations:
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract from root record"
+          configuration:
+            keep.root.record: true
+            copy.root.record.fields: true
+            leaf.record.type: record_value
+        - processor: create_aliases
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
+          configuration:
+            conflict.resolution.policy: do_nothing
+            source_file_name: record_key
+        - processor: excel_parser
+          component: com.hurence.logisland.processor.excel.ExcelExtract
+          type: parser
+          documentation: a parser that produce events from an excel file
+          configuration:
+            record.type: cma1
+            skip.rows: 1
+            field.row.header: 0
