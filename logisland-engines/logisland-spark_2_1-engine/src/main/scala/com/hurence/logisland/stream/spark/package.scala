@@ -4,8 +4,6 @@ import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
 import com.hurence.logisland.validator.StandardValidators
-import org.apache.kafka.connect.connector.Connector
-import org.apache.kafka.connect.storage.Converter
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -505,62 +503,6 @@ object StreamProperties {
         .defaultValue("aggregation")
         .build
 
-    //////////////////////////////////////
-    // Kafka Connect options
-    //////////////////////////////////////
-    val KAFKA_CONNECT_CONNECTOR_CLASS = new PropertyDescriptor.Builder()
-        .name("kc.connector.class")
-        .description("The class canonical name of the kafka connector to use.")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .addValidator(StandardValidators.TYPE_VALIDATOR(classOf[Connector]))
-        .build
 
-    val KAFKA_CONNECT_CONNECTOR_PROPERTIES = new PropertyDescriptor.Builder()
-        .name("kc.connector.properties")
-        .description("The properties (key=value) for the connector.")
-        .required(false)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
-
-    val KAFKA_CONNECT_MAX_TASKS = new PropertyDescriptor.Builder()
-        .name("kc.worker.tasks.max")
-        .description("Max number of threads for this connector")
-        .required(true)
-        .defaultValue("1")
-        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
-        .build
-
-    val KAFKA_CONNECT_KEY_CONVERTER = new PropertyDescriptor.Builder()
-        .name("kc.data.key.converter")
-        .description("Key converter class")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .addValidator(StandardValidators.TYPE_VALIDATOR(classOf[Converter]))
-        .build
-
-    val KAFKA_CONNECT_VALUE_CONVERTER = new PropertyDescriptor.Builder()
-        .name("kc.data.value.converter")
-        .description("Value converter class")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .addValidator(StandardValidators.TYPE_VALIDATOR(classOf[Converter]))
-        .build
-
-    val KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES = new PropertyDescriptor.Builder()
-        .name("kc.data.key.converter.properties")
-        .description("Key converter properties")
-        .required(true)
-        .defaultValue("")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
-
-    val KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES = new PropertyDescriptor.Builder()
-        .name("kc.data.value.converter.properties")
-        .description("Value converter properties")
-        .required(true)
-        .defaultValue("")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build
 
 }

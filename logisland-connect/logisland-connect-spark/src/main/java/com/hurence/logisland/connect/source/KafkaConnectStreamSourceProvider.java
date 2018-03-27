@@ -15,11 +15,15 @@
  *
  */
 
-package com.hurence.logisland.util.kafkaconnect.source;
+package com.hurence.logisland.connect.source;
 
-import com.hurence.logisland.stream.StreamProperties;
+import com.hurence.logisland.stream.spark.StreamOptions;
+import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.connect.runtime.WorkerConfig;
+import org.apache.kafka.connect.runtime.distributed.DistributedConfig;
+import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.source.SourceConnector;
-import org.apache.kafka.connect.storage.Converter;
+import org.apache.kafka.connect.storage.*;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.execution.streaming.Source;
 import org.apache.spark.sql.sources.StreamSourceProvider;
@@ -33,6 +37,12 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link StreamSourceProvider} capable of creating spark {@link com.hurence.logisland.stream.spark.structured.StructuredStream}
+ * enabled kafka sources.
+ *
+ * @author amarziali
+ */
 public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
 
     private Converter createConverter(Map<String, String> parameters, String classKey, String propertyKey)
@@ -51,16 +61,34 @@ public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
     @Override
     public Source createSource(SQLContext sqlContext, String metadataPath, Option<StructType> schema, String providerName, Map<String, String> parameters) {
         try {
-            Converter keyConverter = createConverter(parameters, StreamProperties.KAFKA_CONNECT_KEY_CONVERTER().getName(),
-                    StreamProperties.KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES().getName());
-            Converter valueConverter = createConverter(parameters, StreamProperties.KAFKA_CONNECT_VALUE_CONVERTER().getName(),
-                    StreamProperties.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES().getName());
+            Converter keyConverter = createConverter(parameters, StreamOptions.KAFKA_CONNECT_KEY_CONVERTER().getName(),
+                    StreamOptions.KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES().getName());
+            Converter valueConverter = createConverter(parameters, StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER().getName(),
+                    StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES().getName());
+            //create the right backing store
+            OffsetBackingStore offsetBackingStore = null;
+            WorkerConfig workerConfig = new WorkerConfig(new ConfigDef(),
+                    propertiesToMap(parameters.get(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES().getName()).get()));
+            String bs = parameters.get(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE().getName()).get();
+            if (StreamOptions.FILE_BACKING_STORE().getValue().equals(bs)) {
+                offsetBackingStore = new FileOffsetBackingStore();
+            } else if (StreamOptions.MEMORY_BACKING_STORE().getValue().equals(bs)) {
+                offsetBackingStore = new MemoryOffsetBackingStore();
+            } else if (StreamOptions.KAFKA_BACKING_STORE().getValue().equals(bs)) {
+                offsetBackingStore = new KafkaOffsetBackingStore();
+            } else {
+                throw new IllegalArgumentException(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE().getName() +
+                        " must be set!");
+            }
+
+            offsetBackingStore.configure(workerConfig);
             return new KafkaConnectStreamSource(sqlContext,
-                    propertiesToMap(parameters.get(StreamProperties.KAFKA_CONNECT_CONNECTOR_PROPERTIES().getName()).get()),
+                    propertiesToMap(parameters.get(StreamOptions.KAFKA_CONNECT_CONNECTOR_PROPERTIES().getName()).get()),
                     keyConverter,
                     valueConverter,
-                    Integer.parseInt(parameters.get(StreamProperties.KAFKA_CONNECT_MAX_TASKS().getName()).get()),
-                    (Class<? extends SourceConnector>) Class.forName(parameters.get(StreamProperties.KAFKA_CONNECT_CONNECTOR_CLASS().getName()).get()));
+                    offsetBackingStore,
+                    Integer.parseInt(parameters.get(StreamOptions.KAFKA_CONNECT_MAX_TASKS().getName()).get()),
+                    (Class<? extends SourceConnector>) Class.forName(parameters.get(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS().getName()).get()));
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to create kafka connect stream source", e);
         }

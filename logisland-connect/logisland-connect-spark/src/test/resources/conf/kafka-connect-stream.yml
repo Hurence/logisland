@@ -34,24 +34,20 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.structured.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
       configuration:
-        kc.data.value.converter: com.hurence.logisland.util.kafkaconnect.LogIslandRecordConverter
+        kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
         kc.data.value.converter.properties: |
           record.serializer=com.hurence.logisland.serializer.KryoSerializer
         kc.data.key.converter.properties: |
           schemas.enable=false
         kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
         kc.worker.tasks.max: 1
-        kc.connector.class: com.eneco.trading.kafka.connect.ftp.source.FtpSourceConnector
+        kc.connector.class: com.hurence.logisland.connect.fake.FakeConnector
+        kc.connector.offset.backing.store: memory
         kc.connector.properties: |
-          ftp.address=localhost:8021
-          ftp.user=test
-          ftp.password=test
-          ftp.refresh=PT5S
-          ftp.file.maxage=P1D
-          ftp.keystyle=string
-          ftp.monitor.update=/*.xls*:in_source
+          foo=bar
+          dummy=a long string
 
     - controllerService: kafka_out_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
@@ -108,6 +104,12 @@ engine:
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         write.topics.client.service: kafka_out_service
       processorConfigurations:
+        - processor: stream_debugger2
+          component: com.hurence.logisland.processor.DebugStream
+          type: processor
+          documentation: debug records
+          configuration:
+            event.serializer: json
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap
           type: processor
@@ -116,18 +118,3 @@ engine:
             keep.root.record: true
             copy.root.record.fields: true
             leaf.record.type: record_value
-        - processor: create_aliases
-          component: com.hurence.logisland.processor.NormalizeFields
-          type: processor
-          documentation: "creates an alias tagname/record_name. record_name will be used as metric name into Chronix"
-          configuration:
-            conflict.resolution.policy: do_nothing
-            source_file_name: record_key
-        - processor: excel_parser
-          component: com.hurence.logisland.processor.excel.ExcelExtract
-          type: parser
-          documentation: a parser that produce events from an excel file
-          configuration:
-            record.type: cma1
-            skip.rows: 1
-            field.row.header: 0

@@ -1,25 +1,28 @@
 /*
- * Copyright (C) 2018 Hurence (support@hurence.com)
+ *  * Copyright (C) 2018 Hurence (support@hurence.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
  */
-package com.hurence.logisland.engine;
+package com.hurence.logisland.connect;
 
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
-import com.hurence.logisland.util.spark.SparkUtils;
+import com.hurence.logisland.engine.EngineContext;
+import com.hurence.logisland.util.runner.TestRunner;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +30,16 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 
+/**
+ * End to end test.
+ */
 public class KafkaConnectTest {
     private static Logger logger = LoggerFactory.getLogger(KafkaConnectTest.class);
 
     private static final String JOB_CONF_FILE = "/conf/kafka-connect-stream.yml";
 
     @Test
+    @Ignore
     public void remoteTest() {
 
 
@@ -62,8 +69,8 @@ public class KafkaConnectTest {
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
         } catch (Exception e) {
-            logger.error("something went bad while running the job : {}", e);
-            System.exit(-1);
+            Assert.fail("something went bad while running the job : " + e);
+
         }
 
 

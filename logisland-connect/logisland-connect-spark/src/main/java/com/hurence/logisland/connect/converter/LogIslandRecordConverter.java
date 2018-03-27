@@ -1,25 +1,26 @@
 /*
- * Copyright (C) 2018 Hurence (support@hurence.com)
+ *  * Copyright (C) 2018 Hurence (support@hurence.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
  */
 
-package com.hurence.logisland.util.kafkaconnect;
+package com.hurence.logisland.connect.converter;
 
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.SerializerProvider;
+import com.hurence.logisland.stream.StreamProperties;
 import org.apache.kafka.connect.data.ConnectSchema;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
@@ -34,22 +35,40 @@ import java.util.Map;
 
 public class LogIslandRecordConverter implements Converter {
 
+    /**
+     * Record serializer class (instance of {@link com.hurence.logisland.serializer.RecordSerializer})
+     */
     private static final String PROPERTY_RECORD_SERIALIZER = "record.serializer";
-    public static final String PROPERTY_AVRO_SCHEMA = "avro.schema";
+    /**
+     * Avro schema to use (only apply to {@link com.hurence.logisland.serializer.AvroSerializer})
+     */
+    private static final String PROPERTY_AVRO_SCHEMA = "avro.schema";
+
+    /**
+     * The record type to use. If not provided {@link LogIslandRecordConverter#PROPERTY_RECORD_TYPE} will be used.
+     */
+    private static final String PROPERTY_RECORD_TYPE = StreamProperties.RECORD_TYPE().getName();
+
+    /**
+     * The default type for logisland {@link Record} created by this converter.
+     */
+    private static final String DEFAULT_RECORD_TYPE = "kafka_connect";
 
     private RecordSerializer recordSerializer;
+    private String recordType;
 
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
         recordSerializer = SerializerProvider.getSerializer((String) configs.get(PROPERTY_RECORD_SERIALIZER), (String) configs.get(PROPERTY_AVRO_SCHEMA));
+        recordType = ((Map<String, Object>) configs).getOrDefault(PROPERTY_RECORD_TYPE, DEFAULT_RECORD_TYPE).toString();
     }
 
     @Override
     public byte[] fromConnectData(String topic, Schema schema, Object value) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             recordSerializer.serialize(baos,
-                    new StandardRecord("kafka_connect").setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value)));
+                    new StandardRecord(recordType).setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value)));
             return baos.toByteArray();
         } catch (IOException ioe) {
             throw new DataException("Unexpected IO Exception occurred while serializing data [topic " + topic + "]", ioe);
@@ -59,7 +78,7 @@ public class LogIslandRecordConverter implements Converter {
 
     @Override
     public SchemaAndValue toConnectData(String topic, byte[] value) {
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented! Please try later on ;-)");
     }
 
     private Field toFieldRecursive(String name, Schema schema, Object value) {

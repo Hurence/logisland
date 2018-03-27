@@ -15,11 +15,10 @@
  *
  */
 
-package com.hurence.logisland.util.kafkaconnect.source;
+package com.hurence.logisland.connect.source;
 
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
-import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +36,20 @@ class SourceThread implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SourceTask.class);
 
     private final SourceTask task;
-    private final SQLContext sqlContext;
     private final Map<String, String> config;
     private final SharedSourceTaskContext sharedSourceTaskContext;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
 
-    public SourceThread(SourceTask task, SQLContext sqlContext, Map<String, String> config, SharedSourceTaskContext sharedSourceTaskContext) {
-        this.sqlContext = sqlContext;
-        this.task = task;
+    /**
+     * Construct a new instance.
+     *
+     * @param taskClass               The task to execute.
+     * @param config                  the task configuration
+     * @param sharedSourceTaskContext the shared task context.
+     */
+    public SourceThread(Class<? extends SourceTask> taskClass, Map<String, String> config, SharedSourceTaskContext sharedSourceTaskContext) throws IllegalAccessException, InstantiationException {
+        this.task = taskClass.newInstance();
         this.config = Collections.unmodifiableMap(config);
         this.sharedSourceTaskContext = sharedSourceTaskContext;
         task.initialize(sharedSourceTaskContext);
@@ -67,6 +71,11 @@ class SourceThread implements Runnable {
         }
     }
 
+    /**
+     * Start the worker.
+     *
+     * @return itself
+     */
     public SourceThread start() {
         try {
             task.start(config);
@@ -83,6 +92,9 @@ class SourceThread implements Runnable {
         return this;
     }
 
+    /**
+     * Tell the work loop to end any activity ASAP.
+     */
     public void stop() {
         running.set(false);
 

@@ -15,7 +15,7 @@
  *
  */
 
-package com.hurence.logisland.util.kafkaconnect.source;
+package com.hurence.logisland.connect.source;
 
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -32,6 +32,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * A {@link SourceTaskContext} shared among all task spawned by a connector.
+ * <p>
+ * An instance of this class is regularly polled by spark structured stream engine.
+ */
 public class SharedSourceTaskContext implements SourceTaskContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SharedSourceTaskContext.class);
@@ -43,6 +48,12 @@ public class SharedSourceTaskContext implements SourceTaskContext {
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
 
+    /**
+     * Create a new instance.
+     *
+     * @param offsetStorageReader the offset reader (managed by creating class).
+     * @param offsetStorageWriter the offset writer (managed by the creating class)
+     */
     public SharedSourceTaskContext(OffsetStorageReader offsetStorageReader, OffsetStorageWriter offsetStorageWriter) {
         this.offsetStorageReader = offsetStorageReader;
         this.offsetStorageWriter = offsetStorageWriter;
@@ -54,6 +65,11 @@ public class SharedSourceTaskContext implements SourceTaskContext {
         return offsetStorageReader;
     }
 
+    /**
+     * Fetch last offset available.
+     *
+     * @return
+     */
     public Optional<Long> lastOffset() {
         Lock lock = rwLock.readLock();
         try {
@@ -65,6 +81,13 @@ public class SharedSourceTaskContext implements SourceTaskContext {
         }
     }
 
+    /**
+     * Read the received data according to provided offsets.
+     *
+     * @param from the optional starting offset. If missing data will be fetched since the beginning of available one.
+     * @param to   the mandatory ending offset.
+     * @return the {@link SourceRecord} that have been read.
+     */
     public Collection<SourceRecord> read(Optional<Offset> from, Offset to) {
         Lock lock = rwLock.readLock();
         try {
@@ -88,10 +111,28 @@ public class SharedSourceTaskContext implements SourceTaskContext {
         }
     }
 
+    /**
+     * Enqueue a new record emitted by a {@link SourceTask}
+     *
+     * @param record  the {@link SourceRecord} coming from the connector
+     * @param offset  the corresponding {@link Offset}
+     * @param emitter the record emitter.
+     */
     public void offer(SourceRecord record, Offset offset, SourceTask emitter) {
-        buffer.addLast(Tuple3.apply(record, offset, emitter));
+        Lock lock = rwLock.writeLock();
+        try {
+            lock.lock();
+            buffer.addLast(Tuple3.<SourceRecord, Offset, SourceTask>apply(record, offset, emitter));
+        } finally {
+            lock.unlock();
+        }
     }
 
+    /**
+     * Confirms that data read since offset endOffset has been successfully handled by the streaming engine.
+     *
+     * @param endOffset the last offset read and committed by the spark engine.
+     */
     public void commit(Offset endOffset) {
         Lock lock = rwLock.readLock();
         try {
@@ -102,7 +143,7 @@ public class SharedSourceTaskContext implements SourceTaskContext {
             offsetStorageWriter.offset(sr._1().sourcePartition(), sr._1().sourceOffset());
             if (offsetStorageWriter.beginFlush()) {
                 offsetStorageWriter.doFlush((error, result) -> {
-                    if (error != null) {
+                    if (error == null) {
                         Lock ll = rwLock.writeLock();
                         try {
                             ll.lock();
@@ -133,6 +174,9 @@ public class SharedSourceTaskContext implements SourceTaskContext {
 
     }
 
+    /**
+     * Clean up buffered data.
+     */
     public void clean() {
         Lock lock = rwLock.writeLock();
         try {
