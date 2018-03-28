@@ -237,13 +237,6 @@
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-agent</artifactId>
                 </dependency>
-                <!-- https://mvnrepository.com/artifact/com.eneco/kafka-connect-ftp -->
-                <dependency>
-                    <groupId>com.eneco</groupId>
-                    <artifactId>kafka-connect-ftp</artifactId>
-                    <version>0.1.4</version>
-                </dependency>
-
             </dependencies>
 
         </profile>

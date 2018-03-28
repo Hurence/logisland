@@ -18,7 +18,6 @@
 package com.hurence.logisland.connect.source;
 
 
-import com.hurence.logisland.stream.StreamProperties;
 import com.hurence.logisland.stream.spark.StreamOptions;
 import org.apache.kafka.connect.connector.ConnectorContext;
 import org.apache.kafka.connect.errors.DataException;
@@ -33,7 +32,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
-import org.apache.spark.sql.execution.streaming.LongOffset;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.Source;
 import org.apache.spark.sql.types.DataTypes;
@@ -241,8 +239,8 @@ public class KafkaConnectStreamSource implements Source {
 
     @Override
     public Option<Offset> getOffset() {
-        Optional<Long> offset = sharedSourceTaskContext.lastOffset();
-        return offset.isPresent() ? Option.<Offset>apply(LongOffset.apply(offset.get())) : Option.<Offset>empty();
+        Optional<Offset> offset = sharedSourceTaskContext.lastOffset();
+        return Option.apply(offset.orElse(null));
 
     }
 

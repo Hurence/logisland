@@ -242,6 +242,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
                 if (errorOrNull != null) {
                     logger.error("Error occurred", errorOrNull)
                 }
+                sender.producer.close();
             }
         }
 

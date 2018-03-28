@@ -70,12 +70,11 @@ public class SharedSourceTaskContext implements SourceTaskContext {
      *
      * @return
      */
-    public Optional<Long> lastOffset() {
+    public Optional<Offset> lastOffset() {
         Lock lock = rwLock.readLock();
         try {
             lock.lock();
-            return Optional.ofNullable(buffer.isEmpty() ? null :
-                    new Long(buffer.getLast()._1().sourceOffset().hashCode()));
+            return Optional.ofNullable(buffer.isEmpty() ? null : buffer.getLast()._2());
         } finally {
             lock.unlock();
         }

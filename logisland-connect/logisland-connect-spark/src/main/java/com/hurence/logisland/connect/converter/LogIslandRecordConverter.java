@@ -31,6 +31,7 @@ import org.apache.kafka.connect.storage.Converter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 
 public class LogIslandRecordConverter implements Converter {
@@ -56,12 +57,14 @@ public class LogIslandRecordConverter implements Converter {
 
     private RecordSerializer recordSerializer;
     private String recordType;
+    private boolean isKey;
 
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
         recordSerializer = SerializerProvider.getSerializer((String) configs.get(PROPERTY_RECORD_SERIALIZER), (String) configs.get(PROPERTY_AVRO_SCHEMA));
         recordType = ((Map<String, Object>) configs).getOrDefault(PROPERTY_RECORD_TYPE, DEFAULT_RECORD_TYPE).toString();
+        this.isKey = isKey;
     }
 
     @Override
@@ -127,9 +130,15 @@ public class LogIslandRecordConverter implements Converter {
                     if (struct.schema() != schema) {
                         throw new DataException("Mismatching schema.");
                     }
-                    Record ret = new StandardRecord();
-                    struct.schema().fields().forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field))));
-                    return new Field(name, FieldType.RECORD, ret);
+                    if (isKey) {
+                        Map<String, Object> ret = new HashMap<>();
+                        struct.schema().fields().forEach(field -> ret.put(field.name(), toFieldRecursive(field.name(), field.schema(), struct.get(field)).getRawValue()));
+                        return new Field(name, FieldType.MAP, ret);
+                    } else {
+                        Record ret = new StandardRecord();
+                        struct.schema().fields().forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field))));
+                        return new Field(name, FieldType.RECORD, ret);
+                    }
 
                 }
             }

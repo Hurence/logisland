@@ -45,10 +45,52 @@ import java.util.stream.Collectors;
  */
 public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
 
-    private Converter createConverter(Map<String, String> parameters, String classKey, String propertyKey)
+    /**
+     * Configuration definition for {@link MemoryOffsetBackingStore}
+     */
+    private static class MemoryConfig extends WorkerConfig {
+        public MemoryConfig(java.util.Map<String, String> props) {
+            super(new ConfigDef(), props);
+        }
+    }
+
+    /**
+     * Configuration definition for {@link FileOffsetBackingStore}
+     */
+    private static class FileConfig extends WorkerConfig {
+        public FileConfig(java.util.Map<String, String> props) {
+            super(new ConfigDef()
+                            .define(StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG,
+                                    ConfigDef.Type.STRING,
+                                    ConfigDef.Importance.HIGH,
+                                    "file to store offset data in")
+                    , props);
+        }
+    }
+
+    /**
+     * Configuration definition for {@link KafkaOffsetBackingStore}
+     */
+    private static class KafkaConfig extends WorkerConfig {
+        public KafkaConfig(java.util.Map<String, String> props) {
+            super(new ConfigDef()
+                            .define(BOOTSTRAP_SERVERS_CONFIG,
+                                    ConfigDef.Type.LIST,
+                                    BOOTSTRAP_SERVERS_DEFAULT,
+                                    ConfigDef.Importance.HIGH,
+                                    BOOTSTRAP_SERVERS_DOC)
+                            .define(DistributedConfig.OFFSET_STORAGE_TOPIC_CONFIG,
+                                    ConfigDef.Type.STRING,
+                                    ConfigDef.Importance.HIGH,
+                                    "kafka topic to store connector offsets in")
+                    , props);
+        }
+    }
+
+    private Converter createConverter(Map<String, String> parameters, String classKey, String propertyKey, boolean isKey)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
         Converter ret = (Converter) Class.forName(parameters.get(classKey).get()).newInstance();
-        ret.configure(propertiesToMap(parameters.get(propertyKey).get()), false);
+        ret.configure(propertiesToMap(parameters.get(propertyKey).get()), isKey);
         return ret;
     }
 
@@ -62,20 +104,24 @@ public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
     public Source createSource(SQLContext sqlContext, String metadataPath, Option<StructType> schema, String providerName, Map<String, String> parameters) {
         try {
             Converter keyConverter = createConverter(parameters, StreamOptions.KAFKA_CONNECT_KEY_CONVERTER().getName(),
-                    StreamOptions.KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES().getName());
+                    StreamOptions.KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES().getName(), true);
             Converter valueConverter = createConverter(parameters, StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER().getName(),
-                    StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES().getName());
+                    StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES().getName(), false);
             //create the right backing store
             OffsetBackingStore offsetBackingStore = null;
-            WorkerConfig workerConfig = new WorkerConfig(new ConfigDef(),
-                    propertiesToMap(parameters.get(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES().getName()).get()));
+            WorkerConfig workerConfig = null;
+            java.util.Map<String, String> offsetBackingStoreProperties =
+                    propertiesToMap(parameters.get(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES().getName()).get());
             String bs = parameters.get(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE().getName()).get();
             if (StreamOptions.FILE_BACKING_STORE().getValue().equals(bs)) {
                 offsetBackingStore = new FileOffsetBackingStore();
+                workerConfig = new FileConfig(offsetBackingStoreProperties);
             } else if (StreamOptions.MEMORY_BACKING_STORE().getValue().equals(bs)) {
                 offsetBackingStore = new MemoryOffsetBackingStore();
+                workerConfig = new MemoryConfig(offsetBackingStoreProperties);
             } else if (StreamOptions.KAFKA_BACKING_STORE().getValue().equals(bs)) {
                 offsetBackingStore = new KafkaOffsetBackingStore();
+                workerConfig = new KafkaConfig(offsetBackingStoreProperties);
             } else {
                 throw new IllegalArgumentException(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE().getName() +
                         " must be set!");

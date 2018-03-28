@@ -17,6 +17,7 @@
 
 package com.hurence.logisland.connect.source;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.apache.spark.sql.execution.streaming.LongOffset;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -61,7 +63,10 @@ class SourceThread implements Runnable {
             try {
                 List<SourceRecord> records = task.poll();
                 if (records != null) {
-                    records.forEach(sourceRecord -> sharedSourceTaskContext.offer(sourceRecord, LongOffset.apply(sourceRecord.sourceOffset().hashCode()), task));
+
+                    records.forEach(sourceRecord -> sharedSourceTaskContext.offer(sourceRecord,
+                            LongOffset.apply(sourceRecord.sourceOffset().isEmpty() ? UUID.randomUUID().hashCode() :sourceRecord.sourceOffset().hashCode()),
+                            task));
                 }
             } catch (InterruptedException ie) {
                 break;
