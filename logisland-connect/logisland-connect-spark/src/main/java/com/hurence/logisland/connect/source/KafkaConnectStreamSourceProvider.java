@@ -136,7 +136,7 @@ public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
                     Integer.parseInt(parameters.get(StreamOptions.KAFKA_CONNECT_MAX_TASKS().getName()).get()),
                     (Class<? extends SourceConnector>) Class.forName(parameters.get(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS().getName()).get()));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to create kafka connect stream source", e);
+            throw new IllegalArgumentException("Unable to create kafka connect stream source: " + e.getMessage(), e);
         }
 
 

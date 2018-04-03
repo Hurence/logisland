@@ -285,6 +285,7 @@ public class KafkaConnectStreamSource implements Source {
         }
         LOGGER.info("Stopping connector {}", connectorName());
         stopAllThreads();
+        sharedSourceTaskContext.clean();
         offsetBackingStore.stop();
         connector.stop();
     }

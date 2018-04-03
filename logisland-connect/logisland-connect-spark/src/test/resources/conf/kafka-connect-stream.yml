@@ -6,7 +6,7 @@ engine:
   type: engine
   documentation: Index some apache logs with logisland
   configuration:
-    spark.app.name: CMACGM
+    spark.app.name: ConnectTest
     spark.master: local[*]
     spark.driver.memory: 512M
     spark.driver.cores: 1
@@ -115,6 +115,5 @@ engine:
           type: processor
           documentation: "extract from root record"
           configuration:
-            keep.root.record: true
+            keep.root.record: false
             copy.root.record.fields: true
-            leaf.record.type: record_value
