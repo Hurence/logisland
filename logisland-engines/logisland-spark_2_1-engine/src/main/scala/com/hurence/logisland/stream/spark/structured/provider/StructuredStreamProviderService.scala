@@ -8,7 +8,7 @@ import com.hurence.logisland.record._
 import com.hurence.logisland.serializer.{RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -115,13 +115,15 @@ trait StructuredStreamProviderService extends ControllerService {
                         processingRecords = processor.process(processorContext, processingRecords)
 
                         // compute metrics
-                        /*   ProcessorMetrics.computeMetrics(
+                        /*(
+                        ProcessorMetrics.computeMetrics(
                                pipelineMetricPrefix + processorContext.getName + ".",
                                incomingEvents.toList,
                                processingRecords,
                                0,
                                0,
-                               System.currentTimeMillis() - startTime)*/
+                               System.currentTimeMillis() - startTime)
+                               */
 
                         processorTimerContext.stop()
 
