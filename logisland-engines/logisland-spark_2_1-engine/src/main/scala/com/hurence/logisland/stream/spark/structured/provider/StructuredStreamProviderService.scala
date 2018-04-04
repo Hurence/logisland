@@ -85,11 +85,12 @@ trait StructuredStreamProviderService extends ControllerService {
 
 
             val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
-            val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
 
             // convert to logisland records
-            val incomingEvents = iterator.toList
+            val inEnvents = iterator.toList
+
+            val incomingEvents = inEnvents
                 .flatMap(r => {
                     var processingRecords: util.Collection[Record] = deserializeRecords(serializer, keySerializer, r).toList
 
@@ -115,15 +116,13 @@ trait StructuredStreamProviderService extends ControllerService {
                         processingRecords = processor.process(processorContext, processingRecords)
 
                         // compute metrics
-                        /*(
                         ProcessorMetrics.computeMetrics(
-                               pipelineMetricPrefix + processorContext.getName + ".",
-                               incomingEvents.toList,
-                               processingRecords,
-                               0,
-                               0,
-                               System.currentTimeMillis() - startTime)
-                               */
+                            pipelineMetricPrefix + processorContext.getName + ".",
+                            inEnvents,
+                            processingRecords,
+                            0,
+                            inEnvents.size,
+                            System.currentTimeMillis() - startTime)
 
                         processorTimerContext.stop()
 

@@ -42,8 +42,8 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
 
     var appName = ""
-    var kafkaSinkParams : Map[String, Object] = _
-    var kafkaParams : Map[String, Object] = _
+    var kafkaSinkParams: Map[String, Object] = _
+    var kafkaParams: Map[String, Object] = _
     // Define the Kafka parameters, broker list must be specified
     var inputTopics = Set[String]()
     var outputTopics = Set[String]()
@@ -151,12 +151,10 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .load()
             .as[(String, String)]
             .map(r => {
-                new StandardRecord("kura_metric")
+                new StandardRecord(inputTopics.head)
                     .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
                     .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
             })
-        /*   df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-               .as[(String, String)]*/
 
         df
     }
@@ -246,8 +244,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             }
         }
 
-        df
-            .writeStream
+        df.writeStream
             .foreach(writer)
             .start()
     }
