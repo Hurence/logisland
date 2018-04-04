@@ -202,7 +202,11 @@ public class KafkaConnectStreamSource implements Source {
         final ThreadGroup threadGroup = new ThreadGroup(connector.getClass().getSimpleName());
         final List<SourceThread> sourceThreads = createThreadTasks();
         //Configure a new executor service        ]
-        executorService = Executors.newFixedThreadPool(sourceThreads.size(), r -> new Thread(threadGroup, r));
+        executorService = Executors.newFixedThreadPool(sourceThreads.size(), r -> {
+            Thread t = new Thread(threadGroup, r);
+            t.setDaemon(true);
+            return t;
+        });
         createThreadTasks().forEach(st -> {
             executorService.execute(st.start());
             sourceThreads.add(st);
@@ -240,7 +244,7 @@ public class KafkaConnectStreamSource implements Source {
     @Override
     public Option<Offset> getOffset() {
         Optional<Offset> offset = sharedSourceTaskContext.lastOffset();
-        return Option.apply(offset.orElse(null));
+        return Option.<Offset>apply(offset.orElse(null));
 
     }
 

@@ -39,16 +39,16 @@ public class LogIslandRecordConverter implements Converter {
     /**
      * Record serializer class (instance of {@link com.hurence.logisland.serializer.RecordSerializer})
      */
-    private static final String PROPERTY_RECORD_SERIALIZER = "record.serializer";
+    public static final String PROPERTY_RECORD_SERIALIZER = "record.serializer";
     /**
      * Avro schema to use (only apply to {@link com.hurence.logisland.serializer.AvroSerializer})
      */
-    private static final String PROPERTY_AVRO_SCHEMA = "avro.schema";
+    public static final String PROPERTY_AVRO_SCHEMA = "avro.schema";
 
     /**
      * The record type to use. If not provided {@link LogIslandRecordConverter#PROPERTY_RECORD_TYPE} will be used.
      */
-    private static final String PROPERTY_RECORD_TYPE = StreamProperties.RECORD_TYPE().getName();
+    public static final String PROPERTY_RECORD_TYPE = StreamProperties.RECORD_TYPE().getName();
 
     /**
      * The default type for logisland {@link Record} created by this converter.
@@ -142,8 +142,7 @@ public class LogIslandRecordConverter implements Converter {
 
                 }
             }
-
-            throw new DataException("Couldn't convert " + value + " to JSON.");
+            throw new DataException("Couldn't convert " + value + " to a logisland Record.");
         } catch (ClassCastException e) {
             throw new DataException("Invalid type for " + schema.type() + ": " + value.getClass());
         }
