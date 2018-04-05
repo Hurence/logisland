@@ -65,7 +65,7 @@ class SourceThread implements Runnable {
                 if (records != null) {
 
                     records.forEach(sourceRecord -> sharedSourceTaskContext.offer(sourceRecord,
-                            LongOffset.apply(sourceRecord.sourceOffset().isEmpty() ? UUID.randomUUID().hashCode() :sourceRecord.sourceOffset().hashCode()),
+                            LongOffset.apply(sourceRecord.sourceOffset() == null || sourceRecord.sourceOffset().isEmpty() ? UUID.randomUUID().hashCode() :sourceRecord.sourceOffset().hashCode()),
                             task));
                 }
             } catch (InterruptedException ie) {

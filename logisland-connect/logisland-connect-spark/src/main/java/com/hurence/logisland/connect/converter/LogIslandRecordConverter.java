@@ -31,8 +31,10 @@ import org.apache.kafka.connect.storage.Converter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LogIslandRecordConverter implements Converter {
 
@@ -71,7 +73,7 @@ public class LogIslandRecordConverter implements Converter {
     public byte[] fromConnectData(String topic, Schema schema, Object value) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             recordSerializer.serialize(baos,
-                    new StandardRecord(recordType).setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value)));
+                    new StandardRecord(recordType).setField(toFieldRecursive(FieldDictionary.RECORD_VALUE, schema, value, isKey)));
             return baos.toByteArray();
         } catch (IOException ioe) {
             throw new DataException("Unexpected IO Exception occurred while serializing data [topic " + topic + "]", ioe);
@@ -84,7 +86,7 @@ public class LogIslandRecordConverter implements Converter {
         throw new UnsupportedOperationException("Not yet implemented! Please try later on ;-)");
     }
 
-    private Field toFieldRecursive(String name, Schema schema, Object value) {
+    private Field toFieldRecursive(String name, Schema schema, Object value, boolean isKey) {
         try {
             final Schema.Type schemaType;
             if (schema == null) {
@@ -119,7 +121,13 @@ public class LogIslandRecordConverter implements Converter {
                     }
                     return new Field(name, FieldType.BYTES, bytes);
                 case ARRAY: {
-                    return new Field(name, FieldType.ARRAY, value);
+                    return new Field(name, FieldType.ARRAY,
+                            ((Collection<?>) value).stream().map(item -> {
+                                Schema valueSchema = schema == null ? null : schema.valueSchema();
+                                return toFieldRecursive(FieldDictionary.RECORD_VALUE, valueSchema, item, true);
+                            })
+                                    .map(Field::getRawValue)
+                                    .collect(Collectors.toList()));
                 }
                 case MAP: {
                     return new Field(name, FieldType.MAP, value);
@@ -132,11 +140,11 @@ public class LogIslandRecordConverter implements Converter {
                     }
                     if (isKey) {
                         Map<String, Object> ret = new HashMap<>();
-                        struct.schema().fields().forEach(field -> ret.put(field.name(), toFieldRecursive(field.name(), field.schema(), struct.get(field)).getRawValue()));
+                        struct.schema().fields().forEach(field -> ret.put(field.name(), toFieldRecursive(field.name(), field.schema(), struct.get(field), true).getRawValue()));
                         return new Field(name, FieldType.MAP, ret);
                     } else {
                         Record ret = new StandardRecord();
-                        struct.schema().fields().forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field))));
+                        struct.schema().fields().forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field), true)));
                         return new Field(name, FieldType.RECORD, ret);
                     }
 
