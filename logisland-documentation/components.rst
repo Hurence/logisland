@@ -429,6 +429,38 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.excel.ExcelExtract: 
+
+ExcelExtract
+------------
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
+
+Class
+_____
+com.hurence.logisland.processor.excel.ExcelExtract
+
+Tags
+____
+excel, processor, poi
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "Sheets to Extract", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "", ""
+   "Columns To Skip", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "", ""
+   "Field names mapping", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "", ""
+   "Number of Rows to Skip", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "", ""
+   "record.type", "Default type of record", "", "excel_record", "", ""
+   "Use a row header as field names mapping", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
 
 FetchHBaseRow

@@ -167,6 +167,77 @@
                 </plugins>
             </build>
         </profile>
+        <!-- Kafka Connect Blockchain Source Bundle -->
+        <profile>
+            <id>includeConnectBlockchain</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>withConnectBlockchain</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- https://mvnrepository.com/artifact/com.datamountaineer/kafka-connect-blockchain -->
+                <dependency>
+                    <groupId>com.datamountaineer</groupId>
+                    <artifactId>kafka-connect-blockchain</artifactId>
+                    <version>1.0.0</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.immutables.tools</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>4</version>
+                        <executions>
+                            <execution>
+                                <id>package-blockchain-source</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                                    <artifactSet>
+                                        <includes>
+                                            <include>com.datamountaineer:kafka-connect-blockchain</include>
+                                            <include>org.codehaus.jackson:*</include>
+                                        </includes>
+                                    </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/license/**</exclude>
+                                                <exclude>META-INF/*</exclude>
+                                                <exclude>META-INF/maven/**</exclude>
+                                                <exclude>LICENSE</exclude>
+                                                <exclude>NOTICE</exclude>
+                                                <exclude>/*.txt</exclude>
+                                                <exclude>build.properties</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                    <transformers>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    </transformers>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>org.codehaus.jackson</pattern>
+                                            <shadedPattern>${logisland.shade.packageName}.kc.blockchain.org.codehaus.jackson
+                                            </shadedPattern>
+                                        </relocation>
+                                    </relocations>
+
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 

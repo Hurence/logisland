@@ -19,7 +19,6 @@
 
 <configuration>
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-        <target>System.err</target>
         <encoder>
             <pattern>%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n</pattern>
         </encoder>

@@ -39,7 +39,6 @@ public class KafkaConnectTest {
     private static final String JOB_CONF_FILE = "/conf/kafka-connect-stream.yml";
 
     @Test
-    @Ignore
     public void remoteTest() {
 
 

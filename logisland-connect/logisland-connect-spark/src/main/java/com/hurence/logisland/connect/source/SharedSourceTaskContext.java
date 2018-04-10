@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import scala.Tuple3;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -68,7 +69,7 @@ public class SharedSourceTaskContext implements SourceTaskContext {
     /**
      * Fetch last offset available.
      *
-     * @return
+     * @return the last available offset if any.
      */
     public Optional<Offset> lastOffset() {
         Lock lock = rwLock.readLock();
@@ -91,15 +92,19 @@ public class SharedSourceTaskContext implements SourceTaskContext {
         Lock lock = rwLock.readLock();
         try {
             lock.lock();
-            boolean started = false;
             Collection<SourceRecord> ret = new ArrayList<>();
-            for (Tuple3<SourceRecord, Offset, SourceTask> current : buffer) {
-                Offset lo = current._2();
-                if (started || !from.isPresent() || from.get().equals(lo)) {
-                    started = true;
-                    ret.add(current._1());
+            while (!buffer.isEmpty()) {
+                Tuple3<SourceRecord, Offset, SourceTask> current = buffer.removeFirst();
+                ret.add(current._1());
+                try {
+                    if (current._3() != null) {
+                        current._3().commitRecord(current._1());
+                    }
+                    offsetStorageWriter.offset(current._1().sourcePartition(), current._1().sourceOffset());
+                } catch (Throwable t) {
+                    LOGGER.warn("Unable to properly commit offset " + current._2(), t);
                 }
-                if (to.equals(lo)) {
+                if (to.equals(current._2())) {
                     break;
                 }
             }
@@ -133,44 +138,21 @@ public class SharedSourceTaskContext implements SourceTaskContext {
      * @param endOffset the last offset read and committed by the spark engine.
      */
     public void commit(Offset endOffset) {
-        Lock lock = rwLock.readLock();
         try {
-            lock.lock();
-            Tuple3<SourceRecord, Offset, SourceTask> sr = buffer.stream()
-                    .filter(item -> endOffset.equals(item._2()))
-                    .findFirst().get();
-            offsetStorageWriter.offset(sr._1().sourcePartition(), sr._1().sourceOffset());
+
             if (offsetStorageWriter.beginFlush()) {
                 offsetStorageWriter.doFlush((error, result) -> {
                     if (error == null) {
-                        Lock ll = rwLock.writeLock();
-                        try {
-                            ll.lock();
-                            while (!buffer.isEmpty()) {
-                                Tuple3<SourceRecord, Offset, SourceTask> current = buffer.removeFirst();
-                                if (current._3() != null) {
-                                    try {
-                                        current._3().commitRecord(current._1());
-                                    } catch (InterruptedException e) {
-                                        LOGGER.warn("Interrupted while committing", e);
-                                    }
-                                }
-                                if (endOffset.equals(current._2())) {
-                                    break;
-                                }
-                            }
-                        } finally {
-                            ll.unlock();
-                        }
+                        LOGGER.info("Flushing till offset {} with result {}", endOffset, result);
                     } else {
                         LOGGER.error("Unable to commit records till source offset " + endOffset, error);
-                    }
-                });
-            }
-        } finally {
-            lock.unlock();
-        }
 
+                    }
+                }).get(30, TimeUnit.SECONDS);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Unable to commit records till source offset " + endOffset, e);
+        }
     }
 
     /**
