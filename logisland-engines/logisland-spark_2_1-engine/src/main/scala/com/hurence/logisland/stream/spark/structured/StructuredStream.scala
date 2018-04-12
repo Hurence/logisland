@@ -29,6 +29,7 @@ import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamPr
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.StreamingContext
 
@@ -58,9 +59,11 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         descriptors.add(READ_TOPICS)
         descriptors.add(READ_TOPICS_CLIENT_SERVICE)
         descriptors.add(READ_TOPICS_SERIALIZER)
+        descriptors.add(READ_TOPICS_KEY_SERIALIZER)
         descriptors.add(WRITE_TOPICS)
         descriptors.add(WRITE_TOPICS_CLIENT_SERVICE)
         descriptors.add(WRITE_TOPICS_SERIALIZER)
+        descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
         descriptors.add(LOGISLAND_AGENT_HOST)
         descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
 
@@ -86,6 +89,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
             val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 
+            val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
+            val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
+
+
             restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
             controllerServiceLookupSink = ssc.sparkContext.broadcast(
                 ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
@@ -108,9 +115,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
             val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
 
-
             // store current configuration version
             currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
+            updateConfigFromAgent(agentQuorum, throttling)
 
             // apply windowing
             /*val windowedDF:Dataset[Record] = if (streamContext.getPropertyValue(WINDOW_DURATION).isSet) {
@@ -136,10 +143,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
             // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
             val ds = writeStreamService.save(readDF, streamContext)
+            pipelineTimerContext.stop()
 
         } catch {
             case ex: Throwable =>
-                ex.printStackTrace()
                 logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
         }
     }

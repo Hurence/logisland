@@ -1,26 +1,3 @@
-package com.hurence.logisland.stream.spark.structured.provider
-
-import java.util
-import java.util.Collections
-
-import com.hurence.logisland.annotation.lifecycle.OnEnabled
-import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
-import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
-import com.hurence.logisland.stream.StreamContext
-import com.hurence.logisland.stream.StreamProperties._
-import com.hurence.logisland.util.kafka.KafkaSink
-import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, RestJobsApiClientSink}
-import kafka.admin.AdminUtils
-import kafka.utils.ZkUtils
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.security.JaasUtils
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.slf4j.LoggerFactory
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -37,23 +14,41 @@ import org.slf4j.LoggerFactory
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.hurence.logisland.stream.spark.structured.provider
+
+import java.util
+import java.util.Collections
+
+import com.hurence.logisland.annotation.lifecycle.OnEnabled
+import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
+import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
+import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.stream.StreamContext
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.util.kafka.KafkaSink
+import kafka.admin.AdminUtils
+import kafka.utils.ZkUtils
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.security.JaasUtils
+import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
+import org.apache.spark.sql.{Dataset, ForeachWriter, SparkSession}
+
+
 class KafkaStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
 
-   // private val logger = LoggerFactory.getLogger(this.getClass)
+    // private val logger = LoggerFactory.getLogger(this.getClass)
 
 
     var appName = ""
-    var kafkaSink: Broadcast[KafkaSink] = _
-    var restApiSink: Broadcast[RestJobsApiClientSink] = _
-    var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = _
-
-
-
+    var kafkaSinkParams: Map[String, Object] = _
+    var kafkaParams: Map[String, Object] = _
     // Define the Kafka parameters, broker list must be specified
     var inputTopics = Set[String]()
-    var outputTopics =  Set[String]()
-    var errorTopics =  Set[String]()
-    var metricsTopics =  Set[String]()
+    var outputTopics = Set[String]()
+    var errorTopics = Set[String]()
+    var metricsTopics = Set[String]()
     var topicAutocreate = true
     var topicDefaultPartitions = 3
     var topicDefaultReplicationFactor = 1
@@ -85,11 +80,11 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
 
                 kafkaBatchSize = context.getPropertyValue(KAFKA_BATCH_SIZE).asString
                 kafkaLingerMs = context.getPropertyValue(KAFKA_LINGER_MS).asString
-                 kafkaAcks = context.getPropertyValue(KAFKA_ACKS).asString
-                 kafkaOffset = context.getPropertyValue(KAFKA_MANUAL_OFFSET_RESET).asString
+                kafkaAcks = context.getPropertyValue(KAFKA_ACKS).asString
+                kafkaOffset = context.getPropertyValue(KAFKA_MANUAL_OFFSET_RESET).asString
 
 
-                val kafkaSinkParams = Map(
+                kafkaSinkParams = Map(
                     ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
                     ProducerConfig.CLIENT_ID_CONFIG -> appName,
                     ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[ByteArraySerializer].getCanonicalName,
@@ -100,8 +95,6 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
                     ProducerConfig.BATCH_SIZE_CONFIG -> kafkaBatchSize,
                     ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> "1000",
                     ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
-
-           //     kafkaSink = spark.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
 
                 // TODO deprecate topic creation here (must be done through the agent)
@@ -114,7 +107,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
                 }
 
 
-                val kafkaParams = Map[String, Object](
+                kafkaParams = Map[String, Object](
                     ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokerList,
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
                     ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[ByteArrayDeserializer],
@@ -134,6 +127,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             }
         }
     }
+
     /**
       * create a streaming DataFrame that represents data received
       *
@@ -157,12 +151,10 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .load()
             .as[(String, String)]
             .map(r => {
-                new StandardRecord("kura_metric")
+                new StandardRecord(inputTopics.head)
                     .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._1)
                     .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._2)
-            } )
-        /*   df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-               .as[(String, String)]*/
+            })
 
         df
     }
@@ -229,8 +221,31 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       * @return DataFrame currently loaded
       */
     override def write(df: Dataset[Record], streamContext: StreamContext) = {
+        //implicit val myObjEncoder = org.apache.spark.sql.Encoders.tuple(Encoders.BINARY, Encoders.BINARY)
+        val writer = new ForeachWriter[Record] {
+            var sender: KafkaSink = _
 
+            override def open(partitionId: Long, version: Long) = {
+                sender = KafkaSink(kafkaSinkParams)
+                true
+            }
 
-     df
+            override def process(value: Record) = {
+                sender.send(outputTopics.mkString(","),
+                    value.getField(FieldDictionary.RECORD_KEY).getRawValue().asInstanceOf[Array[Byte]],
+                    value.getField(FieldDictionary.RECORD_VALUE).getRawValue().asInstanceOf[Array[Byte]])
+            }
+
+            override def close(errorOrNull: Throwable) = {
+                if (errorOrNull != null) {
+                    logger.error("Error occurred", errorOrNull)
+                }
+                sender.producer.close();
+            }
+        }
+
+        df.writeStream
+            .foreach(writer)
+            .start()
     }
 }

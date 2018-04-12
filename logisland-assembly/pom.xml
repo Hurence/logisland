@@ -180,6 +180,7 @@
             <artifactId>logisland-excel-plugin</artifactId>
         </dependency>
 
+
         <!--   <dependency>
          <groupId>com.hurence.logisland</groupId>
          <artifactId>logisland-botsearch-plugin</artifactId>
@@ -228,6 +229,14 @@
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-agent</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connect-spark</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connectors-bundle</artifactId>
                 </dependency>
             </dependencies>
 

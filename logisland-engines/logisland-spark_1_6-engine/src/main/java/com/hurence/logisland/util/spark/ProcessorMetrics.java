@@ -16,14 +16,16 @@
 package com.hurence.logisland.util.spark;
 
 
+import com.hurence.logisland.metrics.Names;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import org.apache.spark.groupon.metrics.UserMetricsSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -34,22 +36,21 @@ public class ProcessorMetrics {
 
     public synchronized static void resetMetrics(final String metricPrefix) {
 
-        logger.info("reseting metrics " +metricPrefix );
-        UserMetricsSystem.gauge(metricPrefix + "incoming_messages").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "incoming_records").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "outgoing_records").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "errors").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "bytes_per_field_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "bytes_per_record_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "records_per_second_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "processed_bytes").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "processed_fields").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "error_percentage").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "fields_per_record_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "bytes_per_second_average").set(0);
-        UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(0);
+        logger.info("reseting metrics " + metricPrefix);
+        UserMetricsSystem.gauge(metricPrefix + Names.INCOMING_MESSAGES).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.INCOMING_RECORDS).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.OUTGOING_RECORDS).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.ERRORS).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_FIELD_AVERAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_RECORD_AVERAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.RECORDS_PER_SECOND_AVERAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.PROCESSED_BYTES).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.PROCESSED_FIELDS).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.ERROR_PERCENTAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.FIELDS_PER_RECORD_AVERAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_SECOND_AVERAGE).set(0);
+        UserMetricsSystem.gauge(metricPrefix + Names.PROCESSING_TIME_MS).set(0);
     }
-
 
 
     /**
@@ -73,12 +74,12 @@ public class ProcessorMetrics {
 
         if ((outgoingEvents != null) && (outgoingEvents.size() != 0)) {
 
-            UserMetricsSystem.gauge(metricPrefix + "incoming_messages").set(untilOffset - fromOffset);
-            UserMetricsSystem.gauge(metricPrefix + "incoming_records").set(incomingEvents.size());
-            UserMetricsSystem.gauge(metricPrefix + "outgoing_records").set(outgoingEvents.size());
+            UserMetricsSystem.gauge(metricPrefix + Names.INCOMING_MESSAGES).set(untilOffset - fromOffset);
+            UserMetricsSystem.gauge(metricPrefix + Names.INCOMING_RECORDS).set(incomingEvents.size());
+            UserMetricsSystem.gauge(metricPrefix + Names.OUTGOING_RECORDS).set(outgoingEvents.size());
 
             long errorCount = outgoingEvents.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
-            UserMetricsSystem.gauge(metricPrefix + "errors").set(errorCount);
+            UserMetricsSystem.gauge(metricPrefix + Names.ERRORS).set(errorCount);
             if (outgoingEvents.size() != 0) {
                 final List<Integer> recordSizesInBytes = new ArrayList<>();
                 final List<Integer> recordNumberOfFields = new ArrayList<>();
@@ -92,32 +93,32 @@ public class ProcessorMetrics {
                 final int numberOfProcessedFields = recordNumberOfFields.stream().mapToInt(Integer::intValue).sum();
 
                 if (numberOfProcessedFields != 0) {
-                    UserMetricsSystem.gauge(metricPrefix + "bytes_per_field_average").set(numberOfProcessedBytes / numberOfProcessedFields);
+                    UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_FIELD_AVERAGE).set(numberOfProcessedBytes / numberOfProcessedFields);
                 } else {
-                    UserMetricsSystem.gauge(metricPrefix + "bytes_per_field_average").set(0);
+                    UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_FIELD_AVERAGE).set(0);
                 }
                 if (processingDurationInMillis != 0) {
-                    UserMetricsSystem.gauge(metricPrefix + "bytes_per_second_average").set(numberOfProcessedBytes * 1000 / processingDurationInMillis);
-                    UserMetricsSystem.gauge(metricPrefix + "records_per_second_average").set(outgoingEvents.size() * 1000 / processingDurationInMillis);
+                    UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_SECOND_AVERAGE).set(numberOfProcessedBytes * 1000 / processingDurationInMillis);
+                    UserMetricsSystem.gauge(metricPrefix + Names.RECORDS_PER_SECOND_AVERAGE).set(outgoingEvents.size() * 1000 / processingDurationInMillis);
                 } else {
-                    UserMetricsSystem.gauge(metricPrefix + "bytes_per_second_average").set(0);
-                    UserMetricsSystem.gauge(metricPrefix + "records_per_second_average").set(0);
+                    UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_SECOND_AVERAGE).set(0);
+                    UserMetricsSystem.gauge(metricPrefix + Names.RECORDS_PER_SECOND_AVERAGE).set(0);
                 }
 
 
-                UserMetricsSystem.gauge(metricPrefix + "processed_bytes").set(numberOfProcessedBytes);
-                UserMetricsSystem.gauge(metricPrefix + "processed_fields").set(numberOfProcessedFields);
+                UserMetricsSystem.gauge(metricPrefix + Names.PROCESSED_BYTES).set(numberOfProcessedBytes);
+                UserMetricsSystem.gauge(metricPrefix + Names.PROCESSED_FIELDS).set(numberOfProcessedFields);
 
-                UserMetricsSystem.gauge(metricPrefix + "error_percentage").set((long) (100.0f * errorCount / outgoingEvents.size()));
-                UserMetricsSystem.gauge(metricPrefix + "fields_per_record_average").set(numberOfProcessedFields / outgoingEvents.size());
-                UserMetricsSystem.gauge(metricPrefix + "bytes_per_record_average").set(numberOfProcessedBytes / outgoingEvents.size());
+                UserMetricsSystem.gauge(metricPrefix + Names.ERROR_PERCENTAGE).set((long) (100.0f * errorCount / outgoingEvents.size()));
+                UserMetricsSystem.gauge(metricPrefix + Names.FIELDS_PER_RECORD_AVERAGE).set(numberOfProcessedFields / outgoingEvents.size());
+                UserMetricsSystem.gauge(metricPrefix + Names.BYTES_PER_RECORD_AVERAGE).set(numberOfProcessedBytes / outgoingEvents.size());
             } else if (errorCount > 0)
-                UserMetricsSystem.gauge(metricPrefix + "error_percentage").set(100L);
+                UserMetricsSystem.gauge(metricPrefix + Names.ERROR_PERCENTAGE).set(100L);
             else
-                UserMetricsSystem.gauge(metricPrefix + "error_percentage").set(0L);
+                UserMetricsSystem.gauge(metricPrefix + Names.ERROR_PERCENTAGE).set(0L);
 
 
-            UserMetricsSystem.gauge(metricPrefix + "processing_time_ms").set(processingDurationInMillis);
+            UserMetricsSystem.gauge(metricPrefix + Names.PROCESSING_TIME_MS).set(processingDurationInMillis);
 
         }
     }

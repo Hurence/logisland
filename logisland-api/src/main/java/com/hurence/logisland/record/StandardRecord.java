@@ -65,6 +65,7 @@ public class StandardRecord implements Record {
     }
 
     public StandardRecord(Record toClone) {
+        this();
         this.setType(toClone.getType());
         this.setTime(toClone.getTime());
         this.setId(UUID.randomUUID().toString());
@@ -159,7 +160,9 @@ public class StandardRecord implements Record {
 
     @Override
     public Record setType(String type) {
-        this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
+        if (type != null) {
+            this.setField(FieldDictionary.RECORD_TYPE, FieldType.STRING, type);
+        }
         return this;
     }
 

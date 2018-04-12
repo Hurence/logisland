@@ -246,11 +246,17 @@ public class JsonSerializer implements RecordSerializer {
             }
         }
 
-        Record record = new StandardRecord(type);
-            record.setId(id);
-            record.setType(type);
-            record.setTime(creationDate);
-            record.setFields(fields);
+        Record record = new StandardRecord();
+            if (id != null) {
+                record.setId(id);
+            }
+            if (type != null) {
+                record.setType(type);
+            }
+            if (creationDate != null) {
+                record.setTime(creationDate);
+            }
+            record.addFields(fields);
 
             return record;
 

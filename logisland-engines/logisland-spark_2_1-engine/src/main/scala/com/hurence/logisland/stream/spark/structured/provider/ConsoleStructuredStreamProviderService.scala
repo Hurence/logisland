@@ -84,8 +84,7 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
 
         val df2 = df
 
-            .map(r => (r.getField(FieldDictionary.RECORD_NAME).asString(), r.getField(FieldDictionary.RECORD_VALUE).asString()))
-            .toDF("metric", "value")
+
             .writeStream
             .format("console")
             .start()
