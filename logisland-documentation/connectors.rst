@@ -43,6 +43,8 @@ Please refer to the following table for the details:
 +==========================+=========================+========================================================+==============================+
 | Simulator                | https://github.com/jcustenborder/kafka-connect-simulator                         | None (Built in)              |
 +--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
+| OPC-DA (IIoT)            | https://github.com/Hurence/logisland                                             | None (Built in)              |
++--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
 | FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | -DwithConnectFtp             |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
 | Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | -DwithConnectBlockchain      |
