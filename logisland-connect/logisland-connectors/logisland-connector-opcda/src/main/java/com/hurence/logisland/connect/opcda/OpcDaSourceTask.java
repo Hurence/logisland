@@ -223,7 +223,7 @@ public class OpcDaSourceTask extends SourceTask {
                                         Collections.singletonMap(OpcDaFields.TIMESTAMP, opcData.getTimestamp().toEpochMilli()),
                                         "",
                                         SchemaBuilder.STRING_SCHEMA,
-                                        "/" + domain + "/" + host + "/" + opcData.getTag(),
+                                         domain + "|" + host + "|" + opcData.getTag(),
                                         valueSchema,
                                         value);
                             })
