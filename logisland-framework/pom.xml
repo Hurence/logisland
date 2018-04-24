@@ -37,7 +37,7 @@
 
     <profiles>
         <profile>
-            <id>hdp2.5</id>
+            <id>hdp2.6</id>
             <modules>
                 <module>logisland-agent</module>
             </modules>

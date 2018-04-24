@@ -42,8 +42,8 @@ script:
   #- docker-compose -f logisland-docker/src/it/resources/docker-compose.yml down
   #- echo -en "travis_fold:end:it-tests-w-hdp${hdp}\\r"
 
-  # Exact same sequence with hdp2.5
-  #- export hdp="2.5"
+  # Exact same sequence with hdp2.6
+  #- export hdp="2.6"
   #- echo -en "travis_fold:start:logisland-w-hdp${hdp}\\r"
   #- mvn clean install -Dhdp=${hdp} | grep -v 'Download.* http'
   #- mvn package -Dhdp=${hdp} -Pdocker -f logisland-docker/pom.xml

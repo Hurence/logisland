@@ -193,7 +193,7 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install -Dhdp=2.4       # or -Dhdp=2.5
+    mvn clean install -Dhdp=2.4       # or -Dhdp=2.6
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line. 
 
