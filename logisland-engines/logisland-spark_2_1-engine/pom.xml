@@ -89,7 +89,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
-            <version>${spark.version}</version>
+            <version>2.2.0</version>
         </dependency>
 
 
