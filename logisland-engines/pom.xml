@@ -13,18 +13,18 @@
     <artifactId>logisland-engines</artifactId>
 
     <profiles>
-        <!--  hdp 2.5 -->
+        <!--  hdp 2.7 -->
         <profile>
-            <id>hdp2.5</id>
+            <id>hdp2.7</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
-                    <value>2.5</value>
+                    <value>2.7</value>
                 </property>
             </activation>
             <modules>
-                <module>logisland-spark_2_1-engine</module>
+                <module>logisland-spark_2_3-engine</module>
             </modules>
         </profile>
 

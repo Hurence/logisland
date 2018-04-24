@@ -25,7 +25,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <artifactId>logisland-engines</artifactId>
         <version>0.12.2</version>
     </parent>
-    <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
+    <artifactId>logisland-spark_2_3-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>

@@ -75,18 +75,18 @@
 
         </profile>
         <profile>
-            <id>hdp2.5</id>
+            <id>hdp2.7</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
-                    <value>2.5</value>
+                    <value>2.7</value>
                 </property>
             </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
+                    <artifactId>logisland-spark_2_3-engine_${scala.binary.version}</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
