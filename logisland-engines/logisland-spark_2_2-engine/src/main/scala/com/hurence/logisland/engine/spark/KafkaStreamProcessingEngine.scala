@@ -426,8 +426,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         }
 
         SparkUtils.customizeLogLevels
-        @transient val sc = new SparkContext(conf)
-        @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
+        @transient val sc = SparkContext.getOrCreate(conf);
+        @transient val ssc = StreamingContext.getActiveOrCreate(() => new StreamingContext(sc, Milliseconds(batchDuration)))
         UserMetricsSystem.initialize(sc, "LogislandMetrics")
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
