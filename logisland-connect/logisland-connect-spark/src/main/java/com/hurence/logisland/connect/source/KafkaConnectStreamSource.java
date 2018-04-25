@@ -28,9 +28,13 @@ import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.apache.kafka.connect.storage.OffsetStorageWriter;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
+import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.Source;
@@ -97,6 +101,7 @@ public class KafkaConnectStreamSource implements Source {
     private final Converter keyConverter;
     private final Converter valueConverter;
     private final int maxTasks;
+    private final ExpressionEncoder<Row> rowEncoder = RowEncoder.apply(DATA_SCHEMA);
 
 
     /**
@@ -248,20 +253,27 @@ public class KafkaConnectStreamSource implements Source {
 
     }
 
+    private RDD<InternalRow> toRddInternal(Dataset<Row> dataframe) {
+        return dataframe.javaRDD().map(rowEncoder::toRow).rdd();
+    }
+
 
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
-        return sqlContext.createDataFrame(
-                sharedSourceTaskContext.read(start.isDefined() ? Optional.of(start.get()) : Optional.empty(), end)
-                        .stream()
-                        .map(record -> new GenericRow(new Object[]{
-                                record.topic(),
-                                record.kafkaPartition(),
-                                keyConverter.fromConnectData(record.topic(), record.keySchema(), record.key()),
-                                valueConverter.fromConnectData(record.topic(), record.valueSchema(), record.value())
-                        })).collect(Collectors.toList()),
-                DATA_SCHEMA);
+
+        return sqlContext.internalCreateDataFrame(toRddInternal(
+                sqlContext.createDataFrame(
+                        sharedSourceTaskContext.read(start.isDefined() ? Optional.of(start.get()) : Optional.empty(), end)
+                                .stream()
+                                .map(record -> new GenericRow(new Object[]{
+                                        record.topic(),
+                                        record.kafkaPartition(),
+                                        keyConverter.fromConnectData(record.topic(), record.keySchema(), record.key()),
+                                        valueConverter.fromConnectData(record.topic(), record.valueSchema(), record.value())
+                                })).collect(Collectors.toList()),
+                        DATA_SCHEMA)), DATA_SCHEMA, true);
     }
+
 
     @Override
     public void commit(Offset end) {
