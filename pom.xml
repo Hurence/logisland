@@ -650,7 +650,7 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-spark_2_3-engine_${scala.binary.version}</artifactId>
+                <artifactId>logisland-spark_2_2-engine_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

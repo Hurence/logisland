@@ -28,11 +28,9 @@ import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.apache.kafka.connect.storage.OffsetStorageWriter;
-import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
@@ -253,15 +251,11 @@ public class KafkaConnectStreamSource implements Source {
 
     }
 
-    private RDD<InternalRow> toRddInternal(Dataset<Row> dataframe) {
-        return dataframe.javaRDD().map(rowEncoder::toRow).rdd();
-    }
-
 
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
 
-        return sqlContext.internalCreateDataFrame(toRddInternal(
+        return
                 sqlContext.createDataFrame(
                         sharedSourceTaskContext.read(start.isDefined() ? Optional.of(start.get()) : Optional.empty(), end)
                                 .stream()
@@ -271,7 +265,7 @@ public class KafkaConnectStreamSource implements Source {
                                         keyConverter.fromConnectData(record.topic(), record.keySchema(), record.key()),
                                         valueConverter.fromConnectData(record.topic(), record.valueSchema(), record.value())
                                 })).collect(Collectors.toList()),
-                        DATA_SCHEMA)), DATA_SCHEMA, true);
+                        DATA_SCHEMA);
     }
 
 
