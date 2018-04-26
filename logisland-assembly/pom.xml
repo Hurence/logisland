@@ -179,6 +179,12 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-excel-plugin</artifactId>
         </dependency>
+        <!-- Align to required spark 2.2.x netty dependency to be present on executors -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.43.Final</version>
+        </dependency>
 
 
         <!--   <dependency>
@@ -218,7 +224,7 @@
                 <activeByDefault>true</activeByDefault>
                 <property>
                     <name>hdp</name>
-                    <value>2.7</value>
+                    <value>2.6</value>
                 </property>
             </activation>
             <dependencies>
@@ -238,6 +244,13 @@
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-connectors-bundle</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+
+
             </dependencies>
 
         </profile>
