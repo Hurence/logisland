@@ -18,6 +18,7 @@
 package com.hurence.logisland.connect.opcda;
 
 import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.config.ConfigValue;
 import org.apache.kafka.common.utils.Utils;
 import org.apache.kafka.connect.connector.Task;
@@ -25,9 +26,10 @@ import org.apache.kafka.connect.source.SourceConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,8 +53,20 @@ public class OpcDaSourceConnector extends SourceConnector {
     public static final String PROPERTY_PROGID = "progId";
     public static final String PROPERTY_TAGS = "tags";
     public static final String PROPERTY_SOCKET_TIMEOUT = "socketTimeoutMillis";
-    public static final String PROPERTY_REFRESH_PERIOD = "refreshPeriodMillis";
+    public static final String PROPERTY_DEFAULT_REFRESH_PERIOD = "defaultRefreshPeriodMillis";
     public static final String PROPERTY_DIRECT_READ = "directReadFromDevice";
+
+    private static final Pattern TAG_FORMAT_MATCHER = Pattern.compile("^([^:]+)(:(\\d+))?$");
+
+    public static Map.Entry<String, Long> parseTag(String t, Long defaultRefreshPeriod) {
+        Matcher matcher = TAG_FORMAT_MATCHER.matcher(t);
+        if (matcher.matches()) {
+            String tagName = matcher.group(1);
+            String refresh = matcher.groupCount() == 3 ? matcher.group(3) : null;
+            return new AbstractMap.SimpleEntry<>(tagName, refresh != null ? Long.parseLong(refresh) : defaultRefreshPeriod);
+        }
+        throw new IllegalArgumentException("" + t + " does not match");
+    }
 
 
     /**
@@ -66,9 +80,19 @@ public class OpcDaSourceConnector extends SourceConnector {
             .define(PROPERTY_PASSWORD, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "The logon password")
             .define(PROPERTY_CLSID, ConfigDef.Type.STRING, ConfigDef.Importance.MEDIUM, "The CLSID of the OPC server COM component")
             .define(PROPERTY_PROGID, ConfigDef.Type.STRING, ConfigDef.Importance.MEDIUM, "The Program ID of the OPC server COM component")
-            .define(PROPERTY_TAGS, ConfigDef.Type.LIST, ConfigDef.Importance.HIGH, "The tags to subscribe to")
+            .define(PROPERTY_TAGS, ConfigDef.Type.LIST, Collections.emptyList(), (name, value) -> {
+                if (value == null) {
+                    throw new ConfigException("Cannot be null");
+                }
+                List<String> list = (List<String>) value;
+                for (String s : list) {
+                    if (!TAG_FORMAT_MATCHER.matcher(s).matches()) {
+                        throw new ConfigException("Tag list should be like [tag_name]:[refresh_period_millis] with optional refresh period");
+                    }
+                }
+            }, ConfigDef.Importance.HIGH, "The tags to subscribe to following format tagname:refresh_period_millis. E.g. myTag:1000")
             .define(PROPERTY_SOCKET_TIMEOUT, ConfigDef.Type.LONG, ConfigDef.Importance.LOW, "The socket timeout")
-            .define(PROPERTY_REFRESH_PERIOD, ConfigDef.Type.LONG, 1000, ConfigDef.Importance.LOW, "The data refresh period in milliseconds")
+            .define(PROPERTY_DEFAULT_REFRESH_PERIOD, ConfigDef.Type.LONG, 1000, ConfigDef.Importance.LOW, "The default data refresh period in milliseconds")
             .define(PROPERTY_DIRECT_READ, ConfigDef.Type.BOOLEAN, false, ConfigDef.Importance.LOW, "Use server cache or read directly from device");
 
 
@@ -92,16 +116,21 @@ public class OpcDaSourceConnector extends SourceConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
-        List<String> tags = (List<String>) configValues.get(PROPERTY_TAGS).value();
+        Long defaultRefreshPeriod = (Long) configValues.get(PROPERTY_DEFAULT_REFRESH_PERIOD).value();
+        //first partition tags per refresh period
+        Map<Long, List<String>> tagPartitions = ((List<String>) configValues.get(PROPERTY_TAGS).value())
+                .stream().collect(Collectors.groupingBy(tag -> parseTag(tag, defaultRefreshPeriod).getValue()));
+        List<List<String>> tags = new ArrayList<>(tagPartitions.values());
         int maxPartitions = Math.min(maxTasks, tags.size());
         int batchSize = (int) Math.ceil((double) tags.size() / maxPartitions);
+        //then find the ideal partition size and flatten tag list into a comma separated string (since config is a map of string,string)
         return IntStream.range(0, maxPartitions)
                 .mapToObj(i -> tags.subList(i * batchSize, Math.min((i + 1) * batchSize, tags.size())))
                 .map(l -> {
                     Map<String, String> ret = configValues.entrySet().stream()
                             .filter(a -> a.getValue().value() != null)
                             .collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue().value().toString()));
-                    ret.put(PROPERTY_TAGS, Utils.join(l, ","));
+                    ret.put(PROPERTY_TAGS, Utils.join(l.stream().flatMap(List::stream).collect(Collectors.toList()), ","));
                     return ret;
                 })
                 .collect(Collectors.toList());
