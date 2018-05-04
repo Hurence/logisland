@@ -60,31 +60,6 @@ public class ChronixClientServiceTest {
             solr = solrRule.getClient();
         }
 
-//        @Override
-//        protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
-//            if (storage != null) {
-//                return;
-//            }
-//            try {
-//
-//                converter = new MetricTimeSeriesConverter();
-//                storage = new ChronixSolrStorage<>(20, groupBy, reduce);
-//
-//
-//            } catch (Exception ex) {
-//                logger.error(ex.toString());
-//            }
-//        }
-
-
-        @Override
-        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-
-            List<PropertyDescriptor> props = new ArrayList<>();
-
-            return Collections.unmodifiableList(props);
-        }
-
     }
 
     private DatastoreClientService configureClientService(final TestRunner runner) throws InitializationException {
@@ -92,9 +67,16 @@ public class ChronixClientServiceTest {
 
 
         runner.setProperty(TestProcessor.SOLR_CLIENT_SERVICE, "service");
+        runner.setProperty("solr.collection", "chronix");
+
+        //shouldn't be automatic??
+        service.getSupportedPropertyDescriptors().stream()
+                .filter(p->p.getDefaultValue() != null)
+                .forEach(p->runner.setProperty(p, p.getDefaultValue()));
+
         runner.addControllerService("service", service);
         runner.enableControllerService(service);
-        runner.assertValid(service);
+        //runner.assertValid(service);
 
         return service;
     }
@@ -104,6 +86,7 @@ public class ChronixClientServiceTest {
 
         List<Record> records = new ArrayList<>();
         Random rnd = new Random();
+        long now = System.currentTimeMillis();
 
         String[] metricsType = {"disk.io", "cpu.wait", "io.wait"};
         String[] hosts = {"host1", "host2", "host3"};
@@ -113,8 +96,9 @@ public class ChronixClientServiceTest {
                     .setStringField("host", hosts[rnd.nextInt(3)])
                     .setField(FieldDictionary.RECORD_TIME, FieldType.LONG, new Date().getTime())
                     .setField(FieldDictionary.RECORD_VALUE, FieldType.FLOAT, 100.0 * Math.random())
+                    .setTime(now)
             );
-            Thread.sleep(rnd.nextInt(500));
+            now+=rnd.nextInt(500);
         }
 
         return records;
@@ -122,7 +106,7 @@ public class ChronixClientServiceTest {
 
 
     @Test
-    public void testConvertion() throws InterruptedException {
+    public void testConversion() throws InterruptedException {
 
         final Date now = new Date();
         final Record record =  new StandardRecord(RecordDictionary.METRIC)
@@ -132,8 +116,8 @@ public class ChronixClientServiceTest {
 
         final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
-        final ChronixUpdater service = new ChronixUpdater(solrRule.getClient(), queue, 10, 1000);
-        MetricTimeSeries metric = service.convertToMetric(record);
+        final ChronixUpdater service = new ChronixUpdater(solrRule.getClient(), queue, Collections.emptyMap(), 10, 1000);
+        MetricTimeSeries metric = service.convertToMetric(Collections.singletonList(record)).get(0);
 
         assertTrue(metric.getName().equals("cpu.wait"));
         assertTrue(metric.getType().equals("metric"));
