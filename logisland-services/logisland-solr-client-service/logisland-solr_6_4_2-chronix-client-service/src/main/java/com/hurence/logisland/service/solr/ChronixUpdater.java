@@ -96,7 +96,10 @@ public class ChronixUpdater implements Runnable {
                 if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
                     //use moustache operator to avoid composing strings when not needed
                     logger.debug("committing {} records to Chronix after {} ns", batchedUpdates, (currentTS - lastTS));
-                    storage.add(converter, convertToMetric(batchBuffer), solr);
+                    batchBuffer.stream().collect(Collectors.groupingBy(r -> r.getField(FieldDictionary.RECORD_NAME).asString()))
+                            .values().forEach(list -> {
+                        storage.add(converter, convertToMetric(list.stream().sorted(Comparator.comparing(Record::getTime)).collect(Collectors.toList())), solr);
+                    });
                     solr.commit();
                     lastTS = currentTS;
                     batchBuffer = new ArrayList<>();
