@@ -234,7 +234,7 @@ public class OpcDaSourceTask extends SourceTask {
                 createSessionsIfNeeded();
                 Map<OpcDaSession, List<String>> sessionTags =
                         tagsToRead.stream().collect(Collectors.groupingBy(sessions::get));
-                logger.info("Reading {}", sessionTags);
+                logger.debug("Reading {}", sessionTags);
                 sessionTags.entrySet().parallelStream()
                         .map(entry -> entry.getKey().read(entry.getValue().toArray(new String[entry.getValue().size()])))
                         .flatMap(Collection::stream)
