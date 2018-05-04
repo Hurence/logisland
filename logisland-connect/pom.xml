@@ -16,6 +16,7 @@
     <modules>
         <module>logisland-connect-spark</module>
         <module>logisland-connectors-bundle</module>
+        <module>logisland-connectors</module>
     </modules>
     <dependencyManagement>
         <dependencies>

@@ -125,12 +125,12 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     }
 
     /**
-     * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
+     * Instantiate Chronix Client. This should be called by subclasses' @OnScheduled method to create a client
      * if one does not yet exist. If called when scheduled, closeClient() should be called by the subclasses' @OnStopped
      * method so the client will be destroyed when the processor is stopped.
      *
      * @param context The context for this processor
-     * @throws ProcessException if an error occurs while creating an Elasticsearch client
+     * @throws ProcessException if an error occurs while creating an Chronix client
      */
     protected void createSolrClient(ControllerServiceInitializationContext context) throws ProcessException {
         if (solr != null) {

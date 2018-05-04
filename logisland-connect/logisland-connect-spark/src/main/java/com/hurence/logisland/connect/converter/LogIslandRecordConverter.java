@@ -88,6 +88,9 @@ public class LogIslandRecordConverter implements Converter {
 
     private Field toFieldRecursive(String name, Schema schema, Object value, boolean isKey) {
         try {
+            if (value == null) {
+                return new Field(name, FieldType.NULL, null);
+            }
             final Schema.Type schemaType;
             if (schema == null) {
                 schemaType = ConnectSchema.schemaType(value.getClass());
@@ -104,8 +107,9 @@ public class LogIslandRecordConverter implements Converter {
                 case INT64:
                     return new Field(name, FieldType.LONG, value);
                 case FLOAT32:
-                case FLOAT64:
                     return new Field(name, FieldType.FLOAT, value);
+                case FLOAT64:
+                    return new Field(name, FieldType.DOUBLE, value);
                 case BOOLEAN:
                     return new Field(name, FieldType.BOOLEAN, value);
                 case STRING:

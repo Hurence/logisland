@@ -11,8 +11,25 @@
     <packaging>jar</packaging>
 
     <artifactId>logisland-connectors-bundle</artifactId>
-
     <profiles>
+
+        <profile>
+            <id>includeOpcDaConnector</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipDefaultConnectors</name>
+                </property>
+
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-opcda</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
         <!-- Kafka Connect FTP Source Bundle -->
         <profile>
             <id>includeConnectFtp</id>
@@ -126,6 +143,7 @@
                                             <include>com.google.guava:guava</include>
                                             <include>com.google.inject:guice</include>
                                             <include>com.google.inject.extensions:guice-assistedinject</include>
+                                            <include>org.yaml:snakeyaml</include>
                                         </includes>
                                     </artifactSet>
                                     <filters>
@@ -156,6 +174,11 @@
                                         <relocation>
                                             <pattern>com.google</pattern>
                                             <shadedPattern>${logisland.shade.packageName}.kc.simulator.com.google
+                                            </shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.yaml</pattern>
+                                            <shadedPattern>${logisland.shade.packageName}.kc.simulator.org.yaml
                                             </shadedPattern>
                                         </relocation>
                                     </relocations>
@@ -226,7 +249,8 @@
                                     <relocations>
                                         <relocation>
                                             <pattern>org.codehaus.jackson</pattern>
-                                            <shadedPattern>${logisland.shade.packageName}.kc.blockchain.org.codehaus.jackson
+                                            <shadedPattern>
+                                                ${logisland.shade.packageName}.kc.blockchain.org.codehaus.jackson
                                             </shadedPattern>
                                         </relocation>
                                     </relocations>
