@@ -172,10 +172,10 @@ public class ChronixUpdater implements Runnable {
                             points.stream().forEach(kv -> builder.point(kv.getKey(), kv.getValue()));
 
                             return builder
-                                    .attribute("id", batchUID.toString())
                                     .start(firstTS)
                                     .end(lastTS)
                                     .attributes(attributes)
+                                    .attribute("id", batchUID)
                                     .build();
                         }
                 ).filter(a -> a != null)
