@@ -29,6 +29,7 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -39,12 +40,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Tags({"solr", "client"})
 @CapabilityDescription("Implementation of ChronixClientService for Solr 6 4 2")
@@ -52,11 +53,11 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
 
     private static Logger logger = LoggerFactory.getLogger(Solr_6_4_2_ChronixClientService.class);
     protected volatile SolrClient solr;
-
-    List<ChronixUpdater> updaters = null;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ChronixUpdater updater;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(1000000);
 
-    PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SOLR_CLOUD = new PropertyDescriptor.Builder()
             .name("solr.cloud")
             .description("is slor cloud enabled")
             .required(true)
@@ -64,7 +65,7 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             .defaultValue("false")
             .build();
 
-    PropertyDescriptor SOLR_CONNECTION_STRING = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SOLR_CONNECTION_STRING = new PropertyDescriptor.Builder()
             .name("solr.connection.string")
             .description("zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ")
             .required(true)
@@ -72,22 +73,15 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             .defaultValue("localhost:8983/solr")
             .build();
 
-    PropertyDescriptor SOLR_COLLECTION = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SOLR_COLLECTION = new PropertyDescriptor.Builder()
             .name("solr.collection")
             .description("name of the collection to use")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    PropertyDescriptor CONCURRENT_REQUESTS = new PropertyDescriptor.Builder()
-            .name("solr.concurrent.requests")
-            .description("setConcurrentRequests")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("2")
-            .build();
 
-    PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
             .name("flush.interval")
             .description("flush interval in ms")
             .required(false)
@@ -95,19 +89,28 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             .defaultValue("500")
             .build();
 
+    public static final PropertyDescriptor METRICS_TYPE_MAPPING = new PropertyDescriptor.Builder()
+            .name("metrics.type.mapping")
+            .description("The mapping between record field name and chronix metric type. " +
+                    "This is a comma separated list. E.g. record_value:metric,quality:quality")
+            .required(false)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .defaultValue("")
+            .build();
+
+
+
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(BATCH_SIZE);
         props.add(BULK_SIZE);
         props.add(SOLR_CLOUD);
         props.add(SOLR_COLLECTION);
         props.add(SOLR_CONNECTION_STRING);
-        props.add(CONCURRENT_REQUESTS);
         props.add(FLUSH_INTERVAL);
-
+        props.add(METRICS_TYPE_MAPPING);
         return Collections.unmodifiableList(props);
     }
 
@@ -119,9 +122,19 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
                 createSolrClient(context);
                 createChronixStorage(context);
             } catch (Exception e) {
-                throw new InitializationException(e);
+                throw new InitializationException("Error while instantiating ChronixClientService. " +
+                        "Please check your configuration!", e);
             }
         }
+    }
+
+
+    private Map<String, String> createMetricsTypeMapping(ControllerServiceInitializationContext context) {
+        return Arrays.stream(context.getPropertyValue(METRICS_TYPE_MAPPING).asString()
+                .split(","))
+                .filter(StringUtils::isNotBlank)
+                .map(s -> s.split(":"))
+                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
     }
 
     /**
@@ -136,54 +149,41 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
         if (solr != null) {
             return;
         }
-        try {
-
-            // create a solr client
-            final boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
-            final String connectionString = context.getPropertyValue(SOLR_CONNECTION_STRING).asString();
-            final String collection = context.getPropertyValue(SOLR_COLLECTION).asString();
 
 
-            if (isCloud) {
-                //logInfo("creating solrCloudClient on $solrUrl for collection $collection");
-                CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
-                cloudSolrClient.setDefaultCollection(collection);
-                cloudSolrClient.setZkClientTimeout(30000);
-                cloudSolrClient.setZkConnectTimeout(30000);
-                solr = cloudSolrClient;
-            } else {
-                // logInfo(s"creating HttpSolrClient on $solrUrl for collection $collection")
-                solr = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
-            }
+        // create a solr client
+        final boolean isCloud = context.getPropertyValue(SOLR_CLOUD).asBoolean();
+        final String connectionString = context.getPropertyValue(SOLR_CONNECTION_STRING).asString();
+        final String collection = context.getPropertyValue(SOLR_COLLECTION).asString();
 
 
-        } catch (Exception ex) {
-            logger.error(ex.toString());
+        if (isCloud) {
+            //logInfo("creating solrCloudClient on $solrUrl for collection $collection");
+            CloudSolrClient cloudSolrClient = new CloudSolrClient.Builder().withZkHost(connectionString).build();
+            cloudSolrClient.setDefaultCollection(collection);
+            cloudSolrClient.setZkClientTimeout(30000);
+            cloudSolrClient.setZkConnectTimeout(30000);
+            solr = cloudSolrClient;
+        } else {
+            // logInfo(s"creating HttpSolrClient on $solrUrl for collection $collection")
+            solr = new HttpSolrClient.Builder(connectionString + "/" + collection).build();
         }
+
+
     }
 
 
     protected void createChronixStorage(ControllerServiceInitializationContext context) throws ProcessException {
-        if (updaters != null) {
+        if (updater != null) {
             return;
         }
-        try {
 
-            // setup a thread pool of solr updaters
-            int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
-            int numConcurrentRequests = context.getPropertyValue(CONCURRENT_REQUESTS).asInteger();
-            long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-            updaters = new ArrayList<>(numConcurrentRequests);
-            for (int i = 0; i < numConcurrentRequests; i++) {
-                ChronixUpdater updater = new ChronixUpdater(solr, queue, batchSize, flushInterval);
-                new Thread(updater).start();
-                updaters.add(updater);
-            }
+        // setup a thread pool of solr updaters
+        int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
+        long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
+        updater = new ChronixUpdater(solr, queue, createMetricsTypeMapping(context), batchSize, flushInterval);
+        executorService.execute(updater);
 
-
-        } catch (Exception ex) {
-            logger.error(ex.toString());
-        }
     }
 
     @Override

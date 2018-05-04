@@ -25,17 +25,15 @@ import de.qaware.chronix.solr.client.ChronixSolrStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ChronixUpdater implements Runnable {
 
@@ -45,6 +43,7 @@ public class ChronixUpdater implements Runnable {
     private final long flushInterval;
     private volatile int batchedUpdates = 0;
     private volatile long lastTS = 0;
+    private final Map<String, String> fieldToMetricTypeMapping = new HashMap<>();
 
     private static volatile int threadCount = 0;
     protected static Function<MetricTimeSeries, String> groupBy = MetricTimeSeries::getName;
@@ -52,10 +51,11 @@ public class ChronixUpdater implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(ChronixUpdater.class.getName() + threadCount);
 
-    MetricTimeSeriesConverter converter = null;
-    ChronixSolrStorage<MetricTimeSeries> storage = null;
+    private MetricTimeSeriesConverter converter = null;
+    private ChronixSolrStorage<MetricTimeSeries> storage = null;
 
-    public ChronixUpdater(SolrClient solr, BlockingQueue<Record> records, int batchSize, long flushInterval) {
+    public ChronixUpdater(SolrClient solr, BlockingQueue<Record> records, Map<String, String> fieldToMetricTypeMapping,
+                          int batchSize, long flushInterval) {
         this.solr = solr;
         this.records = records;
         this.batchSize = batchSize;
@@ -63,118 +63,123 @@ public class ChronixUpdater implements Runnable {
         this.lastTS = System.nanoTime(); // far in the future ...
         converter = new MetricTimeSeriesConverter();
         storage = new ChronixSolrStorage<>(batchSize, groupBy, reduce);
+        if (fieldToMetricTypeMapping != null) {
+            this.fieldToMetricTypeMapping.putAll(fieldToMetricTypeMapping);
+        }
+        //add the defaults
+        this.fieldToMetricTypeMapping.put(FieldDictionary.RECORD_VALUE, RecordDictionary.METRIC);
         threadCount++;
     }
 
     @Override
     public void run() {
+        List<Record> batchBuffer = new ArrayList<>();
+
         while (true) {
 
             // process record if one
             try {
                 Record record = records.take();
                 if (record != null) {
-
-                    try {
-                        MetricTimeSeries metric = convertToMetric(record);
-
-                        List<MetricTimeSeries> timeSeries = new ArrayList<>();
-                        timeSeries.add(metric);
-                        storage.add(converter, timeSeries, solr);
-
-
-                    } catch (DatastoreClientServiceException ex) {
-                        logger.error(ex.toString() + " for record " + record.toString());
-                    }
-
+                    batchBuffer.add(record);
                     batchedUpdates++;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                //here we should exit the loop
+                logger.warn("Interrupted while waiting", e);
+                break;
             }
 
             //
             try {
                 long currentTS = System.nanoTime();
-                if ((currentTS - lastTS)  >= flushInterval * 1000000  || batchedUpdates >= batchSize) {
-
-                    logger.debug("commiting " + batchedUpdates + " records to Chronix after " + (currentTS - lastTS) + " ns");
+                if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
+                    //use moustache operator to avoid composing strings when not needed
+                    logger.debug("committing {} records to Chronix after {} ns", batchedUpdates, (currentTS - lastTS));
+                    storage.add(converter, convertToMetric(batchBuffer), solr);
                     solr.commit();
                     lastTS = currentTS;
+                    batchBuffer = new ArrayList<>();
                     batchedUpdates = 0;
                 }
 
 
                 // Thread.sleep(10);
             } catch (IOException | SolrServerException e) {
-                e.printStackTrace();
+                logger.error("Unexpected I/O exception", e);
             }
         }
     }
 
-    MetricTimeSeries convertToMetric(Record record) throws DatastoreClientServiceException {
-
-        try {
-            long recordTS = record.getTime().getTime();
-
-            MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(
-                    record.getField(FieldDictionary.RECORD_NAME).asString(), RecordDictionary.METRIC)
-                    .start(recordTS)
-                    .end(recordTS + 10)
-                    .attribute("id", record.getId())
-                    .point(recordTS, record.getField(FieldDictionary.RECORD_VALUE).asDouble());
+    List<MetricTimeSeries> convertToMetric(List<Record> records) throws DatastoreClientServiceException {
 
 
-            // add all other records
-            record.getAllFieldsSorted().forEach(field -> {
-                try {
-                    // cleanup invalid es fields characters like '.'
-                    String fieldName = field.getName()
-                            .replaceAll("\\.", "_");
-
-                    if (!fieldName.equals(FieldDictionary.RECORD_TIME) &&
-                            !fieldName.equals(FieldDictionary.RECORD_NAME) &&
-                            !fieldName.equals(FieldDictionary.RECORD_VALUE) &&
-                            !fieldName.equals(FieldDictionary.RECORD_ID) &&
-                            !fieldName.equals(FieldDictionary.RECORD_TYPE))
+        Record first = records.get(0);
+        String batchUID = UUID.randomUUID().toString();
+        final long firstTS = records.get(0).getTime().getTime();
+        long tmp = records.get(records.size() - 1).getTime().getTime();
+        final long lastTS = tmp == firstTS ? firstTS + 1 : firstTS;
 
 
-                        switch (field.getType()) {
-
-                            case STRING:
-                                builder.attribute(fieldName, field.asString());
-                                break;
-                            case INT:
-                                builder.attribute(fieldName, field.asInteger());
-                                break;
-                            case LONG:
-                                builder.attribute(fieldName, field.asLong());
-                                break;
-                            case FLOAT:
-                                builder.attribute(fieldName, field.asFloat());
-                                break;
-                            case DOUBLE:
-                                builder.attribute(fieldName, field.asDouble());
-                                break;
-                            case BOOLEAN:
-                                builder.attribute(fieldName, field.asBoolean());
-                                break;
-                            default:
-                                builder.attribute(fieldName, field.getRawValue());
-                                break;
+        //extract meta
+        String metricName = first.getField(FieldDictionary.RECORD_NAME).asString();
+        Map<String, Object> attributes = first.getAllFieldsSorted().stream()
+                .filter(field -> !fieldToMetricTypeMapping.containsKey(field.getName()))
+                .filter(field -> !field.getName().equals(FieldDictionary.RECORD_TIME) &&
+                        !field.getName().equals(FieldDictionary.RECORD_NAME) &&
+                        !field.getName().equals(FieldDictionary.RECORD_VALUE) &&
+                        !field.getName().equals(FieldDictionary.RECORD_ID) &&
+                        !field.getName().equals(FieldDictionary.RECORD_TYPE)
+                )
+                .collect(Collectors.toMap(field -> field.getName().replaceAll("\\.", "_"),
+                        field -> {
+                            try {
+                                switch (field.getType()) {
+                                    case STRING:
+                                        return field.asString();
+                                    case INT:
+                                        return field.asInteger();
+                                    case LONG:
+                                        return field.asLong();
+                                    case FLOAT:
+                                        return field.asFloat();
+                                    case DOUBLE:
+                                        return field.asDouble();
+                                    case BOOLEAN:
+                                        return field.asBoolean();
+                                    default:
+                                        return field.getRawValue();
+                                }
+                            } catch (Exception e) {
+                                logger.error("Unable to process field " + field, e);
+                                return null;
+                            }
                         }
+                ));
 
-                } catch (Throwable ex) {
-                    logger.error("unable to process a field in record : {}, {}", record, ex.toString());
-                }
+        return fieldToMetricTypeMapping.entrySet().stream()
+                .map(entry -> {
+                            MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(metricName, entry.getValue());
+                            List<Map.Entry<Long, Double>> points = records.stream()
+                                    .filter(record -> record.hasField(entry.getKey()) && record.getField(entry.getKey()).isSet())
+                                    .map(record ->
+                                            new AbstractMap.SimpleEntry<>(record.getTime().getTime(),
+                                                    record.getField(entry.getKey()).asDouble())
+                                    ).collect(Collectors.toList());
+                            if (points.isEmpty()) {
+                                return null;
+                            }
+                            points.stream().forEach(kv -> builder.point(kv.getKey(), kv.getValue()));
 
-
-            });
-
-            return builder.build();
-        } catch (Exception ex) {
-            throw new DatastoreClientServiceException("bad record : " + ex.toString());
-        }
+                            return builder
+                                    .attribute("id", batchUID.toString())
+                                    .start(firstTS)
+                                    .end(lastTS)
+                                    .attributes(attributes)
+                                    .build();
+                        }
+                ).filter(a -> a != null)
+                .collect(Collectors.toList());
     }
 
 }
