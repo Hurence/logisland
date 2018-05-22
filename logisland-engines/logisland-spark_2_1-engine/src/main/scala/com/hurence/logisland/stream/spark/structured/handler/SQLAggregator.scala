@@ -54,8 +54,6 @@ class SQLAggregator extends StructuredStreamHandler {
         descriptors.add(KAFKA_METADATA_BROKER_LIST)
         descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(KAFKA_MANUAL_OFFSET_RESET)
-        descriptors.add(LOGISLAND_AGENT_HOST)
-        descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
         descriptors.add(KAFKA_BATCH_SIZE)
         descriptors.add(KAFKA_LINGER_MS)
         descriptors.add(KAFKA_ACKS)

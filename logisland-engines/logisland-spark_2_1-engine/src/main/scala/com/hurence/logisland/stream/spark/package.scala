@@ -183,22 +183,6 @@ object StreamProperties {
         .defaultValue(EARLIEST_OFFSET.getValue)
         .build
 
-    val LOGISLAND_AGENT_HOST: PropertyDescriptor = new PropertyDescriptor.Builder()
-        .name("logisland.agent.host")
-        .description("the stream needs to know how to reach Agent REST api in order to live update its processors")
-        .required(false)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("sandbox:8081")
-        .build
-
-    val LOGISLAND_AGENT_PULL_THROTTLING: PropertyDescriptor = new PropertyDescriptor.Builder()
-        .name("logisland.agent.pull.throttling")
-        .description("wait every x batch to pull agent for new conf")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("10")
-        .build
-
 
     val KAFKA_BATCH_SIZE: PropertyDescriptor = new PropertyDescriptor.Builder()
         .name("kafka.batch.size")

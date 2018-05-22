@@ -19,7 +19,7 @@ package com.hurence.logisland.stream.spark.structured
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.{PropertyDescriptor, RestComponentFactory}
+import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.logging.StandardComponentLogger
 import com.hurence.logisland.stream.StreamProperties._
@@ -44,10 +44,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     @transient protected var ssc: StreamingContext = _
     @transient protected var streamContext: StreamContext = _
     protected var engineContext: EngineContext = _
-    protected var restApiSink: Broadcast[RestJobsApiClientSink] = _
     protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = _
-    protected var currentJobVersion: Int = 0
-    protected var lastCheckCount: Int = 0
     protected var needMetricsReset = false
 
 
@@ -64,8 +61,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         descriptors.add(WRITE_TOPICS_CLIENT_SERVICE)
         descriptors.add(WRITE_TOPICS_SERIALIZER)
         descriptors.add(WRITE_TOPICS_KEY_SERIALIZER)
-        descriptors.add(LOGISLAND_AGENT_HOST)
-        descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -85,15 +80,10 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             throw new IllegalStateException("stream not initialized")
 
         try {
-            // Thread.sleep(5000)
-            val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
-            val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
 
             val pipelineMetricPrefix = streamContext.getIdentifier /*+ ".partition" + partitionId*/ + "."
             val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
-
-            restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
             controllerServiceLookupSink = ssc.sparkContext.broadcast(
                 ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
             )
@@ -114,10 +104,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
             val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
-
-            // store current configuration version
-            currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
-            updateConfigFromAgent(agentQuorum, throttling)
 
             // apply windowing
             /*val windowedDF:Dataset[Record] = if (streamContext.getPropertyValue(WINDOW_DURATION).isSet) {
@@ -150,41 +136,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
         }
     }
-
-
-    private def updateConfigFromAgent(agentQuorum: String, throttling: Integer) = {
-        /**
-          * check if conf needs to be refreshed
-          */
-        if (lastCheckCount > throttling) {
-            lastCheckCount = 0
-            val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
-            if (currentJobVersion != version) {
-                logger.info(s"Job version change detected from $currentJobVersion to $version, proceeding to update")
-
-                val componentFactory = new RestComponentFactory(agentQuorum)
-                val updatedEngineContext = componentFactory.getEngineContext(appName)
-                if (updatedEngineContext.isPresent) {
-
-                    // find the corresponding stream
-                    val it = updatedEngineContext.get().getStreamContexts.iterator()
-                    while (it.hasNext) {
-                        val updatedStreamingContext = it.next()
-
-                        // if we found a streamContext with the same name from the factory
-                        if (updatedStreamingContext.getName == this.streamContext.getName) {
-                            logger.info(s"new conf for stream ${updatedStreamingContext.getName}")
-                            this.streamContext = updatedStreamingContext
-                        }
-                    }
-                }
-                currentJobVersion = version
-            }
-        }
-
-        lastCheckCount += 1
-    }
-
 
 }
 

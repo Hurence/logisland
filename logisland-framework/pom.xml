@@ -35,12 +35,4 @@
         <module>logisland-scripting</module>
     </modules>
 
-    <profiles>
-        <profile>
-            <id>hdp2.5</id>
-            <modules>
-                <module>logisland-agent</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

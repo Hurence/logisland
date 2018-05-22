@@ -34,10 +34,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
         </dependency>
         <dependency>
@@ -118,6 +114,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
 
 

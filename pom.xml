@@ -712,11 +712,6 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
-                <artifactId>logisland-agent</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-elasticsearch-client-service-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1343,7 +1338,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
                         </configuration>
                         <executions>
                             <execution>
