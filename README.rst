@@ -72,9 +72,15 @@ basically **logisland** depends on Kafka and Spark, you can deploy it on any lin
     curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
     export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
 
+<<<<<<< HEAD
     # install Logisland 0.12.2
     curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.12.2-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
     cd /usr/local/logisland-0.12.2
+=======
+    # install Logisland 0.11.0
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.11.0/logisland-0.11.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-0.11.0
+>>>>>>> v0.12.2
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
