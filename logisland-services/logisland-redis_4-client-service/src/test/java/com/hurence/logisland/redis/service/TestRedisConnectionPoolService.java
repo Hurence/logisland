@@ -37,8 +37,24 @@ public class TestRedisConnectionPoolService {
 
         redisService = new RedisKeyValueCacheService();
 
+        redisService.setIdentifier("redis-service");
         testRunner.setProperty(RedisUtils.REDIS_MODE, RedisUtils.REDIS_MODE_STANDALONE);
         testRunner.setProperty(RedisUtils.DATABASE, "0");
+        testRunner.setProperty(RedisUtils.COMMUNICATION_TIMEOUT, "10 seconds");
+
+        testRunner.setProperty(RedisUtils.POOL_MAX_TOTAL, "8");
+        testRunner.setProperty(RedisUtils.POOL_MAX_IDLE, "8");
+        testRunner.setProperty(RedisUtils.POOL_MIN_IDLE, "0");
+        testRunner.setProperty(RedisUtils.POOL_BLOCK_WHEN_EXHAUSTED, "true");
+        testRunner.setProperty(RedisUtils.POOL_MAX_WAIT_TIME, "10 seconds");
+        testRunner.setProperty(RedisUtils.POOL_MIN_EVICTABLE_IDLE_TIME, "60 seconds");
+        testRunner.setProperty(RedisUtils.POOL_TIME_BETWEEN_EVICTION_RUNS, "30 seconds");
+        testRunner.setProperty(RedisUtils.POOL_NUM_TESTS_PER_EVICTION_RUN, "-1");
+        testRunner.setProperty(RedisUtils.POOL_TEST_ON_CREATE, "false");
+        testRunner.setProperty(RedisUtils.POOL_TEST_ON_BORROW, "false");
+        testRunner.setProperty(RedisUtils.POOL_TEST_ON_RETURN, "false");
+        testRunner.setProperty(RedisUtils.POOL_TEST_WHILE_IDLE, "true");
+        testRunner.setProperty(RedisKeyValueCacheService.RECORD_SERIALIZER, "com.hurence.logisland.serializer.JsonSerializer");
         testRunner.addControllerService("redis-service", redisService);
     }
 

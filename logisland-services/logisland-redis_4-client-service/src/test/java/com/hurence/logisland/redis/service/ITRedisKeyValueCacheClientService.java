@@ -108,6 +108,8 @@ public class ITRedisKeyValueCacheClientService {
             testRunner.setProperty(RedisUtils.POOL_TEST_ON_BORROW, "false");
             testRunner.setProperty(RedisUtils.POOL_TEST_ON_RETURN, "false");
             testRunner.setProperty(RedisUtils.POOL_TEST_WHILE_IDLE, "true");
+
+            testRunner.setProperty(RedisKeyValueCacheService.RECORD_SERIALIZER, "com.hurence.logisland.serializer.JsonSerializer");
             testRunner.addControllerService(SERVICE_IDENTIFIER, redisMapCacheClientService);
 
             // uncomment this to test using a different database index than the default 0

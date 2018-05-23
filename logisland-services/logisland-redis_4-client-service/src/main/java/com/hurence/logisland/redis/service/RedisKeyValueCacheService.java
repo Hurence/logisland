@@ -18,6 +18,7 @@ package com.hurence.logisland.redis.service;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
@@ -25,20 +26,23 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.redis.util.RedisAction;
 import com.hurence.logisland.redis.util.RedisUtils;
-import com.hurence.logisland.serializer.Deserializer;
-import com.hurence.logisland.serializer.Serializer;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.model.Cache;
 import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.util.Tuple;
+import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
+import org.apache.avro.Schema;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,9 +61,40 @@ import java.util.List;
 @CapabilityDescription("A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
 public class RedisKeyValueCacheService extends AbstractControllerService implements CacheService<String, Record> {
 
-
+    private volatile RecordSerializer recordSerializer;
+    private final Serializer<String> stringSerializer = new StringSerializer();
     private volatile RedisConnectionPool redisConnectionPool;
 
+
+    public static final AllowableValue AVRO_SERIALIZER = new AllowableValue(AvroSerializer.class.getName(),
+            "avro serialization", "serialize events as avro blocs");
+    public static final AllowableValue JSON_SERIALIZER = new AllowableValue(JsonSerializer.class.getName(),
+            "avro serialization", "serialize events as json blocs");
+    public static final AllowableValue KRYO_SERIALIZER = new AllowableValue(KryoSerializer.class.getName(),
+            "kryo serialization", "serialize events as json blocs");
+    public static final AllowableValue BYTESARRAY_SERIALIZER = new AllowableValue(BytesArraySerializer.class.getName(),
+            "byte array serialization", "serialize events as byte arrays");
+    public static final AllowableValue KURA_PROTOCOL_BUFFER_SERIALIZER = new AllowableValue(KuraProtobufSerializer.class.getName(),
+            "Kura Protobuf serialization", "serialize events as Kura protocol buffer");
+    public static final AllowableValue NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes");
+
+
+    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.recordSerializer")
+            .description("the way to serialize/deserialize the record")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(JSON_SERIALIZER.getValue())
+            .build();
+
+
+    public static final PropertyDescriptor AVRO_SCHEMA = new PropertyDescriptor.Builder()
+            .name("record.avro.schema")
+            .description("the avro schema definition")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
 
     @Override
     @OnEnabled
@@ -67,6 +102,9 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         try {
             this.redisConnectionPool = new RedisConnectionPool();
             this.redisConnectionPool.init(context);
+            this.recordSerializer = getSerializer(
+                    context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                    context.getPropertyValue(AVRO_SCHEMA).asString());
         } catch (Exception e) {
             throw new InitializationException(e);
         }
@@ -75,7 +113,11 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return RedisUtils.REDIS_CONNECTION_PROPERTY_DESCRIPTORS;
+
+        List<PropertyDescriptor> properties = new ArrayList<>(RedisUtils.REDIS_CONNECTION_PROPERTY_DESCRIPTORS);
+        properties.add(RECORD_SERIALIZER);
+
+        return properties;
     }
 
     @Override
@@ -84,13 +126,22 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
-    public Record get(String string) {
-        return null;
+    public Record get(String key) {
+        try {
+            return get(key, stringSerializer, (Deserializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public void set(String string, Record record) {
-
+    public void set(String key, Record value) {
+        try {
+            put(key, value,stringSerializer, (Serializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -258,5 +309,46 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         }
     }
 
+    /**
+     * build a recordSerializer
+     *
+     * @param inSerializerClass the recordSerializer type
+     * @param schemaContent     an Avro schema
+     * @return the recordSerializer
+     */
+    private RecordSerializer getSerializer(String inSerializerClass, String schemaContent) {
 
+        if (inSerializerClass.equals(AVRO_SERIALIZER.getValue())) {
+            Schema.Parser parser = new Schema.Parser();
+            Schema inSchema = parser.parse(schemaContent);
+            new AvroSerializer(inSchema);
+        } else if (inSerializerClass.equals(JSON_SERIALIZER.getValue())) {
+            return new JsonSerializer();
+        } else if (inSerializerClass.equals(BYTESARRAY_SERIALIZER.getValue())) {
+            return new BytesArraySerializer();
+        } else if (inSerializerClass.equals(KURA_PROTOCOL_BUFFER_SERIALIZER.getValue())) {
+            return new KuraProtobufSerializer();
+        }
+            return new KryoSerializer(true);
+
+    }
+
+    private static class StringSerializer implements Serializer<String> {
+        @Override
+        public void serialize(String value, OutputStream output) throws SerializationException, IOException {
+            if (value != null) {
+                output.write(value.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+    }
+
+    private static class StringDeserializer implements Deserializer<String> {
+        @Override
+        public String deserialize(byte[] input) throws DeserializationException, IOException {
+            return input == null ? null : new String(input, StandardCharsets.UTF_8);
+        }
+    }
 }
+
+
+
