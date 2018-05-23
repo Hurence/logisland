@@ -8,7 +8,7 @@ components:
     version: 0.1.0
     documentation: Main Logisland topic entry point
     configuration:
-      spark.master: local[8]
+      spark.master: local[4]
       spark.executorMemory: 4g
       spark.checkpointingDirectory: file:///tmp
       spark.appName: My first processor component

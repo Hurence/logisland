@@ -13,21 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+
 package com.hurence.logisland.engine.spark
 
 
@@ -37,7 +23,7 @@ import java.util.regex.Pattern
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.spark.KafkaRecordStream
+import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
@@ -431,6 +417,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
 
+        conf.set("spark.kryo.registrator", "com.hurence.logisland.util.spark.ProtoBufRegistrator")
+
         if (sparkMaster startsWith "yarn") {
             // Note that SPARK_YARN_DEPLOYMODE is not used by spark itself but only by spark-submit CLI
             // That's why we do not need to propagate it here
@@ -453,7 +441,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-                val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
+                val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {
@@ -471,7 +459,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
 
-                val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
+                val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
                 val sc = kafkaStream.getStreamContext();
                 sc.stop(stopSparkContext = true, stopGracefully = true)
                 kafkaStream.stop()

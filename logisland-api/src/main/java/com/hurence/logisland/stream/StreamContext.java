@@ -16,6 +16,8 @@
 package com.hurence.logisland.stream;
 
 import com.hurence.logisland.component.ComponentContext;
+import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
 
 import java.util.Collection;
@@ -39,5 +41,23 @@ public interface StreamContext extends ComponentContext {
      * @param processContext the ProcessContext to add
      */
     void addProcessContext(ProcessContext processContext);
+
+
+    /**
+     * Adds the given {@link ControllerServiceLookup}  so that the
+     * configured Processor can access it
+     *
+     * @param controllerServiceLookup the service
+     * @throws InitializationException ie
+     */
+    void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
+
+    /**
+     * get the given {@link ControllerServiceLookup}  so that the
+     * configured Processor can access it
+     *
+     * @throws InitializationException ie
+     */
+    ControllerServiceLookup getControllerServiceLookup() throws InitializationException;
 
 }

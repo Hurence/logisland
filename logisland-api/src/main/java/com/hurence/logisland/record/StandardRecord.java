@@ -105,6 +105,25 @@ public class StandardRecord implements Record {
     }
 
     @Override
+    public Position getPosition() {
+        if(hasPosition())
+            return (Position)getField(FieldDictionary.RECORD_POSITION).asRecord();
+        else return null;
+    }
+
+    @Override
+    public Record setPosition(Position position) {
+        if (position != null)
+            setField(FieldDictionary.RECORD_POSITION, FieldType.RECORD, position);
+        return this;
+    }
+
+    @Override
+    public boolean hasPosition() {
+        return hasField(FieldDictionary.RECORD_POSITION);
+    }
+
+    @Override
     public Date getTime() {
         try {
             return new Date((long) getField(FieldDictionary.RECORD_TIME).getRawValue());
@@ -117,6 +136,12 @@ public class StandardRecord implements Record {
     public Record setTime(Date recordTime) {
         if (recordTime != null)
             setField(FieldDictionary.RECORD_TIME, FieldType.LONG, recordTime.getTime());
+        return this;
+    }
+
+    @Override
+    public Record setTime(long timestamp) {
+        setField(FieldDictionary.RECORD_TIME, FieldType.LONG, timestamp);
         return this;
     }
 
@@ -308,6 +333,9 @@ public class StandardRecord implements Record {
                             break;
                         case ARRAY:
                             isValid = field.getRawValue() instanceof Collection;
+                            break;
+                        case RECORD:
+                            isValid = field.getRawValue() instanceof Record;
                             break;
                         default:
                             isValid = false;

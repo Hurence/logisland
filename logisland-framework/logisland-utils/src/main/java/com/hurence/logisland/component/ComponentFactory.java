@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,11 +15,9 @@
  */
 package com.hurence.logisland.component;
 
-import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.engine.StandardEngineContext;
@@ -54,18 +52,16 @@ public final class ComponentFactory {
             // instanciate each related pipelineContext
             configuration.getStreamConfigurations().forEach(pipelineConfig -> {
                 Optional<StreamContext> pipelineContext = getStreamContext(pipelineConfig);
-                if (pipelineContext.isPresent())
-                    engineContext.addStreamContext(pipelineContext.get());
+                pipelineContext.ifPresent(engineContext::addStreamContext);
             });
 
             configuration.getConfiguration()
-                    .entrySet().forEach(e -> engineContext.setProperty(e.getKey(), e.getValue()));
+                    .forEach((key, value) -> engineContext.setProperty(key, value));
 
 
             // load all controller service initialization context
-            configuration.getControllerServiceConfigurations().forEach(serviceConfig -> {
-                engineContext.addControllerServiceConfiguration(serviceConfig);
-            });
+            configuration.getControllerServiceConfigurations()
+                    .forEach(engineContext::addControllerServiceConfiguration);
 
 
             logger.info("created engine {}", configuration.getComponent());
@@ -95,8 +91,7 @@ public final class ComponentFactory {
             // instanciate each related processor
             configuration.getProcessorConfigurations().forEach(processConfig -> {
                 Optional<ProcessContext> processorContext = getProcessContext(processConfig);
-                if (processorContext.isPresent())
-                    instance.addProcessContext(processorContext.get());
+                processorContext.ifPresent(instance::addProcessContext);
             });
 
             // set the config properties

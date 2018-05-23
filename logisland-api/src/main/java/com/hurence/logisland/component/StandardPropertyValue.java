@@ -16,6 +16,9 @@
 package com.hurence.logisland.component;
 
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.record.FieldDictionary;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 
 public class StandardPropertyValue extends AbstractPropertyValue {

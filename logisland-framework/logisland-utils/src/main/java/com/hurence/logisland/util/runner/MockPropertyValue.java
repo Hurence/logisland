@@ -20,7 +20,9 @@ import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 
 import java.util.Map;
@@ -89,6 +91,12 @@ public class MockPropertyValue implements PropertyValue {
         return stdPropValue.asInteger();
     }
 
+    @Override
+    public Record asRecord() {
+        return (getRawValue() == null) ? null : new StandardRecord()
+                .setStringField(FieldDictionary.RECORD_VALUE,rawValue)
+                .setStringField(FieldDictionary.RECORD_RAW_VALUE,rawValue);
+    }
     @Override
     public Long asLong() {
         ensureExpressionsEvaluated();

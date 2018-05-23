@@ -16,9 +16,6 @@
 package com.hurence.logisland.config;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Yaml definition of the Logisland service config
  *

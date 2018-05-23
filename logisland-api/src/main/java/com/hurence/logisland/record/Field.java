@@ -135,6 +135,15 @@ public class Field implements PropertyValue, Serializable {
     }
 
     @Override
+    public Record asRecord() {
+        if (rawValue == null) {
+            return null;
+        } else if (rawValue instanceof Record) {
+            return ((Record) rawValue);
+        } else return null;
+    }
+
+    @Override
     public Long asLong() {
         if (rawValue == null) {
             return null;
