@@ -21,11 +21,11 @@ package com.hurence.logisland.redis;
  */
 public enum RedisType {
 
-    STANDALONE("Standalone", "A single standalone Redis instance."),
+    STANDALONE("standalone", "A single standalone Redis instance."),
 
-    SENTINEL("Sentinel", "Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel"),
+    SENTINEL("sentinel", "Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel"),
 
-    CLUSTER("Cluster", "Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec");
+    CLUSTER("cluster", "Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec");
 
     private final String displayName;
     private final String description;

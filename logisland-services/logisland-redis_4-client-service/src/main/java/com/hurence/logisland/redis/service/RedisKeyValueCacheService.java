@@ -30,6 +30,10 @@ import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.cache.model.Cache;
 import com.hurence.logisland.service.cache.model.LRUCache;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.Tuple;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
@@ -58,7 +62,7 @@ import java.util.List;
  */
 @Tags({"cache", "service", "key", "value", "pair", "redis"})
 @CapabilityDescription("A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
-public class RedisKeyValueCacheService extends AbstractControllerService implements CacheService<String, Record> {
+public class RedisKeyValueCacheService extends AbstractControllerService implements DatastoreClientService, CacheService<String, Record> {
 
     private volatile RecordSerializer recordSerializer;
     private final Serializer<String> stringSerializer = new StringSerializer();
@@ -337,6 +341,81 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         }
             return new KryoSerializer(true);
 
+    }
+
+    @Override
+    public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void dropCollection(String name) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public long countCollection(String name) throws DatastoreClientServiceException {
+        return 0;
+    }
+
+    @Override
+    public boolean existsCollection(String name) throws DatastoreClientServiceException {
+        return false;
+    }
+
+    @Override
+    public void refreshCollection(String name) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void createAlias(String collection, String alias) throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws DatastoreClientServiceException {
+        return false;
+    }
+
+    @Override
+    public void bulkFlush() throws DatastoreClientServiceException {
+
+    }
+
+    @Override
+    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+        set(record.getId(),record);
+    }
+
+    @Override
+    public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        set(record.getId(),record);
+    }
+
+    @Override
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
+        return null;
+    }
+
+    @Override
+    public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
+        return get(record.getId());
+    }
+
+    @Override
+    public Collection<Record> query(String query) {
+        return null;
+    }
+
+    @Override
+    public long queryCount(String query) {
+        return 0;
     }
 
     private static class StringSerializer implements Serializer<String> {

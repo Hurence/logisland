@@ -54,14 +54,11 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
             <version>${spring.data.redis.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>${jedis.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -97,6 +94,8 @@
                             <artifactSet>
                                 <includes>
                                     <include>redis.clients:*</include>
+                                    <include>org.springframework.data:*</include>
+                                    <include>org.springframework:*</include>
                                 </includes>
                             </artifactSet>
                             <filters>

@@ -1,0 +1,103 @@
+#########################################################################################################
+# Logisland configuration script tempate
+#########################################################################################################
+
+version: 0.12.2
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: StoreToRedisDemo
+    spark.master: local[2]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 1000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: datastore_service
+      component: com.hurence.logisland.redis.service.RedisKeyValueCacheService
+      type: service
+      documentation: redis datastore service
+      configuration:
+        connection.string: localhost:6379
+        redis.mode: standalone
+        database.index: 0
+        communication.timeout: 10 seconds
+        pool.max.total: 8
+        pool.max.idle: 8
+        pool.min.idle: 0
+        pool.block.when.exhausted: true
+        pool.max.wait.time: 10 seconds
+        pool.min.evictable.idle.time: 60 seconds
+        pool.time.between.eviction.runs: 30 seconds
+        pool.num.tests.per.eviction.run: -1
+        pool.test.on.create: false
+        pool.test.on.borrow: false
+        pool.test.on.return: false
+        pool.test.while.idle: true
+        record.recordSerializer: com.hurence.logisland.serializer.JsonSerializer
+
+  streamConfigurations:
+
+    # main processing stream
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw apache logs into structured log records
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs into logisland records
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: apache_log
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+
+        # all the parsed records are added to datastore by bulk
+        - processor: solr_publisher
+          component: com.hurence.logisland.processor.datastore.BulkPut
+          type: processor
+          documentation: "indexes processed events in datastore"
+          configuration:
+            datastore.client.service: datastore_service

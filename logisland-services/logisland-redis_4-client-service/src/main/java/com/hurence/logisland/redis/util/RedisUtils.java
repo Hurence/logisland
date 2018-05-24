@@ -52,7 +52,7 @@ public class RedisUtils {
     public static final AllowableValue REDIS_MODE_CLUSTER = new AllowableValue(RedisType.CLUSTER.getDisplayName(), RedisType.CLUSTER.getDisplayName(), RedisType.CLUSTER.getDescription());
 
     public static final PropertyDescriptor REDIS_MODE = new PropertyDescriptor.Builder()
-            .name("Redis Mode")
+            .name("redis.mode")
             .displayName("Redis Mode")
             .description("The type of Redis being communicated with - standalone, sentinel, or clustered.")
             .allowableValues(REDIS_MODE_STANDALONE, REDIS_MODE_SENTINEL, REDIS_MODE_CLUSTER)
@@ -62,7 +62,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor CONNECTION_STRING = new PropertyDescriptor.Builder()
-            .name("Connection String")
+            .name("connection.string")
             .displayName("Connection String")
             .description("The connection string for Redis. In a standalone instance this value will be of the form hostname:port. " +
                     "In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. " +
@@ -73,7 +73,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor DATABASE = new PropertyDescriptor.Builder()
-            .name("Database Index")
+            .name("database.index")
             .displayName("Database Index")
             .description("The database index to be used by connections created from this connection pool. " +
                     "See the databases property in redis.conf, by default databases 0-15 will be available.")
@@ -84,7 +84,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor COMMUNICATION_TIMEOUT = new PropertyDescriptor.Builder()
-            .name("Communication Timeout")
+            .name("communication.timeout")
             .displayName("Communication Timeout")
             .description("The timeout to use when attempting to communicate with Redis.")
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
@@ -93,7 +93,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor CLUSTER_MAX_REDIRECTS = new PropertyDescriptor.Builder()
-            .name("Cluster Max Redirects")
+            .name("cluster.max.redirects")
             .displayName("Cluster Max Redirects")
             .description("The maximum number of redirects that can be performed when clustered.")
             .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
@@ -102,7 +102,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor SENTINEL_MASTER = new PropertyDescriptor.Builder()
-            .name("Sentinel Master")
+            .name("sentinel.master")
             .displayName("Sentinel Master")
             .description("The name of the sentinel master, require when Mode is set to Sentinel")
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
@@ -110,7 +110,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor PASSWORD = new PropertyDescriptor.Builder()
-            .name("Password")
+            .name("password")
             .displayName("Password")
             .description("The password used to authenticate to the Redis server. See the requirepass property in redis.conf.")
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
@@ -119,7 +119,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_MAX_TOTAL = new PropertyDescriptor.Builder()
-            .name("Pool - Max Total")
+            .name("pool.max.total")
             .displayName("Pool - Max Total")
             .description("The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). " +
                     "A negative value indicates that there is no limit.")
@@ -129,7 +129,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_MAX_IDLE = new PropertyDescriptor.Builder()
-            .name("Pool - Max Idle")
+            .name("pool.max.idle")
             .displayName("Pool - Max Idle")
             .description("The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.")
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
@@ -138,7 +138,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_MIN_IDLE = new PropertyDescriptor.Builder()
-            .name("Pool - Min Idle")
+            .name("pool.min.idle")
             .displayName("Pool - Min Idle")
             .description("The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is " +
                     "greater than the configured value for Max Idle, then the value of Max Idle will be used instead.")
@@ -148,7 +148,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_BLOCK_WHEN_EXHAUSTED = new PropertyDescriptor.Builder()
-            .name("Pool - Block When Exhausted")
+            .name("pool.block.when.exhausted")
             .displayName("Pool - Block When Exhausted")
             .description("Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. " +
                     "Setting this to false means an error will occur immediately when a client requests a connection and none are available.")
@@ -159,7 +159,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_MAX_WAIT_TIME = new PropertyDescriptor.Builder()
-            .name("Pool - Max Wait Time")
+            .name("pool.max.wait.time")
             .displayName("Pool - Max Wait Time")
             .description("The amount of time to wait for an available connection when Block When Exhausted is set to true.")
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
@@ -168,7 +168,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_MIN_EVICTABLE_IDLE_TIME = new PropertyDescriptor.Builder()
-            .name("Pool - Min Evictable Idle Time")
+            .name("pool.min.evictable.idle.time")
             .displayName("Pool - Min Evictable Idle Time")
             .description("The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.")
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
@@ -177,7 +177,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_TIME_BETWEEN_EVICTION_RUNS = new PropertyDescriptor.Builder()
-            .name("Pool - Time Between Eviction Runs")
+            .name("pool.time.between.eviction.runs")
             .displayName("Pool - Time Between Eviction Runs")
             .description("The amount of time between attempting to evict idle connections from the pool.")
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
@@ -186,7 +186,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_NUM_TESTS_PER_EVICTION_RUN = new PropertyDescriptor.Builder()
-            .name("Pool - Num Tests Per Eviction Run")
+            .name("pool.num.tests.per.eviction.run")
             .displayName("Pool - Num Tests Per Eviction Run")
             .description("The number of connections to tests per eviction attempt. A negative value indicates to test all connections.")
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
@@ -195,7 +195,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_TEST_ON_CREATE = new PropertyDescriptor.Builder()
-            .name("Pool - Test On Create")
+            .name("pool.test.on.create")
             .displayName("Pool - Test On Create")
             .description("Whether or not connections should be tested upon creation.")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -205,7 +205,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_TEST_ON_BORROW = new PropertyDescriptor.Builder()
-            .name("Pool - Test On Borrow")
+            .name("pool.test.on.borrow")
             .displayName("Pool - Test On Borrow")
             .description("Whether or not connections should be tested upon borrowing from the pool.")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -215,7 +215,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_TEST_ON_RETURN = new PropertyDescriptor.Builder()
-            .name("Pool - Test On Return")
+            .name("pool.test.on.return")
             .displayName("Pool - Test On Return")
             .description("Whether or not connections should be tested upon returning to the pool.")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -225,7 +225,7 @@ public class RedisUtils {
             .build();
 
     public static final PropertyDescriptor POOL_TEST_WHILE_IDLE = new PropertyDescriptor.Builder()
-            .name("Pool - Test While Idle")
+            .name("pool.test.while.idle")
             .displayName("Pool - Test While Idle")
             .description("Whether or not connections should be tested while idle.")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -233,6 +233,19 @@ public class RedisUtils {
             .defaultValue("true")
             .required(true)
             .build();
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public static final List<PropertyDescriptor> REDIS_CONNECTION_PROPERTY_DESCRIPTORS;
 
