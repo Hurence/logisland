@@ -23,6 +23,7 @@ import java.util.regex.Pattern
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
+import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
@@ -364,7 +365,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
       * @param sparkConf     the preinitialized configuration.
       * @param engineContext the engine context.
       */
-    protected abstract def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit
+    protected  def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit
 
 
     final def createStreamingContext(engineContext: EngineContext): StreamingContext = {
@@ -438,7 +439,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
       * @param engineContext the engine context.
       * @param scc           the spark streaming context.
       */
-    protected abstract def setupStreamingContexts(engineContext: EngineContext, scc: StreamingContext): Unit
+    protected def setupStreamingContexts(engineContext: EngineContext, scc: StreamingContext): Unit
 
     protected def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
 
@@ -451,7 +452,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
 
     final override def shutdown(engineContext: EngineContext) = {
         logger.info(s"shutting down Spark engine")
-        engineContext.getStreamContexts.foreach(streamingContext => {
+        engineContext.getStreamContexts foreach (streamingContext => {
             try {
 
                 val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]

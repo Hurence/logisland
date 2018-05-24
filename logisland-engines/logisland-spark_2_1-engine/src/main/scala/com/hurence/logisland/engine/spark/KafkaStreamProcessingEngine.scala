@@ -28,6 +28,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.streaming.StreamingContext
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
+
 object KafkaStreamProcessingEngine {
 
     val SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION = new PropertyDescriptor.Builder()
@@ -62,24 +64,23 @@ class KafkaStreamProcessingEngine extends BaseStreamProcessingEngine {
     }
 
 
-    override protected def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit = {
+    override def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit = {
         setConfProperty(sparkConf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
         setConfProperty(sparkConf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
 
     }
 
-    override protected def setupStreamingContexts(engineContext: EngineContext, ssc: StreamingContext): Unit = {
+    override def setupStreamingContexts(engineContext: EngineContext, ssc: StreamingContext): Unit = {
         val appName = engineContext.getPropertyValue(BaseStreamProcessingEngine.SPARK_APP_NAME).asString
-        engineContext.getStreamContexts.forEach(streamingContext => {
+        engineContext.getStreamContexts.asScala.foreach(streamContext => {
             try {
-                val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-                kafkaStream.setup(appName, ssc, streamingContext, engineContext)
+                val kafkaStream = streamContext.getStream.asInstanceOf[SparkRecordStream]
+                kafkaStream.setup(appName, ssc, streamContext, engineContext)
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
                     logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
             }
-
         })
     }
 }

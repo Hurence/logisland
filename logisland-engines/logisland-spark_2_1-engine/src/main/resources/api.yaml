@@ -1,0 +1,139 @@
+swagger: '2.0'
+info:
+  description: >-
+    <b>REST API for logisland.</b>
+
+
+    The API should be implemented by a third party application and logisland will regularly poll this endpoint in order to trigger configuration changes.
+
+  version: v1
+  title: Logisland standard API
+  contact:
+    name: Hurence
+    email: support@hurence.com
+host: localhost:8081
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+
+  /pipelines:
+    get:
+      tags:
+       - pipelines
+      operationId: pollActivePipelines
+      summary:  Retrieves the streaming pipelines to run.
+      description: Logisland will poll this API in order to start, reconfigure or stop the pipelines according to the received response.
+      responses:
+        "200":
+          description: >-
+            should return every pipeline that should be running.
+            On server side, logisland will do the delta and apply the following:
+
+            - Add a new pipeline if any provided is not already running.
+
+            - Reconfigure a pipeline if the same is already running and its configuration differs
+
+            - Remove a pipeline if running but no more present in returned ones.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pipeline'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+
+  Property:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      type:
+        type: string
+        default: "string"
+      value:
+        type: string
+
+  Component:
+    type: object
+    required:
+      - component
+      - config
+      - name
+    properties:
+      name:
+        type: string
+      component:
+        type: string
+      documentation:
+        type: string
+      config:
+        type: array
+        items:
+          $ref: '#/definitions/Property'
+
+
+
+  Service:
+    type: object
+    description: A logisland 'controller service'.
+    allOf:
+      - $ref: '#/definitions/Component'
+
+
+  Processor:
+    type: object
+    description: A logisland 'controller service'.
+    allOf:
+      - $ref: '#/definitions/Component'
+
+  Stream:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Component'
+      - properties:
+          processors:
+            type: array
+            items:
+              $ref: '#/definitions/Processor'
+
+  Pipeline:
+    type: object
+    description: A streaming pipeline.
+    properties:
+      name:
+        type: string
+        description: the name of the pipeline
+      services:
+        type: array
+        description: The service controllers.
+        items:
+          $ref: '#/definitions/Service'
+      streams:
+        type: array
+        description: The engine properties.
+        items:
+          $ref: '#/definitions/Stream'
+    required:
+      - name
+
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

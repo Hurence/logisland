@@ -27,6 +27,23 @@ http://www.w3.org/2001/XMLSchema-instance ">
     </parent>
     <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
+
+
+    <properties>
+        <joda-version>1.9.2</joda-version>
+        <joda-time-version>2.9.9</joda-time-version>
+        <jersey-version>1.19.4</jersey-version>
+        <swagger-core-version>1.5.16</swagger-core-version>
+        <jersey-async-version>1.0.5</jersey-async-version>
+        <maven-plugin.version>1.0.0</maven-plugin.version>
+        <jackson-version>2.9.2</jackson-version>
+
+        <junit-version>4.12</junit-version>
+        <scala-maven-plugin-version>3.1.5</scala-maven-plugin-version>
+        <scala-test-version>3.0.4</scala-test-version>
+        <swagger-async-httpclient-version>0.3.5</swagger-async-httpclient-version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -136,20 +153,28 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <scope>test</scope>
         </dependency>
 
+
+
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <scope>test</scope>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>${swagger-core-version}</version>
         </dependency>
+
+        <!-- Lightweight dependencies for http rest connections -->
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-urlconnection</artifactId>
+            <version>3.10.0</version>
+        </dependency>
+
+
 
     </dependencies>
 
     <build>
         <plugins>
-
-
-
-
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
@@ -159,6 +184,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                         <id>scala-compile-first</id>
                         <phase>process-resources</phase>
                         <goals>
+                            <goal>add-source</goal>
                             <goal>compile</goal>
                         </goals>
                     </execution>
