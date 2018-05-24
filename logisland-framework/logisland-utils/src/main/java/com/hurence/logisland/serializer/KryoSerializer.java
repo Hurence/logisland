@@ -39,6 +39,7 @@ import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.Field;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.DeflaterOutputStream;
@@ -117,4 +118,5 @@ public class KryoSerializer implements RecordSerializer {
             throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }
+
 }

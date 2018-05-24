@@ -35,13 +35,12 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.avro.Schema;
+import org.apache.commons.io.IOUtils;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -179,7 +178,13 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
                     final Object firstResult = results.get(0);
                     if (firstResult instanceof Boolean) {
                         final Boolean absent = (Boolean) firstResult;
-                        return absent ? null : valueDeserializer.deserialize(existingValue);
+
+                        if(absent){
+                            return null;
+                        }else {
+                            InputStream input = new ByteArrayInputStream(existingValue);
+                            return valueDeserializer.deserialize(input);
+                        }
                     } else {
                         // this shouldn't really happen, but just in case there is a non-boolean result then bounce out of the loop
                         throw new IOException("Unexpected result from Redis transaction: Expected Boolean result, but got "
@@ -213,7 +218,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         return withConnection(redisConnection -> {
             final byte[] k = serialize(key, keySerializer);
             final byte[] v = redisConnection.get(k);
-            return valueDeserializer.deserialize(v);
+            InputStream input = new ByteArrayInputStream(v);
+            return valueDeserializer.deserialize(input);
         });
     }
 
@@ -275,12 +281,12 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     private <K, Record> Tuple<byte[], byte[]> serialize(final K key, final Record value, final Serializer<K> keySerializer, final Serializer<Record> valueSerializer) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        keySerializer.serialize(key, out);
+        keySerializer.serialize(out, key);
         final byte[] k = out.toByteArray();
 
         out.reset();
 
-        valueSerializer.serialize(value, out);
+        valueSerializer.serialize(out, value);
         final byte[] v = out.toByteArray();
 
         return new Tuple<>(k, v);
@@ -289,7 +295,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     private <K> byte[] serialize(final K key, final Serializer<K> keySerializer) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        keySerializer.serialize(key, out);
+        keySerializer.serialize(out, key);
         return out.toByteArray();
     }
 
@@ -335,7 +341,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
     private static class StringSerializer implements Serializer<String> {
         @Override
-        public void serialize(String value, OutputStream output) throws SerializationException, IOException {
+        public void serialize(OutputStream output, String value) throws SerializationException, IOException {
             if (value != null) {
                 output.write(value.getBytes(StandardCharsets.UTF_8));
             }
@@ -344,8 +350,9 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
     private static class StringDeserializer implements Deserializer<String> {
         @Override
-        public String deserialize(byte[] input) throws DeserializationException, IOException {
-            return input == null ? null : new String(input, StandardCharsets.UTF_8);
+        public String deserialize(InputStream input) throws DeserializationException, IOException {
+            byte[] bytes = IOUtils.toByteArray(input);
+            return input == null ? null : new String(bytes, StandardCharsets.UTF_8);
         }
     }
 }

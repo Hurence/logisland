@@ -30,6 +30,7 @@ import com.hurence.logisland.serializer.Serializer;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.validator.StandardValidators;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import redis.embedded.RedisServer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
@@ -154,7 +156,7 @@ public class ITRedisKeyValueCacheClientService {
                     .setStringField(FieldDictionary.RECORD_NAME, metricsType[rnd.nextInt(3)])
                     .setStringField("host", hosts[rnd.nextInt(3)])
                     .setField(FieldDictionary.RECORD_TIME, FieldType.LONG, new Date().getTime())
-                    .setField(FieldDictionary.RECORD_VALUE, FieldType.FLOAT, 100.0 * Math.random())
+                    .setField(FieldDictionary.RECORD_VALUE, FieldType.DOUBLE, 100.0 * Math.random())
                     .setTime(now)
             );
             now += rnd.nextInt(500);
@@ -238,6 +240,18 @@ public class ITRedisKeyValueCacheClientService {
                 Assert.assertEquals(null, getAndPutIfAbsentResultWhenDoesntExist);
                 Assert.assertEquals(value, cacheClient.get(keyThatDoesntExist, stringSerializer, stringDeserializer));
 
+
+                // get/set checks with serializer
+                for (Record record : records) {
+                    String recordKey = record.getId();
+                    cacheClient.set(recordKey, record);
+                    Assert.assertTrue(cacheClient.containsKey(recordKey, stringSerializer));
+                    Record storedRecord = cacheClient.get(recordKey);
+                    Assert.assertEquals(record,storedRecord);
+                    cacheClient.remove(recordKey, stringSerializer);
+                    Assert.assertFalse(cacheClient.containsKey(recordKey, stringSerializer));
+                }
+
                 /*
                 // verify atomic fetch returns the correct entry
                 final AtomicCacheEntry<String,String,byte[]> entry = cacheClient.fetch(key, stringSerializer, stringDeserializer);
@@ -283,7 +297,7 @@ public class ITRedisKeyValueCacheClientService {
 
     private static class StringSerializer implements Serializer<String> {
         @Override
-        public void serialize(String value, OutputStream output) throws SerializationException, IOException {
+        public void serialize(OutputStream output, String value) throws SerializationException, IOException {
             if (value != null) {
                 output.write(value.getBytes(StandardCharsets.UTF_8));
             }
@@ -292,8 +306,9 @@ public class ITRedisKeyValueCacheClientService {
 
     private static class StringDeserializer implements Deserializer<String> {
         @Override
-        public String deserialize(byte[] input) throws DeserializationException, IOException {
-            return input == null ? null : new String(input, StandardCharsets.UTF_8);
+        public String deserialize(InputStream input) throws DeserializationException, IOException {
+            byte[] bytes = IOUtils.toByteArray(input);
+            return input == null ? null : new String(bytes, StandardCharsets.UTF_8);
         }
     }
 }

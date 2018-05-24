@@ -22,15 +22,18 @@ import com.hurence.logisland.serializer.DeserializationException;
 import com.hurence.logisland.serializer.Deserializer;
 import com.hurence.logisland.serializer.SerializationException;
 import com.hurence.logisland.serializer.Serializer;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class StringSerDe implements Serializer<String>, Deserializer<String> {
 
     @Override
-    public String deserialize(final byte[] value) throws DeserializationException, IOException {
+    public String deserialize(final InputStream input) throws DeserializationException, IOException {
+        byte[] value = IOUtils.toByteArray(input);
         if ( value == null ) {
             return null;
         }
@@ -39,7 +42,7 @@ public class StringSerDe implements Serializer<String>, Deserializer<String> {
     }
 
     @Override
-    public void serialize(final String value, final OutputStream out) throws SerializationException, IOException {
+    public void serialize(final OutputStream out, final String value) throws SerializationException, IOException {
         out.write(value.getBytes(StandardCharsets.UTF_8));
     }
 

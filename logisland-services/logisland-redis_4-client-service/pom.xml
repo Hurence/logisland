@@ -129,8 +129,8 @@
                             </transformers>
                            <relocations>
                                  <relocation>
-                                    <pattern>io</pattern>
-                                    <shadedPattern>${shaded.package}.io</shadedPattern>
+                                    <pattern>org.springframework.data</pattern>
+                                    <shadedPattern>${shaded.package}.org.springframework.data</shadedPattern>
                                 </relocation>
 
 

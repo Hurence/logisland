@@ -84,7 +84,7 @@ public class JsonSerializer implements RecordSerializer {
                 // retrieve event field
                 String fieldName = entry.getKey();
                 Field field = entry.getValue();
-                Object fieldValue = field.getRawValue();
+              //  Object fieldValue = field.getRawValue();
                 String fieldType = field.getType().toString();
 
                 // dump event field as record attribute
@@ -92,25 +92,26 @@ public class JsonSerializer implements RecordSerializer {
                 try {
                     switch (fieldType.toLowerCase()) {
                         case "string":
-                            jgen.writeStringField(fieldName, (String) fieldValue);
+                            jgen.writeStringField(fieldName, field.asString());
                             break;
                         case "integer":
-                            jgen.writeNumberField(fieldName, (int) fieldValue);
+                        case "int":
+                            jgen.writeNumberField(fieldName, field.asInteger());
                             break;
                         case "long":
-                            jgen.writeNumberField(fieldName, (long) fieldValue);
+                            jgen.writeNumberField(fieldName, field.asLong());
                             break;
                         case "float":
-                            jgen.writeNumberField(fieldName, (float) fieldValue);
+                            jgen.writeNumberField(fieldName, field.asFloat());
                             break;
                         case "double":
-                            jgen.writeNumberField(fieldName, (double) fieldValue);
+                            jgen.writeNumberField(fieldName, field.asDouble());
                             break;
                         case "boolean":
-                            jgen.writeBooleanField(fieldName, (boolean) fieldValue);
+                            jgen.writeBooleanField(fieldName, field.asBoolean());
                             break;
                         default:
-                            jgen.writeObjectField(fieldName, fieldValue);
+                            jgen.writeObjectField(fieldName, field.asString());
                             break;
                     }
                 } catch (Exception ex) {
@@ -201,9 +202,11 @@ public class JsonSerializer implements RecordSerializer {
 
                 case VALUE_NUMBER_FLOAT:
                     try {
-                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
-                    } catch (JsonParseException ex) {
+
                         fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
+                    } catch (JsonParseException ex) {
+
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
                     }
                     break;
                 case VALUE_FALSE:
