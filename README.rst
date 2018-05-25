@@ -16,6 +16,8 @@ chat with us on `gitter <https://gitter.im/logisland/logisland>`_
 
 **LogIsland is an event mining scalable platform designed to handle a high throughput of events.**
 
+It is highly inspired from DataFlow programming tools such as Apache Nifi, but with a highly scalable architecture.
+
 
 Event mining Workflow
 ---------------------
@@ -49,18 +51,20 @@ to build from the source just clone source and package with maven
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
-    mvn install
+    mvn clean install
 
 the final package is available at `logisland-assembly/target/logisland-0.13.0-bin-hdp2.5.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
+Quick start
+-----------
 
 Local Setup
------------
-basically **logisland** depends on Kafka and Spark, you can deploy it on any linux server
++++++++++++
+Alternatively you can deploy **logisland** on any linux server from which Kafka and Spark are available
 
-.. code-block::
+.. code-block:: sh
 
     # install Kafka 0.10.0.0 & start a zookeeper node + a broker
     curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar -xz -C /usr/local/
@@ -72,20 +76,41 @@ basically **logisland** depends on Kafka and Spark, you can deploy it on any lin
     curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
     export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
 
-<<<<<<< HEAD
     # install Logisland 0.13.0
     curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.13.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
     cd /usr/local/logisland-0.13.0
-=======
-    # install Logisland 0.11.0
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.11.0/logisland-0.11.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-0.11.0
->>>>>>> v0.13.0
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
 you can find some **logisland** job configuration samples under `$LOGISLAND_HOME/conf` folder
+
+
+Docker setup
+++++++++++++
+The easiest way to start is the launch a docker compose stack
+
+.. code-block:: sh
+
+    # launch logisland environment
+    cd /tmp
+    curl -s https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml > docker-compose.yml
+    docker-compose up
+
+    # sample execution of a logisland job
+    docker exec -i -t logisland conf/index-apache-logs.yml
+
+
+Hadoop distribution setup
++++++++++++++++++++++++++
+Launching logisland streaming apps is just easy as unarchiving logisland distribution on an edge node, editing a config with YARN parameters and submitting job.
+
+.. code-block:: sh
+
+    # install Logisland 0.13.0
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.13.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-0.13.0
+    bin/logisland.sh --conf conf/index-apache-logs.yml
 
 
 Start a stream processing job
@@ -113,7 +138,7 @@ The first part is the `ProcessingEngine` configuration (here a Spark streaming e
       documentation: Index some apache logs with logisland
       configuration:
         spark.app.name: IndexApacheLogsDemo
-        spark.master: local[4]
+        spark.master: yarn-cluster
         spark.driver.memory: 1G
         spark.driver.cores: 1
         spark.executor.memory: 2G
@@ -210,7 +235,11 @@ Once you've edited your configuration file, you can submit it to execution engin
 
 .. code-block:: bash
 
-    bin/process-stream.sh -conf conf/job-configuration.yml
+    bin/logisland.sh -conf conf/job-configuration.yml
+
+
+You should jump to the `tutorials section <http://logisland.readthedocs.io/en/latest/tutorials/index.html>`_ of the documentation.
+And then continue with `components documentation<http://logisland.readthedocs.io/en/latest/components.html>`_
 
 Contributing
 ------------
