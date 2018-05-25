@@ -24,6 +24,7 @@ Contents:
 
    prerequisites
    index-apache-logs
+   store-to-redis
    match-queries
    aggregate-events
    enrich-apache-logs

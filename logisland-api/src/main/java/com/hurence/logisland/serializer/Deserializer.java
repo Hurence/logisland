@@ -17,6 +17,7 @@ package com.hurence.logisland.serializer;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Provides an interface for deserializing an array of bytes into an Object
@@ -28,12 +29,12 @@ public interface Deserializer<T> {
     /**
      * Deserializes the given byte array input an Object and returns that value.
      *
-     * @param input input
+     * @param objectDataInput input
      * @return returns deserialized value
      * @throws DeserializationException if a valid object cannot be deserialized
      * from the given byte array
      * @throws IOException ex
      */
-    T deserialize(byte[] input) throws DeserializationException, IOException;
+    T deserialize(InputStream objectDataInput) throws DeserializationException, IOException;
 
 }

@@ -82,6 +82,13 @@ To facilitate integration testing and to easily run tutorials, you can create a 
       extra_hosts:
         - "sandbox:172.17.0.1"
 
+      redis:
+        container_name: redis
+        image: 'redis:latest'
+        ports:
+          - '6379:6379'
+        network_mode: bridge
+
 Once you have this file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana and logisland)
 
 .. code-block:: sh
@@ -115,10 +122,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v0.12.2/logisland-0.12.2-bin-hdp2.5.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v0.13.0/logisland-0.13.0-bin-hdp2.5.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-0.12.2/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-0.13.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 

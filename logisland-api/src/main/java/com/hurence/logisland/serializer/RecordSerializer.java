@@ -39,7 +39,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 
-public interface RecordSerializer extends Serializable {
+public interface RecordSerializer extends Serializable, Serializer<Record>, Deserializer<Record> {
     void serialize(OutputStream objectDataOutput, Record record) throws RecordSerializationException;
 
     Record deserialize(InputStream objectDataInput) throws RecordSerializationException;

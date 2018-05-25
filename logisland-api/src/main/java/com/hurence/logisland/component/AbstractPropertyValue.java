@@ -21,6 +21,9 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
+import com.hurence.logisland.util.FormatUtils;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mathieu on 08/06/17.
@@ -69,6 +72,12 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     public Double asDouble() {
         return (getRawValue() == null) ? null : Double.parseDouble(getRawValue().trim());
     }
+
+    @Override
+    public Long asTimePeriod(final TimeUnit timeUnit) {
+        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.toString().trim(), timeUnit);
+    }
+
 
     @Override
     public boolean isSet() {
