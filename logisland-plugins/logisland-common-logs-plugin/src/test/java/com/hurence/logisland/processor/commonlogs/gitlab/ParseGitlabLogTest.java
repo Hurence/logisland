@@ -23,6 +23,7 @@ import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +40,8 @@ public class ParseGitlabLogTest {
     
     private static Logger logger = LoggerFactory.getLogger(ParseGitlabLogTest.class);
     
-    // Bro conn input event
-    private static final String GITLAB_BRO_EVENT =
+    // Gitlab input event
+    private static final String GITLAB_EVENT =
         "{" +
                 "\"view\": 94.68," +
                 "\"method\": \"GET\"," +
@@ -64,6 +65,45 @@ public class ParseGitlabLogTest {
                 "\"long\": 32345678910" +
         "}";
 
+
+    // Gitlab input event with param
+    private static final String GITLAB_EVENT_WITH_PARAMS =
+            "{" +
+                "\"view\": 94.68," +
+                "\"method\": \"GET\"," +
+                "\"path\": \"/dashboard/issues\"," +
+                "\"params\": [" +
+                    "{" +
+                        "\"key\": \"utf8\"," +
+                        "\"value\": \"✓\"" +
+                    "}," +
+                    "{" +
+                        "\"key\": \"authenticity_token\"," +
+                        "\"value\": \"[FILTERED]\"" +
+                    "}," +
+                    "{" +
+                        "\"key\": \"user\"," +
+                        "\"value\": {" +
+                                        "\"login\": \"mathieu.rossignol@hurence.com\"," +
+                                        "\"password\": \"[FILTERED]\"," +
+                                        "\"remember_me\": \"0\"" +
+                                    "}" +
+                    "}," +
+                    "{" +
+                        "\"key\": \"empty\"," +
+                        "\"value\": \"\"" +
+                    "}," +
+                    "{" +
+                        "\"key\": \"null\"," +
+                        "\"value\": null" +
+                    "}," +
+                    "{" +
+                         "\"key\": \"integer\"," +
+                         "\"value\": 7" +
+                    "}" +
+                "]" +
+            "}";
+
     /**
      * Test fields renaming if deep JSON and also some types
      */
@@ -71,7 +111,7 @@ public class ParseGitlabLogTest {
     public void testFakeDeepEvent() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParseGitlabLog());
         testRunner.assertValid();
-        Record record = new StandardRecord("bro_event");
+        Record record = new StandardRecord("gitlab_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, FAKE_DEEP_EVENT);
         testRunner.enqueue(record);
         testRunner.clearQueues();
@@ -126,8 +166,8 @@ public class ParseGitlabLogTest {
     public void testGitlabLog() {
         final TestRunner testRunner = TestRunners.newTestRunner(new ParseGitlabLog());
         testRunner.assertValid();
-        Record record = new StandardRecord("bro_event");
-        record.setStringField(FieldDictionary.RECORD_VALUE, GITLAB_BRO_EVENT);
+        Record record = new StandardRecord("gitlab_event");
+        record.setStringField(FieldDictionary.RECORD_VALUE, GITLAB_EVENT);
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
@@ -146,5 +186,57 @@ public class ParseGitlabLogTest {
 
         out.assertFieldExists("path");
         out.assertFieldEquals("path", "/dashboard/issues");
+    }
+
+    /**
+     * Test that the special params field as been exploded and replaced with first level fields
+     */
+    @Test
+    public void testFlatParams() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ParseGitlabLog());
+        testRunner.assertValid();
+        Record record = new StandardRecord("gitlab_event");
+        record.setStringField(FieldDictionary.RECORD_VALUE, GITLAB_EVENT_WITH_PARAMS);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+
+        out.assertFieldExists("view");
+        out.assertFieldEquals("view", (float)94.68);
+
+        out.assertFieldExists("method");
+        out.assertFieldEquals("method", "GET");
+
+        out.assertFieldExists("path");
+        out.assertFieldEquals("path", "/dashboard/issues");
+
+        out.assertFieldExists("params_utf8");
+        out.assertFieldEquals("params_utf8", "✓");
+
+        out.assertFieldExists("params_authenticity_token");
+        out.assertFieldEquals("params_authenticity_token", "[FILTERED]");
+
+        out.assertFieldExists("params_user_login");
+        out.assertFieldEquals("params_user_login", "mathieu.rossignol@hurence.com");
+
+        out.assertFieldExists("params_user_password");
+        out.assertFieldEquals("params_user_password", "[FILTERED]");
+
+        out.assertFieldExists("params_empty");
+        out.assertFieldEquals("params_empty", "");
+
+        out.assertFieldExists("params_null");
+        out.assertNullField("params_null");
+
+        out.assertFieldExists("params_integer");
+        out.assertFieldEquals("params_integer", 7);
+
+        System.out.println(out);
     }
 }

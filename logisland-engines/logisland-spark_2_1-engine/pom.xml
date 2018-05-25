@@ -23,7 +23,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engines</artifactId>
-        <version>0.12.2</version>
+        <version>0.13.0</version>
     </parent>
     <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
@@ -57,10 +57,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.groupon.dse</groupId>
             <artifactId>spark-metrics</artifactId>
@@ -122,6 +119,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.kafka</groupId>

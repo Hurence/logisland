@@ -20,18 +20,19 @@ import com.hurence.logisland.serializer.DeserializationException;
 import com.hurence.logisland.serializer.Deserializer;
 import com.hurence.logisland.serializer.SerializationException;
 import com.hurence.logisland.serializer.Serializer;
+import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class ObjectSerDe implements Serializer<Object>, Deserializer<Object> {
 
     @Override
-    public Object deserialize(byte[] input) throws DeserializationException, IOException {
+    public Object deserialize(InputStream is) throws DeserializationException, IOException {
+        if (is == null) {
+            return null;
+        }
+
+        byte[] input = IOUtils.toByteArray(is);
         if (input == null || input.length == 0) {
             return null;
         }
@@ -45,7 +46,7 @@ public class ObjectSerDe implements Serializer<Object>, Deserializer<Object> {
     }
 
     @Override
-    public void serialize(Object value, OutputStream output) throws SerializationException, IOException {
+    public void serialize(OutputStream output, Object value) throws SerializationException, IOException {
         try (final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
              final ObjectOutputStream objOut = new ObjectOutputStream(bOut)) {
             objOut.writeObject(value);

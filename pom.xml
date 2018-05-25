@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hurence.logisland</groupId>
     <artifactId>logisland</artifactId>
-    <version>0.12.2</version>
+    <version>0.13.0</version>
     <packaging>pom</packaging>
     <description>LogIsland is an event mining platform based on Kafka to handle a huge amount of data in realtime.
     </description>
@@ -123,7 +123,7 @@
         </repository>
         <repository>
             <id>central</id>
-            <!-- This should be at top, it makes maven try the central repo 
+            <!-- This should be at top, it makes maven try the central repo
                 first and then others and hence faster dep resolution -->
             <name>Maven Repository</name>
             <url>https://repo1.maven.org/maven2</url>
@@ -174,6 +174,18 @@
             <id>confluent</id>
             <name>Confluent</name>
             <url>http://packages.confluent.io/maven/</url>
+        </repository>
+
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>openscada</id>
+            <url>http://neutronium.openscada.org/maven/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -765,6 +777,16 @@
             </dependency>
             <dependency>
                 <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-excel-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-redis_4-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
                 <artifactId>logisland-documentation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1246,6 +1268,29 @@
                 <jackson.version>2.6.6</jackson.version>
                 <hdp>2.5</hdp>
             </properties>
+            <modules>
+              <module>logisland-connect</module>
+            </modules>
+
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.hurence.logisland</groupId>
+                        <artifactId>logisland-connect-spark</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.hurence.logisland</groupId>
+                        <artifactId>logisland-connector-opcda</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.hurence.logisland</groupId>
+                        <artifactId>logisland-connectors-bundle</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
         </profile>
 
         <!--  hdp 2.4 -->
@@ -1366,11 +1411,11 @@
             </build>
         </profile>
         <profile>
-            <!-- Checks style and licensing requirements. This is a good idea to run 
-            for contributions and for the release process. While it would be nice to 
-            run always these plugins can considerably slow the build and have proven 
-            to create unstable builds in our multi-module project and when building using 
-            multiple threads. The stability issues seen with Checkstyle in multi-module 
+            <!-- Checks style and licensing requirements. This is a good idea to run
+            for contributions and for the release process. While it would be nice to
+            run always these plugins can considerably slow the build and have proven
+            to create unstable builds in our multi-module project and when building using
+            multiple threads. The stability issues seen with Checkstyle in multi-module
             builds include false-positives and false negatives. -->
             <id>contrib-check</id>
             <build>

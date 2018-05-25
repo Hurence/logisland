@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.12.2</version>
+        <version>0.13.0</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -154,6 +154,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-documentation</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
@@ -174,6 +175,16 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-excel-plugin</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-redis_4-client-service</artifactId>
+        </dependency>
+
 
         <!--   <dependency>
          <groupId>com.hurence.logisland</groupId>
@@ -223,6 +234,14 @@
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-agent</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connect-spark</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connectors-bundle</artifactId>
                 </dependency>
             </dependencies>
 

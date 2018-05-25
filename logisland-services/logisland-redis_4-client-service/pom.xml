@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-services</artifactId>
+        <version>0.13.0</version>
+    </parent>
+
+    <artifactId>logisland-redis_4-client-service</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- Versions -->
+        <spring.data.redis.version>1.8.11.RELEASE</spring.data.redis.version>
+        <jedis.version>2.9.0</jedis.version>
+
+        <!-- Configuration -->
+        <shaded.package>${logisland.shade.packageName}.redis409</shaded.package>
+
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cache_key_value-service-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.esotericsoftware.kryo</groupId>
+                    <artifactId>kryo</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>${spring.data.redis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dtests.security.manager=false</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.immutables.tools</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+
+                            <artifactSet>
+                                <includes>
+                                    <include>redis.clients:*</include>
+                                    <include>org.springframework.data:*</include>
+                                    <include>org.springframework:*</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+
+
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- Elasticsearch relies on these entries to verify build correctness -->
+                                    <manifestEntries>
+                                        <Change>GIT commit ID</Change>
+                                        <Build-Date>${maven.build.timestamp}</Build-Date>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                           <relocations>
+                                 <relocation>
+                                    <pattern>org.springframework.data</pattern>
+                                    <shadedPattern>${shaded.package}.org.springframework.data</shadedPattern>
+                                </relocation>
+
+
+                                <relocation>
+                                    <pattern>redis.clients</pattern>
+                                    <shadedPattern>${shaded.package}.redis.clients</shadedPattern>
+                                </relocation>
+
+                            </relocations>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    
+</project>

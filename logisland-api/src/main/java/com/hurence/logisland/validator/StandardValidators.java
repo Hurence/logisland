@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,20 +16,54 @@
 package com.hurence.logisland.validator;
 
 
+import com.hurence.logisland.util.FormatUtils;
+
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.TimeZone;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 public class StandardValidators {
 
+
+    /**
+     * Validator for java class descending for a base class.
+     */
+    private static final class TypeValidator implements Validator {
+
+        private final Class<?> clz;
+
+
+        public TypeValidator(Class<?> clz) {
+            this.clz = clz;
+        }
+
+        @Override
+        public ValidationResult validate(String subject, String input) {
+            String reason = null;
+            try {
+                Class<?> c = Class.forName(input);
+                if (!clz.isAssignableFrom(c)) {
+                    reason = c.getCanonicalName() + " does not inherit from " + input;
+                }
+            } catch (ClassNotFoundException e) {
+                reason = "Could not find class " + input;
+            }
+            return new ValidationResult.Builder().subject(subject).input(input).explanation(reason).valid(reason == null).build();
+        }
+    }
+
+
+    public static final Validator TYPE_VALIDATOR(Class<?> clz) {
+        return new TypeValidator(clz);
+    }
 
     public static final Validator DOUBLE_VALIDATOR = new Validator() {
         @Override
@@ -72,7 +106,7 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                if (value==null) {
+                if (value == null) {
                     reason = "null is not a valid integer";
                 } else {
                     final int intVal = Integer.parseInt(value);
@@ -95,7 +129,7 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                if (value==null) {
+                if (value == null) {
                     reason = "null is not a valid integer";
                 } else {
                     final long longVal = Long.parseLong(value);
@@ -138,7 +172,7 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                if (value==null) {
+                if (value == null) {
                     reason = "null is not a valid integer";
                 } else {
                     Integer.parseInt(value);
@@ -158,7 +192,7 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                if (value==null) {
+                if (value == null) {
                     reason = "null is not a valid long";
                 } else {
                     Long.parseLong(value);
@@ -178,7 +212,7 @@ public class StandardValidators {
 
             String reason = null;
             try {
-                if (value==null) {
+                if (value == null) {
                     reason = "null is not a valid integer";
                 } else {
                     final int intVal = Integer.parseInt(value);
@@ -255,7 +289,7 @@ public class StandardValidators {
 
 
             String reason = String.format("'%s' is not a supported language tag", value);
-            for (String tag: Locale.getISOLanguages()) {
+            for (String tag : Locale.getISOLanguages()) {
                 if (tag.equals(value)) reason = null;
             }
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
@@ -294,6 +328,48 @@ public class StandardValidators {
             return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null).build();
         }
     };
+
+    /**
+     * {@link Validator} that ensures that value has 1+ non-whitespace
+     * characters
+     */
+    public static final Validator NON_BLANK_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String value) {
+            return new ValidationResult.Builder().subject(subject).input(value)
+                    .valid(value != null && !value.trim().isEmpty())
+                    .explanation(subject
+                            + " must contain at least one character that is not white space").build();
+        }
+    };
+
+    public static final Validator TIME_PERIOD_VALIDATOR = new Validator() {
+        private final Pattern TIME_DURATION_PATTERN = Pattern.compile(FormatUtils.TIME_DURATION_REGEX);
+
+        @Override
+        public ValidationResult validate(final String subject, final String input) {
+          /*  if (context.isExpressionLanguageSupported(subject) && context.isExpressionLanguagePresent(input)) {
+                return new ValidationResult.Builder().subject(subject).input(input).explanation("Expression Language Present").valid(true).build();
+            }*/
+
+            if (input == null) {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("Time Period cannot be null").build();
+            }
+            if (TIME_DURATION_PATTERN.matcher(input.toLowerCase()).matches()) {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            } else {
+                return new ValidationResult.Builder()
+                        .subject(subject)
+                        .input(input)
+                        .valid(false)
+                        .explanation("Must be of format <duration> <TimeUnit> where <duration> is a "
+                                + "non-negative integer and TimeUnit is a supported Time Unit, such "
+                                + "as: nanos, millis, secs, mins, hrs, days")
+                        .build();
+            }
+        }
+    };
+
     //
     //
     // FACTORY METHODS FOR VALIDATORS
@@ -318,8 +394,6 @@ public class StandardValidators {
     }
 
 
-
-
     public static Validator createRegexMatchingValidator(final Pattern pattern) {
         return new Validator() {
             @Override
@@ -336,7 +410,6 @@ public class StandardValidators {
             }
         };
     }
-
 
 
     public static Validator createLongValidator(final long minimum, final long maximum, final boolean inclusive) {
@@ -362,8 +435,6 @@ public class StandardValidators {
     }
 
 
-
-
     public static class StringLengthValidator implements Validator {
         private final int minimum;
         private final int maximum;
@@ -377,17 +448,17 @@ public class StandardValidators {
         public ValidationResult validate(final String subject, final String value) {
             if (value.length() < minimum || value.length() > maximum) {
                 return new ValidationResult.Builder()
-                  .subject(subject)
-                  .valid(false)
-                  .input(value)
-                  .explanation(String.format("String length invalid [min: %d, max: %d]", minimum, maximum))
-                  .build();
+                        .subject(subject)
+                        .valid(false)
+                        .input(value)
+                        .explanation(String.format("String length invalid [min: %d, max: %d]", minimum, maximum))
+                        .build();
             } else {
                 return new ValidationResult.Builder()
-                  .valid(true)
-                  .input(value)
-                  .subject(subject)
-                  .build();
+                        .valid(true)
+                        .input(value)
+                        .subject(subject)
+                        .build();
             }
         }
     }
@@ -404,7 +475,7 @@ public class StandardValidators {
         }
 
         @Override
-        public ValidationResult validate(final String subject, final String value ) {
+        public ValidationResult validate(final String subject, final String value) {
 
 
             final String substituted = value;
@@ -472,8 +543,7 @@ public class StandardValidators {
             try {
                 Enum.valueOf(this.enumClass, value);
                 builder.valid(true);
-            }
-            catch(final Exception e) {
+            } catch (final Exception e) {
                 builder.explanation(e.getLocalizedMessage()).valid(false);
             }
 

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>0.12.2</version>
+        <version>0.13.0</version>
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
@@ -104,6 +104,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>

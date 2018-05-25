@@ -15,72 +15,83 @@ To facilitate integration testing and to easily run tutorials, you can create a 
 
 .. code-block:: yaml
 
-    # Zookeeper container 172.17.0.1
-    zookeeper:
-      image: hurence/zookeeper
-      hostname: zookeeper
-      container_name: zookeeper
-      ports:
-        - "2181:2181"
+    version: "2"
+    services:
 
-    # Kafka container
-    kafka:
-      image: hurence/kafka
-      hostname: kafka
-      container_name: kafka
-      links:
-        - zookeeper
-      ports:
-        - "9092:9092"
-      environment:
-        KAFKA_ADVERTISED_PORT: 9092
-        KAFKA_ADVERTISED_HOST_NAME: sandbox
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        KAFKA_JMX_PORT: 7071
+      zookeeper:
+        container_name: zookeeper
+        image: hurence/zookeeper
+        hostname: zookeeper
+        ports:
+          - "2181:2181"
 
-    # ES container
-    elasticsearch:
-      environment:
-        - ES_JAVA_OPT="-Xms1G -Xmx1G"
-        - cluster.name=es-logisland
-        - http.host=0.0.0.0
-        - transport.host=0.0.0.0
-        - xpack.security.enabled=false
-      hostname: elasticsearch
-      container_name: elasticsearch
-      image: 'docker.elastic.co/elasticsearch/elasticsearch:5.4.0'
-      ports:
-        - '9200:9200'
-        - '9300:9300'
+      kafka:
+        container_name: kafka
+        image: hurence/kafka
+        hostname: kafka
+        links:
+          - zookeeper
+        ports:
+          - "9092:9092"
+        environment:
+          KAFKA_ADVERTISED_PORT: 9092
+          KAFKA_ADVERTISED_HOST_NAME: sandbox
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_JMX_PORT: 7071
 
-    # Kibana container
-    kibana:
-      environment:
-        - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
-      image: 'docker.elastic.co/kibana/kibana:5.4.0'
-      container_name: kibana
-      links:
-        - elasticsearch
-      ports:
-        - '5601:5601'
+      # ES container
+      elasticsearch:
+        container_name: elasticsearch
+        environment:
+          - ES_JAVA_OPT="-Xms1G -Xmx1G"
+          - cluster.name=es-logisland
+          - http.host=0.0.0.0
+          - transport.host=0.0.0.0
+          - xpack.security.enabled=false
+        hostname: elasticsearch
+        container_name: elasticsearch
+        image: 'docker.elastic.co/elasticsearch/elasticsearch:5.4.0'
+        ports:
+          - '9200:9200'
+          - '9300:9300'
 
-    # Logisland container : does nothing but launching
-    logisland:
-      image: hurence/logisland
-      command: tail -f bin/logisland.sh
-      #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
-      links:
-        - zookeeper
-        - kafka
-        - elasticsearch
-      ports:
-        - "4050:4050"
-      volumes:
-        - ./conf/logisland:/conf
-        - ./data/logisland:/data
-      container_name: logisland
-      extra_hosts:
-        - "sandbox:172.17.0.1"
+      # Kibana container
+      kibana:
+        container_name: kibana
+        environment:
+          - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
+        image: 'docker.elastic.co/kibana/kibana:5.4.0'
+        container_name: kibana
+        links:
+          - elasticsearch
+        ports:
+          - '5601:5601'
+
+      # Logisland container : does nothing but launching
+      logisland:
+        container_name: logisland
+        image: hurence/logisland:0.13.0
+        command: tail -f bin/logisland.sh
+        #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
+        links:
+          - zookeeper
+          - kafka
+          - elasticsearch
+          - redis
+        ports:
+          - "4050:4050"
+        volumes:
+          - ./conf/logisland:/conf
+          - ./data/logisland:/data
+        container_name: logisland
+        extra_hosts:
+          - "sandbox:172.17.0.1"
+
+      redis:
+        container_name: redis
+        image: 'redis:latest'
+        ports:
+          - '6379:6379'
 
 Once you have this file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana and logisland)
 
@@ -115,10 +126,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v0.12.2/logisland-0.12.2-bin-hdp2.5.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v0.13.0/logisland-0.13.0-bin-hdp2.5.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-0.12.2/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-0.13.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 
