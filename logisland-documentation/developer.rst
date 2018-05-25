@@ -204,14 +204,14 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-    mvn versions:set -DnewVersion=0.12.2
+    mvn versions:set -DnewVersion=0.13.0
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy
     mvn versions:commit
 
-    git tag -a v0.12.2 -m "new logisland release 0.12.2"
-    git push origin v0.12.2
+    git tag -a v0.13.0 -m "new logisland release 0.13.0"
+    git push origin v0.13.0
 
 follow the staging procedure in `oss.sonatype.org <https://oss.sonatype.org/#stagingRepositories>`_ or read `Sonatype book <http://books.sonatype.com/nexus-book/reference/staging-deployment.html#staging-maven>`_
 
@@ -224,7 +224,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/8905079/assets?name=logisland-0.12.2-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/8905079/assets?name=logisland-0.13.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 

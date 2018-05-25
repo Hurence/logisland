@@ -92,7 +92,6 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
             }
         }
 
-        logger.debug("getting controller service {}", new Object[]{serviceIdentifier});
         return controllerServiceMap.get(serviceIdentifier);
     }
 

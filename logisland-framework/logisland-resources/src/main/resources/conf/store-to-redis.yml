@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.12.2
+version: 0.13.0
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -19,12 +19,6 @@ engine:
     spark.executor.memory: 2G
     spark.executor.instances: 4
     spark.executor.cores: 2
-    spark.yarn.queue: default
-    spark.yarn.maxAppAttempts: 4
-    spark.yarn.am.attemptFailuresValidityInterval: 1h
-    spark.yarn.max.executor.failures: 20
-    spark.yarn.executor.failuresValidityInterval: 1h
-    spark.task.maxFailures: 8
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.batchDuration: 1000
     spark.streaming.backpressure.enabled: false
@@ -45,7 +39,7 @@ engine:
       type: service
       documentation: redis datastore service
       configuration:
-        connection.string: localhost:6379
+        connection.string: ${REDIS_CONNECTION}
         redis.mode: standalone
         database.index: 0
         communication.timeout: 10 seconds
@@ -95,7 +89,7 @@ engine:
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
         # all the parsed records are added to datastore by bulk
-        - processor: solr_publisher
+        - processor: datastore_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
           documentation: "indexes processed events in datastore"

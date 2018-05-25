@@ -21,6 +21,8 @@ import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.redis.RedisType;
 import com.hurence.logisland.redis.util.RedisUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
@@ -30,6 +32,8 @@ public class RedisConnectionPool {
     private volatile ControllerServiceInitializationContext context;
     private volatile RedisType redisType;
     private volatile JedisConnectionFactory connectionFactory;
+
+    private static Logger logger = LoggerFactory.getLogger(RedisConnectionPool.class);
 
 
     public void init(final ControllerServiceInitializationContext context) {
@@ -57,6 +61,7 @@ public class RedisConnectionPool {
         if (connectionFactory == null) {
             synchronized (this) {
                 if (connectionFactory == null) {
+                    logger.info("creating Redis connection factory");
                     connectionFactory = RedisUtils.createConnectionFactory(context);
                 }
             }

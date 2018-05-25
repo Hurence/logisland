@@ -63,8 +63,8 @@ Manual mode :
 
     # download the latest build of Node Exporter
     cd /opt
-    wget https://github.com/prometheus/node_exporter/releases/download/0.12.2/node_exporter-0.12.2.linux-amd64.tar.gz -O /tmp/node_exporter-0.12.2.linux-amd64.tar.gz
-    sudo tar -xvzf /tmp/node_exporter-0.12.2.linux-amd64.tar.gz
+    wget https://github.com/prometheus/node_exporter/releases/download/0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz -O /tmp/node_exporter-0.13.0.linux-amd64.tar.gz
+    sudo tar -xvzf /tmp/node_exporter-0.13.0.linux-amd64.tar.gz
 
     # Create a soft link to the node_exporter binary in /usr/bin.
     sudo ln -s /opt/node_exporter /usr/bin

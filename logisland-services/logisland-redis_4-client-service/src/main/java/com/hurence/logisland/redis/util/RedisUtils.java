@@ -332,6 +332,7 @@ public class RedisUtils {
 
         // need to call this to initialize the pool/connections
         connectionFactory.afterPropertiesSet();
+        logger.info("done creating Connection factory");
         return connectionFactory;
     }
 

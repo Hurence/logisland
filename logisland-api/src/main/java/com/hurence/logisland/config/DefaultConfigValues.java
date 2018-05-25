@@ -20,6 +20,7 @@ package com.hurence.logisland.config;
  */
 public enum DefaultConfigValues {
 
+    REDIS_CONNECTION("sandbox:6379"),
     ES_HOSTS("sandbox:9300"),
     ES_CLUSTER_NAME("es-logisland"),
     KAFKA_BROKERS("sandbox:9092"),
