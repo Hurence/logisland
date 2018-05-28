@@ -33,9 +33,11 @@ import java.util.Objects;
 
 public class Component {
     @JsonProperty("name")
+    @NotNull
     private String name = null;
 
     @JsonProperty("component")
+    @NotNull
     private String component = null;
 
     @JsonProperty("documentation")
@@ -43,6 +45,7 @@ public class Component {
 
     @JsonProperty("config")
     @Valid
+    @NotNull
     private List<Property> config = new ArrayList<Property>();
 
     public Component name(String name) {
@@ -56,9 +59,6 @@ public class Component {
      * @return name
      **/
     @ApiModelProperty(required = true, value = "")
-    @NotNull
-
-
     public String getName() {
         return name;
     }
@@ -78,9 +78,6 @@ public class Component {
      * @return component
      **/
     @ApiModelProperty(required = true, value = "")
-    @NotNull
-
-
     public String getComponent() {
         return component;
     }
@@ -100,8 +97,6 @@ public class Component {
      * @return documentation
      **/
     @ApiModelProperty(value = "")
-
-
     public String getDocumentation() {
         return documentation;
     }
@@ -125,11 +120,7 @@ public class Component {
      *
      * @return config
      **/
-    @ApiModelProperty(required = true, value = "")
-    @NotNull
-
-    @Valid
-
+    @ApiModelProperty(required = false, value = "")
     public List<Property> getConfig() {
         return config;
     }

@@ -22,18 +22,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hurence.logisland.engine.spark.remote.model.Pipeline;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,6 +52,7 @@ public class RemoteApiClient {
 
     private static final String PIPELINES_RESOURCE_URI = "pipelines";
     private static final CollectionType pipelineType = TypeFactory.defaultInstance().constructCollectionType(List.class, Pipeline.class);
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     private final OkHttpClient client;
     private final HttpUrl baseUrl;
@@ -109,7 +115,10 @@ public class RemoteApiClient {
                 logger.error("Error refreshing pipelines from remote server. Got code {}", response.code());
 
             }
-            return mapper.readValue(response.body().byteStream(), pipelineType);
+            List<Pipeline> ret = mapper.readValue(response.body().byteStream(), pipelineType);
+            //validate against javax.validation annotations.
+            ret.forEach(RemoteApiClient::doValidate);
+            return ret;
         } catch (Exception e) {
             logger.error("Unable to refresh pipelines from remote server", e);
         }
@@ -117,6 +126,27 @@ public class RemoteApiClient {
         return Collections.emptyList();
 
 
+    }
+
+    /**
+     * Perform validation of the given bean.
+     *
+     * @param bean the instance to validate
+     * @see javax.validation.Validator#validate
+     */
+    private static void doValidate(Object bean) {
+        Set<ConstraintViolation<Object>> result = validator.validate(bean);
+        if (!result.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Bean validation failed: ");
+            for (Iterator<ConstraintViolation<Object>> it = result.iterator(); it.hasNext(); ) {
+                ConstraintViolation<Object> violation = it.next();
+                sb.append(violation.getPropertyPath()).append(" - ").append(violation.getMessage());
+                if (it.hasNext()) {
+                    sb.append("; ");
+                }
+            }
+            throw new ConstraintViolationException(sb.toString(), result);
+        }
     }
 
 

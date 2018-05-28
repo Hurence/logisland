@@ -29,9 +29,11 @@ import java.util.Objects;
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
 
 public class Error {
+    @NotNull
     @JsonProperty("code")
     private Integer code = null;
 
+    @NotNull
     @JsonProperty("message")
     private String message = null;
 
@@ -46,7 +48,6 @@ public class Error {
      * @return code
      **/
     @ApiModelProperty(required = true, value = "")
-    @NotNull
 
 
     public Integer getCode() {
@@ -68,9 +69,6 @@ public class Error {
      * @return message
      **/
     @ApiModelProperty(required = true, value = "")
-    @NotNull
-
-
     public String getMessage() {
         return message;
     }

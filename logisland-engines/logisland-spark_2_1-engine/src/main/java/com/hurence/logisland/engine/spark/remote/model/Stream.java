@@ -54,9 +54,6 @@ public class Stream extends Component {
      * @return processors
      **/
     @ApiModelProperty(value = "")
-
-    @Valid
-
     public List<Processor> getProcessors() {
         return processors;
     }

@@ -36,7 +36,7 @@ paths:
 
             - Add a new pipeline if any provided is not already running.
 
-            - Reconfigure a pipeline if the same is already running and its configuration differs
+            - Reconfigure a pipeline (stop and then start) if same pipiline already running and but its lastUpdated is older than the one provided
 
             - Remove a pipeline if running but no more present in returned ones.
           schema:
@@ -113,7 +113,11 @@ definitions:
     properties:
       name:
         type: string
-        description: the name of the pipeline
+        description: The pipeline name
+      lastModified:
+        type: string
+        format: date-time
+        description: the last modified timestamp of this pipeline (used to trigger changes).
       services:
         type: array
         description: The service controllers.
@@ -122,10 +126,12 @@ definitions:
       streams:
         type: array
         description: The engine properties.
+        minItems: 1
         items:
           $ref: '#/definitions/Stream'
     required:
       - name
+      - lastModified
 
   Error:
     required:

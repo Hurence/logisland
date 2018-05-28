@@ -23,9 +23,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,9 +34,13 @@ import java.util.Objects;
  */
 @ApiModel(description = "A streaming pipeline.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
+public class Pipeline {
+    @JsonProperty("name")
+    @NotNull
+    private String name = null;
 
-public class Pipeline extends Component  {
     @JsonProperty("lastModified")
+    @NotNull
     private OffsetDateTime lastModified = null;
 
     @JsonProperty("services")
@@ -45,7 +49,28 @@ public class Pipeline extends Component  {
 
     @JsonProperty("streams")
     @Valid
+    @Size(min = 1)
+    @NotNull
     private List<Stream> streams = null;
+
+    public Pipeline name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * The pipeline name
+     *
+     * @return name
+     **/
+    @ApiModelProperty(required = true, value = "The pipeline name")
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Pipeline lastModified(OffsetDateTime lastModified) {
         this.lastModified = lastModified;
@@ -54,12 +79,10 @@ public class Pipeline extends Component  {
 
     /**
      * the last modified timestamp of this pipeline (used to trigger changes).
+     *
      * @return lastModified
      **/
-    @ApiModelProperty(value = "the last modified timestamp of this pipeline (used to trigger changes).")
-
-    @Valid
-
+    @ApiModelProperty(required = true, value = "the last modified timestamp of this pipeline (used to trigger changes).")
     public OffsetDateTime getLastModified() {
         return lastModified;
     }
@@ -83,12 +106,10 @@ public class Pipeline extends Component  {
 
     /**
      * The service controllers.
+     *
      * @return services
      **/
     @ApiModelProperty(value = "The service controllers.")
-
-    @Valid
-
     public List<Service> getServices() {
         return services;
     }
@@ -112,12 +133,10 @@ public class Pipeline extends Component  {
 
     /**
      * The engine properties.
+     *
      * @return streams
      **/
     @ApiModelProperty(value = "The engine properties.")
-
-    @Valid
-
     public List<Stream> getStreams() {
         return streams;
     }
@@ -136,22 +155,23 @@ public class Pipeline extends Component  {
             return false;
         }
         Pipeline pipeline = (Pipeline) o;
-        return Objects.equals(this.lastModified, pipeline.lastModified) &&
+        return Objects.equals(this.name, pipeline.name) &&
+                Objects.equals(this.lastModified, pipeline.lastModified) &&
                 Objects.equals(this.services, pipeline.services) &&
-                Objects.equals(this.streams, pipeline.streams) &&
-                super.equals(o);
+                Objects.equals(this.streams, pipeline.streams);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lastModified, services, streams, super.hashCode());
+        return Objects.hash(name, lastModified, services, streams);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class Pipeline {\n");
-        sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+
+        sb.append("    name: ").append(toIndentedString(name)).append("\n");
         sb.append("    lastModified: ").append(toIndentedString(lastModified)).append("\n");
         sb.append("    services: ").append(toIndentedString(services)).append("\n");
         sb.append("    streams: ").append(toIndentedString(streams)).append("\n");
@@ -170,4 +190,6 @@ public class Pipeline extends Component  {
         return o.toString().replace("\n", "\n    ");
     }
 }
+
+
 

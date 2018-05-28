@@ -21,13 +21,11 @@ import okhttp3.Credentials;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.BDDMockito;
 
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.HttpHeaders;
-import java.rmi.Remote;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +41,9 @@ public class RemoteApiClientTest {
         try (MockWebServer mockWebServer = new MockWebServer()) {
             mockWebServer.enqueue(new MockResponse().setResponseCode(404));
             mockWebServer.enqueue(new MockResponse().setBodyDelay(3, TimeUnit.SECONDS));
-            mockWebServer.enqueue(new MockResponse().setBody("[{\"name\":\"divPo\", \"lastModified\":\"1983-06-04T10:01:02.345\",\"services\":[{}],\"streams\":[{}]}]"));
+            final String dummy = "\"name\":\"myName\", \"component\":\"myComponent\"";
+            mockWebServer.enqueue(new MockResponse().setBody("[{" + dummy + ",\"lastModified\":\"1983-06-04T10:01:02Z\"," +
+                    "\"streams\":[{" + dummy +"}]}]"));
             RemoteApiClient client = createInstance(mockWebServer, null, null);
             Assert.assertTrue(client.fetchPipelines().isEmpty());
             Assert.assertTrue(client.fetchPipelines().isEmpty());
@@ -51,6 +51,15 @@ public class RemoteApiClientTest {
         }
 
 
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void testValidationFails() throws Exception {
+        try (MockWebServer mockWebServer = new MockWebServer()) {
+            mockWebServer.enqueue(new MockResponse().setBody("[{\"name\":\"divPo\", \"lastModified\":\"1983-06-04T10:01:02Z\",\"services\":[{}],\"streams\":[{}]}]"));
+            RemoteApiClient client = createInstance(mockWebServer, null, null);
+            client.fetchPipelines();
+        }
 
 
     }
