@@ -104,7 +104,7 @@ public class ModifyId extends AbstractProcessor {
             .required(true)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue(FieldDictionary.RECORD_RAW_VALUE)
+            .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
     //TODO determines those values dynamically, used this code to determine those

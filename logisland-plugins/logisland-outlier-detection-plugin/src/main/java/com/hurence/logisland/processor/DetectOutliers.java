@@ -618,7 +618,7 @@ public class DetectOutliers extends AbstractProcessor {
             } catch (RuntimeException e) {
                 list.add(new StandardRecord(OUTLIER_PROCESSING_EXCEPTION_TYPE)
                         .setStringField(FieldDictionary.RECORD_ERRORS, ProcessError.RUNTIME_ERROR.toString())
-                        .setStringField(FieldDictionary.RECORD_RAW_VALUE, e.getMessage())
+                        .setStringField(FieldDictionary.RECORD_VALUE, e.getMessage())
                         .setStringField(FieldDictionary.PROCESSOR_NAME, DetectOutliers.class.getName())
                 );
             }

@@ -28,8 +28,6 @@ public class FieldDictionary {
     public static String RECORD_DAYTIME = "record_daytime";
     public static String RECORD_KEY = "record_key";
     public static String RECORD_VALUE = "record_value";
-    public static String RECORD_RAW_KEY = "record_raw_key";
-    public static String RECORD_RAW_VALUE = "record_raw_value";
     public static String RECORD_NAME = "record_name";
     public static String PROCESSOR_NAME = "processor_name";
     public static String RECORD_POSITION = "record_position";
@@ -59,8 +57,6 @@ public class FieldDictionary {
                 RECORD_DAYTIME,
                 RECORD_KEY,
                 RECORD_VALUE,
-                RECORD_RAW_KEY,
-                RECORD_RAW_VALUE,
                 PROCESSOR_NAME,
                 RECORD_POSITION,
                 RECORD_BODY,

@@ -95,8 +95,7 @@ public class MockPropertyValue implements PropertyValue {
     @Override
     public Record asRecord() {
         return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE,rawValue)
-                .setStringField(FieldDictionary.RECORD_RAW_VALUE,rawValue);
+                .setStringField(FieldDictionary.RECORD_VALUE,rawValue);
     }
     @Override
     public Long asLong() {

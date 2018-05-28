@@ -291,7 +291,7 @@ public class ModifyIdTest {
          * ERRORS
          */
         String rawValue = "a,b,c,12.5";
-        Record record1 = getRecord1().setStringField(FieldDictionary.RECORD_RAW_VALUE,rawValue);
+        Record record1 = getRecord1().setStringField(FieldDictionary.RECORD_VALUE,rawValue);
         testRunner.enqueue(record1);
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();

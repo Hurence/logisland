@@ -87,8 +87,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     @Override
     public Record asRecord() {
         return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim())
-                .setStringField(FieldDictionary.RECORD_RAW_VALUE,getRawValue().trim());
+                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim());
     }
 
     @Override
