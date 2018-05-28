@@ -45,8 +45,6 @@ paths:
               $ref: '#/definitions/Pipeline'
         default:
           description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
 
 definitions:
 
@@ -68,7 +66,6 @@ definitions:
     type: object
     required:
       - component
-      - config
       - name
     properties:
       name:
@@ -133,13 +130,3 @@ definitions:
       - name
       - lastModified
 
-  Error:
-    required:
-      - code
-      - message
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
