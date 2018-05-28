@@ -15,9 +15,9 @@
  */
 package com.hurence.logisland.util.string;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hurence.logisland.util.time.DateUtil;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class JsonUtil {
 		Map<String, Object> retMap = new HashMap<>();
 		if (json != null) {
 			try {
-				retMap = mapper.readValue(json, new TypeReference<Map<String, Object>>() {
+				retMap = mapper.readValue(json, new TypeReference<Map<String, Object>> () {
 				});
 			} catch (IOException e) {
 				logger.warn("Error while reading Java Map from JSON response: " + json, e);

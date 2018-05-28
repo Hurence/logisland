@@ -43,7 +43,7 @@ public class RemoteApiClientTest {
         try (MockWebServer mockWebServer = new MockWebServer()) {
             mockWebServer.enqueue(new MockResponse().setResponseCode(404));
             mockWebServer.enqueue(new MockResponse().setBodyDelay(3, TimeUnit.SECONDS));
-            mockWebServer.enqueue(new MockResponse().setBody("[{\"name\":\"divPo\",\"services\":[{}],\"streams\":[{}]}]"));
+            mockWebServer.enqueue(new MockResponse().setBody("[{\"name\":\"divPo\", \"lastModified\":\"1983-06-04T10:01:02.345\",\"services\":[{}],\"streams\":[{}]}]"));
             RemoteApiClient client = createInstance(mockWebServer, null, null);
             Assert.assertTrue(client.fetchPipelines().isEmpty());
             Assert.assertTrue(client.fetchPipelines().isEmpty());

@@ -89,6 +89,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

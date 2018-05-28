@@ -49,6 +49,11 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     }
 
     @Override
+    public void removeStreamContext(StreamContext streamContext) {
+        streamContexts.remove(streamContext);
+    }
+
+    @Override
     public ProcessingEngine getEngine() {
         return (ProcessingEngine) component;
     }
@@ -90,5 +95,10 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     @Override
     public void addControllerServiceConfiguration(ControllerServiceConfiguration config) {
         controllerServiceConfigurations.add(config);
+    }
+
+    @Override
+    public void removeControllerServiceConfiguration(ControllerServiceConfiguration config) {
+        controllerServiceConfigurations.remove(config);
     }
 }

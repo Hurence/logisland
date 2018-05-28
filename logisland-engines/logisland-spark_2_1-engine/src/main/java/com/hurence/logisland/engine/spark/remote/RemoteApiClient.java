@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hurence.logisland.engine.spark.remote.model.Pipeline;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ public class RemoteApiClient {
         this.mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setDateFormat(new ISO8601DateFormat());
+        mapper.registerModule(new JavaTimeModule())
+                .findAndRegisterModules();
 
         OkHttpClient.Builder builder = new OkHttpClient()
                 .newBuilder()

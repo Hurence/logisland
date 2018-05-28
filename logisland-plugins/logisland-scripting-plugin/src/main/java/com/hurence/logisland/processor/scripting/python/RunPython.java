@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.processor.scripting.python;
 
-import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -299,8 +298,7 @@ public class RunPython extends AbstractProcessor {
             
             // Define the process method
 
-            String statement = Lists.newArrayList(scriptCodeProcess.split("\n"))
-                    .stream()
+            String statement = Arrays.stream(scriptCodeProcess.split("\n"))
                     .map( t -> String.format("  %s", t))
                     .collect(joining("\n"));
             pythonInterpreter.exec("def process(context, records):\n" + statement);
