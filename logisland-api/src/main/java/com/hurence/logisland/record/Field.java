@@ -17,10 +17,12 @@ package com.hurence.logisland.record;
 
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Primitive Types
@@ -206,6 +208,11 @@ public class Field implements PropertyValue, Serializable {
                 }
             }
         }
+    }
+
+    @Override
+    public Long asTimePeriod(final TimeUnit timeUnit) {
+        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.toString().trim(), timeUnit);
     }
 
     @Override

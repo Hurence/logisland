@@ -21,6 +21,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -91,7 +92,7 @@ public interface PropertyValue extends Serializable {
      * in terms of the specified TimeUnit; if the property is not set, returns
      * <code>null</code>
      */
-   // public Long asTimePeriod(TimeUnit timeUnit);
+    public Long asTimePeriod(TimeUnit timeUnit);
 
 
 

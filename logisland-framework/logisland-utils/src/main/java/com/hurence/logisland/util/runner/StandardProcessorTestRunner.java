@@ -321,8 +321,17 @@ public class StandardProcessorTestRunner implements TestRunner {
         }
 
         try {
-            final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
-            ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, configContext);
+         //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
+
+
+            final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(service.getIdentifier()));
+            initContext.addControllerServices(context);
+
+            for(PropertyDescriptor prop :  context.getProperties().keySet()) {
+                initContext.setProperty(prop.getName(), context.getPropertyValue(prop.getName()).asString());
+            }
+
+            ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, initContext);
         } catch (final InvocationTargetException ite) {
             ite.getCause().printStackTrace();
             Assert.fail("Failed to enable Controller Service " + service + " due to " + ite.getCause());

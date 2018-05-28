@@ -24,6 +24,7 @@ Contents:
 
    prerequisites
    index-apache-logs
+   store-to-redis
    match-queries
    aggregate-events
    enrich-apache-logs
@@ -31,4 +32,8 @@ Contents:
    indexing-bro-events
    indexing-netflow-events
    indexing-network-packets
-
+   generate_unique_ids
+   index-blockchain-transactions
+   index-excel-spreadsheets
+   mqtt-to-historian
+   integrate-kafka-connect

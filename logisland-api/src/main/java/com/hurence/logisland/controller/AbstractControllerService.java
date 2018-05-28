@@ -17,6 +17,8 @@
 package com.hurence.logisland.controller;
 
 
+import com.hurence.logisland.annotation.lifecycle.OnDisabled;
+import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.logging.ComponentLog;
@@ -26,6 +28,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
 
     private ControllerServiceLookup serviceLookup;
     private ComponentLog logger;
+    private volatile boolean enabled = true;
 
     @Override
     public final void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
@@ -62,4 +65,18 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
         return logger;
     }
 
+
+    @OnEnabled
+    public final void enabled() {
+        this.enabled = true;
+    }
+
+    @OnDisabled
+    public final void disabled() {
+        this.enabled = false;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
 }
