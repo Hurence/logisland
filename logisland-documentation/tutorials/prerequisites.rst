@@ -11,7 +11,7 @@ There are two main ways to launch a logisland job :
 ------------------------------------------
 Logisland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
-To facilitate integration testing and to easily run tutorials, you can create a `docker-compose.yml` file with the following content, or directly download it from `a gist <https://gist.githubusercontent.com/oalam/706e719baf6bb6df46acdc4cd96ac72f/raw/08c014f3e7116f23a5edae30f82422dd297e8263/docker-compose.yml>`_
+To facilitate integration testing and to easily run tutorials, you can create a `docker-compose.yml` file with the following content.
 
 .. code-block:: yaml
 
