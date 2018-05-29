@@ -24,6 +24,7 @@ import com.hurence.logisland.processor.StandardValidationContext;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
+import java.io.IOException;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -243,5 +244,8 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
         config.setAnnotationData(annotationData);
     }
 
-
+    @Override
+    public void close() throws IOException {
+        //do nothing
+    }
 }

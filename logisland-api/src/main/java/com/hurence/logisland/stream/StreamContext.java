@@ -20,9 +20,10 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
 
+import java.io.Closeable;
 import java.util.Collection;
 
-public interface StreamContext extends ComponentContext {
+public interface StreamContext extends ComponentContext, Closeable {
 
     /**
      * @return the Stream

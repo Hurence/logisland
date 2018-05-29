@@ -20,7 +20,9 @@ import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 
-public interface ProcessContext extends ComponentContext {
+import java.io.Closeable;
+
+public interface ProcessContext extends ComponentContext, Closeable {
 
     /**
      * Adds the given {@link ControllerServiceLookup}  so that the

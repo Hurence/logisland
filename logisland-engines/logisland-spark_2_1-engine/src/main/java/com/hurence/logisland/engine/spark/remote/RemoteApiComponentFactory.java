@@ -18,10 +18,9 @@
 package com.hurence.logisland.engine.spark.remote;
 
 import com.hurence.logisland.config.ControllerServiceConfiguration;
-import com.hurence.logisland.engine.spark.remote.model.Processor;
-import com.hurence.logisland.engine.spark.remote.model.Property;
-import com.hurence.logisland.engine.spark.remote.model.Service;
-import com.hurence.logisland.engine.spark.remote.model.Stream;
+import com.hurence.logisland.engine.EngineContext;
+import com.hurence.logisland.engine.StandardEngineContext;
+import com.hurence.logisland.engine.spark.remote.model.*;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.stream.RecordStream;
@@ -33,9 +32,34 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * ]
+ * Component factory resolving logisland components from remote api model.
+ *
+ * @author amarziali
+ */
 public class RemoteApiComponentFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteApiComponentFactory.class);
+
+
+    /**
+     * Create a child isolated engine context for a pipeline sharing the engine processor but having separated streams,
+     * processor and services.
+     *
+     * @param engineContext the master engine context
+     * @param pipeline      the pipeline.
+     * @return a child {@link EngineContext}
+     */
+    public EngineContext createScopedEngineContext(EngineContext engineContext, Pipeline pipeline) {
+        EngineContext ret = new StandardEngineContext(engineContext.getEngine(), pipeline.getName());
+        ret.getProperties().forEach((k, v) -> {
+            if (v != null) {
+                ret.setProperty(k.getName(), v);
+            }
+        });
+        return ret;
+    }
 
 
     /**

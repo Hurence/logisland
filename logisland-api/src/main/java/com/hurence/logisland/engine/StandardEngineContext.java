@@ -23,6 +23,7 @@ import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.stream.StreamContext;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,11 +47,6 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     @Override
     public void addStreamContext(StreamContext streamContext) {
         streamContexts.add(streamContext);
-    }
-
-    @Override
-    public void removeStreamContext(StreamContext streamContext) {
-        streamContexts.remove(streamContext);
     }
 
     @Override
@@ -98,7 +94,9 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
     }
 
     @Override
-    public void removeControllerServiceConfiguration(ControllerServiceConfiguration config) {
-        controllerServiceConfigurations.remove(config);
+    public void close() throws IOException {
+        while (!streamContexts.isEmpty()) {
+            streamContexts.remove(0).close();
+        }
     }
 }
