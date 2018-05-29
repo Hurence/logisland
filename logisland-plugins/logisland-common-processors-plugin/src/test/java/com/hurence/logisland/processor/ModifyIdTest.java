@@ -131,7 +131,8 @@ public class ModifyIdTest {
         testRunner.enqueue(record1);
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputRecordsCount(0);
+        testRunner.assertOutputErrorCount(1);
         MockRecord outputRecord = testRunner.getOutputRecords().get(0);
 
         outputRecord.assertRecordSizeEquals(5);
@@ -151,7 +152,8 @@ public class ModifyIdTest {
         testRunner.enqueue(record1);
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputErrorCount(1);
+        testRunner.assertOutputRecordsCount(0);
         outputRecord = testRunner.getOutputRecords().get(0);
 
         outputRecord.assertRecordSizeEquals(5);

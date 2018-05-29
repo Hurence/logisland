@@ -22,4 +22,7 @@ public class RecordDictionary {
     public static String METRIC = "metric";
     public static String EVENT = "event";
     public static String MESSAGE = "message";
+    public static String ERROR = "error";
+    public static String TAG = "tag";
+    public static String COMPUTED_TAG = "computed_tag";
 }

@@ -23,10 +23,7 @@ import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import delight.nashornsandbox.NashornSandbox;
@@ -145,6 +142,7 @@ public class ComputeTag extends AbstractProcessor {
 
     protected DatastoreClientService datastoreClientService;
     protected NashornSandbox sandbox;
+    protected Map<String, String> dynamicTagValuesMap;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -206,8 +204,7 @@ public class ComputeTag extends AbstractProcessor {
         sandbox.allow(FieldDictionary.class);
 
 
-        // loop over js expression to evaluate/* Build the JsonPath expressions from attributes */
-        final Map<String, String> dynamicTagValuesMap = new HashMap<>();
+       dynamicTagValuesMap = new HashMap<>();
 
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
@@ -234,14 +231,12 @@ public class ComputeTag extends AbstractProcessor {
             String value = entry.getValue()
                     .replaceAll("cache\\((\\S*\\))", "cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId($1)")
                     .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble()");
-            //  dynamicTagValuesMap.put(entry.getKey().getName(), entry.getValue());
-            StringBuilder sb = new StringBuilder();
 
+            StringBuilder sb = new StringBuilder();
             sb.append("function ")
                     .append(key)
-                    .append("(  ) { ")
+                    .append("() { ")
                     .append(value)
-
                     .append(" } \n");
             sb.append("var record_")
                     .append(key)
@@ -257,21 +252,8 @@ public class ComputeTag extends AbstractProcessor {
                     .append(key)
                     .append("());\n");
 
-            try {
-                System.out.println(sb.toString());
-                sandbox.eval(sb.toString());
-              /*  sandbox.eval( "function oula() { var recordToFetch = new com.hurence.logisland.record.StandardRecord();" +
-                        "var test=  cache.get(\"test\",recordToFetch.setId(\"cached_id1\")).getField(\"record_value\").asString(); " +
-                        "return test;}" +
-                        "oula();");
-
-                System.out.println(value);
-                sandbox.eval( "function oula() { " + value +"}" +
-                        "oula();");*/
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
-
+            dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
+            System.out.println(sb.toString());
             logger.debug(sb.toString());
         }
 
@@ -286,12 +268,20 @@ public class ComputeTag extends AbstractProcessor {
         }
 
         List<Record> outputRecords = new ArrayList<>();
-        for (Record record : records) {
+        for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
-            Record cached = (Record) sandbox.get("record_cvib1");
-               /* Record comptedRecord = new StandardRecord("computed_record")
-                        .setStringField("test_field", stored.toString());*/
-            outputRecords.add(cached);
+
+            try {
+                sandbox.eval(entry.getValue());
+                Record cached = (Record) sandbox.get("record_" + entry.getKey());
+                outputRecords.add(cached);
+            } catch (ScriptException e) {
+                Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
+                        .setId(entry.getKey())
+                        .addError("ScriptException", e.getMessage() );
+                outputRecords.add(errorRecord);
+                logger.error(e.toString());
+            }
         }
 
         return outputRecords;

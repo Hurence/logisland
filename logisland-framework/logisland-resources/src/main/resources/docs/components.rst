@@ -147,6 +147,93 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.alerting.ComputeTag: 
+
+ComputeTag
+----------
+Add one or more field with a default value
+...
+
+Class
+_____
+com.hurence.logisland.processor.alerting.ComputeTag
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
+   "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
+<p>
+  Explanation: all loops (for, do-while, while, and if-else, and functions
+  should use braces, because poison_pill() function will be inserted after
+  each open brace "{", to ensure interruption checking. Otherwise simple
+  code like:
+  <pre>
+    while(true) while(true) {
+      // do nothing
+    }
+  </pre>
+  or even:
+  <pre>
+    while(true)
+  </pre>
+  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+  which make JVM unstable.
+</p>
+<p>
+  Properly writen code (even in bad intention) like:
+  <pre>
+    while(true) { while(true) {
+      // do nothing
+    }}
+  </pre>
+  will be changed into:
+  <pre>
+    while(true) {poison_pill(); 
+      while(true) {poison_pill();
+        // do nothing
+      }
+    }
+  </pre>
+  which finish nicely when interrupted.
+<p>
+  For legacy code, this check can be turned off, but with no guarantee, the
+  JS thread will gracefully finish when interrupted.
+</p>", "", "false", "", ""
+   "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
+<p>
+  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
+  quit itself when time exceeded. To execute only once this procedure per
+  statement set this value.
+</p>
+<p>
+  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
+</p>", "", "30", "", ""
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
 .. _com.hurence.logisland.processor.webAnalytics.ConsolidateSession: 
 
 ConsolidateSession
@@ -795,7 +882,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**id.generation.strategy**", "the strategy to generate new Id", "generate a random uid (generate a randomUid using java library), generate a hash from fields (generate a hash from fields), generate a string from java pattern and fields (generate a string from java pattern and fields), generate a concatenation of type, time and a hash from fields (generate a concatenation of type, time and a hash from fields (as for generate_hash strategy))", "randomUuid", "", ""
-   "**fields.to.hash**", "the comma separated list of field names (e.g. : 'policyid,date_raw'", "", "record_raw_value", "", ""
+   "**fields.to.hash**", "the comma separated list of field names (e.g. : 'policyid,date_raw'", "", "record_value", "", ""
    "**hash.charset**", "the charset to use to hash id string (e.g. 'UTF-8')", "", "UTF-8", "", ""
    "**hash.algorithm**", "the algorithme to use to hash id string (e.g. 'SHA-256'", "SHA-384, SHA-224, SHA-256, MD2, SHA, SHA-512, MD5", "SHA-256", "", ""
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "", ""
@@ -1498,7 +1585,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**value.regex**", "the regex to match for the message value", "", "null", "", ""
    "**value.fields**", "a comma separated list of fields corresponding to matching groups for the message value", "", "null", "", ""
    "key.regex", "the regex to match for the message key", "", ".*", "", ""
-   "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
+   "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_key", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
    "timezone.record.time", "what is the time zone of the string formatted date for 'record_time' field.", "", "UTC", "", ""
@@ -1574,7 +1661,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**value.regex**", "the regex to match for the message value", "", "null", "", ""
    "**value.fields**", "a comma separated list of fields corresponding to matching groups for the message value", "", "null", "", ""
    "key.regex", "the regex to match for the message key", "", ".*", "", ""
-   "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_raw_key", "", ""
+   "key.fields", "a comma separated list of fields corresponding to matching groups for the message key", "", "record_key", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
    "**properties.field**", "the field containing the properties to split and treat", "", "properties", "", ""
