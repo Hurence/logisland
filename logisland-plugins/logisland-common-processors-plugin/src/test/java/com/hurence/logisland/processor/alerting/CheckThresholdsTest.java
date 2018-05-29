@@ -32,7 +32,7 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
-public class ComputeTagsTest {
+public class CheckThresholdsTest {
 
     @Test
     public void testMultipleRules() throws InitializationException {
@@ -41,14 +41,13 @@ public class ComputeTagsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
+        final TestRunner runner = TestRunners.newTestRunner(CheckThresholds.class);
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
         runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
-        runner.setProperty("cvib3", "return 37.2/10*3;");
-        runner.setProperty("cvib2", "if( cache(\"cached_id2\").value > 10 ) return 0.0; else return 1.0;");
-        runner.setProperty("cvib1", "return cache(\"cached_id1\").value * 10.2;");
+        runner.setProperty("tvib1","cache(\"cached_id1\").value > 10.0");
+        runner.setProperty("tvib2", "cache(\"cached_id2\").value >= 0");
         runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
         runner.addControllerService(service.getIdentifier(), service);
         runner.enableControllerService(service);
@@ -62,61 +61,18 @@ public class ComputeTagsTest {
         runner.enqueue(recordsToEnrich);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(3);
+        runner.assertOutputRecordsCount(2);
         runner.assertOutputErrorCount(0);
 
         for (Record enriched : runner.getOutputRecords()) {
-            if (enriched.getId().equals("cvib1")) {
-                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asDouble(), 10.2 * 12.45, 0.0001);
-            } else if (enriched.getId().equals("cvib2")) {
-                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asDouble(), 1.0, 0.00001);
-            } else if (enriched.getId().equals("cvib3")) {
-                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asDouble(), 37.2 / 10.0 * 3.0, 0.00001);
+            if (enriched.getId().equals("tvib1")) {
+                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asString(), "cache(\"cached_id1\").value > 10.0");
+            } else if (enriched.getId().equals("tvib2")) {
+                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asString(), "cache(\"cached_id2\").value >= 0");
             }
         }
     }
 
-
-    @Test
-    public void testBadRules() throws InitializationException {
-
-        // create the controller service and link it to the test processor
-        final DatastoreClientService service = new MockDatastoreService();
-        getCacheRecords().forEach(r -> service.put("test", r, false));
-
-        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
-        runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
-        runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
-        runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
-        runner.setProperty("cvib3", "return 37.2/++10*3;");
-       /* runner.setProperty("cvib2", "if( cache(\"cached_id2\").value > 10 ) return 0.0; else return 1.0;");
-        runner.setProperty("cvib1", "return cache(\"cached_id1\").value * 10.2;");*/
-        runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
-        runner.addControllerService(service.getIdentifier(), service);
-        runner.enableControllerService(service);
-
-        final DatastoreClientService lookupService = runner.getProcessContext()
-                .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
-
-        Collection<Record> recordsToEnrich = getRecords();
-        runner.assertValid();
-        runner.enqueue(recordsToEnrich);
-        runner.run();
-        runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(0);
-        runner.assertOutputErrorCount(1);
-
-        for (Record enriched : runner.getOutputRecords()) {
-            if (enriched.getId().equals("cvib3")) {
-                assertEquals(enriched.getErrors().toArray()[0],
-                        "ScriptException: <eval>:3:17 Invalid left hand side for assignment\n" +
-                        " return 37.2 / ++10 * 3;\n" +
-                        "                 ^ in <eval> at line number 3 at column number 17");
-            }
-        }
-    }
 
     private Collection<Record> getRecords() {
         Collection<Record> recordsToEnrich = new ArrayList<>();
