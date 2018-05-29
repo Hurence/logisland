@@ -429,7 +429,8 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
     }
 
     protected final def getCurrentSparkStreamingContext(): StreamingContext = {
-        val batchDuration = conf.get(BaseStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getName).toInt
+        val batchDuration = conf.get(BaseStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getName,
+            BaseStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION.getDefaultValue).toInt
         StreamingContext.getActiveOrCreate(() => new StreamingContext(getCurrentSparkContext(), Milliseconds(batchDuration)))
     }
 
