@@ -26,4 +26,5 @@ public class RecordDictionary {
     public static String TAG = "tag";
     public static String COMPUTED_TAG = "computed_tag";
     public static String THRESHOLD = "threshold";
+    public static String ALERT = "alert";
 }

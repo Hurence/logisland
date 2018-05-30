@@ -21,22 +21,18 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.RecordDictionary;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Tags({"record", "fields", "Add"})
-@CapabilityDescription("Add one or more field with a default value\n" +
-        "...")
+@Tags({"record", "threshold", "tag", "alerting"})
+@CapabilityDescription("Compute threshold cross from given formulas.\n" +
+        "            each dynamic property will return a new record according to the formula definition\n" +
+        "            the record name will be set to the property name\n" +
+        "            the record time will be set to the current timestamp")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",
@@ -103,15 +99,31 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
 
-
-
             try {
                 sandbox.eval(entry.getValue());
                 Boolean match = (Boolean) sandbox.get("match");
                 if (match) {
-                    outputRecords.add(new StandardRecord(RecordDictionary.THRESHOLD)
-                            .setId(entry.getKey())
-                            .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(entry.getKey()).asString()));
+
+                    String key = entry.getKey();
+                    Record cachedThreshold = datastoreClientService.get("test", new StandardRecord().setId(key));
+                    if (cachedThreshold != null) {
+
+                        Long count = cachedThreshold.getField("count").asLong();
+                        Long duration = System.currentTimeMillis() - cachedThreshold.getField("first_record_time").asLong();
+                        cachedThreshold.setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
+                                .setField("count", FieldType.LONG, count + 1)
+                                .setField("duration", FieldType.LONG, duration);
+                        outputRecords.add(cachedThreshold);
+                    } else {
+                        Record threshold = new StandardRecord(RecordDictionary.THRESHOLD)
+                                .setId(key)
+                                .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
+                                .setField("count", FieldType.LONG, 1L)
+                                .setField("first_record_time", FieldType.LONG, new Date().getTime())
+                                .setField("duration", FieldType.LONG, 0);
+                        datastoreClientService.put("test", threshold, true);
+                        outputRecords.add(threshold);
+                    }
                 }
             } catch (ScriptException e) {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
