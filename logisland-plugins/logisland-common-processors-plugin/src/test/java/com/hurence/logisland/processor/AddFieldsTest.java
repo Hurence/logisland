@@ -222,13 +222,13 @@ public class AddFieldsTest extends BaseSyslogTest {
 
         Record record1 = new StandardRecord();
         record1.setField("ImportanceCode", FieldType.STRING, "9003");
-        record1.setField("B2BUnit", FieldType.STRING, "12_54");
+        record1.setField("ClientID", FieldType.STRING, "12_54");
         record1.setField("libelle_zone", FieldType.STRING, "EST");
 
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("category", "" +
-                "${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'affiliates'; if ( B2BUnit contains '_' ) return 'marketplace'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'integrated';}");
+                "${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'A'; if ( ClientID contains '_' ) return 'M'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'I';}");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -236,7 +236,7 @@ public class AddFieldsTest extends BaseSyslogTest {
         testRunner.assertOutputRecordsCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldEquals("category", "affiliates");
+        out.assertFieldEquals("category", "A");
     }
 
     @Test
@@ -244,13 +244,13 @@ public class AddFieldsTest extends BaseSyslogTest {
 
         Record record1 = new StandardRecord();
         record1.setField("ImportanceCode", FieldType.STRING, "9008");
-        record1.setField("B2BUnit", FieldType.STRING, "12*_*54");
+        record1.setField("ClientID", FieldType.STRING, "12*_*54");
         record1.setField("libelle_zone", FieldType.STRING, "EST");
 
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("category", "" +
-                "${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'affiliates'; if ( B2BUnit contains '*_*' ) return 'marketplace'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'integrated';}");
+                "${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'A'; if ( ClientID contains '*_*' ) return 'M'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'I';}");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -258,21 +258,21 @@ public class AddFieldsTest extends BaseSyslogTest {
         testRunner.assertOutputRecordsCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldEquals("category", "marketplace");
+        out.assertFieldEquals("category", "M");
     }
 
     @Test
     public void testMultipleFieldsWithComplexExpressionLanguageWithEmptyValues() {
 
         Record record1 = new StandardRecord();
-        record1.setField("ImportanceCode", FieldType.STRING, "");
-        record1.setField("B2BUnit", FieldType.STRING, "");
+        record1.setField("ImportantFlag", FieldType.STRING, "");
+        record1.setField("ClientID", FieldType.STRING, "");
         record1.setField("libelle_zone", FieldType.STRING, "");
 
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("category", "" +
-                "${if( ImportanceCode == '9003' || ImportanceCode == '9004') return 'affiliates'; if ( B2BUnit contains '_' ) return 'marketplace'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'integrated';}");
+                "${if( ImportantFlag == '9003' || ImportantFlag == '9004') return 'A'; if ( ClientID contains '_' ) return 'M'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'I';}");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -288,14 +288,14 @@ public class AddFieldsTest extends BaseSyslogTest {
     public void testMultipleFieldsWithComplexExpressionLanguageWithNullValues() {
 
         Record record1 = new StandardRecord();
-        record1.setField("ImportanceCode", FieldType.STRING, null);
-        record1.setField("B2BUnit", FieldType.STRING, null);
-        record1.setField("libelle_zone", FieldType.STRING, null);
+        record1.setField("ImportantFlag", FieldType.STRING, null);
+        record1.setField("ClientID", FieldType.STRING, null);
+        record1.setField("zone", FieldType.STRING, null);
 
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("category", "" +
-                "${if ( ImportanceCode != null && (ImportanceCode == '9003' || ImportanceCode == '9004')) return 'affiliates'; if ( B2BUnit contains '_' ) return 'marketplace'; if ( libelle_zone != 'EST' && libelle_zone != 'OUEST' && libelle_zone != 'NORD' ) return 'subsidiaries'; else return 'integrated';}");
+                "${if ( ImportantFlag != null && (ImportantFlag == '9003' || ImportantFlag == '9004')) return 'A'; if ( ClientID contains '_' ) return 'M'; if ( zone != 'EST' && zone != 'OUEST' && zone != 'NORD' ) return 'S'; else return 'I';}");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -303,6 +303,6 @@ public class AddFieldsTest extends BaseSyslogTest {
         testRunner.assertOutputRecordsCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldEquals("category", "subsidiaries");
+        out.assertFieldEquals("category", "S");
     }
 }
