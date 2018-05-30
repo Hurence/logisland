@@ -55,6 +55,7 @@ class KafkaStreamProcessingEngine extends BaseStreamProcessingEngine {
     private val logger = LoggerFactory.getLogger(classOf[KafkaStreamProcessingEngine])
 
 
+
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.addAll(super.getSupportedPropertyDescriptors)
@@ -64,13 +65,13 @@ class KafkaStreamProcessingEngine extends BaseStreamProcessingEngine {
     }
 
 
-    override def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit = {
+    override protected def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit = {
         setConfProperty(sparkConf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES)
         setConfProperty(sparkConf, engineContext, KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION)
 
     }
 
-    override def setupStreamingContexts(engineContext: EngineContext, ssc: StreamingContext): Unit = {
+    override protected def setupStreamingContexts(engineContext: EngineContext, ssc: StreamingContext): Unit = {
         val appName = engineContext.getPropertyValue(BaseStreamProcessingEngine.SPARK_APP_NAME).asString
         engineContext.getStreamContexts.asScala.foreach(streamContext => {
             try {

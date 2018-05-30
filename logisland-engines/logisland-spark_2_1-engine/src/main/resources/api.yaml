@@ -1,13 +1,32 @@
 swagger: '2.0'
 info:
-  description: >-
-    <b>REST API for logisland.</b>
-
-
-    The API should be implemented by a third party application and logisland will regularly poll this endpoint in order to trigger configuration changes.
-
   version: v1
   title: Logisland standard API
+  description: >-
+    <b>The Logisland REST API for third party applications.</b>
+
+
+    The API should be implemented by a third party application and logisland will regularly poll this endpoint in order to:
+
+    - Ask for configuration changes to be triggered.
+
+    - Report the latest configuration applied (to ease up resynchronisation and business continuity).
+
+    In terms of APIs, two degrees of freedom are possible:
+
+    - <b>Dataflows (mandatory)</b>:
+
+        A dataflow is a set of services and streams allowing a data flowing from one or more sources, being transformed and reach one or more destinations (sinks).
+
+        Use the dataflow api if you want to keep a high level point of view on your data operations. In this case, every stream created in a <i>dataflow box</i> will be destroyed if any change occours inside the stream itself (e.g. A processor configuration change.)
+
+
+    - <b>Streams (optional)</b>:
+        Obviously, you can have a finer-grained control of what is going on inside your streams!
+        In case you marked your dataflow as <u>mutable</u> Logisland will poll as well on the streams API endpoint in order to know if any stream has been affected by some configuration change.
+
+        In this case, the processor chain will be dynamically reconfigured without the need of stopping the stream and restarting a new one.
+
   contact:
     name: Hurence
     email: support@hurence.com
@@ -20,14 +39,106 @@ consumes:
 produces:
   - application/json
 paths:
-
-  /pipelines:
+  /{jobId}/dataflows:
     get:
       tags:
-       - pipelines
-      operationId: pollActivePipelines
-      summary:  Retrieves the streaming pipelines to run.
+       - dataflows
+      operationId: pollActiveDataflows
+      summary:  Retrieves the data flow to run.
+      description: >-
+        A dataflow is a set of services and streams allowing a data flowing from one or more sources,
+        being transformed and reach one or more destinations (sinks).
+      parameters:
+        - name: jobId
+          in: path
+          type: string
+          required: true
+          description: logisland job id (aka the engine name)
+      responses:
+        "200":
+          description: >-
+            should return every pipeline that should be running.
+            On server side, logisland will do the delta and apply the following:
+
+            - Add a new dataflow if any provided is not already running.
+              In this case streams and services will be created.
+
+            - Fully reconfigure a dataflow (stop and then start) if another one with
+                the same name is already running but its lastUpdated is older than the one provided.
+
+              In this case be aware that old stream and services will be destroyed and
+              new ones will be created.
+
+            - Remove a pipeline if running but no more present in returned ones.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DataFlow'
+        "304":
+          description: |
+            Nothing has been modified since the last call.
+
+            In this case the body content will be completely ignored
+            (hence the server can answer with an empty body to save network and resources).
+
+        "404":
+          description: Not found (the server probably does not handle this job)
+        default :
+          description: Unexpected error
+    post:
+      tags:
+       - dataflows
+      operationId: updateCurrentConfiguration
+      summary: Communicates the configuration of running dataflows.
+      description: >-
+        In order to ensure business continuity, Logisland will regularly contact the third party application in order to communicate a snapshot of the current configuration.
+
+        This service can be seen as well as a ping.
+      parameters:
+        - name: jobId
+          in: path
+          type: string
+          required: true
+          description: logisland job id (aka the engine name)
+        - in: body
+          name: dataflows
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DataFlow'
+      responses:
+        default :
+          description: |
+            The server should return HTTP 200 OK.
+            By the way, the response is ignored by Logisland since the operation
+            has a <i>fire and forget</i> nature.
+
+
+  /{jobId}/dataflows/{dataflowId}/streams/:
+    get:
+      tags:
+       - streams
+      operationId: pollStreamConfigurationChanges
+      summary:  Retrieves the
       description: Logisland will poll this API in order to start, reconfigure or stop the pipelines according to the received response.
+      parameters:
+        - name: jobId
+          in: path
+          type: string
+          required: true
+          description: logisland job id (aka the engine name)
+        - name: dataflowId
+          in: path
+          type: string
+          required: true
+          description: The name of the dataflow
+        - name: streamId
+          in: path
+          type: string
+          required: true
+          description: the name of the stream
+
       responses:
         "200":
           description: >-
@@ -36,15 +147,24 @@ paths:
 
             - Add a new pipeline if any provided is not already running.
 
-            - Reconfigure a pipeline (stop and then start) if same pipiline already running and but its lastUpdated is older than the one provided
+            - Reconfigure a pipeline (stop and then start) if same pipeline already running and but its lastUpdated is older than the one provided
 
             - Remove a pipeline if running but no more present in returned ones.
           schema:
             type: array
             items:
-              $ref: '#/definitions/Pipeline'
-        default:
-          description: unexpected error
+              $ref: '#/definitions/StreamConfiguration'
+        "304":
+          description: |
+            Nothing has been modified since the last call.
+
+            In this case the body content will be completely ignored
+            (hence the server can answer with an empty body to save network and resources).
+
+        "404":
+          description: Not found (the server probably does not handle this job)
+        default :
+          description: Unexpected error
 
 definitions:
 
@@ -79,8 +199,6 @@ definitions:
         items:
           $ref: '#/definitions/Property'
 
-
-
   Service:
     type: object
     description: A logisland 'controller service'.
@@ -90,7 +208,7 @@ definitions:
 
   Processor:
     type: object
-    description: A logisland 'controller service'.
+    description: A logisland 'processor'.
     allOf:
       - $ref: '#/definitions/Component'
 
@@ -99,14 +217,23 @@ definitions:
     allOf:
       - $ref: '#/definitions/Component'
       - properties:
+          mutable:
+            type: boolean
+            description: >-
+              if the stream is mutable, logisland will poll for changes.
+
+              See API /{jobId}/dataflows/{dataflowId}/stream/{streamId} for
+              more information.
+
+            default: false
           processors:
             type: array
             items:
               $ref: '#/definitions/Processor'
 
-  Pipeline:
+  Versioned:
     type: object
-    description: A streaming pipeline.
+    description: a versioned component
     properties:
       name:
         type: string
@@ -115,18 +242,37 @@ definitions:
         type: string
         format: date-time
         description: the last modified timestamp of this pipeline (used to trigger changes).
-      services:
-        type: array
-        description: The service controllers.
-        items:
-          $ref: '#/definitions/Service'
-      streams:
-        type: array
-        description: The engine properties.
-        minItems: 1
-        items:
-          $ref: '#/definitions/Stream'
     required:
       - name
       - lastModified
+
+  StreamConfiguration:
+    type: object
+    description: Tracks versioned stream configurations.
+    allOf:
+      - $ref: '#/definitions/Versioned'
+      - properties:
+          processors:
+            type: array
+            items:
+              $ref: '#/definitions/Processor'
+
+
+  DataFlow:
+    type: object
+    description: A streaming pipeline.
+    allOf:
+      - $ref: "#/definitions/Versioned"
+      - properties:
+          services:
+            type: array
+            description: The service controllers.
+            items:
+              $ref: '#/definitions/Service'
+          streams:
+            type: array
+            description: The engine properties.
+            minItems: 1
+            items:
+              $ref: '#/definitions/Stream'
 

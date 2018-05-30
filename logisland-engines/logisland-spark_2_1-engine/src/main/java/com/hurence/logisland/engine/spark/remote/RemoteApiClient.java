@@ -35,9 +35,9 @@ import javax.validation.Validator;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -104,7 +104,7 @@ public class RemoteApiClient {
      *
      * @return a list of {@link Pipeline} (never null). Empty in case of error or no results.
      */
-    public List<Pipeline> fetchPipelines() {
+    public Optional<List<Pipeline>> fetchPipelines() {
         Request request = new Request.Builder()
                 .url(baseUrl.newBuilder().addPathSegment(PIPELINES_RESOURCE_URI).build())
                 .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
@@ -113,17 +113,17 @@ public class RemoteApiClient {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 logger.error("Error refreshing pipelines from remote server. Got code {}", response.code());
-
+            } else {
+                List<Pipeline> ret = mapper.readValue(response.body().byteStream(), pipelineType);
+                //validate against javax.validation annotations.
+                ret.forEach(RemoteApiClient::doValidate);
+                return Optional.of(ret);
             }
-            List<Pipeline> ret = mapper.readValue(response.body().byteStream(), pipelineType);
-            //validate against javax.validation annotations.
-            ret.forEach(RemoteApiClient::doValidate);
-            return ret;
         } catch (Exception e) {
             logger.error("Unable to refresh pipelines from remote server", e);
         }
 
-        return Collections.emptyList();
+        return Optional.empty();
 
 
     }

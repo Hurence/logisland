@@ -23,7 +23,6 @@ import java.util.regex.Pattern
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
@@ -331,6 +330,20 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
 
 
     /**
+      * Called after the engine has been started.
+      *
+      * @param engineContext
+      */
+    protected def onStart(engineContext: EngineContext) : Unit = {}
+
+    /**
+      * Called before the engine is being stopped.
+      *
+      * @param engineContext
+      */
+    protected def onStop(engineContext: EngineContext) : Unit = {}
+
+    /**
       * start the engine
       *
       * @param engineContext
@@ -352,6 +365,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
         }
 
         streamingContext.start()
+        onStart(engineContext)
 
         if (timeout != -1) streamingContext.awaitTerminationOrTimeout(timeout)
         else streamingContext.awaitTermination()
@@ -365,7 +379,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
       * @param sparkConf     the preinitialized configuration.
       * @param engineContext the engine context.
       */
-    protected  def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit
+    protected def customizeSparkConfiguration(sparkConf: SparkConf, engineContext: EngineContext): Unit
 
 
     final def createStreamingContext(engineContext: EngineContext): StreamingContext = {
@@ -453,6 +467,7 @@ abstract class BaseStreamProcessingEngine extends AbstractProcessingEngine {
 
     final override def shutdown(engineContext: EngineContext) = {
         logger.info(s"shutting down Spark engine")
+        onStop(engineContext)
         engineContext.getStreamContexts foreach (streamingContext => {
             try {
 

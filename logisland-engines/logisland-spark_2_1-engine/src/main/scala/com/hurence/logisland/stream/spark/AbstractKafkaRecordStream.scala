@@ -89,7 +89,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     }
 
 
-    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
+        override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
