@@ -30,10 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Tags({"record", "alerting", "thresholds", "opc", "tag"})
 @CapabilityDescription("Add one or more field with a default value")
@@ -93,20 +90,26 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
                 .replaceAll("\\.count", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_COUNT).asDouble()")
                 .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_AVG).asDouble()");*/
 
-       return rawCode.replaceAll("cache\\((\\S*)\\).value", "getValue($1)")
-               .replaceAll("cache\\((\\S*)\\).count", "getCount($1)")
-               .replaceAll("cache\\((\\S*)\\).duration", "getDuration($1)");
+        return rawCode.replaceAll("cache\\((\\S*)\\).value", "getValue($1)")
+                .replaceAll("cache\\((\\S*)\\).count", "getCount($1)")
+                .replaceAll("cache\\((\\S*)\\).duration", "getDuration($1)");
     }
 
 
     @Override
     protected void setupDynamicProperties(ProcessContext context) {
+
+        sandbox.allow(System.class);
+        sandbox.allow(Date.class);
         String profileActivationRule = context.getPropertyValue(PROFILE_ACTIVATION_CONDITION).asString();
 
         StringBuilder sbActivation = new StringBuilder();
         sbActivation.append("var alert = false;\n")
                 .append("function getValue(id) {\n  return cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id)).getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n")
-                .append("function getDuration(id) {\n  return cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id)).getField(\"duration\").asDouble(); \n};\n")
+                .append("function getDuration(id) {\n")
+                .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
+                .append("  var duration =  new Date().getTime() - record.getTime().getTime();\n")
+                .append("  return duration; \n};\n")
                 .append("function getCount(id) {\n  return cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id)).getField(\"count\").asDouble(); \n};\n")
                 .append("if( ")
                 .append(expandCode(profileActivationRule))

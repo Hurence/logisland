@@ -147,16 +147,199 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
-.. _com.hurence.logisland.processor.alerting.ComputeTag: 
+.. _com.hurence.logisland.processor.alerting.CheckAlerts: 
 
-ComputeTag
-----------
+CheckAlerts
+-----------
 Add one or more field with a default value
-...
 
 Class
 _____
-com.hurence.logisland.processor.alerting.ComputeTag
+com.hurence.logisland.processor.alerting.CheckAlerts
+
+Tags
+____
+record, alerting, thresholds, opc, tag
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
+   "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
+<p>
+  Explanation: all loops (for, do-while, while, and if-else, and functions
+  should use braces, because poison_pill() function will be inserted after
+  each open brace "{", to ensure interruption checking. Otherwise simple
+  code like:
+  <pre>
+    while(true) while(true) {
+      // do nothing
+    }
+  </pre>
+  or even:
+  <pre>
+    while(true)
+  </pre>
+  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+  which make JVM unstable.
+</p>
+<p>
+  Properly writen code (even in bad intention) like:
+  <pre>
+    while(true) { while(true) {
+      // do nothing
+    }}
+  </pre>
+  will be changed into:
+  <pre>
+    while(true) {poison_pill(); 
+      while(true) {poison_pill();
+        // do nothing
+      }
+    }
+  </pre>
+  which finish nicely when interrupted.
+<p>
+  For legacy code, this check can be turned off, but with no guarantee, the
+  JS thread will gracefully finish when interrupted.
+</p>", "", "false", "", ""
+   "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
+<p>
+  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
+  quit itself when time exceeded. To execute only once this procedure per
+  statement set this value.
+</p>
+<p>
+  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
+</p>", "", "30", "", ""
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
+   "profile.activation.condition", "A javascript expression that activates this alerting profile when true", "", "0==0", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
+.. _com.hurence.logisland.processor.alerting.CheckThresholds: 
+
+CheckThresholds
+---------------
+Compute threshold cross from given formulas.
+            each dynamic property will return a new record according to the formula definition
+            the record name will be set to the property name
+            the record time will be set to the current timestamp
+
+Class
+_____
+com.hurence.logisland.processor.alerting.CheckThresholds
+
+Tags
+____
+record, threshold, tag, alerting
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
+   "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
+<p>
+  Explanation: all loops (for, do-while, while, and if-else, and functions
+  should use braces, because poison_pill() function will be inserted after
+  each open brace "{", to ensure interruption checking. Otherwise simple
+  code like:
+  <pre>
+    while(true) while(true) {
+      // do nothing
+    }
+  </pre>
+  or even:
+  <pre>
+    while(true)
+  </pre>
+  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+  which make JVM unstable.
+</p>
+<p>
+  Properly writen code (even in bad intention) like:
+  <pre>
+    while(true) { while(true) {
+      // do nothing
+    }}
+  </pre>
+  will be changed into:
+  <pre>
+    while(true) {poison_pill(); 
+      while(true) {poison_pill();
+        // do nothing
+      }
+    }
+  </pre>
+  which finish nicely when interrupted.
+<p>
+  For legacy code, this check can be turned off, but with no guarantee, the
+  JS thread will gracefully finish when interrupted.
+</p>", "", "false", "", ""
+   "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
+<p>
+  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
+  quit itself when time exceeded. To execute only once this procedure per
+  statement set this value.
+</p>
+<p>
+  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
+</p>", "", "30", "", ""
+   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
+   "record.ttl", "How long (in ms) do the record will remain in cache", "", "30000", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
+.. _com.hurence.logisland.processor.alerting.ComputeTags: 
+
+ComputeTags
+-----------
+Compute tag cross from given formulas.
+- each dynamic property will return a new record according to the formula definition
+- the record name will be set to the property name
+- the record time will be set to the current timestamp
+
+a threshold_cross has the following properties : count, sum, avg, time, duration, value
+
+Class
+_____
+com.hurence.logisland.processor.alerting.ComputeTags
 
 Tags
 ____
@@ -221,6 +404,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
   When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
 </p>", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
 
 Dynamic Properties
 __________________

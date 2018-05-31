@@ -93,6 +93,11 @@ public class MockDatastoreService implements DatastoreClientService {
     }
 
     @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        collections.get(collectionName).remove(record.getId());
+    }
+
+    @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
         List<MultiGetResponseRecord> results = new ArrayList<>();
         for (MultiGetQueryRecord mgqr : multiGetQueryRecords) {

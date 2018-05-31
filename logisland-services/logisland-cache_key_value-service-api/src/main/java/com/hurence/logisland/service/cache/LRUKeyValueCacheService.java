@@ -47,7 +47,7 @@ import java.util.*;
 @CapabilityDescription("A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
 public class LRUKeyValueCacheService<K,V>  extends AbstractControllerService implements CacheService<K,V> {
 
-    private volatile Cache<K,V> cache;
+    protected volatile Cache<K,V> cache;
 
     @Override
     public V get(K k) {

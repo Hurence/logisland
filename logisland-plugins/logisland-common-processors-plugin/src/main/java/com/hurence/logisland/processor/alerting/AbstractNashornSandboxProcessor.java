@@ -137,6 +137,15 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
             .build();
 
 
+    public static final PropertyDescriptor DATASTORE_CACHE_COLLECTION = new PropertyDescriptor.Builder()
+            .name("datastore.cache.collection")
+            .description("The collection where to find cached objects")
+            .required(false)
+            .defaultValue("test")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+
     protected DatastoreClientService datastoreClientService;
     protected NashornSandbox sandbox;
     protected Map<String, String> dynamicTagValuesMap;
@@ -149,6 +158,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         properties.add(ALLOw_NO_BRACE);
         properties.add(MAX_PREPARED_STATEMENTS);
         properties.add(DATASTORE_CLIENT_SERVICE);
+        properties.add(DATASTORE_CACHE_COLLECTION);
 
         return properties;
     }

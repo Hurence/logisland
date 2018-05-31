@@ -399,6 +399,16 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            remove(record.getId(),stringSerializer);
+        } catch (IOException e) {
+            getLogger().warn("Error removing record : " + e.getMessage(), e);
+        }
+
+    }
+
+    @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
         return null;
     }

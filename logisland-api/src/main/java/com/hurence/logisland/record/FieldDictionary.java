@@ -32,6 +32,7 @@ public class FieldDictionary {
     public static String PROCESSOR_NAME = "processor_name";
     public static String RECORD_POSITION = "record_position";
     public static String RECORD_BODY = "record_body";
+    public static String RECORD_COUNT = "record_count";
 
 
     public static String RECORD_POSITION_LATITUDE = "record_position_latitude";

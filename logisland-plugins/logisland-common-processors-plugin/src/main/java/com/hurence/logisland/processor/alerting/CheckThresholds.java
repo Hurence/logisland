@@ -22,6 +22,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,13 +55,30 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
           configuration:
             cache.client.service: cache
             default.record_type: threshold_cross
-            default.el.language: js
             default.ttl: 300000
             tvib1: cache("vib1").value > 10.0;
             tvib2: cache("vib2").value >= 0 && cache("vib2").value < cache("vib1").value;
      */
 
     private static final Logger logger = LoggerFactory.getLogger(CheckThresholds.class);
+
+
+    public static final PropertyDescriptor RECORD_TTL = new PropertyDescriptor.Builder()
+            .name("record.ttl")
+            .description("How long (in ms) do the record will remain in cache")
+            .required(false)
+            .defaultValue("30000")
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+
+
+    @Override
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        List<PropertyDescriptor> properties = new ArrayList<>(super.getSupportedPropertyDescriptors());
+        properties.add(RECORD_TTL);
+
+        return properties;
+    }
 
     @Override
     protected void setupDynamicProperties(ProcessContext context) {
@@ -84,8 +102,12 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
             System.out.println(sb.toString());
             logger.debug(sb.toString());
         }
+        defaultCollection = context.getPropertyValue(DATASTORE_CACHE_COLLECTION).asString();
+        recordTTL = context.getPropertyValue(RECORD_TTL).asInteger();
     }
 
+    private String defaultCollection;
+    private Integer recordTTL;
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
@@ -98,30 +120,36 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
         List<Record> outputRecords = new ArrayList<>();
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
+            // look for record into the cache
+            String key = entry.getKey();
+            Record cachedThreshold = datastoreClientService.get(defaultCollection, new StandardRecord().setId(key));
+            if (cachedThreshold != null) {
+                Long duration = System.currentTimeMillis() - cachedThreshold.getTime().getTime();
+                if (duration > recordTTL) {
+                    datastoreClientService.remove(defaultCollection, cachedThreshold, false);
+                    cachedThreshold = null;
+                }
+            }
 
             try {
                 sandbox.eval(entry.getValue());
                 Boolean match = (Boolean) sandbox.get("match");
                 if (match) {
 
-                    String key = entry.getKey();
-                    Record cachedThreshold = datastoreClientService.get("test", new StandardRecord().setId(key));
-                    if (cachedThreshold != null) {
 
-                        Long count = cachedThreshold.getField("count").asLong();
-                        Long duration = System.currentTimeMillis() - cachedThreshold.getField("first_record_time").asLong();
+                    if (cachedThreshold != null) {
+                        Long count = cachedThreshold.getField(FieldDictionary.RECORD_COUNT).asLong();
+                        Date firstThresholdTime = cachedThreshold.getTime();
                         cachedThreshold.setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
-                                .setField("count", FieldType.LONG, count + 1)
-                                .setField("duration", FieldType.LONG, duration);
+                                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, count + 1)
+                                .setTime(firstThresholdTime);
                         outputRecords.add(cachedThreshold);
                     } else {
                         Record threshold = new StandardRecord(RecordDictionary.THRESHOLD)
                                 .setId(key)
                                 .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
-                                .setField("count", FieldType.LONG, 1L)
-                                .setField("first_record_time", FieldType.LONG, new Date().getTime())
-                                .setField("duration", FieldType.LONG, 0);
-                        datastoreClientService.put("test", threshold, true);
+                                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, 1L);
+                        datastoreClientService.put(defaultCollection, threshold, true);
                         outputRecords.add(threshold);
                     }
                 }
