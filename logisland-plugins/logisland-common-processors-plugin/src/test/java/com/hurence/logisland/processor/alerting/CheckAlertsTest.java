@@ -34,8 +34,38 @@ import static org.junit.Assert.assertEquals;
 
 public class CheckAlertsTest {
 
+
     @Test
-    public void testMultipleRules() throws InitializationException {
+    public void testSyntax() throws InitializationException {
+
+        // create the controller service and link it to the test processor
+        final DatastoreClientService service = new MockDatastoreService();
+        getCacheRecords().forEach(r -> service.put("test", r, false));
+
+        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
+        runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
+        runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
+        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
+        runner.setProperty("avib4", "cache(\"noone\").value < 5");             // syntax error
+        runner.setProperty("avib5", "brousoufparty++++");                      // syntax error
+
+
+        runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
+        runner.addControllerService(service.getIdentifier(), service);
+        runner.enableControllerService(service);
+
+        runner.assertValid();
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(0);
+        runner.assertOutputErrorCount(2);
+
+         }
+
+    @Test
+    public void testValueRules() throws InitializationException {
 
         // create the controller service and link it to the test processor
         final DatastoreClientService service = new MockDatastoreService();
@@ -50,9 +80,65 @@ public class CheckAlertsTest {
         runner.setProperty("avib1", "cache(\"cached_id1\").value > 12.0");     // ok
         runner.setProperty("avib2", "cache(\"cached_id2\").value < 5");        // ok
         runner.setProperty("avib3", "cache(\"cached_id3\").value < 5");        // ko
-        runner.setProperty("avib4", "cache(\"noone\").value < 5");             // syntax error
-        runner.setProperty("avib5", "brousoufparty++++");                      // syntax error
+
+        runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
+        runner.addControllerService(service.getIdentifier(), service);
+        runner.enableControllerService(service);
+
+        runner.assertValid();
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(2);
+        runner.assertOutputErrorCount(0);
+
+        for (Record enriched : runner.getOutputRecords()) {
+            if (enriched.getId().equals("avib1")) {
+                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asString(), "cache(\"cached_id1\").value > 12.0");
+            }
+        }
+    }
+
+
+    @Test
+    public void testCountRules() throws InitializationException {
+
+        // create the controller service and link it to the test processor
+        final DatastoreClientService service = new MockDatastoreService();
+        getCacheRecords().forEach(r -> service.put("test", r, false));
+
+        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
+        runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
+        runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
+        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib6", "cache(\"cached_id1\").count > 4");        // ok
+
+        runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
+        runner.addControllerService(service.getIdentifier(), service);
+        runner.enableControllerService(service);
+
+        runner.assertValid();
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.assertOutputRecordsCount(1);
+        runner.assertOutputErrorCount(0);
+
+    }
+
+    @Test
+    public void testDurationRules() throws InitializationException {
+
+        // create the controller service and link it to the test processor
+        final DatastoreClientService service = new MockDatastoreService();
+        getCacheRecords().forEach(r -> service.put("test", r, false));
+
+        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
+        runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
+        runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
+        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib7", "cache(\"cached_id2\").duration > 10000"); // ok
 
         runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
@@ -62,14 +148,9 @@ public class CheckAlertsTest {
         runner.assertValid();
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(4);
-        runner.assertOutputErrorCount(2);
+        runner.assertOutputRecordsCount(1);
+        runner.assertOutputErrorCount(0);
 
-        for (Record enriched : runner.getOutputRecords()) {
-            if (enriched.getId().equals("avib1")) {
-                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asString(), "cache(\"cached_id1\").value > 12.0");
-            }
-        }
     }
 
 
@@ -81,7 +162,7 @@ public class CheckAlertsTest {
         lookupRecords.add(new StandardRecord()
                 .setId("cached_id1")
                 .setField(FieldDictionary.RECORD_VALUE, FieldType.DOUBLE, 12.45)
-                .setField("count", FieldType.LONG, 5));
+                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, 5L));
 
         lookupRecords.add(new StandardRecord()
                 .setId("cached_id2")

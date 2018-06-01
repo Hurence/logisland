@@ -132,9 +132,9 @@ public class StringUtils {
                 }
             } );
 
-            if(!hasBeenReplaced[0]){
+          /*  if(!hasBeenReplaced[0]){
                 m.appendReplacement(sb, null == envVarValue ? defaultValue : envVarValue);
-            }
+            }*/
 
         }
         m.appendTail(sb);

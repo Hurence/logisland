@@ -39,23 +39,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.util.time.DateUtil;
+import com.hurence.logisland.record.*;
+import com.hurence.logisland.util.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 public class JsonSerializer implements RecordSerializer {
 
@@ -84,7 +76,7 @@ public class JsonSerializer implements RecordSerializer {
                 // retrieve event field
                 String fieldName = entry.getKey();
                 Field field = entry.getValue();
-              //  Object fieldValue = field.getRawValue();
+                //  Object fieldValue = field.getRawValue();
                 String fieldType = field.getType().toString();
 
                 // dump event field as record attribute
@@ -110,6 +102,16 @@ public class JsonSerializer implements RecordSerializer {
                         case "boolean":
                             jgen.writeBooleanField(fieldName, field.asBoolean());
                             break;
+                        case "array":
+                            jgen.writeArrayFieldStart(fieldName);
+                            //  jgen.writeStartArray();
+                            String[] items = field.asString().split(",");
+                            for (String item : items) {
+                                jgen.writeString(item);
+                            }
+                            jgen.writeEndArray();
+                            break;
+
                         default:
                             jgen.writeObjectField(fieldName, field.asString());
                             break;
@@ -144,7 +146,7 @@ public class JsonSerializer implements RecordSerializer {
             out.write(jsonString.getBytes());
             out.flush();
         } catch (IOException e) {
-           logger.debug(e.toString());
+            logger.debug(e.toString());
         }
 
     }
@@ -171,6 +173,8 @@ public class JsonSerializer implements RecordSerializer {
             Map<String, Field> fields = new HashMap<>();
 
             boolean processingFields = false;
+            Map<String, List<String>> arrays = new HashMap<>();
+            String currentArrayName = null;
             while ((currentToken = jp.nextValue()) != null) {
 
                 switch (currentToken) {
@@ -193,42 +197,49 @@ public class JsonSerializer implements RecordSerializer {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                            }else {
+                            } else {
                                 fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
                             }
                         }
                         break;
 
 
-                case VALUE_NUMBER_FLOAT:
-                    try {
+                    case VALUE_NUMBER_FLOAT:
+                        try {
 
-                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
-                    } catch (JsonParseException ex) {
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.DOUBLE, jp.getDoubleValue()));
+                        } catch (JsonParseException ex) {
 
-                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
-                    }
-                    break;
-                case VALUE_FALSE:
-                case VALUE_TRUE:
-                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
-                    break;
-                case START_ARRAY:
-                    logger.info(jp.getCurrentName());
-                    break;
+                            fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.FLOAT, jp.getFloatValue()));
+                        }
+                        break;
+                    case VALUE_FALSE:
+                    case VALUE_TRUE:
+                        fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.BOOLEAN, jp.getBooleanValue()));
+                        break;
+                    case START_ARRAY:
 
-                case END_ARRAY:
-                    break;
-                case VALUE_STRING:
+                        currentArrayName = jp.getCurrentName();
+                        arrays.put(currentArrayName, new ArrayList<>());
+                        break;
 
-                    if (jp.getCurrentName() != null) {
-                        switch (jp.getCurrentName()) {
-                            case "id":
-                                id = jp.getValueAsString();
-                                break;
-                            case "type":
-                                type = jp.getValueAsString();
-                                break;
+                    case END_ARRAY:
+
+                        String itemString = ListUtils.mkString(arrays.get(currentArrayName), String::toString, ", ");
+
+                            fields.put(currentArrayName, new Field(jp.getCurrentName(), FieldType.ARRAY, itemString));
+
+                        break;
+                    case VALUE_STRING:
+
+                        if (jp.getCurrentName() != null) {
+                            switch (jp.getCurrentName()) {
+                                case "id":
+                                    id = jp.getValueAsString();
+                                    break;
+                                case "type":
+                                    type = jp.getValueAsString();
+                                    break;
                          /*   case "creationDate":
                                 try {
                                     creationDate = new Date(jp.getValueAsLong());
@@ -236,20 +247,24 @@ public class JsonSerializer implements RecordSerializer {
                                     e.printStackTrace();
                                 }
                                 break;*/
-                            default:
-                                fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
+                                default:
+                                    fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.STRING, jp.getValueAsString()));
 
-                                break;
+                                    break;
+                            }
+                        } else {
+                            arrays.get(currentArrayName).add(jp.getValueAsString());
+
+
                         }
-                    }
 
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
 
-        Record record = new StandardRecord();
+            Record record = new StandardRecord();
             if (id != null) {
                 record.setId(id);
             }
@@ -263,9 +278,9 @@ public class JsonSerializer implements RecordSerializer {
 
             return record;
 
-    }
+        }
 
-}
+    }
 
 
     @Override

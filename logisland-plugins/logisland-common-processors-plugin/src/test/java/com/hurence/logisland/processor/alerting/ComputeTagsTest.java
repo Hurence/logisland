@@ -110,10 +110,11 @@ public class ComputeTagsTest {
 
         for (Record enriched : runner.getOutputRecords()) {
             if (enriched.getId().equals("cvib3")) {
-                assertEquals(enriched.getErrors().toArray()[0],
-                        "ScriptException: <eval>:3:17 Invalid left hand side for assignment\n" +
-                        " return 37.2 / ++10 * 3;\n" +
-                        "                 ^ in <eval> at line number 3 at column number 17");
+                assertEquals(
+                        "ScriptException: <eval>:9:17 Invalid left hand side for assignment\n" +
+                                " return 37.2 / ++10 * 3;\n" +
+                                "                 ^ in <eval> at line number 9 at column number 17",
+                        enriched.getErrors().toArray()[0]);
             }
         }
     }

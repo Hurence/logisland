@@ -51,25 +51,34 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
 
     @Override
     protected void setupDynamicProperties(ProcessContext context) {
+
+        StringBuilder sbActivation = new StringBuilder();
+        sbActivation
+                .append("function getValue(id) {\n")
+                .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
+                .append("  if(record == null) return Double.NaN;\n")
+                .append("  return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n");
+
+
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
                 continue;
             }
 
             String key = entry.getKey().getName();
-            String value = entry.getValue()
-                    .replaceAll("cache\\((\\S*\\))", "cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId($1)")
-                    .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble()");
+            String value = entry.getValue().replaceAll("cache\\((\\S*)\\).value", "getValue($1)");
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(sbActivation);
             sb.append("function ")
                     .append(key)
                     .append("() { ")
                     .append(value)
-                    .append(" } \n");
+                    .append(" }; \n");
             sb.append("var record_")
                     .append(key)
-                    .append(" = new com.hurence.logisland.record.StandardRecord()")
+                    .append(" = new com.hurence.logisland.record.StandardRecord(\"")
+                    .append(outputRecordType)
+                    .append("\")")
                     .append(".setId(\"")
                     .append(key)
                     .append("\");\n");
@@ -82,8 +91,8 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
                     .append("());\n");
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
-            System.out.println(sb.toString());
-            logger.debug(sb.toString());
+       //     System.out.println(sb.toString());
+        //    logger.debug(sb.toString());
         }
     }
 
@@ -95,7 +104,7 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
             init(context);
         }
 
-        List<Record> outputRecords = new ArrayList<>();
+        List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
 

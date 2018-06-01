@@ -49,11 +49,20 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor ALERT_CRITICITY = new PropertyDescriptor.Builder()
+            .name("alert.criticity")
+            .description("from 0 to ...")
+            .required(false)
+            .defaultValue("0")
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> properties = new ArrayList<>(super.getSupportedPropertyDescriptors());
         properties.add(PROFILE_ACTIVATION_CONDITION);
+        properties.add(ALERT_CRITICITY);
 
         return properties;
     }
@@ -101,16 +110,24 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
         sandbox.allow(System.class);
         sandbox.allow(Date.class);
+        sandbox.allow(Double.class);
         String profileActivationRule = context.getPropertyValue(PROFILE_ACTIVATION_CONDITION).asString();
 
         StringBuilder sbActivation = new StringBuilder();
         sbActivation.append("var alert = false;\n")
-                .append("function getValue(id) {\n  return cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id)).getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n")
+                .append("function getValue(id) {\n")
+                .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
+                .append("  if(record == null) return Double.NaN;\n")
+                .append("  return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n")
                 .append("function getDuration(id) {\n")
                 .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
+                .append("  if(record == null) return -1;\n")
                 .append("  var duration =  new Date().getTime() - record.getTime().getTime();\n")
                 .append("  return duration; \n};\n")
-                .append("function getCount(id) {\n  return cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id)).getField(\"count\").asDouble(); \n};\n")
+                .append("function getCount(id) {\n")
+                .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
+                .append("  if(record == null) return -1;\n")
+                .append("  return record.getField(\"record_count\").asLong(); \n};\n")
                 .append("if( ")
                 .append(expandCode(profileActivationRule))
                 .append(" ) { \n");
@@ -131,8 +148,8 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
 
-            System.out.println(sb.toString());
-            logger.debug(sb.toString());
+          //  System.out.println(sb.toString());
+           // logger.debug(sb.toString());
         }
 
 
@@ -147,16 +164,20 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
             init(context);
         }
 
-        List<Record> outputRecords = new ArrayList<>();
+        List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
             try {
                 sandbox.eval(entry.getValue());
                 Boolean alert = (Boolean) sandbox.get("alert");
                 if (alert) {
-                    outputRecords.add(new StandardRecord(RecordDictionary.ALERT)
+                    Record alertRecord = new StandardRecord(outputRecordType)
                             .setId(entry.getKey())
-                            .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(entry.getKey()).asString()));
+                            .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(entry.getKey()).asString());
+                    outputRecords.add(alertRecord);
+
+
+                    logger.info(alertRecord.toString());
                 }
             } catch (ScriptException e) {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)

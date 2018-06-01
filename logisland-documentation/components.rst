@@ -221,6 +221,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 </p>", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
+   "output.record.type", "the type of the output record", "", "event", "", ""
    "profile.activation.condition", "A javascript expression that activates this alerting profile when true", "", "0==0", "", ""
 
 Dynamic Properties
@@ -312,6 +313,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 </p>", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
+   "output.record.type", "the type of the output record", "", "event", "", ""
    "record.ttl", "How long (in ms) do the record will remain in cache", "", "30000", "", ""
 
 Dynamic Properties
@@ -405,6 +407,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 </p>", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
+   "output.record.type", "the type of the output record", "", "event", "", ""
 
 Dynamic Properties
 __________________

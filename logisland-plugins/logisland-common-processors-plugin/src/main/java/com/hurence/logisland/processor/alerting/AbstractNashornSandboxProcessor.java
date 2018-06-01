@@ -22,10 +22,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.FieldDictionary;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import delight.nashornsandbox.NashornSandbox;
@@ -146,9 +143,18 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
             .build();
 
 
+    public static final PropertyDescriptor OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()
+            .name("output.record.type")
+            .description("the type of the output record")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue(RecordDictionary.EVENT)
+            .build();
+
     protected DatastoreClientService datastoreClientService;
     protected NashornSandbox sandbox;
     protected Map<String, String> dynamicTagValuesMap;
+    protected String outputRecordType;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -159,6 +165,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         properties.add(MAX_PREPARED_STATEMENTS);
         properties.add(DATASTORE_CLIENT_SERVICE);
         properties.add(DATASTORE_CACHE_COLLECTION);
+        properties.add(OUTPUT_RECORD_TYPE);
 
         return properties;
     }
@@ -216,6 +223,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
 
 
         dynamicTagValuesMap = new HashMap<>();
+        outputRecordType = context.getPropertyValue(OUTPUT_RECORD_TYPE).asString();
 
         this.setupDynamicProperties(context);
 

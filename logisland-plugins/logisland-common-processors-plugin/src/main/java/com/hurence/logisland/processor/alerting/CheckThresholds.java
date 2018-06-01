@@ -99,8 +99,8 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
                     .append(" ) { match=true; }\n");
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
-            System.out.println(sb.toString());
-            logger.debug(sb.toString());
+         //   System.out.println(sb.toString());
+          //  logger.debug(sb.toString());
         }
         defaultCollection = context.getPropertyValue(DATASTORE_CACHE_COLLECTION).asString();
         recordTTL = context.getPropertyValue(RECORD_TTL).asInteger();
@@ -117,7 +117,7 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
             init(context);
         }
 
-        List<Record> outputRecords = new ArrayList<>();
+        List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
             // look for record into the cache
@@ -143,9 +143,11 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
                         cachedThreshold.setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
                                 .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, count + 1)
                                 .setTime(firstThresholdTime);
+
+                        datastoreClientService.put(defaultCollection, cachedThreshold, true);
                         outputRecords.add(cachedThreshold);
                     } else {
-                        Record threshold = new StandardRecord(RecordDictionary.THRESHOLD)
+                        Record threshold = new StandardRecord(outputRecordType)
                                 .setId(key)
                                 .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
                                 .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, 1L);
