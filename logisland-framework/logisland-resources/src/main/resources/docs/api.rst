@@ -369,5 +369,3 @@ And check if your output records behave as expected.
     out.assertRecordSizeEquals(9);
     out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "apache_log");
     out.assertFieldEquals(FieldDictionary.RECORD_TIME, 1469342728000L);
-
-
