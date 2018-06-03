@@ -19,16 +19,18 @@ package com.hurence.logisland.engine.spark.remote;
 
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.engine.EngineContext;
-import com.hurence.logisland.engine.StandardEngineContext;
 import com.hurence.logisland.engine.spark.remote.model.*;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.StandardProcessContext;
 import com.hurence.logisland.stream.RecordStream;
 import com.hurence.logisland.stream.StandardStreamContext;
 import com.hurence.logisland.stream.StreamContext;
+import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,25 +43,6 @@ import java.util.stream.Collectors;
 public class RemoteApiComponentFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteApiComponentFactory.class);
-
-
-    /**
-     * Create a child isolated engine context for a pipeline sharing the engine processor but having separated streams,
-     * processor and services.
-     *
-     * @param engineContext the master engine context
-     * @param pipeline      the pipeline.
-     * @return a child {@link EngineContext}
-     */
-    public EngineContext createScopedEngineContext(EngineContext engineContext, Pipeline pipeline) {
-        EngineContext ret = new StandardEngineContext(engineContext.getEngine(), pipeline.getName());
-        ret.getProperties().forEach((k, v) -> {
-            if (v != null) {
-                ret.setProperty(k.getName(), v);
-            }
-        });
-        return ret;
-    }
 
 
     /**
@@ -76,11 +59,12 @@ public class RemoteApiComponentFactory {
                     new StandardStreamContext(recordStream, stream.getName());
 
             // instantiate each related processor
-            stream.getProcessors().forEach(processor -> {
+            stream.getPipeline().getProcessors().forEach(processor -> {
                 Optional<ProcessContext> processorContext = getProcessContext(processor);
                 if (processorContext.isPresent())
                     instance.addProcessContext(processorContext.get());
             });
+
 
             // set the config properties
             stream.getConfig().forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
@@ -145,4 +129,71 @@ public class RemoteApiComponentFactory {
 
         return Optional.empty();
     }
+
+    /**
+     * Updates the state of the engine if needed.
+     *
+     * @param sparkContext  the spark context
+     * @param engineContext the engineContext
+     * @param dataflow      the new dataflow (new state)
+     * @param oldDataflow   latest dataflow dataflow.
+     */
+    public void updateEngineContext(SparkContext sparkContext, EngineContext engineContext, DataFlow dataflow, DataFlow oldDataflow) {
+        if (oldDataflow == null || oldDataflow.getLastModified().isBefore(dataflow.getLastModified())) {
+            logger.info("We have a new configuration. Resetting current engine");
+            engineContext.getEngine().reset(engineContext);
+            logger.info("Configuring dataflow. Last change at {} is {}", dataflow.getLastModified(), dataflow.getModificationReason());
+            dataflow.getServices().stream()
+                    .map(this::getControllerServiceConfiguration)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .forEach(engineContext::addControllerServiceConfiguration);
+            dataflow.getStreams().stream()
+                    .map(this::getStreamContext)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .forEach(engineContext::addStreamContext);
+            logger.info("Restarting engine");
+            try {
+                PipelineConfigurationBroadcastWrapper.getInstance().refresh(
+                        engineContext.getStreamContexts().stream()
+                                .collect(Collectors.toMap(StreamContext::getIdentifier, StreamContext::getProcessContexts))
+                        , sparkContext);
+                updatePipelines(sparkContext, dataflow);
+                engineContext.getEngine().start(engineContext);
+            } catch (Exception e) {
+                logger.error("Unable to start engine. Logisland state may be inconsistent. Trying to recover. Caused by", e);
+                engineContext.getEngine().reset(engineContext);
+            }
+        } else {
+            //need to update pipelines?
+            if (dataflow.getStreams().stream()
+                    .anyMatch(s -> {
+                        Optional<Stream> old = oldDataflow.getStreams().stream()
+                                .filter(t -> t.getName().equals(s.getName())).findFirst();
+                        return old.isPresent() && old.get() != null &&
+                                old.get().getPipeline().getLastModified().isBefore(s.getPipeline().getLastModified());
+                    })) {
+                updatePipelines(sparkContext, dataflow);
+            }
+        }
+
+    }
+
+    /**
+     * Update pipelines.
+     *
+     * @param sparkContext the spark context
+     * @param dataflow     the dataflow
+     */
+    public void updatePipelines(SparkContext sparkContext, DataFlow dataflow) {
+        Map<String, Collection<ProcessContext>> pipelineMap = dataflow.getStreams().stream()
+                .collect(Collectors.toMap(Stream::getName,
+                        s -> s.getPipeline().getProcessors().stream().map(this::getProcessContext)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .collect(Collectors.toList())));
+        PipelineConfigurationBroadcastWrapper.getInstance().refresh(pipelineMap, sparkContext);
+    }
+
 }

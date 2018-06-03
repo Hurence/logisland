@@ -20,10 +20,9 @@ import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.stream.StreamContext;
 
-import java.io.Closeable;
 import java.util.Collection;
 
-public interface EngineContext extends ComponentContext , Closeable {
+public interface EngineContext extends ComponentContext {
 
     /**
      * @return retrieve the list of stream contexts
@@ -36,7 +35,6 @@ public interface EngineContext extends ComponentContext , Closeable {
      * @param streamContext the Stream to add
      */
     void addStreamContext(StreamContext streamContext);
-
 
 
     /**

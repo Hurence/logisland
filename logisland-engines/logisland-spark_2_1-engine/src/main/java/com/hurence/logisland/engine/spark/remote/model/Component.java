@@ -29,15 +29,13 @@ import java.util.Objects;
 /**
  * Component
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-06-03T13:00:49.942Z")
 
 public class Component {
     @JsonProperty("name")
-    @NotNull
     private String name = null;
 
     @JsonProperty("component")
-    @NotNull
     private String component = null;
 
     @JsonProperty("documentation")
@@ -45,8 +43,7 @@ public class Component {
 
     @JsonProperty("config")
     @Valid
-    @NotNull
-    private List<Property> config = new ArrayList<Property>();
+    private List<Property> config = new ArrayList<>();
 
     public Component name(String name) {
         this.name = name;
@@ -59,6 +56,9 @@ public class Component {
      * @return name
      **/
     @ApiModelProperty(required = true, value = "")
+    @NotNull
+
+
     public String getName() {
         return name;
     }
@@ -78,6 +78,9 @@ public class Component {
      * @return component
      **/
     @ApiModelProperty(required = true, value = "")
+    @NotNull
+
+
     public String getComponent() {
         return component;
     }
@@ -97,6 +100,8 @@ public class Component {
      * @return documentation
      **/
     @ApiModelProperty(value = "")
+
+
     public String getDocumentation() {
         return documentation;
     }
@@ -111,6 +116,9 @@ public class Component {
     }
 
     public Component addConfigItem(Property configItem) {
+        if (this.config == null) {
+            this.config = new ArrayList<Property>();
+        }
         this.config.add(configItem);
         return this;
     }
@@ -120,7 +128,10 @@ public class Component {
      *
      * @return config
      **/
-    @ApiModelProperty(required = false, value = "")
+    @ApiModelProperty(value = "")
+
+    @Valid
+
     public List<Property> getConfig() {
         return config;
     }

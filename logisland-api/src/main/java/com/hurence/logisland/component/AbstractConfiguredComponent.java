@@ -159,6 +159,8 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     }
 
+
+
     @Override
     public String getProperty(final PropertyDescriptor property) {
         return properties.get(property);

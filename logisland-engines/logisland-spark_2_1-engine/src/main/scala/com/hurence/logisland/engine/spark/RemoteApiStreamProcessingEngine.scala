@@ -17,19 +17,22 @@
 
 package com.hurence.logisland.engine.spark
 
-import java.time.Duration
+import java.time.{Duration, Instant}
 import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, TimeUnit}
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
-import com.hurence.logisland.engine.spark.remote.{RemoteApiClient, RemoteComponentRegistry}
-import com.hurence.logisland.stream.StandardStreamContext
+import com.hurence.logisland.engine.spark.remote.model.DataFlow
+import com.hurence.logisland.engine.spark.remote.{PipelineConfigurationBroadcastWrapper, RemoteApiClient, RemoteApiComponentFactory}
+import com.hurence.logisland.processor.ProcessContext
+import com.hurence.logisland.stream.{StandardStreamContext, StreamContext}
 import com.hurence.logisland.stream.spark.DummyRecordStream
 import com.hurence.logisland.validator.StandardValidators
-import org.apache.spark.streaming.StreamingContext
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConverters
 
 object RemoteApiStreamProcessingEngine {
     val REMOTE_API_BASE_URL = new PropertyDescriptor.Builder()
@@ -42,6 +45,13 @@ object RemoteApiStreamProcessingEngine {
     val REMOTE_API_POLLING_RATE = new PropertyDescriptor.Builder()
         .name("remote.api.polling.rate")
         .description("Remote api polling rate in milliseconds")
+        .required(true)
+        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+        .build
+
+    val REMOTE_API_CONFIG_PUSH_RATE = new PropertyDescriptor.Builder()
+        .name("remote.api.push.rate")
+        .description("Remote api configuration push rate in milliseconds")
         .required(true)
         .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
         .build
@@ -78,14 +88,14 @@ object RemoteApiStreamProcessingEngine {
 class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[RemoteApiStreamProcessingEngine])
-    private val executor = Executors.newSingleThreadScheduledExecutor()
-    private var remoteApiRegistry: RemoteComponentRegistry = _
+    private var initialized = false
 
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val ret = new util.ArrayList(super.getSupportedPropertyDescriptors)
         ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_BASE_URL)
         ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_POLLING_RATE)
+        ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_CONFIG_PUSH_RATE)
         ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_CONNECT_TIMEOUT)
         ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_USER)
         ret.add(RemoteApiStreamProcessingEngine.REMOTE_API_PASSWORD)
@@ -93,60 +103,75 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
         return Collections.unmodifiableList(ret)
     }
 
-    override protected def setupStreamingContexts(engineContext: EngineContext, scc: StreamingContext): Unit = {
-        if (!engineContext.getControllerServiceConfigurations.isEmpty) {
-            logger.warn("This engine will not load service controllers from the configuration file!")
-            engineContext.getControllerServiceConfigurations.clear()
-        }
-        if (!engineContext.getStreamContexts.isEmpty()) {
-            logger.warn("This engine will not handle streams from the configuration file!")
-            engineContext.getStreamContexts.clear()
-        }
-        engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"));
-        super.setupStreamingContexts(engineContext, scc)
-        remoteApiRegistry = new RemoteComponentRegistry(engineContext);
-
-    }
 
     /**
-      * Called after the engine has been started.
+      * start the engine
       *
       * @param engineContext
       */
-    override protected def onStart(engineContext: EngineContext): Unit = {
-        super.onStart(engineContext)
-        val remoteApiClient = new RemoteApiClient(
-            engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_BASE_URL),
-            Duration.ofMillis(engineContext.getPropertyValue(RemoteApiStreamProcessingEngine.REMOTE_API_SOCKET_TIMEOUT).asLong()),
-            Duration.ofMillis(engineContext.getPropertyValue(RemoteApiStreamProcessingEngine.REMOTE_API_CONNECT_TIMEOUT).asLong()),
-            engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_USER),
-            engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_PASSWORD))
+    override def start(engineContext: EngineContext): Unit = {
 
-        implicit def funToRunnable(fun: () => Unit) = new Runnable() {
-            def run() = fun()
+        if (engineContext.getStreamContexts.isEmpty) {
+            engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"))
         }
 
-        executor.scheduleWithFixedDelay(() => {
-            val pipelines = remoteApiClient.fetchPipelines()
-            if (pipelines.isPresent) {
-                remoteApiRegistry.updateEngineContext(pipelines.get())
-            }
 
-        }, 0, engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_POLLING_RATE).toInt,
-            TimeUnit.MILLISECONDS)
-    }
 
-    /**
-      * Called before the engine is being stopped.
-      *
-      * @param engineContext
-      */
-    override protected def onStop(engineContext: EngineContext): Unit = {
-        super.onStop(engineContext)
-        executor.shutdown()
-        //stop everything started from remote side.
-        if (remoteApiRegistry != null) {
-            remoteApiRegistry.updateEngineContext(Collections.emptyList())
+        if (!initialized) {
+            initialized = true
+            val remoteApiClient = new RemoteApiClient(new RemoteApiClient.ConnectionSettings(
+                engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_BASE_URL),
+                Duration.ofMillis(engineContext.getPropertyValue(RemoteApiStreamProcessingEngine.REMOTE_API_SOCKET_TIMEOUT).asLong()),
+                Duration.ofMillis(engineContext.getPropertyValue(RemoteApiStreamProcessingEngine.REMOTE_API_CONNECT_TIMEOUT).asLong()),
+                engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_USER),
+                engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_PASSWORD)))
+
+
+            val appName = getCurrentSparkContext().appName
+            var currentDataflow: DataFlow = null
+
+            //schedule dataflow refresh
+            @transient lazy val executor = Executors.newSingleThreadScheduledExecutor();
+            @transient lazy val remoteApiComponentFactory = new RemoteApiComponentFactory
+
+
+            executor.scheduleWithFixedDelay(new Runnable {
+                val state = new RemoteApiClient.State
+                var i = 0
+
+                override def run(): Unit = {
+                    try {
+                        val dataflow = remoteApiClient.fetchDataflow(appName, state)
+                        if (dataflow.isPresent) {
+                            var lastUpdated: Instant = null
+                            if (currentDataflow != null && currentDataflow.getLastModified != null) {
+                                lastUpdated = currentDataflow.getLastModified.toInstant
+                            }
+                            remoteApiComponentFactory.updateEngineContext(getCurrentSparkContext(), engineContext, dataflow.get, currentDataflow)
+
+
+
+                            currentDataflow = dataflow.get()
+                        }
+                    } catch {
+                        case default: Throwable => logger.warn("Unexpected exception while trying to poll for new dataflow configuration", default)
+                    }
+                }
+            }, 0, engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_POLLING_RATE).toInt, TimeUnit.MILLISECONDS
+            )
+
+
         }
+
+
+
+        super.start(engineContext)
     }
+
+
+    override def shutdown(engineContext: EngineContext): Unit = {
+        super.shutdown(engineContext)
+    }
+
+
 }

@@ -49,7 +49,7 @@ public final class ComponentFactory {
                     new StandardEngineContext(engine, Long.toString(currentId.incrementAndGet()));
 
 
-            // instanciate each related pipelineContext
+            // instantiate each related pipelineContext
             configuration.getStreamConfigurations().forEach(pipelineConfig -> {
                 Optional<StreamContext> pipelineContext = getStreamContext(pipelineConfig);
                 pipelineContext.ifPresent(engineContext::addStreamContext);
@@ -63,6 +63,7 @@ public final class ComponentFactory {
             configuration.getControllerServiceConfigurations()
                     .forEach(engineContext::addControllerServiceConfiguration);
 
+            ((AbstractConfigurableComponent)engine).init(engineContext);
 
             logger.info("created engine {}", configuration.getComponent());
 
@@ -70,7 +71,7 @@ public final class ComponentFactory {
             return Optional.of(engineContext);
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instanciate engine {} : {}", configuration.getComponent(), e.toString());
+            logger.error("unable to instantiate engine {} : {}", configuration.getComponent(), e.toString());
         }
         return Optional.empty();
     }

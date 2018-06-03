@@ -25,7 +25,7 @@ import java.util.Objects;
  * A logisland &#39;controller service&#39;.
  */
 @ApiModel(description = "A logisland 'controller service'.")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-06-03T13:00:49.942Z")
 
 public class Service extends Component {
 

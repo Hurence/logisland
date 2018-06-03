@@ -67,8 +67,4 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
 
     }
 
-    @Override
-    public void close() throws IOException {
-        controllerServiceLookup = null;
-    }
 }

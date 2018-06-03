@@ -27,44 +27,78 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Tracks stream processing pipeline configuration
+ * A streaming pipeline.
  */
-@ApiModel(description = "Tracks stream processing pipeline configuration")
+@ApiModel(description = "A streaming pipeline.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-06-03T13:00:49.942Z")
 
-public class Pipeline extends Versioned {
-    @JsonProperty("processors")
+public class DataFlow extends Versioned {
+    @JsonProperty("services")
     @Valid
-    private List<Processor> processors = new ArrayList<>();
+    private List<Service> services = new ArrayList<>();
 
-    public Pipeline processors(List<Processor> processors) {
-        this.processors = processors;
+    @JsonProperty("streams")
+    @Valid
+    private List<Stream> streams = new ArrayList<>();
+
+    public DataFlow services(List<Service> services) {
+        this.services = services;
         return this;
     }
 
-    public Pipeline addProcessorsItem(Processor processorsItem) {
-        if (this.processors == null) {
-            this.processors = new ArrayList<Processor>();
+    public DataFlow addServicesItem(Service servicesItem) {
+        if (this.services == null) {
+            this.services = new ArrayList<Service>();
         }
-        this.processors.add(processorsItem);
+        this.services.add(servicesItem);
         return this;
     }
 
     /**
-     * Get processors
+     * The service controllers.
      *
-     * @return processors
+     * @return services
      **/
-    @ApiModelProperty(value = "")
+    @ApiModelProperty(value = "The service controllers.")
 
     @Valid
 
-    public List<Processor> getProcessors() {
-        return processors;
+    public List<Service> getServices() {
+        return services;
     }
 
-    public void setProcessors(List<Processor> processors) {
-        this.processors = processors;
+    public void setServices(List<Service> services) {
+        this.services = services;
+    }
+
+    public DataFlow streams(List<Stream> streams) {
+        this.streams = streams;
+        return this;
+    }
+
+    public DataFlow addStreamsItem(Stream streamsItem) {
+        if (this.streams == null) {
+            this.streams = new ArrayList<Stream>();
+        }
+        this.streams.add(streamsItem);
+        return this;
+    }
+
+    /**
+     * The engine properties.
+     *
+     * @return streams
+     **/
+    @ApiModelProperty(value = "The engine properties.")
+
+    @Valid
+
+    public List<Stream> getStreams() {
+        return streams;
+    }
+
+    public void setStreams(List<Stream> streams) {
+        this.streams = streams;
     }
 
 
@@ -76,22 +110,24 @@ public class Pipeline extends Versioned {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Pipeline pipeline = (Pipeline) o;
-        return Objects.equals(this.processors, pipeline.processors) &&
+        DataFlow dataFlow = (DataFlow) o;
+        return Objects.equals(this.services, dataFlow.services) &&
+                Objects.equals(this.streams, dataFlow.streams) &&
                 super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(processors, super.hashCode());
+        return Objects.hash(services, streams, super.hashCode());
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class Pipeline {\n");
+        sb.append("class DataFlow {\n");
         sb.append("    ").append(toIndentedString(super.toString())).append("\n");
-        sb.append("    processors: ").append(toIndentedString(processors)).append("\n");
+        sb.append("    services: ").append(toIndentedString(services)).append("\n");
+        sb.append("    streams: ").append(toIndentedString(streams)).append("\n");
         sb.append("}");
         return sb.toString();
     }

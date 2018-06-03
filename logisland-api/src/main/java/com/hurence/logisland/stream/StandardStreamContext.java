@@ -20,7 +20,7 @@ import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
 
-import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +28,7 @@ import java.util.List;
 public class StandardStreamContext extends AbstractConfiguredComponent implements StreamContext {
 
     private final List<ProcessContext> processContexts = new ArrayList<>();
+    private final Instant creationDate = Instant.now();
 
     public StandardStreamContext(final RecordStream recordStream, final String id) {
         super(recordStream, id);
@@ -89,11 +90,5 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
 
     }
 
-    @Override
-    public void close() throws IOException {
-        while (!processContexts.isEmpty()) {
-            processContexts.remove(0).close();
-        }
-        controllerServiceLookup = null;
-    }
+
 }

@@ -6,7 +6,7 @@ engine:
   type: engine
   documentation: Do some remote pipelines.
   configuration:
-    spark.app.name: FutureFactory
+    spark.app.name: RemoteConnect
     spark.master: local[2]
     spark.driver.memory: 512M
     spark.driver.cores: 1
@@ -30,50 +30,9 @@ engine:
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4040
-    remote.api.baseUrl: http://localhost:1234/api
+    remote.api.baseUrl: http://localhost:3000
     remote.api.polling.rate: 5000
+    remote.api.push.rate: 10000
 
-  controllerServiceConfigurations:
 
-    - controllerService: mqtt_service
-      component: com.hurence.logisland.stream.spark.structured.provider.MQTTStructuredStreamProviderService
-      configuration:
-       # mqtt.broker.url: tcp://51.15.164.141:1883
-        mqtt.broker.url: tcp://localhost:1883
-        mqtt.persistence: memory
-        mqtt.client.id: logisland
-        mqtt.qos: 0
-        mqtt.topic: Account123/#
-        mqtt.username: User123
-        mqtt.password: Kapu12345678+
-        mqtt.clean.session: true
-        mqtt.connection.timeout: 30
-        mqtt.keep.alive: 60
-        mqtt.version: 3
 
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
-
-  streamConfigurations:
-
-    # indexing stream
-    - stream: indexing_stream
-      component: com.hurence.logisland.stream.spark.structured.StructuredStream
-      configuration:
-        read.topics: /a/in
-        read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
-        read.topics.client.service: mqtt_service
-        write.topics: /a/out
-        write.topics.serializer: none
-        write.topics.client.service: console_service
-      processorConfigurations:
-
-        - processor: flatten
-          component: com.hurence.logisland.processor.FlatMap
-          type: processor
-          documentation: "extract metrics from root record"
-          configuration:
-            keep.root.record: false
-            copy.root.record.fields: true
-            leaf.record.type: record_metric
-            concat.fields: record_name

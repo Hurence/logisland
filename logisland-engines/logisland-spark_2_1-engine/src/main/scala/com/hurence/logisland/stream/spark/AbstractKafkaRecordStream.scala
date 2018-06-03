@@ -22,6 +22,7 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.StreamProperties._
@@ -48,10 +49,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
 
-
-
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with SparkRecordStream {
-
 
 
     val NONE_TOPIC: String = "none"
@@ -89,7 +87,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     }
 
 
-        override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
+    override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext) = {
         this.appName = appName
         this.ssc = ssc
         this.streamContext = streamContext
@@ -186,57 +184,62 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
             } else kafkaStream
 
 
-            stream.foreachRDD(rdd => {
+            stream
+                .foreachRDD(rdd => {
+
+                    this.streamContext.getProcessContexts().clear();
+                    logger.info(s"Stream is ${this.streamContext.getIdentifier}")
+                    this.streamContext.getProcessContexts().addAll(
+                        PipelineConfigurationBroadcastWrapper.getInstance().get(this.streamContext.getIdentifier))
+
+                    if (!rdd.isEmpty()) {
 
 
-                if (!rdd.isEmpty()) {
+                        val offsetRanges = process(rdd)
+                        // some time later, after outputs have completed
+                        if (offsetRanges.nonEmpty) {
+                            // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
 
 
-                    val offsetRanges = process(rdd)
-                    // some time later, after outputs have completed
-                    if (offsetRanges.nonEmpty) {
-                       // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
-
-
-                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
-                            def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
-                                if (null != e) {
-                                    logger.error("error commiting offsets", e)
+                            kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
+                                def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
+                                    if (null != e) {
+                                        logger.error("error commiting offsets", e)
+                                    }
                                 }
+                            })
+
+
+                            needMetricsReset = true
+                        }
+                        else if (needMetricsReset) {
+                            try {
+
+                                for (partitionId <- 0 to rdd.getNumPartitions) {
+                                    val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                                        "partition" + partitionId + "."
+                                    val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
+
+                                    streamContext.getProcessContexts.foreach(processorContext => {
+                                        UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                            .time()
+                                            .stop()
+
+                                        ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                                    })
+                                    pipelineTimerContext.stop()
+                                }
+                            } catch {
+                                case ex: Throwable =>
+                                    logger.error(s"exception : ${ex.toString}")
+                                    None
+                            } finally {
+                                needMetricsReset = false
                             }
-                        })
-
-
-                        needMetricsReset = true
-                    }
-                    else if (needMetricsReset) {
-                        try {
-
-                            for (partitionId <- 0 to rdd.getNumPartitions) {
-                                val pipelineMetricPrefix = streamContext.getIdentifier + "." +
-                                    "partition" + partitionId + "."
-                                val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
-
-                                streamContext.getProcessContexts.foreach(processorContext => {
-                                    UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
-                                        .time()
-                                        .stop()
-
-                                    ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
-                                })
-                                pipelineTimerContext.stop()
-                            }
-                        } catch {
-                            case ex: Throwable =>
-                                logger.error(s"exception : ${ex.toString}")
-                                None
-                        } finally {
-                            needMetricsReset = false
                         }
                     }
-                }
 
-            })
+                })
         } catch {
             case ex: Throwable =>
                 ex.printStackTrace()

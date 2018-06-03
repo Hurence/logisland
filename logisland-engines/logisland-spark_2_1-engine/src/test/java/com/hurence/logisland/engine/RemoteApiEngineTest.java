@@ -42,10 +42,6 @@ public class RemoteApiEngineTest {
     @Ignore
     public void remoteTest() {
 
-        MockWebServer webServer = new MockWebServer();
-        webServer.enqueue(new MockResponse().setBody(""));
-
-
         logger.info("starting StreamProcessingRunner");
 
         Optional<EngineContext> engineInstance = Optional.empty();
@@ -70,10 +66,11 @@ public class RemoteApiEngineTest {
         try {
             // start the engine
             final EngineContext engineContext = engineInstance.get();
-            Executors.newSingleThreadScheduledExecutor().schedule(()->engineContext.getEngine().shutdown(engineContext),
-                    10, TimeUnit.SECONDS);
             engineInstance.get().getEngine().start(engineContext);
             SparkUtils.customizeLogLevels();
+
+            engineContext.getEngine().awaitTermination(engineContext);
+
         } catch (Exception e) {
             logger.error("something went bad while running the job : {}", e);
             System.exit(-1);

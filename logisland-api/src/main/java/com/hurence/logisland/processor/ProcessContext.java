@@ -22,7 +22,7 @@ import com.hurence.logisland.controller.ControllerServiceLookup;
 
 import java.io.Closeable;
 
-public interface ProcessContext extends ComponentContext, Closeable {
+public interface ProcessContext extends ComponentContext {
 
     /**
      * Adds the given {@link ControllerServiceLookup}  so that the

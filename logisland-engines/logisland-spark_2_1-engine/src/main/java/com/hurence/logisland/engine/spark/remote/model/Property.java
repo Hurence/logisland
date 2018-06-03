@@ -26,19 +26,16 @@ import java.util.Objects;
 /**
  * Property
  */
-
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-06-03T13:00:49.942Z")
 
 public class Property {
     @JsonProperty("key")
-    @NotNull
     private String key = null;
 
     @JsonProperty("type")
     private String type = "string";
 
     @JsonProperty("value")
-    @NotNull
     private String value = null;
 
     public Property key(String key) {
@@ -52,6 +49,9 @@ public class Property {
      * @return key
      **/
     @ApiModelProperty(required = true, value = "")
+    @NotNull
+
+
     public String getKey() {
         return key;
     }
@@ -71,6 +71,8 @@ public class Property {
      * @return type
      **/
     @ApiModelProperty(value = "")
+
+
     public String getType() {
         return type;
     }
@@ -90,6 +92,9 @@ public class Property {
      * @return value
      **/
     @ApiModelProperty(required = true, value = "")
+    @NotNull
+
+
     public String getValue() {
         return value;
     }

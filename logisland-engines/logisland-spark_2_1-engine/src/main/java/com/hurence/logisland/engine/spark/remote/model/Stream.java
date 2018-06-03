@@ -21,50 +21,41 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
  * Stream
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-05-24T14:20:39.061Z")
-
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-06-03T13:00:49.942Z")
 public class Stream extends Component {
-    @JsonProperty("processors")
-    @Valid
-    private List<Processor> processors = null;
+    @JsonProperty("pipeline")
+    private Pipeline pipeline = null;
 
-    public Stream processors(List<Processor> processors) {
-        this.processors = processors;
-        return this;
-    }
-
-    public Stream addProcessorsItem(Processor processorsItem) {
-        if (this.processors == null) {
-            this.processors = new ArrayList<Processor>();
-        }
-        this.processors.add(processorsItem);
+    public Stream pipeline(Pipeline pipeline) {
+        this.pipeline = pipeline;
         return this;
     }
 
     /**
-     * Get processors
+     * Get pipeline
      *
-     * @return processors
+     * @return pipeline
      **/
     @ApiModelProperty(value = "")
-    public List<Processor> getProcessors() {
-        return processors;
+
+    @Valid
+
+    public Pipeline getPipeline() {
+        return pipeline;
     }
 
-    public void setProcessors(List<Processor> processors) {
-        this.processors = processors;
+    public void setPipeline(Pipeline pipeline) {
+        this.pipeline = pipeline;
     }
 
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(java.lang.Object o) {
         if (this == o) {
             return true;
         }
@@ -72,13 +63,13 @@ public class Stream extends Component {
             return false;
         }
         Stream stream = (Stream) o;
-        return Objects.equals(this.processors, stream.processors) &&
+        return Objects.equals(this.pipeline, stream.pipeline) &&
                 super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(processors, super.hashCode());
+        return Objects.hash(pipeline, super.hashCode());
     }
 
     @Override
@@ -86,7 +77,7 @@ public class Stream extends Component {
         StringBuilder sb = new StringBuilder();
         sb.append("class Stream {\n");
         sb.append("    ").append(toIndentedString(super.toString())).append("\n");
-        sb.append("    processors: ").append(toIndentedString(processors)).append("\n");
+        sb.append("    pipeline: ").append(toIndentedString(pipeline)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -95,7 +86,7 @@ public class Stream extends Component {
      * Convert the given object to string with each line indented by 4 spaces
      * (except the first line).
      */
-    private String toIndentedString(Object o) {
+    private String toIndentedString(java.lang.Object o) {
         if (o == null) {
             return "null";
         }
