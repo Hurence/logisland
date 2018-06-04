@@ -29,9 +29,8 @@ import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -160,7 +159,7 @@ public class RemoteApiComponentFactory {
                         engineContext.getStreamContexts().stream()
                                 .collect(Collectors.toMap(StreamContext::getIdentifier, StreamContext::getProcessContexts))
                         , sparkContext);
-                updatePipelines(sparkContext, engineContext, dataflow);
+                updatePipelines(sparkContext, engineContext, dataflow.getStreams());
                 engineContext.getEngine().start(engineContext);
             } catch (Exception e) {
                 logger.error("Unable to start engine. Logisland state may be inconsistent. Trying to recover. Caused by", e);
@@ -169,29 +168,39 @@ public class RemoteApiComponentFactory {
             changed = true;
         } else {
             //need to update pipelines?
-            if (dataflow.getStreams().stream()
-                    .anyMatch(s -> {
-                        Optional<Stream> old = oldDataflow.getStreams().stream()
-                                .filter(t -> t.getName().equals(s.getName())).findFirst();
-                        return old.isPresent() && old.get() != null &&
-                                old.get().getPipeline().getLastModified().isBefore(s.getPipeline().getLastModified());
-                    })) {
-                updatePipelines(sparkContext, engineContext, dataflow);
-                changed = true;
+
+
+            Map<String, Stream> streamMap = dataflow.getStreams().stream().collect(Collectors.toMap(Stream::getName, Function.identity()));
+
+            List<Stream> mergedStreamList = new ArrayList<>();
+            for (Stream oldStream : oldDataflow.getStreams()) {
+                Stream newStream = streamMap.get(oldStream.getName());
+                if (newStream != null && oldStream.getPipeline().getLastModified().isBefore(newStream.getPipeline().getLastModified())) {
+                    changed = true;
+                    logger.info("Detected change for pipeline {}", newStream.getName());
+                    mergedStreamList.add(newStream);
+                } else {
+                    mergedStreamList.add(oldStream);
+                }
             }
+            if (changed) {
+                updatePipelines(sparkContext, engineContext, mergedStreamList);
+            }
+
         }
         return changed;
     }
+
 
     /**
      * Update pipelines.
      *
      * @param sparkContext  the spark context
      * @param engineContext the engine context.
-     * @param dataflow      the dataflow
+     * @param streams       the list of streams
      */
-    public void updatePipelines(SparkContext sparkContext, EngineContext engineContext, DataFlow dataflow) {
-        Map<String, Collection<ProcessContext>> pipelineMap = dataflow.getStreams().stream()
+    public void updatePipelines(SparkContext sparkContext, EngineContext engineContext, Collection<Stream> streams) {
+        Map<String, Collection<ProcessContext>> pipelineMap = streams.stream()
                 .collect(Collectors.toMap(Stream::getName,
                         s -> s.getPipeline().getProcessors().stream().map(this::getProcessContext)
                                 .filter(Optional::isPresent)
@@ -203,5 +212,6 @@ public class RemoteApiComponentFactory {
         });
         PipelineConfigurationBroadcastWrapper.getInstance().refresh(pipelineMap, sparkContext);
     }
+
 
 }
