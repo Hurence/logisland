@@ -138,7 +138,8 @@ public class RemoteApiComponentFactory {
      * @param dataflow      the new dataflow (new state)
      * @param oldDataflow   latest dataflow dataflow.
      */
-    public void updateEngineContext(SparkContext sparkContext, EngineContext engineContext, DataFlow dataflow, DataFlow oldDataflow) {
+    public boolean updateEngineContext(SparkContext sparkContext, EngineContext engineContext, DataFlow dataflow, DataFlow oldDataflow) {
+        boolean changed = false;
         if (oldDataflow == null || oldDataflow.getLastModified().isBefore(dataflow.getLastModified())) {
             logger.info("We have a new configuration. Resetting current engine");
             engineContext.getEngine().reset(engineContext);
@@ -159,12 +160,13 @@ public class RemoteApiComponentFactory {
                         engineContext.getStreamContexts().stream()
                                 .collect(Collectors.toMap(StreamContext::getIdentifier, StreamContext::getProcessContexts))
                         , sparkContext);
-                updatePipelines(sparkContext, dataflow);
+                updatePipelines(sparkContext, engineContext, dataflow);
                 engineContext.getEngine().start(engineContext);
             } catch (Exception e) {
                 logger.error("Unable to start engine. Logisland state may be inconsistent. Trying to recover. Caused by", e);
                 engineContext.getEngine().reset(engineContext);
             }
+            changed = true;
         } else {
             //need to update pipelines?
             if (dataflow.getStreams().stream()
@@ -174,25 +176,31 @@ public class RemoteApiComponentFactory {
                         return old.isPresent() && old.get() != null &&
                                 old.get().getPipeline().getLastModified().isBefore(s.getPipeline().getLastModified());
                     })) {
-                updatePipelines(sparkContext, dataflow);
+                updatePipelines(sparkContext, engineContext, dataflow);
+                changed = true;
             }
         }
-
+        return changed;
     }
 
     /**
      * Update pipelines.
      *
-     * @param sparkContext the spark context
-     * @param dataflow     the dataflow
+     * @param sparkContext  the spark context
+     * @param engineContext the engine context.
+     * @param dataflow      the dataflow
      */
-    public void updatePipelines(SparkContext sparkContext, DataFlow dataflow) {
+    public void updatePipelines(SparkContext sparkContext, EngineContext engineContext, DataFlow dataflow) {
         Map<String, Collection<ProcessContext>> pipelineMap = dataflow.getStreams().stream()
                 .collect(Collectors.toMap(Stream::getName,
                         s -> s.getPipeline().getProcessors().stream().map(this::getProcessContext)
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
                                 .collect(Collectors.toList())));
+        engineContext.getStreamContexts().forEach(streamContext -> {
+            streamContext.getProcessContexts().clear();
+            streamContext.getProcessContexts().addAll(pipelineMap.get(streamContext.getIdentifier()));
+        });
         PipelineConfigurationBroadcastWrapper.getInstance().refresh(pipelineMap, sparkContext);
     }
 

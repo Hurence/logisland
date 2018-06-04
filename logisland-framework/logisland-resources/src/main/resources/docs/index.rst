@@ -28,6 +28,7 @@ Contents:
    developer
    tutorials/index
    api
+   rest-api
    components
    changes
    faq

@@ -229,7 +229,7 @@ public class RemoteApiClient {
                     .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
                     .post(RequestBody.create(
                             okhttp3.MediaType.parse(MediaType.APPLICATION_JSON),
-                            mapper.writeValueAsBytes(dataFlow)))
+                            mapper.writeValueAsString(dataFlow)))
                     .build();
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
