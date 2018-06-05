@@ -62,7 +62,7 @@ public class ComputeTagsTest {
         runner.enqueue(recordsToEnrich);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(3);
+        runner.assertOutputRecordsCount(3+3);
         runner.assertOutputErrorCount(0);
 
         for (Record enriched : runner.getOutputRecords()) {
@@ -105,7 +105,7 @@ public class ComputeTagsTest {
         runner.enqueue(recordsToEnrich);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(0);
+        runner.assertOutputRecordsCount(3);
         runner.assertOutputErrorCount(1);
 
         for (Record enriched : runner.getOutputRecords()) {

@@ -223,6 +223,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "output.record.type", "the type of the output record", "", "event", "", ""
    "profile.activation.condition", "A javascript expression that activates this alerting profile when true", "", "0==0", "", ""
+   "alert.criticity", "from 0 to ...", "", "0", "", ""
 
 Dynamic Properties
 __________________
@@ -518,6 +519,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**event.serializer**", "the way to serialize event", "Json serialization (serialize events as json blocs), String serialization (serialize events as toString() blocs)", "json", "", ""
+   "record.types", "comma separated list of record to include. all if empty", "", "", "", ""
 
 ----------
 

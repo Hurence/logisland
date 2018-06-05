@@ -61,7 +61,7 @@ public class CheckThresholdsTest {
         runner.enqueue(recordsToEnrich);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(2);
+        runner.assertOutputRecordsCount(2+3);
         runner.assertOutputErrorCount(0);
 
         for (Record enriched : runner.getOutputRecords()) {
