@@ -66,7 +66,7 @@ public class AddFields extends AbstractProcessor {
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
-                .expressionLanguageSupported(false)
+                .expressionLanguageSupported(true)
                 .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
                 .required(false)
                 .dynamic(true)
@@ -91,7 +91,7 @@ public class AddFields extends AbstractProcessor {
             return;
         }
         fieldsNameMapping.keySet().forEach(addedFieldName -> {
-            final String defaultValueToAdd = fieldsNameMapping.get(addedFieldName);
+            final String defaultValueToAdd = context.getPropertyValue(addedFieldName).evaluate(record).asString();
             // field is already here
             if (record.hasField(addedFieldName)) {
                 if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
