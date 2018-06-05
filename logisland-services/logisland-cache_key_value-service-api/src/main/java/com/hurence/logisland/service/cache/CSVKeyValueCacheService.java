@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
 import java.net.URI;
@@ -299,12 +300,12 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
     @Override
     public void createCollection(String name, int partitionsCount, int replicationFactor) throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void dropCollection(String name) throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
@@ -319,17 +320,17 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
     @Override
     public void refreshCollection(String name) throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void copyCollection(String reindexScrollTimeout, String src, String dst) throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void createAlias(String collection, String alias) throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
@@ -339,18 +340,23 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
 
     @Override
     public void bulkFlush() throws DatastoreClientServiceException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-
+        set(record.getField(rowKey).asString(), record);
     }
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
 
         set(record.getField(rowKey).asString(), record);
+    }
+
+    @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        throw new NotImplementedException();
     }
 
     @Override

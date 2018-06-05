@@ -142,6 +142,17 @@ public interface DatastoreClientService extends ControllerService {
     void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException;
 
 
+    /**
+     * Remove the specified Record from the given collection.
+     *
+     * @param collectionName
+     * @param record
+     * @param asynchronous
+     * @throws Exception
+     */
+    void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException;
+
+
 
 
     /* ********************************************************************

@@ -39,6 +39,7 @@ import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.CoreAdminResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -624,5 +625,16 @@ abstract public class SolrClientService extends AbstractControllerService implem
     @Override
     public long queryCount(String queryString) {
         return queryCount(queryString, null);
+    }
+
+    @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            getClient().deleteById(collectionName, record.getId());
+
+        } catch (SolrServerException | IOException e) {
+            logger.error(e.toString());
+            throw new DatastoreClientServiceException(e);
+        }
     }
 }

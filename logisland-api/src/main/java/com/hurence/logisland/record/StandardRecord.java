@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -107,8 +107,8 @@ public class StandardRecord implements Record {
 
     @Override
     public Position getPosition() {
-        if(hasPosition())
-            return (Position)getField(FieldDictionary.RECORD_POSITION).asRecord();
+        if (hasPosition())
+            return (Position) getField(FieldDictionary.RECORD_POSITION).asRecord();
         else return null;
     }
 
@@ -249,7 +249,12 @@ public class StandardRecord implements Record {
      */
     @Override
     public Field removeField(String fieldName) {
-        return fields.remove(fieldName);
+        if (fieldName.equals(FieldDictionary.RECORD_TIME)) {
+            logger.debug("trying to remove record_time field. we won't let you do that !!");
+            return fields.get(FieldDictionary.RECORD_TIME);
+        } else {
+            return fields.remove(fieldName);
+        }
     }
 
     /**

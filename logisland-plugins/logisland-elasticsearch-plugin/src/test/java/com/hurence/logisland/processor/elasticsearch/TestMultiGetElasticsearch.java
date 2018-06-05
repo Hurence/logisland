@@ -190,7 +190,7 @@ public class TestMultiGetElasticsearch {
         runner.clearQueues();
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(12);
+        runner.assertOutputRecordsCount(8);
         runner.assertOutputErrorCount(4);
 
 

@@ -68,7 +68,8 @@ public class SplitTextTest {
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(244);
+        testRunner.assertOutputRecordsCount(8);
+        testRunner.assertOutputErrorCount(244-8);
 
         testRunner.setProperty(SplitText.VALUE_REGEX, USR_GATEWAY_REGEX);
         testRunner.setProperty(SplitText.VALUE_FIELDS, USR_GATEWAY_FIELDS);
@@ -77,7 +78,8 @@ public class SplitTextTest {
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(201);
+        testRunner.assertOutputRecordsCount(73);
+        testRunner.assertOutputErrorCount(201-73);
     }
 
 
@@ -155,12 +157,12 @@ public class SplitTextTest {
         testRunner.clearQueues();
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(200);
+        testRunner.assertOutputRecordsCount(0);
         testRunner.assertOutputErrorCount(200);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldNotExists("src_ip");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:28 +0200] \"GET /usr/rest/account/email HTTP/1.1\" 200 51");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(2);
     }
@@ -198,7 +200,7 @@ public class SplitTextTest {
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
         out.assertFieldEquals("user", "-");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(9);
 
@@ -208,7 +210,7 @@ public class SplitTextTest {
         out.assertFieldEquals("src_ip", "10.3.10.134");
         out.assertFieldEquals("http_status", 200);
         out.assertFieldEquals("bytes_out", 52);
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 200 52");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "10.3.10.134 200 52");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(4);
     }
@@ -247,7 +249,7 @@ public class SplitTextTest {
         out.assertFieldEquals("http_version", "HTTP/1.1");
         out.assertFieldEquals("identd", "-");
         out.assertFieldEquals("user", "-");
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "10.3.10.134 - - [24/Jul/2016:08:45:29 +0200] \"GET /usr/rest/bank/purses?activeOnly=true HTTP/1.1\" 200 239");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(9);
 
@@ -257,7 +259,7 @@ public class SplitTextTest {
         out.assertFieldEquals(FieldDictionary.RECORD_TIME, 1469342729000L);
         out.assertFieldNotExists("http_status");
         out.assertFieldEquals("bytes_out", 52);
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "[24/Jul/2016:08:45:29 +0200] 52");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "[24/Jul/2016:08:45:29 +0200] 52");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(2);
 
@@ -267,7 +269,7 @@ public class SplitTextTest {
         out.assertFieldEquals("src_ip", "10.3.10.134");
         out.assertFieldEquals("http_status", 200);
         out.assertFieldEquals("bytes_out", 52);
-        out.assertFieldEquals(FieldDictionary.RECORD_RAW_VALUE, "10.3.10.134 200 52");
+        out.assertFieldEquals(FieldDictionary.RECORD_VALUE, "10.3.10.134 200 52");
         //out.assertFieldEquals(FieldDictionary.RECORD_ERRORS, ProcessError.REGEX_MATCHING_ERROR.toString());
         out.assertRecordSizeEquals(4);
     }
@@ -308,7 +310,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
         out.assertFieldEquals("record_time", 1484679138000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -319,7 +321,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("record_time", 1484679138000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -330,7 +332,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("record_time", 1484679138000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -341,7 +343,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("record_time", 1484679138000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -352,7 +354,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 92.130.95.204");
         out.assertFieldEquals("record_time", 1484679138000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -364,7 +366,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 92.143.11.69");
         out.assertFieldEquals("raw_date", "Jan 24 19:59:56");
-        out.assertFieldEquals("record_raw_value", "Jan 24 19:59:56 EagleP12.prod.hurence.fr/EagleP12.prod.hurence.fr 2017 Jan 24 19:59:56 INFO SSL: Host www.hurence.fr received fin without close notify alert from 92.143.11.69");
+        out.assertFieldEquals("record_value", "Jan 24 19:59:56 EagleP12.prod.hurence.fr/EagleP12.prod.hurence.fr 2017 Jan 24 19:59:56 INFO SSL: Host www.hurence.fr received fin without close notify alert from 92.143.11.69");
         out.assertFieldEquals("record_time", 1485287996000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);
@@ -400,7 +402,7 @@ public class SplitTextTest {
         out.assertFieldEquals("level", "INFO");
         out.assertFieldEquals("message", "SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
         out.assertFieldEquals("raw_date", "Jan 17 18:52:18");
-        out.assertFieldEquals("record_raw_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
+        out.assertFieldEquals("record_value", "Jan 17 18:52:18 EagleP13.prod.hurence.fr/EagleP13.prod.hurence.fr 2017 Jan 17 18:52:18  INFO    SSL: Host www.hurence.fr received fin without close notify alert from 77.154.202.48");
         out.assertFieldEquals("record_time", 1484693538000L);
         out.assertFieldEquals("record_type", "apache_log");
         out.assertRecordSizeEquals(6);

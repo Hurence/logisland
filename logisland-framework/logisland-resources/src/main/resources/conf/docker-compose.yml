@@ -23,6 +23,8 @@ services:
       KAFKA_JMX_PORT: 7071
 
   # ES container
+  # make sure to increase vm.max_map_count kernel setting like documented here :
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
   elasticsearch:
     container_name: elasticsearch
     environment:

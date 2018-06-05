@@ -81,6 +81,14 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-elasticsearch-plugin</artifactId>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.javadelight</groupId>
+            <artifactId>delight-nashorn-sandbox</artifactId>
+            <version>0.1.14</version>
+        </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cache_key_value-service-api</artifactId>
