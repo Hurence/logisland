@@ -56,11 +56,20 @@ public class DebugStream extends AbstractProcessor {
             .allowableValues(JSON, STRING)
             .build();
 
+    public static final PropertyDescriptor RECORD_TYPES = new PropertyDescriptor.Builder()
+            .name("record.types")
+            .description("comma separated list of record to include. all if empty")
+            .required(false)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .defaultValue("")
+            .build();
+
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(SERIALIZER);
+        descriptors.add(RECORD_TYPES);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -68,6 +77,8 @@ public class DebugStream extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
+
+        String[] recordTypesToInclude = context.getPropertyValue(RECORD_TYPES).asString().split(",");
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
             if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {

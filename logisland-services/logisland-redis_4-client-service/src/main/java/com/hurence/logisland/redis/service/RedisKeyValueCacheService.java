@@ -222,8 +222,12 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         return withConnection(redisConnection -> {
             final byte[] k = serialize(key, keySerializer);
             final byte[] v = redisConnection.get(k);
-            InputStream input = new ByteArrayInputStream(v);
-            return valueDeserializer.deserialize(input);
+            if (v == null) {
+                return null;
+            }else {
+                InputStream input = new ByteArrayInputStream(v);
+                return valueDeserializer.deserialize(input);
+            }
         });
     }
 
@@ -284,14 +288,23 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
     private <K, Record> Tuple<byte[], byte[]> serialize(final K key, final Record value, final Serializer<K> keySerializer, final Serializer<Record> valueSerializer) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] k = null;
 
-        keySerializer.serialize(out, key);
-        final byte[] k = out.toByteArray();
-
+        try {
+            keySerializer.serialize(out, key);
+            k= out.toByteArray();
+        }catch (Throwable t){
+            // do nothing
+        }
         out.reset();
 
-        valueSerializer.serialize(out, value);
-        final byte[] v = out.toByteArray();
+        byte[] v = null;
+        try {
+            valueSerializer.serialize(out, value);
+            v = out.toByteArray();
+        }catch (Throwable t){
+            // do nothing
+        }
 
         return new Tuple<>(k, v);
     }
@@ -396,6 +409,16 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
         set(record.getId(),record);
+    }
+
+    @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            remove(record.getId(),stringSerializer);
+        } catch (IOException e) {
+            getLogger().warn("Error removing record : " + e.getMessage(), e);
+        }
+
     }
 
     @Override

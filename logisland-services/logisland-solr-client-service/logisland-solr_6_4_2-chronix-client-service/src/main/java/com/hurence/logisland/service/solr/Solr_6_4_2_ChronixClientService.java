@@ -267,6 +267,17 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     }
 
     @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            solr.deleteById(collectionName, record.getId());
+
+        } catch (SolrServerException | IOException e) {
+            logger.error(e.toString());
+            throw new DatastoreClientServiceException(e);
+        }
+    }
+
+    @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
         return null;
     }

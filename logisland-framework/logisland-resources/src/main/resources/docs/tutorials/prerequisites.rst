@@ -11,92 +11,20 @@ There are two main ways to launch a logisland job :
 ------------------------------------------
 Logisland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
-To facilitate integration testing and to easily run tutorials, you can create a `docker-compose.yml` file with the following content, or directly download it from `a gist <https://gist.githubusercontent.com/oalam/706e719baf6bb6df46acdc4cd96ac72f/raw/08c014f3e7116f23a5edae30f82422dd297e8263/docker-compose.yml>`_
-
-.. code-block:: yaml
-
-    version: "2"
-    services:
-
-      zookeeper:
-        container_name: zookeeper
-        image: hurence/zookeeper
-        hostname: zookeeper
-        ports:
-          - "2181:2181"
-
-      kafka:
-        container_name: kafka
-        image: hurence/kafka
-        hostname: kafka
-        links:
-          - zookeeper
-        ports:
-          - "9092:9092"
-        environment:
-          KAFKA_ADVERTISED_PORT: 9092
-          KAFKA_ADVERTISED_HOST_NAME: sandbox
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-          KAFKA_JMX_PORT: 7071
-
-      # ES container
-      elasticsearch:
-        container_name: elasticsearch
-        environment:
-          - ES_JAVA_OPT="-Xms1G -Xmx1G"
-          - cluster.name=es-logisland
-          - http.host=0.0.0.0
-          - transport.host=0.0.0.0
-          - xpack.security.enabled=false
-        hostname: elasticsearch
-        container_name: elasticsearch
-        image: 'docker.elastic.co/elasticsearch/elasticsearch:5.4.0'
-        ports:
-          - '9200:9200'
-          - '9300:9300'
-
-      # Kibana container
-      kibana:
-        container_name: kibana
-        environment:
-          - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
-        image: 'docker.elastic.co/kibana/kibana:5.4.0'
-        container_name: kibana
-        links:
-          - elasticsearch
-        ports:
-          - '5601:5601'
-
-      # Logisland container : does nothing but launching
-      logisland:
-        container_name: logisland
-        image: hurence/logisland:0.13.0
-        command: tail -f bin/logisland.sh
-        #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
-        links:
-          - zookeeper
-          - kafka
-          - elasticsearch
-          - redis
-        ports:
-          - "4050:4050"
-        volumes:
-          - ./conf/logisland:/conf
-          - ./data/logisland:/data
-        container_name: logisland
-        extra_hosts:
-          - "sandbox:172.17.0.1"
-
-      redis:
-        container_name: redis
-        image: 'redis:latest'
-        ports:
-          - '6379:6379'
+To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the following `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
 
 Once you have this file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana and logisland)
 
+Elasticsearch on docker needs a special tweak as described `here <https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode>`_
+
 .. code-block:: sh
 
+    # set vm.max_map_count kernel setting for elasticsearch
+    sudo sysctl -w vm.max_map_count=262144
+
+    #
+    cd /tmp
+    wget https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml
     docker-compose up
 
 .. note::

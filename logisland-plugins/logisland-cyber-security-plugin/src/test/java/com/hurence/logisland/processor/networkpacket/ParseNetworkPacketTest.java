@@ -502,7 +502,7 @@ public class ParseNetworkPacketTest {
         testRunner.run();
 
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(2);
+        testRunner.assertOutputRecordsCount(1);
         testRunner.assertOutputErrorCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
@@ -562,7 +562,7 @@ public class ParseNetworkPacketTest {
         testRunner.run();
 
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(14261);
+        testRunner.assertOutputRecordsCount(14261-52);
         testRunner.assertOutputErrorCount(52);
 
         //int i = 0;
@@ -598,7 +598,7 @@ public class ParseNetworkPacketTest {
         testRunner.run();
 
         testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
+        testRunner.assertOutputRecordsCount(0);
         testRunner.assertOutputErrorCount(1);
 
         MockRecord out = testRunner.getOutputRecords().get(0);
