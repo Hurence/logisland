@@ -17,7 +17,7 @@
 
 package com.hurence.logisland.engine.spark
 
-import java.time.{Duration, Instant}
+import java.time.Duration
 import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, TimeUnit}
@@ -26,8 +26,6 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.model.DataFlow
 import com.hurence.logisland.engine.spark.remote.{RemoteApiClient, RemoteApiComponentFactory}
-import com.hurence.logisland.stream.StandardStreamContext
-import com.hurence.logisland.stream.spark.DummyRecordStream
 import com.hurence.logisland.validator.StandardValidators
 import org.slf4j.LoggerFactory
 
@@ -107,11 +105,11 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
       * @param engineContext
       */
     override def start(engineContext: EngineContext): Unit = {
-
-        if (engineContext.getStreamContexts.isEmpty) {
-            engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"))
-        }
-
+        /*
+                if (engineContext.getStreamContexts.isEmpty) {
+                    engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"))
+                }
+        */
 
         if (!initialized) {
             initialized = true
@@ -135,24 +133,29 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
                 val state = new RemoteApiClient.State
 
                 override def run(): Unit = {
+                    var changed = false
                     try {
                         val dataflow = remoteApiClient.fetchDataflow(appName, state)
                         if (dataflow.isPresent) {
-                            var lastUpdated: Instant = null
-                            if (currentDataflow != null && currentDataflow.getLastModified != null) {
-                                lastUpdated = currentDataflow.getLastModified.toInstant
-                            }
+                            changed = true
                             if (remoteApiComponentFactory.updateEngineContext(getCurrentSparkContext(), engineContext, dataflow.get, currentDataflow)) {
                                 currentDataflow = dataflow.get()
-                                try {
-                                    remoteApiClient.pushDataFlow(appName, currentDataflow);
-                                } catch {
-                                    case default: Throwable => logger.warn("Unexpected exception while trying to push configuration to remote server", default)
-                                }
                             }
                         }
                     } catch {
-                        case default: Throwable => logger.warn("Unexpected exception while trying to poll for new dataflow configuration", default)
+                        case default: Throwable => {
+                            currentDataflow = null
+                            logger.warn("Unexpected exception while trying to poll for new dataflow configuration", default)
+                            reset(engineContext)
+                        }
+                    } finally {
+                        if (changed) {
+                            try {
+                                remoteApiClient.pushDataFlow(appName, currentDataflow);
+                            } catch {
+                                case default: Throwable => logger.warn("Unexpected exception while trying to push configuration to remote server", default)
+                            }
+                        }
                     }
                 }
             }, 0, engineContext.getProperty(RemoteApiStreamProcessingEngine.REMOTE_API_POLLING_RATE).toInt, TimeUnit.MILLISECONDS

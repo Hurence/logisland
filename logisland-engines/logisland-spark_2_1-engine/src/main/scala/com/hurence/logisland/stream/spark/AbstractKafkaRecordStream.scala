@@ -188,7 +188,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
                 .foreachRDD(rdd => {
 
                     this.streamContext.getProcessContexts().clear();
-                    logger.info(s"Stream is ${this.streamContext.getIdentifier}")
                     this.streamContext.getProcessContexts().addAll(
                         PipelineConfigurationBroadcastWrapper.getInstance().get(this.streamContext.getIdentifier))
 

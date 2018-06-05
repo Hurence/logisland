@@ -433,7 +433,9 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         logger.info("starting Spark Engine")
         //val timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
         val streamingContext = createStreamingContext(engineContext)
-        streamingContext.start()
+        if (!engineContext.getStreamContexts.isEmpty) {
+            streamingContext.start()
+        }
     }
 
     protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {

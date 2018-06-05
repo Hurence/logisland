@@ -227,9 +227,11 @@ public class RemoteApiClient {
                             .addPathSegment(DATAFLOW_RESOURCE_URI).addPathSegment(dataflowName)
                             .build())
                     .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                    .post(RequestBody.create(
-                            okhttp3.MediaType.parse(MediaType.APPLICATION_JSON),
-                            mapper.writeValueAsString(dataFlow)))
+                    .post(dataFlow != null ?
+                            RequestBody.create(okhttp3.MediaType.parse(MediaType.APPLICATION_JSON),
+
+                                    mapper.writeValueAsString(dataFlow)) :
+                            RequestBody.create(null, new byte[0]))
                     .build();
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {

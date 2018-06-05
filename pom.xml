@@ -401,12 +401,46 @@
                 <version>1.3</version>
             </dependency>
 
+
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-parameter-names</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.json-simple</groupId>
@@ -1199,7 +1233,7 @@
                 <kafka.version>0.10.0.1</kafka.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
-                <jackson.version>2.9.0</jackson.version>
+                <jackson.version>2.6.6</jackson.version>
                 <hdp>2.5</hdp>
             </properties>
             <modules>
@@ -1241,7 +1275,7 @@
                 <kafka.version>0.8.2.1</kafka.version>
                 <scala.version>2.10.6</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
-                <jackson.version>2.9.0</jackson.version>
+                <jackson.version>2.4.4</jackson.version>
                 <hdp>2.4</hdp>
             </properties>
         </profile>

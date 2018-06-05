@@ -149,6 +149,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .option("kafka.bootstrap.servers", brokerList)
             .option("subscribe", inputTopics.mkString(","))
             .load()
+            .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
             .as[(String, String)]
             .map(r => {
                 new StandardRecord(inputTopics.head)

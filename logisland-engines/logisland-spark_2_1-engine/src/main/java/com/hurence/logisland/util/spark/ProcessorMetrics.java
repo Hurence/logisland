@@ -76,7 +76,7 @@ public class ProcessorMetrics {
             UserMetricsSystem.gauge(metricPrefix + Names.INCOMING_RECORDS).set(incomingEvents.size());
             UserMetricsSystem.gauge(metricPrefix + Names.OUTGOING_RECORDS).set(outgoingEvents.size());
 
-            long errorCount = outgoingEvents.stream().filter(r -> r.hasField(FieldDictionary.RECORD_ERRORS)).count();
+            long errorCount = outgoingEvents.stream().filter(r -> r != null && r.hasField(FieldDictionary.RECORD_ERRORS)).count();
             UserMetricsSystem.gauge(metricPrefix + "errors").set(errorCount);
             if (outgoingEvents.size() != 0) {
                 final List<Integer> recordSizesInBytes = new ArrayList<>();

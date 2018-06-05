@@ -17,7 +17,12 @@
 
 package com.hurence.logisland.engine.spark.remote;
 
+import com.hurence.logisland.component.ConfigurableComponent;
+import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
+import com.hurence.logisland.controller.ControllerService;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.controller.StandardControllerServiceContext;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.spark.remote.model.*;
 import com.hurence.logisland.processor.ProcessContext;
@@ -29,7 +34,10 @@ import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,7 +58,7 @@ public class RemoteApiComponentFactory {
      * @param stream
      * @return
      */
-    public Optional<StreamContext> getStreamContext(Stream stream) {
+    public StreamContext getStreamContext(Stream stream) {
         try {
             final RecordStream recordStream =
                     (RecordStream) Class.forName(stream.getComponent()).newInstance();
@@ -58,24 +66,24 @@ public class RemoteApiComponentFactory {
                     new StandardStreamContext(recordStream, stream.getName());
 
             // instantiate each related processor
-            stream.getPipeline().getProcessors().forEach(processor -> {
-                Optional<ProcessContext> processorContext = getProcessContext(processor);
-                if (processorContext.isPresent())
-                    instance.addProcessContext(processorContext.get());
-            });
+            stream.getPipeline().getProcessors().stream()
+                    .map(this::getProcessContext)
+                    .forEach(instance::addProcessContext);
 
 
             // set the config properties
-            stream.getConfig().forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
-
+            configureComponent(recordStream, stream.getConfig())
+                    .forEach((k, s) -> instance.setProperty(k, s));
+            if (!instance.isValid()) {
+                throw new IllegalArgumentException("Stream is not valid");
+            }
 
             logger.info("created stream {}", stream.getName());
-            return Optional.of(instance);
+            return instance;
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instantiate stream " + stream.getName(), e);
+            throw new RuntimeException("unable to instantiate stream " + stream.getName(), e);
         }
-        return Optional.empty();
     }
 
     /**
@@ -84,7 +92,7 @@ public class RemoteApiComponentFactory {
      * @param processor the processor bean.
      * @return optionally the constructed processor context or nothing in case of error.
      */
-    public Optional<ProcessContext> getProcessContext(Processor processor) {
+    public ProcessContext getProcessContext(Processor processor) {
         try {
             final com.hurence.logisland.processor.Processor processorInstance =
                     (com.hurence.logisland.processor.Processor) Class.forName(processor.getComponent()).newInstance();
@@ -92,15 +100,21 @@ public class RemoteApiComponentFactory {
                     new StandardProcessContext(processorInstance, processor.getName());
 
             // set all properties
-            processor.getConfig().forEach(e -> processContext.setProperty(e.getKey(), e.getValue()));
+            configureComponent(processorInstance, processor.getConfig())
+                    .forEach((k, s) -> processContext.setProperty(k, s));
+            ;
+
+            if (!processContext.isValid()) {
+                throw new IllegalArgumentException("Processor is not valid");
+            }
+
 
             logger.info("created processor {}", processor);
-            return Optional.of(processContext);
+            return processContext;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instantiate processor " + processor.getComponent(), e);
+            throw new RuntimeException("unable to instantiate processor " + processor.getName(), e);
         }
 
-        return Optional.empty();
     }
 
 
@@ -110,23 +124,27 @@ public class RemoteApiComponentFactory {
      * @param service the service bean.
      * @return optionally the constructed service configuration or nothing in case of error.
      */
-    public Optional<ControllerServiceConfiguration> getControllerServiceConfiguration(Service service) {
+    public ControllerServiceConfiguration getControllerServiceConfiguration(Service service) {
         try {
+            ControllerService cs = (ControllerService) Class.forName(service.getComponent()).newInstance();
             ControllerServiceConfiguration configuration = new ControllerServiceConfiguration();
             configuration.setControllerService(service.getName());
             configuration.setComponent(service.getComponent());
             configuration.setDocumentation(service.getDocumentation());
             configuration.setType("service");
-            configuration.setConfiguration(service.getConfig().stream()
-                    .collect(Collectors.toMap(Property::getKey, Property::getValue)));
-
+            configuration.setConfiguration(configureComponent(cs, service.getConfig()));
+            ControllerServiceInitializationContext ic = new StandardControllerServiceContext(cs, service.getName());
+            configuration.getConfiguration().forEach((k, s) -> ic.setProperty(k, s));
+            if (!ic.isValid()) {
+                throw new IllegalArgumentException("Service is not valid");
+            }
             logger.info("created service {}", service.getName());
-            return Optional.of(configuration);
+            return configuration;
         } catch (Exception e) {
-            logger.error("unable to configure service " + service.getComponent(), e);
+            throw new RuntimeException("unable to instantiate service " + service.getName(), e);
         }
 
-        return Optional.empty();
+
     }
 
     /**
@@ -141,34 +159,38 @@ public class RemoteApiComponentFactory {
         boolean changed = false;
         if (oldDataflow == null || oldDataflow.getLastModified().isBefore(dataflow.getLastModified())) {
             logger.info("We have a new configuration. Resetting current engine");
-            engineContext.getEngine().reset(engineContext);
             logger.info("Configuring dataflow. Last change at {} is {}", dataflow.getLastModified(), dataflow.getModificationReason());
-            dataflow.getServices().stream()
+
+
+            List<ControllerServiceConfiguration> css = dataflow.getServices().stream()
                     .map(this::getControllerServiceConfiguration)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(engineContext::addControllerServiceConfiguration);
-            dataflow.getStreams().stream()
+                    .collect(Collectors.toList());
+
+            List<StreamContext> sc = dataflow.getStreams().stream()
                     .map(this::getStreamContext)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(engineContext::addStreamContext);
+                    .collect(Collectors.toList());
+
+            sc.forEach(streamContext -> {
+                if (!streamContext.isValid()) {
+                    throw new IllegalArgumentException("Unable to validate steam " + streamContext.getIdentifier());
+                }
+            });
+
             logger.info("Restarting engine");
-            try {
-                PipelineConfigurationBroadcastWrapper.getInstance().refresh(
-                        engineContext.getStreamContexts().stream()
-                                .collect(Collectors.toMap(StreamContext::getIdentifier, StreamContext::getProcessContexts))
-                        , sparkContext);
-                updatePipelines(sparkContext, engineContext, dataflow.getStreams());
-                engineContext.getEngine().start(engineContext);
-            } catch (Exception e) {
-                logger.error("Unable to start engine. Logisland state may be inconsistent. Trying to recover. Caused by", e);
-                engineContext.getEngine().reset(engineContext);
-            }
+            engineContext.getEngine().reset(engineContext);
+            css.forEach(engineContext::addControllerServiceConfiguration);
+            sc.forEach(engineContext::addStreamContext);
+
+            PipelineConfigurationBroadcastWrapper.getInstance().refresh(
+                    engineContext.getStreamContexts().stream()
+                            .collect(Collectors.toMap(StreamContext::getIdentifier, StreamContext::getProcessContexts))
+                    , sparkContext);
+            updatePipelines(sparkContext, engineContext, dataflow.getStreams());
+            engineContext.getEngine().start(engineContext);
             changed = true;
+
         } else {
             //need to update pipelines?
-
 
             Map<String, Stream> streamMap = dataflow.getStreams().stream().collect(Collectors.toMap(Stream::getName, Function.identity()));
 
@@ -203,14 +225,27 @@ public class RemoteApiComponentFactory {
         Map<String, Collection<ProcessContext>> pipelineMap = streams.stream()
                 .collect(Collectors.toMap(Stream::getName,
                         s -> s.getPipeline().getProcessors().stream().map(this::getProcessContext)
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
                                 .collect(Collectors.toList())));
         engineContext.getStreamContexts().forEach(streamContext -> {
             streamContext.getProcessContexts().clear();
             streamContext.getProcessContexts().addAll(pipelineMap.get(streamContext.getIdentifier()));
         });
+
         PipelineConfigurationBroadcastWrapper.getInstance().refresh(pipelineMap, sparkContext);
+    }
+
+    private Map<String, String> configureComponent(ConfigurableComponent component, Collection<Property> properties) {
+        final Map<String, Property> propertyMap = properties.stream().collect(Collectors.toMap(Property::getKey, Function.identity()));
+        return component.getPropertyDescriptors().stream()
+                .filter(propertyDescriptor -> propertyMap.containsKey(propertyDescriptor.getName()) ||
+                        (propertyDescriptor.getDefaultValue() != null && propertyDescriptor.isRequired()))
+                .collect(Collectors.toMap(PropertyDescriptor::getName, propertyDescriptor -> {
+                    String value = propertyDescriptor.getDefaultValue();
+                    if (propertyMap.containsKey(propertyDescriptor.getName())) {
+                        value = propertyMap.get(propertyDescriptor.getName()).getValue();
+                    }
+                    return value;
+                }));
     }
 
 
