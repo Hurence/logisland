@@ -20,10 +20,11 @@ package com.hurence.logisland.engine.spark
 import java.util
 import java.util.Collections
 import java.util.regex.Pattern
+import java.util.stream.Collectors
 
 import com.hurence.logisland.component.{AllowableValue, ComponentContext, PropertyDescriptor}
+import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.spark.SparkRecordStream
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
@@ -381,6 +382,9 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             sparkContext.stop();
             logger.info("Application stopped")
         }
+
+
+        PipelineConfigurationBroadcastWrapper.getInstance().refresh(engineContext, sparkContext)
 
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +

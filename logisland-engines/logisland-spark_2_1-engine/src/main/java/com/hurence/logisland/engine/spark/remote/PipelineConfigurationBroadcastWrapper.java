@@ -17,7 +17,9 @@
 
 package com.hurence.logisland.engine.spark.remote;
 
+import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.stream.StreamContext;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Broadcast} wrapper for a Stream pipeline configuration.
@@ -60,6 +63,18 @@ public class PipelineConfigurationBroadcastWrapper {
         }
         broadcastedPipelineMap = getSparkContext(sparkContext).broadcast(pipelineMap);
     }
+
+    public void refresh(EngineContext engineContext, SparkContext sparkContext) {
+        logger.info("Refreshing dataflow pipelines!");
+
+        if (broadcastedPipelineMap != null) {
+            broadcastedPipelineMap.unpersist();
+        }
+        broadcastedPipelineMap = getSparkContext(sparkContext).broadcast(engineContext.getStreamContexts().stream()
+                .collect(Collectors.toMap(StreamContext::getIdentifier, s -> s.getProcessContexts().stream().collect(Collectors.toList()))));
+
+    }
+
 
     public Collection<ProcessContext> get(String streamName) {
         return broadcastedPipelineMap.getValue().get(streamName);
