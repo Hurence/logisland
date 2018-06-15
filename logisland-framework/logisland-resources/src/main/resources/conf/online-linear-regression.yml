@@ -1,0 +1,155 @@
+#########################################################################################################
+# Logisland configuration script template
+#########################################################################################################
+
+version: 0.13.0
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: A logisland stream that match custom queries
+  configuration:
+    spark.app.name: QueryMatchingDemo
+    spark.master: local[4]
+    spark.driver.memory: 1g
+    spark.driver.cores: 1
+    spark.executor.memory: 2g
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+
+  streamConfigurations:
+
+    # structure metric measurements log
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw metric measurements logs into structured log records
+      configuration:
+        kafka.input.topics: logisland_raw_ali2
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: cosvgre75:9092
+        kafka.zookeeper.quorum: cosvgre75:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse metric measurement logs
+        - processor: metric_measurements_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from ServiceNav metric_measurments
+          configuration:
+            record.type: sn_metric_measurements
+            value.regex: \"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\”?
+            value.fields: groupId,metricId,bucket,metricName,metricUnit,timestamp,value,critThreshold,warnThreshold,min,max,normalCheckWindow
+
+        - processor: field_types_converter
+          component: com.hurence.logisland.processor.ConvertFieldsType
+          type: processor
+          documentation: convert some field to a given type
+          configuration:
+            timestamp: long
+            value: float
+            normalCheckWindow: long
+
+
+
+
+    # aggregate metrics
+    - stream: metrics_by_host
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamSQLAggregator
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: logisland_aggregations
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: cosvgre75:9092
+        kafka.zookeeper.quorum: cosvgre75:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+        window.duration: 5
+        avro.input.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.sn_metric_measurements",
+             "fields": [
+               { "name": "groupId",      "type": ["string","null"] },
+               { "name": "metricId", "type": ["string","null"] },
+               { "name": "timestamp",   "type": ["long","null"] },
+               { "name": "value",   "type": ["float","null"] },
+               { "name": "metricName",  "type": ["string","null"] },
+               { "name": "critThreshold","type": ["string","null"] },
+               { "name": "warnThreshold", "type": ["string","null"] },
+               { "name": "min",      "type": ["string","null"] },
+               { "name": "max",        "type": ["string","null"] }    ]}
+        sql.query: >
+          SELECT groupId, metricId, metricName, timestamp, value, critThreshold, warnThreshold
+          FROM logisland_events
+          LIMIT 10
+        max.results.count: 1000
+        output.record.type: last_10_metrics
+
+
+    # metric prediction
+    - stream: metric_prediction
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: A processor that perform predcition on record list of metric measurements
+      configuration:
+        kafka.input.topics: logisland_aggregations
+        kafka.output.topics: logisland_predictions
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: cosvgre75:9092
+        kafka.zookeeper.quorum: cosvgre75:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: metric_prediction
+          component: com.hurence.logisland.processor.OnlineLinearRegression
+          type: processor
+          documentation: Perform training and prediction on list of records
+          configuration:
+            record.type: metric_predcition
+            training.history.size: 10
+            prediction.horizon.size: 54000
+
+
+
+
+

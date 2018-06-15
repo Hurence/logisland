@@ -27,6 +27,14 @@ public class FieldDictionary {
     public static String RECORD_TIME = "record_time";
     public static String RECORD_DAYTIME = "record_daytime";
     public static String RECORD_KEY = "record_key";
+    public static String RECORD_SLOPE = "record_slope";
+    public static String RECORD_METRIC_ID = "record_metric_id";
+    public static String RECORD_METRIC_NAME = "record_metric_name";
+    public static String RECORD_GROUP_ID = "record_group_id";
+    public static String RECORD_INTERCEPT = "record_intercept";
+    public static String RECORD_TRAINING_TIMESTAMP = "record_predction_timestamp";
+    public static String RECORD_PREDICTION_TIMESTAMP = "record_predction_timestamp";
+    public static String RECORD_PREDICTION_VALUE = "record_predction_value";
     public static String RECORD_VALUE = "record_value";
     public static String RECORD_NAME = "record_name";
     public static String PROCESSOR_NAME = "processor_name";
