@@ -77,7 +77,7 @@ public class StreamProcessingRunner {
             // load the YAML config
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
-            // instanciate engine and all the processor from the config
+            // instantiate engine and all the processor from the config
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();

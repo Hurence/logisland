@@ -54,9 +54,8 @@ public class ConfigReader {
         }
 
         // replace all host from environment variables
-       // String fileContent = StringUtils.resolveEnvVars(readFile(configFilePath, Charset.defaultCharset()), "localhost");
-        //temporary shut down env resolution since the syntax collides with EL
-        String fileContent = readFile(configFilePath, Charset.defaultCharset());
+        String fileContent = StringUtils.resolveEnvVars(readFile(configFilePath, Charset.defaultCharset()), "localhost");
+        //String fileContent = readFile(configFilePath, Charset.defaultCharset());
 
         return mapper.readValue(fileContent, LogislandConfiguration.class);
     }
