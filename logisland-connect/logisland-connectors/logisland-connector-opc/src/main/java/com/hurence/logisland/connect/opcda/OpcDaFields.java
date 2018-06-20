@@ -46,6 +46,11 @@ public interface OpcDaFields {
      * The OPC server error code in case the tag reading is in error.
      */
     String ERROR_CODE = "error_code";
+
+    /**
+     * The error reason (as string description)
+     */
+    String ERROR_REASON = "error_reason";
     /**
      * The OPC server host generating the event.
      */

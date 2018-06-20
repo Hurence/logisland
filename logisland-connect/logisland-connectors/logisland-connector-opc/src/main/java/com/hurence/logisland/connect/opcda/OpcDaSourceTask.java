@@ -17,10 +17,12 @@
 
 package com.hurence.logisland.connect.opcda;
 
+import com.hurence.opc.OperationStatus;
+import com.hurence.opc.auth.UsernamePasswordCredentials;
 import com.hurence.opc.da.OpcDaConnectionProfile;
-import com.hurence.opc.da.OpcDaOperations;
 import com.hurence.opc.da.OpcDaSession;
 import com.hurence.opc.da.OpcDaSessionProfile;
+import com.hurence.opc.da.OpcDaTemplate;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -76,12 +79,11 @@ public class OpcDaSourceTask extends SourceTask {
     private Map<String, TagInfo> tagInfoMap;
     private Set<String> tagReadingQueue;
     private ScheduledExecutorService executorService;
-    private String host;
     private String domain;
+    private String host;
     private boolean directRead;
     private long defaultRefreshPeriodMillis;
     private long minWaitTime;
-    private volatile boolean running = false;
 
 
     private synchronized void createSessionsIfNeeded() {
@@ -90,7 +92,7 @@ public class OpcDaSourceTask extends SourceTask {
             tagInfoMap.entrySet().stream().collect(Collectors.groupingBy(entry -> entry.getValue().refreshPeriodMillis))
                     .forEach((a, b) -> {
                         OpcDaSessionProfile sessionProfile = new OpcDaSessionProfile().withDirectRead(directRead)
-                                .withRefreshPeriodMillis(a);
+                                .withRefreshPeriod(Duration.ofMillis(a));
                         OpcDaSession session = opcOperations.createSession(sessionProfile);
                         b.forEach(c -> sessions.put(c.getKey(), session));
                     });
@@ -100,14 +102,17 @@ public class OpcDaSourceTask extends SourceTask {
 
     private OpcDaConnectionProfile propertiesToConnectionProfile(Map<String, String> properties) {
         OpcDaConnectionProfile ret = new OpcDaConnectionProfile();
-        ret.setHost(properties.get(OpcDaSourceConnector.PROPERTY_HOST));
+        StringBuilder uri = new StringBuilder(String.format("opc.da://%s",
+                properties.get(OpcDaSourceConnector.PROPERTY_HOST)));
         ret.setComClsId(properties.get(OpcDaSourceConnector.PROPERTY_CLSID));
         ret.setComProgId(properties.get(OpcDaSourceConnector.PROPERTY_PROGID));
         if (properties.containsKey(OpcDaSourceConnector.PROPERTY_PORT)) {
-            ret.setPort(Integer.parseInt(properties.get(OpcDaSourceConnector.PROPERTY_PORT)));
+            uri.append(String.format(":%d", Integer.parseInt(properties.get(OpcDaSourceConnector.PROPERTY_PORT))));
         }
-        ret.setUser(properties.get(OpcDaSourceConnector.PROPERTY_USER));
-        ret.setPassword(properties.get(OpcDaSourceConnector.PROPERTY_PASSWORD));
+        ret.setConnectionUri(URI.create(uri.toString()));
+        ret.setCredentials(new UsernamePasswordCredentials()
+                .withUser(properties.get(OpcDaSourceConnector.PROPERTY_USER))
+                .withPassword(properties.get(OpcDaSourceConnector.PROPERTY_PASSWORD)));
         ret.setDomain(properties.get(OpcDaSourceConnector.PROPERTY_DOMAIN));
 
         if (properties.containsKey(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT)) {
@@ -173,16 +178,15 @@ public class OpcDaSourceTask extends SourceTask {
         SchemaBuilder ret = SchemaBuilder.struct()
                 .field(OpcDaFields.TAG_NAME, SchemaBuilder.string())
                 .field(OpcDaFields.TIMESTAMP, SchemaBuilder.int64())
-                .field(OpcDaFields.QUALITY, SchemaBuilder.int32().optional())
+                .field(OpcDaFields.QUALITY, SchemaBuilder.string())
                 .field(OpcDaFields.UPDATE_PERIOD, SchemaBuilder.int64().optional())
                 .field(OpcDaFields.TAG_GROUP, SchemaBuilder.string().optional())
                 .field(OpcDaFields.OPC_SERVER_DOMAIN, SchemaBuilder.string().optional())
-                .field(OpcDaFields.OPC_SERVER_HOST, SchemaBuilder.string());
-
+                .field(OpcDaFields.OPC_SERVER_HOST, SchemaBuilder.string())
+                .field(OpcDaFields.ERROR_CODE, SchemaBuilder.int64().optional())
+                .field(OpcDaFields.ERROR_REASON, SchemaBuilder.string().optional());
         if (valueSchema != null) {
             ret = ret.field(OpcDaFields.VALUE, valueSchema);
-        } else {
-            ret = ret.field(OpcDaFields.ERROR_CODE, SchemaBuilder.int32().optional());
         }
         return ret;
     }
@@ -191,11 +195,11 @@ public class OpcDaSourceTask extends SourceTask {
     @Override
     public void start(Map<String, String> props) {
         transferQueue = new LinkedTransferQueue<>();
-        opcOperations = new SmartOpcOperations<>(new OpcDaOperations());
+        opcOperations = new SmartOpcOperations<>(new OpcDaTemplate());
         OpcDaConnectionProfile connectionProfile = propertiesToConnectionProfile(props);
         tags = props.get(OpcDaSourceConnector.PROPERTY_TAGS).split(",");
-        host = connectionProfile.getHost();
         domain = connectionProfile.getDomain() != null ? connectionProfile.getDomain() : "";
+        host = connectionProfile.getConnectionUri().getHost();
         defaultRefreshPeriodMillis = Long.parseLong(props.get(OpcDaSourceConnector.PROPERTY_DEFAULT_REFRESH_PERIOD));
         directRead = Boolean.parseBoolean(props.get(OpcDaSourceConnector.PROPERTY_DIRECT_READ));
         tagInfoMap = Arrays.stream(tags).map(t -> new TagInfo(t, defaultRefreshPeriodMillis))
@@ -207,7 +211,6 @@ public class OpcDaSourceTask extends SourceTask {
         logger.info("Started OPC-DA task for tags {}", (Object) tags);
         minWaitTime = Math.max(10, gcd(tagInfoMap.values().stream().mapToLong(t -> t.refreshPeriodMillis).toArray()));
         tagReadingQueue = new HashSet<>();
-        running = true;
         executorService = Executors.newSingleThreadScheduledExecutor();
         tagInfoMap.forEach((k, v) -> executorService.scheduleAtFixedRate(() -> {
             try {
@@ -245,7 +248,7 @@ public class OpcDaSourceTask extends SourceTask {
                                     Struct value = new Struct(valueSchema)
                                             .put(OpcDaFields.TIMESTAMP, opcData.getTimestamp().toEpochMilli())
                                             .put(OpcDaFields.TAG_NAME, opcData.getTag())
-                                            .put(OpcDaFields.QUALITY, opcData.getQuality())
+                                            .put(OpcDaFields.QUALITY, opcData.getQuality().name())
                                             .put(OpcDaFields.UPDATE_PERIOD, meta.refreshPeriodMillis)
                                             .put(OpcDaFields.TAG_GROUP, meta.group)
                                             .put(OpcDaFields.OPC_SERVER_HOST, host)
@@ -254,8 +257,12 @@ public class OpcDaSourceTask extends SourceTask {
                                     if (tmp.value() != null) {
                                         value = value.put(OpcDaFields.VALUE, tmp.value());
                                     }
-                                    if (opcData.getErrorCode().isPresent()) {
-                                        value.put(OpcDaFields.ERROR_CODE, opcData.getErrorCode().get());
+                                    if (opcData.getOperationStatus().getLevel().compareTo(OperationStatus.Level.INFO) > 0) {
+                                        value.put(OpcDaFields.ERROR_CODE, opcData.getOperationStatus().getCode());
+                                        if (opcData.getOperationStatus().getMessageDetail().isPresent()) {
+                                            value.put(OpcDaFields.ERROR_REASON,
+                                                    opcData.getOperationStatus().getMessageDetail().get());
+                                        }
                                     }
 
                                     Map<String, String> partition = new HashMap<>();
@@ -298,7 +305,6 @@ public class OpcDaSourceTask extends SourceTask {
 
     @Override
     public void stop() {
-        running = false;
         if (executorService != null) {
             executorService.shutdown();
             executorService = null;

@@ -17,12 +17,10 @@
 
 package com.hurence.logisland.connect.opcda;
 
-import com.hurence.opc.ConnectionProfile;
-import com.hurence.opc.OpcOperations;
-import com.hurence.opc.OpcSession;
-import com.hurence.opc.SessionProfile;
+import com.hurence.opc.*;
 import com.hurence.opc.util.AutoReconnectOpcOperations;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,9 +31,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author amarziali
  */
 public class SmartOpcOperations<S extends ConnectionProfile<S>, T extends SessionProfile<T>, U extends OpcSession>
-        extends AutoReconnectOpcOperations<S, T, U> {
+        implements OpcOperations<S, T, U> {
 
     private final AtomicBoolean stale = new AtomicBoolean();
+    private final OpcOperations<S, T, U> delegate;
 
     /**
      * Construct an instance.
@@ -43,19 +42,19 @@ public class SmartOpcOperations<S extends ConnectionProfile<S>, T extends Sessio
      * @param delegate the deletegate {@link OpcOperations}.
      */
     public SmartOpcOperations(OpcOperations<S, T, U> delegate) {
-        super(delegate);
+        this.delegate = AutoReconnectOpcOperations.create(delegate);
     }
 
     @Override
     public void connect(S connectionProfile) {
         stale.set(true);
-        super.connect(connectionProfile);
+        delegate.connect(connectionProfile);
         awaitConnected();
     }
 
     @Override
     public void disconnect() {
-        super.disconnect();
+        delegate.disconnect();
     }
 
     /**
@@ -66,6 +65,46 @@ public class SmartOpcOperations<S extends ConnectionProfile<S>, T extends Sessio
     public synchronized boolean resetStale() {
         awaitConnected();
         return stale.getAndSet(false);
+    }
+
+    @Override
+    public boolean isChannelSecured() {
+        return false;
+    }
+
+    @Override
+    public ConnectionState getConnectionState() {
+        return delegate.getConnectionState();
+    }
+
+    @Override
+    public Collection<OpcTagInfo> browseTags() {
+        return delegate.browseTags();
+    }
+
+    @Override
+    public U createSession(T t) {
+        return delegate.createSession(t);
+    }
+
+    @Override
+    public void releaseSession(U u) {
+        delegate.releaseSession(u);
+    }
+
+    @Override
+    public boolean awaitConnected() {
+        return delegate.awaitConnected();
+    }
+
+    @Override
+    public boolean awaitDisconnected() {
+        return delegate.awaitDisconnected();
+    }
+
+    @Override
+    public void close() throws Exception {
+        delegate.close();
     }
 
     @Override
