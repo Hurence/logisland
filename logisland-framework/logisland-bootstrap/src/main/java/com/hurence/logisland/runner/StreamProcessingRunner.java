@@ -92,6 +92,7 @@ public class StreamProcessingRunner {
             // start the engine
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
+            engineContext.getEngine().awaitTermination(engineContext);
         } catch (Exception e) {
             logger.error("something went bad while running the job : {}", e);
             System.exit(-1);
