@@ -79,7 +79,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     protected static final String SEARCH_ENGINE_SITE = "search_engine";
     private static final String REFERRING_SITE = "referral";
     private static final String DIRECT_TRAFFIC = "direct";
-    protected CacheService<String, CacheEntry> cacheService;
+    protected CacheService<String, CacheEntry, Long> cacheService;
     static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
     protected boolean debug = false;
 

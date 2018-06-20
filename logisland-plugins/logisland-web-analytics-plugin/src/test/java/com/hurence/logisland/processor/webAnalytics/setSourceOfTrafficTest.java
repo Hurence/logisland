@@ -221,7 +221,7 @@ public class setSourceOfTrafficTest extends BaseSyslogTest {
         runner.enableControllerService(elasticsearchClient);
         runner.setProperty(setSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
-        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        final MockCacheService<String, String, Long> cacheService = new MockCacheService(20);
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(setSourceOfTraffic.CONFIG_CACHE_SERVICE, "cacheService");
@@ -233,7 +233,7 @@ public class setSourceOfTrafficTest extends BaseSyslogTest {
 
 
 
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+    private class MockCacheService<K,V,S> extends LRUKeyValueCacheService<K,V,S> {
 
         private int cacheSize;
 

@@ -390,7 +390,7 @@ public class IpToFqdnTest {
         runner.setProperty(IpToFqdn.CONFIG_RESOLUTION_TIMEOUT, "1000");
         runner.setProperty(IpToFqdn.CONFIG_DEBUG, "true");
 
-        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        final MockCacheService<String, String, Long> cacheService = new MockCacheService(20);
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(IpToFqdn.CONFIG_CACHE_SERVICE, "cacheService");
@@ -449,7 +449,7 @@ public class IpToFqdnTest {
         Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress(""));
     }
 
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+    private class MockCacheService<K,V,S> extends LRUKeyValueCacheService<K,V,S> {
 
         private int cacheSize;
 
