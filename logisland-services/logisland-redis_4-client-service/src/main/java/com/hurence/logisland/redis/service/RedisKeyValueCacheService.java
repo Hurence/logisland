@@ -46,9 +46,7 @@ import org.springframework.data.redis.core.ScanOptions;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -62,7 +60,7 @@ import java.util.List;
  */
 @Tags({"cache", "service", "key", "value", "pair", "redis"})
 @CapabilityDescription("A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
-public class RedisKeyValueCacheService extends AbstractControllerService implements DatastoreClientService, CacheService<String, Record> {
+public class RedisKeyValueCacheService extends AbstractControllerService implements DatastoreClientService, CacheService<String, Record, Long> {
 
     private volatile RecordSerializer recordSerializer;
     private final Serializer<String> stringSerializer = new StringSerializer();
@@ -145,6 +143,50 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void set(String key, Long score, Record value) {
+        try {
+            put(key, score, value,stringSerializer, (Serializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Record> get(String key, Long min, Long max, Long limit) {
+        try {
+            return get(key, min, max, limit, stringSerializer, (Deserializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public <String, Record> List<Record> get(final String key, final Long min, final Long max, final Long limit, final Serializer<String> keySerializer, final Deserializer<Record> valueDeserializer) throws IOException {
+        return withConnection(redisConnection -> {
+            final byte[] k = serialize(key, keySerializer);
+            Set<byte[]> res = redisConnection.zRangeByScore(k, min, max, 0, limit);
+            List<Record> resList = new ArrayList<>();
+            for(byte[] elem : res){
+                InputStream input = new ByteArrayInputStream(elem);
+                resList.add(valueDeserializer.deserialize(input));
+            }
+            if(resList.isEmpty()){
+                return null;
+            }else{
+                return resList;
+            }
+
+        });
+    }
+
+    public <String, Record> void put(final String key, final Long score, final Record value, final Serializer<String> keySerializer, final Serializer<Record> valueSerializer) throws IOException {
+        withConnection(redisConnection -> {
+            final Tuple<byte[], byte[]> kv = serialize(key, value, keySerializer, valueSerializer);
+            redisConnection.zAdd(kv.getKey(), score, kv.getValue());
+            return null;
+        });
     }
 
 
@@ -404,6 +446,11 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
         set(record.getId(),record);
+        String metricId = record.getField("metricId").asString();
+        if(metricId != null && !metricId.isEmpty()){
+            long currentTimestamp = (new Date()).getTime() / 1000;
+            set(metricId,currentTimestamp, record);
+        }
     }
 
     @Override

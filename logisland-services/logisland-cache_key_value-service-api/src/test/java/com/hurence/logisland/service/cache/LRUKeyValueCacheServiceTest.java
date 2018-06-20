@@ -48,7 +48,7 @@ public class LRUKeyValueCacheServiceTest {
         final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
 
         // create the controller service and link it to the test processor
-        final CacheService<String, String> service = new MockCacheService<String, String>(3);
+        final CacheService<String, String, Long> service = new MockCacheService<String, String, Long>(3);
         runner.addControllerService("lruCache", service);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.CACHE_SERVICE, "lruCache");
@@ -79,7 +79,7 @@ public class LRUKeyValueCacheServiceTest {
         assertEquals("3", cacheService.get("3"));
         assertEquals("6", cacheService.get("6"));
     }
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+    private class MockCacheService<K,V, S> extends LRUKeyValueCacheService<K,V, S> {
 
         private int cacheSize;
 

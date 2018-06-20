@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Tags({"csv", "service", "cache"})
 @CapabilityDescription("A cache that store csv lines as records loaded from a file")
-public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService {
+public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record, Long> implements DatastoreClientService {
 
 
     private static Logger logger = LoggerFactory.getLogger(CSVKeyValueCacheService.class);
@@ -413,5 +413,15 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     @Override
     public long queryCount(String query) {
         return 0;
+    }
+
+    @Override
+    public void set(String s, Long aLong, Record record) {
+
+    }
+
+    @Override
+    public List<Record> get(String s, Long min, Long max, Long limit) {
+        return null;
     }
 }
