@@ -480,7 +480,7 @@ public class IpToGeoTest {
         runner.enableControllerService(service);
         runner.assertValid(service);
 
-        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        final MockCacheService<String, String, Long> cacheService = new MockCacheService(20);
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(IpToGeo.CONFIG_CACHE_SERVICE, "cacheService");
@@ -509,7 +509,7 @@ public class IpToGeoTest {
         }
     }
 
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+    private class MockCacheService<K,V,S> extends LRUKeyValueCacheService<K,V,S> {
 
         private int cacheSize;
 

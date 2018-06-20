@@ -36,7 +36,7 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpToFqdn.class);
 
-    protected CacheService<String, CacheEntry> cacheService;
+    protected CacheService<String, CacheEntry, Long> cacheService;
 
     protected String fqdnField = null;
     protected boolean overwrite = false;

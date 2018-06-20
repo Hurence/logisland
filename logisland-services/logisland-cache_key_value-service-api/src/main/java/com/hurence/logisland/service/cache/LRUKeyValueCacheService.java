@@ -45,7 +45,7 @@ import java.util.*;
  */
 @Tags({"cache", "service", "key", "value", "pair", "LRU"})
 @CapabilityDescription("A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
-public class LRUKeyValueCacheService<K,V>  extends AbstractControllerService implements CacheService<K,V> {
+public class LRUKeyValueCacheService<K,V,S>  extends AbstractControllerService implements CacheService<K,V,S> {
 
     protected volatile Cache<K,V> cache;
 
@@ -57,6 +57,16 @@ public class LRUKeyValueCacheService<K,V>  extends AbstractControllerService imp
     @Override
     public void set(K k, V v) {
         cache.set(k, v);
+    }
+
+    @Override
+    public void set(K k, S s, V v) {
+
+    }
+
+    @Override
+    public List<V> get(K k, S min, S max, S limit) {
+        return null;
     }
 
     @Override

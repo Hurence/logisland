@@ -37,10 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.embedded.RedisServer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.SocketChannel;
@@ -64,6 +61,8 @@ public class ITRedisKeyValueCacheClientService {
         this.redisPort = getAvailablePort();
 
         this.redisServer = new RedisServer(redisPort);
+        this.redisServer = new RedisServer(new File("C:\\temp\\soft\\redis\\redis-2.8.19\\redis-server.exe"), 6379);
+
         redisServer.start();
 
         proc = new TestRedisProcessor();

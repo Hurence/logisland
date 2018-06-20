@@ -57,7 +57,7 @@ public class IpToGeo extends IpAbstractProcessor {
     protected static final String PROP_DEBUG = "debug";
     protected static final long DEFAULT_CACHE_VALIDITY_PERIOD = 0;
     protected long cacheValidityPeriodSec = DEFAULT_CACHE_VALIDITY_PERIOD;
-    protected CacheService<String, IpToGeo.CacheEntry> cacheService;
+    protected CacheService<String, IpToGeo.CacheEntry, Long> cacheService;
     protected boolean debug = false;
     static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
     protected static final String PROP_CACHE_SERVICE = "cache.service";
