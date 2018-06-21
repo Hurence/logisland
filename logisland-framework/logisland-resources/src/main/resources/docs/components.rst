@@ -1232,7 +1232,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
+   "**cache.client.service**", "The instance of the Controller Service to use for accessing the cache.", "", "null", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "**training.history.size**", "History size of for the training in terms of number of points.", "", "true", "", ""
    "**prediction.horizon.size**", "Predction horizon : number of seconds in the futur to add to the present timestamp.", "", "true", "", ""

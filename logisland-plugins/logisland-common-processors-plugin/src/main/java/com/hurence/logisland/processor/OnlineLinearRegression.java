@@ -3,33 +3,27 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.datastore.AbstractDatastoreProcessor;
 import com.hurence.logisland.record.*;
-import com.hurence.logisland.redis.service.RedisKeyValueCacheService;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Time;
 import java.util.*;
 
 @Tags({"record", "linear-regression", "prediction"})
 @CapabilityDescription("Perform a training and prediction on records. Each record must have two mondatory fields: timestamp, value." +
         "All the records must be related to the same measurement Id.")
-public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
-
+public class OnlineLinearRegression  extends AbstractProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(OnlineLinearRegression.class);
 
-    protected CacheService datastoreClientService;
+    protected CacheService cacheClientService;
 
-
-    static final PropertyDescriptor DATASTORE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
-            .name("datastore.client.service")
-            .description("The instance of the Controller Service to use for accessing datastore.")
+    public static final PropertyDescriptor CACHE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+            .name("cache.client.service")
+            .description("The instance of the Controller Service to use for accessing the cache.")
             .required(true)
             .identifiesControllerService(CacheService.class)
             .build();
@@ -65,11 +59,10 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
-
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
-        descriptors.add(DATASTORE_CLIENT_SERVICE);
+        descriptors.add(CACHE_CLIENT_SERVICE);
         descriptors.add(RECORD_TYPE);
         descriptors.add(TRAINING_HISTORY_SIZE);
         descriptors.add(PREDICTION_HORIZON_SIZE);
@@ -78,21 +71,21 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
     }
 
     @Override
+    public void init(ProcessContext context) {
+        cacheClientService = context.getPropertyValue(CACHE_CLIENT_SERVICE).asControllerService(CacheService.class);
+        if (cacheClientService == null) {
+            throw new IllegalArgumentException(CACHE_CLIENT_SERVICE.getName() + " does not resolve to any valid Cache service. " +
+                    "Please check your configuration.");
+        }
+    }
+
+    @Override
+    public boolean hasControllerService() {
+        return true;
+    }
+
+    @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
-        // check if we need initialization
-        if(datastoreClientService == null) {
-            init(context);
-        }
-
-        // bail out if init has failed
-        if(datastoreClientService == null) {
-            return records;
-        }
-
-
-        //final RedisKeyValueCacheService redisKeyValueCacheService = context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService(RedisKeyValueCacheService.class);
-        final CacheService redisKeyValueCacheService = context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService(CacheService.class);
 
         final String eventType = context.getPropertyValue(RECORD_TYPE).asString();
         final Long trainingHistorySize = context.getPropertyValue(TRAINING_HISTORY_SIZE).asLong();
@@ -110,7 +103,7 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
 
         // creating regression object, passing true to have intercept term
         SimpleRegression simpleRegression = new SimpleRegression(true);
-        if(records.size() == 0) {
+        if(records.size() != 0) {
 
             long currentTimestamp = (new Date()).getTime() / 1000;
 
@@ -121,8 +114,13 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
             int normalCheckWindow = record.getField("normalCheckWindow").asInteger();
             long pastTimestamp = currentTimestamp - normalCheckWindow * 60 * trainingHistorySize ;
 
+            Record lastTrainingTimestampRecord = (Record) cacheClientService.get("#"+metricId);
+            if(lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP) != null) {
+                long lastTrainingTimestamp = lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP).asLong();
+                if((currentTimestamp - lastTrainingTimestamp) <  (normalCheckWindow * 60)) return outputRecords;
+            }
 
-            List<Record> recordsFromRedis = redisKeyValueCacheService.get(metricId, pastTimestamp, currentTimestamp, trainingHistorySize );
+            List<Record> recordsFromRedis = cacheClientService.get(metricId, pastTimestamp, currentTimestamp, trainingHistorySize );
             double[][] data = new double[trainingHistorySize.intValue()][2];
             int cptRows = 0;
             for(Record recordRedis : recordsFromRedis){
@@ -135,7 +133,6 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
 
             simpleRegression.addData(data);
 
-
             long predictionTimestamp = currentTimestamp + predictionHorizonSize;
             double predicted_value =  simpleRegression.predict(predictionTimestamp);
 
@@ -145,9 +142,17 @@ public class OnlineLinearRegression  extends AbstractDatastoreProcessor {
             outputRecord.setField(FieldDictionary.RECORD_METRIC_NAME, FieldType.STRING, metricName);
             outputRecord.setField(FieldDictionary.RECORD_SLOPE, FieldType.DOUBLE, simpleRegression.getSlope());
             outputRecord.setField(FieldDictionary.RECORD_INTERCEPT, FieldType.DOUBLE, simpleRegression.getIntercept());
-            outputRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.DOUBLE, currentTimestamp);
-            outputRecord.setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.DOUBLE, predictionTimestamp);
+            outputRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
+            outputRecord.setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);
             outputRecord.setField(FieldDictionary.RECORD_PREDICTION_VALUE, FieldType.DOUBLE, predicted_value);
+
+            //Save the prediction to Redis
+            cacheClientService.set(groupId+"#"+metricId, predictionTimestamp, outputRecord);
+
+            //Save the last training timestamp to Redis
+            StandardRecord redisRecord = new StandardRecord(eventType);
+            redisRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
+            cacheClientService.set("#"+metricId, redisRecord);
 
             outputRecords.add(outputRecord);
         }
