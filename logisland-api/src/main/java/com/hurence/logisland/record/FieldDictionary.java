@@ -32,7 +32,7 @@ public class FieldDictionary {
     public static String RECORD_METRIC_NAME = "record_metric_name";
     public static String RECORD_GROUP_ID = "record_group_id";
     public static String RECORD_INTERCEPT = "record_intercept";
-    public static String RECORD_TRAINING_TIMESTAMP = "record_predction_timestamp";
+    public static String RECORD_TRAINING_TIMESTAMP = "record_training_timestamp";
     public static String RECORD_PREDICTION_TIMESTAMP = "record_predction_timestamp";
     public static String RECORD_PREDICTION_VALUE = "record_predction_value";
     public static String RECORD_VALUE = "record_value";

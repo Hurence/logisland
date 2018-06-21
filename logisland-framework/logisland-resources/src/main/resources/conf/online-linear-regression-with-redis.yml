@@ -40,7 +40,7 @@ engine:
 
   controllerServiceConfigurations:
 
-    - controllerService: datastore_service
+    - controllerService: cache_service
       component: com.hurence.logisland.redis.service.RedisKeyValueCacheService
       type: service
       documentation: redis datastore service
@@ -72,8 +72,8 @@ engine:
       type: stream
       documentation: a processor that converts raw metric measurements logs into structured log records
       configuration:
-        kafka.input.topics: logisland_raw_ali2
-        kafka.output.topics: logisland_events
+        kafka.input.topics: logisland_raw_ali4
+        kafka.output.topics: logisland_events2
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
         kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -112,7 +112,7 @@ engine:
           type: processor
           documentation: "indexes processed events in datastore"
           configuration:
-            datastore.client.service: datastore_service
+            datastore.client.service: cache_service
 
 
     # metric prediction
@@ -121,10 +121,10 @@ engine:
       type: stream
       documentation: A processor that perform predcition on record list of metric measurements
       configuration:
-        kafka.input.topics: logisland_events
+        kafka.input.topics: logisland_events2
         kafka.output.topics: logisland_predictions
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: cosvgre75:9092
@@ -138,7 +138,7 @@ engine:
           type: processor
           documentation: Perform training and prediction on list of records
           configuration:
-            datastore.client.service: datastore_service
+            cache.client.service: cache_service
             record.type: metric_predcition
             training.history.size: 3
             prediction.horizon.size: 54000
