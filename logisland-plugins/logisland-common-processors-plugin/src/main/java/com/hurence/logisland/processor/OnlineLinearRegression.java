@@ -112,49 +112,51 @@ public class OnlineLinearRegression  extends AbstractProcessor {
             String metricName = record.getField("metricName").asString();
             String groupId = record.getField("groupId").asString();
             int normalCheckWindow = record.getField("normalCheckWindow").asInteger();
-            long pastTimestamp = currentTimestamp - normalCheckWindow * 60 * trainingHistorySize ;
+            long pastTimestamp = currentTimestamp - (normalCheckWindow * trainingHistorySize) ;
 
             Record lastTrainingTimestampRecord = (Record) cacheClientService.get("#"+metricId);
             if(lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP) != null) {
                 long lastTrainingTimestamp = lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP).asLong();
-                if((currentTimestamp - lastTrainingTimestamp) <  (normalCheckWindow * 60)) return outputRecords;
+                if((currentTimestamp - lastTrainingTimestamp) < normalCheckWindow) return outputRecords;
             }
 
             List<Record> recordsFromRedis = cacheClientService.get(metricId, pastTimestamp, currentTimestamp, trainingHistorySize );
-            double[][] data = new double[trainingHistorySize.intValue()][2];
-            int cptRows = 0;
-            for(Record recordRedis : recordsFromRedis){
-                Long timestamp = recordRedis.getField("timestamp").asLong();
-                float value = recordRedis.getField("value").asFloat();
-                data[cptRows][0] = timestamp;
-                data[cptRows][1] = value;
-                cptRows++;
+            if(recordsFromRedis != null) {
+                double[][] data = new double[trainingHistorySize.intValue()][2];
+                int cptRows = 0;
+                for (Record recordRedis : recordsFromRedis) {
+                    Long timestamp = recordRedis.getField("timestamp").asLong();
+                    float value = recordRedis.getField("value").asFloat();
+                    data[cptRows][0] = timestamp;
+                    data[cptRows][1] = value;
+                    cptRows++;
+                }
+
+                simpleRegression.addData(data);
+
+                long predictionTimestamp = currentTimestamp + predictionHorizonSize;
+                double predicted_value = simpleRegression.predict(predictionTimestamp);
+
+                // Set the field values
+                outputRecord.setField(FieldDictionary.RECORD_GROUP_ID, FieldType.STRING, groupId);
+                outputRecord.setField(FieldDictionary.RECORD_METRIC_ID, FieldType.STRING, metricId);
+                outputRecord.setField(FieldDictionary.RECORD_METRIC_NAME, FieldType.STRING, metricName);
+                outputRecord.setField(FieldDictionary.RECORD_SLOPE, FieldType.DOUBLE, simpleRegression.getSlope());
+                outputRecord.setField(FieldDictionary.RECORD_INTERCEPT, FieldType.DOUBLE, simpleRegression.getIntercept());
+                outputRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
+                outputRecord.setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);
+                outputRecord.setField(FieldDictionary.RECORD_PREDICTION_VALUE, FieldType.DOUBLE, predicted_value);
+
+                //Save the prediction to Redis
+                cacheClientService.set(groupId + "#" + metricId, predictionTimestamp, outputRecord);
+
+                //Save the last training timestamp to Redis
+                StandardRecord redisRecord = new StandardRecord(eventType);
+                redisRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
+                cacheClientService.set("#" + metricId, redisRecord);
+
+                outputRecords.add(outputRecord);
             }
-
-            simpleRegression.addData(data);
-
-            long predictionTimestamp = currentTimestamp + predictionHorizonSize;
-            double predicted_value =  simpleRegression.predict(predictionTimestamp);
-
-            // Set the field values
-            outputRecord.setField(FieldDictionary.RECORD_GROUP_ID, FieldType.STRING, groupId);
-            outputRecord.setField(FieldDictionary.RECORD_METRIC_ID, FieldType.STRING, metricId);
-            outputRecord.setField(FieldDictionary.RECORD_METRIC_NAME, FieldType.STRING, metricName);
-            outputRecord.setField(FieldDictionary.RECORD_SLOPE, FieldType.DOUBLE, simpleRegression.getSlope());
-            outputRecord.setField(FieldDictionary.RECORD_INTERCEPT, FieldType.DOUBLE, simpleRegression.getIntercept());
-            outputRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
-            outputRecord.setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);
-            outputRecord.setField(FieldDictionary.RECORD_PREDICTION_VALUE, FieldType.DOUBLE, predicted_value);
-
-            //Save the prediction to Redis
-            cacheClientService.set(groupId+"#"+metricId, predictionTimestamp, outputRecord);
-
-            //Save the last training timestamp to Redis
-            StandardRecord redisRecord = new StandardRecord(eventType);
-            redisRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
-            cacheClientService.set("#"+metricId, redisRecord);
-
-            outputRecords.add(outputRecord);
         }
 
         return outputRecords;
