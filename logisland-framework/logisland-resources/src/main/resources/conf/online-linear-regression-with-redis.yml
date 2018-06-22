@@ -93,6 +93,7 @@ engine:
           documentation: a parser that produce events from ServiceNav metric_measurments
           configuration:
             record.type: sn_metric_measurements
+            key.regex: \"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\”?
             value.regex: \"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\"?,\"?([^\"|^,]*)\”?
             value.fields: groupId,metricId,bucket,metricName,metricUnit,timestamp,value,critThreshold,warnThreshold,min,max,normalCheckWindow
 
