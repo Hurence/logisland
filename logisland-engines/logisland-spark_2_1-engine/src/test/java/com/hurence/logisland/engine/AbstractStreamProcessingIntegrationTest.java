@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,6 @@ package com.hurence.logisland.engine;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.stream.StreamProperties;
-import com.hurence.logisland.stream.spark.AbstractKafkaRecordStream;
 import com.hurence.logisland.util.spark.SparkUtils;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
@@ -34,9 +33,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,6 +45,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
+
 /**
  * Abstract class for integration testing
  */
@@ -61,7 +60,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     protected static final String MAGIC_STRING = "the world is so big";
 
 
-    private static Logger logger = (Logger)LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractStreamProcessingIntegrationTest.class);
 
     private static KafkaProducer<byte[], byte[]> producer;
     private static KafkaConsumer<byte[], byte[]> consumer;
@@ -94,8 +93,6 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     @Before
     public void setUp() throws InterruptedException, IOException {
 
-        Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.WARN);
 
         SparkUtils.customizeLogLevels();
         // setup Zookeeper
@@ -115,22 +112,19 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         kafkaServer = TestUtils.createServer(config, mock);
 
         // create topics
-        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
+        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils,
                     StreamProperties.DEFAULT_ERRORS_TOPIC().getValue(),
-                1,
-                1,
-                new Properties(),
-                RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+                    1,
+                    1,
+                    new Properties(),
+                    RackAwareMode.Disabled$.MODULE$);
+        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
+        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-        if(!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
+        if (!AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
             AdminUtils.createTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue(), 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
-
-
-
 
 
         // deleting zookeeper information to make sure the consumer starts from the beginning
@@ -175,13 +169,13 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         }
 
         if (zkUtils != null) {
-            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
+            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue()))
                 AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_ERRORS_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
+            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue()))
                 AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RECORDS_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
+            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue()))
                 AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_RAW_TOPIC().getValue());
-            if(AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
+            if (AdminUtils.topicExists(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue()))
                 AdminUtils.deleteTopic(zkUtils, StreamProperties.DEFAULT_METRICS_TOPIC().getValue());
             zkUtils.close();
         }

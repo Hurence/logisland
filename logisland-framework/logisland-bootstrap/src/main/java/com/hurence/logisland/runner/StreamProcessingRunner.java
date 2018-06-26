@@ -77,7 +77,7 @@ public class StreamProcessingRunner {
             // load the YAML config
             LogislandConfiguration sessionConf = ConfigReader.loadConfig(configFile);
 
-            // instanciate engine and all the processor from the config
+            // instantiate engine and all the processor from the config
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
             assert engineInstance.isPresent();
             assert engineInstance.get().isValid();
@@ -92,6 +92,7 @@ public class StreamProcessingRunner {
             // start the engine
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
+            engineContext.getEngine().awaitTermination(engineContext);
         } catch (Exception e) {
             logger.error("something went bad while running the job : {}", e);
             System.exit(-1);

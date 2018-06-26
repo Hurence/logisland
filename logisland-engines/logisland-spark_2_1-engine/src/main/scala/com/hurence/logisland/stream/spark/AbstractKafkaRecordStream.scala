@@ -20,14 +20,15 @@ import java.io.ByteArrayInputStream
 import java.util
 import java.util.Collections
 
-import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor, RestComponentFactory}
+import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record.Record
 import com.hurence.logisland.serializer._
-import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext, StreamProperties}
+import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
-import com.hurence.logisland.validator.StandardValidators
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.avro.Schema.Parser
@@ -46,13 +47,9 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-import com.hurence.logisland.stream.StreamProperties._
-
-
 
 
 abstract class AbstractKafkaRecordStream extends AbstractRecordStream with SparkRecordStream {
-
 
 
     val NONE_TOPIC: String = "none"
@@ -62,10 +59,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
     @transient protected var ssc: StreamingContext = null
     protected var streamContext: StreamContext = null
     protected var engineContext: EngineContext = null
-    protected var restApiSink: Broadcast[RestJobsApiClientSink] = null
     protected var controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink] = null
-    protected var currentJobVersion: Int = 0
-    protected var lastCheckCount: Int = 0
     protected var needMetricsReset = false
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
@@ -84,8 +78,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         descriptors.add(KAFKA_METADATA_BROKER_LIST)
         descriptors.add(KAFKA_ZOOKEEPER_QUORUM)
         descriptors.add(KAFKA_MANUAL_OFFSET_RESET)
-        descriptors.add(LOGISLAND_AGENT_HOST)
-        descriptors.add(LOGISLAND_AGENT_PULL_THROTTLING)
         descriptors.add(KAFKA_BATCH_SIZE)
         descriptors.add(KAFKA_LINGER_MS)
         descriptors.add(KAFKA_ACKS)
@@ -123,8 +115,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
             val brokerList = streamContext.getPropertyValue(KAFKA_METADATA_BROKER_LIST).asString
             val zkQuorum = streamContext.getPropertyValue(KAFKA_ZOOKEEPER_QUORUM).asString
 
-            val agentQuorum = streamContext.getPropertyValue(LOGISLAND_AGENT_HOST).asString
-            val throttling = streamContext.getPropertyValue(LOGISLAND_AGENT_PULL_THROTTLING).asInteger()
             val kafkaBatchSize = streamContext.getPropertyValue(KAFKA_BATCH_SIZE).asString
             val kafkaLingerMs = streamContext.getPropertyValue(KAFKA_LINGER_MS).asString
             val kafkaAcks = streamContext.getPropertyValue(KAFKA_ACKS).asString
@@ -144,7 +134,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
                 ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG -> "1000")
 
             kafkaSink = ssc.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
-            restApiSink = ssc.sparkContext.broadcast(RestJobsApiClientSink(agentQuorum))
             controllerServiceLookupSink = ssc.sparkContext.broadcast(
                 ControllerServiceLookupSink(engineContext.getControllerServiceConfigurations)
             )
@@ -181,9 +170,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
                 Subscribe[Array[Byte], Array[Byte]](inputTopics, kafkaParams)
             )
 
-            // store current configuration version
-            currentJobVersion = restApiSink.value.getJobApiClient.getJobVersion(appName)
-
             // do the parallel processing
 
             val stream = if (streamContext.getPropertyValue(WINDOW_DURATION).isSet) {
@@ -198,90 +184,61 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
             } else kafkaStream
 
 
-            stream.foreachRDD(rdd => {
+            stream
+                .foreachRDD(rdd => {
+
+                    this.streamContext.getProcessContexts().clear();
+                    this.streamContext.getProcessContexts().addAll(
+                        PipelineConfigurationBroadcastWrapper.getInstance().get(this.streamContext.getIdentifier))
+
+                    if (!rdd.isEmpty()) {
 
 
-                if (!rdd.isEmpty()) {
+                        val offsetRanges = process(rdd)
+                        // some time later, after outputs have completed
+                        if (offsetRanges.nonEmpty) {
+                            // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
 
-                    /**
-                      * check if conf needs to be refreshed
-                      */
-                    if (lastCheckCount > throttling) {
-                        lastCheckCount = 0
-                        val version = restApiSink.value.getJobApiClient.getJobVersion(appName)
-                        if (currentJobVersion != version) {
-                            logger.info("Job version change detected from {} to {}, proceeding to update",
-                                currentJobVersion,
-                                version)
 
-                            val componentFactory = new RestComponentFactory(agentQuorum)
-                            val updatedEngineContext = componentFactory.getEngineContext(appName)
-                            if (updatedEngineContext.isPresent) {
-
-                                // find the corresponding stream
-                                val it = updatedEngineContext.get().getStreamContexts.iterator()
-                                while (it.hasNext) {
-                                    val updatedStreamingContext = it.next()
-
-                                    // if we found a streamContext with the same name from the factory
-                                    if (updatedStreamingContext.getName == this.streamContext.getName) {
-                                        logger.info("new conf for stream {}", updatedStreamingContext.getName)
-                                        this.streamContext = updatedStreamingContext
+                            kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
+                                def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
+                                    if (null != e) {
+                                        logger.error("error commiting offsets", e)
                                     }
                                 }
-                            }
-                            currentJobVersion = version
+                            })
+
+
+                            needMetricsReset = true
                         }
-                    }
+                        else if (needMetricsReset) {
+                            try {
 
-                    lastCheckCount += 1
+                                for (partitionId <- 0 to rdd.getNumPartitions) {
+                                    val pipelineMetricPrefix = streamContext.getIdentifier + "." +
+                                        "partition" + partitionId + "."
+                                    val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
+                                    streamContext.getProcessContexts.foreach(processorContext => {
+                                        UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                            .time()
+                                            .stop()
 
-                    val offsetRanges = process(rdd)
-                    // some time later, after outputs have completed
-                    if (offsetRanges.nonEmpty) {
-                       // kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get)
-
-
-                        kafkaStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges.get, new OffsetCommitCallback() {
-                            def onComplete(m: java.util.Map[TopicPartition, OffsetAndMetadata], e: Exception) {
-                                if (null != e) {
-                                    logger.error("error commiting offsets", e)
+                                        ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                                    })
+                                    pipelineTimerContext.stop()
                                 }
+                            } catch {
+                                case ex: Throwable =>
+                                    logger.error(s"exception : ${ex.toString}")
+                                    None
+                            } finally {
+                                needMetricsReset = false
                             }
-                        })
-
-
-                        needMetricsReset = true
-                    }
-                    else if (needMetricsReset) {
-                        try {
-
-                            for (partitionId <- 0 to rdd.getNumPartitions) {
-                                val pipelineMetricPrefix = streamContext.getIdentifier + "." +
-                                    "partition" + partitionId + "."
-                                val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
-
-                                streamContext.getProcessContexts.foreach(processorContext => {
-                                    UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
-                                        .time()
-                                        .stop()
-
-                                    ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
-                                })
-                                pipelineTimerContext.stop()
-                            }
-                        } catch {
-                            case ex: Throwable =>
-                                logger.error(s"exception : ${ex.toString}")
-                                None
-                        } finally {
-                            needMetricsReset = false
                         }
                     }
-                }
 
-            })
+                })
         } catch {
             case ex: Throwable =>
                 ex.printStackTrace()

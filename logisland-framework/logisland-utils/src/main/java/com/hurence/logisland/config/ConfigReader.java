@@ -55,7 +55,7 @@ public class ConfigReader {
 
         // replace all host from environment variables
         String fileContent = StringUtils.resolveEnvVars(readFile(configFilePath, Charset.defaultCharset()), "localhost");
-
+        //String fileContent = readFile(configFilePath, Charset.defaultCharset());
 
         return mapper.readValue(fileContent, LogislandConfiguration.class);
     }

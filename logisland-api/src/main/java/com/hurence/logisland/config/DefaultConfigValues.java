@@ -26,7 +26,6 @@ public enum DefaultConfigValues {
     KAFKA_BROKERS("sandbox:9092"),
     ZK_QUORUM("sandbox:2181"),
     SOLR_CONNECTION("http://sandbox:8983/solr"),
-    LOGISLAND_AGENT_HOST("sandbox:8008"),
     MQTT_BROKER_URL("tcp://sandbox:1883");
 
 
