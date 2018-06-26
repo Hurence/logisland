@@ -15,21 +15,20 @@
  *
  */
 
-package com.hurence.logisland.connect.opcda;
+package com.hurence.logisland.connect.opc.da;
 
 import com.google.gson.Gson;
+import com.hurence.logisland.connect.opc.CommonUtils;
 import com.hurence.opc.OpcTagInfo;
 import com.hurence.opc.auth.UsernamePasswordCredentials;
 import com.hurence.opc.da.OpcDaConnectionProfile;
 import com.hurence.opc.da.OpcDaOperations;
 import com.hurence.opc.da.OpcDaTemplate;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URI;
-import java.sql.Struct;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -43,16 +42,16 @@ public class OpcDaSourceConnectorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void parseFailureTest() {
-        OpcDaSourceConnector.parseTag("test1:2aj", 500L);
+        CommonUtils.parseTag("test1:2aj", 500L);
     }
 
     @Test
     public void tagParseTest() {
-        Map.Entry<String, Long> toTest = OpcDaSourceConnector.parseTag("test1:1000", 500L);
+        Map.Entry<String, Long> toTest = CommonUtils.parseTag("test1:1000", 500L);
         Assert.assertEquals("test1", toTest.getKey());
         Assert.assertEquals(new Long(1000), toTest.getValue());
 
-        toTest = OpcDaSourceConnector.parseTag("test2", 500L);
+        toTest = CommonUtils.parseTag("test2", 500L);
         Assert.assertEquals("test2", toTest.getKey());
         Assert.assertEquals(new Long(500), toTest.getValue());
     }

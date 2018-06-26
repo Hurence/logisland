@@ -15,9 +15,13 @@
  *
  */
 
-package com.hurence.logisland.connect.opcda;
+package com.hurence.logisland.connect.opc.da;
 
-import com.hurence.opc.OperationStatus;
+import com.hurence.logisland.connect.opc.CommonUtils;
+import com.hurence.logisland.connect.opc.OpcRecordFields;
+import com.hurence.logisland.connect.opc.SmartOpcOperations;
+import com.hurence.logisland.connect.opc.TagInfo;
+import com.hurence.opc.OpcTagInfo;
 import com.hurence.opc.auth.UsernamePasswordCredentials;
 import com.hurence.opc.da.OpcDaConnectionProfile;
 import com.hurence.opc.da.OpcDaSession;
@@ -28,16 +32,13 @@ import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.errors.SchemaBuilderException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
@@ -50,27 +51,7 @@ import java.util.stream.Collectors;
  */
 public class OpcDaSourceTask extends SourceTask {
 
-    private static class TagInfo {
-        final String group;
-        final String name;
-        final Long refreshPeriodMillis;
-
-        public TagInfo(String raw, long defaultRefreshPeriod) {
-            Map.Entry<String, Long> parsed = OpcDaSourceConnector.parseTag(raw, defaultRefreshPeriod);
-            String tag = parsed.getKey();
-            this.refreshPeriodMillis = parsed.getValue();
-            int idx = tag.lastIndexOf('.');
-            if (idx > 0) {
-                this.group = tag.substring(0, idx);
-            } else {
-                this.group = "";
-            }
-            this.name = tag;
-        }
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(OpcDaSourceTask.class);
-
     private SmartOpcOperations<OpcDaConnectionProfile, OpcDaSessionProfile, OpcDaSession> opcOperations;
     private TransferQueue<SourceRecord> transferQueue;
     private Lock lock = new ReentrantLock();
@@ -85,11 +66,31 @@ public class OpcDaSourceTask extends SourceTask {
     private long defaultRefreshPeriodMillis;
     private long minWaitTime;
 
+    /**
+     * GCD recursive version
+     *
+     * @param x dividend
+     * @param y divisor
+     * @return
+     */
+    private static long gcdInternal(long x, long y) {
+        return (y == 0) ? x : gcdInternal(y, x % y);
+    }
+
+    /**
+     * Great common divisor (An elegant way to do it with a lambda).
+     *
+     * @param numbers list of number
+     * @return the GCD.
+     */
+    private static long gcd(long... numbers) {
+        return Arrays.stream(numbers).reduce(0, (x, y) -> (y == 0) ? x : gcdInternal(y, x % y));
+    }
 
     private synchronized void createSessionsIfNeeded() {
         if (opcOperations != null && opcOperations.resetStale()) {
             sessions = new HashMap<>();
-            tagInfoMap.entrySet().stream().collect(Collectors.groupingBy(entry -> entry.getValue().refreshPeriodMillis))
+            tagInfoMap.entrySet().stream().collect(Collectors.groupingBy(entry -> entry.getValue().getRefreshPeriodMillis()))
                     .forEach((a, b) -> {
                         OpcDaSessionProfile sessionProfile = new OpcDaSessionProfile().withDirectRead(directRead)
                                 .withRefreshPeriod(Duration.ofMillis(a));
@@ -98,7 +99,6 @@ public class OpcDaSourceTask extends SourceTask {
                     });
         }
     }
-
 
     private OpcDaConnectionProfile propertiesToConnectionProfile(Map<String, String> properties) {
         OpcDaConnectionProfile ret = new OpcDaConnectionProfile();
@@ -121,76 +121,6 @@ public class OpcDaSourceTask extends SourceTask {
         return ret;
     }
 
-    private SchemaAndValue convertToNativeType(final Object value) {
-
-        Class<?> cls = value != null ? value.getClass() : Void.class;
-        final ArrayList<Object> objs = new ArrayList<>();
-
-        if (cls.isArray()) {
-            final Object[] array = (Object[]) value;
-
-            Schema arraySchema = null;
-
-            for (final Object element : array) {
-                SchemaAndValue tmp = convertToNativeType(element);
-                if (arraySchema == null) {
-                    arraySchema = tmp.schema();
-                }
-                objs.add(tmp.value());
-            }
-
-            return new SchemaAndValue(SchemaBuilder.array(arraySchema), objs);
-        }
-
-        if (cls.isAssignableFrom(Void.class)) {
-            return SchemaAndValue.NULL;
-        } else if (cls.isAssignableFrom(String.class)) {
-            return new SchemaAndValue(SchemaBuilder.string().optional(), value);
-        } else if (cls.isAssignableFrom(Short.class)) {
-            return new SchemaAndValue(SchemaBuilder.int16().optional(), value);
-        } else if (cls.isAssignableFrom(Integer.class)) {
-
-            return new SchemaAndValue(SchemaBuilder.int32().optional(), value);
-        } else if (cls.isAssignableFrom(Long.class)) {
-
-            return new SchemaAndValue(SchemaBuilder.int64().optional(), value);
-        } else if (cls.isAssignableFrom(Byte.class)) {
-            return new SchemaAndValue(SchemaBuilder.int8().optional(), value);
-        } else if (cls.isAssignableFrom(Character.class)) {
-            return new SchemaAndValue(SchemaBuilder.int32().optional(), value == null ? null : new Integer(((char) value)));
-        } else if (cls.isAssignableFrom(Boolean.class)) {
-            return new SchemaAndValue(SchemaBuilder.bool().optional(), value);
-        } else if (cls.isAssignableFrom(Float.class)) {
-            return new SchemaAndValue(SchemaBuilder.float32().optional(), value);
-        } else if (cls.isAssignableFrom(BigDecimal.class)) {
-            return new SchemaAndValue(SchemaBuilder.float64().optional(), value == null ? null : ((BigDecimal) value).doubleValue());
-        } else if (cls.isAssignableFrom(Double.class)) {
-            return new SchemaAndValue(SchemaBuilder.float64().optional(), value);
-        } else if (cls.isAssignableFrom(Instant.class)) {
-            return new SchemaAndValue(SchemaBuilder.int64().optional(), value == null ? null : ((Instant) value).toEpochMilli());
-
-        }
-        throw new SchemaBuilderException("Unknown type presented (" + cls + ")");
-
-    }
-
-    private Schema buildSchema(Schema valueSchema) {
-        SchemaBuilder ret = SchemaBuilder.struct()
-                .field(OpcDaFields.TAG_NAME, SchemaBuilder.string())
-                .field(OpcDaFields.TIMESTAMP, SchemaBuilder.int64())
-                .field(OpcDaFields.QUALITY, SchemaBuilder.string())
-                .field(OpcDaFields.UPDATE_PERIOD, SchemaBuilder.int64().optional())
-                .field(OpcDaFields.TAG_GROUP, SchemaBuilder.string().optional())
-                .field(OpcDaFields.OPC_SERVER_DOMAIN, SchemaBuilder.string().optional())
-                .field(OpcDaFields.OPC_SERVER_HOST, SchemaBuilder.string())
-                .field(OpcDaFields.ERROR_CODE, SchemaBuilder.int64().optional())
-                .field(OpcDaFields.ERROR_REASON, SchemaBuilder.string().optional());
-        if (valueSchema != null) {
-            ret = ret.field(OpcDaFields.VALUE, valueSchema);
-        }
-        return ret;
-    }
-
 
     @Override
     public void start(Map<String, String> props) {
@@ -202,14 +132,20 @@ public class OpcDaSourceTask extends SourceTask {
         host = connectionProfile.getConnectionUri().getHost();
         defaultRefreshPeriodMillis = Long.parseLong(props.get(OpcDaSourceConnector.PROPERTY_DEFAULT_REFRESH_PERIOD));
         directRead = Boolean.parseBoolean(props.get(OpcDaSourceConnector.PROPERTY_DIRECT_READ));
-        tagInfoMap = Arrays.stream(tags).map(t -> new TagInfo(t, defaultRefreshPeriodMillis))
-                .collect(Collectors.toMap(t -> t.name, Function.identity()));
+
         opcOperations.connect(connectionProfile);
         if (!opcOperations.awaitConnected()) {
             throw new ConnectException("Unable to connect");
         }
+        Map<String, OpcTagInfo> dictionary =
+                opcOperations.fetchMetadata(Arrays.stream(tags).map(t -> CommonUtils.parseTag(t, defaultRefreshPeriodMillis).getKey())
+                        .toArray(size -> new String[size]))
+                        .stream()
+                        .collect(Collectors.toMap(OpcTagInfo::getId, Function.identity()));
+        tagInfoMap = Arrays.stream(tags).map(t -> new TagInfo(t, defaultRefreshPeriodMillis, dictionary))
+                .collect(Collectors.toMap(t -> t.getTagInfo().getId(), Function.identity()));
         logger.info("Started OPC-DA task for tags {}", (Object) tags);
-        minWaitTime = Math.max(10, gcd(tagInfoMap.values().stream().mapToLong(t -> t.refreshPeriodMillis).toArray()));
+        minWaitTime = Math.max(10, gcd(tagInfoMap.values().stream().mapToLong(TagInfo::getRefreshPeriodMillis).toArray()));
         tagReadingQueue = new HashSet<>();
         executorService = Executors.newSingleThreadScheduledExecutor();
         tagInfoMap.forEach((k, v) -> executorService.scheduleAtFixedRate(() -> {
@@ -219,7 +155,7 @@ public class OpcDaSourceTask extends SourceTask {
             } finally {
                 lock.unlock();
             }
-        }, 0, v.refreshPeriodMillis, TimeUnit.MILLISECONDS));
+        }, 0, v.getRefreshPeriodMillis(), TimeUnit.MILLISECONDS));
 
         executorService.scheduleAtFixedRate(() -> {
             try {
@@ -242,38 +178,27 @@ public class OpcDaSourceTask extends SourceTask {
                         .map(entry -> entry.getKey().read(entry.getValue().toArray(new String[entry.getValue().size()])))
                         .flatMap(Collection::stream)
                         .map(opcData -> {
-                                    SchemaAndValue tmp = convertToNativeType(opcData.getValue());
-                                    Schema valueSchema = buildSchema(tmp.schema());
+                                    SchemaAndValue tmp = CommonUtils.convertToNativeType(opcData.getValue());
+                                    Schema valueSchema = CommonUtils.buildSchema(tmp.schema());
                                     TagInfo meta = tagInfoMap.get(opcData.getTag());
-                                    Struct value = new Struct(valueSchema)
-                                            .put(OpcDaFields.TIMESTAMP, opcData.getTimestamp().toEpochMilli())
-                                            .put(OpcDaFields.TAG_NAME, opcData.getTag())
-                                            .put(OpcDaFields.QUALITY, opcData.getQuality().name())
-                                            .put(OpcDaFields.UPDATE_PERIOD, meta.refreshPeriodMillis)
-                                            .put(OpcDaFields.TAG_GROUP, meta.group)
-                                            .put(OpcDaFields.OPC_SERVER_HOST, host)
-                                            .put(OpcDaFields.OPC_SERVER_DOMAIN, domain);
-
-                                    if (tmp.value() != null) {
-                                        value = value.put(OpcDaFields.VALUE, tmp.value());
-                                    }
-                                    if (opcData.getOperationStatus().getLevel().compareTo(OperationStatus.Level.INFO) > 0) {
-                                        value.put(OpcDaFields.ERROR_CODE, opcData.getOperationStatus().getCode());
-                                        if (opcData.getOperationStatus().getMessageDetail().isPresent()) {
-                                            value.put(OpcDaFields.ERROR_REASON,
-                                                    opcData.getOperationStatus().getMessageDetail().get());
-                                        }
-                                    }
+                                    Map<String, Object> additionalInfo = new HashMap<>();
+                                    additionalInfo.put(OpcRecordFields.OPC_SERVER_HOST, host);
+                                    additionalInfo.put(OpcRecordFields.OPC_SERVER_DOMAIN, domain);
+                                    Struct value = CommonUtils.mapToConnectObject(opcData,
+                                            meta,
+                                            valueSchema,
+                                            tmp,
+                                            additionalInfo);
 
                                     Map<String, String> partition = new HashMap<>();
-                                    partition.put(OpcDaFields.TAG_NAME, opcData.getTag());
-                                    partition.put(OpcDaFields.OPC_SERVER_DOMAIN, domain);
-                                    partition.put(OpcDaFields.OPC_SERVER_HOST, host);
+                                    partition.put(OpcRecordFields.TAG_NAME, opcData.getTag());
+                                    partition.put(OpcRecordFields.OPC_SERVER_DOMAIN, domain);
+                                    partition.put(OpcRecordFields.OPC_SERVER_HOST, host);
 
 
                                     return new SourceRecord(
                                             partition,
-                                            Collections.singletonMap(OpcDaFields.TIMESTAMP, opcData.getTimestamp().toEpochMilli()),
+                                            Collections.singletonMap(OpcRecordFields.TIMESTAMP, opcData.getTimestamp().toEpochMilli()),
                                             "",
                                             SchemaBuilder.STRING_SCHEMA,
                                             domain + "|" + host + "|" + opcData.getTag(),
@@ -325,27 +250,6 @@ public class OpcDaSourceTask extends SourceTask {
     @Override
     public String version() {
         return getClass().getPackage().getImplementationVersion();
-    }
-
-    /**
-     * GCD recursive version
-     *
-     * @param x dividend
-     * @param y divisor
-     * @return
-     */
-    private static long gcdInternal(long x, long y) {
-        return (y == 0) ? x : gcdInternal(y, x % y);
-    }
-
-    /**
-     * Great common divisor (An elegant way to do it with a lambda).
-     *
-     * @param numbers list of number
-     * @return the GCD.
-     */
-    private static long gcd(long... numbers) {
-        return Arrays.stream(numbers).reduce(0, (x, y) -> (y == 0) ? x : gcdInternal(y, x % y));
     }
 
 

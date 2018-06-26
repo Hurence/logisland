@@ -179,6 +179,9 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>openscada</id>
@@ -1281,7 +1284,7 @@
                     </dependency>
                     <dependency>
                         <groupId>com.hurence.logisland</groupId>
-                        <artifactId>logisland-connector-opcda</artifactId>
+                        <artifactId>logisland-connector-opc</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
