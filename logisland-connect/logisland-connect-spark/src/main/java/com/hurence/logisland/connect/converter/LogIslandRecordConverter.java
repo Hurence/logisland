@@ -144,11 +144,14 @@ public class LogIslandRecordConverter implements Converter {
                     }
                     if (isKey) {
                         Map<String, Object> ret = new HashMap<>();
-                        struct.schema().fields().forEach(field -> ret.put(field.name(), toFieldRecursive(field.name(), field.schema(), struct.get(field), true).getRawValue()));
+                        struct.schema().fields().stream().filter(field -> !(field.schema().isOptional() && struct.get(field) == null))
+                                .forEach(field -> ret.put(field.name(), toFieldRecursive(field.name(), field.schema(), struct.get(field), true).getRawValue()));
                         return new Field(name, FieldType.MAP, ret);
                     } else {
                         Record ret = new StandardRecord();
-                        struct.schema().fields().forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field), true)));
+                        struct.schema().fields().stream()
+                                .filter(field -> !(field.schema().isOptional() && struct.get(field) == null))
+                                .forEach(field -> ret.setField(toFieldRecursive(field.name(), field.schema(), struct.get(field), true)));
                         return new Field(name, FieldType.RECORD, ret);
                     }
 

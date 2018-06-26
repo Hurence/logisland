@@ -92,6 +92,7 @@ class SourceThread implements Runnable {
             } catch (Throwable tt) {
                 //swallow
             }
+            throw t;
         }
 
         return this;

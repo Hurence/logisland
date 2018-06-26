@@ -157,7 +157,7 @@ public class KafkaConnectStreamSource implements Source {
 
             //create and start tasks
             startAllThreads();
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (Exception e) {
             try {
                 stopAllThreads();
             } catch (Throwable t) {
