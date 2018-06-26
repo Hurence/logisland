@@ -15,7 +15,7 @@
  *
  */
 
-package com.hurence.logisland.connect.opcda;
+package com.hurence.logisland.connect.opc;
 
 import com.hurence.opc.*;
 import com.hurence.opc.util.AutoReconnectOpcOperations;
@@ -68,8 +68,13 @@ public class SmartOpcOperations<S extends ConnectionProfile<S>, T extends Sessio
     }
 
     @Override
+    public Collection<OpcTagInfo> fetchMetadata(String... strings) {
+        return delegate.fetchMetadata(strings);
+    }
+
+    @Override
     public boolean isChannelSecured() {
-        return false;
+        return delegate.isChannelSecured();
     }
 
     @Override
