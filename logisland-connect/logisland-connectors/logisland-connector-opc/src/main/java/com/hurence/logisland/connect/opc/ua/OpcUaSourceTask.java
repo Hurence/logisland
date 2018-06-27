@@ -25,6 +25,7 @@ import com.hurence.logisland.connect.opc.da.OpcDaSourceConnector;
 import com.hurence.opc.OpcTagInfo;
 import com.hurence.opc.auth.Credentials;
 import com.hurence.opc.auth.UsernamePasswordCredentials;
+import com.hurence.opc.auth.X509Credentials;
 import com.hurence.opc.ua.OpcUaConnectionProfile;
 import com.hurence.opc.ua.OpcUaSession;
 import com.hurence.opc.ua.OpcUaSessionProfile;
@@ -36,10 +37,22 @@ import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.net.URI;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -56,6 +69,10 @@ import java.util.stream.Collectors;
  */
 public class OpcUaSourceTask extends SourceTask {
 
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(OpcUaSourceTask.class);
 
     private SmartOpcOperations<OpcUaConnectionProfile, OpcUaSessionProfile, OpcUaSession> opcOperations;
@@ -69,18 +86,60 @@ public class OpcUaSourceTask extends SourceTask {
     private volatile boolean running;
 
 
+    private X509Certificate decodePemCertificate(String certificate) {
+        try {
+            return (X509Certificate) CertificateFactory.getInstance("X.509")
+                    .generateCertificate(new ByteArrayInputStream(certificate.getBytes("UTF8")));
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to decode certificate", e);
+        }
+    }
+
+    private PrivateKey decodePemPrivateKey(String privateKey) {
+        try {
+            PEMParser pemParser = new PEMParser(new StringReader(privateKey));
+            Object object = pemParser.readObject();
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+            if (object instanceof PEMEncryptedKeyPair) {
+                throw new UnsupportedOperationException("Encrypted keys are not yet supported");
+            }
+            PEMKeyPair ukp = (PEMKeyPair) object;
+            KeyPair keyPair = converter.getKeyPair(ukp);
+            return keyPair.getPrivate();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to decode private key", e);
+        }
+    }
+
+    private X509Credentials decodeCredentials(String certificate, String key) {
+        return new X509Credentials()
+                .withPrivateKey(decodePemPrivateKey(key))
+                .withCertificate(decodePemCertificate(certificate));
+    }
+
     private OpcUaConnectionProfile propertiesToConnectionProfile(Map<String, String> properties) {
-        OpcUaConnectionProfile ret = new OpcUaConnectionProfile();
-        ret.setConnectionUri(URI.create(properties.get(OpcUaSourceConnector.PROPERTY_URI)));
-        if (properties.containsKey(OpcUaSourceConnector.PROPERTY_AUTH_USER)) {
+        OpcUaConnectionProfile ret = new OpcUaConnectionProfile()
+                .withConnectionUri(URI.create(properties.get(OpcUaSourceConnector.PROPERTY_SERVER_URI)))
+                .withClientIdUri(properties.get(OpcUaSourceConnector.PROPERTY_CLIENT_URI))
+                .withSocketTimeout(Duration.ofMillis(Long.parseLong(properties.get(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT))));
+
+        if (properties.containsKey(OpcUaSourceConnector.PROPERTY_AUTH_BASIC_USER)) {
             ret.setCredentials(new UsernamePasswordCredentials()
-                    .withUser(properties.get(OpcUaSourceConnector.PROPERTY_AUTH_USER))
-                    .withPassword(properties.get(OpcUaSourceConnector.PROPERTY_AUTH_PASSWORD)));
+                    .withUser(properties.get(OpcUaSourceConnector.PROPERTY_AUTH_BASIC_USER))
+                    .withPassword(properties.get(OpcUaSourceConnector.PROPERTY_AUTH_BASIC_PASSWORD)));
+        } else if (properties.containsKey(OpcUaSourceConnector.PROPERTY_AUTH_X509_CERTIFICATE) &&
+                properties.containsKey(OpcUaSourceConnector.PROPERTY_AUTH_X509_PRIVATE_KEY)) {
+            ret.setCredentials(decodeCredentials(properties.get(OpcUaSourceConnector.PROPERTY_AUTH_X509_CERTIFICATE),
+                    properties.get(OpcUaSourceConnector.PROPERTY_AUTH_X509_PRIVATE_KEY)));
         } else {
             ret.setCredentials(Credentials.ANONYMOUS_CREDENTIALS);
         }
-        if (properties.containsKey(OpcUaSourceConnector.PROPERTY_SOCKET_TIMEOUT)) {
-            ret.setSocketTimeout(Duration.ofMillis(Long.parseLong(properties.get(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT))));
+
+        if (properties.containsKey(OpcUaSourceConnector.PROPERTY_CHANNEL_CERTIFICATE) &&
+                properties.containsKey(OpcUaSourceConnector.PROPERTY_CHANNEL_PRIVATE_KEY)) {
+            ret.setSecureChannelEncryption(decodeCredentials(properties.get(OpcUaSourceConnector.PROPERTY_CHANNEL_CERTIFICATE),
+                    properties.get(OpcUaSourceConnector.PROPERTY_CHANNEL_PRIVATE_KEY)));
         }
         return ret;
     }

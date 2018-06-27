@@ -43,9 +43,14 @@ public class OpcUaSourceConnector extends SourceConnector {
 
     private Map<String, ConfigValue> configValues;
 
-    public static final String PROPERTY_URI = "uri";
-    public static final String PROPERTY_AUTH_USER = "auth.user";
-    public static final String PROPERTY_AUTH_PASSWORD = "auth.password";
+    public static final String PROPERTY_SERVER_URI = "server.uri";
+    public static final String PROPERTY_AUTH_BASIC_USER = "auth.basic.user";
+    public static final String PROPERTY_AUTH_BASIC_PASSWORD = "auth.basic.password";
+    public static final String PROPERTY_AUTH_X509_CERTIFICATE = "auth.x509.certificate";
+    public static final String PROPERTY_AUTH_X509_PRIVATE_KEY = "auth.x509.key";
+    public static final String PROPERTY_CHANNEL_CERTIFICATE = "channel.certificate";
+    public static final String PROPERTY_CHANNEL_PRIVATE_KEY = "channel.key";
+    public static final String PROPERTY_CLIENT_URI = "client.uri";
     public static final String PROPERTY_TAGS = "tags";
     public static final String PROPERTY_SOCKET_TIMEOUT = "socketTimeoutMillis";
     public static final String PROPERTY_DEFAULT_REFRESH_PERIOD = "defaultRefreshPeriodMillis";
@@ -56,9 +61,11 @@ public class OpcUaSourceConnector extends SourceConnector {
      * The configuration.
      */
     private static final ConfigDef CONFIG = new ConfigDef()
-            .define(PROPERTY_URI, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "The OPC-UA server uri")
-            .define(PROPERTY_AUTH_USER, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "The logon user")
-            .define(PROPERTY_AUTH_PASSWORD, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "The logon password")
+            .define(PROPERTY_SERVER_URI, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "The OPC-UA server uri to connect to")
+            .define(PROPERTY_AUTH_BASIC_USER, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "(User/Password security): The login user")
+            .define(PROPERTY_AUTH_BASIC_PASSWORD, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "(User/Password security): the login password")
+            .define(PROPERTY_AUTH_X509_CERTIFICATE, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "(X509 security): The certificate")
+            .define(PROPERTY_AUTH_X509_PRIVATE_KEY, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "(X509 security): The private key")
             .define(PROPERTY_TAGS, ConfigDef.Type.LIST, Collections.emptyList(), (name, value) -> {
                 if (value == null) {
                     throw new ConfigException("Cannot be null");
@@ -70,6 +77,9 @@ public class OpcUaSourceConnector extends SourceConnector {
                     }
                 }
             }, ConfigDef.Importance.HIGH, "The tags to subscribe to following format tagname:refresh_period_millis. E.g. myTag:1000")
+            .define(PROPERTY_CLIENT_URI, ConfigDef.Type.STRING, "urn:hurence:logisland", ConfigDef.Importance.MEDIUM, "The client URI (defaults to urn:hurence:logisland)")
+            .define(PROPERTY_CHANNEL_CERTIFICATE, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "In case the connection is secure, the client will have a certificate")
+            .define(PROPERTY_CHANNEL_PRIVATE_KEY, ConfigDef.Type.STRING, ConfigDef.Importance.LOW, "In case the connection is secure, the client will have a private key")
             .define(PROPERTY_SOCKET_TIMEOUT, ConfigDef.Type.LONG, 10_000, ConfigDef.Importance.LOW, "The socket timeout (defaults to 10 seconds)")
             .define(PROPERTY_DEFAULT_REFRESH_PERIOD, ConfigDef.Type.LONG, 1_000, ConfigDef.Importance.LOW, "The default data refresh period in milliseconds")
             .define(PROPERTY_DATA_PUBLICATION_PERIOD, ConfigDef.Type.LONG, 1_000, ConfigDef.Importance.LOW, "The data publication window in milliseconds");
@@ -85,7 +95,7 @@ public class OpcUaSourceConnector extends SourceConnector {
         //shallow copy
         configValues = config().validate(props).stream().collect(Collectors.toMap(ConfigValue::name, Function.identity()));
         logger.info("Starting OPC-UA connector (version {}) on server {} reading tags {}", version(),
-                configValues.get(PROPERTY_URI).value(), configValues.get(PROPERTY_TAGS).value());
+                configValues.get(PROPERTY_SERVER_URI).value(), configValues.get(PROPERTY_TAGS).value());
     }
 
     @Override
@@ -104,7 +114,7 @@ public class OpcUaSourceConnector extends SourceConnector {
 
     @Override
     public void stop() {
-        logger.info("Stopping OPC-UA connector (version {}) on server {}", version(), configValues.get(PROPERTY_URI).value());
+        logger.info("Stopping OPC-UA connector (version {}) on server {}", version(), configValues.get(PROPERTY_SERVER_URI).value());
     }
 
     @Override
