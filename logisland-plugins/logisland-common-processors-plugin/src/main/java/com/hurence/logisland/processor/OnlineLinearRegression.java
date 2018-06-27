@@ -40,15 +40,24 @@ public class OnlineLinearRegression  extends AbstractProcessor {
             .description("History size of for the training in terms of number of points.")
             .required(true)
             .defaultValue("true")
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
+
+    public static final PropertyDescriptor TRAINING_TIMELAPSE = new PropertyDescriptor.Builder()
+            .name("training.timelapse")
+            .description("Timelapse to wait before to trigger a new training.")
+            .required(true)
+            .defaultValue("true")
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
+            .build();
+
 
     public static final PropertyDescriptor PREDICTION_HORIZON_SIZE = new PropertyDescriptor.Builder()
             .name("prediction.horizon.size")
             .description("Predction horizon : number of seconds in the futur to add to the present timestamp.")
             .required(true)
             .defaultValue("true")
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor KEEP_RAW_CONTENT = new PropertyDescriptor.Builder()
@@ -65,6 +74,7 @@ public class OnlineLinearRegression  extends AbstractProcessor {
         descriptors.add(CACHE_CLIENT_SERVICE);
         descriptors.add(RECORD_TYPE);
         descriptors.add(TRAINING_HISTORY_SIZE);
+        descriptors.add(TRAINING_TIMELAPSE);
         descriptors.add(PREDICTION_HORIZON_SIZE);
         descriptors.add(KEEP_RAW_CONTENT);
         return Collections.unmodifiableList(descriptors);
@@ -88,8 +98,9 @@ public class OnlineLinearRegression  extends AbstractProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         final String eventType = context.getPropertyValue(RECORD_TYPE).asString();
-        final Long trainingHistorySize = context.getPropertyValue(TRAINING_HISTORY_SIZE).asLong();
-        final int predictionHorizonSize = context.getPropertyValue(PREDICTION_HORIZON_SIZE).asInteger();
+        final Map<Long, Long> predictionHorizonSizeMap = context.getPropertyValue(PREDICTION_HORIZON_SIZE).asMapLong();
+        final Map<Long, Long> trainingHistorySizeMap = context.getPropertyValue(TRAINING_HISTORY_SIZE).asMapLong();
+        final Map<Long, Long> trainingTimelapseMap = context.getPropertyValue(TRAINING_TIMELAPSE).asMapLong();
         final boolean keepRawContent = context.getPropertyValue(KEEP_RAW_CONTENT).asBoolean();
 
         /**
@@ -111,17 +122,22 @@ public class OnlineLinearRegression  extends AbstractProcessor {
             String metricId = record.getField("metricId").asString();
             String metricName = record.getField("metricName").asString();
             String groupId = record.getField("groupId").asString();
-            int normalCheckWindow = record.getField("normalCheckWindow").asInteger();
+            Long normalCheckWindow = record.getField("normalCheckWindow").asLong();
+
+            Long trainingHistorySize = getMapValueInterval(trainingHistorySizeMap,  normalCheckWindow);
+            Long predictionHorizonSize = getMapValueInterval(trainingHistorySizeMap,  normalCheckWindow);
+            Long predictionTimelapse = getMapValueInterval(trainingTimelapseMap,  normalCheckWindow);
+
             long pastTimestamp = currentTimestamp - (normalCheckWindow * trainingHistorySize) ;
 
             Record lastTrainingTimestampRecord = (Record) cacheClientService.get("#"+metricId);
             if(lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP) != null) {
                 long lastTrainingTimestamp = lastTrainingTimestampRecord.getField(FieldDictionary.RECORD_TRAINING_TIMESTAMP).asLong();
-                if((currentTimestamp - lastTrainingTimestamp) < normalCheckWindow) return outputRecords;
+                if((currentTimestamp - lastTrainingTimestamp) < predictionTimelapse) return outputRecords;
             }
 
             List<Record> recordsFromRedis = cacheClientService.get(metricId, pastTimestamp, currentTimestamp, trainingHistorySize );
-            if(recordsFromRedis != null) {
+            if(recordsFromRedis != null && recordsFromRedis.size() >= trainingHistorySize) {
                 double[][] data = new double[trainingHistorySize.intValue()][2];
                 int cptRows = 0;
                 for (Record recordRedis : recordsFromRedis) {
@@ -156,9 +172,44 @@ public class OnlineLinearRegression  extends AbstractProcessor {
                 cacheClientService.set("#" + metricId, redisRecord);
 
                 outputRecords.add(outputRecord);
+
+                //TODO Clear past data in Redis Cache
             }
         }
 
         return outputRecords;
+    }
+
+    /**
+     * Get a value from a Map<Long,Long>
+     *     If the key does not exist then get the value of smallest key which is greater than
+     *     keySearch.
+     *     Example: map={(5,20),(10,40),(20,60)}
+     *     Result for map.get(7) = 40 because the nearest key to 7 is 10.
+     * @param sizeMap
+     * @param keySearch
+     * @return the value of the keySearch
+     */
+    private Long getMapValueInterval(Map<Long, Long> sizeMap, Long keySearch){
+        Long size = sizeMap.get(keySearch);
+        if(size == null) {
+            List<Long> keyList = new ArrayList(sizeMap.keySet());
+            keyList.sort(Comparator.naturalOrder());
+            boolean found = false;
+            Iterator<Long> it = keyList.iterator();
+            Long key = null;
+            while(it.hasNext() && !found){
+                key  = it.next();
+                if(key < keySearch ){
+                    size = sizeMap.get(key);
+                    found = true;
+                }
+            }
+            if(!found){
+                //get the value of the last key
+                size = sizeMap.get(key);
+            }
+        }
+        return size;
     }
 }

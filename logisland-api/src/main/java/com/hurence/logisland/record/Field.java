@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -113,6 +115,26 @@ public class Field implements PropertyValue, Serializable {
     @Override
     public Object getRawValue() {
         return rawValue;
+    }
+
+    @Override
+    public Map<Long, Long> asMapLong() {
+        if (rawValue == null) {
+            return null;
+        } else if (rawValue instanceof String) {
+            String[] vals = ((String) rawValue).split(",");
+            Map<Long, Long> resMap = new HashMap<>();
+            for(String elem : vals){
+                String[] sub_tab = elem.split(":");
+                try {
+                    resMap.put(Long.parseLong(sub_tab[0]), Long.parseLong(sub_tab[1])) ;
+                } catch (Exception ex) {
+                    logger.error(ex.toString() + " : unable to convert " + sub_tab[1] + " as a long, returning 0");
+                }
+            }
+            return resMap;
+        }
+        return null;
     }
 
     @Override

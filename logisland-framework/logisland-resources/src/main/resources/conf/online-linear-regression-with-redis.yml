@@ -141,10 +141,6 @@ engine:
           configuration:
             cache.client.service: cache_service
             record.type: metric_predcition
-            training.history.size: 3
-            prediction.horizon.size: 54000
-
-
-
-
-
+            training.history.size: 60:3,300:3,1500:3,3600:3,4500:3 # normalCheckWindow:number of points
+            training.timelapse: 60:300,300:300,1500:1500,3600:3600,4500:4500 # normalCheckWindow:number of seconds
+            prediction.horizon.size: 60:54000,300:54000,1500:54000,3600:54000,4500:54000 # normalCheckWindow:number of seconds

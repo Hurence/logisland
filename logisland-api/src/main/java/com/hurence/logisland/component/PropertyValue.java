@@ -21,6 +21,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +37,12 @@ public interface PropertyValue extends Serializable {
      */
     public Object getRawValue();
 
+
+    /**
+     * @return <String, Integer> Map of  the property value (ex: "key1:454,key2:45457,key3:4545454" ), or
+     * <code>null</code> if not set
+     */
+    public Map<Long, Long> asMapLong();
 
     /**
      * @return an String representation of the property value, or
