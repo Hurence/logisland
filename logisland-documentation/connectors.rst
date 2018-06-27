@@ -45,6 +45,8 @@ Please refer to the following table for the details:
 +--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
 | OPC-DA (IIoT)            | https://github.com/Hurence/logisland                                             | None (Built in)              |
 +--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
+| OPC-UA (IIoT)            | https://github.com/Hurence/logisland                                             | None (Built in)              |
++--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
 | FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | -DwithConnectFtp             |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
 | Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | -DwithConnectBlockchain      |
