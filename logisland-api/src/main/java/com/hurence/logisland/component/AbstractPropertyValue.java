@@ -23,6 +23,8 @@ import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.util.FormatUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,6 +58,26 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     @Override
     public Long asLong() {
         return (getRawValue() == null) ? null : Long.parseLong(getRawValue().trim());
+    }
+
+    @Override
+    public Map<Long, Long> asMapLong() {
+        if (rawValue == null) {
+            return null;
+        } else if (rawValue instanceof String) {
+            String[] vals = ((String) rawValue).split(",");
+            Map<Long, Long> resMap = new HashMap<>();
+            for(String elem : vals){
+                String[] sub_tab = elem.split(":");
+                try {
+                    resMap.put(Long.parseLong(sub_tab[0]), Long.parseLong(sub_tab[1])) ;
+                } catch (Exception ex) {
+                    //logger.error(ex.toString() + " : unable to convert " + sub_tab[1] + " as a long, returning 0");
+                }
+            }
+            return resMap;
+        }
+        return null;
     }
 
     @Override
