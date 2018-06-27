@@ -81,8 +81,8 @@ public class OpcDaSourceConnector extends SourceConnector {
                     }
                 }
             }, ConfigDef.Importance.HIGH, "The tags to subscribe to following format tagname:refresh_period_millis. E.g. myTag:1000")
-            .define(PROPERTY_SOCKET_TIMEOUT, ConfigDef.Type.LONG, ConfigDef.Importance.LOW, "The socket timeout")
-            .define(PROPERTY_DEFAULT_REFRESH_PERIOD, ConfigDef.Type.LONG, 1000, ConfigDef.Importance.LOW, "The default data refresh period in milliseconds")
+            .define(PROPERTY_SOCKET_TIMEOUT, ConfigDef.Type.LONG, 10_000,ConfigDef.Importance.LOW, "The socket timeout (defaults to 10 seconds)")
+            .define(PROPERTY_DEFAULT_REFRESH_PERIOD, ConfigDef.Type.LONG, 1_000, ConfigDef.Importance.LOW, "The default data refresh period in milliseconds")
             .define(PROPERTY_DIRECT_READ, ConfigDef.Type.BOOLEAN, false, ConfigDef.Importance.LOW, "Use server cache or read directly from device");
 
 
