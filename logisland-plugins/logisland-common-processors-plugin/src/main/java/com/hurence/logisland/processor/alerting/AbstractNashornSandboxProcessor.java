@@ -23,6 +23,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.validator.StandardValidators;
 import delight.nashornsandbox.NashornSandbox;
@@ -30,10 +31,7 @@ import delight.nashornsandbox.NashornSandboxes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 @Tags({"record", "fields", "Add"})
@@ -45,9 +43,12 @@ import java.util.concurrent.Executors;
         description = "Add a field to the record with the default value")
 public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor {
 
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractNashornSandboxProcessor.class);
 
+    /**
+     * Default storage for Nashorn js sandbox.
+     */
+    private static final Map<String, String> DEFAULT_JS_STORAGE = Collections.synchronizedMap(new HashMap<>());
 
     public static final PropertyDescriptor MAX_CPU_TIME = new PropertyDescriptor.Builder()
             .name("max.cpu.time")
@@ -142,6 +143,14 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor JS_CACHE_SERVICE = new PropertyDescriptor.Builder()
+            .name("js.cache.service")
+            .description("The cache service to be used to store already sanitized JS expressions. " +
+                    "If not specified a in-memory unlimited hash map will be used.")
+            .required(false)
+            .identifiesControllerService(CacheService.class)
+            .build();
+
 
     public static final PropertyDescriptor OUTPUT_RECORD_TYPE = new PropertyDescriptor.Builder()
             .name("output.record.type")
@@ -165,6 +174,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         properties.add(MAX_PREPARED_STATEMENTS);
         properties.add(DATASTORE_CLIENT_SERVICE);
         properties.add(DATASTORE_CACHE_COLLECTION);
+        properties.add(JS_CACHE_SERVICE);
         properties.add(OUTPUT_RECORD_TYPE);
 
         return properties;
@@ -196,6 +206,23 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
 
         super.init(context);
         sandbox = NashornSandboxes.create();
+
+        CacheService<String, String> cacheService = context.getPropertyValue(JS_CACHE_SERVICE).asControllerService(CacheService.class);
+
+        //inject the right cache service (or the default one).
+        if (cacheService != null) {
+            sandbox.setScriptCache(((js, allowNoBraces, producer) -> {
+                String ret = cacheService.get(js);
+                if (ret == null) {
+                    ret = producer.get();
+                    cacheService.set(js, ret);
+                }
+                return ret;
+            }));
+        } else {
+            sandbox.setScriptCache((js, allowNoBraces, producer) ->
+                    DEFAULT_JS_STORAGE.computeIfAbsent(js, s -> producer.get()));
+        }
 
         Long maxCpuTime = context.getPropertyValue(MAX_CPU_TIME).asLong();
         Long maxMemory = context.getPropertyValue(MAX_MEMORY).asLong();

@@ -17,22 +17,90 @@
 package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.datastore.MockDatastoreService;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.cache.CacheService;
+import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
+import com.hurence.logisland.service.cache.model.Cache;
+import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ComputeTagsTest {
+
+    @Test
+    public void testWithCustomCacheService() throws InitializationException {
+        final DatastoreClientService service = new MockDatastoreService();
+        getCacheRecords().forEach(r -> service.put("test", r, false));
+
+
+        final CacheService<String, String> cacheService = new LRUKeyValueCacheService<String, String>() {
+            private final int cacheSize = 10;
+
+            @Override
+            protected Cache<String, String> createCache(ControllerServiceInitializationContext context) {
+                return new LRUCache<>(cacheSize);
+            }
+        };
+
+        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
+        runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
+        runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
+        runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
+        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
+        runner.setProperty("cvib3", "return 37.2/10*3;");
+        runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
+        runner.setProperty(ComputeTags.JS_CACHE_SERVICE, "js_cache");
+
+
+        runner.addControllerService(service.getIdentifier(), service);
+        runner.enableControllerService(service);
+
+        runner.addControllerService("js_cache", cacheService);
+        runner.enableControllerService(cacheService);
+
+        final DatastoreClientService lookupService = runner.getProcessContext()
+                .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
+                .asControllerService(MockDatastoreService.class);
+
+        Assert.assertNotNull(lookupService);
+        Assert.assertNotNull(runner.getProcessContext()
+                .getPropertyValue(ComputeTags.JS_CACHE_SERVICE)
+                .asControllerService(CacheService.class));
+
+
+        Collection<Record> recordsToEnrich = getRecords();
+        runner.assertValid();
+        runner.enqueue(recordsToEnrich);
+        runner.run();
+        runner.assertAllInputRecordsProcessed();
+        runner.getErrorRecords().forEach(System.err::println);
+        runner.assertOutputRecordsCount(3 + 1);
+        runner.assertOutputErrorCount(0);
+
+        boolean asserted = false;
+
+        for (Record enriched : runner.getOutputRecords()) {
+            if (enriched.getId().equals("cvib3")) {
+                assertEquals(enriched.getField(FieldDictionary.RECORD_VALUE).asDouble(), 37.2 / 10.0 * 3.0, 0.00001);
+                asserted = true;
+            }
+        }
+        assertTrue(asserted);
+    }
 
     @Test
     public void testMultipleRules() throws InitializationException {
@@ -62,7 +130,7 @@ public class ComputeTagsTest {
         runner.enqueue(recordsToEnrich);
         runner.run();
         runner.assertAllInputRecordsProcessed();
-        runner.assertOutputRecordsCount(3+3);
+        runner.assertOutputRecordsCount(3 + 3);
         runner.assertOutputErrorCount(0);
 
         for (Record enriched : runner.getOutputRecords()) {
