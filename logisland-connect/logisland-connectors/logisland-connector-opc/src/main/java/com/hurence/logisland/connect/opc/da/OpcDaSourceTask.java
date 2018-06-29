@@ -21,6 +21,7 @@ import com.hurence.logisland.connect.opc.CommonUtils;
 import com.hurence.logisland.connect.opc.OpcRecordFields;
 import com.hurence.logisland.connect.opc.SmartOpcOperations;
 import com.hurence.logisland.connect.opc.TagInfo;
+import com.hurence.opc.ConnectionState;
 import com.hurence.opc.OpcTagInfo;
 import com.hurence.opc.auth.UsernamePasswordCredentials;
 import com.hurence.opc.da.OpcDaConnectionProfile;
@@ -88,7 +89,7 @@ public class OpcDaSourceTask extends SourceTask {
     }
 
     private synchronized void createSessionsIfNeeded() {
-        if (opcOperations != null && opcOperations.resetStale()) {
+        if (opcOperations != null && (opcOperations.resetStale() || sessions == null)) {
             sessions = new HashMap<>();
             tagInfoMap.entrySet().stream().collect(Collectors.groupingBy(entry -> entry.getValue().getRefreshPeriodMillis()))
                     .forEach((a, b) -> {
@@ -214,6 +215,17 @@ public class OpcDaSourceTask extends SourceTask {
                 });
             } catch (Exception e) {
                 logger.error("Got exception while reading tags", e);
+                if (sessions != null && opcOperations != null && opcOperations.getConnectionState() == ConnectionState.CONNECTED) {
+                    while (!sessions.isEmpty()) {
+
+                        try {
+                            sessions.remove(sessions.keySet().stream().findFirst().get()).close();
+                        } catch (Exception e1) {
+                            //swallow here
+                        }
+                    }
+                }
+                sessions = null;
             }
         }, 0L, minWaitTime, TimeUnit.MILLISECONDS);
     }

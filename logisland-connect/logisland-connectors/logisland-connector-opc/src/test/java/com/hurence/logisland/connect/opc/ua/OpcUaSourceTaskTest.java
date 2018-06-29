@@ -18,7 +18,6 @@
 package com.hurence.logisland.connect.opc.ua;
 
 import com.hurence.opc.auth.X509Credentials;
-import com.sun.deploy.security.CertUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -121,7 +120,6 @@ public class OpcUaSourceTaskTest {
         System.out.println(ret);
         Assert.assertNotNull(ret);
         Assert.assertNotNull(ret.getCertificate());
-        Assert.assertEquals("Hurence IIoT", CertUtils.extractSubjectAliasName(ret.getCertificate()));
         Assert.assertNotNull(ret.getPrivateKey());
 
     }

@@ -81,15 +81,9 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
         import spark.implicits._
         //  implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-
-        val df2 = df
-
-
+        df
             .writeStream
             .format("console")
             .start()
-
-
-        df2.awaitTermination()
     }
 }

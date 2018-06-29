@@ -4,7 +4,6 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 
 import com.hurence.logisland.controller.ControllerService
-import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.record._
 import com.hurence.logisland.serializer.{RecordSerializer, SerializerProvider}
 import com.hurence.logisland.stream.StreamContext
@@ -68,13 +67,11 @@ trait StructuredStreamProviderService extends ControllerService {
 
         val df = read(spark, streamContext)
 
+
         df.mapPartitions(iterator => {
 
 
             val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-            streamContext.getProcessContexts().clear();
-            streamContext.getProcessContexts().addAll(
-                PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
 
             /**
               * create serializers
