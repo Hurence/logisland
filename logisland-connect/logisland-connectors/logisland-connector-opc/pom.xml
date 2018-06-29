@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.github.Hurence</groupId>
             <artifactId>opc-simple</artifactId>
-            <version>develop-1.1.2-g6c92e27-20</version>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
