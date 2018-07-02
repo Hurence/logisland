@@ -47,7 +47,7 @@ public class ComputeTagsTest {
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
 
-        final CacheService<String, String> cacheService = new LRUKeyValueCacheService<String, String>() {
+        final CacheService<String, String, Long> cacheService = new LRUKeyValueCacheService<String, String, Long>() {
             private final int cacheSize = 10;
 
             @Override
