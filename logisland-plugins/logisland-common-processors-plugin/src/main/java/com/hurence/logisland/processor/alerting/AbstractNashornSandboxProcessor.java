@@ -207,7 +207,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         super.init(context);
         sandbox = NashornSandboxes.create();
 
-        CacheService<String, String> cacheService = context.getPropertyValue(JS_CACHE_SERVICE).asControllerService(CacheService.class);
+        CacheService<String, String, Long> cacheService = context.getPropertyValue(JS_CACHE_SERVICE).asControllerService(CacheService.class);
 
         //inject the right cache service (or the default one).
         if (cacheService != null) {

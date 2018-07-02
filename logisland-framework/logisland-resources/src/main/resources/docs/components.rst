@@ -1238,6 +1238,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**cache.client.service**", "The instance of the Controller Service to use for accessing the cache.", "", "null", "", ""
    "record.type", "default type of record", "", "record", "", ""
    "**training.history.size**", "History size of for the training in terms of number of points.", "", "true", "", ""
+   "**training.timelapse**", "Timelapse to wait before to trigger a new training.", "", "true", "", ""
    "**prediction.horizon.size**", "Predction horizon : number of seconds in the futur to add to the present timestamp.", "", "true", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
 
