@@ -181,6 +181,24 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         });
     }
 
+    @Override
+    public Long remove(String key, Long min, Long max){
+        return remove(key, min, max, stringSerializer);
+    }
+
+    public Long remove(final String key, final Long min, final Long max,final Serializer<String> keySerializer){
+        try {
+            return withConnection(redisConnection -> {
+                final byte[] k = serialize(key, keySerializer);
+                Long res = redisConnection.zRemRangeByScore(k, min, max);
+                return res;
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public <String, Record> void put(final String key, final Long score, final Record value, final Serializer<String> keySerializer, final Serializer<Record> valueSerializer) throws IOException {
         withConnection(redisConnection -> {
             final Tuple<byte[], byte[]> kv = serialize(key, value, keySerializer, valueSerializer);
@@ -188,7 +206,6 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             return null;
         });
     }
-
 
     protected Cache<String, Record> createCache(final ControllerServiceInitializationContext context) throws IOException, InterruptedException {
         final int capacity = context.getPropertyValue(CACHE_SIZE).asInteger();

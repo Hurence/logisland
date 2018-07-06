@@ -73,4 +73,16 @@ public interface CacheService<K,V,S> extends ControllerService {
      * @return
      */
     public List<V> get(K k, S min, S max, S limit);
+
+    /**
+     * Remove of elements from the cache.
+     * Elements are ordered from min value to max value
+     *
+     * @param k : key
+     * @param min : min value of the score
+     * @param max : max value of the score
+     * @return number of removed elements in the cache
+     */
+    public Long remove(K k, S min, S max);
+
 }

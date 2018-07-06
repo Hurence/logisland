@@ -72,7 +72,7 @@ engine:
       type: stream
       documentation: a processor that converts raw metric measurements logs into structured log records
       configuration:
-        kafka.input.topics: logisland_raw_ali4
+        kafka.input.topics: logisland_raw_ali5
         kafka.output.topics: logisland_events2
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
