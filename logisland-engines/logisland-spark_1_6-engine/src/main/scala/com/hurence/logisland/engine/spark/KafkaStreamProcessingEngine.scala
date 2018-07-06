@@ -366,7 +366,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           * job configuration
           */
 
-        val conf = new SparkConf()
+        @transient val conf = new SparkConf()
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
         def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
