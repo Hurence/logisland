@@ -292,7 +292,6 @@ object KafkaStreamProcessingEngine {
 class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[KafkaStreamProcessingEngine])
-    private val conf = new SparkConf()
 
 
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
@@ -367,6 +366,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           * job configuration
           */
 
+        val conf = new SparkConf()
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
         def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
@@ -466,7 +466,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     override def awaitTermination(engineContext: EngineContext): Unit = {
         var timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
             .asInteger().toInt
-        val sc = SparkContext.getOrCreate(conf)
+        val sc = SparkContext.getOrCreate()
 
         while (!sc.isStopped) {
             try {
