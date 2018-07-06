@@ -126,7 +126,7 @@ public class OnlineLinearRegression  extends AbstractProcessor {
             Long normalCheckWindow = record.getField("normalCheckWindow").asLong();
 
             Long trainingHistorySize = getMapValueInterval(trainingHistorySizeMap,  normalCheckWindow);
-            Long predictionHorizonSize = getMapValueInterval(trainingHistorySizeMap,  normalCheckWindow);
+            Long predictionHorizonSize = getMapValueInterval(predictionHorizonSizeMap,  normalCheckWindow);
             Long predictionTimelapse = getMapValueInterval(trainingTimelapseMap,  normalCheckWindow);
 
             long pastTimestamp = currentTimestamp - (normalCheckWindow * trainingHistorySize) ;
@@ -174,7 +174,9 @@ public class OnlineLinearRegression  extends AbstractProcessor {
 
                 outputRecords.add(outputRecord);
 
-                //TODO Clear past data in Redis Cache
+                //Clear past data in Redis Cache
+                Long max_timestamp = new Long(pastTimestamp - normalCheckWindow);
+                cacheClientService.remove(metricId,0L, max_timestamp);
             }
         }
 

@@ -90,4 +90,9 @@ public class LRUKeyValueCacheService<K,V,S>  extends AbstractControllerService i
         final int capacity = context.getPropertyValue(CACHE_SIZE).asInteger();
         return new LRUCache<K,V>(capacity);
     }
+
+    @Override
+    public Long remove(K k, S min, S max){
+      return null;
+    }
 }
