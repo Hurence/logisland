@@ -46,14 +46,22 @@ public class LogIslandRecordConverterTest {
 
     private void assertFieldEquals(Record record, String fieldName, Object expected) {
         Field field = record.getField(fieldName);
-        assertNotNull(field);
-        assertEquals(expected, record.getField(fieldName).getRawValue());
+        if (expected == null) {
+            assertNull(field);
+        } else {
+            assertNotNull(field);
+            assertEquals(expected, field.getRawValue());
+        }
     }
 
     private void assertFieldEquals(Record record, String fieldName, byte[] expected) {
         Field field = record.getField(fieldName);
-        assertNotNull(field);
-        assertArrayEquals(expected, (byte[]) record.getField(fieldName).getRawValue());
+        if (expected == null) {
+            assertNull(field);
+        } else {
+            assertNotNull(field);
+            assertArrayEquals(expected, (byte[]) field.getRawValue());
+        }
     }
 
 
