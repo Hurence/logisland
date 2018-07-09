@@ -81,10 +81,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch-plugin</artifactId>
-        </dependency>
 
 
         <dependency>
@@ -98,10 +94,6 @@
             <artifactId>logisland-cache_key_value-service-api</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 </project>
