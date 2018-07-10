@@ -92,6 +92,7 @@ class SourceThread implements Runnable {
             } catch (Throwable tt) {
                 //swallow
             }
+            throw t;
         }
 
         return this;
@@ -102,6 +103,10 @@ class SourceThread implements Runnable {
      */
     public void stop() {
         running.set(false);
-
+        try {
+            task.stop();
+        } catch (Exception e) {
+            LOGGER.warn("Unable to properly stop task " + task, e );
+        } 
     }
 }

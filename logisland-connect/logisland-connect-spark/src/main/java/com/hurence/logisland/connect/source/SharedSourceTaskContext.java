@@ -143,7 +143,7 @@ public class SharedSourceTaskContext implements SourceTaskContext {
             if (offsetStorageWriter.beginFlush()) {
                 offsetStorageWriter.doFlush((error, result) -> {
                     if (error == null) {
-                        LOGGER.info("Flushing till offset {} with result {}", endOffset, result);
+                        LOGGER.debug("Flushing till offset {} with result {}", endOffset, result);
                     } else {
                         LOGGER.error("Unable to commit records till source offset " + endOffset, error);
 

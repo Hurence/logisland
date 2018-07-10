@@ -25,10 +25,11 @@ import java.util.stream.Collectors
 import com.hurence.logisland.component.{AllowableValue, ComponentContext, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
-import com.hurence.logisland.stream.spark.SparkRecordStream
+import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
@@ -435,9 +436,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       */
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
-        //val timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT).asInteger().intValue()
         val streamingContext = createStreamingContext(engineContext)
-        if (!engineContext.getStreamContexts.isEmpty) {
+        if (!engineContext.getStreamContexts.map(p=>p.getStream).filter(p=>p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
             streamingContext.start()
         }
     }
@@ -469,6 +469,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
                 val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
+
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()
             } catch {
@@ -502,6 +503,14 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 .stop(stopSparkContext = doStopSparkContext, stopGracefully = true)
 
 
+        })
+        SparkSession.builder().getOrCreate().streams.active.foreach(streamingQuery=>{
+            try {
+                streamingQuery.stop()
+            } catch {
+                case ex: Exception =>
+                    logger.error("something bad while stopping a streaming query. Please check cluster health : {}", ex.getMessage)
+            }
         })
     }
 

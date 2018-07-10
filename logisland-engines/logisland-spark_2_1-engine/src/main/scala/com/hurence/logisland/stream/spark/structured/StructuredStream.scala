@@ -21,6 +21,7 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
+import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.logging.StandardComponentLogger
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.SparkRecordStream
@@ -102,7 +103,9 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
 
-
+            streamContext.getProcessContexts().clear();
+            streamContext.getProcessContexts().addAll(
+                PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
             val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
 
             // apply windowing
@@ -136,6 +139,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
         }
     }
+
 
 }
 

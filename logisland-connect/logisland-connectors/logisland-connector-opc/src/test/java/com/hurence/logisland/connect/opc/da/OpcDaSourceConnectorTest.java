@@ -15,15 +15,20 @@
  *
  */
 
-package com.hurence.logisland.connect.opcda;
+package com.hurence.logisland.connect.opc.da;
 
+import com.google.gson.Gson;
+import com.hurence.logisland.connect.opc.CommonUtils;
 import com.hurence.opc.OpcTagInfo;
+import com.hurence.opc.auth.UsernamePasswordCredentials;
 import com.hurence.opc.da.OpcDaConnectionProfile;
 import com.hurence.opc.da.OpcDaOperations;
+import com.hurence.opc.da.OpcDaTemplate;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -37,16 +42,16 @@ public class OpcDaSourceConnectorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void parseFailureTest() {
-        OpcDaSourceConnector.parseTag("test1:2aj", 500L);
+        CommonUtils.parseTag("test1:2aj", 500L);
     }
 
     @Test
     public void tagParseTest() {
-        Map.Entry<String, Long> toTest = OpcDaSourceConnector.parseTag("test1:1000", 500L);
+        Map.Entry<String, Long> toTest = CommonUtils.parseTag("test1:1000", 500L);
         Assert.assertEquals("test1", toTest.getKey());
         Assert.assertEquals(new Long(1000), toTest.getValue());
 
-        toTest = OpcDaSourceConnector.parseTag("test2", 500L);
+        toTest = CommonUtils.parseTag("test2", 500L);
         Assert.assertEquals("test2", toTest.getKey());
         Assert.assertEquals(new Long(500), toTest.getValue());
     }
@@ -81,7 +86,7 @@ public class OpcDaSourceConnectorTest {
         properties.put(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT, "2000");
         properties.put(OpcDaSourceConnector.PROPERTY_PASSWORD, "opc");
         properties.put(OpcDaSourceConnector.PROPERTY_USER, "OPC");
-        properties.put(OpcDaSourceConnector.PROPERTY_HOST, "192.168.56.101");
+        properties.put(OpcDaSourceConnector.PROPERTY_HOST, "192.168.99.100");
         properties.put(OpcDaSourceConnector.PROPERTY_CLSID, "F8582CF2-88FB-11D0-B850-00C0F0104305");
         properties.put(OpcDaSourceConnector.PROPERTY_TAGS, listAllTags().stream()
                 .map(s -> s + ":" + atomicInteger.getAndAdd(r.nextInt(130)))
@@ -92,9 +97,10 @@ public class OpcDaSourceConnectorTest {
         OpcDaSourceTask task = new OpcDaSourceTask();
         task.start(connector.taskConfigs(1).get(0));
         ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
+        Gson json = new Gson();
         es.scheduleAtFixedRate(() -> {
             try {
-                task.poll().forEach(System.out::println);
+                System.err.println(json.toJson(task.poll()));
             } catch (InterruptedException e) {
                 //do nothing
             }
@@ -111,19 +117,20 @@ public class OpcDaSourceConnectorTest {
         OpcDaConnectionProfile connectionProfile = new OpcDaConnectionProfile()
                 .withComClsId("F8582CF2-88FB-11D0-B850-00C0F0104305")
                 .withDomain("OPC-9167C0D9342")
-                .withUser("OPC")
-                .withPassword("opc")
-                .withHost("192.168.56.101")
-                .withSocketTimeout(Duration.of(1, ChronoUnit.SECONDS));
+                .withCredentials(new UsernamePasswordCredentials()
+                        .withUser("OPC")
+                        .withPassword("opc"))
+                .withConnectionUri(URI.create("opc.da://192.168.99.100"))
+                .withSocketTimeout(Duration.of(10, ChronoUnit.SECONDS));
 
         //Create an instance of a da operations
-        try (OpcDaOperations opcDaOperations = new OpcDaOperations()) {
+        try (OpcDaOperations opcDaOperations = new OpcDaTemplate()) {
             //connect using our profile
             opcDaOperations.connect(connectionProfile);
             if (!opcDaOperations.awaitConnected()) {
                 throw new IllegalStateException("Unable to connect");
             }
-            return opcDaOperations.browseTags().stream().map(OpcTagInfo::getName).collect(Collectors.toList());
+            return opcDaOperations.browseTags().stream().map(OpcTagInfo::getId).collect(Collectors.toList());
         }
     }
 

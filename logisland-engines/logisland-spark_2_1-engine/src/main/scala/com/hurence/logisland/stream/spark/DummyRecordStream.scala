@@ -29,7 +29,7 @@ import org.apache.spark.streaming.receiver.Receiver
 
 class DummyRecordStream extends AbstractRecordStream with SparkRecordStream {
 
-    private var streamingContext: StreamingContext = _
+    @transient private var streamingContext: StreamingContext = _
 
     /**
       * Allows subclasses to register which property descriptor objects are

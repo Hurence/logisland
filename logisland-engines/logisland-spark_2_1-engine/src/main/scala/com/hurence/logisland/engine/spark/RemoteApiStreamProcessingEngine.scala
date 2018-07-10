@@ -26,7 +26,10 @@ import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.engine.spark.remote.model.DataFlow
 import com.hurence.logisland.engine.spark.remote.{RemoteApiClient, RemoteApiComponentFactory}
+import com.hurence.logisland.stream.StandardStreamContext
+import com.hurence.logisland.stream.spark.DummyRecordStream
 import com.hurence.logisland.validator.StandardValidators
+import org.apache.spark.streaming.dstream.DStream
 import org.slf4j.LoggerFactory
 
 object RemoteApiStreamProcessingEngine {
@@ -105,11 +108,7 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
       * @param engineContext
       */
     override def start(engineContext: EngineContext): Unit = {
-        /*
-                if (engineContext.getStreamContexts.isEmpty) {
-                    engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"))
-                }
-        */
+       // engineContext.addStreamContext(new StandardStreamContext(new DummyRecordStream(), "busybox"))
 
         if (!initialized) {
             initialized = true

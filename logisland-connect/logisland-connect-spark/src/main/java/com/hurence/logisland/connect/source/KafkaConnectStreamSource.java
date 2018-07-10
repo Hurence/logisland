@@ -157,7 +157,7 @@ public class KafkaConnectStreamSource implements Source {
 
             //create and start tasks
             startAllThreads();
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (Exception e) {
             try {
                 stopAllThreads();
             } catch (Throwable t) {
@@ -200,14 +200,14 @@ public class KafkaConnectStreamSource implements Source {
         }
         //Give a meaningful name to thread belonging to this connector
         final ThreadGroup threadGroup = new ThreadGroup(connector.getClass().getSimpleName());
-        final List<SourceThread> sourceThreads = createThreadTasks();
+        final List<SourceThread> threadz = createThreadTasks();
         //Configure a new executor service        ]
-        executorService = Executors.newFixedThreadPool(sourceThreads.size(), r -> {
+        executorService = Executors.newFixedThreadPool(threadz.size(), r -> {
             Thread t = new Thread(threadGroup, r);
             t.setDaemon(true);
             return t;
         });
-        createThreadTasks().forEach(st -> {
+        threadz.forEach(st -> {
             executorService.execute(st.start());
             sourceThreads.add(st);
         });

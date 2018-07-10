@@ -15,11 +15,11 @@
  *
  */
 
-package com.hurence.logisland.connect.opcda;
+package com.hurence.logisland.connect.opc;
 
 import com.hurence.logisland.record.FieldDictionary;
 
-public interface OpcDaFields {
+public interface OpcRecordFields {
 
     /**
      * The update period in milliseconds.
@@ -33,6 +33,11 @@ public interface OpcDaFields {
      * The fully qualified tag name (with group).
      */
     String TAG_NAME = FieldDictionary.RECORD_NAME;
+
+    /**
+     * The internal tag id (depends to the implementation).
+     */
+    String TAG_ID = "tag_id";
     /**
      * The quality of the measurement (in case server caching is used).
      * The value is managed by the OPC server.
@@ -46,6 +51,11 @@ public interface OpcDaFields {
      * The OPC server error code in case the tag reading is in error.
      */
     String ERROR_CODE = "error_code";
+
+    /**
+     * The error reason (as string description)
+     */
+    String ERROR_REASON = "error_reason";
     /**
      * The OPC server host generating the event.
      */
