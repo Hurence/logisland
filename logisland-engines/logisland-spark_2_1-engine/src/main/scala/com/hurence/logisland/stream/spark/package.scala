@@ -91,7 +91,7 @@ object StreamProperties {
         "avro serialization", "serialize events as json blocs")
     val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
         "kryo serialization", "serialize events as binary blocs")
-    val STRING_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
+    val STRING_SERIALIZER = new AllowableValue(classOf[StringSerializer].getName,
         "string serialization", "serialize events as string")
     val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
         "byte array serialization", "serialize events as byte arrays")
