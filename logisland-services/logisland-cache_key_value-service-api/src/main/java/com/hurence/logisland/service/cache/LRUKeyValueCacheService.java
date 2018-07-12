@@ -60,6 +60,16 @@ public class LRUKeyValueCacheService<K,V,S>  extends AbstractControllerService i
     }
 
     @Override
+    public List<V> sMembers(K k) {
+        return null;
+    }
+
+    @Override
+    public void sAdd(K k, V v) {
+
+    }
+
+    @Override
     public void set(K k, S s, V v) {
 
     }
