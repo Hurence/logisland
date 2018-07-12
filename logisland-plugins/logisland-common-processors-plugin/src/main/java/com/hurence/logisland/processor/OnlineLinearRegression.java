@@ -122,8 +122,11 @@ public class OnlineLinearRegression  extends AbstractProcessor {
             Record record =  records.iterator().next();
             String metricId = record.getField("metricId").asString();
             String metricName = record.getField("metricName").asString();
+            String metricWarning = record.getField("warnThreshold").asString();
+            String metricCritical = record.getField("critThreshold").asString();
             String groupId = record.getField("groupId").asString();
             Long normalCheckWindow = record.getField("normalCheckWindow").asLong();
+            Long timestampMetric = record.getField("timestamp").asLong();
 
             Long trainingHistorySize = getMapValueInterval(trainingHistorySizeMap,  normalCheckWindow);
             Long predictionHorizonSize = getMapValueInterval(predictionHorizonSizeMap,  normalCheckWindow);
@@ -158,25 +161,36 @@ public class OnlineLinearRegression  extends AbstractProcessor {
                 outputRecord.setField(FieldDictionary.RECORD_GROUP_ID, FieldType.STRING, groupId);
                 outputRecord.setField(FieldDictionary.RECORD_METRIC_ID, FieldType.STRING, metricId);
                 outputRecord.setField(FieldDictionary.RECORD_METRIC_NAME, FieldType.STRING, metricName);
+                outputRecord.setField(FieldDictionary.RECORD_METRIC_WARNING, FieldType.STRING, metricWarning);
+                outputRecord.setField(FieldDictionary.RECORD_METRIC_CRITICAL, FieldType.STRING, metricCritical);
                 outputRecord.setField(FieldDictionary.RECORD_SLOPE, FieldType.DOUBLE, simpleRegression.getSlope());
                 outputRecord.setField(FieldDictionary.RECORD_INTERCEPT, FieldType.DOUBLE, simpleRegression.getIntercept());
+                outputRecord.setField(FieldDictionary.RECORD_TIMESTAMP, FieldType.LONG, timestampMetric);
                 outputRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
                 outputRecord.setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);
                 outputRecord.setField(FieldDictionary.RECORD_PREDICTION_VALUE, FieldType.DOUBLE, predicted_value);
 
+
                 //Save the prediction to Redis
-                cacheClientService.set(groupId + "#" + metricId, predictionTimestamp, outputRecord);
+                //cacheClientService.set(groupId + "#" + metricId, timestampMetric, outputRecord);
+                cacheClientService.set(groupId + "#" + metricId, outputRecord);
 
                 //Save the last training timestamp to Redis
-                StandardRecord redisRecord = new StandardRecord(eventType);
-                redisRecord.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
-                cacheClientService.set("#" + metricId, redisRecord);
+                StandardRecord redisRecordTrainingTimestamp = new StandardRecord(eventType);
+                redisRecordTrainingTimestamp.setField(FieldDictionary.RECORD_TRAINING_TIMESTAMP, FieldType.LONG, currentTimestamp);
+                cacheClientService.set("#" + metricId, redisRecordTrainingTimestamp);
 
                 outputRecords.add(outputRecord);
 
-                //Clear past data in Redis Cache
+                //Clear metric measurements past data in Redis Cache
                 Long max_timestamp = new Long(pastTimestamp - normalCheckWindow);
                 cacheClientService.remove(metricId,0L, max_timestamp);
+
+                //Add the metricId to the groupId set
+                StandardRecord redisGroupIdMetrics = new StandardRecord(eventType);
+                redisGroupIdMetrics.setField(FieldDictionary.RECORD_METRIC_ID, FieldType.STRING, metricId);
+                cacheClientService.sAdd(groupId, redisGroupIdMetrics);
+
             }
         }
 

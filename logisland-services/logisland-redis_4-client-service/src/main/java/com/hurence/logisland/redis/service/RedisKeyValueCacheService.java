@@ -155,6 +155,41 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
+    public void sAdd(String key, Record record) {
+        try {
+            sAdd(key, record, stringSerializer, (Serializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Record> sMembers(String key) {
+        try {
+            return sMembers(key, stringSerializer, (Deserializer<Record>) recordSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public <String, Record> List<Record> sMembers(final String key, final Serializer<String> keySerializer, final Deserializer<Record> valueDeserializer) throws IOException {
+        return withConnection(redisConnection -> {
+            final byte[] k = serialize(key, keySerializer);
+            Set<byte[]> res = redisConnection.sMembers(k);
+            List<Record> resList = new ArrayList<>();
+            for(byte[] elem : res){
+                InputStream input = new ByteArrayInputStream(elem);
+                resList.add(valueDeserializer.deserialize(input));
+            }
+            if(resList.isEmpty()){
+                return null;
+            }else{
+                return resList;
+            }
+        });
+    }
+
+    @Override
     public List<Record> get(String key, Long min, Long max, Long limit) {
         try {
             return get(key, min, max, limit, stringSerializer, (Deserializer<Record>) recordSerializer);
@@ -177,7 +212,6 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             }else{
                 return resList;
             }
-
         });
     }
 
@@ -276,6 +310,14 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         });
     }
 
+
+    public <String, Record> void sAdd(final String key, final Record value, final Serializer<String> keySerializer, final Serializer<Record> valueSerializer) throws IOException {
+        withConnection(redisConnection -> {
+            final Tuple<byte[], byte[]> kv = serialize(key, value, keySerializer, valueSerializer);
+            redisConnection.sAdd(kv.getKey(), kv.getValue());
+            return null;
+        });
+    }
 
     public <String, Record> Record get(final String key, final Serializer<String> keySerializer, final Deserializer<Record> valueDeserializer) throws IOException {
         return withConnection(redisConnection -> {

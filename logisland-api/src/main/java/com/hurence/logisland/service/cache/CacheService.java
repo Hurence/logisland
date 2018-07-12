@@ -22,6 +22,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by gregoire on 19/05/17.
@@ -52,6 +53,23 @@ public interface CacheService<K,V,S> extends ControllerService {
      * @param v
      */
     public void set(K k, V v);
+
+
+    /**
+     * Get List of elements from the cache set.
+     *
+     * @param k : key of the set
+     * @return
+     */
+    public List<V> sMembers(K k);
+
+
+    /**
+     * Save an element into the cache Set
+     * @param k
+     * @param v
+     */
+    public void sAdd(K k, V v);
 
 
     /**
