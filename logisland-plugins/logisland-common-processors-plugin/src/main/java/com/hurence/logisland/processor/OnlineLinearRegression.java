@@ -186,7 +186,7 @@ public class OnlineLinearRegression  extends AbstractProcessor {
                 cacheClientService.remove(metricId,0L, max_timestamp);
 
                 //Add the metricId to the groupId set
-                StandardRecord redisGroupIdMetrics = new StandardRecord(eventType);
+                LightRecord redisGroupIdMetrics = new LightRecord(eventType);
                 redisGroupIdMetrics.setField(FieldDictionary.RECORD_METRIC_ID, FieldType.STRING, metricId);
                 cacheClientService.sAdd(groupId, redisGroupIdMetrics);
 

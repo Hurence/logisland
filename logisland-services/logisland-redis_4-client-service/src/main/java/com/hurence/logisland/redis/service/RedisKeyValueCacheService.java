@@ -23,6 +23,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.redis.util.RedisAction;
 import com.hurence.logisland.redis.util.RedisUtils;
@@ -63,6 +64,7 @@ import java.util.*;
 public class RedisKeyValueCacheService extends AbstractControllerService implements DatastoreClientService, CacheService<String, Record, Long> {
 
     private volatile RecordSerializer recordSerializer;
+    private volatile RecordSerializer recordLightSerializer;
     private final Serializer<String> stringSerializer = new StringSerializer();
     private volatile RedisConnectionPool redisConnectionPool;
 
@@ -71,6 +73,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             "avro serialization", "serialize events as avro blocs");
     public static final AllowableValue JSON_SERIALIZER = new AllowableValue(JsonSerializer.class.getName(),
             "avro serialization", "serialize events as json blocs");
+    public static final AllowableValue JSON_LIGHT_SERIALIZER = new AllowableValue(JsonLightSerializer.class.getName(),
+            "avro serialization", "serialize events as json Light Recods blocs");
     public static final AllowableValue KRYO_SERIALIZER = new AllowableValue(KryoSerializer.class.getName(),
             "kryo serialization", "serialize events as json blocs");
     public static final AllowableValue BYTESARRAY_SERIALIZER = new AllowableValue(BytesArraySerializer.class.getName(),
@@ -89,6 +93,14 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             .defaultValue(JSON_SERIALIZER.getValue())
             .build();
 
+    public static final PropertyDescriptor RECORD_LIGHT_SERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.recordLightSerializer")
+            .description("the way to serialize/deserialize the light record")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER,JSON_LIGHT_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(JSON_LIGHT_SERIALIZER.getValue())
+            .build();
 
     public static final PropertyDescriptor AVRO_SCHEMA = new PropertyDescriptor.Builder()
             .name("record.avro.schema")
@@ -106,6 +118,9 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             this.recordSerializer = getSerializer(
                     context.getPropertyValue(RECORD_SERIALIZER).asString(),
                     context.getPropertyValue(AVRO_SCHEMA).asString());
+            this.recordLightSerializer = getSerializer(
+                    context.getPropertyValue(RECORD_LIGHT_SERIALIZER).asString(),
+                    context.getPropertyValue(AVRO_SCHEMA).asString());
         } catch (Exception e) {
             throw new InitializationException(e);
         }
@@ -117,6 +132,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
         List<PropertyDescriptor> properties = new ArrayList<>(RedisUtils.REDIS_CONNECTION_PROPERTY_DESCRIPTORS);
         properties.add(RECORD_SERIALIZER);
+        properties.add(RECORD_LIGHT_SERIALIZER);
 
         return properties;
     }
@@ -157,7 +173,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     public void sAdd(String key, Record record) {
         try {
-            sAdd(key, record, stringSerializer, (Serializer<Record>) recordSerializer);
+            //Set of records must be unique. ID and Time are not required. Use LightRecord.class
+            sAdd(key, record, stringSerializer, (Serializer<Record>) recordLightSerializer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -166,7 +183,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     public List<Record> sMembers(String key) {
         try {
-            return sMembers(key, stringSerializer, (Deserializer<Record>) recordSerializer);
+            return sMembers(key, stringSerializer, (Deserializer<Record>) recordLightSerializer);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -448,6 +465,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             new AvroSerializer(inSchema);
         } else if (inSerializerClass.equals(JSON_SERIALIZER.getValue())) {
             return new JsonSerializer();
+        } else if (inSerializerClass.equals(JSON_LIGHT_SERIALIZER.getValue())) {
+            return new JsonLightSerializer();
         } else if (inSerializerClass.equals(BYTESARRAY_SERIALIZER.getValue())) {
             return new BytesArraySerializer();
         } else if (inSerializerClass.equals(KURA_PROTOCOL_BUFFER_SERIALIZER.getValue())) {

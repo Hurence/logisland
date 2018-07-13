@@ -1,34 +1,3 @@
-/**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- Copyright 2016 Hurence
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
-
 package com.hurence.logisland.serializer;
 
 import com.fasterxml.jackson.core.*;
@@ -39,7 +8,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.hurence.logisland.record.*;
+import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.LightRecord;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.LightRecord;
 import com.hurence.logisland.util.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +22,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 
-public class JsonSerializer implements RecordSerializer {
+/**
+ * Created by a.ait-bachir on 13/07/2018.
+ */
+public class JsonLightSerializer implements RecordSerializer{
 
-    private static Logger logger = LoggerFactory.getLogger(JsonSerializer.class);
+    private static Logger logger = LoggerFactory.getLogger(JsonLightSerializer.class);
 
     class EventSerializer extends StdSerializer<Record> {
 
@@ -136,7 +112,7 @@ public class JsonSerializer implements RecordSerializer {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(StandardRecord.class, new EventSerializer());
+        module.addSerializer(LightRecord.class, new EventSerializer());
         mapper.registerModule(module);
 
         //map json to student
@@ -230,7 +206,7 @@ public class JsonSerializer implements RecordSerializer {
 
                         String itemString = ListUtils.mkString(arrays.get(currentArrayName), String::toString, ", ");
 
-                            fields.put(currentArrayName, new Field(jp.getCurrentName(), FieldType.ARRAY, itemString));
+                        fields.put(currentArrayName, new Field(jp.getCurrentName(), FieldType.ARRAY, itemString));
 
                         break;
                     case VALUE_STRING:
@@ -267,7 +243,7 @@ public class JsonSerializer implements RecordSerializer {
                 }
             }
 
-            Record record = new StandardRecord();
+            Record record = new LightRecord();
             if (id != null) {
                 record.setId(id);
             }
