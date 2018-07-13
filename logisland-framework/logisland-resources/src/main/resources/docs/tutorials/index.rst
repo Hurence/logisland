@@ -36,4 +36,5 @@ Contents:
    index-blockchain-transactions
    index-excel-spreadsheets
    mqtt-to-historian
+   iiot-opc-ua
    integrate-kafka-connect

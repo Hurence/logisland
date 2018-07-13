@@ -204,7 +204,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-   ./update-version.sh -o 0.13.0 -n 14.4
+   ./update-version.sh -o 0.14.0 -n 14.4
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy -Phdp2.5
@@ -222,7 +222,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v0.13.0/assets?name=logisland-0.13.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v0.14.0/assets?name=logisland-0.14.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 
