@@ -62,6 +62,7 @@ engine:
         pool.test.on.return: false
         pool.test.while.idle: true
         record.recordSerializer: com.hurence.logisland.serializer.JsonSerializer
+        record.recordLightSerializer: com.hurence.logisland.serializer.JsonLightSerializer
 
 
   streamConfigurations:
@@ -144,3 +145,31 @@ engine:
             training.history.size: 60:3,300:3,1500:3,3600:3,4500:3 # normalCheckWindow:number of points
             training.timelapse: 60:300,300:300,1500:1500,3600:3600,4500:4500 # normalCheckWindow:number of seconds
             prediction.horizon.size: 60:54000,300:54000,1500:54000,3600:54000,4500:54000 # normalCheckWindow:number of seconds
+
+    # Status evaluation system
+    - stream: status_prediction
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: A processor that perform predcition on record list of metric measurements
+      configuration:
+        kafka.input.topics: logisland_predictions
+        kafka.output.topics: logisland_status_predictions
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: cosvgre75:9092
+        kafka.zookeeper.quorum: cosvgre75:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: status_evaluation
+          component: com.hurence.logisland.processor.alerting.StatusEvaluationSystem
+          type: processor
+          documentation: Perform Status Evaluation on prediction on list of records for a given CI (GroupId)
+          configuration:
+            datastore.client.service: cache_service
+            cache.client.service: cache_service
+            js.cache.service: cache_service
+            record.type: status_evaluation

@@ -1906,6 +1906,45 @@ _________
 
 ----------
 
+.. _com.hurence.logisland.processor.alerting.StatusEvaluationSystem: 
+
+StatusEvaluationSystem
+----------------------
+Add one or more field with a default value
+...
+
+Class
+_____
+com.hurence.logisland.processor.alerting.StatusEvaluationSystem
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**cache.client.service**", "The instance of the Controller Service to use for accessing the cache.", "", "null", "", ""
+   "record.type", "default type of record", "", "record", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
 .. _com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic: 
 
 setSourceOfTraffic
