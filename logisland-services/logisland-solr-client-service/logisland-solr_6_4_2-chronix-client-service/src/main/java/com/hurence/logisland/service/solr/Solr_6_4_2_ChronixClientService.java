@@ -81,14 +81,6 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             .build();
 
 
-    public static final PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
-            .name("flush.interval")
-            .description("flush interval in ms")
-            .required(false)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .defaultValue("500")
-            .build();
-
     public static final PropertyDescriptor METRICS_TYPE_MAPPING = new PropertyDescriptor.Builder()
             .name("metrics.type.mapping")
             .description("The mapping between record field name and chronix metric type. " +

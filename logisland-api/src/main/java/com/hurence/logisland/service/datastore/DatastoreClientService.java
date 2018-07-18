@@ -30,7 +30,13 @@ import java.util.*;
 @CapabilityDescription("A controller service for accessing an abstract datatore.")
 public interface DatastoreClientService extends ControllerService {
 
-
+    PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
+            .name("flush.interval")
+            .description("flush interval in ms")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .defaultValue("500")
+            .build();
 
     PropertyDescriptor BATCH_SIZE = new PropertyDescriptor.Builder()
             .name("batch.size")
