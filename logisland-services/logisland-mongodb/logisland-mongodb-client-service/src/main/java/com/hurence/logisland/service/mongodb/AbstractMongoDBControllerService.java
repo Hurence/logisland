@@ -21,6 +21,7 @@ import com.hurence.logisland.annotation.lifecycle.OnStopped;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ConfigurationContext;
+import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.mongodb.MongoClient;
@@ -48,7 +49,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
     static final String WRITE_CONCERN_MAJORITY = "MAJORITY";
 
     protected static final PropertyDescriptor URI = new PropertyDescriptor.Builder()
-            .name("mongo-uri")
+            .name("mongo.uri")
             .displayName("Mongo URI")
             .description("MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]")
             .required(true)
@@ -57,7 +58,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
             .build();
 
     protected static final PropertyDescriptor DATABASE_NAME = new PropertyDescriptor.Builder()
-            .name("mongo-db-name")
+            .name("mongo.db.name")
             .displayName("Mongo Database Name")
             .description("The name of the database to use")
             .required(true)
@@ -66,7 +67,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
             .build();
 
     protected static final PropertyDescriptor COLLECTION_NAME = new PropertyDescriptor.Builder()
-            .name("mongo-collection-name")
+            .name("mongo.collection.name")
             .displayName("Mongo Collection Name")
             .description("The name of the collection to use")
             .required(true)
@@ -94,7 +95,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
             .build();
 */
     public static final PropertyDescriptor WRITE_CONCERN = new PropertyDescriptor.Builder()
-            .name("mongo-write-concern")
+            .name("mongo.write.concern")
             .displayName("Write Concern")
             .description("The write concern to use")
             .required(true)
@@ -115,7 +116,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
 
     protected MongoClient mongoClient;
 
-    protected final void createClient(ConfigurationContext context) throws IOException {
+    protected final void createClient(ControllerServiceInitializationContext context) throws IOException {
         if (mongoClient != null) {
             closeClient();
         }
@@ -189,7 +190,7 @@ public class AbstractMongoDBControllerService extends AbstractControllerService 
         return getDatabase(context, record).getCollection(collectionName);
     }
 
-    protected String getURI(final ConfigurationContext context) {
+    protected String getURI(final ControllerServiceInitializationContext context) {
         return context.getPropertyValue(URI).evaluate(null).asString();
     }
 

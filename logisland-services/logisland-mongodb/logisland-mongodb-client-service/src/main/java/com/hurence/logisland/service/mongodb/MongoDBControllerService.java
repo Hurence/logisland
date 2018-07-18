@@ -69,6 +69,7 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
         descriptors.add(BATCH_SIZE);
         descriptors.add(BULK_SIZE);
         descriptors.add(FLUSH_INTERVAL);
+        descriptors.add(WRITE_CONCERN);
        /* descriptors.add(SSL_CONTEXT_SERVICE);
         descriptors.add(CLIENT_AUTH);*/
         return descriptors;
@@ -79,9 +80,14 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
    // public void init(ControllerServiceInitializationContext context) throws InitializationException {
 
 
+    @Override
     @OnEnabled
-    public void onEnabled(final ConfigurationContext context) throws InitializationException, IOException, InterruptedException {
-        this.createClient(context);
+    public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        try {
+            this.createClient(context);
+        } catch (IOException e) {
+            throw new InitializationException(e);
+        }
         this.db = this.mongoClient.getDatabase(context.getPropertyValue(MongoDBControllerService.DATABASE_NAME).asString());
         this.col = this.db.getCollection(context.getPropertyValue(MongoDBControllerService.COLLECTION_NAME).asString());
         if (updater != null) {

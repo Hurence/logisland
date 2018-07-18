@@ -750,6 +750,11 @@
                 <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-mongodb-client-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.hurence.logisland</groupId>

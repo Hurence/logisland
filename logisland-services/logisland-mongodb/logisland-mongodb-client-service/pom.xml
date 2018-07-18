@@ -66,24 +66,42 @@
 
                             <artifactSet>
                                 <includes>
-                                    <include>com.hurence.logisland:logisland-solr-client-service-api</include>
-                                    <include>org.apache.lucene:*</include>
-                                    <include>org.apache.solr:*</include>
-                                    <include>com.google.guava:*</include>
-                                    <include>com.twitter:*</include>
-                                    <include>com.tdunning:*</include>
-                                    <include>com.spatial4j:*</include>
-                                    <include>com.carrotsearch:*</include>
-                                    <include>org.hdrhistogram:HdrHistogram</include>
+                                    <include>org.mongodb:*</include>
+                                    <include>com.hurence.logisland:logisland-mongodb-client-service-api</include>
+                                    <include>com.hurence.logisland:logisland-utils</include>
+                                    <include>org.apache.avro:*</include>
+                                    <include>org.codehaus.jackson:*</include>
                                     <include>com.thoughtworks.paranamer:*</include>
-                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>org.xerial.snappy:*</include>
+                                    <include>org.apache.commons:*</include>
+                                    <include>org.tukaani:*</include>
+                                    <include>com.esotericsoftware.kryo:*</include>
+                                    <include>com.esotericsoftware.reflectasm:*</include>
+                                    <include>org.ow2.asm:*</include>
+                                    <include>com.esotericsoftware.minlog:*</include>
                                     <include>com.fasterxml.jackson.dataformat:*</include>
-                                    <include>io.netty:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
                                     <include>org.yaml:*</include>
-                                    <include>org.apache.httpcomponents:*</include>
+                                    <include>commons-cli:*</include>
                                     <include>commons-codec:*</include>
-                                    <include>org.jboss.netty:*</include>
-                                    <include>com.ning:*</include>
+                                    <include>commons-collections:*</include>
+                                    <include>joda-time:*</include>
+                                    <include>com.googlecode.json-simple:*</include>
+                                    <include>org.apache.commons:*</include>
+                                    <include>com.google.protobuf:*</include>
+                                    <include>org.apache.curator:*</include>
+                                    <include>org.apache.zookeeper:*</include>
+                                    <include>jline:*</include>
+                                    <include>io.netty:*</include>
+                                    <include>org.javassist:*</include>
+                                    <include>org.apache.commons:*</include>
+                                    <include>com.google.guava:*</include>
+                                    <include>org.json:*</include>
+                                    <include>com.101tec:*</include>
+                                    <include>commons-io:*</include>
+                                    <include>org.objenesis:*</include>
+
+
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -107,58 +125,125 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-                           <relocations>
-                                 <relocation>
-                                    <pattern>io</pattern>
-                                    <shadedPattern>${shaded.package}.io</shadedPattern>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.mongodb</pattern>
+                                    <shadedPattern>${shaded.package}.org.mongodb</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.avro</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.avro</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.codehaus.jackson</pattern>
+                                    <shadedPattern>${shaded.package}.org.codehaus.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.thoughtworks.paranamer</pattern>
+                                    <shadedPattern>${shaded.package}.com.thoughtworks.paranamer</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.xerial.snappy</pattern>
+                                    <shadedPattern>${shaded.package}.org.xerial.snappy</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.tukaani</pattern>
+                                    <shadedPattern>${shaded.package}.org.tukaani</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.esotericsoftware</pattern>
+                                    <shadedPattern>${shaded.package}.com.esotericsoftware</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.ow2.asm</pattern>
+                                    <shadedPattern>${shaded.package}.org.ow2.asm</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>${shaded.package}.com.fasterxml.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml</pattern>
+                                    <shadedPattern>${shaded.package}.org.yaml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>commons-cli</pattern>
+                                    <shadedPattern>${shaded.package}.commons-cli</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>commons-codec</pattern>
+                                    <shadedPattern>${shaded.package}.commons-codec</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>commons-collections</pattern>
+                                    <shadedPattern>${shaded.package}.commons-collections</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>joda-time</pattern>
+                                    <shadedPattern>${shaded.package}.joda-time</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.googlecode.json-simple</pattern>
+                                    <shadedPattern>${shaded.package}.com.googlecode.json-simple</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>${shaded.package}.com.google.protobuf</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.curator</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.curator</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.zookeeper</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.zookeeper</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>jline</pattern>
+                                    <shadedPattern>${shaded.package}.jline</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.netty</pattern>
+                                    <shadedPattern>${shaded.package}.io.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.javassist</pattern>
+                                    <shadedPattern>${shaded.package}.org.javassist</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>${shaded.package}.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.guava</pattern>
+                                    <shadedPattern>${shaded.package}.com.google.guava</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.json</pattern>
+                                    <shadedPattern>${shaded.package}.org.json</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.101tec</pattern>
+                                    <shadedPattern>${shaded.package}.com.101tec</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>commons-io</pattern>
+                                    <shadedPattern>${shaded.package}.commons-io</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.objenesis</pattern>
+                                    <shadedPattern>${shaded.package}.org.objenesis</shadedPattern>
                                 </relocation>
 
 
-                                <relocation>
-                                    <pattern>com.google</pattern>
-                                    <shadedPattern>${shaded.package}.com.google</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.spatial4j</pattern>
-                                    <shadedPattern>${shaded.package}.com.spatial4j</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.carrotsearch</pattern>
-                                    <shadedPattern>${shaded.package}.com.carrotsearch</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.twitter</pattern>
-                                    <shadedPattern>${shaded.package}.com.twitter</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.tdunning</pattern>
-                                    <shadedPattern>${shaded.package}.com.tdunning</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.thoughtworks</pattern>
-                                    <shadedPattern>${shaded.package}.com.thoughtworks</shadedPattern>
-                                </relocation>
-
-                                <relocation>
-                                    <pattern>com.ning</pattern>
-                                    <shadedPattern>${shaded.package}.com.ning</shadedPattern>
-                                </relocation>
-                               <relocation>
-                                    <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
-                                </relocation>
-                               <relocation>
-                                    <pattern>org.apache.solr</pattern>
-                                    <shadedPattern>${shaded.package}.org.apache.solr</shadedPattern>
-                                </relocation>
-                               <relocation>
-                                   <pattern>com.hurence.logisland.service.solr.api</pattern>
-                                   <shadedPattern>${shaded.package}.com.hurence.logisland.service.solr.api</shadedPattern>
-                               </relocation>
                             </relocations>
                         </configuration>
                     </execution>
