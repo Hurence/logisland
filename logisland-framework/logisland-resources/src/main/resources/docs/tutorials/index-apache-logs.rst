@@ -24,6 +24,12 @@ And here for Solr :
     docker exec -i -t logisland vim conf/index-apache-logs-solr.yml
 
 
+And here for Mongo :
+
+.. code-block:: sh
+
+    docker exec -i -t logisland vim conf/index-apache-logs-mongo.yml
+
 We will start by explaining each part of the config file.
 
 An Engine is needed to handle the stream processing. This ``conf/index-apache-logs.yml`` configuration file defines a stream processing job setup.
@@ -176,6 +182,49 @@ Then, the second processor have to send data to Solr :
       configuration:
         datastore.client.service: datastore_service
 
+
+
+
+Mongo
+"""""
+
+In the case of Mongo, we have to declare another service :
+
+.. code-block:: yaml
+
+    - controllerService: datastore_service
+      component: com.hurence.logisland.service.mongodb.MongoDBControllerService
+      type: service
+      documentation: "Mongo 3.8.0 service"
+      configuration:
+        mongo.uri: mongodb://sandbox:27017
+        mongo.db.name: logisland
+        mongo.collection.name: apache
+        # possible values ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY
+        mongo.write.concern: ACKNOWLEDGED
+        flush.interval: 2000
+        batch.size: 1000
+
+
+
+.. note::
+You have to create the db logisland with the collection apache.
+
+.. code-block:: sh
+    # open a mongo shell
+    mongo
+
+    > use logisland
+    switched to db logisland
+
+    > db.apache.insert({src_ip:"19.123.12.67", identd:"-", user:"-", bytes_out:12344, http_method:"POST", http_version:"2.0", http_query:"/logisland/is/so?great=true",http_status:"404" })
+    WriteResult({ "nInserted" : 1 })
+
+    > db.apache.find()
+{ "_id" : ObjectId("5b4f3c4a5561b53b7e862b57"), "src_ip" : "19.123.12.67", "identd" : "-", "user" : "-", "bytes_out" : 12344, "http_method" : "POST", "http_version" : "2.0", "http_query" : "/logisland/is/so?great=true", "http_status" : "404" }
+
+
+
 2. Launch the script
 --------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
@@ -192,6 +241,12 @@ For Solr :
 .. code-block:: sh
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs-solr.yml
+
+For Mongo :
+
+.. code-block:: sh
+
+    docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs-mongo.yml
 
 3. Inject some Apache logs into the system
 ------------------------------------------
@@ -271,3 +326,13 @@ Then, go to query and by clicking to Execute Query, you will see some data from 
 .. image:: /_static/solr-query.png
 
 
+Mongo
+"""""
+
+With mongo you can directly use the shell:
+
+.. code-block:: sh
+
+    > db.apache.find()
+{ "_id" : "507adf3e-3162-4ff0-843a-253e01a6df69", "src_ip" : "129.94.144.152", "record_id" : "507adf3e-3162-4ff0-843a-253e01a6df69", "http_method" : "GET", "record_value" : "129.94.144.152 - - [01/Jul/1995:00:00:17 -0400] \"GET /images/ksclogo-medium.gif HTTP/1.0\" 304 0", "http_query" : "/images/ksclogo-medium.gif", "bytes_out" : "0", "identd" : "-", "http_version" : "HTTP/1.0", "http_status" : "304", "record_time" : NumberLong("804571217000"), "user" : "-", "record_type" : "apache_log" }
+{ "_id" : "c44a9d09-52b9-4ada-8126-39c70c90fdd3", "src_ip" : "ppp-mia-30.shadow.net", "record_id" : "c44a9d09-52b9-4ada-8126-39c70c90fdd3", "http_method" : "GET", "record_value" : "ppp-mia-30.shadow.net - - [01/Jul/1995:00:00:27 -0400] \"GET / HTTP/1.0\" 200 7074", "http_query" : "/", "bytes_out" : "7074", "identd" : "-", "http_version" : "HTTP/1.0", "http_status" : "200", "record_time" : NumberLong("804571227000"), "user" : "-", "record_type" : "apache_log" }
