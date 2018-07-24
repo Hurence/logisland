@@ -55,6 +55,11 @@ public class LRUKeyValueCacheService<K,V,S>  extends AbstractControllerService i
     }
 
     @Override
+    public K getString(K k) {
+        return null;
+    }
+
+    @Override
     public void set(K k, V v) {
         cache.set(k, v);
     }

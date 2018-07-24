@@ -68,7 +68,7 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
 
         List<Record> outputRecords = new ArrayList<>();
 
-        for(Record record : outputRecords){
+        for(Record record : records){
 
             String groupId = record.getField(FieldDictionary.RECORD_GROUP_ID).asString();
             Long recordTimestamp = record.getField(FieldDictionary.RECORD_TIMESTAMP).asLong();
@@ -79,13 +79,13 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
 
             // Generate the JS variable initialisation with Cached prediction values in Redis
             StringBuffer jsVariableInit = generateJsVariableInitialisation(metricIdList, groupId, recordTimestamp);
-            if(jsVariableInit.toString().isEmpty()){
+            if(jsVariableInit == null || jsVariableInit.toString().isEmpty()){
                 return outputRecords;
             }
 
             //Get from Redis the JS function definition for a Given GroupId
             //TODO Get the JS according to ServiceCategoryId
-            String jsFunction = (String) cacheClientService.get("js#"+groupId);
+            String jsFunction = (String) cacheClientService.getString("js#"+groupId);
             jsVariableInit.append(jsFunction);
 
             //Evaluate the status
@@ -119,26 +119,31 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
      * @param recordTimestamp
      * @return
      */
-    private StringBuffer generateJsVariableInitialisation(List<Record> metricIdList, String groupId, Long recordTimestamp){
+    public StringBuffer generateJsVariableInitialisation(List<Record> metricIdList, String groupId, Long recordTimestamp){
         StringBuffer res = new StringBuffer();
         for(Record record : metricIdList){
-            String metricId = record.getField(FieldDictionary.RECORD_METRIC_ID).asString();
-            //Get the prediction value from Redis
-            Record prediction = (Record) cacheClientService.get(groupId+ "#" + metricId);
-            Long recordTimestampCache = prediction.getField(FieldDictionary.RECORD_TIMESTAMP).asLong();
-            if(!recordTimestampCache.equals(recordTimestamp)){
-                return null;
-            }
-            String metricName = prediction.getField(FieldDictionary.RECORD_METRIC_NAME).asString().replaceAll(" ", "_").replaceAll("\\%", "percent");
-            String predictedValue = prediction.getField(FieldDictionary.RECORD_PREDICTION_VALUE).asString();
-            res.append("var "  + metricName + "=" +predictedValue + ";\n");
 
-            //Add warning and Critical values
-            String warningValue = prediction.getField(FieldDictionary.RECORD_METRIC_WARNING).asString();
-            String criticalValue = prediction.getField(FieldDictionary.RECORD_METRIC_CRITICAL).asString();
-            if(warningValue != "null") res.append("var warning_"  + metricName + "=" +warningValue + ";\n");
-            if(criticalValue != "null") res.append("var critical_"  + metricName + "=" +criticalValue + ";\n");
+            String metricId = record.getField(FieldDictionary.RECORD_METRIC_ID).asString();
+            if(metricId != null && metricId != "null") {
+                //Get the prediction value from Redis
+                Record prediction = (Record) cacheClientService.get(groupId + "#" + metricId);
+                Long recordTimestampCache = prediction.getField(FieldDictionary.RECORD_TIMESTAMP).asLong();
+                if (!recordTimestampCache.equals(recordTimestamp)) {
+                    return null;
+                }
+                String metricName = prediction.getField(FieldDictionary.RECORD_METRIC_NAME).asString().replaceAll(" ", "_").replaceAll("\\%", "percent");
+                String predictedValue = prediction.getField(FieldDictionary.RECORD_PREDICTION_VALUE).asString();
+                res.append("var " + metricName + "=" + predictedValue + ";\n");
+
+                //Add warning and Critical values
+                String warningValue = prediction.getField(FieldDictionary.RECORD_METRIC_WARNING).asString();
+                String criticalValue = prediction.getField(FieldDictionary.RECORD_METRIC_CRITICAL).asString();
+                if (warningValue != "null") res.append("var warning_" + metricName + "=" + warningValue + ";\n");
+                if (criticalValue != "null") res.append("var critical_" + metricName + "=" + criticalValue + ";\n");
+            }
+
         }
+        logger.debug(res.toString());
         return res;
     }
 

@@ -47,6 +47,14 @@ public interface CacheService<K,V,S> extends ControllerService {
      */
     public V get(K k);
 
+
+    /**
+     * Get an element from the cache as String values
+     * @param k
+     * @return
+     */
+    public K getString(K k);
+
     /**
      * Save an element into the cache
      * @param k

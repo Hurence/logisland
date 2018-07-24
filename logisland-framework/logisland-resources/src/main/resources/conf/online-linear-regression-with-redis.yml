@@ -173,3 +173,7 @@ engine:
             cache.client.service: cache_service
             js.cache.service: cache_service
             record.type: status_evaluation
+            max.cpu.time: 100
+            max.memory: 51200
+            allow.no.brace: false
+            max.prepared.statements: 30

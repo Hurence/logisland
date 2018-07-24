@@ -153,6 +153,16 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     }
 
     @Override
+    public String getString(String key) {
+        try {
+            return getString(key, stringSerializer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public void set(String key, Record value) {
         try {
             put(key, value,stringSerializer, (Serializer<Record>) recordSerializer);
@@ -348,6 +358,20 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             }
         });
     }
+
+    public String getString(final String key, final Serializer<String> keySerializer) throws IOException {
+        return withConnection(redisConnection -> {
+            final byte[] k = serialize(key, keySerializer);
+            final byte[] v = redisConnection.get(k);
+            if (v == null) {
+                return null;
+            }else {
+                InputStream input = new ByteArrayInputStream(v);
+                return new String(v, "UTF-8");
+            }
+        });
+    }
+
 
     public void close() throws IOException {
         try {
