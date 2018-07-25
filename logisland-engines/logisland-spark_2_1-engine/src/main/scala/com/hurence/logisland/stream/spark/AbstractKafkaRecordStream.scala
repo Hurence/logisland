@@ -263,16 +263,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
       * @return the serializer
       */
     def getSerializer(inSerializerClass: String, schemaContent: String): RecordSerializer = {
-        // TODO move this in a utility class
-        inSerializerClass match {
-            case c if c == AVRO_SERIALIZER.getValue =>
-                val parser = new Parser
-                val inSchema = parser.parse(schemaContent)
-                new AvroSerializer(inSchema)
-            case c if c == JSON_SERIALIZER.getValue => new JsonSerializer()
-            case c if c == BYTESARRAY_SERIALIZER.getValue => new BytesArraySerializer()
-            case _ => new KryoSerializer(true)
-        }
+       SerializerProvider.getSerializer(inSerializerClass, schemaContent)
     }
 
     /**
