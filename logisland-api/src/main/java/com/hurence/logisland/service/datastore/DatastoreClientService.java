@@ -18,6 +18,7 @@ package com.hurence.logisland.service.datastore;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
@@ -54,6 +55,19 @@ public interface DatastoreClientService extends ControllerService {
             .defaultValue("5")
             .build();
 
+    AllowableValue BULK_MODE_INSERT = new AllowableValue("insert", "Insert", "Insert records whose key must be unique");
+    AllowableValue BULK_MODE_UPSERT = new AllowableValue("upsert", "Insert or Update",
+            "Insert records if not already existing or update the record if already existing");
+
+
+    PropertyDescriptor BULK_MODE = new PropertyDescriptor.Builder()
+            .name("bulk.mode")
+            .description("Bulk mode (insert or upsert)")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(BULK_MODE_INSERT, BULK_MODE_UPSERT)
+            .defaultValue(BULK_MODE_INSERT.getValue())
+            .build();
 
 
     /* ********************************************************************

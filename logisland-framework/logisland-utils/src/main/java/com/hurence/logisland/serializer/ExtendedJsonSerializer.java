@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Basic but complete Json {@link RecordSerializer}.
@@ -55,11 +54,9 @@ public class ExtendedJsonSerializer implements RecordSerializer {
         final ObjectMapper mapper = new ObjectMapper();
         try {
 
-            Map<String, Object> json = record.getAllFieldsSorted().stream().collect(Collectors.toMap(Field::getName, Field::getRawValue,
-                    (u, v) -> {
-                        throw new IllegalStateException(String.format("Duplicate key %s", u));
-                    },
-                    LinkedHashMap::new));
+            Map<String, Object> json = new LinkedHashMap<>();
+
+            record.getAllFieldsSorted().forEach(f -> json.put(f.getName(), f.getRawValue()));
             json.put("id", record.getId());
             if (record.getTime() != null) {
                 json.put("creationDate", record.getTime().getTime());
@@ -69,7 +66,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
             mapper.writeValue(out, json);
             out.flush();
         } catch (IOException e) {
-            logger.debug(e.toString());
+            logger.warn(e.toString());
         }
 
     }
