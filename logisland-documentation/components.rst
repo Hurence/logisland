@@ -765,11 +765,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
-   "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "", "**true**"
    "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
    "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
-   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+   "table.name.default", "The table to use if table name field is not set", "", "null", "", ""
 
 ----------
 
@@ -860,6 +860,52 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**avro.output.schema**", "the avro schema definition for the output serialization", "", "null", "", ""
    "**min.events.count**", "the minimum number of generated events each run", "", "10", "", ""
    "**max.events.count**", "the maximum number of generated events each run", "", "200", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.webAnalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+No description provided.
+
+Class
+_____
+com.hurence.logisland.processor.webAnalytics.IncrementalWebSession
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "", ""
+   "**field.name**", "The field to distinct records", "", "record_id", "", ""
+   "**es.index**", "Name of the ES index containing the web session documents.", "", "null", "", ""
+   "es.type", "Name of the ES type of web session documents.", "", "default", "", ""
+   "**es-backup.index**", "Name of the ES index containing the web session - backup - documents.", "", "null", "", ""
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "", ""
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "", ""
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "", ""
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "", ""
+   "fields.to.return", "the list of fields to return", "", "null", "", ""
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "", ""
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "", ""
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "", ""
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "", ""
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "", ""
+   "session.timeout", "session timeout in sec", "", "1800", "", ""
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "", ""
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "", ""
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "", ""
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
 
 ----------
 
