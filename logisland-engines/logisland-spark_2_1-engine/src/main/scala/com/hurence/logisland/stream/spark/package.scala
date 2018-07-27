@@ -431,6 +431,14 @@ object StreamProperties {
         .build
 
 
+    val INPUT_FORMAT = new PropertyDescriptor.Builder()
+        .name("input.format")
+        .description("Used to load data from a raw record_value. Only json supported")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("")
+        .build
+
     val OUTPUT_FORMAT = new PropertyDescriptor.Builder()
         .name("output.format")
         .description("can be parquet, orc csv")
@@ -460,6 +468,14 @@ object StreamProperties {
         .required(false)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("true")
+        .build
+
+    val DATE_FORMAT = new PropertyDescriptor.Builder()
+        .name("date.format")
+        .description("The format of the date for the partition")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("yyyy-MM-dd")
         .build
 
 
