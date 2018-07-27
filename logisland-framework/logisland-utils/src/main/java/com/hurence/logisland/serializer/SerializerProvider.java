@@ -52,7 +52,7 @@ public class SerializerProvider {
             } else if (inSerializerClass.equals(JSON_SERIALIZER)) {
                 return new JsonSerializer();
             } else if (inSerializerClass.equals(EXTENDED_JSON_SERIALIZER)) {
-                return new ExtendedJsonSerializer();
+                return new ExtendedJsonSerializer(schemaContent);
             } else if (inSerializerClass.equals(KRYO_SERIALIZER)) {
                 return new KryoSerializer(true);
             } else if (inSerializerClass.equals(BYTES_ARRAY_SERIALIZER)) {

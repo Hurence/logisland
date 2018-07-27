@@ -25,9 +25,7 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -38,6 +36,109 @@ import static org.junit.Assert.assertTrue;
  * @author tom
  */
 public class ExtendedJsonSerializerTest {
+
+
+
+
+
+    @Test
+    public void someSchemaTest() throws Exception {
+        final String recordStr = "{\n" +
+                "  \"firstName\": \"John\",\n" +
+                "  \"lastName\" : \"doe\",\n" +
+                "  \"age\"      : 26,\n" +
+                "  \"address\"  : {\n" +
+                "    \"streetAddress\": \"naist street\",\n" +
+                "    \"city\"         : \"Nara\",\n" +
+                "    \"postalCode\"   : \"630-0192\"\n" +
+                "  },\n" +
+                "  \"phoneNumbers\": [\n" +
+                "    {\n" +
+                "      \"type\"  : \"iPhone\",\n" +
+                "      \"number\": \"0123-4567-8888\",\n" +
+                "      \"value\": \"1.023\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"type\"  : \"home\",\n" +
+                "      \"number\": \"0123-4567-8910\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        final String schema = "{\n" +
+                "  \"version\": 1,\n" +
+                "  \"type\": \"record\",\n" +
+                "  \"namespace\": \"com.hurence.logisland\",\n" +
+                "  \"name\": \"Record\",\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"name\": \"firstName\",\n" +
+                "      \"type\": \"string\"\n" +
+                "    }, {\n" +
+                "      \"name\": \"lastName\",\n" +
+                "      \"type\": \"string\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"age\",\n" +
+                "      \"type\": \"long\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"address\",\n" +
+                "      \"type\": {\n" +
+                "        \"type\": \"record\",\n" +
+                "        \"name\": \"Address\",\n" +
+                "        \"fields\": [\n" +
+                "            {\n" +
+                "              \"name\": \"streetAddress\",\n" +
+                "              \"type\": \"string\"\n" +
+                "            }, {\n" +
+                "              \"name\": \"city\",\n" +
+                "              \"type\": \"string\"\n" +
+                "            }\n" +
+                "            ]\n" +
+                "      }\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"phoneNumbers\",\n" +
+                "      \"type\": {\n" +
+                "          \"type\": \"array\",\n" +
+                "          \"items\": {\n" +
+                "            \"type\": \"record\",\n" +
+                "            \"name\": \"PhoneNumber\",\n" +
+                "            \"fields\": [\n" +
+                "                {\n" +
+                "                  \"name\": \"type\",\n" +
+                "                  \"type\": \"string\"\n" +
+                "                }, \n" +
+                "                {\n" +
+                "                  \"name\": \"value\",\n" +
+                "                  \"type\": \"double\"\n" +
+                "                }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        \n" +
+                "      }\n" +
+                "    }\n" +
+                "    \n" +
+                "  ]\n" +
+                "}";
+
+
+
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer(schema);
+        ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(bais);
+        System.out.println(deserializedRecord);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(baos, deserializedRecord);
+        baos.close();
+
+
+        System.out.println(new String(baos.toByteArray()));
+    }
+
+
 
 
     @Test
