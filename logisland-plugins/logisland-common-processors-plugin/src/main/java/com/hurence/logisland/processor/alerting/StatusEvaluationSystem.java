@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor.alerting;
 
+import com.google.common.base.Stopwatch;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
@@ -8,17 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by a.ait-bachir on 11/07/2018.
  */
 public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
 
-    private static final Logger logger = LoggerFactory.getLogger(CheckAlerts.class);
+    private static final Logger logger = LoggerFactory.getLogger(StatusEvaluationSystem.class);
 
     protected CacheService cacheClientService;
 
@@ -90,14 +89,22 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
 
             //Evaluate the status
             try{
+                //Stopwatch stopWatch = Stopwatch.createStarted();
+                long startTs = System.currentTimeMillis();
                 sandbox.eval(jsVariableInit.toString());
                 Integer statusCode = (Integer) sandbox.get("status1");
-                Record statusRecord = new StandardRecord(outputRecordType)
-                        .setId(groupId)
-                        .setStringField(FieldDictionary.RECORD_VALUE, statusCode.toString())
-                        .setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);;
 
-                outputRecords.add(statusRecord);
+                if(statusCode != null) {
+                    //long millis = stopWatch.elapsed(TimeUnit.MILLISECONDS);
+                    long executionTime = System.currentTimeMillis() - startTs;
+                    logger.debug("JS Status Evaluation took: " + executionTime);
+                    Record statusRecord = new StandardRecord(outputRecordType)
+                            .setId(groupId)
+                            .setStringField(FieldDictionary.RECORD_VALUE, statusCode.toString())
+                            .setField(FieldDictionary.RECORD_PREDICTION_TIMESTAMP, FieldType.LONG, predictionTimestamp);
+                    ;
+                    outputRecords.add(statusRecord);
+                }
 
             } catch (ScriptException e) {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
@@ -121,6 +128,7 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
      */
     public StringBuffer generateJsVariableInitialisation(List<Record> metricIdList, String groupId, Long recordTimestamp){
         StringBuffer res = new StringBuffer();
+        Set<String> alreadyExistVariables = new HashSet<>();
         for(Record record : metricIdList){
 
             String metricId = record.getField(FieldDictionary.RECORD_METRIC_ID).asString();
@@ -128,18 +136,23 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
                 //Get the prediction value from Redis
                 Record prediction = (Record) cacheClientService.get(groupId + "#" + metricId);
                 Long recordTimestampCache = prediction.getField(FieldDictionary.RECORD_TIMESTAMP).asLong();
-                if (!recordTimestampCache.equals(recordTimestamp)) {
-                    return null;
-                }
+                //TODO check why predcition are not performed at the same time!!!!
+                //if (!recordTimestampCache.equals(recordTimestamp)) {
+                //    return null;
+                //}
                 String metricName = prediction.getField(FieldDictionary.RECORD_METRIC_NAME).asString().replaceAll(" ", "_").replaceAll("\\%", "percent");
-                String predictedValue = prediction.getField(FieldDictionary.RECORD_PREDICTION_VALUE).asString();
-                res.append("var " + metricName + "=" + predictedValue + ";\n");
+                if(!alreadyExistVariables.contains(metricName)) {
+                    String predictedValue = prediction.getField(FieldDictionary.RECORD_PREDICTION_VALUE).asString();
+                    res.append("var " + metricName + "=" + predictedValue + ";\n");
 
-                //Add warning and Critical values
-                String warningValue = prediction.getField(FieldDictionary.RECORD_METRIC_WARNING).asString();
-                String criticalValue = prediction.getField(FieldDictionary.RECORD_METRIC_CRITICAL).asString();
-                if (warningValue != "null") res.append("var warning_" + metricName + "=" + warningValue + ";\n");
-                if (criticalValue != "null") res.append("var critical_" + metricName + "=" + criticalValue + ";\n");
+                    //Add warning and Critical values
+                    String warningValue = prediction.getField(FieldDictionary.RECORD_METRIC_WARNING).asString();
+                    String criticalValue = prediction.getField(FieldDictionary.RECORD_METRIC_CRITICAL).asString();
+                    if (warningValue != "null") res.append("var warning_" + metricName + "=" + warningValue + ";\n");
+                    if (criticalValue != "null") res.append("var critical_" + metricName + "=" + criticalValue + ";\n");
+
+                    alreadyExistVariables.add(metricName);
+                }
             }
 
         }

@@ -35,9 +35,25 @@ public interface Cache<K,V> {
     public V get(K k);
 
     /**
+     * Get a String element from the cache
+     * @param k
+     * @return
+     */
+    public K getString(K k);
+
+    /**
      * Save an element into the cache
      * @param k
      * @param v
      */
     public void set(K k, V v);
+
+    /**
+     * Save a String element into the cache
+     * @param k
+     * @param v
+     */
+    public void setString(K k, K v);
+
+
 }

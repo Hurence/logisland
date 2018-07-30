@@ -23,6 +23,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
+import com.hurence.logisland.redis.service.RedisKeyValueCacheService;
 import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.validator.StandardValidators;
@@ -212,10 +213,10 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         //inject the right cache service (or the default one).
         if (cacheService != null) {
             sandbox.setScriptCache(((js, allowNoBraces, producer) -> {
-                String ret = cacheService.get(js);
+                String ret = cacheService.getString(js);
                 if (ret == null) {
                     ret = producer.get();
-                    cacheService.set(js, ret);
+                    cacheService.setString(js, ret);
                 }
                 return ret;
             }));

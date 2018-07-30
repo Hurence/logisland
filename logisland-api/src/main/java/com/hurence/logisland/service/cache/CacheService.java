@@ -60,6 +60,13 @@ public interface CacheService<K,V,S> extends ControllerService {
      * @param k
      * @param v
      */
+    public void setString(K k, K v);
+
+    /**
+     * Save an element into the cache
+     * @param k
+     * @param v
+     */
     public void set(K k, V v);
 
 

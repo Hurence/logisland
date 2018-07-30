@@ -78,7 +78,16 @@ public class LRUCache<K, V> implements Cache<K,V> {
     }
 
     @Override
+    public K getString(K k) {
+         return (K) synchronized_map.get(k);
+    }
+
+    @Override
     public void set(K k, V v) {
         synchronized_map.put(k, v);
+    }
+
+    @Override
+    public void setString(K k, K v) {
     }
 }
