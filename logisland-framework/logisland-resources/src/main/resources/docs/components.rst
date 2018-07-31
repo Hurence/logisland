@@ -318,6 +318,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
    "output.record.type", "the type of the output record", "", "event", "", ""
    "record.ttl", "How long (in ms) do the record will remain in cache", "", "30000", "", ""
+   "min.update.time.ms", "The minimum amount of time (in ms) that we expect between two consecutive update of the same threshold record", "", "200", "", ""
 
 Dynamic Properties
 __________________

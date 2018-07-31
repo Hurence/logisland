@@ -173,7 +173,7 @@ public class ComputeTagsTest {
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(3);
-        runner.assertOutputErrorCount(1);
+        runner.assertOutputErrorCount(0);
 
         for (Record enriched : runner.getOutputRecords()) {
             if (enriched.getId().equals("cvib3")) {

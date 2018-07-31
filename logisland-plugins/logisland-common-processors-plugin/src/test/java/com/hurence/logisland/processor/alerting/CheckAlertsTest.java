@@ -59,7 +59,7 @@ public class CheckAlertsTest {
         runner.run();
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(0);
-        runner.assertOutputErrorCount(2);
+        runner.assertOutputErrorCount(0);
 
          }
 
