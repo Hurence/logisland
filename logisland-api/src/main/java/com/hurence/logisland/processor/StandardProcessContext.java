@@ -19,6 +19,8 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 
+import java.io.IOException;
+
 public class StandardProcessContext extends AbstractConfiguredComponent implements ProcessContext {
 
     private ControllerServiceLookup controllerServiceLookup;
@@ -64,4 +66,5 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
     public void verifyModifiable() throws IllegalStateException {
 
     }
+
 }

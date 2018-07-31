@@ -55,7 +55,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
         this(component, VariableRegistry.EMPTY_REGISTRY);
     }
 
-    public MockProcessContext(final ControllerService component, final MockProcessContext context,  final VariableRegistry variableRegistry) {
+    public MockProcessContext(final ControllerService component, final MockProcessContext context, final VariableRegistry variableRegistry) {
         this(component, variableRegistry);
 
         try {

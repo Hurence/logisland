@@ -81,7 +81,7 @@ public class SplitText extends AbstractProcessor {
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .defaultValue(FieldDictionary.RECORD_RAW_KEY)
+            .defaultValue(FieldDictionary.RECORD_KEY)
             .build();
 
     public static final PropertyDescriptor RECORD_TYPE = new PropertyDescriptor.Builder()
@@ -220,7 +220,7 @@ public class SplitText extends AbstractProcessor {
                         if (keyMatcher.matches()) {
 
                             if (keepRawContent) {
-                                outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, keyMatcher.group(0));
+                                outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, keyMatcher.group(0));
                             }
                             for (int i = 0; i < keyMatcher.groupCount() + 1 && i < keyFields.length; i++) {
                                 String content = keyMatcher.group(i);
@@ -229,7 +229,7 @@ public class SplitText extends AbstractProcessor {
                                 }
                             }
                         } else {
-                            outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, key);
+                            outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, key);
                         }
                     } catch (Exception e) {
                         String errorMessage = "error while matching key " + key +
@@ -237,7 +237,7 @@ public class SplitText extends AbstractProcessor {
                                 " : " + e.getMessage();
                         logger.warn(errorMessage);
                         outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_RAW_KEY, FieldType.STRING, value);
+                        outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, value);
                     }
                 }
                 /**
@@ -276,7 +276,7 @@ public class SplitText extends AbstractProcessor {
                             // if we don't have any matches output an error
                             if (!hasMatched) {
                                 outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), "check your conf");
-                                outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
+                                outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
                             }
 
                         }
@@ -287,7 +287,7 @@ public class SplitText extends AbstractProcessor {
                                 " : " + e.getMessage();
                         logger.warn(errorMessage);
                         outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
-                        outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, value);
+                        outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
                     } finally {
                         outputRecords.add(outputRecord);
                     }
@@ -331,7 +331,7 @@ public class SplitText extends AbstractProcessor {
     private void extractValueFields(String[] valueFields, boolean keepRawContent, StandardRecord outputRecord, Matcher valueMatcher,
                                     TimeZone timezone) {
         if (keepRawContent) {
-            outputRecord.setField(FieldDictionary.RECORD_RAW_VALUE, FieldType.STRING, valueMatcher.group(0));
+            outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, valueMatcher.group(0));
         }
         for (int i = 0; i < Math.min(valueMatcher.groupCount() + 1, valueFields.length); i++) {
             String content = valueMatcher.group(i + 1);

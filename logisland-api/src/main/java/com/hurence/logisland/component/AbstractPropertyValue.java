@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,8 +87,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     @Override
     public Record asRecord() {
         return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim())
-                .setStringField(FieldDictionary.RECORD_RAW_VALUE,getRawValue().trim());
+                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim());
     }
 
     @Override

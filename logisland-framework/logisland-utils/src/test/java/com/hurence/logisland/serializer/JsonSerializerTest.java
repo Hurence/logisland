@@ -39,51 +39,76 @@ import static org.junit.Assert.assertTrue;
 public class JsonSerializerTest {
 
 
-	@Test
-	public void validateJsonSerialization() throws IOException {
+    @Test
+    public void validateArrays() throws IOException {
 
-		final JsonSerializer serializer = new JsonSerializer();
-
-
-		Record record = new StandardRecord("cisco");
-		record.setId("firewall_record1");
-		record.setField("timestamp", FieldType.LONG, new Date().getTime());
-		record.setField("method", FieldType.STRING, "GET");
-		record.setField("ip_source", FieldType.STRING, "123.34.45.123");
-		record.setField("ip_target", FieldType.STRING, "255.255.255.255");
-		record.setField("url_scheme", FieldType.STRING, "http");
-		record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
-		record.setField("url_port", FieldType.STRING, "80");
-		record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
-		record.setField("request_size", FieldType.INT, 1399);
-		record.setField("response_size", FieldType.INT, 452);
-		record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
-		record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
-		//record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+        final JsonSerializer serializer = new JsonSerializer();
 
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		serializer.serialize(baos, record);
-		baos.close();
+        Record record = new StandardRecord("cisco");
+        record.setId("firewall_record1");
+        record.addError("fatal_error", "ouille");
+        //record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
 
 
-		String strEvent = new String(baos.toByteArray());
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		Record deserializedRecord = serializer.deserialize(bais);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(baos, record);
+        baos.close();
 
-		assertEquals(record,deserializedRecord);
 
-	}
-	
-	
-	@Test
-	public void issueWithDate(){
-		final String recordStr = "{ \"id\" : \"0:vfBHTdrZCcFs3H6aO7Yb4UXWVppa80JiKQ7aW0\", \"type\" : \"pageView\", \"creationDate\" : \"Thu Apr 27 11:45:00 CEST 2017\", \"fields\" : { \"referer\" : \"https://orexad.preprod.group-iph.com/fr/equipement/c-45\",   \"B2BUnit\" : null,   \"eventCategory\" : null,   \"remoteHost\" : \"149.202.66.102\",   \"userAgentString\" : \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36\",   \"eventAction\" : null,   \"categoryName\" : null,   \"viewportPixelWidth\" : 1624,   \"hitType\" : null,   \"companyID\" : null,   \"pageType\" : null,   \"Userid\" : null,   \"localPath\" : null,   \"partyId\" : \"0:j1ymvypx:pO~iVklsXUYa6zMKVZeA2nC1YlVzTEw1\",   \"codeProduct\" : null,   \"is_newSession\" : false,   \"GroupCode\" : null,     \"sessionId\" : \"0:j20802wr:Py1qDrBry7UedH6my~6ebE58wRHUXWVp\",   \"categoryCode\" : null,   \"eventLabel\" :null,   \"record_type\" : \"pageView\",   \"n\" : null,   \"record_id\" : \"0:vfBHTdrZCcFs3H6aO7Yb4pa80JiKQ7aW0\",   \"q\" : null,   \"userRoles\" : null,   \"screenPixelWidth\" : 1855,   \"viewportPixelHeight\" : 726,   \"screenPixelHeight\" : 1056,   \"is_PunchOut\" : null,   \"h2kTimestamp\" : 1493286295730,  \"pageViewId\" : \"0:vfBHTdrZCcFs3H6aO7Yb4pa80JiKQ7aW\",   \"location\" : \"https://orexad.preprod.group-iph.com/fr/equipement/c-45\",   \"record_time\" : 1493286300033,   \"pointOfService\" : null }}";
+        String strEvent = new String(baos.toByteArray());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        Record deserializedRecord = serializer.deserialize(bais);
 
-		final JsonSerializer serializer = new JsonSerializer();
-		ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
-		Record deserializedRecord = serializer.deserialize(bais);
-		assertTrue(deserializedRecord.getTime().getTime() == 1493286300033L);
-	}
+       // assertEquals(record.getAllFieldsSorted(), deserializedRecord.getAllFieldsSorted());
+
+    }
+
+    @Test
+    public void validateJsonSerialization() throws IOException {
+
+        final JsonSerializer serializer = new JsonSerializer();
+
+
+        Record record = new StandardRecord("cisco");
+        record.setId("firewall_record1");
+        record.setField("timestamp", FieldType.LONG, new Date().getTime());
+        record.setField("method", FieldType.STRING, "GET");
+        record.setField("ip_source", FieldType.STRING, "123.34.45.123");
+        record.setField("ip_target", FieldType.STRING, "255.255.255.255");
+        record.setField("url_scheme", FieldType.STRING, "http");
+        record.setField("url_host", FieldType.STRING, "origin-www.20minutes.fr");
+        record.setField("url_port", FieldType.STRING, "80");
+        record.setField("url_path", FieldType.STRING, "/r15lgc-100KB.js");
+        record.setField("request_size", FieldType.INT, 1399);
+        record.setField("response_size", FieldType.INT, 452);
+        record.setField("is_outside_office_hours", FieldType.BOOLEAN, false);
+        record.setField("is_host_blacklisted", FieldType.BOOLEAN, false);
+        //record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(baos, record);
+        baos.close();
+
+
+        String strEvent = new String(baos.toByteArray());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        Record deserializedRecord = serializer.deserialize(bais);
+
+        assertEquals(record, deserializedRecord);
+
+    }
+
+
+    @Test
+    public void issueWithDate() {
+        final String recordStr = "{ \"id\" : \"0:vfBHTdrZCcFs3H6aO7Yb4UXWVppa80JiKQ7aW0\", \"type\" : \"pageView\", \"creationDate\" : \"Thu Apr 27 11:45:00 CEST 2017\", \"fields\" : { \"referer\" : \"https://orexad.preprod.group-iph.com/fr/equipement/c-45\",   \"B2BUnit\" : null,   \"eventCategory\" : null,   \"remoteHost\" : \"149.202.66.102\",   \"userAgentString\" : \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36\",   \"eventAction\" : null,   \"categoryName\" : null,   \"viewportPixelWidth\" : 1624,   \"hitType\" : null,   \"companyID\" : null,   \"pageType\" : null,   \"Userid\" : null,   \"localPath\" : null,   \"partyId\" : \"0:j1ymvypx:pO~iVklsXUYa6zMKVZeA2nC1YlVzTEw1\",   \"codeProduct\" : null,   \"is_newSession\" : false,   \"GroupCode\" : null,     \"sessionId\" : \"0:j20802wr:Py1qDrBry7UedH6my~6ebE58wRHUXWVp\",   \"categoryCode\" : null,   \"eventLabel\" :null,   \"record_type\" : \"pageView\",   \"n\" : null,   \"record_id\" : \"0:vfBHTdrZCcFs3H6aO7Yb4pa80JiKQ7aW0\",   \"q\" : null,   \"userRoles\" : null,   \"screenPixelWidth\" : 1855,   \"viewportPixelHeight\" : 726,   \"screenPixelHeight\" : 1056,   \"is_PunchOut\" : null,   \"h2kTimestamp\" : 1493286295730,  \"pageViewId\" : \"0:vfBHTdrZCcFs3H6aO7Yb4pa80JiKQ7aW\",   \"location\" : \"https://orexad.preprod.group-iph.com/fr/equipement/c-45\",   \"record_time\" : 1493286300033,   \"pointOfService\" : null }}";
+
+        final JsonSerializer serializer = new JsonSerializer();
+        ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(bais);
+        assertTrue(deserializedRecord.getTime().getTime() == 1493286300033L);
+    }
 
 }

@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Hurence (support@hurence.com)
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.connect.source;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -92,6 +90,7 @@ class SourceThread implements Runnable {
             } catch (Throwable tt) {
                 //swallow
             }
+            throw t;
         }
 
         return this;
@@ -102,6 +101,10 @@ class SourceThread implements Runnable {
      */
     public void stop() {
         running.set(false);
-
+        try {
+            task.stop();
+        } catch (Exception e) {
+            LOGGER.warn("Unable to properly stop task " + task, e );
+        } 
     }
 }

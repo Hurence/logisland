@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.stream
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
@@ -90,20 +105,21 @@ object StreamProperties {
     val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
         "avro serialization", "serialize events as json blocs")
     val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
-        "kryo serialization", "serialize events as json blocs")
+        "kryo serialization", "serialize events as binary blocs")
+    val STRING_SERIALIZER = new AllowableValue(classOf[StringSerializer].getName,
+        "string serialization", "serialize events as string")
     val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
         "byte array serialization", "serialize events as byte arrays")
     val KURA_PROTOCOL_BUFFER_SERIALIZER = new AllowableValue(classOf[KuraProtobufSerializer].getName,
         "Kura Protobuf serialization", "serialize events as Kura protocol buffer")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
 
-
     val INPUT_SERIALIZER: PropertyDescriptor = new PropertyDescriptor.Builder()
         .name("kafka.input.topics.serializer")
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -112,7 +128,7 @@ object StreamProperties {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -122,7 +138,7 @@ object StreamProperties {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(JSON_SERIALIZER.getValue)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .build
 
 
@@ -181,22 +197,6 @@ object StreamProperties {
         .required(false)
         .allowableValues(LATEST_OFFSET, EARLIEST_OFFSET, NONE_OFFSET)
         .defaultValue(EARLIEST_OFFSET.getValue)
-        .build
-
-    val LOGISLAND_AGENT_HOST: PropertyDescriptor = new PropertyDescriptor.Builder()
-        .name("logisland.agent.host")
-        .description("the stream needs to know how to reach Agent REST api in order to live update its processors")
-        .required(false)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .defaultValue("sandbox:8081")
-        .build
-
-    val LOGISLAND_AGENT_PULL_THROTTLING: PropertyDescriptor = new PropertyDescriptor.Builder()
-        .name("logisland.agent.pull.throttling")
-        .description("wait every x batch to pull agent for new conf")
-        .required(false)
-        .addValidator(StandardValidators.INTEGER_VALIDATOR)
-        .defaultValue("10")
         .build
 
 
@@ -374,7 +374,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -383,7 +383,7 @@ object StreamProperties {
         .description("The key serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER,KURA_PROTOCOL_BUFFER_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -407,7 +407,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -416,7 +416,7 @@ object StreamProperties {
         .description("The key serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 

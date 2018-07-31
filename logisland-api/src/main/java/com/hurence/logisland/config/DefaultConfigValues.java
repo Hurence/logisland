@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,6 @@ public enum DefaultConfigValues {
     KAFKA_BROKERS("sandbox:9092"),
     ZK_QUORUM("sandbox:2181"),
     SOLR_CONNECTION("http://sandbox:8983/solr"),
-    LOGISLAND_AGENT_HOST("sandbox:8008"),
     MQTT_BROKER_URL("tcp://sandbox:1883");
 
 

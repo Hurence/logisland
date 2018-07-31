@@ -81,4 +81,6 @@ public interface ComponentContext extends ConfiguredComponent {
      * @return the configured name of this processor
      */
     String getName();
+
+
 }

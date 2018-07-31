@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,7 +49,7 @@ public final class ComponentFactory {
                     new StandardEngineContext(engine, Long.toString(currentId.incrementAndGet()));
 
 
-            // instanciate each related pipelineContext
+            // instantiate each related pipelineContext
             configuration.getStreamConfigurations().forEach(pipelineConfig -> {
                 Optional<StreamContext> pipelineContext = getStreamContext(pipelineConfig);
                 pipelineContext.ifPresent(engineContext::addStreamContext);
@@ -63,6 +63,7 @@ public final class ComponentFactory {
             configuration.getControllerServiceConfigurations()
                     .forEach(engineContext::addControllerServiceConfiguration);
 
+            ((AbstractConfigurableComponent)engine).init(engineContext);
 
             logger.info("created engine {}", configuration.getComponent());
 
@@ -70,7 +71,7 @@ public final class ComponentFactory {
             return Optional.of(engineContext);
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instanciate engine {} : {}", configuration.getComponent(), e.toString());
+            logger.error("unable to instantiate engine {} : {}", configuration.getComponent(), e.toString());
         }
         return Optional.empty();
     }

@@ -19,8 +19,8 @@ package com.hurence.logisland.stream;
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.Processor;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +28,7 @@ import java.util.List;
 public class StandardStreamContext extends AbstractConfiguredComponent implements StreamContext {
 
     private final List<ProcessContext> processContexts = new ArrayList<>();
+    private final Instant creationDate = Instant.now();
 
     public StandardStreamContext(final RecordStream recordStream, final String id) {
         super(recordStream, id);
@@ -88,4 +89,6 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
     public void verifyModifiable() throws IllegalStateException {
 
     }
+
+
 }

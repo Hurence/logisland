@@ -365,8 +365,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         /**
           * job configuration
           */
-        val conf = new SparkConf()
 
+        @transient val conf = new SparkConf()
         conf.setAppName(appName)
         conf.setMaster(sparkMaster)
         def setConfProperty(conf: SparkConf, engineContext: EngineContext, propertyDescriptor: PropertyDescriptor) = {
@@ -458,6 +458,40 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         } value changed from $oldValue to $newValue")
     }
 
+    /**
+      * Await for termination.
+      *
+      * @param engineContext
+      */
+    override def awaitTermination(engineContext: EngineContext): Unit = {
+        var timeout = engineContext.getPropertyValue(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT)
+            .asInteger().toInt
+        val sc = SparkContext.getOrCreate()
+
+        while (!sc.isStopped) {
+            try {
+                if (timeout < 0) {
+                    Thread.sleep(200)
+                } else {
+                    val toSleep = Math.min(200, timeout);
+                    Thread.sleep(toSleep)
+                    timeout -= toSleep
+                }
+            } catch {
+                case e: InterruptedException => return
+                case unknown: Throwable => throw unknown
+            }
+        }
+    }
+
+    /**
+      * Reset the engine by stopping the streaming context.
+      *
+      * @param engineContext
+      */
+    override def reset(engineContext: EngineContext): Unit = {
+        //not supported
+    }
 }
 
 

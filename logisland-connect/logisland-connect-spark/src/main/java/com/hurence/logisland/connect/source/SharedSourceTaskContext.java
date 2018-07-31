@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Hurence (support@hurence.com)
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.connect.source;
 
 import org.apache.kafka.connect.source.SourceRecord;
@@ -143,7 +141,7 @@ public class SharedSourceTaskContext implements SourceTaskContext {
             if (offsetStorageWriter.beginFlush()) {
                 offsetStorageWriter.doFlush((error, result) -> {
                     if (error == null) {
-                        LOGGER.info("Flushing till offset {} with result {}", endOffset, result);
+                        LOGGER.debug("Flushing till offset {} with result {}", endOffset, result);
                     } else {
                         LOGGER.error("Unable to commit records till source offset " + endOffset, error);
 

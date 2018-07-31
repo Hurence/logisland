@@ -303,7 +303,6 @@ public class DocGenerator {
 
     public static void main(String[] args) {
         DocGenerator.generate(new File("."), "rst");
-        DocGenerator.generate(new File("../logisland-framework/logisland-agent/src/main/resources"), "json");
 
         try {
             FileUtils.copyDirectory(

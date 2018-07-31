@@ -218,8 +218,9 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void assertOutputRecordsCount(int count) {
-        assertTrue("expected output record count was " + count + " but is currently " +
-                outputRecordsList.size(), outputRecordsList.size() == count);
+        long recordsCount =
+                outputRecordsList.stream().filter(r -> !r.hasField(FieldDictionary.RECORD_ERRORS)).count();
+        assertTrue("expected output record count was " + count + " but is currently " +recordsCount, recordsCount == count);
     }
 
     @Override

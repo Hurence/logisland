@@ -83,7 +83,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
             // this is used to implicitly convert an RDD to a DataFrame.
 
-            val deserializer = getSerializer(
+            @transient lazy val deserializer = getSerializer(
                 streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
                 streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 

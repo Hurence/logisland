@@ -18,14 +18,9 @@ package com.caseystella.analytics.outlier.streaming;
 import com.caseystella.analytics.distribution.GlobalStatistics;
 import com.caseystella.analytics.distribution.config.RotationConfig;
 import com.caseystella.analytics.distribution.scaling.ScalingFunctions;
-import com.caseystella.analytics.outlier.batch.rpca.RPCAOutlierAlgorithm;
-import com.caseystella.analytics.outlier.streaming.mad.SketchyMovingMAD;
-import com.google.common.collect.ImmutableList;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OutlierConfig implements Serializable {
     private RotationConfig rotationPolicy = new RotationConfig();
@@ -34,7 +29,7 @@ public class OutlierConfig implements Serializable {
     private OutlierAlgorithm sketchyOutlierAlgorithm;
     private com.caseystella.analytics.outlier.batch.OutlierAlgorithm batchOutlierAlgorithm;
     private ScalingFunctions scalingFunction = null;
-    private List<Double> percentilesToTrack = ImmutableList.of(0.50d, 0.75d, 0.90d, 0.95d, 0.99d);
+    private List<Double> percentilesToTrack = Collections.unmodifiableList(Arrays.asList(0.50d, 0.75d, 0.90d, 0.95d, 0.99d));
     private List<String> groupingKeys;
     private Map<String, Object> config = new HashMap<>();
 

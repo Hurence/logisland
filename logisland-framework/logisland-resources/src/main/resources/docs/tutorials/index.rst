@@ -25,6 +25,7 @@ Contents:
    prerequisites
    index-apache-logs
    store-to-redis
+   threshold-alerting
    match-queries
    aggregate-events
    enrich-apache-logs
@@ -36,4 +37,5 @@ Contents:
    index-blockchain-transactions
    index-excel-spreadsheets
    mqtt-to-historian
+   iiot-opc-ua
    integrate-kafka-connect

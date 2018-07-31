@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.13.0</version>
+        <version>0.14.0</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
     <dependencies>
@@ -117,6 +117,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-redis_4-client-service</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -136,7 +137,6 @@
                              also adding the project build directory -->
                         <classpath/>
                         <argument>com.hurence.logisland.documentation.DocGenerator</argument>
-
                     </arguments>
 
 

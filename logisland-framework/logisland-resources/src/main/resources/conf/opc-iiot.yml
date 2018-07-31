@@ -1,0 +1,106 @@
+version: 0.14.0
+documentation: LogIsland IIoT OPC-UA Job
+
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some OPC-UA tagw with Logisland
+  configuration:
+    spark.app.name: OpcUaLogisland
+    spark.master: local[*]
+    spark.driver.memory: 512M
+    spark.driver.cores: 1
+    spark.executor.memory: 512M
+    spark.executor.instances: 4
+    spark.executor.cores: 1
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 3000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch service
+      configuration:
+        hosts: sandbox:9300
+        cluster.name: es-logisland
+
+    - controllerService: console_service
+      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+
+    - controllerService: kc_source_service
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      documentation: Kafka connect OPC-UA source service
+      type: service
+      configuration:
+        kc.connector.class: com.hurence.logisland.connect.opc.ua.OpcUaSourceConnector
+        kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
+        kc.data.value.converter.properties: |
+          record.serializer=com.hurence.logisland.serializer.KryoSerializer
+        kc.data.key.converter.properties: |
+          schemas.enable=false
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.worker.tasks.max: 1
+        kc.connector.offset.backing.store: memory
+        kc.connector.properties: |
+          defaultRefreshPeriodMillis=500
+          dataPublicationPeriodMillis=1000
+          defaultSocketTimeoutMillis=10000
+          server.uri=opc.tcp://sandbox:53530/OPCUA/SimulationServer
+          tags=ns=5;s=Sawtooth1
+
+  streamConfigurations:
+
+    - stream: ingest_stream
+      component: com.hurence.logisland.stream.spark.structured.StructuredStream
+      configuration:
+        read.topics: /a/in
+        read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        read.topics.client.service: kc_source_service
+        write.topics: logisland_parsed
+        write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
+        write.topics.client.service: console_service
+      processorConfigurations:
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract from root record"
+          configuration:
+            keep.root.record: false
+            copy.root.record.fields: true
+        - processor: rename_fields
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: processor
+          documentation: "set record time to tag server generation time"
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            record_time: tag_timestamp
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type

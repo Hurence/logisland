@@ -55,4 +55,13 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
         logger.info("engine shutdown");
     }
 
+    @Override
+    public void awaitTermination(EngineContext engineContext) {
+    }
+
+    @Override
+    public void reset(EngineContext engineContext) {
+        engineContext.getStreamContexts().clear();
+        engineContext.getControllerServiceConfigurations().clear();
+    }
 }

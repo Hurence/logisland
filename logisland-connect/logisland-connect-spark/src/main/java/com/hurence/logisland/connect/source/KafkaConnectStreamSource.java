@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Hurence (support@hurence.com)
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.connect.source;
 
 
@@ -157,7 +155,7 @@ public class KafkaConnectStreamSource implements Source {
 
             //create and start tasks
             startAllThreads();
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (Exception e) {
             try {
                 stopAllThreads();
             } catch (Throwable t) {
@@ -200,14 +198,14 @@ public class KafkaConnectStreamSource implements Source {
         }
         //Give a meaningful name to thread belonging to this connector
         final ThreadGroup threadGroup = new ThreadGroup(connector.getClass().getSimpleName());
-        final List<SourceThread> sourceThreads = createThreadTasks();
+        final List<SourceThread> threadz = createThreadTasks();
         //Configure a new executor service        ]
-        executorService = Executors.newFixedThreadPool(sourceThreads.size(), r -> {
+        executorService = Executors.newFixedThreadPool(threadz.size(), r -> {
             Thread t = new Thread(threadGroup, r);
             t.setDaemon(true);
             return t;
         });
-        createThreadTasks().forEach(st -> {
+        threadz.forEach(st -> {
             executorService.execute(st.start());
             sourceThreads.add(st);
         });

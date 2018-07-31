@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 0.13.0
+version: 0.14.0
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -69,7 +69,7 @@ engine:
         kafka.output.topics: logisland_events
         kafka.error.topics: logisland_errors
         kafka.input.topics.serializer: none
-        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         kafka.metadata.broker.list: ${KAFKA_BROKERS}
         kafka.zookeeper.quorum: ${ZK_QUORUM}
@@ -88,6 +88,55 @@ engine:
             value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
             value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
+        - processor: normalize_fields
+          component: com.hurence.logisland.processor.NormalizeFields
+          type: parser
+          documentation: change current id to src_ip
+          configuration:
+            conflict.resolution.policy: overwrite_existing
+            record_value: bytes_out
+
+        - processor: modify_id
+          component: com.hurence.logisland.processor.ModifyId
+          type: parser
+          documentation: change current id to src_ip
+          configuration:
+            id.generation.strategy: fromFields
+            fields.to.hash: src_ip
+            java.formatter.string: "%1$s"
+
+        - processor: remove_fields
+          component: com.hurence.logisland.processor.RemoveFields
+          type: parser
+          documentation: remove useless fields
+          configuration:
+            fields.to.remove: src_ip,identd,user,http_method,http_query,http_version,http_status,bytes_out
+
+        - processor: cast
+          component: com.hurence.logisland.processor.ConvertFieldsType
+          type: parser
+          documentation: cast values
+          configuration:
+            record_value: double
+
+        - processor: compute_tag
+          component: com.hurence.logisland.processor.alerting.ComputeTags
+          type: processor
+          documentation: |
+            compute tags from given formulas.
+            each dynamic property will return a new record according to the formula definition
+            the record name will be set to the property name
+            the record time will be set to the current timestamp
+          configuration:
+            datastore.client.service: datastore_service
+            output.record.type: computed_tag
+            max.cpu.time: 500
+            max.memory: 64800000
+            max.prepared.statements: 5
+            allow.no.brace: false
+            computed1: return cache("ppp-mia-30.shadow.net").value * 10.2;
+
+
         # all the parsed records are added to datastore by bulk
         - processor: datastore_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut
@@ -95,3 +144,101 @@ engine:
           documentation: "indexes processed events in datastore"
           configuration:
             datastore.client.service: datastore_service
+
+
+
+    - stream: alerting_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that converts raw apache logs into structured log records
+      configuration:
+        kafka.input.topics: logisland_events
+        kafka.output.topics: logisland_alerts
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+
+
+        - processor: compute_thresholds
+          component: com.hurence.logisland.processor.alerting.CheckThresholds
+          type: processor
+          documentation: |
+            compute threshold cross from given formulas.
+            each dynamic property will return a new record according to the formula definition
+            the record name will be set to the property name
+            the record time will be set to the current timestamp
+
+            a threshold_cross has the following properties : count, time, duration, value
+          configuration:
+            datastore.client.service: datastore_service
+            output.record.type: threshold_cross
+            max.cpu.time: 100
+            max.memory: 12800000
+            max.prepared.statements: 5
+            record.ttl: 300000
+            tvib1: cache("port26.annex2.nwlink.com").value > 2000.0
+
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          configuration:
+            event.serializer: json
+
+        - processor: compute_alerts1
+          component: com.hurence.logisland.processor.alerting.CheckAlerts
+          type: processor
+          documentation: |
+            compute threshold cross from given formulas.
+            each dynamic property will return a new record according to the formula definition
+            the record name will be set to the property name
+            the record time will be set to the current timestamp
+          configuration:
+            datastore.client.service: datastore_service
+            output.record.type: medium_alert
+            alert.criticity: 1
+            max.cpu.time: 100
+            max.memory: 12800000
+            max.prepared.statements: 5
+            profile.activation.condition: cache("port26.annex2.nwlink.com").value > 3000.0
+            avib1: cache("tvib1").count > 5.0
+
+
+        - processor: debug
+          component: com.hurence.logisland.processor.DebugStream
+          configuration:
+            event.serializer: json
+#
+#        - processor: compute_alerts2
+#          component: com.hurence.logisland.processor.alerting.CheckAlerts
+#          type: processor
+#          documentation: |
+#            compute threshold cross from given formulas.
+#            each dynamic property will return a new record according to the formula definition
+#            the record name will be set to the property name
+#            the record time will be set to the current timestamp
+#          configuration:
+#            datastore.client.service: datastore_service
+#            output.record.type: critical_alert
+#            alert.criticity: 2
+#            max.cpu.time: 100
+#            max.memory: 12800000
+#            max.prepared.statements: 5
+#            profile.activation.condition: cache("vib1").value <= 10.0 || cache("vib2").value <= 2
+#            avib1: cache("tvib1").count > 10.0
+#            avib3: cache("tvib12").duration > 30000.0
+#
+#        - processor: datastore_publisher
+#          component: com.hurence.logisland.processor.datastore.BulkPut
+#          type: processor
+#          documentation: "indexes processed events in datastore"
+#          configuration:
+#            datastore.client.service: datastore_service
+
+

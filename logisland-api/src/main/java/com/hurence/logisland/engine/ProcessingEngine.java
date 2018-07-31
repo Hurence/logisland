@@ -31,8 +31,21 @@ public interface ProcessingEngine extends ConfigurableComponent {
 
     /**
      * shutdown the engine with a context
+     *
      * @param engineContext
      */
     void shutdown(EngineContext engineContext);
+
+    /**
+     * Await for termination.
+     * @param engineContext
+     */
+    void awaitTermination(EngineContext engineContext);
+
+    /**
+     * Reset the engine by stopping the streaming context.
+     * @param engineContext
+     */
+    void reset(EngineContext engineContext);
 
 }

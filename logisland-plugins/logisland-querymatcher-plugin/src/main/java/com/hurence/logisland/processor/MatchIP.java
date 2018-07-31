@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2017 Hurence (support@hurence.com)
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class MatchIP extends MatchQuery {
                     }
                     else {
                         HashSet<Pair<String, Pattern>> regexpVals = new HashSet<>();
-                        regexpVals.add(new ImmutablePair<>(name, ipRegexp));
+                        regexpVals.add(new org.apache.commons.lang3.tuple.ImmutablePair<>(name, ipRegexp));
                         ipRegexps.put(queryField, regexpVals);
                     }
                 }

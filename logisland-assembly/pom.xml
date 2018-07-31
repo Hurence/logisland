@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>0.13.0</version>
+        <version>0.14.0</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -230,10 +230,6 @@
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-spark_2_1-engine_${scala.binary.version}</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>com.hurence.logisland</groupId>
-                    <artifactId>logisland-agent</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>

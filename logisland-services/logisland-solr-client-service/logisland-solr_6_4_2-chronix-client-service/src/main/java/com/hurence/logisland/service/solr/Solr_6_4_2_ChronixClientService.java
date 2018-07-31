@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -264,6 +264,17 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
         bulkPut(collectionName, record);
 
 
+    }
+
+    @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        try {
+            solr.deleteById(collectionName, record.getId());
+
+        } catch (SolrServerException | IOException e) {
+            logger.error(e.toString());
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override

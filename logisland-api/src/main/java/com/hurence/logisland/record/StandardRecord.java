@@ -107,8 +107,8 @@ public class StandardRecord implements Record {
 
     @Override
     public Position getPosition() {
-        if(hasPosition())
-            return (Position)getField(FieldDictionary.RECORD_POSITION).asRecord();
+        if (hasPosition())
+            return (Position) getField(FieldDictionary.RECORD_POSITION).asRecord();
         else return null;
     }
 
@@ -249,7 +249,12 @@ public class StandardRecord implements Record {
      */
     @Override
     public Field removeField(String fieldName) {
-        return fields.remove(fieldName);
+        if (fieldName.equals(FieldDictionary.RECORD_TIME)) {
+            logger.debug("trying to remove record_time field. we won't let you do that !!");
+            return fields.get(FieldDictionary.RECORD_TIME);
+        } else {
+            return fields.remove(fieldName);
+        }
     }
 
     /**
