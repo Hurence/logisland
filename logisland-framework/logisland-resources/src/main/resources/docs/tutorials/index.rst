@@ -25,6 +25,7 @@ Contents:
    prerequisites
    index-apache-logs
    store-to-redis
+   threshold-alerting
    match-queries
    aggregate-events
    enrich-apache-logs

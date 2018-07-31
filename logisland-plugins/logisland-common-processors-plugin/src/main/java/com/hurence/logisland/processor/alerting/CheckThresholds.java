@@ -1,13 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,10 +71,20 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
             .build();
 
 
+    public static final PropertyDescriptor MIN_UPDATE_TIME_MS = new PropertyDescriptor.Builder()
+            .name("min.update.time.ms")
+            .description("The minimum amount of time (in ms) that we expect between two consecutive update of the same threshold record")
+            .required(false)
+            .defaultValue("200")
+            .addValidator(StandardValidators.LONG_VALIDATOR)
+            .build();
+
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> properties = new ArrayList<>(super.getSupportedPropertyDescriptors());
         properties.add(RECORD_TTL);
+        properties.add(MIN_UPDATE_TIME_MS);
 
         return properties;
     }
@@ -93,14 +102,16 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
                     .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble()");
 
             StringBuilder sb = new StringBuilder();
-            sb.append("var match=false;\n");
-            sb.append("if( ")
+            sb.append("var match=false;\n")
+                    .append("try {\n")
+                    .append("if( ")
                     .append(value)
-                    .append(" ) { match=true; }\n");
+                    .append(" ) { match=true; }\n")
+                    .append("} catch(error) {}");
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
-         //   System.out.println(sb.toString());
-          //  logger.debug(sb.toString());
+            //   System.out.println(sb.toString());
+            //  logger.debug(sb.toString());
         }
         defaultCollection = context.getPropertyValue(DATASTORE_CACHE_COLLECTION).asString();
         recordTTL = context.getPropertyValue(RECORD_TTL).asInteger();
@@ -120,7 +131,7 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
 
-            // look for record into the cache
+            // look for record into the cache & remove this if TTL expired
             String key = entry.getKey();
             Record cachedThreshold = datastoreClientService.get(defaultCollection, new StandardRecord().setId(key));
             if (cachedThreshold != null) {
@@ -135,22 +146,28 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
                 sandbox.eval(entry.getValue());
                 Boolean match = (Boolean) sandbox.get("match");
                 if (match) {
-
-
                     if (cachedThreshold != null) {
+                        // check if we haven't handle this event yet
+                        Long durationBeetwenLastUpdateInMs = System.currentTimeMillis() -
+                                cachedThreshold.getField(FieldDictionary.RECORD_LAST_UPDATE_TIME).asLong();
+                        if (durationBeetwenLastUpdateInMs > context.getPropertyValue(MIN_UPDATE_TIME_MS).asLong()) {
+
                         Long count = cachedThreshold.getField(FieldDictionary.RECORD_COUNT).asLong();
                         Date firstThresholdTime = cachedThreshold.getTime();
-                        cachedThreshold.setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
-                                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, count + 1)
-                                .setTime(firstThresholdTime);
+                        cachedThreshold.setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, count + 1)
+                                .setTime(firstThresholdTime)
+                                .setField(FieldDictionary.RECORD_LAST_UPDATE_TIME, FieldType.LONG, System.currentTimeMillis());
 
                         datastoreClientService.put(defaultCollection, cachedThreshold, true);
                         outputRecords.add(cachedThreshold);
+                        }
+
                     } else {
                         Record threshold = new StandardRecord(outputRecordType)
                                 .setId(key)
                                 .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(key).asString())
-                                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, 1L);
+                                .setField(FieldDictionary.RECORD_COUNT, FieldType.LONG, 1L)
+                                .setField(FieldDictionary.RECORD_LAST_UPDATE_TIME, FieldType.LONG, System.currentTimeMillis());
                         datastoreClientService.put(defaultCollection, threshold, true);
                         outputRecords.add(threshold);
                     }
@@ -159,7 +176,7 @@ public class CheckThresholds extends AbstractNashornSandboxProcessor {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
                         .setId(entry.getKey())
                         .addError("ScriptException", e.getMessage());
-                outputRecords.add(errorRecord);
+                //   outputRecords.add(errorRecord);
                 logger.error(e.toString());
             }
         }

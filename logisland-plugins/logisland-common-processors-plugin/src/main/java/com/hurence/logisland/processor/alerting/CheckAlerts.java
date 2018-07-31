@@ -1,13 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -117,17 +116,19 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
         sbActivation.append("var alert = false;\n")
                 .append("function getValue(id) {\n")
                 .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
-                .append("  if(record == null) return Double.NaN;\n")
-                .append("  return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n")
+                .append("  if(record === null) return Double.NaN;\n")
+                .append("  else return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n")
                 .append("function getDuration(id) {\n")
                 .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
-                .append("  if(record == null) return -1;\n")
-                .append("  var duration =  new Date().getTime() - record.getTime().getTime();\n")
-                .append("  return duration; \n};\n")
+                .append("  if(record === null) return -1;\n")
+                .append("  else { \n")
+                .append("    var duration =  new Date().getTime() - record.getTime().getTime();\n")
+                .append("    return duration; \n}};\n")
                 .append("function getCount(id) {\n")
                 .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
-                .append("  if(record == null) return -1;\n")
-                .append("  return record.getField(\"record_count\").asLong(); \n};\n")
+                .append("  if(record === null) return -1;\n")
+                .append("  else return record.getField(\"record_count\").asLong(); \n};\n")
+                .append("try {\n")
                 .append("if( ")
                 .append(expandCode(profileActivationRule))
                 .append(" ) { \n");
@@ -144,13 +145,16 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
             sb.append("  if( ")
                     .append(value)
                     .append(" ) { alert = true; }\n")
-                    .append("}\n");
+                    .append("}\n")
+                    .append("} catch(error) {}");
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
 
-          //  System.out.println(sb.toString());
-           // logger.debug(sb.toString());
+            //  System.out.println(sb.toString());
+            // logger.debug(sb.toString());
         }
+
+
 
 
     }
@@ -183,7 +187,7 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
                         .setId(entry.getKey())
                         .addError("ScriptException", e.getMessage());
-                outputRecords.add(errorRecord);
+                // outputRecords.add(errorRecord);
                 logger.error(e.toString());
             }
         }
