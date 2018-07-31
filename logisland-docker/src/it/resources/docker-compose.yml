@@ -27,7 +27,7 @@ services:
       - 2181:2181
       - 9092:9092
       - 9000:9000
-      - 4050-4060:4050-4060
+      - 4050:4050
     links:
       - "elasticsearch23"
       - "elasticsearch24"
