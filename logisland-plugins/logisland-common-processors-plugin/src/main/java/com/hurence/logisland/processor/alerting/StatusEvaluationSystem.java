@@ -5,9 +5,11 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.cache.CacheService;
+import delight.nashornsandbox.NashornSandbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.Bindings;
 import javax.script.ScriptException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -77,22 +79,29 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
             List<Record> metricIdList = cacheClientService.sMembers(groupId);
 
             // Generate the JS variable initialisation with Cached prediction values in Redis
-            StringBuffer jsVariableInit = generateJsVariableInitialisation(metricIdList, groupId, recordTimestamp);
-            if(jsVariableInit == null || jsVariableInit.toString().isEmpty()){
+            //StringBuffer jsVariableInit = generateJsVariableInitialisation(metricIdList, groupId, recordTimestamp);
+            //if(jsVariableInit == null || jsVariableInit.toString().isEmpty()){
+            //    return outputRecords;
+            //}
+
+            Bindings bindings = generateJsVariableBindings(metricIdList, groupId, recordTimestamp, sandbox);
+            if(bindings == null || bindings.keySet().isEmpty()){
                 return outputRecords;
             }
 
             //Get from Redis the JS function definition for a Given GroupId
             //TODO Get the JS according to ServiceCategoryId
             String jsFunction = (String) cacheClientService.getString("js#"+groupId);
-            jsVariableInit.append(jsFunction);
+            //jsVariableInit.append(jsFunction);
 
             //Evaluate the status
             try{
                 //Stopwatch stopWatch = Stopwatch.createStarted();
                 long startTs = System.currentTimeMillis();
-                sandbox.eval(jsVariableInit.toString());
-                Integer statusCode = (Integer) sandbox.get("status1");
+
+                //sandbox.eval(jsVariableInit.toString(), bindings);
+                sandbox.eval(jsFunction, bindings);
+                Integer statusCode = (Integer) bindings.get("status1");
 
                 if(statusCode != null) {
                     //long millis = stopWatch.elapsed(TimeUnit.MILLISECONDS);
@@ -117,6 +126,48 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
         }
 
         return outputRecords;
+    }
+
+
+    /**
+     * Generates the JS for all the metrics of the groupId
+     * @param metricIdList
+     * @param groupId
+     * @param recordTimestamp
+     * @return
+     */
+    public Bindings generateJsVariableBindings(List<Record> metricIdList, String groupId, Long recordTimestamp, NashornSandbox sandbox){
+        Bindings bindings = sandbox.createBindings();
+
+        Set<String> alreadyExistVariables = new HashSet<>();
+        for(Record record : metricIdList){
+
+            String metricId = record.getField(FieldDictionary.RECORD_METRIC_ID).asString();
+            if(metricId != null && metricId != "null") {
+                //Get the prediction value from Redis
+                Record prediction = (Record) cacheClientService.get(groupId + "#" + metricId);
+                Long recordTimestampCache = prediction.getField(FieldDictionary.RECORD_TIMESTAMP).asLong();
+                //TODO check why predcition are not performed at the same time!!!!
+                //if (!recordTimestampCache.equals(recordTimestamp)) {
+                //    return null;
+                //}
+                String metricName = prediction.getField(FieldDictionary.RECORD_METRIC_NAME).asString().replaceAll(" ", "_").replaceAll("\\%", "percent");
+                if(!alreadyExistVariables.contains(metricName)) {
+                    String predictedValue = prediction.getField(FieldDictionary.RECORD_PREDICTION_VALUE).asString();
+                    bindings.put(metricName, predictedValue);
+
+                    //Add warning and Critical values
+                    String warningValue = prediction.getField(FieldDictionary.RECORD_METRIC_WARNING).asString();
+                    String criticalValue = prediction.getField(FieldDictionary.RECORD_METRIC_CRITICAL).asString();
+                    if (warningValue != "null")   bindings.put("warning_"+metricName, warningValue);
+                    if (criticalValue != "null") bindings.put("critical_" + metricName, criticalValue);
+
+                    alreadyExistVariables.add(metricName);
+                }
+            }
+
+        }
+        return bindings;
     }
 
     /**
@@ -159,5 +210,7 @@ public class StatusEvaluationSystem extends AbstractNashornSandboxProcessor{
         logger.debug(res.toString());
         return res;
     }
+
+
 
 }
