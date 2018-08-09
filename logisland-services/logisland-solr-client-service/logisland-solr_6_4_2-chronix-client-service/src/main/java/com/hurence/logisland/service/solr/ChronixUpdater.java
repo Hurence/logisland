@@ -111,12 +111,14 @@ public class ChronixUpdater implements Runnable {
 
     private synchronized void sendData(long currentTS) throws SolrServerException, IOException {
         logger.debug("committing {} records to Chronix after {} ns", batchedUpdates, (currentTS - lastTS));
-        Map<Object[], List<Record>> groups = batchBuffer.stream().collect(Collectors.groupingBy(r ->
-                groupByFields.stream().map(f -> r.hasField(f) ? r.getField(f).getRawValue() : null).toArray()));
+        Map<String, List<Record>> groups = batchBuffer.stream().collect(Collectors.groupingBy(r ->
+                groupByFields.stream().map(f -> r.hasField(f) ? r.getField(f).asString() : null).collect(Collectors.joining("|"))));
 
         storage.add(converter,
-                groups.values().stream().filter(l -> !l.isEmpty()).map(this::convertToMetric).collect(Collectors.toList()),
-                solr);
+                groups.values().stream().filter(l -> !l.isEmpty()).map(recs -> {
+                    Collections.sort(recs, Comparator.comparing(Record::getTime));
+                    return recs;
+                }).map(this::convertToMetric).collect(Collectors.toList()), solr);
         solr.commit();
         lastTS = currentTS;
         batchBuffer.clear();
@@ -130,7 +132,7 @@ public class ChronixUpdater implements Runnable {
         String batchUID = UUID.randomUUID().toString();
         final long firstTS = records.get(0).getTime().getTime();
         long tmp = records.get(records.size() - 1).getTime().getTime();
-        final long lastTS = tmp == firstTS ? firstTS + 1 : firstTS;
+        final long lastTS = tmp == firstTS ? firstTS + 1 : tmp;
 
 
         //extract meta
