@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -78,7 +79,7 @@ public class ChronixUpdater implements Runnable {
 
             // process record if one
             try {
-                Record record = records.take();
+                Record record = records.poll(flushInterval, TimeUnit.MILLISECONDS);
                 if (record != null) {
                     batchBuffer.add(record);
                     batchedUpdates++;
@@ -113,13 +114,14 @@ public class ChronixUpdater implements Runnable {
         logger.debug("committing {} records to Chronix after {} ns", batchedUpdates, (currentTS - lastTS));
         Map<String, List<Record>> groups = batchBuffer.stream().collect(Collectors.groupingBy(r ->
                 groupByFields.stream().map(f -> r.hasField(f) ? r.getField(f).asString() : null).collect(Collectors.joining("|"))));
-
-        storage.add(converter,
-                groups.values().stream().filter(l -> !l.isEmpty()).map(recs -> {
-                    Collections.sort(recs, Comparator.comparing(Record::getTime));
-                    return recs;
-                }).map(this::convertToMetric).collect(Collectors.toList()), solr);
-        solr.commit();
+        if (!groups.isEmpty()) {
+            storage.add(converter,
+                    groups.values().stream().filter(l -> !l.isEmpty()).map(recs -> {
+                        Collections.sort(recs, Comparator.comparing(Record::getTime));
+                        return recs;
+                    }).map(this::convertToMetric).collect(Collectors.toList()), solr);
+            solr.commit();
+        }
         lastTS = currentTS;
         batchBuffer.clear();
         batchedUpdates = 0;
