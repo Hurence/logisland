@@ -28,7 +28,7 @@ public interface OpcRecordFields {
      */
     String SOURCE_TIMESTAMP = "tag_source_timestamp";
     /**
-     * The timestamp when the tag has been created.
+     * The timestamp when the value has been created.
      */
     String SAMPLED_TIMESTAMP = "tag_sampled_timestamp";
 

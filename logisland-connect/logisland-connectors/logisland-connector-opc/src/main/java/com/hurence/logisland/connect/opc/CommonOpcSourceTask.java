@@ -63,13 +63,42 @@ public abstract class CommonOpcSourceTask extends SourceTask {
 
     }
 
+    /**
+     * Subclasses should use this hook to set their specific properties.
+     *
+     * @param properties
+     */
     protected abstract void setConfigurationProperties(Map<String, String> properties);
 
+    /**
+     * Subclasses to create their specific session profile.
+     *
+     * @return
+     */
     protected abstract SessionProfile createSessionProfile();
 
+    /**
+     * Subclasses to create their specific connection profile.
+     *
+     * @return
+     */
     protected abstract ConnectionProfile createConnectionProfile();
 
+    /**
+     * Subclasses to create their specific {@link OpcOperations} instance.
+     * @return
+     */
     protected abstract OpcOperations createOpcOperations();
+
+    /**
+     * Indicate whenever the server can do sompling on a subscription.
+     * Usually it is false for synchronous OPC-DA but generally true for OPC-UA.
+     *
+     * @return
+     */
+    protected boolean hasServerSideSampling() {
+        return false;
+    }
 
 
     @Override
@@ -118,7 +147,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
                     session.stream(subscriptionConfiguration, tagInfoMap.keySet().toArray(new String[tagInfoMap.size()]))
                             .forEach(opcData -> {
                                 if (tagInfoMap.get(opcData.getTag()).getStreamingMode().equals(StreamingMode.SUBSCRIBE)) {
-                                    transferQueue.add(new Tuple<>(Instant.now(), opcData));
+                                    transferQueue.add(new Tuple<>(hasServerSideSampling() ? opcData.getTimestamp() : Instant.now(), opcData));
                                 } else {
                                     lastValues.put(opcData.getTag(), opcData);
                                 }

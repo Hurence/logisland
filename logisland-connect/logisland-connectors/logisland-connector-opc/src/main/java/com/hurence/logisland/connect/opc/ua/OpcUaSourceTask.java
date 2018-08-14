@@ -160,4 +160,9 @@ public class OpcUaSourceTask extends CommonOpcSourceTask {
     protected OpcOperations createOpcOperations() {
         return new OpcUaTemplate();
     }
+
+    @Override
+    protected boolean hasServerSideSampling() {
+        return true;
+    }
 }
