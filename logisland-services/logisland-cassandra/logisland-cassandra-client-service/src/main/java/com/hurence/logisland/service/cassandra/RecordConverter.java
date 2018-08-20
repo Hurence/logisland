@@ -29,6 +29,35 @@ import java.util.Set;
  */
 public class RecordConverter {
 
+    public enum CassandraType {
+        UUID("uuid"),
+        INT("int");
+
+        private final String value;
+
+        CassandraType(String value)
+        {
+            this.value = value;
+        }
+
+        public static CassandraType fromValue(String value) throws Exception {
+            switch(value)
+            {
+                case "uuid":
+                    return UUID;
+                    case "int":
+                        return INT;
+                default:
+                    throw new Exception("Unsupported cassandra type: " + value);
+            }
+        }
+
+        public String getValue()
+        {
+            return value;
+        }
+    }
+
     private static Logger logger = LoggerFactory.getLogger(RecordConverter.class.getName());
 
     public static String convertInsert(Record record, String keyspace, String table) {
