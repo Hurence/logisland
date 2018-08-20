@@ -81,17 +81,18 @@ Here we have the OPC-UA source with all the connection parameters.
         kc.worker.tasks.max: 1
         kc.connector.offset.backing.store: memory
         kc.connector.properties: |
-          defaultRefreshPeriodMillis=500
-          dataPublicationPeriodMillis=1000
-          defaultSocketTimeoutMillis=10000
+          session.publicationRate=PT1S
+          connection.socketTimeoutMillis=10000
           server.uri=opc.tcp://sandbox:53530/OPCUA/SimulationServer
-          tags=ns=5;s=Sawtooth1
+          tags.id=ns=5;s=Sawtooth1
+          tags.sampling.rate=PT0.5S
+          tags.stream.mode=SUBSCRIBE
 
 In particular, we have
 
 * A tag to be read: *"ns=5;s=Sawtooth1"*
-* The tag will be subscribed to be refreshed each 0.5s *(defaultRefreshPeriodMillis)*
-* The data will be published by the opc server each second (*dataPublicationPeriodMillis*)
+* The tag will be subscribed and sampled each 0.5s
+* The data will be published by the opc server each second (*session.publicationRate*)
 
 Full connector documentation is on javadoc of class ``com.hurence.logisland.connect.opc.ua.OpcUaSourceConnector``
 
@@ -141,7 +142,7 @@ First, we need to extract the record thanks to a ``FlatMap`` processor
         keep.root.record: false
         copy.root.record.fields: true
 
-Now that the record is well-formed, we want to set the record time to be the same of the one given by the source (and stored on the field *tag_timestamp*).
+Now that the record is well-formed, we want to set the record time to be the same of the one given by the source (and stored on the field *tag_sampled_timestamp*).
 
 For this, we use a ``NormalizeFields`` processor.
 
@@ -153,7 +154,7 @@ For this, we use a ``NormalizeFields`` processor.
           documentation: "set record time to tag server generation time"
           configuration:
             conflict.resolution.policy: overwrite_existing
-            record_time: tag_timestamp
+            record_time: tag_sampled_timestamp
 
 Then, the last processor will index our records into elasticsearch
 

@@ -59,11 +59,12 @@ engine:
         kc.worker.tasks.max: 1
         kc.connector.offset.backing.store: memory
         kc.connector.properties: |
-          defaultRefreshPeriodMillis=500
-          dataPublicationPeriodMillis=1000
-          defaultSocketTimeoutMillis=10000
+          session.publicationRate=PT1S
+          connection.socketTimeoutMillis=10000
           server.uri=opc.tcp://sandbox:53530/OPCUA/SimulationServer
-          tags=ns=5;s=Sawtooth1
+          tags.id=ns=5;s=Sawtooth1
+          tags.sampling.rate=PT0.5S
+          tags.stream.mode=SUBSCRIBE
 
   streamConfigurations:
 
@@ -92,7 +93,7 @@ engine:
           documentation: "set record time to tag server generation time"
           configuration:
             conflict.resolution.policy: overwrite_existing
-            record_time: tag_timestamp
+            record_time: tag_sampled_timestamp
         - processor: es_publisher
           component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
