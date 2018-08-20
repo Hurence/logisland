@@ -188,7 +188,9 @@ public class ChronixUpdater implements Runnable {
                 .end(lastTS);
 
         records.stream()
+                .filter(record -> record.getField(FieldDictionary.RECORD_VALUE) != null && record.getField(FieldDictionary.RECORD_VALUE).getRawValue() != null)
                 .map(record -> new Pair<>(record.getTime().getTime(), record.getField(FieldDictionary.RECORD_VALUE).asDouble()))
+                .filter(longDoublePair -> longDoublePair.getSecond() != null && Double.isFinite(longDoublePair.getSecond()))
                 .forEach(pair -> ret.point(pair.getFirst(), pair.getSecond()));
 
 
