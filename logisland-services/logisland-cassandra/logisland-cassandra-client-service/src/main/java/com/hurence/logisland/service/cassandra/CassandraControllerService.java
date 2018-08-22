@@ -21,6 +21,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnStopped;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -47,12 +48,14 @@ public class CassandraControllerService extends AbstractControllerService implem
     private Session session;
     private String keyspace;
     private String table;
-    private Map<String, CassandraType> fieldsToType = new HashMap<String, CassandraType>();
-    private List<String> primaryFields = new ArrayList<String>();
+    Map<String, CassandraType> fieldsToType = new HashMap<String, CassandraType>();
+    List<String> primaryFields = new ArrayList<String>();
     private boolean createSchema = true;
     private CassandraUpdater updater;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private long flushInterval;
     final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(100000);
+    volatile boolean stillSomeRecords = false; // Unit tests only code
 
     protected static final PropertyDescriptor HOSTS = new PropertyDescriptor.Builder()
             .name("cassandra.hosts")
@@ -296,6 +299,10 @@ public class CassandraControllerService extends AbstractControllerService implem
         }
     }
 
+    // Note: we use the @OnDisabled facility here so that unit test can call proper disconnection with
+    // runner.disableControllerService(service); runner has no stopControllerService(service)
+    // This service does not however currently supports disable/enable out of unit test
+    @OnDisabled
     @OnStopped
     public final void stop() {
 
@@ -321,8 +328,8 @@ public class CassandraControllerService extends AbstractControllerService implem
 
         // setup a thread pool of cassandra updaters
         int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
-        long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-        updater = new CassandraUpdater(cluster, session, keyspace, table, queue , batchSize, flushInterval);
+        flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
+        updater = new CassandraUpdater(cluster, session, keyspace, table, queue , batchSize, this, flushInterval);
 
         executorService.execute(updater);
     }
@@ -385,15 +392,47 @@ public class CassandraControllerService extends AbstractControllerService implem
         return false;
     }
 
+    /**
+     * Unit tests only code
+     */
+    public void waitForFlush()
+    {
+        // First wait for empty queue
+        while (!queue.isEmpty())
+        {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                getLogger().error("Interrupted while waiting for cassandra updater flush [step 1]");
+            }
+        }
+
+        // Then wait for all records sent to cassandra
+        while (this.stillSomeRecords)
+        {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                getLogger().error("Interrupted while waiting for cassandra updater flush [step 2]");
+            }
+        }
+    }
+
     @Override
     public void bulkFlush() throws DatastoreClientServiceException {
+
+        // TODO: current bulkPut processor implementation systematically calls bulkFlush. I think it should not otherwise
+        // what's the point in having a dedicated thread for insertion (updater thread)?
+        // If we put some mechanism to wait for flush here, the perf will be impacted. So for test purpose only,
+        // I set the flush mechanism in waitForFlush
     }
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        if (record != null)
+        if (record != null) {
+            stillSomeRecords = true;
             queue.add(record);
-        else
+        } else
             getLogger().debug("Trying to add null record in the queue");
     }
 
