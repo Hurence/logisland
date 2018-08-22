@@ -89,7 +89,11 @@ public class FakeConnector extends SourceConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
-        return Collections.singletonList(Collections.emptyMap());
+        List<Map<String, String>> ret = new ArrayList<>();
+        for (int i = 0; i < maxTasks; i++) {
+           ret.add(Collections.emptyMap());
+        }
+        return ret;
     }
 
     @Override
