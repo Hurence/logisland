@@ -16,9 +16,8 @@
  */
 package com.hurence.logisland.service.cassandra;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.DriverException;
 import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -33,6 +33,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class CassandraUpdater implements Runnable {
 
+    private CassandraControllerService service;
     private final BlockingQueue<Record> records;
     private final int batchSize;
     private final long flushInterval;
@@ -49,9 +50,11 @@ public class CassandraUpdater implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(CassandraUpdater.class.getName() + threadCount);
 
+    private PreparedStatement statement;
+    private BoundStatement boundStatement;
 
     public CassandraUpdater(Cluster cluster, Session session, String keyspace, String table, BlockingQueue<Record> records, int batchSize,
-                            long flushInterval) {
+                            CassandraControllerService service, long flushInterval) {
         this.cluster = cluster;
         this.session = session;
         this.keyspace = keyspace;
@@ -59,7 +62,39 @@ public class CassandraUpdater implements Runnable {
         this.records = records;
         this.batchSize = batchSize;
         this.flushInterval = flushInterval;
+        this.service = service;
         threadCount++;
+
+        prepareStatement();
+    }
+
+    /**
+     * Prepare once for all a bound statement that will be always used: this is faster than constructing and using a
+     * specific string each time.
+     */
+    private void prepareStatement() {
+
+        /**
+         * INSERT INTO keyspace.table (field1, field2) VALUES (?, ?)
+         */
+        StringBuffer sb = new StringBuffer("INSERT INTO " + keyspace + "." + table + " (");
+        StringBuffer questionMarksSb = new StringBuffer();
+        boolean first = true;
+        for (String field : service.fieldsToType.keySet()) {
+            if (first) {
+                first = false;
+            } else
+            {
+                sb.append(", ");
+                questionMarksSb.append(", ");
+            }
+            sb.append(field);
+            questionMarksSb.append("?");
+        }
+        sb.append(") VALUES (").append(questionMarksSb).append(");");
+        String statementString = sb.toString();
+        statement = session.prepare(statementString);
+        boundStatement = new BoundStatement(statement);
     }
 
     void stop()
@@ -69,58 +104,59 @@ public class CassandraUpdater implements Runnable {
 
     @Override
     public void run() {
-        List<String> batchInsertStatements = new ArrayList<String>();
+        List<List<Object>> batchInsertValues = new ArrayList<List<Object>>();
 
         while (!stop) {
-
             try {
 
                 // process record if one
                 try {
-                    Record record = records.take();
+                    Record record = records.poll(100, TimeUnit.MILLISECONDS);
                     if (record != null) {
-                        batchInsertStatements.add(RecordConverter.convertInsert(record, keyspace, table));
+                        batchInsertValues.add(RecordConverter.convertInsert(record, service.fieldsToType));
                         batchedUpdates++;
                     }
                 } catch (InterruptedException e) {
-                    //here we should exit the loop
+                    // Here we should exit the loop
                     logger.warn("Interrupted while waiting", e);
                     break;
                 }
 
                 // If time to do so, insert records into Cassandra
                 long currentTS = System.nanoTime();
+                if (lastTS == 0L) // Insure we wait for the flush interval when first time entering the loop
+                {
+                    lastTS = currentTS;
+                }
                 if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
-                    logger.debug("committing {} records to Cassandra after {} ns", batchedUpdates, (currentTS - lastTS));
-                    executeInserts(batchInsertStatements);
+                    logger.info("committing {} records to Cassandra after {} ns", batchedUpdates, (currentTS - lastTS));
+                    executeInserts(batchInsertValues);
                     lastTS = currentTS;
                     batchedUpdates = 0;
-                    batchInsertStatements.clear();
+                    batchInsertValues.clear();
+                    service.stillSomeRecords = false; // We suppose the unit test code is mono-threaded and never writes more that a batch can handle
                 }
-            } catch(Throwable t)
-            {
+            } catch (Throwable t) {
                 logger.error("Error in cassandra updater: " + t.getMessage());
             }
         }
     }
 
-    private void executeInserts(List<String> insertStatements)
+    private void executeInserts(List<List<Object>> insertValuesList)
     {
-        StringBuffer sb = new StringBuffer();
-        insertStatements.forEach(insertStatement -> {
-            sb.append(insertStatement).append(";\n");
+        insertValuesList.forEach(insertValues -> {
+            // TODO: use debug level
+            logger.info("Cassandra inserting values: " + insertValues);
+            Object[] values = new Object[service.fieldsToType.size()];
+            values = insertValues.toArray(values);
+            try {
+                ResultSet resultSet = session.execute(boundStatement.bind(values));
+                if (!resultSet.wasApplied()) {
+                    logger.error("Error inserting " + insertValues);
+                }
+            } catch(DriverException e) {
+                logger.error("Error inserting " + insertValues + ": " + e.getMessage());
+            }
         });
-
-        String cql = sb.toString();
-
-        // TODO: use debug level
-        logger.info("Cassandra updater executing statement: [" + cql + "]");
-        System.out.println("Cassandra updater executing statement: [" + cql + "]");
-
-        ResultSet resultSet = session.execute(cql);
-        if (resultSet.wasApplied())
-        {
-            logger.error("Error executing statement: [" + cql + "]");
-        }
     }
 }
