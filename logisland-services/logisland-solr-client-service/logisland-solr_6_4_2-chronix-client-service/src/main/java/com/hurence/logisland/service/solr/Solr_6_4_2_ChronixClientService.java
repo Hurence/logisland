@@ -81,28 +81,24 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
             .build();
 
 
-    public static final PropertyDescriptor METRICS_TYPE_MAPPING = new PropertyDescriptor.Builder()
-            .name("metrics.type.mapping")
-            .description("The mapping between record field name and chronix metric type. " +
-                    "This is a comma separated list. E.g. record_value:metric,quality:quality")
+    public static final PropertyDescriptor GROUP_BY = new PropertyDescriptor.Builder()
+            .name("group.by")
+            .description("The field the chunk should be grouped by")
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .defaultValue("")
             .build();
 
 
-
-
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(BATCH_SIZE);
-        props.add(BULK_SIZE);
         props.add(SOLR_CLOUD);
         props.add(SOLR_COLLECTION);
         props.add(SOLR_CONNECTION_STRING);
         props.add(FLUSH_INTERVAL);
-        props.add(METRICS_TYPE_MAPPING);
+        props.add(GROUP_BY);
         return Collections.unmodifiableList(props);
     }
 
@@ -118,15 +114,6 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
                         "Please check your configuration!", e);
             }
         }
-    }
-
-
-    private Map<String, String> createMetricsTypeMapping(ControllerServiceInitializationContext context) {
-        return Arrays.stream(context.getPropertyValue(METRICS_TYPE_MAPPING).asString()
-                .split(","))
-                .filter(StringUtils::isNotBlank)
-                .map(s -> s.split(":"))
-                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
     }
 
     /**
@@ -173,7 +160,9 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
         // setup a thread pool of solr updaters
         int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
         long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-        updater = new ChronixUpdater(solr, queue, createMetricsTypeMapping(context), batchSize, flushInterval);
+        String[] groupBy = context.getPropertyValue(GROUP_BY).asString().split(",");
+        updater = new ChronixUpdater(solr, queue, Arrays.stream(groupBy).filter(StringUtils::isNotBlank).collect(Collectors.toList()),
+                batchSize, flushInterval);
         executorService.execute(updater);
 
     }

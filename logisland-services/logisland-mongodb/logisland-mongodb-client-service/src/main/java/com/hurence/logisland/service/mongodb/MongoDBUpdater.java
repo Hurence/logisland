@@ -17,8 +17,12 @@
 package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
 
 
 /**
@@ -39,6 +44,7 @@ public class MongoDBUpdater implements Runnable {
     private final long flushInterval;
     private volatile int batchedUpdates = 0;
     private volatile long lastTS = 0;
+    private final String bulkMode;
 
     private final MongoDatabase db;
     private final MongoCollection<Document> col;
@@ -52,12 +58,14 @@ public class MongoDBUpdater implements Runnable {
                           MongoCollection<Document> col,
                           BlockingQueue<Record> records,
                           int batchSize,
-                          long flushInterval) {
+                          long flushInterval,
+                          String bulkMode) {
         this.db = db;
         this.col = col;
         this.records = records;
         this.batchSize = batchSize;
         this.flushInterval = flushInterval;
+        this.bulkMode = bulkMode;
         this.lastTS = System.nanoTime(); // far in the future ...
         threadCount++;
     }
@@ -86,16 +94,29 @@ public class MongoDBUpdater implements Runnable {
             if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
                 //use moustache operator to avoid composing strings when not needed
                 logger.debug("committing {} records to Mongo after {} ns", batchedUpdates, (currentTS - lastTS));
-                col.insertMany(batchBuffer);
+
+                if (DatastoreClientService.BULK_MODE_UPSERT.getValue().equals(bulkMode)) {
+
+
+                    ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
+                    col.bulkWrite(batchBuffer.stream().map(document -> new ReplaceOneModel<>(
+                            Filters.eq("_id", document.getString("_id")),
+                            document,
+                            replaceOptions)).collect(Collectors.toList()));
+                } else {
+                    col.insertMany(batchBuffer);
+                }
+
                 lastTS = currentTS;
                 batchBuffer = new ArrayList<>();
                 batchedUpdates = 0;
             }
-
-
-            // Thread.sleep(10);
         }
+
+
+        // Thread.sleep(10);
     }
-
-
 }
+
+
+

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-connectors</artifactId>
-        <version>0.13.0</version>
+        <version>0.14.0</version>
     </parent>
     <packaging>jar</packaging>
 
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.github.Hurence</groupId>
             <artifactId>opc-simple</artifactId>
-            <version>1.2.1</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

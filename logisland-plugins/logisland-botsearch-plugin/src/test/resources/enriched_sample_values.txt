@@ -23,7 +23,7 @@
 2012-10-19T16:12:53.000 UTC	10.112.122.22	POST	TCP_CLIENT_REFRESH_MISS/200	http	195.145.147.146	/idle/OaOmdz02zSLnCW6Z/34	-1	-	0	277	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	195.145.147.146	u1n6hu38e1n6	51.0	9.0	Germany	43		
 2012-10-19T16:12:53.000 UTC	10.112.122.22	POST	TCP_CLIENT_REFRESH_MISS/200	http	195.145.147.146	/idle/ObOmdz02zSLkCW6Z/34	-1	-	0	277	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	195.145.147.146	u1n6hu38e1n6	51.0	9.0	Germany	43		
 2012-10-19T16:12:53.000 UTC	10.112.122.22	POST	TCP_CLIENT_REFRESH_MISS/200	http	195.145.147.146	/idle/ObOmdz02zSLkCW6Z/34	-1	-	0	277	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	195.145.147.146	u1n6hu38e1n6	51.0	9.0	Germany	43
-2012-10-19T16:12:51.000 UTC	10.112.31.174	POST	TCP_CLIENT_REFRESH_MISS/200	http	95.140.225.151	/idle/Cf7maD8spa7BaStZ/1030	-1	-	0	277	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	95.140.225.151	gcpuvp334xv6	51.5	-0.1300048828125	United Kingdom	43		
+2012-10-19T16:12:51.000 UTC	10.112.31.174	POST	TCP_CLIENT_REFRESH_MISS/200	http	95.140.225.151	/idle/Cf7maD8spa7BaStZ/1030	-1	-	0	277	"SHOCKWAVE FLASH" 	false	false	false	false	false	null	95.140.225.151	gcpuvp334xv6	51.5	-0.14.0048828125	United Kingdom	43		
 2012-10-19T16:12:51.500 UTC	10.113.134.177	CONNECT	NONE/503	tunnel	sip.example.com	/	443	-	0	3088	- 	false	false	false	false	false	null	255.255.255.255	null	0.0	0.0	null	43		
 2012-10-19T16:12:51.000 UTC	10.113.134.177	CONNECT	NONE/503	tunnel	sip.example.com	/	443	-	0	3088	- 	false	false	false	false	false	null	255.255.255.255	null	0.0	0.0	null	43		
 2012-10-19T16:12:51.100 UTC	10.113.134.177	CONNECT	NONE/503	tunnel	sipexternal.example.com	/	443	-	0	3112	- 	false	false	false	false	false	null	255.255.255.255	null	0.0	0.0	null	43		

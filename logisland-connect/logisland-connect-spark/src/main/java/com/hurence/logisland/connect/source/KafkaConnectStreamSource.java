@@ -1,28 +1,30 @@
-/*
- * Copyright (C) 2018 Hurence (support@hurence.com)
- *
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.connect.source;
 
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.hurence.logisland.stream.spark.StreamOptions;
 import org.apache.kafka.connect.connector.ConnectorContext;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.json.JsonConverter;
+import org.apache.kafka.connect.runtime.WorkerSourceTaskContext;
 import org.apache.kafka.connect.source.SourceConnector;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
@@ -32,6 +34,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
+import org.apache.spark.sql.execution.streaming.LongOffset;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.Source;
 import org.apache.spark.sql.types.DataTypes;
@@ -41,12 +44,14 @@ import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
+import scala.Tuple2;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Kafka connect to spark sql streaming bridge.
@@ -54,8 +59,6 @@ import java.util.stream.Collectors;
  * @author amarziali
  */
 public class KafkaConnectStreamSource implements Source {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConnectStreamSource.class);
 
     /**
      * The Schema used for this source.
@@ -84,19 +87,22 @@ public class KafkaConnectStreamSource implements Source {
             new StructField("value", DataTypes.BinaryType, false, Metadata.empty())
 
     });
-
-
+    private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConnectStreamSource.class);
     private final SourceConnector connector;
-    private ExecutorService executorService;
-    private final List<SourceThread> sourceThreads = new ArrayList<>();
+    private final List<SourceTask> sourceTasks = new ArrayList<>();
     private final OffsetBackingStore offsetBackingStore;
+    private final OffsetStorageWriter offsetStorageWriter;
     private final AtomicBoolean startWatch = new AtomicBoolean(false);
+    private final String connectorName;
+    private final Multimap<SourceTask, SourceRecord> recordsToCommit = Multimaps.synchronizedListMultimap(
+            Multimaps.newListMultimap(new IdentityHashMap<>(), ArrayList::new));
 
-    private final SharedSourceTaskContext sharedSourceTaskContext;
+
     private final SQLContext sqlContext;
     private final Converter keyConverter;
     private final Converter valueConverter;
     private final int maxTasks;
+    private final AtomicLong counter = new AtomicLong();
 
 
     /**
@@ -122,19 +128,21 @@ public class KafkaConnectStreamSource implements Source {
             this.sqlContext = sqlContext;
             this.maxTasks = maxTasks;
             //instantiate connector
+            this.connectorName = connectorClass.getCanonicalName();
             connector = connectorClass.newInstance();
             //create converters
             this.keyConverter = keyConverter;
             this.valueConverter = valueConverter;
             final Converter internalConverter = createInternalConverter();
 
+
             //Create the connector context
             final ConnectorContext connectorContext = new ConnectorContext() {
                 @Override
                 public void requestTaskReconfiguration() {
                     try {
-                        stopAllThreads();
-                        startAllThreads();
+                        stopAllTasks();
+                        createAndStartAllTasks();
                     } catch (Throwable t) {
                         LOGGER.error("Unable to reconfigure tasks for connector " + connectorName(), t);
                     }
@@ -151,17 +159,16 @@ public class KafkaConnectStreamSource implements Source {
             connector.start(connectorProperties);
             this.offsetBackingStore = offsetBackingStore;
             offsetBackingStore.start();
-            sharedSourceTaskContext = new SharedSourceTaskContext(
-                    new OffsetStorageReaderImpl(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter),
-                    new OffsetStorageWriter(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter));
+            //new OffsetStorageReaderImpl(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter),
 
+            offsetStorageWriter = new OffsetStorageWriter(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter);
             //create and start tasks
-            startAllThreads();
+            createAndStartAllTasks();
         } catch (Exception e) {
             try {
-                stopAllThreads();
+                stopAllTasks();
             } catch (Throwable t) {
-                LOGGER.error("Unable to properly stop threads of connector " + connectorName(), t);
+                LOGGER.error("Unable to properly stop tasks of connector " + connectorName(), t);
             }
             throw new DataException("Unable to create connector " + connectorName(), e);
         }
@@ -169,48 +176,29 @@ public class KafkaConnectStreamSource implements Source {
     }
 
     /**
-     * Create all the {@link Runnable} workers needed to host the source threads.
+     * Create all the {@link Runnable} workers needed to host the source tasks.
      *
      * @return
      * @throws IllegalAccessException if task instantiation fails.
      * @throws InstantiationException if task instantiation fails.
      */
-    private List<SourceThread> createThreadTasks() throws IllegalAccessException, InstantiationException {
-        Class<? extends SourceTask> taskClass = (Class<? extends SourceTask>) connector.taskClass();
-        List<Map<String, String>> configs = connector.taskConfigs(maxTasks);
-        List<SourceThread> ret = new ArrayList<>();
-        LOGGER.info("Creating {} tasks for connector {}", configs.size(), connectorName());
-        for (Map<String, String> conf : configs) {
-            //create the task
-            final SourceThread t = new SourceThread(taskClass, conf, sharedSourceTaskContext);
-            ret.add(t);
-        }
-        return ret;
-    }
-
-    /**
-     * Start all threads.
-     *
-     * @throws IllegalAccessException if task instantiation fails.
-     * @throws InstantiationException if task instantiation fails.
-     */
-    private void startAllThreads() throws IllegalAccessException, InstantiationException {
+    private void createAndStartAllTasks() throws IllegalAccessException, InstantiationException {
         if (!startWatch.compareAndSet(false, true)) {
             throw new IllegalStateException("Connector is already started");
         }
-        //Give a meaningful name to thread belonging to this connector
-        final ThreadGroup threadGroup = new ThreadGroup(connector.getClass().getSimpleName());
-        final List<SourceThread> threadz = createThreadTasks();
-        //Configure a new executor service        ]
-        executorService = Executors.newFixedThreadPool(threadz.size(), r -> {
-            Thread t = new Thread(threadGroup, r);
-            t.setDaemon(true);
-            return t;
-        });
-        threadz.forEach(st -> {
-            executorService.execute(st.start());
-            sourceThreads.add(st);
-        });
+        Class<? extends SourceTask> taskClass = (Class<? extends SourceTask>) connector.taskClass();
+        List<Map<String, String>> configs = connector.taskConfigs(maxTasks);
+        counter.set(0);
+        LOGGER.info("Creating {} tasks for connector {}", configs.size(), connectorName());
+        for (Map<String, String> conf : configs) {
+            //create the task
+            SourceTask task = taskClass.newInstance();
+            task.initialize(new WorkerSourceTaskContext(new OffsetStorageReaderImpl(offsetBackingStore,
+                    connector.getClass().getCanonicalName(), keyConverter, valueConverter)));
+            task.start(conf);
+            sourceTasks.add(task);
+
+        }
     }
 
 
@@ -232,7 +220,7 @@ public class KafkaConnectStreamSource implements Source {
      * @return
      */
     private String connectorName() {
-        return connector.getClass().getCanonicalName();
+        return connectorName;
     }
 
 
@@ -242,42 +230,100 @@ public class KafkaConnectStreamSource implements Source {
     }
 
     @Override
-    public Option<Offset> getOffset() {
-        Optional<Offset> offset = sharedSourceTaskContext.lastOffset();
-        return Option.<Offset>apply(offset.orElse(null));
-
+    public synchronized Option<Offset> getOffset() {
+        return Option.apply(LongOffset.apply(counter.addAndGet(sourceTasks.size())));
     }
 
 
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
-        return sqlContext.createDataFrame(
-                sharedSourceTaskContext.read(start.isDefined() ? Optional.of(start.get()) : Optional.empty(), end)
-                        .stream()
-                        .map(record -> new GenericRow(new Object[]{
-                                record.topic(),
-                                record.kafkaPartition(),
-                                keyConverter.fromConnectData(record.topic(), record.keySchema(), record.key()),
-                                valueConverter.fromConnectData(record.topic(), record.valueSchema(), record.value())
-                        })).collect(Collectors.toList()),
-                DATA_SCHEMA);
+        IdentityHashMap<SourceTask, Void> tasksToPoll = new IdentityHashMap<>();
+        long startOffset = start.isDefined() ? ((LongOffset) start.get()).offset() : 0;
+        long endOffset = ((LongOffset) end).offset();
+        while (startOffset != endOffset) {
+            int idx = (int) (startOffset % sourceTasks.size());
+            tasksToPoll.putIfAbsent(sourceTasks.get(idx), null);
+            startOffset++;
+        }
+        List<Tuple2<SourceTask, SourceRecord>> buffer;
+        final AtomicBoolean inError = new AtomicBoolean();
+        do {
+            buffer = tasksToPoll.keySet().parallelStream().flatMap(sourceTask -> {
+                Stream<SourceRecord> ret = Stream.empty();
+                try {
+                    ret = sourceTask.poll().stream();
+                } catch (InterruptedException ie) {
+                    LOGGER.warn("Task {} interrupted while waiting.", sourceTask.getClass().getCanonicalName());
+                } catch (Exception e) {
+                    LOGGER.error("Error while reading from source task " + sourceTask.getClass().getCanonicalName(), e);
+                    inError.set(true);
+                }
+                return ret.map(sourceRecord -> Tuple2.apply(sourceTask, sourceRecord));
+            }).collect(Collectors.toList());
+        } while (isRunning() && !inError.get() && buffer.isEmpty());
+        //now add to records to commit
+        buffer.forEach(tuple2 -> recordsToCommit.put(tuple2._1(), tuple2._2()));
+        return sqlContext.createDataFrame(buffer.stream()
+                .map(Tuple2::_2)
+                .map(sourceRecord -> {
+                    offsetStorageWriter.offset(sourceRecord.sourcePartition(), sourceRecord.sourceOffset());
+                    return new GenericRow(new Object[]{
+                            sourceRecord.topic(),
+                            sourceRecord.kafkaPartition(),
+                            keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
+                            valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
+                    });
+                }).collect(Collectors.toList()), DATA_SCHEMA);
     }
 
     @Override
     public void commit(Offset end) {
-        sharedSourceTaskContext.commit(end);
+        //first commit all offsets already given
+        Set<SourceTask> keys = new HashSet<>(recordsToCommit.keySet());
+        keys.stream()
+                .flatMap(key -> recordsToCommit.removeAll(key).stream().map(record -> Tuple2.apply(key, record)))
+                .forEach(tuple -> {
+                    try {
+                        offsetStorageWriter.offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
+                        tuple._1().commitRecord(tuple._2());
+                    } catch (Exception e) {
+                        LOGGER.warn("Unable to commit record " + tuple._2(), e);
+                    }
+                });
+        keys.forEach(sourceTask -> {
+            try {
+                sourceTask.commit();
+            } catch (Exception e) {
+                LOGGER.warn("Unable to bulk commit offset for connector " + connectorName, e);
+            }
+        });
+        //now flush offset writer
+        try {
+            if (offsetStorageWriter.beginFlush()) {
+                offsetStorageWriter.doFlush((error, result) -> {
+                    if (error == null) {
+                        LOGGER.debug("Flushing till offset {} with result {}", end, result);
+                    } else {
+                        LOGGER.error("Unable to commit records till source offset " + end, error);
+
+                    }
+                }).get(30, TimeUnit.SECONDS);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Unable to commit records till source offset " + end, e);
+        }
     }
 
     /**
-     * Stops every threads running and serving for this connector.
+     * Stops every tasks running and serving for this connector.
      */
-    private void stopAllThreads() {
-        LOGGER.info("Stopping every threads for connector {}", connectorName());
-        while (!sourceThreads.isEmpty()) {
+    private void stopAllTasks() {
+        LOGGER.info("Stopping every tasks for connector {}", connectorName());
+        while (!sourceTasks.isEmpty()) {
             try {
-                sourceThreads.remove(0).stop();
+                sourceTasks.remove(0).stop();
             } catch (Throwable t) {
-                LOGGER.warn("Error occurring while stopping a thread of connector " + connectorName(), t);
+                LOGGER.warn("Error occurring while stopping a task of connector " + connectorName(), t);
             }
         }
     }
@@ -288,8 +334,7 @@ public class KafkaConnectStreamSource implements Source {
             throw new IllegalStateException("Connector is not started");
         }
         LOGGER.info("Stopping connector {}", connectorName());
-        stopAllThreads();
-        sharedSourceTaskContext.clean();
+        stopAllTasks();
         offsetBackingStore.stop();
         connector.stop();
     }

@@ -1,0 +1,234 @@
+/*
+ *  * Copyright (C) 2018 Hurence (support@hurence.com)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package com.hurence.logisland.serializer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldType;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.StandardRecord;
+import org.apache.avro.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Basic but complete Json {@link RecordSerializer}.
+ * It support nested object and arrays.
+ * <p>
+ * Useful when the input data is coming directly in JSON format from Kafka.
+ *
+ * @author amarziali
+ */
+public class ExtendedJsonSerializer implements RecordSerializer {
+
+
+    private static Logger logger = LoggerFactory.getLogger(com.hurence.logisland.serializer.JsonSerializer.class);
+
+    private final Schema schema;
+
+    public ExtendedJsonSerializer(Schema schema) {
+        this.schema = schema;
+    }
+
+    public ExtendedJsonSerializer() {
+        this.schema = null;
+    }
+
+    public void doFilter(Map<String, Object> map, String name, Object value, Schema schema) {
+        final Schema.Field field = name != null ? schema.getField(name) : null;
+        if (field != null || name == null) {
+            if (value == null) {
+                map.put(name, null);
+            } else {
+                final Schema currentSchema = field != null ? field.schema() :schema;
+                switch (currentSchema.getType()) {
+                    case FLOAT:
+                        map.put(name, Float.parseFloat(value.toString()));
+                        break;
+                    case LONG:
+                        map.put(name, Long.parseLong(value.toString()));
+                        break;
+                    case ARRAY:
+                        final Map<String, Object> tmpMap = new LinkedHashMap<>();
+                        Object[] filtered = ((List<Object>) value).stream().map(o -> {
+                            tmpMap.clear();
+                            doFilter(tmpMap, null, o, currentSchema.getElementType());
+                            return tmpMap.get(null);
+                        }).toArray();
+                        map.put(name, filtered);
+                        break;
+                    case INT:
+                        map.put(name, Integer.parseInt(value.toString()));
+                        break;
+                    case DOUBLE:
+                        map.put(name, Double.parseDouble(value.toString()));
+                        break;
+                    case BOOLEAN:
+                        map.put(name, Boolean.parseBoolean(value.toString()));
+                        break;
+                    case MAP:
+                        Map<String, Object> tmpStruct = new LinkedHashMap<>();
+                        ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpStruct, k, v, currentSchema.getValueType()));
+                        map.put(name, tmpStruct);
+                        break;
+                    case RECORD:
+                        Map<String, Object> tmpRecord = new LinkedHashMap<>();
+                        ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpRecord, k, v, currentSchema));
+                        map.put(name, tmpRecord);
+                        break;
+                    default:
+                        map.put(name, value.toString());
+                        break;
+                }
+            }
+        }
+    }
+
+    public Map<String, Object> filterWithSchema(Map<String, Object> in) {
+        Map<String, Object> ret = in;
+        if (schema != null) {
+            ret = new LinkedHashMap<>();
+            doFilter(ret, null, in, schema);
+            ret =  (Map<String, Object>)ret.getOrDefault(null, Collections.<String, Object>emptyMap());
+        }
+
+        return ret;
+    }
+
+    public ExtendedJsonSerializer(String schemaString) {
+        if (schemaString != null) {
+            final Schema.Parser parser = new Schema.Parser();
+            try {
+                schema = parser.parse(schemaString);
+            } catch (Exception e) {
+                throw new RecordSerializationException("unable to create serializer", e);
+            }
+        } else {
+            schema = null;
+        }
+    }
+
+    @Override
+    public void serialize(OutputStream out, Record record) throws RecordSerializationException {
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+
+            Map<String, Object> json = new LinkedHashMap<>();
+
+            record.getAllFieldsSorted().forEach(f -> json.put(f.getName(), f.getRawValue()));
+            json.put("id", record.getId());
+            if (record.getTime() != null) {
+                json.put("creationDate", record.getTime().getTime());
+            }
+            json.put("type", record.getType());
+
+            mapper.writeValue(out, filterWithSchema(json));
+            out.flush();
+        } catch (IOException e) {
+            logger.warn(e.toString());
+        }
+
+    }
+
+
+    private Field doDeserializeField(String name, Object value) {
+        Field ret;
+        if (value == null) {
+            ret = new Field(name, FieldType.NULL, null);
+        } else if (value.getClass().isArray()) {
+            ArrayList tmp = new ArrayList();
+            for (int i = 0; i < Array.getLength(value); i++) {
+                tmp.add(doDeserializeField("", Array.get(value, i)).getRawValue());
+            }
+            ret = new Field(name, FieldType.ARRAY, tmp);
+        } else if (value instanceof Map) {
+            ret = new Field(name, FieldType.MAP, value);
+        } else {
+            if (value instanceof Boolean) {
+                ret = new Field(name, FieldType.BOOLEAN, value);
+            } else if (value instanceof Float) {
+                ret = new Field(name, FieldType.FLOAT, value);
+            } else if (value instanceof Long) {
+                ret = new Field(name, FieldType.LONG, value);
+            } else if (value instanceof Number) {
+                ret = new Field(name, FieldType.INT, value);
+            } else if (value instanceof Double) {
+                ret = new Field(name, FieldType.DOUBLE, value);
+            } else if (value instanceof Date) {
+                ret = new Field(name, FieldType.LONG, ((Date) value).getTime());
+            } else {
+                ret = new Field(name, FieldType.STRING, value);
+            }
+        }
+        return ret;
+    }
+
+
+    @Override
+    public Record deserialize(InputStream in) throws RecordSerializationException {
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, Object> map = mapper.readValue(in, mapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
+            Record record = new StandardRecord();
+            if (map.containsKey("type")) {
+                record.setType((String) map.get("type"));
+                map.remove("type");
+            }
+            if (map.containsKey("id")) {
+                record.setId((String) map.get("id"));
+                map.remove("id");
+            }
+            if (map.containsKey("creationDate")) {
+                Object tmp = map.get("creationDate");
+                Long date = null;
+                if (tmp instanceof Long) {
+                    date = (Long) tmp;
+                } else if (tmp != null) {
+                    try {
+                        Date d = DateFormat.getInstance().parse(tmp.toString());
+                        if (d != null) {
+                            date = d.getTime();
+                        }
+                    } catch (Exception e) {
+                        //just do not serialize the information for now
+                        logger.warn("Record date cannot be serialized", e);
+                    }
+                }
+                if (date != null) {
+                    record.setTime(date);
+                }
+                map.remove("creationDate");
+            }
+            filterWithSchema(map).forEach((k, v) -> record.setField(doDeserializeField(k, v)));
+            return record;
+
+        } catch (IOException e) {
+            logger.error(e.toString());
+            throw new RecordSerializationException("unable to deserialize record");
+        }
+
+    }
+}

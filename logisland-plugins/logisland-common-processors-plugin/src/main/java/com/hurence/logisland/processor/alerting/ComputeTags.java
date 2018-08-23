@@ -1,13 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +20,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordDictionary;
 import com.hurence.logisland.record.StandardRecord;
@@ -56,8 +56,8 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
         sbActivation
                 .append("function getValue(id) {\n")
                 .append("  var record = cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId(id));\n")
-                .append("  if(record == null) return Double.NaN;\n")
-                .append("  return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n");
+                .append("  if(record === undefined) return Double.NaN;\n")
+                .append("  else return record.getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble(); \n};\n");
 
 
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
@@ -74,6 +74,7 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
                     .append("() { ")
                     .append(value)
                     .append(" }; \n");
+            sb.append("try {\n");
             sb.append("var record_")
                     .append(key)
                     .append(" = new com.hurence.logisland.record.StandardRecord(\"")
@@ -89,10 +90,11 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
                     .append(" com.hurence.logisland.record.FieldType.DOUBLE,")
                     .append(key)
                     .append("());\n");
+            sb.append("}\ncatch(error){}");
 
             dynamicTagValuesMap.put(entry.getKey().getName(), sb.toString());
-       //     System.out.println(sb.toString());
-        //    logger.debug(sb.toString());
+            //     System.out.println(sb.toString());
+            //    logger.debug(sb.toString());
         }
     }
 
@@ -111,12 +113,13 @@ public class ComputeTags extends AbstractNashornSandboxProcessor {
             try {
                 sandbox.eval(entry.getValue());
                 Record cached = (Record) sandbox.get("record_" + entry.getKey());
-                outputRecords.add(cached);
+                if (cached.hasField(FieldDictionary.RECORD_VALUE))
+                    outputRecords.add(cached);
             } catch (ScriptException e) {
                 Record errorRecord = new StandardRecord(RecordDictionary.ERROR)
                         .setId(entry.getKey())
                         .addError("ScriptException", e.getMessage());
-                outputRecords.add(errorRecord);
+                //  outputRecords.add(errorRecord);
                 logger.error(e.toString());
             }
         }

@@ -23,9 +23,7 @@ import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
-import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -62,12 +60,12 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> descriptors = new ArrayList<>();
 
-
         descriptors.add(URI);
         descriptors.add(DATABASE_NAME);
         descriptors.add(COLLECTION_NAME);
         descriptors.add(BATCH_SIZE);
         descriptors.add(BULK_SIZE);
+        descriptors.add(BULK_MODE);
         descriptors.add(FLUSH_INTERVAL);
         descriptors.add(WRITE_CONCERN);
        /* descriptors.add(SSL_CONTEXT_SERVICE);
@@ -76,8 +74,7 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     }
 
 
-
-   // public void init(ControllerServiceInitializationContext context) throws InitializationException {
+    // public void init(ControllerServiceInitializationContext context) throws InitializationException {
 
 
     @Override
@@ -97,7 +94,8 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
         // setup a thread pool of solr updaters
         int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
         long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-        updater = new MongoDBUpdater(db, col, queue , batchSize, flushInterval);
+        String bulkMode = context.getPropertyValue(BULK_MODE).asString();
+        updater = new MongoDBUpdater(db, col, queue, batchSize, flushInterval, bulkMode);
         executorService.execute(updater);
     }
 

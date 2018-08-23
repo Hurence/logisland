@@ -55,7 +55,7 @@ engine:
       documentation: "store an in-memory cache coming from CSV"
       configuration:
         csv.format: excel_fr
-        csv.file.path: "logisland-assembly/target/logisland-0.13.0-bin-hdp2.5/logisland-0.13.0/conf/timeseries-lookup.csv"
+        csv.file.path: "logisland-assembly/target/logisland-0.14.0-bin-hdp2.5/logisland-0.14.0/conf/timeseries-lookup.csv"
         first.line.header: true
         row.key: tagname
         encoding.charset: ISO-8859-1
