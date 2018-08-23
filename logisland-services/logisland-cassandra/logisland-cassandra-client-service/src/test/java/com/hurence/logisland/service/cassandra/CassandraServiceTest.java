@@ -45,14 +45,14 @@ public class CassandraServiceTest {
     // Embedded cassandra server maven plugin instance connect info
 
     // TODO: set back cassandra maven plugin usage
-//    private final static String CASSANDRA_HOST = "localhost";
-//    private final static String CASSANDRA_PORT = "19042";
+    private final static String CASSANDRA_HOST = "localhost";
+    private final static String CASSANDRA_PORT = "19042";
 
     // Use these ones instead if you want to use the "docker cassandra start" instead of embedded cassandra server maven plugin instance
     // Or use "mvn -DfailIfNoTests=false [clean] test -Dtest=CassandraServiceTest" If want to use embedded
     // cassandra server maven plugin running only this test out of the IDE
-    private final static String CASSANDRA_HOST = "172.17.0.4"; // Set the right docker container ip
-    private final static String CASSANDRA_PORT = "9042";
+//    private final static String CASSANDRA_HOST = "172.17.0.4"; // Set the right docker container ip
+//    private final static String CASSANDRA_PORT = "9042";
 
     private final static String TEST_KEYSPACE = "testKeySpace";
     private final static String TEST_TABLE = "testTable";
