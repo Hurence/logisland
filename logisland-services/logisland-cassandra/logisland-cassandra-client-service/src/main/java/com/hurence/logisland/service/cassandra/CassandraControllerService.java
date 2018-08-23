@@ -193,14 +193,12 @@ public class CassandraControllerService extends AbstractControllerService implem
 
         getLogger().info("Creating cassandra schema (keyspace and table) if it does not exist");
 
-        // TODO Use debug level?
-
         /**
          * Create keyspace
          */
 
         String statement = "CREATE KEYSPACE IF NOT EXISTS " + keyspace + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};";
-        getLogger().info(statement);
+        getLogger().debug(statement);
         session.execute(statement);
 
         /**

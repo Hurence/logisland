@@ -29,7 +29,6 @@ import com.hurence.logisland.service.cassandra.RecordConverter.CassandraType;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.joda.time.DateTime;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -231,8 +230,8 @@ public class CassandraServiceTest {
 
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testFloat", FieldType.FLOAT, (float)-4712568.6423844), CassandraType.FLOAT);
-        row.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.9985544221), CassandraType.DOUBLE);
-        row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-542212145454577.2151321145451")), CassandraType.DECIMAL);
+        row.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.31225), CassandraType.DOUBLE);
+        row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-342212145454577.24565")), CassandraType.DECIMAL);
         table4.add(row);
 
         /**
@@ -282,7 +281,7 @@ public class CassandraServiceTest {
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTimestamp", FieldType.STRING, "2011-02-03T04:05:00.000+0000"), CassandraType.TIMESTAMP);
         row.put(new Field("testDate", FieldType.STRING, "2011-02-03"), CassandraType.DATE);
-        row.put(new Field("testTime", FieldType.STRING, "08:12:54.123456789"), CassandraType.TIME);
+        row.put(new Field("testTime", FieldType.STRING, "08:12:54.523456789"), CassandraType.TIME);
         table6.add(row);
 
         Object[][] inputs = {
@@ -300,7 +299,8 @@ public class CassandraServiceTest {
 
     private static void echo(String msg)
     {
-        System.out.println(msg);
+        // Uncomment for debug
+//        System.out.println(msg);
     }
 
     @BeforeClass
@@ -413,20 +413,12 @@ public class CassandraServiceTest {
         {
             Assert.fail("Statement not applied: " + statement);
         }
-        Iterator<Row> iterator = resultSet.iterator();
 
-        // Count and compare number of lines and potentially display them for debug
-        int nRows = 0;
-        while(iterator.hasNext())
-        {
-            Row row = iterator.next();
-            nRows++;
-            echo("Row " + nRows + " : " + row);
-        }
-        assertEquals("Number of found lines in table " + tableName + " is not equal to expected ones", expectedRows.size(), nRows);
+        assertEquals("Number of found lines in table " + tableName + " is not equal to expected ones", expectedRows.size(), resultSet.getAvailableWithoutFetching());
 
         // Now check that lines are all expected ones
-        iterator = resultSet.iterator();
+        Iterator<Row> iterator = resultSet.iterator();
+        int nRows = 0;
         while(iterator.hasNext())
         {
             Row row = iterator.next();
@@ -463,7 +455,7 @@ public class CassandraServiceTest {
                             String expectedString = field.asString();
                             if (!expectedString.equals(actualString))
                             {
-                                throw new Exception("In table " + tableName + ", uuid values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", text values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra text value is " + actualString);
                             }
                             break;
@@ -474,15 +466,10 @@ public class CassandraServiceTest {
                             if (fieldType == FieldType.STRING)
                             {
                                 String expectedDateString = field.asString();
-                                // yyyy-mm-dd (so '2011-02-03')
-                                String[] tokens = expectedDateString.split("-");
-                                if (tokens.length != 3) {
-                                    throw new Exception("Illegal Cassandra date: " + expectedDateString);
-                                }
-                                expectedDate = LocalDate.fromYearMonthDay(
-                                        Integer.parseInt(tokens[0]),
-                                        Integer.parseInt(tokens[1]),
-                                        Integer.parseInt(tokens[2]));
+                                /**
+                                 * yyyy-mm-dd (so '2011-02-03')
+                                 */
+                                expectedDate = RecordConverter.cassandraDateToLocalDate(expectedDateString);
                             } else
                             {
                                 expectedDate = LocalDate.fromDaysSinceEpoch(field.asLong().intValue());
@@ -500,7 +487,16 @@ public class CassandraServiceTest {
                             if (fieldType == FieldType.STRING)
                             {
                                 String expectedTimeString = field.asString();
-                                expectedTime = stringToCassandraTime(expectedTimeString);
+                                /**
+                                 * hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond).
+                                 * So for instance, the following are valid inputs for a time:
+                                 *
+                                 *     '08:12:54'
+                                 *     '08:12:54.123'
+                                 *     '08:12:54.123456'
+                                 *     '08:12:54.123456789'
+                                 */
+                                expectedTime = RecordConverter.cassandraTimeToNanosecondsSinceMidnight(expectedTimeString);
                             } else
                             {
                                 expectedTime = field.asLong();
@@ -519,7 +515,18 @@ public class CassandraServiceTest {
                             if (fieldType == FieldType.STRING)
                             {
                                 String expectedTimestampString = field.asString();
-                                expectedTimestamp = new DateTime(expectedTimestampString).toDate();
+                                /**
+                                 * String that represents an ISO 8601 date. For instance, all of the values below are valid timestamp values for Mar 2, 2011, at 04:05:00 AM, GMT:
+                                 *
+                                 *     1299038700000
+                                 *     '2011-02-03 04:05+0000'
+                                 *     '2011-02-03 04:05:00+0000'
+                                 *     '2011-02-03 04:05:00.000+0000'
+                                 *     '2011-02-03T04:05+0000'
+                                 *     '2011-02-03T04:05:00+0000'
+                                 *     '2011-02-03T04:05:00.000+0000'
+                                 */
+                                expectedTimestamp = RecordConverter.cassandraTimestampToDate(expectedTimestampString);
                             } else
                             {
                                 expectedTimestamp = new Date(field.asLong());
@@ -553,8 +560,8 @@ public class CassandraServiceTest {
                             Integer expectedInteger = field.asInteger();
                             if (!expectedInteger.equals(actualInteger))
                             {
-                                throw new Exception("In table " + tableName + ", integer values for field " + fieldName +
-                                        " differ for expected row: " + expectedRow + ". Cassandra integer value is " + actualInteger);
+                                throw new Exception("In table " + tableName + ", int values for field " + fieldName +
+                                        " differ for expected row: " + expectedRow + ". Cassandra int value is " + actualInteger);
                             }
                             break;
                         case BIGINT:
@@ -562,16 +569,16 @@ public class CassandraServiceTest {
                             Long expectedLong = field.asLong();
                             if (!expectedLong.equals(actualLong))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", bigint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra bigint value is " + actualLong);
                             }
                             break;
                         case VARINT:
                             BigInteger actualBigInteger = actualRow.getVarint(fieldName);
-                            BigInteger expectedBigInteger = new BigInteger(field.asLong().toString());
+                            BigInteger expectedBigInteger = BigInteger.valueOf(field.asLong());
                             if (!expectedBigInteger.equals(actualBigInteger))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", varint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra varint value is " + actualBigInteger);
                             }
                             break;
@@ -580,7 +587,7 @@ public class CassandraServiceTest {
                             Float expectedFloat = field.asFloat();
                             if (!expectedFloat.equals(actualFloat))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", float values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra float value is " + actualFloat);
                             }
                             break;
@@ -589,16 +596,18 @@ public class CassandraServiceTest {
                             Double expectedDouble = field.asDouble();
                             if (!expectedDouble.equals(actualDouble))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", double values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra double value is " + actualDouble);
                             }
                             break;
                         case DECIMAL:
                             BigDecimal actualBigDecimal = actualRow.getDecimal(fieldName);
-                            BigDecimal expectedBigDecimal = new BigDecimal(field.asDouble().toString());
+                            BigDecimal expectedBigDecimal = BigDecimal.valueOf(field.asDouble());
                             if (!expectedBigDecimal.equals(actualBigDecimal))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                echo("actualBigDecimal="+actualBigDecimal);
+                                echo("expectedBigDecimal="+expectedBigDecimal);
+                                throw new Exception("In table " + tableName + ", decimal values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra decimal value is " + actualBigDecimal);
                             }
                             break;
@@ -607,7 +616,7 @@ public class CassandraServiceTest {
                             Boolean expectedBoolean = field.asBoolean();
                             if (!expectedBoolean.equals(actualBoolean))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", boolean values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra boolean value is " + actualBoolean);
                             }
                             break;
@@ -618,7 +627,7 @@ public class CassandraServiceTest {
                             ByteBuffer expectedByteBuffer = ByteBuffer.wrap(bytes);
                             if (!expectedByteBuffer.equals(actualByteBuffer))
                             {
-                                throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
+                                throw new Exception("In table " + tableName + ", blob values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra blob value is " + actualByteBuffer);
                             }
                             break;
@@ -633,42 +642,10 @@ public class CassandraServiceTest {
             } catch(Exception e)
             {
                 // Does not match this row, let's try the next one
-                echo("Not this row: " + expectedRow);
+                echo("Not this row: " + e.getMessage());
             }
         }
 
         Assert.fail("Unable to find this row in the expected ones: " + actualRow);
     }
-
-    private Long stringToCassandraTime(String expectedTimeString) {
-
-        /**
-         * hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond).
-         * So for instance, the following are valid inputs for a time:
-         *
-         *     '08:12:54'
-         *     '08:12:54.123'
-         *     '08:12:54.123456'
-         *     '08:12:54.123456789'
-         */
-
-        // TODO: to be finished
-
-        int dotIndex = expectedTimeString.indexOf(".");
-        if (dotIndex != -1)
-        {
-            long firstPart = hhmmssToCassandraTime(expectedTimeString.substring(0, dotIndex));
-            return firstPart;
-        } else
-        {
-            return hhmmssToCassandraTime(expectedTimeString);
-        }
-    }
-
-    private Long hhmmssToCassandraTime(String expectedTimeString) {
-        // TODO: to be finished
-        return null;
-    }
-
-
 }

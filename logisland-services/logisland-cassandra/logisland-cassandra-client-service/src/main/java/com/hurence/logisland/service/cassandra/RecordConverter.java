@@ -20,6 +20,7 @@ import com.datastax.driver.core.LocalDate;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,18 +229,7 @@ public class RecordConverter {
         FieldType fieldType = field.getType();
         if (fieldType == FieldType.STRING)
         {
-            /**
-             * string that represents an ISO 8601 date. For instance, all of the values below are valid timestamp values for Mar 2, 2011, at 04:05:00 AM, GMT:
-             *
-             *     1299038700000
-             *     '2011-02-03 04:05+0000'
-             *     '2011-02-03 04:05:00+0000'
-             *     '2011-02-03 04:05:00.000+0000'
-             *     '2011-02-03T04:05+0000'
-             *     '2011-02-03T04:05:00+0000'
-             *     '2011-02-03T04:05:00.000+0000'
-             */
-            return field.asString();
+            return cassandraTimestampToDate(field.asString());
         } else
         {
             // type are encoded as 64-bit signed integers representing a number of milliseconds since the standard base
@@ -248,25 +238,115 @@ public class RecordConverter {
         }
     }
 
+    public static Date cassandraTimestampToDate(String timestamp)
+    {
+        /**
+         * String that represents an ISO 8601 date. For instance, all of the values below are valid timestamp values for Mar 2, 2011, at 04:05:00 AM, GMT:
+         *
+         *     1299038700000
+         *     '2011-02-03 04:05+0000'
+         *     '2011-02-03 04:05:00+0000'
+         *     '2011-02-03 04:05:00.000+0000'
+         *     '2011-02-03T04:05+0000'
+         *     '2011-02-03T04:05:00+0000'
+         *     '2011-02-03T04:05:00.000+0000'
+         */
+        return new DateTime(timestamp).toDate(); // Default joda date is ISO 8601
+    }
+
     private static Object convertToCassandraTimeValue(Field field) throws Exception {
         // Times may be expressed either in integer or string form:
         // see http://cassandra.apache.org/doc/latest/cql/types.html#times
         FieldType fieldType = field.getType();
         if (fieldType == FieldType.STRING)
         {
-            /**
-             *  the format should be hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond). So for instance, the following are valid inputs for a time:
-             *
-             *     '08:12:54'
-             *     '08:12:54.123'
-             *     '08:12:54.123456'
-             *     '08:12:54.123456789'
-             */
-            return field.asString();
+            return cassandraTimeToNanosecondsSinceMidnight(field.asString());
         } else
         {
             // type are encoded as 64-bit signed integers representing the number of nanoseconds since midnight.
             return field.asLong();
+        }
+    }
+
+    public static long cassandraTimeToNanosecondsSinceMidnight(String time) throws Exception {
+        /**
+         *  The format should be hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond). So for instance, the following are valid inputs for a time:
+         *
+         *     '08:12:54'
+         *     '08:12:54.123'
+         *     '08:12:54.123456'
+         *     '08:12:54.123456789'
+         */
+
+        if (time == null)
+            throw new Exception("Null string cassandra time");
+
+        int dotIndex = time.indexOf(".");
+
+        if ( (dotIndex == 0) || (dotIndex == (time.length() -1)) )
+            throw new Exception("Bad string cassandra time format: " + time);
+        if (dotIndex != -1)
+        {
+            long firstPart = hhMmSsToNanosecondSinceMidnight(time.substring(0, dotIndex));
+            return firstPart + parseTimeDecimals(time.substring(dotIndex+1));
+        } else
+        {
+            return hhMmSsToNanosecondSinceMidnight(time);
+        }
+    }
+
+    /**
+     * Transforms fffffffff in hh:mm:ss[.fffffffff] in 0 or 1 (rounding) nanoseconds
+     * @param decimals
+     * @return
+     */
+    private static long parseTimeDecimals(String decimals) throws Exception {
+
+        if (decimals == null)
+            throw new Exception("Null string cassandra time decimal part");
+
+        Float nanoseconds;
+        try {
+            nanoseconds = Float.parseFloat("0." + decimals);
+            return Math.round(nanoseconds);
+        } catch(NumberFormatException e)
+        {
+            throw new Exception("Bad string cassandra time decimals format: " + decimals + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Transforms hh:mm:ss into number of nanoseconds since midnight
+     * @param time
+     * @return
+     */
+    private static long hhMmSsToNanosecondSinceMidnight(String time) throws Exception {
+
+        if (time == null)
+            throw new Exception("Null string cassandra time");
+
+        // hh:mm:ss (so '08:12:54')
+        String[] tokens = time.split(":");
+        if (tokens.length != 3) {
+            throw new Exception("Bad string cassandra time format: " + time);
+        }
+
+        try {
+            long hours = (long) Integer.parseInt(tokens[0]);
+            if ( (hours < 0) || (hours > 23) )
+                throw new Exception("Bad string cassandra time format: " + time + ": bad hours number");
+            long minutes = (long) Integer.parseInt(tokens[1]);
+            if ( (minutes < 0) || (minutes > 59) )
+                throw new Exception("Bad string cassandra time format: " + time + ": bad minutes number");
+            long seconds = (long) Integer.parseInt(tokens[2]);
+            if ( (seconds < 0) || (seconds > 59) )
+                throw new Exception("Bad string cassandra time format: " + time + ": bad seconds number");
+
+            return hours * 3600000000000L + minutes * 60000000000L + seconds * 1000000000L;
+
+        } catch(NumberFormatException e)
+        {
+            throw new Exception("Bad string cassandra time format: " + time + ": " + e.getMessage());
         }
     }
 
@@ -276,11 +356,26 @@ public class RecordConverter {
         FieldType fieldType = field.getType();
         if (fieldType == FieldType.STRING)
         {
-            return field.asString(); // the format should be yyyy-mm-dd (so '2011-02-03' for instance).
+            return cassandraDateToLocalDate(field.asString());
         } else
         {
             return LocalDate.fromDaysSinceEpoch(field.asLong().intValue()); // date type are encoded as 32-bit unsigned integers representing a number of days with “the epoch”
         }
+    }
+
+    public static LocalDate cassandraDateToLocalDate(String date) throws Exception {
+        /**
+         * The format should be yyyy-mm-dd (so '2011-02-03' for instance).
+         */
+
+        String[] tokens = date.split("-");
+        if (tokens.length != 3) {
+            throw new Exception("Illegal Cassandra date: " + date + " : expecting cassandra string date format yyyy-mm-dd");
+        }
+        return LocalDate.fromYearMonthDay(
+                Integer.parseInt(tokens[0]),
+                Integer.parseInt(tokens[1]),
+                Integer.parseInt(tokens[2]));
     }
 
     private static Object convertToCassandraTextValue(Field field) throws Exception {

@@ -129,7 +129,7 @@ public class CassandraUpdater implements Runnable {
                     lastTS = currentTS;
                 }
                 if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
-                    logger.info("committing {} records to Cassandra after {} ns", batchedUpdates, (currentTS - lastTS));
+                    logger.debug("committing {} records to Cassandra after {} ns", batchedUpdates, (currentTS - lastTS));
                     executeInserts(batchInsertValues);
                     lastTS = currentTS;
                     batchedUpdates = 0;
@@ -145,8 +145,7 @@ public class CassandraUpdater implements Runnable {
     private void executeInserts(List<List<Object>> insertValuesList)
     {
         insertValuesList.forEach(insertValues -> {
-            // TODO: use debug level
-            logger.info("Cassandra inserting values: " + insertValues);
+            //logger.debug("Cassandra inserting values: " + insertValues);
             Object[] values = new Object[service.fieldsToType.size()];
             values = insertValues.toArray(values);
             try {
