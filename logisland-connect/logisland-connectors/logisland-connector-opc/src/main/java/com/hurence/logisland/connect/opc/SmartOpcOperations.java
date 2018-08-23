@@ -62,7 +62,12 @@ public class SmartOpcOperations<S extends ConnectionProfile<S>, T extends Sessio
      */
     public synchronized boolean resetStale() {
         awaitConnected();
-        return stale.getAndSet(false);
+        return  stale.getAndSet(false);
+    }
+
+    @Override
+    public Collection<OpcObjectInfo> fetchNextTreeLevel(String rootTagId) {
+        return delegate.fetchNextTreeLevel(rootTagId);
     }
 
     @Override
