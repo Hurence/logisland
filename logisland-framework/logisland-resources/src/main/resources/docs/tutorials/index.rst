@@ -34,6 +34,7 @@ Contents:
    indexing-netflow-events
    indexing-network-packets
    generate_unique_ids
+   index-jms-messages
    index-blockchain-transactions
    index-excel-spreadsheets
    mqtt-to-historian

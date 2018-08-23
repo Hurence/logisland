@@ -51,6 +51,8 @@ Please refer to the following table for the details:
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
 | Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | -DwithConnectBlockchain      |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
+| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | None (Built in)              |
++--------------------------+----------------------------------------------------------------------------------+------------------------------+
 
 
 Configuring
