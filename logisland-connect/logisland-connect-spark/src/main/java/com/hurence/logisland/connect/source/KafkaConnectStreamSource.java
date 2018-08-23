@@ -16,6 +16,8 @@
 package com.hurence.logisland.connect.source;
 
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.hurence.logisland.stream.spark.StreamOptions;
 import org.apache.kafka.connect.connector.ConnectorContext;
 import org.apache.kafka.connect.errors.DataException;
@@ -42,12 +44,14 @@ import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
+import scala.Tuple2;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Kafka connect to spark sql streaming bridge.
@@ -89,6 +93,9 @@ public class KafkaConnectStreamSource implements Source {
     private final OffsetBackingStore offsetBackingStore;
     private final OffsetStorageWriter offsetStorageWriter;
     private final AtomicBoolean startWatch = new AtomicBoolean(false);
+    private final String connectorName;
+    private final Multimap<SourceTask, SourceRecord> recordsToCommit = Multimaps.synchronizedListMultimap(
+            Multimaps.newListMultimap(new IdentityHashMap<>(), ArrayList::new));
 
 
     private final SQLContext sqlContext;
@@ -121,6 +128,7 @@ public class KafkaConnectStreamSource implements Source {
             this.sqlContext = sqlContext;
             this.maxTasks = maxTasks;
             //instantiate connector
+            this.connectorName = connectorClass.getCanonicalName();
             connector = connectorClass.newInstance();
             //create converters
             this.keyConverter = keyConverter;
@@ -175,6 +183,9 @@ public class KafkaConnectStreamSource implements Source {
      * @throws InstantiationException if task instantiation fails.
      */
     private void createAndStartAllTasks() throws IllegalAccessException, InstantiationException {
+        if (!startWatch.compareAndSet(false, true)) {
+            throw new IllegalStateException("Connector is already started");
+        }
         Class<? extends SourceTask> taskClass = (Class<? extends SourceTask>) connector.taskClass();
         List<Map<String, String>> configs = connector.taskConfigs(maxTasks);
         counter.set(0);
@@ -209,7 +220,7 @@ public class KafkaConnectStreamSource implements Source {
      * @return
      */
     private String connectorName() {
-        return connector.getClass().getCanonicalName();
+        return connectorName;
     }
 
 
@@ -230,18 +241,31 @@ public class KafkaConnectStreamSource implements Source {
         long startOffset = start.isDefined() ? ((LongOffset) start.get()).offset() : 0;
         long endOffset = ((LongOffset) end).offset();
         while (startOffset != endOffset) {
-            tasksToPoll.putIfAbsent(sourceTasks.get((int) (startOffset % sourceTasks.size())), null);
+            int idx = (int) (startOffset % sourceTasks.size());
+            tasksToPoll.putIfAbsent(sourceTasks.get(idx), null);
             startOffset++;
         }
-        return sqlContext.createDataFrame(
-                tasksToPoll.keySet().parallelStream().flatMap(sourceTask -> {
-                    try {
-                        return sourceTask.poll().stream();
-                    } catch (Exception e) {
-                        LOGGER.warn("Error while reading from source task " + sourceTask.getClass().getCanonicalName(), e);
-                    }
-                    return Collections.<SourceRecord>emptyList().stream();
-                }).map(sourceRecord -> {
+        List<Tuple2<SourceTask, SourceRecord>> buffer;
+        final AtomicBoolean inError = new AtomicBoolean();
+        do {
+            buffer = tasksToPoll.keySet().parallelStream().flatMap(sourceTask -> {
+                Stream<SourceRecord> ret = Stream.empty();
+                try {
+                    ret = sourceTask.poll().stream();
+                } catch (InterruptedException ie) {
+                    LOGGER.warn("Task {} interrupted while waiting.", sourceTask.getClass().getCanonicalName());
+                } catch (Exception e) {
+                    LOGGER.error("Error while reading from source task " + sourceTask.getClass().getCanonicalName(), e);
+                    inError.set(true);
+                }
+                return ret.map(sourceRecord -> Tuple2.apply(sourceTask, sourceRecord));
+            }).collect(Collectors.toList());
+        } while (isRunning() && !inError.get() && buffer.isEmpty());
+        //now add to records to commit
+        buffer.forEach(tuple2 -> recordsToCommit.put(tuple2._1(), tuple2._2()));
+        return sqlContext.createDataFrame(buffer.stream()
+                .map(Tuple2::_2)
+                .map(sourceRecord -> {
                     offsetStorageWriter.offset(sourceRecord.sourcePartition(), sourceRecord.sourceOffset());
                     return new GenericRow(new Object[]{
                             sourceRecord.topic(),
@@ -254,6 +278,26 @@ public class KafkaConnectStreamSource implements Source {
 
     @Override
     public void commit(Offset end) {
+        //first commit all offsets already given
+        Set<SourceTask> keys = new HashSet<>(recordsToCommit.keySet());
+        keys.stream()
+                .flatMap(key -> recordsToCommit.removeAll(key).stream().map(record -> Tuple2.apply(key, record)))
+                .forEach(tuple -> {
+                    try {
+                        offsetStorageWriter.offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
+                        tuple._1().commitRecord(tuple._2());
+                    } catch (Exception e) {
+                        LOGGER.warn("Unable to commit record " + tuple._2(), e);
+                    }
+                });
+        keys.forEach(sourceTask -> {
+            try {
+                sourceTask.commit();
+            } catch (Exception e) {
+                LOGGER.warn("Unable to bulk commit offset for connector " + connectorName, e);
+            }
+        });
+        //now flush offset writer
         try {
             if (offsetStorageWriter.beginFlush()) {
                 offsetStorageWriter.doFlush((error, result) -> {
