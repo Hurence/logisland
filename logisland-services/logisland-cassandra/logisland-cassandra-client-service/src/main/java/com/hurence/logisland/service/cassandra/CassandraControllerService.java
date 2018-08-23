@@ -51,6 +51,8 @@ public class CassandraControllerService extends AbstractControllerService implem
     Map<String, CassandraType> fieldsToType = new HashMap<String, CassandraType>();
     List<String> primaryFields = new ArrayList<String>();
     private boolean createSchema = true;
+    private boolean ssl = false;
+    private boolean credentials = false;
     private CassandraUpdater updater;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private long flushInterval;
@@ -119,6 +121,38 @@ public class CassandraControllerService extends AbstractControllerService implem
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
+    protected static final PropertyDescriptor WITH_SSL = new PropertyDescriptor.Builder()
+            .name("cassandra.with-ssl")
+            .displayName("Use SSL.")
+            .description("If this property is true, use SSL. Default is no SSL (false).")
+            .required(false)
+            .defaultValue("false")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
+    protected static final PropertyDescriptor WITH_CREDENTIALS = new PropertyDescriptor.Builder()
+            .name("cassandra.with-credentials")
+            .displayName("Use credentials.")
+            .description("If this property is true, use credentials. Default is no credentials (false).")
+            .required(false)
+            .defaultValue("false")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .build();
+
+    protected static final PropertyDescriptor CREDENTIALS_USER = new PropertyDescriptor.Builder()
+            .name("cassandra.credentials.user")
+            .displayName("User name.")
+            .description("The user name to use for authentication. " + WITH_CREDENTIALS.getName() + " must be true for that property to be used.")
+            .required(false)
+            .build();
+
+    protected static final PropertyDescriptor CREDENTIALS_PASSWORD = new PropertyDescriptor.Builder()
+            .name("cassandra.credentials.password")
+            .displayName("User password.")
+            .description("The user password to use for authentication. " + WITH_CREDENTIALS.getName() + " must be true for that property to be used.")
+            .required(false)
+            .build();
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -130,6 +164,10 @@ public class CassandraControllerService extends AbstractControllerService implem
         descriptors.add(TABLE_FIELDS);
         descriptors.add(TABLE_PRIMARY_KEY);
         descriptors.add(CREATE_SCHEMA);
+        descriptors.add(WITH_SSL);
+        descriptors.add(WITH_CREDENTIALS);
+        descriptors.add(CREDENTIALS_USER);
+        descriptors.add(CREDENTIALS_PASSWORD);
         descriptors.add(BATCH_SIZE);
         descriptors.add(BULK_SIZE);
         descriptors.add(FLUSH_INTERVAL);
@@ -154,14 +192,58 @@ public class CassandraControllerService extends AbstractControllerService implem
             hosts.add(host);
         }
 
+        // Use SSL?
+        if (context.getPropertyValue(WITH_SSL).isSet())
+            ssl = context.getPropertyValue(WITH_SSL).asBoolean();
+        if (ssl)
+        {
+            builder.withSSL();
+        }
+
+        // Use credentials?
+        if (context.getPropertyValue(WITH_CREDENTIALS).isSet())
+            credentials = context.getPropertyValue(WITH_CREDENTIALS).asBoolean();
+        String userName = "";
+        if (credentials)
+        {
+            // User name
+            if (!context.getPropertyValue(CREDENTIALS_USER).isSet())
+            {
+                throw new InitializationException("Credentials are enabled but user name is null");
+            }
+            userName = context.getPropertyValue(CREDENTIALS_USER).asString();
+            if (userName.length() == 0)
+            {
+                throw new InitializationException("Credentials are enabled but user name is empty");
+            }
+
+            // User password
+            if (!context.getPropertyValue(CREDENTIALS_PASSWORD).isSet())
+            {
+                throw new InitializationException("Credentials are enabled but user password is null");
+            }
+            String userPassword = context.getPropertyValue(CREDENTIALS_PASSWORD).asString();
+            if (userPassword.length() == 0)
+            {
+                throw new InitializationException("Credentials are enabled but user password is empty");
+            }
+            builder.withCredentials(userName, userPassword);
+        }
+
         // Port
         int port = context.getPropertyValue(PORT).asInteger();
         builder.withPort(port);
 
-        getLogger().info("Establishing Cassandra connection to hosts " + hosts + " on port " + port);
+        String credDetails = "credentials=no";
+        if (credentials)
+        {
+            credDetails = "credentials=" + userName;
+        }
+        getLogger().info("Establishing Cassandra connection to hosts " + hosts + " on port " + port
+                + " ssl=" + ssl + " " + credDetails);
 
+        // Connect
         cluster = builder.build();
-
         session = cluster.connect();
 
         getLogger().info("Connected to Cassandra");
@@ -174,7 +256,9 @@ public class CassandraControllerService extends AbstractControllerService implem
         table = context.getPropertyValue(TABLE).asString();
         getTableFields(context.getPropertyValue(TABLE_FIELDS).asString());
         getTablePrimaryKey(context.getPropertyValue(TABLE_PRIMARY_KEY).asString());
-        createSchema = context.getPropertyValue(CREATE_SCHEMA).asBoolean();
+
+        if (context.getPropertyValue(CREATE_SCHEMA).isSet())
+            createSchema = context.getPropertyValue(CREATE_SCHEMA).asBoolean();
 
         if (createSchema)
         {
