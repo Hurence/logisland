@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark.structured.provider
 
 import java.io.{File, IOException}
@@ -32,6 +32,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
+import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter}
 import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 
 class KafkaStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
@@ -131,18 +132,14 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       *
       * @param spark
       * @param streamContext
-      * @return
+      * @return DataFrame currently loaded
       */
     override def read(spark: SparkSession, streamContext: StreamContext) = {
-
-
-        import spark.implicits._
         implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
+        import spark.implicits._
 
         logger.info(s"starting Kafka direct stream on topics $inputTopics from $kafkaOffset offsets")
-        val df = spark
-            .readStream
+        val df = spark.readStream
             .format("kafka")
             .option("kafka.bootstrap.servers", brokerList)
             .option("subscribe", inputTopics.mkString(","))
@@ -219,7 +216,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], streamContext: StreamContext) = {
+    override def write(df: Dataset[Record], streamContext: StreamContext) : DataStreamWriter[_] = {
         implicit val myObjEncoder = org.apache.spark.sql.Encoders.tuple(Encoders.BINARY, Encoders.BINARY)
 
         //val sender = KafkaSink(kafkaSinkParams)
@@ -229,7 +226,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
             .format("com.hurence.logisland.stream.spark.structured.provider.KafkaStreamWriterProvider")
             .options(kafkaSinkParams.mapValues(value => value.toString))
             .option("checkpointLocation", createTempDir(namePrefix = s"temporary").getCanonicalPath)
-            .start(outputTopics.mkString(","))
+            .option("path", outputTopics.mkString(","))
     }
 
     private def getOrElse[T](record: Record, field: String, defaultValue: T): T = {

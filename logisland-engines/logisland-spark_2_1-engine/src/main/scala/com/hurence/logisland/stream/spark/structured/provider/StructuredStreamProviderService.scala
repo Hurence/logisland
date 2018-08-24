@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark.structured.provider
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
@@ -26,6 +26,7 @@ import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
+import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
@@ -67,7 +68,7 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    protected def write(df: Dataset[Record], streamContext: StreamContext)
+    protected def write(df: Dataset[Record], streamContext: StreamContext): DataStreamWriter[_]
 
     /**
       *
@@ -180,7 +181,8 @@ trait StructuredStreamProviderService extends ControllerService {
         val df2 = df.
             mapPartitions(record =>
                 record.map(record => serializeRecords(serializer, keySerializer, record)))
-        write(df2, streamContext)
+        write(df2, streamContext).queryName(streamContext.getIdentifier).start()
+
 
 
     }

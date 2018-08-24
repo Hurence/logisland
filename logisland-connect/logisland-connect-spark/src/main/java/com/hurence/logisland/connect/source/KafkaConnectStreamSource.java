@@ -16,8 +16,6 @@
 package com.hurence.logisland.connect.source;
 
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.hurence.logisland.stream.spark.StreamOptions;
 import org.apache.kafka.connect.connector.ConnectorContext;
 import org.apache.kafka.connect.errors.DataException;
@@ -36,6 +34,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 import org.apache.spark.sql.execution.streaming.Offset;
+import org.apache.spark.sql.execution.streaming.SerializedOffset;
 import org.apache.spark.sql.execution.streaming.Source;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
@@ -94,15 +93,16 @@ public class KafkaConnectStreamSource implements Source {
     private final OffsetStorageWriter offsetStorageWriter;
     private final AtomicBoolean startWatch = new AtomicBoolean(false);
     private final String connectorName;
-    private final Multimap<SourceTask, SourceRecord> recordsToCommit = Multimaps.synchronizedListMultimap(
-            Multimaps.newListMultimap(new IdentityHashMap<>(), ArrayList::new));
-
+    private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> bufferedRecords =
+            Collections.synchronizedSortedMap(new TreeMap<>());
+    private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> uncommittedRecords =
+            Collections.synchronizedSortedMap(new TreeMap<>());
 
     private final SQLContext sqlContext;
     private final Converter keyConverter;
     private final Converter valueConverter;
     private final int maxTasks;
-    private final AtomicLong counter = new AtomicLong();
+    private volatile long counter = 0;
 
 
     /**
@@ -188,7 +188,7 @@ public class KafkaConnectStreamSource implements Source {
         }
         Class<? extends SourceTask> taskClass = (Class<? extends SourceTask>) connector.taskClass();
         List<Map<String, String>> configs = connector.taskConfigs(maxTasks);
-        counter.set(0);
+        counter = 0;
         LOGGER.info("Creating {} tasks for connector {}", configs.size(), connectorName());
         for (Map<String, String> conf : configs) {
             //create the task
@@ -231,66 +231,80 @@ public class KafkaConnectStreamSource implements Source {
 
     @Override
     public synchronized Option<Offset> getOffset() {
-        return Option.apply(LongOffset.apply(counter.addAndGet(sourceTasks.size())));
-    }
-
-
-    @Override
-    public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
-        IdentityHashMap<SourceTask, Void> tasksToPoll = new IdentityHashMap<>();
-        long startOffset = start.isDefined() ? ((LongOffset) start.get()).offset() : 0;
-        long endOffset = ((LongOffset) end).offset();
-        while (startOffset != endOffset) {
-            int idx = (int) (startOffset % sourceTasks.size());
-            tasksToPoll.putIfAbsent(sourceTasks.get(idx), null);
-            startOffset++;
+        if (!uncommittedRecords.isEmpty()) {
+            return Option.apply(SerializedOffset.apply(Long.toString(counter++)));
         }
-        List<Tuple2<SourceTask, SourceRecord>> buffer;
-        final AtomicBoolean inError = new AtomicBoolean();
-        do {
-            buffer = tasksToPoll.keySet().parallelStream().flatMap(sourceTask -> {
+        if (bufferedRecords.isEmpty()) {
+
+            List<Tuple2<SourceTask, SourceRecord>> buffer = sourceTasks.parallelStream().flatMap(sourceTask -> {
                 Stream<SourceRecord> ret = Stream.empty();
                 try {
                     ret = sourceTask.poll().stream();
                 } catch (InterruptedException ie) {
                     LOGGER.warn("Task {} interrupted while waiting.", sourceTask.getClass().getCanonicalName());
-                } catch (Exception e) {
-                    LOGGER.error("Error while reading from source task " + sourceTask.getClass().getCanonicalName(), e);
-                    inError.set(true);
                 }
                 return ret.map(sourceRecord -> Tuple2.apply(sourceTask, sourceRecord));
             }).collect(Collectors.toList());
-        } while (isRunning() && !inError.get() && buffer.isEmpty());
-        //now add to records to commit
-        buffer.forEach(tuple2 -> recordsToCommit.put(tuple2._1(), tuple2._2()));
-        return sqlContext.createDataFrame(buffer.stream()
-                .map(Tuple2::_2)
-                .map(sourceRecord -> {
-                    offsetStorageWriter.offset(sourceRecord.sourcePartition(), sourceRecord.sourceOffset());
-                    return new GenericRow(new Object[]{
-                            sourceRecord.topic(),
-                            sourceRecord.kafkaPartition(),
-                            keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
-                            valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
-                    });
-                }).collect(Collectors.toList()), DATA_SCHEMA);
+            if (!buffer.isEmpty()) {
+                LongOffset nextOffset = LongOffset.apply(counter++);
+                bufferedRecords.put(nextOffset.offset(), buffer);
+            }
+        }
+        if (!bufferedRecords.isEmpty()) {
+            return Option.apply(SerializedOffset.apply(bufferedRecords.lastKey().toString()));
+        }
+        return Option.empty();
+    }
+
+
+    @Override
+    public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
+
+        Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
+                !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
+
+
+        return sqlContext.createDataFrame(
+                bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1).keySet().stream()
+                        .flatMap(offset -> {
+                            List<Tuple2<SourceTask, SourceRecord>> srl = bufferedRecords.remove(offset);
+                            if (srl != null) {
+                                uncommittedRecords.put(offset, srl);
+                                return srl.stream();
+                            }
+                            return Stream.empty();
+                        })
+                        .map(Tuple2::_2)
+                        .map(sourceRecord -> new GenericRow(new Object[]{
+                                sourceRecord.topic(),
+                                sourceRecord.kafkaPartition(),
+                                keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
+                                valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
+                        }))
+                        .collect(Collectors.toList()), DATA_SCHEMA);
+
     }
 
     @Override
     public void commit(Offset end) {
+        if (uncommittedRecords.isEmpty()) {
+            return;
+        }
         //first commit all offsets already given
-        Set<SourceTask> keys = new HashSet<>(recordsToCommit.keySet());
-        keys.stream()
-                .flatMap(key -> recordsToCommit.removeAll(key).stream().map(record -> Tuple2.apply(key, record)))
-                .forEach(tuple -> {
-                    try {
-                        offsetStorageWriter.offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
-                        tuple._1().commitRecord(tuple._2());
-                    } catch (Exception e) {
-                        LOGGER.warn("Unable to commit record " + tuple._2(), e);
-                    }
-                });
-        keys.forEach(sourceTask -> {
+        List<Tuple2<SourceTask, SourceRecord>> recordsToCommit =
+                uncommittedRecords.subMap(uncommittedRecords.firstKey(), Long.parseLong(end.json()) + 1).keySet().stream()
+                        .flatMap(key -> uncommittedRecords.remove(key).stream())
+                        .collect(Collectors.toList());
+
+        recordsToCommit.forEach(tuple -> {
+            try {
+                offsetStorageWriter.offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
+                tuple._1().commitRecord(tuple._2());
+            } catch (Exception e) {
+                LOGGER.warn("Unable to commit record " + tuple._2(), e);
+            }
+        });
+        recordsToCommit.stream().map(Tuple2::_1).distinct().forEach(sourceTask -> {
             try {
                 sourceTask.commit();
             } catch (Exception e) {

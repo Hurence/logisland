@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -132,7 +133,7 @@ public class LogIslandRecordConverter implements Converter {
                                     .collect(Collectors.toList()));
                 }
                 case MAP: {
-                    return new Field(name, FieldType.MAP, value);
+                    return new Field(name, FieldType.MAP, new LinkedHashMap<>((Map)value));
                 }
                 case STRUCT: {
                     Struct struct = (Struct) value;

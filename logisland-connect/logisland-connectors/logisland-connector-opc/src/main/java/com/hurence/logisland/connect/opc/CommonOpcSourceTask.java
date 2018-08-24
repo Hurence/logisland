@@ -167,7 +167,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        while (transferQueue.isEmpty()) {
+        if (transferQueue.isEmpty()) {
             Thread.sleep(minWaitTime);
         }
         List<Tuple<Instant, OpcData>> ret = new ArrayList<>();

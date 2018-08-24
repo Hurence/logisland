@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 /**
   * Copyright (C) 2016 Hurence (support@hurence.com)
   *
@@ -33,9 +33,9 @@ package com.hurence.logisland.engine.spark
 
 
 import java.util
-import java.util.Collections
+import java.util.concurrent.Executors
 import java.util.regex.Pattern
-import java.util.stream.Collectors
+import java.util.{Collections, UUID}
 
 import com.hurence.logisland.component.{AllowableValue, ComponentContext, PropertyDescriptor}
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
@@ -44,7 +44,8 @@ import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecor
 import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
@@ -325,6 +326,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
     private val logger = LoggerFactory.getLogger(classOf[KafkaStreamProcessingEngine])
     private val conf = new SparkConf()
+    private var running = false
 
 
     /**
@@ -395,13 +397,48 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         sys.ShutdownHookThread {
             logger.info("Gracefully stopping Spark Streaming Application")
-            sparkContext.stop();
+            shutdown(engineContext)
             logger.info("Application stopped")
         }
 
 
         PipelineConfigurationBroadcastWrapper.getInstance().refresh(engineContext, sparkContext)
 
+
+        SQLContext.getOrCreate(getCurrentSparkContext()).streams.addListener(new StreamingQueryListener {
+
+            val runMap = scala.collection.mutable.Map[UUID, String]()
+            val executor = Executors.newSingleThreadExecutor()
+            //force early initialization of this pool
+            executor.submit(new Runnable {
+                override def run(): Unit = {}
+            })
+
+            override def onQueryStarted(event: StreamingQueryListener.QueryStartedEvent): Unit = {
+                logger.info(s"Streaming query for stream ${event.name} has been started")
+                runMap.put(event.id, event.name)
+            }
+
+            override def onQueryProgress(event: StreamingQueryListener.QueryProgressEvent): Unit = {
+            }
+
+            override def onQueryTerminated(event: StreamingQueryListener.QueryTerminatedEvent): Unit = {
+                if (event.exception.isDefined && !getCurrentSparkContext().isStopped) {
+                    val currentStreamId = runMap.get(event.id)
+                    logger.warn(s"Streaming query for stream $currentStreamId terminated with exception ${event.exception}. " +
+                        s"The engine will be reset")
+
+                    executor.submit(new Runnable {
+                        override def run(): Unit = {
+                            Thread.sleep(1000);
+                            engineContext.getEngine.reset(engineContext)
+                        }
+                    })
+                }
+            }
+        })
+
+        running = true
 
         logger.info(s"spark context initialized with master:$sparkMaster, " +
             s"appName:$appName, " +
@@ -452,9 +489,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
     override def start(engineContext: EngineContext) = {
         logger.info("starting Spark Engine")
         val streamingContext = createStreamingContext(engineContext)
-        if (!engineContext.getStreamContexts.map(p=>p.getStream).filter(p=>p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
+        if (!engineContext.getStreamContexts.map(p => p.getStream).filter(p => p.isInstanceOf[AbstractKafkaRecordStream]).isEmpty) {
             streamingContext.start()
         }
+
     }
 
     protected def getCurrentSparkStreamingContext(sparkContext: SparkContext): StreamingContext = {
@@ -498,35 +536,45 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
 
     override def shutdown(engineContext: EngineContext) = {
-        logger.info(s"shutting down Spark engine")
-        stop(engineContext, true)
-
+        if (running) {
+            running = false
+            logger.info(s"shutting down Spark engine")
+            stop(engineContext, true)
+        }
     }
 
-    private def stop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
-        engineContext.getStreamContexts.foreach(streamingContext => {
-            try {
+    def stop(engineContext: EngineContext, doStopSparkContext: Boolean) = {
+        synchronized {
+            val sc = getCurrentSparkContext();
+            if (!sc.isStopped) {
 
-                val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
-                kafkaStream.stop()
-            } catch {
-                case ex: Exception =>
-                    logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
+                engineContext.getStreamContexts.foreach(streamingContext => {
+                    try {
+                        val kafkaStream = streamingContext.getStream.asInstanceOf[SparkRecordStream]
+                        kafkaStream.stop()
+                    } catch {
+                        case ex: Exception =>
+                            logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
+                    }
+                })
+
+                try {
+                    val ssc = getCurrentSparkStreamingContext(sc);
+                    ssc.stop(stopSparkContext = false, stopGracefully = true)
+
+                } finally {
+                    if (doStopSparkContext) {
+                        try {
+                            sc.stop();
+                        } catch {
+                            case ex: Exception =>
+                                logger.error("something bad while stopping the spark context. Please check cluster health : {}", ex.getMessage)
+                        }
+                    }
+                }
+
             }
-
-            getCurrentSparkStreamingContext(getCurrentSparkContext())
-                .stop(stopSparkContext = doStopSparkContext, stopGracefully = true)
-
-
-        })
-        SparkSession.builder().getOrCreate().streams.active.foreach(streamingQuery=>{
-            try {
-                streamingQuery.stop()
-            } catch {
-                case ex: Exception =>
-                    logger.error("something bad while stopping a streaming query. Please check cluster health : {}", ex.getMessage)
-            }
-        })
+        }
     }
 
     override def onPropertyModified(descriptor: PropertyDescriptor, oldValue: String, newValue: String) = {
@@ -565,12 +613,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
       * Reset the engine by stopping the streaming context.
       */
     override def reset(engineContext: EngineContext): Unit = {
-        logger.info(s"Resetting engine ${
-            engineContext.getName
-        }")
-        stop(engineContext, false)
-        engineContext.getStreamContexts.clear()
-        engineContext.getControllerServiceConfigurations.clear()
+        shutdown(engineContext)
     }
 
 
