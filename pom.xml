@@ -1258,17 +1258,7 @@
                     </dependency>
                     <dependency>
                         <groupId>com.hurence.logisland</groupId>
-                        <artifactId>logisland-connector-opc</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.hurence.logisland</groupId>
                         <artifactId>logisland-connectors-bundle</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.hurence.logisland</groupId>
-                        <artifactId>logisland-agent</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

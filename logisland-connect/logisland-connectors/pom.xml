@@ -17,9 +17,54 @@
             <artifactId>connect-api</artifactId>
         </dependency>
     </dependencies>
-    <modules>
-      <module>logisland-connector-opc</module>
-    </modules>
+    <profiles>
+
+        <profile>
+            <id>defaultBundle</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipDefaultConnectors</name>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-connector-jms</module>
+                <module>logisland-connector-opc</module>
+                <module>logisland-connector-simulator</module>
+            </modules>
+        </profile>
+
+        <!-- Kafka Connect FTP Source Bundle -->
+        <profile>
+            <id>includeConnectFtp</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>withConnectFtp</name>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-connector-ftp</module>
+            </modules>
+
+
+        </profile>
+
+
+        <!-- Kafka Connect Blockchain Source Bundle -->
+        <profile>
+            <id>includeConnectBlockchain</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>withConnectBlockchain</name>
+                </property>
+            </activation>
+            <modules>
+                <module>logisland-connector-blockchain</module>
+            </modules>
+        </profile>
+    </profiles>
 
 
 </project>
