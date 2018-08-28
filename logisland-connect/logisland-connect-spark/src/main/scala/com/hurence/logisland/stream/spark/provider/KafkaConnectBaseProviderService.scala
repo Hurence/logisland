@@ -1,18 +1,19 @@
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ *  * Copyright (C) 2018 Hurence (support@hurence.com)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package com.hurence.logisland.stream.spark.provider
 
 import java.util
@@ -21,14 +22,16 @@ import java.util.Collections
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
 import com.hurence.logisland.controller.{AbstractControllerService, ControllerServiceInitializationContext}
-import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
+import com.hurence.logisland.record.Record
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.spark.StreamOptions
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-class KafkaConnectStructuredProviderService extends AbstractControllerService with StructuredStreamProviderService {
+class KafkaConnectBaseProviderService extends AbstractControllerService with StructuredStreamProviderService {
 
     var connectorProperties = ""
     var keyConverter = ""
@@ -39,7 +42,6 @@ class KafkaConnectStructuredProviderService extends AbstractControllerService wi
     var delegateConnectorClass = ""
     var offsetBackingStore = ""
     var offsetBackingStoreProperties = ""
-
 
     @OnEnabled
     @throws[InitializationException]
@@ -55,6 +57,8 @@ class KafkaConnectStructuredProviderService extends AbstractControllerService wi
                 maxConfigurations = (context getPropertyValue StreamOptions.KAFKA_CONNECT_MAX_TASKS).asInteger()
                 offsetBackingStore = (context getPropertyValue StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE).asString()
                 offsetBackingStoreProperties = context.getPropertyValue(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES).asString()
+
+
             } catch {
                 case e: Exception =>
                     throw new InitializationException(e)
@@ -78,6 +82,7 @@ class KafkaConnectStructuredProviderService extends AbstractControllerService wi
         descriptors.add(StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER)
         descriptors.add(StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES)
         descriptors.add(StreamOptions.KAFKA_CONNECT_MAX_TASKS)
+        descriptors.add(StreamOptions.KAFKA_CONNECT_MAX_PARTITIONS)
         descriptors.add(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE)
         descriptors.add(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES)
         Collections.unmodifiableList(descriptors)
@@ -91,31 +96,8 @@ class KafkaConnectStructuredProviderService extends AbstractControllerService wi
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def read(spark: SparkSession, streamContext: StreamContext) = {
-        import spark.implicits._
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
-
-        getLogger.info(s"Connecting kafka-connect source $delegateConnectorClass")
-        spark.readStream
-            .format("com.hurence.logisland.connect.source.KafkaConnectStreamSourceProvider")
-            .option(StreamOptions.KAFKA_CONNECT_CONNECTOR_PROPERTIES.getName, connectorProperties)
-            .option(StreamOptions.KAFKA_CONNECT_KEY_CONVERTER.getName, keyConverter)
-            .option(StreamOptions.KAFKA_CONNECT_KEY_CONVERTER_PROPERTIES.getName, keyConverterProperties)
-            .option(StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER.getName, valueConverter)
-            .option(StreamOptions.KAFKA_CONNECT_VALUE_CONVERTER_PROPERTIES.getName, valueConverterProperties)
-            .option(StreamOptions.KAFKA_CONNECT_MAX_TASKS.getName, maxConfigurations)
-            .option(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS.getName, delegateConnectorClass)
-            .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE.getName, offsetBackingStore)
-            .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES.getName, offsetBackingStoreProperties)
-
-
-            .load()
-            //Topic, Partition, Key, Value
-            .as[(String, Int, Array[Byte], Array[Byte])]
-            .map(r =>
-                new StandardRecord("kafka_connect")
-                    .setField(FieldDictionary.RECORD_KEY, FieldType.BYTES, r._3)
-                    .setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, r._4))
+    override def read(spark: SparkSession, streamContext: StreamContext): Dataset[Record] = {
+        throw new UnsupportedOperationException("Operation not supported. Please be sure to use the right component")
     }
 
 
@@ -125,9 +107,9 @@ class KafkaConnectStructuredProviderService extends AbstractControllerService wi
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], streamContext: StreamContext): DataStreamWriter[_] = {
-        //TODO: Add sink support
-        df.writeStream
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
+        throw new UnsupportedOperationException("Operation not supported. Please be sure to use the right component")
     }
+
 
 }

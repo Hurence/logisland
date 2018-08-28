@@ -142,7 +142,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 .asInstanceOf[StructuredStreamProviderService]
 
             // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-            val ds = writeStreamService.save(readDF, streamContext)
+            val ds = writeStreamService.save(readDF, controllerServiceLookupSink, streamContext)
             pipelineTimerContext.stop()
 
         } catch {

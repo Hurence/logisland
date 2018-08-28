@@ -26,7 +26,9 @@ import com.hurence.logisland.controller.{AbstractControllerService, ControllerSe
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter}
 
@@ -136,7 +138,7 @@ class MQTTStructuredStreamProviderService extends AbstractControllerService with
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], streamContext: StreamContext): DataStreamWriter[_] = {
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
 
 
         // Create DataFrame representing the stream of input lines from connection to mqtt server

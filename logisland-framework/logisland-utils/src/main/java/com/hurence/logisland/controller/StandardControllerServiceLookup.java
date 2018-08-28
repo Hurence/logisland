@@ -64,7 +64,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
                         AbstractControllerService service = (AbstractControllerService) Class.forName(conf.getComponent()).newInstance();
                         logger.info("loading controller service {}", new Object[]{conf.getComponent()});
-                        ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, Long.toString(currentId.incrementAndGet()));
+                        ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
                         Map<String, String> properties = conf.getConfiguration();
                         properties.keySet().forEach(name -> context.setProperty(name, properties.get(name)));
 
