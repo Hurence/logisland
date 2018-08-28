@@ -17,6 +17,8 @@
 
 package com.hurence.logisland.serializer;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -32,7 +34,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Basic but complete Json {@link RecordSerializer}.
@@ -49,6 +50,8 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     private final Schema schema;
 
+    private transient volatile ObjectMapper mapper;
+
     public ExtendedJsonSerializer(Schema schema) {
         this.schema = schema;
     }
@@ -63,7 +66,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
             if (value == null) {
                 map.put(name, null);
             } else {
-                final Schema currentSchema = field != null ? field.schema() :schema;
+                final Schema currentSchema = field != null ? field.schema() : schema;
                 switch (currentSchema.getType()) {
                     case FLOAT:
                         map.put(name, Float.parseFloat(value.toString()));
@@ -112,7 +115,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
         if (schema != null) {
             ret = new LinkedHashMap<>();
             doFilter(ret, null, in, schema);
-            ret =  (Map<String, Object>)ret.getOrDefault(null, Collections.<String, Object>emptyMap());
+            ret = (Map<String, Object>) ret.getOrDefault(null, Collections.<String, Object>emptyMap());
         }
 
         return ret;
@@ -133,24 +136,24 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {
-        final ObjectMapper mapper = new ObjectMapper();
         try {
-
-            Map<String, Object> json = new LinkedHashMap<>();
-
-            record.getAllFieldsSorted().forEach(f -> json.put(f.getName(), f.getRawValue()));
-            json.put("id", record.getId());
-            if (record.getTime() != null) {
-                json.put("creationDate", record.getTime().getTime());
-            }
-            json.put("type", record.getType());
-
-            mapper.writeValue(out, filterWithSchema(json));
-            out.flush();
+            mapper().writeValue(out, filterWithSchema(createJsonObject(record)));
         } catch (IOException e) {
             logger.warn(e.toString());
         }
 
+    }
+
+    protected Map<String, Object> createJsonObject(Record record) {
+        Map<String, Object> json = new LinkedHashMap<>();
+
+        record.getAllFieldsSorted().forEach(f -> json.put(f.getName(), f.getRawValue()));
+        json.put("id", record.getId());
+        if (record.getTime() != null) {
+            json.put("creationDate", record.getTime().getTime());
+        }
+        json.put("type", record.getType());
+        return json;
     }
 
 
@@ -189,7 +192,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     @Override
     public Record deserialize(InputStream in) throws RecordSerializationException {
-        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = mapper();
         try {
             Map<String, Object> map = mapper.readValue(in, mapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
             Record record = new StandardRecord();
@@ -230,5 +233,12 @@ public class ExtendedJsonSerializer implements RecordSerializer {
             throw new RecordSerializationException("unable to deserialize record");
         }
 
+    }
+
+    protected synchronized ObjectMapper mapper() {
+        if (mapper == null) {
+            mapper = new ObjectMapper();
+        }
+        return mapper;
     }
 }

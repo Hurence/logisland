@@ -28,6 +28,7 @@ public class SerializerProvider {
     private static String JSON_SERIALIZER = JsonSerializer.class.getName();
     private static String EXTENDED_JSON_SERIALIZER = ExtendedJsonSerializer.class.getName();
 
+
     private static String KRYO_SERIALIZER = KryoSerializer.class.getName();
     private static String BYTES_ARRAY_SERIALIZER = BytesArraySerializer.class.getName();
     private static String STRING_SERIALIZER = StringSerializer.class.getName();
