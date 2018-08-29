@@ -175,10 +175,13 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-solr_6_4_2-chronix-client-service</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-mongodb-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-cassandra-client-service</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-mongodb</artifactId>
+        <artifactId>logisland-cassandra</artifactId>
         <version>0.14.0</version>
     </parent>
 
-    <artifactId>logisland-mongodb-client-service-api</artifactId>
+    <artifactId>logisland-cassandra-client-service-api</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -21,9 +21,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>${mongo.driver.version}</version>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${cassandra.driver.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

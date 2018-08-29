@@ -30,5 +30,6 @@
         <module>logisland-ip-to-geo-service-api</module>
         <module>logisland-redis_4-client-service</module>
         <module>logisland-mongodb</module>
+        <module>logisland-cassandra</module>
     </modules>
 </project>
