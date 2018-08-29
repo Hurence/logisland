@@ -155,7 +155,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         super.stop()
         //stop the source
         val thisStream = SparkSession.builder().getOrCreate().streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
-        if (thisStream.isDefined && !thisStream.get.sparkSession.sparkContext.isStopped) {
+        if (thisStream.isDefined && !thisStream.get.sparkSession.sparkContext.isStopped && thisStream.get.isActive) {
             try {
                 thisStream.get.stop()
                 thisStream.get.awaitTermination()

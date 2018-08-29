@@ -263,7 +263,6 @@ public class KafkaConnectStreamSource implements Source {
         Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
                 !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
 
-
         return sqlContext.createDataFrame(
                 bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1).keySet().stream()
                         .flatMap(offset -> {

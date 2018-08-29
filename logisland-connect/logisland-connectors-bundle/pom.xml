@@ -14,20 +14,31 @@
     <profiles>
 
         <profile>
-            <id>includeOpcConnector</id>
+            <id>defaultBundle</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
                     <name>!skipDefaultConnectors</name>
                 </property>
-
             </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-simulator</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-jms</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-connector-opc</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
+
         </profile>
 
         <!-- Kafka Connect FTP Source Bundle -->
@@ -42,154 +53,13 @@
             <dependencies>
                 <!-- https://mvnrepository.com/artifact/com.eneco/kafka-connect-ftp -->
                 <dependency>
-                    <groupId>com.eneco</groupId>
-                    <artifactId>kafka-connect-ftp</artifactId>
-                    <version>0.1.4</version>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-ftp</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.immutables.tools</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <version>4</version>
-                        <executions>
-                            <execution>
-                                <id>package-ftp-source</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                                <configuration>
-                                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                                    <artifactSet>
-                                        <includes>
-                                            <include>com.eneco:kafka-connect-ftp</include>
-                                            <include>commons-net:commons-net</include>
-                                            <include>commons-compress:commons-compress</include>
-                                        </includes>
-                                    </artifactSet>
-                                    <filters>
-                                        <filter>
-                                            <artifact>*:*</artifact>
-                                            <excludes>
-                                                <exclude>META-INF/license/**</exclude>
-                                                <exclude>META-INF/*</exclude>
-                                                <exclude>META-INF/maven/**</exclude>
-                                                <exclude>LICENSE</exclude>
-                                                <exclude>NOTICE</exclude>
-                                                <exclude>/*.txt</exclude>
-                                                <exclude>build.properties</exclude>
-                                            </excludes>
-                                        </filter>
-                                    </filters>
-                                    <transformers>
-                                        <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                    </transformers>
-                                    <relocations>
-                                        <relocation>
-                                            <pattern>org.apache.commons.net</pattern>
-                                            <shadedPattern>${logisland.shade.packageName}.kc.ftp.org.apache.commons.net
-                                            </shadedPattern>
-                                        </relocation>
-                                    </relocations>
-
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
-        <!-- Kafka Connect Simulator Source/Sink bundle -->
-        <profile>
-            <id>includeConnectSimulator</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>!skipDefaultConnectors</name>
-                </property>
 
-            </activation>
-            <dependencies>
-                <!-- https://mvnrepository.com/artifact/com.github.jcustenborder.kafka.connect/kafka-connect-simulator -->
-                <dependency>
-                    <groupId>com.github.jcustenborder.kafka.connect</groupId>
-                    <artifactId>kafka-connect-simulator</artifactId>
-                    <version>0.1.118</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.immutables.tools</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <version>4</version>
-                        <executions>
-                            <execution>
-                                <id>package-simulator-plugin</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                                <configuration>
-                                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                                    <artifactSet>
-                                        <includes>
-                                            <include>com.github.jcustenborder.kafka.connect:kafka-connect-simulator
-                                            </include>
-                                            <include>io.codearte.jfairy:jfairy</include>
-                                            <include>com.google.guava:guava</include>
-                                            <include>com.google.inject:guice</include>
-                                            <include>com.google.inject.extensions:guice-assistedinject</include>
-                                            <include>org.yaml:snakeyaml</include>
-                                        </includes>
-                                    </artifactSet>
-                                    <filters>
-                                        <filter>
-                                            <artifact>*:*</artifact>
-                                            <excludes>
-                                                <exclude>META-INF/license/**</exclude>
-                                                <exclude>META-INF/*</exclude>
-                                                <exclude>META-INF/maven/**</exclude>
-                                                <exclude>LICENSE</exclude>
-                                                <exclude>NOTICE</exclude>
-                                                <exclude>/*.txt</exclude>
-                                                <exclude>build.properties</exclude>
-                                            </excludes>
-                                        </filter>
-                                    </filters>
-                                    <transformers>
-                                        <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                    </transformers>
-                                    <relocations>
-                                        <relocation>
-                                            <pattern>io.codearte.jfairy</pattern>
-                                            <shadedPattern>
-                                                ${logisland.shade.packageName}.kc.simulator.io.codearte.jfairy
-                                            </shadedPattern>
-                                        </relocation>
-                                        <relocation>
-                                            <pattern>com.google</pattern>
-                                            <shadedPattern>${logisland.shade.packageName}.kc.simulator.com.google
-                                            </shadedPattern>
-                                        </relocation>
-                                        <relocation>
-                                            <pattern>org.yaml</pattern>
-                                            <shadedPattern>${logisland.shade.packageName}.kc.simulator.org.yaml
-                                            </shadedPattern>
-                                        </relocation>
-                                    </relocations>
-
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <!-- Kafka Connect Blockchain Source Bundle -->
         <profile>
             <id>includeConnectBlockchain</id>
@@ -202,65 +72,11 @@
             <dependencies>
                 <!-- https://mvnrepository.com/artifact/com.datamountaineer/kafka-connect-blockchain -->
                 <dependency>
-                    <groupId>com.datamountaineer</groupId>
-                    <artifactId>kafka-connect-blockchain</artifactId>
-                    <version>1.0.0</version>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-blockchain</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.immutables.tools</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <version>4</version>
-                        <executions>
-                            <execution>
-                                <id>package-blockchain-source</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                                <configuration>
-                                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                                    <artifactSet>
-                                        <includes>
-                                            <include>com.datamountaineer:kafka-connect-blockchain</include>
-                                            <include>org.codehaus.jackson:*</include>
-                                        </includes>
-                                    </artifactSet>
-                                    <filters>
-                                        <filter>
-                                            <artifact>*:*</artifact>
-                                            <excludes>
-                                                <exclude>META-INF/license/**</exclude>
-                                                <exclude>META-INF/*</exclude>
-                                                <exclude>META-INF/maven/**</exclude>
-                                                <exclude>LICENSE</exclude>
-                                                <exclude>NOTICE</exclude>
-                                                <exclude>/*.txt</exclude>
-                                                <exclude>build.properties</exclude>
-                                            </excludes>
-                                        </filter>
-                                    </filters>
-                                    <transformers>
-                                        <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                    </transformers>
-                                    <relocations>
-                                        <relocation>
-                                            <pattern>org.codehaus.jackson</pattern>
-                                            <shadedPattern>
-                                                ${logisland.shade.packageName}.kc.blockchain.org.codehaus.jackson
-                                            </shadedPattern>
-                                        </relocation>
-                                    </relocations>
-
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 
