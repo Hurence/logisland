@@ -25,7 +25,6 @@ import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
-import org.apache.kafka.connect.storage.OffsetStorageWriter;
 import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -48,7 +48,6 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
     protected final T connector;
     protected final List<U> tasks = new ArrayList<>();
     protected final OffsetBackingStore offsetBackingStore;
-    protected final OffsetStorageWriter offsetStorageWriter;
     protected final AtomicBoolean startWatch = new AtomicBoolean(false);
     protected final String connectorName;
     private final Map<String, String> connectorProperties;
@@ -87,7 +86,6 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
             //create converters
             this.keyConverter = keyConverter;
             this.valueConverter = valueConverter;
-            final Converter internalConverter = createInternalConverter();
             this.connectorProperties = connectorProperties;
 
             //Create the connector context
@@ -111,9 +109,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
             LOGGER.info("Starting connector {}", connectorClass.getCanonicalName());
             connector.initialize(connectorContext);
             this.offsetBackingStore = offsetBackingStore;
-            //new OffsetStorageReaderImpl(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter),
 
-            offsetStorageWriter = new OffsetStorageWriter(offsetBackingStore, connectorClass.getCanonicalName(), internalConverter, internalConverter);
 
         } catch (Exception e) {
             throw new DataException("Unable to create connector " + connectorName(), e);
@@ -171,9 +167,9 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
      *
      * @return an instance of {@link Converter}
      */
-    protected Converter createInternalConverter() {
+    protected Converter createInternalConverter(boolean isKey) {
         JsonConverter internalConverter = new JsonConverter();
-        internalConverter.configure(Collections.singletonMap("schemas.enable", "false"), false);
+        internalConverter.configure(Collections.singletonMap("schemas.enable", "false"), isKey);
         return internalConverter;
     }
 

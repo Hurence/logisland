@@ -223,7 +223,7 @@ trait StructuredStreamProviderService extends ControllerService {
                 deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
 
             if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
-                val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY)).asInstanceOf[Record]
+                val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
                 if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
                     val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
                     deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)

@@ -66,7 +66,7 @@ The `controllerServiceConfigurations` part is here to define all services that b
 The parsing stream
 ==================
 
-Here we are going to use a special processor (``KafkaConnectStructuredProviderService``) to use the kafka connect source as input for the structured stream defined below.
+Here we are going to use a special processor (``KafkaConnectStructuredSourceProviderService``) to use the kafka connect source as input for the structured stream defined below.
 
 For this example, we are going to use the source *com.github.jcustenborder.kafka.connect.simulator.SimulatorSourceConnector* that generates records containing fake personal data at rate of 100 messages/s.
 
@@ -75,7 +75,7 @@ For this example, we are going to use the source *com.github.jcustenborder.kafka
 
     # Our source service
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: A kafka source connector provider reading from its own source and providing structured streaming to the underlying layer
       configuration:
         # We will use the logisland record converter for both key and value

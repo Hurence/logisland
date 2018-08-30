@@ -45,7 +45,7 @@ import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.StreamingContext
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
@@ -154,13 +154,15 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     override def stop(): Unit = {
         super.stop()
         //stop the source
-        val thisStream = SparkSession.builder().getOrCreate().streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
-        if (thisStream.isDefined && !thisStream.get.sparkSession.sparkContext.isStopped && thisStream.get.isActive) {
-            try {
-                thisStream.get.stop()
-                thisStream.get.awaitTermination()
-            } catch {
-                case ex: Throwable => logger.warn(s"Unable to properly stop stream ${streamContext.getIdentifier}", ex)
+        val thisStream = SQLContext.getOrCreate(getStreamContext().sparkContext).streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
+        if (thisStream.isDefined) {
+            if (!getStreamContext().sparkContext.isStopped && thisStream.get.isActive) {
+                try {
+                    thisStream.get.stop()
+                    thisStream.get.awaitTermination()
+                } catch {
+                    case ex: Throwable => logger.warn(s"Stream ${streamContext.getIdentifier} may not have been correctly stopped")
+                }
             }
         } else {
             logger.warn(s"Unable to find an active streaming query for stream ${streamContext.getIdentifier}")

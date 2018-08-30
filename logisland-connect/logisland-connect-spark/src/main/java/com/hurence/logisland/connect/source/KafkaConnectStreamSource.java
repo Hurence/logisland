@@ -25,11 +25,11 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
+import org.apache.kafka.connect.storage.OffsetStorageWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
-import org.apache.spark.sql.execution.streaming.LongOffset;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.SerializedOffset;
 import org.apache.spark.sql.execution.streaming.Source;
@@ -44,6 +44,7 @@ import scala.Tuple2;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -85,12 +86,14 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
     });
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConnectStreamSource.class);
 
-    private volatile long counter = 0;
+    private final AtomicLong counter = new AtomicLong();
 
+    protected final OffsetStorageWriter offsetStorageWriter;
     private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> bufferedRecords =
             Collections.synchronizedSortedMap(new TreeMap<>());
     private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> uncommittedRecords =
             Collections.synchronizedSortedMap(new TreeMap<>());
+    private final Map<SourceTask, Thread> busyTasks = Collections.synchronizedMap(new IdentityHashMap<>());
 
 
     /**
@@ -113,13 +116,15 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                                     int maxTasks,
                                     Class<? extends SourceConnector> connectorClass) {
         super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass);
+        this.offsetStorageWriter = new OffsetStorageWriter(offsetBackingStore, connector.getClass().getCanonicalName(),
+                createInternalConverter(true), createInternalConverter(false));
     }
 
 
     @Override
     protected void initialize(SourceTask task) {
         task.initialize(new WorkerSourceTaskContext(new OffsetStorageReaderImpl(offsetBackingStore,
-                connector.getClass().getCanonicalName(), keyConverter, valueConverter)));
+                connector.getClass().getCanonicalName(), createInternalConverter(true), createInternalConverter(false))));
     }
 
 
@@ -130,33 +135,37 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
 
     @Override
     protected void createAndStartAllTasks() throws IllegalAccessException, InstantiationException {
-        counter = 0;
+        counter.set(0);
         super.createAndStartAllTasks();
     }
 
     @Override
     public synchronized Option<Offset> getOffset() {
         if (!uncommittedRecords.isEmpty()) {
-            return Option.apply(SerializedOffset.apply(Long.toString(counter++)));
+            return Option.apply(SerializedOffset.apply(Long.toString(counter.incrementAndGet())));
         }
         if (bufferedRecords.isEmpty()) {
-
-            List<Tuple2<SourceTask, SourceRecord>> buffer = tasks.parallelStream().flatMap(sourceTask -> {
-                Stream<SourceRecord> ret = Stream.empty();
-                try {
-                    ret = sourceTask.poll().stream();
-                } catch (InterruptedException ie) {
-                    LOGGER.warn("Task {} interrupted while waiting.", sourceTask.getClass().getCanonicalName());
-                }
-                return ret.map(sourceRecord -> Tuple2.apply(sourceTask, sourceRecord));
-            }).collect(Collectors.toList());
-            if (!buffer.isEmpty()) {
-                LongOffset nextOffset = LongOffset.apply(counter++);
-                bufferedRecords.put(nextOffset.offset(), buffer);
-            }
-        }
-        if (!bufferedRecords.isEmpty()) {
+            tasks.forEach(t -> busyTasks.computeIfAbsent(t, sourceTask -> {
+                Thread thread = new Thread(() -> {
+                    try {
+                        List<Tuple2<SourceTask, SourceRecord>> tmp = sourceTask.poll().stream()
+                                .map(sourceRecord -> Tuple2.apply(sourceTask, sourceRecord))
+                                .collect(Collectors.toList());
+                        if (!tmp.isEmpty()) {
+                            bufferedRecords.put(counter.incrementAndGet(), tmp);
+                        }
+                    } catch (InterruptedException ie) {
+                        LOGGER.warn("Task {} interrupted while waiting.", sourceTask.getClass().getCanonicalName());
+                    } finally {
+                        busyTasks.remove(t);
+                    }
+                });
+                thread.start();
+                return thread;
+            }));
+        } else {
             return Option.apply(SerializedOffset.apply(bufferedRecords.lastKey().toString()));
+
         }
         return Option.empty();
     }
@@ -165,11 +174,12 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
 
+
         Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
                 !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
 
         Map<Integer, List<Row>> current =
-                bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1)
+                new LinkedHashMap<>(bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1))
                         .keySet().stream()
                         .flatMap(offset -> {
                             List<Tuple2<SourceTask, SourceRecord>> srl = bufferedRecords.remove(offset);
@@ -187,8 +197,6 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                                 keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
                                 valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
                         })).collect(Collectors.groupingBy(row -> Objects.hashCode(row.getString(1))));
-
-
         return sqlContext.createDataFrame(new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA);
 
 
@@ -201,7 +209,7 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
         }
         //first commit all offsets already given
         List<Tuple2<SourceTask, SourceRecord>> recordsToCommit =
-                uncommittedRecords.subMap(uncommittedRecords.firstKey(), Long.parseLong(end.json()) + 1).keySet().stream()
+                new LinkedHashMap<>(uncommittedRecords.subMap(uncommittedRecords.firstKey(), Long.parseLong(end.json()) + 1)).keySet().stream()
                         .flatMap(key -> uncommittedRecords.remove(key).stream())
                         .collect(Collectors.toList());
 
@@ -243,6 +251,6 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
         super.stop();
     }
 
-
 }
+
 

@@ -67,7 +67,7 @@ Here we have the OPC-UA source with all the connection parameters.
 .. code-block:: yaml
 
    - controllerService: kc_source_service
-     component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+     component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: Kafka connect OPC-UA source service
       type: service
       configuration:

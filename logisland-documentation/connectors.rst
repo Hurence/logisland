@@ -53,6 +53,8 @@ Please refer to the following table for the details:
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
 | JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | None (Built in)              |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------+
+| JDBC                     | https://docs.confluent.io/current/connect/connect-jdbc/docs/index.html           | None (Built in)              |
++--------------------------+----------------------------------------------------------------------------------+------------------------------+
 
 
 Configuring
@@ -62,7 +64,7 @@ Once you have bundled the connectors you need, you are now ready to use them.
 
 Let's do it step by step.
 
-First of all we need to declare a *KafkaConnectStructuredProviderService* that will manage our connector in Logisland.
+First of all we need to declare a *KafkaConnectStructuredSourceProviderService* or a *KafkaConnectStructuredSinkProviderService* that will manage our connector in Logisland.
 Along with this we need to put some configuration (In general you can always refer to kafka connect documentation to better understand the underlying architecture and how to configure a connector):
 
 
@@ -141,7 +143,7 @@ The recap we can examine the following configuration example:
 
      # Our source service
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: A kafka source connector provider reading from its own source and providing structured streaming to the underlying layer
       configuration:
         # We will use the logisland record converter for both key and value

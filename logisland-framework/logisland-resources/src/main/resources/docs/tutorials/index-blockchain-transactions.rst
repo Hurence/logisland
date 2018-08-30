@@ -76,7 +76,7 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
     The parsing stream
     ==================
 
-    Here we are going to use a special processor (``KafkaConnectStructuredProviderService``) to use the kafka connect source as input for the structured stream defined below.
+    Here we are going to use a special processor (``KafkaConnectStructuredSourceProviderService``) to use the kafka connect source as input for the structured stream defined below.
 
     For this example, we are going to use the source *com.datamountaineer.streamreactor.connect.blockchain.source.BlockchainSourceConnector*
     that opens a secure websocket connections to the blockchain subscribing to any transaction update stream.
@@ -86,7 +86,7 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
 
         ControllerServiceConfigurations:
         - controllerService: kc_source_service
-          component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+          component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
           configuration:
             kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
             kc.data.value.converter.properties: |

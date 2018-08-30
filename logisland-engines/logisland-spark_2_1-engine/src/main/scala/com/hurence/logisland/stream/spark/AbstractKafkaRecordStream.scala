@@ -46,7 +46,6 @@ import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark._
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
-import org.apache.avro.Schema.Parser
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.TopicPartition

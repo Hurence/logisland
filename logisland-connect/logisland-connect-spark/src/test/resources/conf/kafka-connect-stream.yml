@@ -64,8 +64,7 @@ engine:
         kc.connector.class: com.hurence.logisland.connect.fake.TestSink
 
 
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+
 
     - controllerService: kafka_out_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
