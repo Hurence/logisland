@@ -15,10 +15,8 @@
   */
 package com.hurence.logisland.stream.spark.structured.provider
 
-import java.io.{File, IOException}
-import java.nio.file.{Files, Paths}
 import java.util
-import java.util.{Collections, UUID}
+import java.util.Collections
 
 import com.hurence.logisland.annotation.lifecycle.OnEnabled
 import com.hurence.logisland.component.{InitializationException, PropertyDescriptor}
@@ -26,14 +24,17 @@ import com.hurence.logisland.controller.{AbstractControllerService, ControllerSe
 import com.hurence.logisland.record.{FieldDictionary, FieldType, Record, StandardRecord}
 import com.hurence.logisland.stream.StreamContext
 import com.hurence.logisland.stream.StreamProperties._
+import com.hurence.logisland.util.kafka.KafkaSink
+import com.hurence.logisland.util.spark.ControllerServiceLookupSink
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.security.JaasUtils
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
-import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter}
-import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.streaming.DataStreamWriter
+import org.apache.spark.sql.{Dataset, Encoders, ForeachWriter, SparkSession}
 
 class KafkaStructuredStreamProviderService() extends AbstractControllerService with StructuredStreamProviderService {
 
@@ -216,17 +217,29 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    override def write(df: Dataset[Record], streamContext: StreamContext) : DataStreamWriter[_] = {
-        implicit val myObjEncoder = org.apache.spark.sql.Encoders.tuple(Encoders.BINARY, Encoders.BINARY)
+    override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
+        val sender = df.sparkSession.sparkContext.broadcast(KafkaSink(kafkaSinkParams))
 
-        //val sender = KafkaSink(kafkaSinkParams)
-        df.map(record => (getOrElse(record, FieldDictionary.RECORD_KEY, new Array[Byte](0)),
-            getOrElse(record, FieldDictionary.RECORD_VALUE, new Array[Byte](0))))
-            .writeStream
-            .format("com.hurence.logisland.stream.spark.structured.provider.KafkaStreamWriterProvider")
-            .options(kafkaSinkParams.mapValues(value => value.toString))
-            .option("checkpointLocation", createTempDir(namePrefix = s"temporary").getCanonicalPath)
-            .option("path", outputTopics.mkString(","))
+        implicit val myObjectEncoder = Encoders.kryo[Record]
+
+        df.writeStream
+            .foreach(new ForeachWriter[Record] {
+
+                override def process(value: Record): Unit = {
+
+                    /**
+                      * push outgoing events and errors to Kafka
+                      */
+                    sender.value.send(streamContext.getPropertyValue(WRITE_TOPICS).asString,
+                        getOrElse(value, FieldDictionary.RECORD_KEY, new Array[Byte](0)),
+                        getOrElse(value, FieldDictionary.RECORD_VALUE, new Array[Byte](0)))
+
+                }
+
+                override def close(errorOrNull: Throwable): Unit = sender.value.producer.flush()
+
+                override def open(partitionId: Long, version: Long): Boolean = true
+            })
     }
 
     private def getOrElse[T](record: Record, field: String, defaultValue: T): T = {
@@ -237,94 +250,5 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
         defaultValue
     }
 
-    /**
-      * Create a temporary directory inside the given parent directory. The directory will be
-      * automatically deleted when the VM shuts down.
-      */
-    private def createTempDir(root: String = System.getProperty("java.io.tmpdir"),
-                              namePrefix: String = "spark"): File = {
-        val dir = createDirectory(root, namePrefix)
-        sys.addShutdownHook(() => deleteRecursively(dir.getAbsoluteFile))
-        dir
-    }
-
-    /**
-      * Create a directory inside the given parent directory. The directory is guaranteed to be
-      * newly created, and is not marked for automatic deletion.
-      */
-    private def createDirectory(root: String, namePrefix: String = "spark"): File = {
-        var attempts = 0
-        val maxAttempts = 3
-        var dir: File = null
-        while (dir == null) {
-            attempts += 1
-            if (attempts > maxAttempts) {
-                throw new IOException("Failed to create a temp directory (under " + root + ") after " +
-                    maxAttempts + " attempts!")
-            }
-            try {
-                dir = new File(root, namePrefix + "-" + UUID.randomUUID.toString)
-                if (dir.exists() || !dir.mkdirs()) {
-                    dir = null
-                }
-            } catch {
-                case e: SecurityException => dir = null;
-            }
-        }
-
-        dir.getCanonicalFile
-    }
-
-    private def listFilesSafely(file: File): Seq[File] = {
-        if (file.exists()) {
-            val files = file.listFiles()
-            if (files == null) {
-                throw new IOException("Failed to list files for dir: " + file)
-            }
-            files
-        } else {
-            List()
-        }
-    }
-
-    /**
-      * Delete a file or directory and its contents recursively.
-      * Don't follow directories if they are symlinks.
-      * Throws an exception if deletion is unsuccessful.
-      */
-    private def deleteRecursively(file: File) {
-        if (file != null) {
-            try {
-                if (file.isDirectory && !isSymlink(file)) {
-                    var savedIOException: IOException = null
-                    for (child <- listFilesSafely(file)) {
-                        try {
-                            deleteRecursively(child)
-                        } catch {
-                            // In case of multiple exceptions, only last one will be thrown
-                            case ioe: IOException => savedIOException = ioe
-                        }
-                    }
-                    if (savedIOException != null) {
-                        throw savedIOException
-                    }
-                }
-            } finally {
-                if (!file.delete()) {
-                    // Delete can also fail if the file simply did not exist
-                    if (file.exists()) {
-                        throw new IOException("Failed to delete: " + file.getAbsolutePath)
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-      * Check to see if file is a symbolic link.
-      */
-    private def isSymlink(file: File): Boolean = {
-        return Files.isSymbolicLink(Paths.get(file.toURI))
-    }
 
 }

@@ -34,7 +34,7 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       configuration:
         kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
         kc.data.value.converter.properties: |
@@ -42,12 +42,29 @@ engine:
         kc.data.key.converter.properties: |
           schemas.enable=false
         kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
-        kc.worker.tasks.max: 10
+        kc.worker.tasks.max: 3
+        kc.partitions.max: 12
         kc.connector.class: com.hurence.logisland.connect.fake.FakeConnector
         kc.connector.offset.backing.store: memory
         kc.connector.properties: |
           foo=bar
           dummy=a long string
+
+    - controllerService: kc_sink_service
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSinkProviderService
+      configuration:
+        kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
+        kc.data.value.converter.properties: |
+          record.serializer=com.hurence.logisland.serializer.KryoSerializer
+        kc.data.key.converter.properties: |
+          schemas.enable=false
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.worker.tasks.max: 2
+        kc.partitions.max: 4
+        kc.connector.class: com.hurence.logisland.connect.fake.TestSink
+
+
+
 
     - controllerService: kafka_out_service
       component: com.hurence.logisland.stream.spark.structured.provider.KafkaStructuredStreamProviderService
@@ -102,19 +119,20 @@ engine:
         write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: kafka_out_service
+        write.topics.client.service: kc_sink_service
       processorConfigurations:
 
+        - processor: flatten
+          component: com.hurence.logisland.processor.FlatMap
+          type: processor
+          documentation: "extract from root record"
+          configuration:
+            keep.root.record: false
+            copy.root.record.fields: true
         - processor: add_fields
           component: com.hurence.logisland.processor.AddFields
           type: processor
           documentation: "rename fields for dynamic indexation in chronix : add *_s suffix"
           configuration:
             conflict.resolution.policy: overwrite_existing
-            record_key: ${record_id}
-        - processor: stream_debugger2
-          component: com.hurence.logisland.processor.DebugStream
-          type: processor
-          documentation: debug records
-          configuration:
-            event.serializer: json
+            record_key: ${partition}

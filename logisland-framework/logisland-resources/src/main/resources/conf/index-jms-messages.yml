@@ -33,11 +33,18 @@ engine:
 
   controllerServiceConfigurations:
 
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+    - controllerService: kc_null
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSinkProviderService
+      configuration:
+        kc.data.value.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.data.value.converter.properties:
+        kc.data.key.converter.properties:
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.worker.tasks.max: 1
+        kc.connector.class: com.hurence.logisland.connect.sink.NullSink
 
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       configuration:
         kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
         kc.data.value.converter.properties: |
@@ -75,7 +82,7 @@ engine:
         write.topics: none
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: console_service
+        write.topics.client.service: kc_null
       processorConfigurations:
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap

@@ -38,6 +38,12 @@
             <organization>Hurence</organization>
             <organizationUrl>http://www.hurence.com</organizationUrl>
         </developer>
+        <developer>
+            <name>Andrea Marziali</name>
+            <email>marziali.andrea@gmail.com</email>
+            <organization>Hurence</organization>
+            <organizationUrl>http://www.hurence.com</organizationUrl>
+        </developer>
     </developers>
     <licenses>
         <license>

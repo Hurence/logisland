@@ -64,7 +64,7 @@ Let's first focus on the stream configuration and then on its pipeline in order 
 The JMS stream
 ==============
 
-Here we are going to use a special processor (``KafkaConnectStructuredProviderService``) to use the kafka connect source as input for the structured stream defined below.
+Here we are going to use a special processor (``KafkaConnectStructuredSourceProviderService``) to use the kafka connect source as input for the structured stream defined below.
 
 Logisland ships by default a kafka connect JMS source implemented by the class *com.datamountaineer.streamreactor.connect.jms.source.JMSSourceConnector*.
 
@@ -80,7 +80,7 @@ The kafka connect controller service configuration will look like this:
 .. code-block:: yaml
 
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       configuration:
         kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
         kc.data.value.converter.properties: |

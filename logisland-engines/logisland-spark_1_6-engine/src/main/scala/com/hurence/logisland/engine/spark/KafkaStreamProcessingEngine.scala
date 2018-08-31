@@ -429,7 +429,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 kafkaStream.start()
             } catch {
                 case ex: Exception =>
-                    logger.error("something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
+                    logger.error(s"something bad happened, please check Kafka or cluster health : {}", ex.getMessage)
             }
 
         })

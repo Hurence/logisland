@@ -29,6 +29,7 @@
             </activation>
             <modules>
                 <module>logisland-connector-jms</module>
+                <module>logisland-connector-jdbc</module>
                 <module>logisland-connector-opc</module>
                 <module>logisland-connector-simulator</module>
             </modules>

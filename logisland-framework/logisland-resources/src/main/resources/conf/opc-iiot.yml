@@ -4,7 +4,7 @@ documentation: LogIsland IIoT OPC-UA Job
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Index some OPC-UA tagw with Logisland
+  documentation: Index some OPC-UA tags with Logisland
   configuration:
     spark.app.name: OpcUaLogisland
     spark.master: local[*]
@@ -41,11 +41,18 @@ engine:
         hosts: sandbox:9300
         cluster.name: es-logisland
 
-    - controllerService: console_service
-      component: com.hurence.logisland.stream.spark.structured.provider.ConsoleStructuredStreamProviderService
+    - controllerService: kc_null
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSinkProviderService
+      configuration:
+        kc.data.value.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.data.value.converter.properties:
+        kc.data.key.converter.properties:
+        kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
+        kc.worker.tasks.max: 1
+        kc.connector.class: com.hurence.logisland.connect.sink.NullSink
 
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: Kafka connect OPC-UA source service
       type: service
       configuration:
@@ -78,7 +85,7 @@ engine:
         write.topics: logisland_parsed
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        write.topics.client.service: console_service
+        write.topics.client.service: kc_null
       processorConfigurations:
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap
