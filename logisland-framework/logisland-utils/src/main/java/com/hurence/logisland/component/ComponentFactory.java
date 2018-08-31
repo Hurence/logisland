@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.config.EngineConfiguration;
 import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
@@ -43,8 +44,7 @@ public final class ComponentFactory {
 
     public static Optional<EngineContext> getEngineContext(EngineConfiguration configuration) {
         try {
-            final ProcessingEngine engine =
-                    (ProcessingEngine) Class.forName(configuration.getComponent()).newInstance();
+            final ProcessingEngine engine = loadComponent(configuration.getComponent());
             final EngineContext engineContext =
                     new StandardEngineContext(engine, Long.toString(currentId.incrementAndGet()));
 
@@ -70,7 +70,7 @@ public final class ComponentFactory {
 
             return Optional.of(engineContext);
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException e) {
             logger.error("unable to instantiate engine {} : {}", configuration.getComponent(), e.toString());
         }
         return Optional.empty();
@@ -84,8 +84,7 @@ public final class ComponentFactory {
      */
     public static Optional<StreamContext> getStreamContext(StreamConfiguration configuration) {
         try {
-            final RecordStream recordStream =
-                    (RecordStream) Class.forName(configuration.getComponent()).newInstance();
+            final RecordStream recordStream =loadComponent(configuration.getComponent());
             final StreamContext instance =
                     new StandardStreamContext(recordStream, configuration.getStream());
 
@@ -101,15 +100,15 @@ public final class ComponentFactory {
             logger.info("created processor {}", configuration.getComponent());
             return Optional.of(instance);
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instanciate processor {} : {}", configuration.getComponent(), e.toString());
+        } catch (ClassNotFoundException e) {
+            logger.error("unable to instantiate processor {} : {}", configuration.getComponent(), e.toString());
         }
         return Optional.empty();
     }
 
     public static Optional<ProcessContext> getProcessContext(ProcessorConfiguration configuration) {
         try {
-            final Processor processor = (Processor) Class.forName(configuration.getComponent()).newInstance();
+            final Processor processor =loadComponent(configuration.getComponent());
             final ProcessContext processContext =
                     new StandardProcessContext(processor, configuration.getProcessor());
 
@@ -119,11 +118,25 @@ public final class ComponentFactory {
 
             logger.info("created processor {}", configuration.getComponent());
             return Optional.of(processContext);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.error("unable to instanciate processor {} : {}", configuration.getComponent(), e.toString());
+        } catch (ClassNotFoundException e) {
+            logger.error("unable to instantiate processor {} : {}", configuration.getComponent(), e.toString());
         }
 
         return Optional.empty();
+    }
+
+
+    public static <T> T loadComponent(String className)throws ClassNotFoundException {
+        //first look for a plugin
+        try {
+        try {
+            return PluginLoader.loadPlugin(className);
+        } catch (ClassNotFoundException cnfe) {
+            return (T)Class.forName(className).newInstance();
+        }
+        } catch (Exception e) {
+            throw new ClassNotFoundException("Unable to find class " + className, e);
+        }
     }
 
 
