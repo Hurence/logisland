@@ -3,7 +3,7 @@ What's new in logisland ?
 
 
 
-v0.14.0
+v0.15.0
 -------
 
 - add support for SOLR
