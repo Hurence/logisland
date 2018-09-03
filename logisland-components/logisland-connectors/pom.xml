@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-components</artifactId>
+        <version>0.14.0</version>
+    </parent>
+    <packaging>pom</packaging>
+
+    <artifactId>logisland-connectors</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+    <modules>
+        <module>logisland-connector-jms</module>
+        <module>logisland-connector-jdbc</module>
+        <module>logisland-connector-opc</module>
+        <module>logisland-connector-simulator</module>
+        <module>logisland-connector-blockchain</module>
+        <module>logisland-connector-ftp</module>
+    </modules>
+
+
+</project>
