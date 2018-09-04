@@ -24,6 +24,11 @@ import org.springframework.boot.loader.tools.LibraryScope;
 
 import java.io.File;
 
+/**
+ * A modified version of {@link org.springframework.boot.loader.tools.Layouts.None} layout that discards provided dependencies.
+ *
+ * @author amarziali
+ */
 public class LogislandPluginLayoutFactory implements LayoutFactory {
 
     @Override

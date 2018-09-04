@@ -29,25 +29,34 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-
+            <version>2.9.4</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-
+            <version>2.9.4</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <version>2.6</version>
         </dependency>
+
+
+
+
+        <!--
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-common-processors-plugin</artifactId>
@@ -125,6 +134,18 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-cassandra-client-service</artifactId>
         </dependency>
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-hbase_1_1_2-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -146,7 +167,6 @@
                         <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                     </arguments>
 
-
                 </configuration>
 
 
@@ -158,6 +178,7 @@
                         </goals>
                     </execution>
                 </executions>
+
             </plugin>
         </plugins>
 

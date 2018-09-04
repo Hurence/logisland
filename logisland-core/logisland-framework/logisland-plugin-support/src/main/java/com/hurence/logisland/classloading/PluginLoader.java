@@ -111,6 +111,14 @@ public class PluginLoader {
     }
 
 
+    /**
+     * Load a plugin by autoproxying between current caller classloader and plugin own classloader.
+     *
+     * @param className the name of plugin class to load
+     * @param <U>       the return type.
+     * @return an instance of the requested plugin
+     * @throws Exception
+     */
     public static <U> U loadPlugin(String className) throws Exception {
         ClassLoader cl = registry.get(className);
         if (cl == null) {
@@ -118,6 +126,11 @@ public class PluginLoader {
                     ". Please check your classpath");
         }
         return (U) PluginProxy.create(cl.loadClass(className).newInstance());
+    }
+
+
+    public static Map<String, ClassLoader> getRegistry() {
+        return Collections.unmodifiableMap(registry);
     }
 
 }

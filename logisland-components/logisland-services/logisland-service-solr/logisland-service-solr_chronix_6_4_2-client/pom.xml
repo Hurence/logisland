@@ -128,6 +128,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>-Dtests.security.manager=false</argLine>
+                    <forkMode>never</forkMode>
                 </configuration>
             </plugin>
             <plugin>

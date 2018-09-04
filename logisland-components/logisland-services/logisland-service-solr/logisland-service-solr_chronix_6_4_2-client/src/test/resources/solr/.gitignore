@@ -1,0 +1,9 @@
+*
+
+!.gitignore
+!solr.xml
+!zoo.cfg
+!chronix/**/*
+!README.txt
+
+!*/

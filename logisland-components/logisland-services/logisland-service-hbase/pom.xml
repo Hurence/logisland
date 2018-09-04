@@ -26,13 +26,12 @@
     </parent>
 
     <artifactId>logisland-service-hbase</artifactId>
-    <name>Logisland HBase Services</name>
+    <name>Logisland HBase Service Packages</name>
     <packaging>pom</packaging>
 
     <modules>
-        <module>logisland-service-elasticsearch-api</module>
-        <module>logisland-service-elasticsearch_2_4_0-client</module>
-        <module>logisland-service-elasticsearch_5_4_0-client</module>
+        <module>logisland-service-hbase_1_1_2-client</module>
+        <module>logisland-service-hbase-api</module>
     </modules>
 
 

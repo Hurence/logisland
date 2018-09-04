@@ -6,30 +6,38 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-services</artifactId>
+        <artifactId>logisland-service-elasticsearch</artifactId>
         <version>0.14.0</version>
     </parent>
 
-    <artifactId>logisland-elasticsearch_5_4_0-client-service</artifactId>
+    <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
     <packaging>jar</packaging>
-    <name>Logisland Elasticsearch 5.4.0 Service</name>
+    <name>Elasticsearch 5.4.0 Service Plugin</name>
 
 
     <properties>
         <!-- Versions -->
         <elasticsearch.version>5.4.0</elasticsearch.version>
-
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <module.exports>com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService</module.exports>
     </properties>
     <dependencies>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.16</version>
             <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -64,6 +72,34 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.11.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.11.1</version>
+            <scope>test</scope>
+        </dependency>
+
+
 
     </dependencies>
     <build>
@@ -75,7 +111,15 @@
                     <argLine>-Dtests.security.manager=false</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
 
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 

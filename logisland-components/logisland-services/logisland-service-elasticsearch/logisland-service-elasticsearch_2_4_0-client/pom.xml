@@ -12,25 +12,32 @@
 
     <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
     <packaging>jar</packaging>
-    <name>Logisland Elasticsearch 2.4.0 Service</name>
+    <name>Elasticsearch 2.4.0 Service Plugin</name>
 
 
     <properties>
         <!-- Versions -->
         <elasticsearch.version>2.4.5</elasticsearch.version>
 
-        <!-- Encoding -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <module.exports>com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService</module.exports>
     </properties>
     <dependencies>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.16</version>
             <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -42,6 +49,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
             <optional>true</optional>
         </dependency>
 
@@ -59,6 +67,28 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.16</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
     <build>
         <plugins>
@@ -68,6 +98,15 @@
                 <configuration>
                     <argLine>-Dtests.security.manager=false</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -20,65 +20,11 @@
         <module>logisland-service-inmemory-cache</module>
         <module>logisland-service-ip-to-geo</module>
         <module>logisland-service-redis</module>
-
+        <module>logisland-service-hbase</module>
         <module>logisland-service-solr</module>
-
-        <!--
         <module>logisland-service-elasticsearch</module>
--->
 
     </modules>
 
-    <build>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.0</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Logisland-Version>${project.version}</Logisland-Version>
-                                <Logisland-Plugins-Export>${module.exports}</Logisland-Plugins-Export>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>2.0.0.RELEASE</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>repackage</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <layoutFactory implementation="com.hurence.logisland.packaging.LogislandPluginLayoutFactory">
-                        </layoutFactory>
-                        <excludeArtifactIds>connect-api,connect-runtime,connect-json,connect-transforms,kafka-clients,
-                            logisland-utils,logisland-api,commons-logging
-                        </excludeArtifactIds>
-                        <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>
-                        <classifier>plugin</classifier>
-
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.hurence.logisland</groupId>
-                            <artifactId>logisland-plugin-support</artifactId>
-                            <version>${project.version}</version>
-                        </dependency>
-                    </dependencies>
-
-                </plugin>
-            </plugins>
-
-        </pluginManagement>
-    </build>
 </project>
