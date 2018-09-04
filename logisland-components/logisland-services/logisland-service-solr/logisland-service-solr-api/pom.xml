@@ -6,12 +6,15 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-solr-client-service</artifactId>
-        <version>0.15.0</version>
+        <artifactId>logisland-service-solr</artifactId>
+        <version>0.14.0</version>
     </parent>
 
     <artifactId>logisland-service-solr-api</artifactId>
     <packaging>jar</packaging>
+
+    <name>Solr Service API</name>
+
 
     <properties>
         <!-- Encoding -->
@@ -23,7 +26,13 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>${solr.version}</version>
+            <version>5.5.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>

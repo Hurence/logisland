@@ -77,8 +77,10 @@
     <modules>
        <module>logisland-components</module>
         <module>logisland-core</module>
+        <!--
         <module>logisland-documentation</module>
         <module>logisland-assembly</module>
+        -->
         <module>logisland-docker</module>
     </modules>
 
@@ -193,27 +195,6 @@
     </repositories>
 
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.15.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
-        </dependency>
-
-    </dependencies>
     <build>
 
         <pluginManagement>

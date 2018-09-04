@@ -11,7 +11,7 @@
 
     <artifactId>logisland-mongodb</artifactId>
     <packaging>pom</packaging>
-    <name>Logisland MongoDB Service</name>
+    <name>Logisland MongoDB Service Packages</name>
 
 
     <modules>

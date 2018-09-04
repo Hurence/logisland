@@ -21,8 +21,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland</artifactId>
-        <version>0.15.0</version>
+        <artifactId>logisland-core</artifactId>
+        <version>0.14.0</version>
     </parent>
 
     <artifactId>logisland-framework</artifactId>
@@ -33,6 +33,9 @@
         <module>logisland-bootstrap</module>
         <module>logisland-hadoop-utils</module>
         <module>logisland-scripting</module>
+        <module>logisland-plugin-support</module>
     </modules>
+
+
 
 </project>

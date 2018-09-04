@@ -13,8 +13,10 @@
     <packaging>pom</packaging>
     <artifactId>logisland-components</artifactId>
     <modules>
+        <!--
         <module>logisland-connectors</module>
         <module>logisland-processors</module>
+        -->
         <module>logisland-services</module>
     </modules>
 

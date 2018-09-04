@@ -13,6 +13,9 @@
     <artifactId>logisland-service-cassandra-api</artifactId>
     <packaging>jar</packaging>
 
+    <name>Cassandra 3 Service API</name>
+
+
     <properties>
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

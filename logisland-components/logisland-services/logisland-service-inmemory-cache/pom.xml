@@ -13,6 +13,9 @@
     <artifactId>logisland-service-inmemory-cache</artifactId>
     <packaging>jar</packaging>
 
+    <name>Memory Cache Service Plugin</name>
+
+
     <properties>
         <module.exports>com.hurence.logisland.service.cache.CSVKeyValueCacheService,
             com.hurence.logisland.service.cache.LRUKeyValueCacheService</module.exports>

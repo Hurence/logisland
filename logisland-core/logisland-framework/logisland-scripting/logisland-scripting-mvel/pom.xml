@@ -14,6 +14,7 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-scripting-base</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mvel</groupId>

@@ -26,6 +26,9 @@
     <artifactId>logisland-service-cassandra</artifactId>
     <packaging>pom</packaging>
 
+    <name>Logisland Cassandra Service Packages</name>
+
+
     <modules>
         <module>logisland-service-cassandra-api</module>
         <module>logisland-service-cassandra-client</module>

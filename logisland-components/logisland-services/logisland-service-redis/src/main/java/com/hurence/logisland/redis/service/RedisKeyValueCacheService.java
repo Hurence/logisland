@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +28,6 @@ import com.hurence.logisland.redis.util.RedisAction;
 import com.hurence.logisland.redis.util.RedisUtils;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.cache.model.Cache;
-import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -141,16 +139,10 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     public void set(String key, Record value) {
         try {
-            put(key, value,stringSerializer, (Serializer<Record>) recordSerializer);
+            put(key, value, stringSerializer, (Serializer<Record>) recordSerializer);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    protected Cache<String, Record> createCache(final ControllerServiceInitializationContext context) throws IOException, InterruptedException {
-        final int capacity = context.getPropertyValue(CACHE_SIZE).asInteger();
-        return new LRUCache<String, Record>(capacity);
     }
 
 
@@ -183,9 +175,9 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
                     if (firstResult instanceof Boolean) {
                         final Boolean absent = (Boolean) firstResult;
 
-                        if(absent){
+                        if (absent) {
                             return null;
-                        }else {
+                        } else {
                             InputStream input = new ByteArrayInputStream(existingValue);
                             return valueDeserializer.deserialize(input);
                         }
@@ -224,7 +216,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
             final byte[] v = redisConnection.get(k);
             if (v == null) {
                 return null;
-            }else {
+            } else {
                 InputStream input = new ByteArrayInputStream(v);
                 return valueDeserializer.deserialize(input);
             }
@@ -292,8 +284,8 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
         try {
             keySerializer.serialize(out, key);
-            k= out.toByteArray();
-        }catch (Throwable t){
+            k = out.toByteArray();
+        } catch (Throwable t) {
             // do nothing
         }
         out.reset();
@@ -302,7 +294,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         try {
             valueSerializer.serialize(out, value);
             v = out.toByteArray();
-        }catch (Throwable t){
+        } catch (Throwable t) {
             // do nothing
         }
 
@@ -352,7 +344,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         } else if (inSerializerClass.equals(KURA_PROTOCOL_BUFFER_SERIALIZER.getValue())) {
             return new KuraProtobufSerializer();
         }
-            return new KryoSerializer(true);
+        return new KryoSerializer(true);
 
     }
 
@@ -403,18 +395,18 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        set(record.getId(),record);
+        set(record.getId(), record);
     }
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
-        set(record.getId(),record);
+        set(record.getId(), record);
     }
 
     @Override
     public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
         try {
-            remove(record.getId(),stringSerializer);
+            remove(record.getId(), stringSerializer);
         } catch (IOException e) {
             getLogger().warn("Error removing record : " + e.getMessage(), e);
         }

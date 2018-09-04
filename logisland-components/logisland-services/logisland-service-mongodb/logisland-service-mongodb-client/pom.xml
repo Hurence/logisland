@@ -12,7 +12,7 @@
 
     <artifactId>logisland-service-mongodb-client</artifactId>
     <packaging>jar</packaging>
-    <name>Logisland Elasticsearch MongoDB 3.8.0 Service</name>
+    <name>MongoDB 3.8.0 Service Plugin</name>
 
 
     <properties>

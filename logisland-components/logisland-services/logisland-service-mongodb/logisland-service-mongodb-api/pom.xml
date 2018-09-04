@@ -12,7 +12,7 @@
 
     <artifactId>logisland-service-mongodb-api</artifactId>
     <packaging>jar</packaging>
-    <name>Logisland MongoDB Service API</name>
+    <name>MongoDB Service API</name>
 
 
     <properties>
