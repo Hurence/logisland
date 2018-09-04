@@ -65,6 +65,8 @@ services:
       - redis
     ports:
       - "4050:4050"
+      - "8082:8082"
+      - "9999:9999"
     volumes:
       - ./conf/logisland:/conf
       - ./data/logisland:/data

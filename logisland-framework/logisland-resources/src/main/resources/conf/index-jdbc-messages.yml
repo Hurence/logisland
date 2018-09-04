@@ -1,13 +1,13 @@
-version: 0.15.0
-documentation: LogIsland JMS read job
+version: 0.12.2
+documentation: LogIsland Kafka Connect Integration
 
 engine:
   component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
   type: engine
-  documentation: Index some JDBC messages with logisland
+  documentation: Use Kafka connectors with logisland
   configuration:
-    spark.app.name: JDBCTest
-    spark.master: local[1]
+    spark.app.name: JdbcTest
+    spark.master: local[*]
     spark.driver.memory: 512M
     spark.driver.cores: 1
     spark.executor.memory: 512M
@@ -26,7 +26,7 @@ engine:
     spark.streaming.kafka.maxRatePerPartition: 10000
     spark.streaming.timeout: -1
     spark.streaming.unpersist: false
-    spark.streaming.kafka.maxRetries: 10
+    spark.streaming.kafka.maxRetries: 3
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4040
@@ -43,50 +43,41 @@ engine:
         kc.worker.tasks.max: 1
         kc.connector.class: com.hurence.logisland.connect.sink.NullSink
 
-    - controllerService: kc_source_service
+
+    - controllerService: kc_jdbc_source
       component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       configuration:
         kc.data.value.converter: com.hurence.logisland.connect.converter.LogIslandRecordConverter
         kc.data.value.converter.properties: |
           record.serializer=com.hurence.logisland.serializer.KryoSerializer
-        kc.data.key.converter.properties: |
-          schemas.enable=false
+        kc.data.key.converter.properties:
         kc.data.key.converter: org.apache.kafka.connect.storage.StringConverter
         kc.worker.tasks.max: 1
+        kc.partitions.max: 4
         kc.connector.class: io.confluent.connect.jdbc.JdbcSourceConnector
         kc.connector.offset.backing.store: memory
         kc.connector.properties: |
-          connection.url=jdbc:mysql://localhost:3306/logisland?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
-          connection.user=root
-          connection.password=formation
-          schema.pattern=logisland
-          connection.attempts=3
-          connection.backoff.ms=5000
+          connection.url=jdbc:h2:tcp://sandbox:9999/~/test
+          connection.user=sa
+          connection.password=
           mode=incrementing
-          incrementing.column.name=bytes_out
-          query=SELECT * FROM logisland.apache
-          topic.prefix=jdbc-
-
-
-    - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
-      type: service
-      documentation: elasticsearch service
-      configuration:
-        hosts: sandbox:9300
-        cluster.name: es-logisland
-        batch.size: 5000
+          incrementing.column.name=RECORD_ID
+          query=SELECT * FROM LOGISLAND.APACHE
+          topic.prefix=test-jdbc-
 
   streamConfigurations:
-    - stream: parsing_stream_source
+
+
+    ######### parsing stream ##############
+    - stream: jdbc_ingest
       component: com.hurence.logisland.stream.spark.structured.StructuredStream
       configuration:
-        read.topics: none
+        read.topics: test
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
-        read.topics.client.service: kc_source_service
+        read.topics.client.service: kc_jdbc_source
         write.topics: none
-        write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        write.topics.serializer: com.hurence.logisland.serializer.StringSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         write.topics.client.service: kc_null
       processorConfigurations:
@@ -97,34 +88,10 @@ engine:
           configuration:
             keep.root.record: false
             copy.root.record.fields: true
-        - processor: add_fields
-          component: com.hurence.logisland.processor.AddFields
+
+        - processor: stream_debugger2
+          component: com.hurence.logisland.processor.DebugStream
           type: processor
-          documentation: "rename fields for dynamic indexation in chronix : add *_s suffix"
+          documentation: debug records
           configuration:
-            conflict.resolution.policy: overwrite_existing
-            message_text: ${new String(bytes_payload)}
-        - processor: rename_fields
-          component: com.hurence.logisland.processor.NormalizeFields
-          type: processor
-          documentation: "Change the record time according to message_timestamp field"
-          configuration:
-            conflict.resolution.policy: overwrite_existing
-            record_time: message_timestamp
-        - processor: remove_fields
-          component: com.hurence.logisland.processor.RemoveFields
-          type: processor
-          documentation: "Remove unused fields"
-          configuration:
-            fields.to.remove: bytes_payload
-        - component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
-          processor: es_publisher
-          type: processor
-          documentation: a processor that indexes processed events in elasticsearch
-          configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
-            default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+            event.serializer: json
