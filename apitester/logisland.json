@@ -1,0 +1,87 @@
+{
+	"lastModified": "2018-06-30T10:00:24Z",
+
+	"streams": [{
+			"name": "kafka_in",
+			"component": "com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing",
+			"config": [{
+					"key": "kafka.input.topics",
+					"value": "logisland_raw"
+				},
+
+				{
+					"key": "kafka.output.topics",
+					"value": "logisland_events"
+				},
+				{
+					"key": "kafka.error.topics",
+					"value": "logisland_errors"
+				},
+				{
+					"key": "kafka.input.topics.serializer",
+					"value": "none"
+				},
+				{
+					"key": "kafka.output.topics.serializer",
+					"value": "com.hurence.logisland.serializer.KryoSerializer"
+				},
+				{
+					"key": "kafka.error.topics.serializer",
+					"value": "com.hurence.logisland.serializer.JsonSerializer"
+				},
+				{
+					"key": "kafka.metadata.broker.list",
+					"value": "sandbox:9092"
+				},
+				{
+					"key": "kafka.zookeeper.quorum",
+					"value": "sandbox:2181"
+				},
+				{
+					"key": "kafka.topic.autoCreate",
+					"value": "true"
+				},
+				{
+					"key": "kafka.topic.default.partitions",
+					"value": "4"
+				},
+				{
+					"key": "kafka.topic.default.replicationFactor",
+					"value": "1"
+				}
+			],
+			"pipeline": {
+				"lastModified": "2018-05-30T12:02:35Z",
+				"processors": [{
+						"component": "com.hurence.logisland.processor.SplitText",
+						"name": "apache_parser",
+						"documentation": "parse apache logs with a regexp",
+						"config": [
+              {
+                                 "key": "record.type",
+                                 "value": "apache_logs"
+                               },
+							{
+								"key": "value.regex",
+								"value": "(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\[([\\w:\\/]+\\s[+\\-]\\d{4})\\]\\s+\"(\\S+)\\s+(\\S+)\\s*(\\S*)\"\\s+(\\S+)\\s+(\\S+)"
+							},
+							{
+								"key": "value.fields",
+								"value": "src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out"
+							}
+						]
+					},
+					{
+						"name": "outLog",
+						"component": "com.hurence.logisland.processor.DebugStream",
+						"config": [{
+							"key": "event.serializer",
+							"value": "json"
+						}]
+
+					}
+	]
+}
+}
+]
+}

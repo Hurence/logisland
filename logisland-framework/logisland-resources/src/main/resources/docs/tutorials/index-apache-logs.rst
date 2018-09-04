@@ -270,7 +270,7 @@ Let's send the first 500000 lines of NASA http access over July 1995 to LogIslan
     cd /tmp
     wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz
     gunzip NASA_access_log_Jul95.gz
-    head -500000 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
+    head -n 500 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
 
 
 4. Monitor your spark jobs and Kafka topics

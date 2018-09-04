@@ -1,0 +1,247 @@
+#########################################################################################################
+# Logisland configuration script template
+#########################################################################################################
+
+version: 0.10.0-SNAPSHOT
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: IntegrationTests
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 2G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 1000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service_3
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+      type: service
+      documentation: elasticsearch 2.3.3 service implementation
+      configuration:
+        hosts: elasticsearch23:9300
+        cluster.name: elasticsearch-2.3
+        batch.size: 20000
+
+    - controllerService: elasticsearch_service_4
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: elasticsearch24:9300
+        cluster.name: elasticsearch-2.4
+        batch.size: 20000
+
+    - controllerService: elasticsearch_service_5
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch 5 service implementation
+      configuration:
+        hosts: elasticsearch5:9300
+        cluster.name: elasticsearch-5
+        batch.size: 20000
+
+
+  streamConfigurations:
+
+
+    # indexing elasticsearch 2.3
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES 2.3
+      configuration:
+        kafka.input.topics: save_to_es
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_3
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_4
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that indexes processed events in elasticsearch
+          configuration:
+            elasticsearch.client.service: elasticsearch_service_5
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
+
+#------------------------------------------------------------
+#              _   _ _                    _      _            _   _
+#   ___  _   _| |_| (_) ___ _ __       __| | ___| |_ ___  ___| |_(_) ___  _ __
+#  / _ \| | | | __| | |/ _ \ '__|____ / _` |/ _ \ __/ _ \/ __| __| |/ _ \| '_ \
+# | (_) | |_| | |_| | |  __/ | |_____| (_| |  __/ ||  __/ (__| |_| | (_) | | | |
+#  \___/ \__,_|\__|_|_|\___|_|        \__,_|\___|\__\___|\___|\__|_|\___/|_| |_|
+#
+
+#  streamConfigurations:
+
+    # 1. parse time series
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: outlier-detection_raw
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        avro.output.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.cpu_usage",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "record_value",      "type": ["double","null"] } ]}
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            record.type: outlier-detection
+            value.regex: (\S*\s*\S*),(\S*)
+            value.fields: record_time,record_value
+
+
+    # detect outliers
+    - stream: detect_outliers
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_sensor_events
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: match_query
+          component: com.hurence.logisland.processor.DetectOutliers
+          type: processor
+          documentation: a processor that detection something exotic in a continuous time series values
+          configuration:
+            rotation.policy.type: by_amount
+            rotation.policy.amount: 100
+            rotation.policy.unit: points
+            chunking.policy.type: by_amount
+            chunking.policy.amount: 10
+            chunking.policy.unit: points
+            global.statistics.min: -100000
+            min.amount.to.predict: 100
+            zscore.cutoffs.normal: 3.5
+            zscore.cutoffs.moderate: 5
+            record.value.field: record_value
+            record.time.field: record_time
+            output.record.type: sensor_outlier
+
+    # sample time series
+    - stream: detect_outliers
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: logisland_sensor_events
+        kafka.output.topics: save_to_es
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: sampler
+          component: com.hurence.logisland.processor.SampleRecords
+          type: processor
+          documentation: a processor that reduce the number of time series values
+          configuration:
+            record.value.field: record_value
+            record.time.field: record_time
+            sampling.algorithm: average
+            sampling.parameter: 10

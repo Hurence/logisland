@@ -116,7 +116,7 @@ public class FlowDistanceMeasure {
 	 *
 	 * We define dv(rk, rh) to be equal to the normalized Levenshtein distance
 	 * between strings obtained by concatenating the parameter values (e.g.,
-	 * 0.14.0US).
+	 * 0.15.0US).
 	 */
 	private static double dv(HttpFlow e1, HttpFlow e2) {
 		List<String> v1 = e1.getUrlQueryValues();
