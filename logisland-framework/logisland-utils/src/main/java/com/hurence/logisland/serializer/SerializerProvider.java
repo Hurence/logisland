@@ -26,12 +26,16 @@ public class SerializerProvider {
     private static ComponentLog logger = new StandardComponentLogger("serializerProvider", SerializerProvider.class);
     private static String AVRO_SERIALIZER = AvroSerializer.class.getName();
     private static String JSON_SERIALIZER = JsonSerializer.class.getName();
+    private static String EXTENDED_JSON_SERIALIZER = ExtendedJsonSerializer.class.getName();
+
+
     private static String KRYO_SERIALIZER = KryoSerializer.class.getName();
     private static String BYTES_ARRAY_SERIALIZER = BytesArraySerializer.class.getName();
     private static String STRING_SERIALIZER = StringSerializer.class.getName();
     private static String NOOP_SERIALIZER = NoopSerializer.class.getName();
 
     private static String KURA_PROTOBUF_SERIALIZER = KuraProtobufSerializer.class.getName();
+
     /**
      * build a serializer
      *
@@ -48,6 +52,8 @@ public class SerializerProvider {
                 return new AvroSerializer(schema);
             } else if (inSerializerClass.equals(JSON_SERIALIZER)) {
                 return new JsonSerializer();
+            } else if (inSerializerClass.equals(EXTENDED_JSON_SERIALIZER)) {
+                return new ExtendedJsonSerializer(schemaContent);
             } else if (inSerializerClass.equals(KRYO_SERIALIZER)) {
                 return new KryoSerializer(true);
             } else if (inSerializerClass.equals(BYTES_ARRAY_SERIALIZER)) {

@@ -89,7 +89,7 @@ public final class ComponentFactory {
             final StreamContext instance =
                     new StandardStreamContext(recordStream, configuration.getStream());
 
-            // instanciate each related processor
+            // instantiate each related processor
             configuration.getProcessorConfigurations().forEach(processConfig -> {
                 Optional<ProcessContext> processorContext = getProcessContext(processConfig);
                 processorContext.ifPresent(instance::addProcessContext);

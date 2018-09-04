@@ -234,7 +234,8 @@ public class RemoteApiComponentFactory {
 
     private Map<String, String> configureComponent(ConfigurableComponent component, Collection<Property> properties) {
         final Map<String, Property> propertyMap = properties.stream().collect(Collectors.toMap(Property::getKey, Function.identity()));
-        return component.getPropertyDescriptors().stream()
+       return propertyMap.keySet().stream().map(component::getPropertyDescriptor)
+               .filter(propertyDescriptor -> propertyDescriptor != null)
                 .filter(propertyDescriptor -> propertyMap.containsKey(propertyDescriptor.getName()) ||
                         (propertyDescriptor.getDefaultValue() != null && propertyDescriptor.isRequired()))
                 .collect(Collectors.toMap(PropertyDescriptor::getName, propertyDescriptor -> {

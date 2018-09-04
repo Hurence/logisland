@@ -15,22 +15,23 @@
  */
 package com.hurence.logisland.connect.converter;
 
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.SerializerProvider;
 import com.hurence.logisland.stream.StreamProperties;
-import org.apache.kafka.connect.data.ConnectSchema;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaAndValue;
-import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.data.*;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.storage.Converter;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -81,8 +82,66 @@ public class LogIslandRecordConverter implements Converter {
 
     @Override
     public SchemaAndValue toConnectData(String topic, byte[] value) {
-        throw new UnsupportedOperationException("Not yet implemented! Please try later on ;-)");
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(value)) {
+            Record r = recordSerializer.deserialize(bais);
+            Schema schema = toSchemaRecursive(r);
+            return new SchemaAndValue(schema, toObjectRecursive(r, schema));
+        } catch (IOException ioe) {
+            throw new DataException("Unexpected IO Exception occurred while serializing data [topic " + topic + "]", ioe);
+        }    }
+
+
+    public Object toObjectRecursive(Object o, Schema schema) {
+        if (o instanceof Collection) {
+            return  ((Collection<?>) o).stream().map(elem -> toObjectRecursive(elem, schema.schema()));
+        }
+        else if (o instanceof Map) {
+            Struct ret = new Struct(schema);
+            ((Map<?, ?>) o).forEach((k, v) -> ret.put(k.toString(), toObjectRecursive(o, schema.field(k.toString()).schema())));
+            return ret;
+        } else if (o instanceof Record) {
+            Struct ret = new Struct(schema);
+            ((Record) o).getAllFieldsSorted().forEach(field -> ret.put(field.getName(), toObjectRecursive(field.getRawValue(), schema.field(field.getName()).schema())));
+            return ret;
+        }
+        return o;
     }
+
+    private SchemaBuilder toSchemaRecursive(Object o) {
+        if (o instanceof Byte) {
+            return SchemaBuilder.bytes().optional();
+        } else if (o instanceof Short) {
+            return SchemaBuilder.int16().optional();
+        } else if (o instanceof Integer) {
+            return SchemaBuilder.int32().optional();
+
+        } else if (o instanceof Long) {
+            return SchemaBuilder.int64().optional();
+
+        } else if (o instanceof Float) {
+            return SchemaBuilder.float32().optional();
+
+        } else if (o instanceof Double) {
+            return SchemaBuilder.float64().optional();
+
+        } else if (o instanceof Boolean) {
+            return SchemaBuilder.bool().optional();
+        } else if (o instanceof byte[]) {
+            return SchemaBuilder.bytes().optional();
+        } else if (o instanceof Collection) {
+            return SchemaBuilder.array(toSchemaRecursive((Array.getLength(o) > 0 ? Array.get(o, 0) : null))).optional();
+        } else if (o instanceof Map) {
+            SchemaBuilder sb = SchemaBuilder.struct();
+            ((Map<?, ?>) o).forEach((k, v) -> sb.field(k.toString(), toSchemaRecursive(v)));
+            return sb.optional();
+        } else if (o instanceof Record) {
+            SchemaBuilder sb = SchemaBuilder.struct();
+            ((Record) o).getAllFieldsSorted().forEach(field -> sb.field(field.getName(), toSchemaRecursive(field.getRawValue())));
+            return sb.optional();
+        }
+        return SchemaBuilder.string().optional();
+    }
+
 
     private Field toFieldRecursive(String name, Schema schema, Object value, boolean isKey) {
         try {
@@ -132,7 +191,7 @@ public class LogIslandRecordConverter implements Converter {
                                     .collect(Collectors.toList()));
                 }
                 case MAP: {
-                    return new Field(name, FieldType.MAP, value);
+                    return new Field(name, FieldType.MAP, new LinkedHashMap<>((Map) value));
                 }
                 case STRUCT: {
                     Struct struct = (Struct) value;

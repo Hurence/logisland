@@ -28,6 +28,21 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
+/**
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 
 package com.hurence.logisland.stream.spark.structured
 
@@ -40,19 +55,17 @@ import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastW
 import com.hurence.logisland.logging.StandardComponentLogger
 import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.stream.spark.SparkRecordStream
-import com.hurence.logisland.stream.spark.structured.handler.StructuredStreamHandler
 import com.hurence.logisland.stream.spark.structured.provider.StructuredStreamProviderService
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.StreamingContext
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
-    protected var handler: StructuredStreamHandler = _
     protected var provider: StructuredStreamProviderService = _
 
 
@@ -117,7 +130,6 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 .asInstanceOf[StructuredStreamProviderService]
 
 
-
             streamContext.getProcessContexts().clear();
             streamContext.getProcessContexts().addAll(
                 PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
@@ -144,18 +156,33 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
                 .asControllerService()
                 .asInstanceOf[StructuredStreamProviderService]
 
-
             // Write key-value data from a DataFrame to a specific Kafka topic specified in an option
-            val ds = writeStreamService.save(readDF, streamContext)
+            val ds = writeStreamService.save(readDF, controllerServiceLookupSink, streamContext)
             pipelineTimerContext.stop()
 
         } catch {
             case ex: Throwable =>
-                logger.error("something bad happened, please check Kafka or Zookeeper health : {}", ex)
+                throw new IllegalStateException("Error while processing the streaming query", ex)
         }
     }
 
-
+    override def stop(): Unit = {
+        super.stop()
+        //stop the source
+        val thisStream = SQLContext.getOrCreate(getStreamContext().sparkContext).streams.active.find(stream => streamContext.getIdentifier.equals(stream.name));
+        if (thisStream.isDefined) {
+            if (!getStreamContext().sparkContext.isStopped && thisStream.get.isActive) {
+                try {
+                    thisStream.get.stop()
+                    thisStream.get.awaitTermination()
+                } catch {
+                    case ex: Throwable => logger.warn(s"Stream ${streamContext.getIdentifier} may not have been correctly stopped")
+                }
+            }
+        } else {
+            logger.warn(s"Unable to find an active streaming query for stream ${streamContext.getIdentifier}")
+        }
+    }
 }
 
 

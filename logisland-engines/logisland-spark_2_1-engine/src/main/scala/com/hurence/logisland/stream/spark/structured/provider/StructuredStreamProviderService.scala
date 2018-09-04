@@ -13,6 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark.structured.provider
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
@@ -26,27 +41,12 @@ import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, ProcessorMetrics}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
+import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 trait StructuredStreamProviderService extends ControllerService {
 
     val logger = LoggerFactory.getLogger(this.getClass)
@@ -67,7 +67,7 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    protected def write(df: Dataset[Record], streamContext: StreamContext)
+    protected def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_]
 
     /**
       *
@@ -161,7 +161,7 @@ trait StructuredStreamProviderService extends ControllerService {
       * @param streamContext
       * @return DataFrame currently loaded
       */
-    def save(df: Dataset[Record], streamContext: StreamContext) = {
+    def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
 
         // make sure controller service lookup won't be serialized !!
         streamContext.addControllerServiceLookup(null)
@@ -180,7 +180,7 @@ trait StructuredStreamProviderService extends ControllerService {
         val df2 = df.
             mapPartitions(record =>
                 record.map(record => serializeRecords(serializer, keySerializer, record)))
-        write(df2, streamContext)
+        write(df2, controllerServiceLookupSink, streamContext).queryName(streamContext.getIdentifier).start()
 
 
     }
@@ -238,7 +238,7 @@ trait StructuredStreamProviderService extends ControllerService {
                 deserialized.setField(r.getField(FieldDictionary.RECORD_NAME))
 
             if (r.hasField(FieldDictionary.RECORD_KEY) && r.getField(FieldDictionary.RECORD_KEY).getRawValue != null) {
-                val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY)).asInstanceOf[Record]
+                val deserializedKey = doDeserialize(keySerializer, r.getField(FieldDictionary.RECORD_KEY))
                 if (deserializedKey.hasField(FieldDictionary.RECORD_VALUE) && deserializedKey.getField(FieldDictionary.RECORD_VALUE).getRawValue != null) {
                     val f = deserializedKey.getField(FieldDictionary.RECORD_VALUE)
                     deserialized.setField(FieldDictionary.RECORD_KEY, f.getType, f.getRawValue)

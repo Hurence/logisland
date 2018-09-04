@@ -103,7 +103,9 @@ object StreamProperties {
     val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
         "avro serialization", "serialize events as avro blocs")
     val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
-        "avro serialization", "serialize events as json blocs")
+        "json serialization", "serialize events as json blocs")
+    val EXTENDED_JSON_SERIALIZER = new AllowableValue(classOf[ExtendedJsonSerializer].getName,
+        "extended json serialization", "serialize events as json blocs supporting nested objects/arrays")
     val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
         "kryo serialization", "serialize events as binary blocs")
     val STRING_SERIALIZER = new AllowableValue(classOf[StringSerializer].getName,
@@ -119,7 +121,7 @@ object StreamProperties {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -128,7 +130,7 @@ object StreamProperties {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -138,7 +140,7 @@ object StreamProperties {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(JSON_SERIALIZER.getValue)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .build
 
 
@@ -374,7 +376,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -383,7 +385,7 @@ object StreamProperties {
         .description("The key serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER,KURA_PROTOCOL_BUFFER_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER,KURA_PROTOCOL_BUFFER_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -407,7 +409,7 @@ object StreamProperties {
         .description("the serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -416,7 +418,7 @@ object StreamProperties {
         .description("The key serializer to use")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER, KURA_PROTOCOL_BUFFER_SERIALIZER)
         .defaultValue(NO_SERIALIZER.getValue)
         .build
 
@@ -443,6 +445,14 @@ object StreamProperties {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
+
+    val INPUT_FORMAT = new PropertyDescriptor.Builder()
+        .name("input.format")
+        .description("Used to load data from a raw record_value. Only json supported")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("")
+        .build
 
     val OUTPUT_FORMAT = new PropertyDescriptor.Builder()
         .name("output.format")
@@ -473,6 +483,14 @@ object StreamProperties {
         .required(false)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("true")
+        .build
+
+    val DATE_FORMAT = new PropertyDescriptor.Builder()
+        .name("date.format")
+        .description("The format of the date for the partition")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("yyyy-MM-dd")
         .build
 
 

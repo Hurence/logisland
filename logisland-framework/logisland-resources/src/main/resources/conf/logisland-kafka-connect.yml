@@ -1,4 +1,4 @@
-version: 0.14.0
+version: 0.15.0
 documentation: LogIsland Kafka Connect Integration
 
 engine:
@@ -35,7 +35,7 @@ engine:
 
     # Our source service
     - controllerService: kc_source_service
-      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredProviderService
+      component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSourceProviderService
       documentation: A kafka source connector provider reading from its own source and providing structured streaming to the underlying layer
       configuration:
         # We will use the logisland record converter for both key and value

@@ -23,6 +23,8 @@ import com.hurence.logisland.component.AbstractConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.logging.ComponentLog;
 
+import java.io.IOException;
+
 public abstract class AbstractControllerService extends AbstractConfigurableComponent implements ControllerService {
 
 
@@ -35,7 +37,11 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
         this.identifier = context.getIdentifier();
         serviceLookup = context.getControllerServiceLookup();
         logger = context.getLogger();
-        init(context);
+        try {
+            init(context);
+        } catch (IOException e) {
+            throw  new InitializationException(e);
+        }
     }
 
 
@@ -54,7 +60,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
      * @param context of initialization context
      * @throws InitializationException if unable to init
      */
-    protected void init(final ControllerServiceInitializationContext context) throws InitializationException {
+    protected void init(final ControllerServiceInitializationContext context) throws InitializationException, IOException {
     }
 
     /**

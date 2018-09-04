@@ -13,6 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.hurence.logisland.stream.spark
 
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
@@ -54,6 +69,7 @@ object StreamOptions {
         .name("kc.connector.properties")
         .description("The properties (key=value) for the connector.")
         .required(false)
+        .defaultValue("")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
@@ -62,6 +78,13 @@ object StreamOptions {
         .description("Max number of threads for this connector")
         .required(true)
         .defaultValue("1")
+        .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
+        .build
+
+    val KAFKA_CONNECT_MAX_PARTITIONS = new PropertyDescriptor.Builder()
+        .name("kc.partitions.max")
+        .description("Max number of partitions for this connector.")
+        .required(false)
         .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
         .build
 

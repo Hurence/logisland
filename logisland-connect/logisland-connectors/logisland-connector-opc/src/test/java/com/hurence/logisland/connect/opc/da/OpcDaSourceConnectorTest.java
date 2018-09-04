@@ -16,81 +16,45 @@
 package com.hurence.logisland.connect.opc.da;
 
 import com.google.gson.Gson;
-import com.hurence.logisland.connect.opc.CommonUtils;
-import com.hurence.opc.OpcTagInfo;
-import com.hurence.opc.auth.UsernamePasswordCredentials;
-import com.hurence.opc.da.OpcDaConnectionProfile;
-import com.hurence.opc.da.OpcDaOperations;
-import com.hurence.opc.da.OpcDaTemplate;
-import org.junit.Assert;
+import com.hurence.logisland.connect.opc.CommonDefinitions;
+import com.hurence.logisland.connect.opc.OpcRecordFields;
+import com.hurence.logisland.util.Tuple;
+import javafx.util.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class OpcDaSourceConnectorTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void parseFailureTest() {
-        CommonUtils.parseTag("test1:2aj", 500L);
-    }
-
-    @Test
-    public void tagParseTest() {
-        Map.Entry<String, Long> toTest = CommonUtils.parseTag("test1:1000", 500L);
-        Assert.assertEquals("test1", toTest.getKey());
-        Assert.assertEquals(new Long(1000), toTest.getValue());
-
-        toTest = CommonUtils.parseTag("test2", 500L);
-        Assert.assertEquals("test2", toTest.getKey());
-        Assert.assertEquals(new Long(500), toTest.getValue());
-    }
-
-    @Test
-    public void configParseAndPartitionTest() {
-        OpcDaSourceConnector connector = new OpcDaSourceConnector();
-        Map<String, String> properties = new HashMap<>();
-        properties.put(OpcDaSourceConnector.PROPERTY_DOMAIN, "domain");
-        properties.put(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT, "2000");
-        properties.put(OpcDaSourceConnector.PROPERTY_PASSWORD, "password");
-        properties.put(OpcDaSourceConnector.PROPERTY_USER, "user");
-        properties.put(OpcDaSourceConnector.PROPERTY_HOST, "host");
-        properties.put(OpcDaSourceConnector.PROPERTY_CLSID, "clsId");
-        properties.put(OpcDaSourceConnector.PROPERTY_TAGS, "tag1:1000,tag2,tag3:3000,tag4:3000");
-        connector.start(properties);
-        List<Map<String, String>> configs = connector.taskConfigs(2);
-        Assert.assertEquals(2, configs.size());
-        System.out.println(configs);
-        configs.stream().map(m -> m.get(OpcDaSourceConnector.PROPERTY_TAGS))
-                .map(s -> s.split(",")).forEach(a -> Assert.assertEquals(2, a.length));
-    }
 
     @Test
     @Ignore
     public void e2eTest() throws Exception {
-        AtomicInteger atomicInteger = new AtomicInteger(5);
-        Random r = new Random();
         OpcDaSourceConnector connector = new OpcDaSourceConnector();
         Map<String, String> properties = new HashMap<>();
-        properties.put(OpcDaSourceConnector.PROPERTY_DOMAIN, "OPC-9167C0D9342");
-        properties.put(OpcDaSourceConnector.PROPERTY_SOCKET_TIMEOUT, "2000");
-        properties.put(OpcDaSourceConnector.PROPERTY_PASSWORD, "opc");
-        properties.put(OpcDaSourceConnector.PROPERTY_USER, "OPC");
-        properties.put(OpcDaSourceConnector.PROPERTY_HOST, "192.168.99.100");
-        properties.put(OpcDaSourceConnector.PROPERTY_CLSID, "F8582CF2-88FB-11D0-B850-00C0F0104305");
-        properties.put(OpcDaSourceConnector.PROPERTY_TAGS, listAllTags().stream()
-                .map(s -> s + ":" + atomicInteger.getAndAdd(r.nextInt(130)))
-                .collect(Collectors.joining(","))
-        );
-        //"Read Error.Int4:1000,Square Waves.Real8,Random.ArrayOfString:100"
+        properties.put(OpcDaSourceConnector.PROPERTY_AUTH_NTLM_DOMAIN, "OPC-9167C0D9342");
+        properties.put(CommonDefinitions.PROPERTY_CONNECTION_SOCKET_TIMEOUT, "2000");
+        properties.put(OpcDaSourceConnector.PROPERTY_AUTH_NTLM_PASSWORD, "opc");
+        properties.put(OpcDaSourceConnector.PROPERTY_AUTH_NTLM_USER, "OPC");
+        properties.put(CommonDefinitions.PROPERTY_SERVER_URI, "opc.da://192.168.99.100");
+        properties.put(OpcDaSourceConnector.PROPERTY_SERVER_CLSID, "F8582CF2-88FB-11D0-B850-00C0F0104305");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_ID, "Random.Real8,Triangle Waves.Int4");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_STREAM_MODE, "SUBSCRIBE,POLL");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_SAMPLING_RATE, "PT3S,PT1S");
+        properties.put(OpcDaSourceConnector.PROPERTY_SESSION_REFRESH_PERIOD, "1000");
+        properties.put(OpcDaSourceConnector.PROPERTY_TAGS_DATA_TYPE_OVERRIDE, "0,8");
+
+
+
         connector.start(properties);
         OpcDaSourceTask task = new OpcDaSourceTask();
         task.start(connector.taskConfigs(1).get(0));
@@ -98,38 +62,17 @@ public class OpcDaSourceConnectorTest {
         Gson json = new Gson();
         es.scheduleAtFixedRate(() -> {
             try {
-                System.err.println(json.toJson(task.poll()));
+                task.poll().stream().map(a->new Tuple<>(new Date((Long)a.sourceOffset().get(OpcRecordFields.SAMPLED_TIMESTAMP)), json.toJson(a))).forEach(System.out::println);
             } catch (InterruptedException e) {
                 //do nothing
             }
         }, 0, 10, TimeUnit.MILLISECONDS);
 
-        Thread.sleep(10000);
+        Thread.sleep(600000);
         task.stop();
         es.shutdown();
         connector.stop();
     }
 
-    private Collection<String> listAllTags() throws Exception {
-        //create a connection profile
-        OpcDaConnectionProfile connectionProfile = new OpcDaConnectionProfile()
-                .withComClsId("F8582CF2-88FB-11D0-B850-00C0F0104305")
-                .withDomain("OPC-9167C0D9342")
-                .withCredentials(new UsernamePasswordCredentials()
-                        .withUser("OPC")
-                        .withPassword("opc"))
-                .withConnectionUri(URI.create("opc.da://192.168.99.100"))
-                .withSocketTimeout(Duration.of(10, ChronoUnit.SECONDS));
-
-        //Create an instance of a da operations
-        try (OpcDaOperations opcDaOperations = new OpcDaTemplate()) {
-            //connect using our profile
-            opcDaOperations.connect(connectionProfile);
-            if (!opcDaOperations.awaitConnected()) {
-                throw new IllegalStateException("Unable to connect");
-            }
-            return opcDaOperations.browseTags().stream().map(OpcTagInfo::getId).collect(Collectors.toList());
-        }
-    }
 
 }

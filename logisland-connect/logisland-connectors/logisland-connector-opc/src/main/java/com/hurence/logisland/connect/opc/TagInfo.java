@@ -15,30 +15,33 @@
  */
 package com.hurence.logisland.connect.opc;
 
-import com.hurence.opc.OpcTagInfo;
-import org.apache.kafka.connect.errors.NotFoundException;
+import java.time.Duration;
 
-import java.util.Map;
-
+/**
+ * Information about a tag
+ *
+ * @author amarziali
+ */
 public class TagInfo {
-    private final OpcTagInfo tagInfo;
-    private final Long refreshPeriodMillis;
+    private final String tagId;
+    private final Duration samplingInterval;
+    private final StreamingMode streamingMode;
 
-    public TagInfo(String raw, long defaultRefreshPeriod, Map<String, OpcTagInfo> dictionary) {
-        Map.Entry<String, Long> parsed = CommonUtils.parseTag(raw, defaultRefreshPeriod);
-        String tag = parsed.getKey();
-        this.refreshPeriodMillis = parsed.getValue();
-        this.tagInfo = dictionary.get(tag);
-        if (tagInfo == null) {
-            throw new NotFoundException("Unable to find tag " + tag + " on selected server. Please check your configuration");
-        }
+    public TagInfo(String tagId, Duration samplingInterval, StreamingMode streamingMode) {
+        this.tagId = tagId;
+        this.samplingInterval = samplingInterval;
+        this.streamingMode = streamingMode;
     }
 
-    public Long getRefreshPeriodMillis() {
-        return refreshPeriodMillis;
+    public String getTagId() {
+        return tagId;
     }
 
-    public OpcTagInfo getTagInfo() {
-        return tagInfo;
+    public Duration getSamplingInterval() {
+        return samplingInterval;
+    }
+
+    public StreamingMode getStreamingMode() {
+        return streamingMode;
     }
 }

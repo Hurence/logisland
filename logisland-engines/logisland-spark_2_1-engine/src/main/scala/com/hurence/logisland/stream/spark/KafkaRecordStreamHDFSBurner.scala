@@ -40,7 +40,7 @@ import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
 import com.hurence.logisland.stream.spark._
@@ -63,6 +63,8 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         descriptors.add(RECORD_TYPE)
         descriptors.add(NUM_PARTITIONS)
         descriptors.add(EXCLUDE_ERRORS)
+        descriptors.add(DATE_FORMAT)
+        descriptors.add(INPUT_FORMAT)
         Collections.unmodifiableList(descriptors)
     }
 
@@ -92,7 +94,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
             if (!records.isEmpty()) {
 
 
-                val sdf = new SimpleDateFormat("yyyy-MM-dd")
+                val sdf = new SimpleDateFormat(streamContext.getPropertyValue(DATE_FORMAT).asString)
 
 
                 val numPartitions = streamContext.getPropertyValue(NUM_PARTITIONS).asInteger()
@@ -120,19 +122,29 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
 
 
                 if (!records.isEmpty()) {
-                    val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
-                    val rows = if (doExcludeErrors) {
-                        records
-                            .filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS))
-                            .map(r => SparkUtils.convertToRow(r, schema))
+                    var df: DataFrame = null;
+                    val inputFormat = streamContext.getPropertyValue(INPUT_FORMAT).asString()
+                    if (inputFormat.isEmpty) {
+
+                        val schema = SparkUtils.convertFieldsNameToSchema(records.take(1)(0))
+                        val rows = if (doExcludeErrors) {
+                            records
+                                .filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS))
+                                .map(r => SparkUtils.convertToRow(r, schema))
+                        } else {
+                            records.map(r => SparkUtils.convertToRow(r, schema))
+                        }
+
+
+                        logger.info(schema.toString())
+                        df = sqlContext.createDataFrame(rows, schema)
                     } else {
-                        records.map(r => SparkUtils.convertToRow(r, schema))
+                        if ("json".equals(inputFormat)) {
+                            df = sqlContext.read.json(records.map(record=> record.getField(FieldDictionary.RECORD_VALUE).asString()))
+                        } else {
+                            throw new IllegalArgumentException(s"Input format $inputFormat is not supported")
+                        }
                     }
-
-
-                    logger.info(schema.toString())
-                    val df = sqlContext.createDataFrame(rows, schema)
-
 
                     outputFormat match {
                         case FILE_FORMAT_PARQUET =>

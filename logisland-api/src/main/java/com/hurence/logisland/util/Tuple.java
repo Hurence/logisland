@@ -73,4 +73,12 @@ public class Tuple<A, B> {
     public int hashCode() {
         return 581 + (this.key == null ? 0 : this.key.hashCode()) + (this.value == null ? 0 : this.value.hashCode());
     }
+
+    @Override
+    public String toString() {
+        return "Tuple{" +
+                "key=" + key +
+                ", value=" + value +
+                '}';
+    }
 }

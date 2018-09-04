@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.Scanner;
 
 
 /**
@@ -67,6 +68,7 @@ public class KafkaConnectTest {
             // start the engine
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
+            new Scanner(System.in).nextLine();
         } catch (Exception e) {
             Assert.fail("something went bad while running the job : " + e);
 

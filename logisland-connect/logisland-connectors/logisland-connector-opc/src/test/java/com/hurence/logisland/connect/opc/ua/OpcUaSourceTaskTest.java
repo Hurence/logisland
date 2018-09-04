@@ -15,11 +15,24 @@
  */
 package com.hurence.logisland.connect.opc.ua;
 
+import com.google.gson.Gson;
+import com.hurence.logisland.connect.opc.CommonDefinitions;
+import com.hurence.logisland.connect.opc.OpcRecordFields;
+import com.hurence.logisland.connect.opc.da.OpcDaSourceConnector;
+import com.hurence.logisland.connect.opc.da.OpcDaSourceTask;
+import com.hurence.logisland.util.Tuple;
 import com.hurence.opc.auth.X509Credentials;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class OpcUaSourceTaskTest {
 
@@ -122,4 +135,39 @@ public class OpcUaSourceTaskTest {
 
     }
 
+
+    @Test
+    @Ignore
+    public void e2eTest() throws Exception {
+        OpcUaSourceConnector connector = new OpcUaSourceConnector();
+        Map<String, String> properties = new HashMap<>();
+        properties.put(OpcUaSourceConnector.PROPERTY_AUTH_BASIC_USER, "test");
+        properties.put(OpcUaSourceConnector.PROPERTY_AUTH_BASIC_PASSWORD, "test");
+        properties.put(CommonDefinitions.PROPERTY_CONNECTION_SOCKET_TIMEOUT, "10000");
+        properties.put(CommonDefinitions.PROPERTY_SERVER_URI, "opc.tcp://127.0.0.1:53530/OPCUA/SimulationServer");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_ID, "ns=5;s=Counter1,ns=5;s=Random1,ns=5;s=Sinusoid1");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_STREAM_MODE, "SUBSCRIBE,POLL,SUBSCRIBE");
+        properties.put(CommonDefinitions.PROPERTY_TAGS_SAMPLING_RATE, "PT3S,PT0.01S,PT1S");
+        properties.put(OpcUaSourceConnector.PROPERTY_DATA_PUBLICATION_RATE, "PT1S");
+
+
+
+        connector.start(properties);
+        OpcUaSourceTask task = new OpcUaSourceTask();
+        task.start(connector.taskConfigs(1).get(0));
+        ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
+        Gson json = new Gson();
+        es.scheduleAtFixedRate(() -> {
+            try {
+                task.poll().stream().map(a->new Tuple<>(new Date((Long)a.sourceOffset().get(OpcRecordFields.SAMPLED_TIMESTAMP)), json.toJson(a))).forEach(System.out::println);
+            } catch (InterruptedException e) {
+                //do nothing
+            }
+        }, 0, 10, TimeUnit.MILLISECONDS);
+
+        Thread.sleep(600000);
+        task.stop();
+        es.shutdown();
+        connector.stop();
+    }
 }

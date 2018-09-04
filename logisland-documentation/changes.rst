@@ -2,6 +2,14 @@ What's new in logisland ?
 =========================
 
 
+v0.15.0
+-------
+
+- add support for JMS kafka connect source
+- add support for JDBC kafka connect source
+- add Cassandra datastore service
+- support all Kafka connect sinks
+
 
 v0.14.0
 -------

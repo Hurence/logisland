@@ -65,7 +65,7 @@ public class StreamProcessingRunner {
                 "██║     ██║   ██║██║  ███╗  ██║███████╗██║     ███████║██╔██╗ ██║██║  ██║\n" +
                 "██║     ██║   ██║██║   ██║  ██║╚════██║██║     ██╔══██║██║╚██╗██║██║  ██║\n" +
                 "███████╗╚██████╔╝╚██████╔╝  ██║███████║███████╗██║  ██║██║ ╚████║██████╔╝\n" +
-                "╚══════╝ ╚═════╝  ╚═════╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝   v0.14.0\n\n\n";
+                "╚══════╝ ╚═════╝  ╚═════╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝   v0.15.0\n\n\n";
 
         System.out.println(logisland);
         Optional<EngineContext> engineInstance = Optional.empty();
@@ -93,6 +93,7 @@ public class StreamProcessingRunner {
             EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
             engineContext.getEngine().awaitTermination(engineContext);
+            System.exit(0);
         } catch (Exception e) {
             logger.error("something went bad while running the job : {}", e);
             System.exit(-1);

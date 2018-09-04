@@ -345,6 +345,17 @@ public class StandardRecord implements Record {
                         case RECORD:
                             isValid = field.getRawValue() instanceof Record;
                             break;
+                        case MAP:
+                            isValid = field.getRawValue() instanceof Map;
+                            break;
+                        case NULL:
+                            isValid = field.getRawValue() == null;
+                            break;
+                        case BYTES:
+                            isValid = field.getRawValue() instanceof byte[] ||
+                                    field.getRawValue() instanceof Byte[];
+                            break;
+
                         default:
                             isValid = false;
                             break;
