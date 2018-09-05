@@ -26,6 +26,7 @@
     </parent>
     <artifactId>logisland-bootstrap</artifactId>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -96,4 +97,11 @@
 
         </profile>
     </profiles>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
 </project>

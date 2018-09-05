@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.runner;
 
+import com.hurence.logisland.BannerLoader;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.config.ConfigReader;
 import com.hurence.logisland.config.LogislandConfiguration;
@@ -59,17 +60,10 @@ public class StreamProcessingRunner {
         options.addOption(conf);
 
 
-        String logisland =
-                "██╗      ██████╗  ██████╗   ██╗███████╗██╗      █████╗ ███╗   ██╗██████╗ \n" +
-                "██║     ██╔═══██╗██╔════╝   ██║██╔════╝██║     ██╔══██╗████╗  ██║██╔══██╗\n" +
-                "██║     ██║   ██║██║  ███╗  ██║███████╗██║     ███████║██╔██╗ ██║██║  ██║\n" +
-                "██║     ██║   ██║██║   ██║  ██║╚════██║██║     ██╔══██║██║╚██╗██║██║  ██║\n" +
-                "███████╗╚██████╔╝╚██████╔╝  ██║███████║███████╗██║  ██║██║ ╚████║██████╔╝\n" +
-                "╚══════╝ ╚═════╝  ╚═════╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝   v0.15.0\n\n\n";
-
-        System.out.println(logisland);
         Optional<EngineContext> engineInstance = Optional.empty();
         try {
+            System.out.println(BannerLoader.loadBanner());
+
             // parse the command line arguments
             CommandLine line = parser.parse(options, args);
             String configFile = line.getOptionValue("conf");
