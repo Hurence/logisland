@@ -31,6 +31,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>logisland-processor-common</module>
+        <module>logisland-processor-common-logs</module>
+
         <!--
         <module>logisland-processor-botsearch</module>
         <module>logisland-processor-common-logs</module>
