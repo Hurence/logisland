@@ -41,7 +41,7 @@ public class CheckAlertsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
@@ -70,7 +70,7 @@ public class CheckAlertsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
@@ -105,7 +105,7 @@ public class CheckAlertsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
@@ -132,7 +132,7 @@ public class CheckAlertsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(CheckAlerts.class);
+        final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");

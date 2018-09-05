@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-elasticsearch</artifactId>
-        <version>0.14.0</version>
+        <version>0.15.0</version>
     </parent>
 
     <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
@@ -18,7 +18,6 @@
     <properties>
         <!-- Versions -->
         <elasticsearch.version>5.4.0</elasticsearch.version>
-        <module.exports>com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService</module.exports>
     </properties>
     <dependencies>
 
@@ -105,20 +104,22 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>-Dtests.security.manager=false</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

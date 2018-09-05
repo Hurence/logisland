@@ -106,8 +106,7 @@ public class PluginProxy {
 
 
         if (superClass == null && il.size() == 0) {
-            throw new IllegalArgumentException("Neither the class [" + object.getClass().getSuperclass().getName()
-                    + "] nor all the implemented interfaces found in the current classloader");
+           return object;
         }
 
         return createProxy(object, superClass, il.toArray(new Class[il.size()]), null);

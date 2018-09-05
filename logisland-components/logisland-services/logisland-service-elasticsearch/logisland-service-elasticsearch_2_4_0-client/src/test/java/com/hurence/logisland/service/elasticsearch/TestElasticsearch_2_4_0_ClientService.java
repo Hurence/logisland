@@ -144,7 +144,7 @@ public class TestElasticsearch_2_4_0_ClientService {
 
         boolean result;
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
 
@@ -238,7 +238,7 @@ public class TestElasticsearch_2_4_0_ClientService {
         document1.put(nameKey, nameValue);
         document1.put(ageKey, ageValue);
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
@@ -325,7 +325,7 @@ public class TestElasticsearch_2_4_0_ClientService {
         document3.put("field_fin_1", "field_fin_1_document3_value");
         document3.put("field_fin_2", "field_fin_2_document3_value");
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);

@@ -1,9 +1,12 @@
 *
+chronix/data
 
 !.gitignore
 !solr.xml
 !zoo.cfg
-!chronix/**/*
+!chronix/conf
+!chronix/lib
+!chronix/*
 !README.txt
 
 !*/

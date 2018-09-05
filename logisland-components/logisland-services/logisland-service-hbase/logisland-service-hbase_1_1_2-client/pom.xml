@@ -19,21 +19,13 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-services</artifactId>
-        <version>0.14.0</version>
+        <artifactId>logisland-service-hbase</artifactId>
+        <version>0.15.0</version>
     </parent>
 
     <artifactId>logisland-service-hbase_1_1_2-client</artifactId>
     <name>HBase 1.1.2 Plugin</name>
     <packaging>jar</packaging>
-
-    <properties>
-        <module.exports>
-            com.hurence.logisland.processor.hbase.FetchHBaseRow,
-            com.hurence.logisland.processor.hbase.PutHBaseCell,
-            com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
-        </module.exports>
-    </properties>
 
     <dependencies>
 
@@ -133,19 +125,22 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>-Dtests.security.manager=false</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

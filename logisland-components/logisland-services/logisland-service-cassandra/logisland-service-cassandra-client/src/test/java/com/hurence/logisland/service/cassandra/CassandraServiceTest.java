@@ -17,7 +17,6 @@ package com.hurence.logisland.service.cassandra;
 
 import com.datastax.driver.core.*;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.processor.datastore.BulkPut;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -354,7 +353,7 @@ public class CassandraServiceTest {
     public void testBulkPut(List<Map<Field, CassandraType>> insertedAndExpectedRows, String tableFields,
                             String tablePrimaryKey, String tableName) throws InitializationException {
 
-        final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
         runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);

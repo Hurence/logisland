@@ -67,7 +67,7 @@ abstract public class TestSolrClientService {
 
     @Test
     public void testVersion() throws Exception {
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         final SolrClientService solrClientService = configureSolrClientService(runner);
 
@@ -82,7 +82,7 @@ abstract public class TestSolrClientService {
 
         boolean result;
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         final SolrClientService solrClientService = configureSolrClientService(runner);
 
@@ -173,7 +173,7 @@ abstract public class TestSolrClientService {
         document1.setStringField(nameKey, nameValue);
         document1.setField(ageKey, FieldType.INT, ageValue);
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
         final SolrClientService solrClientService = configureSolrClientService(runner);
@@ -237,7 +237,7 @@ abstract public class TestSolrClientService {
         document3.setStringField("field_fin_1_s", "field_fin_1_document3_value");
         document3.setStringField("field_fin_2_s", "field_fin_2_document3_value");
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor :
         final SolrClientService solrClientService = configureSolrClientService(runner);

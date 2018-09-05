@@ -33,7 +33,7 @@ public class CSVKeyValueCacheServiceTest {
     @Test
     public void testLookup() throws InitializationException, IOException {
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
         runner.setProperty(TestProcessor.CACHE_SERVICE, "lookup_service");
 
 

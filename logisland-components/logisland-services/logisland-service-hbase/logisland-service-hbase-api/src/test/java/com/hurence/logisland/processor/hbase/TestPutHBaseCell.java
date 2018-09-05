@@ -143,7 +143,7 @@ public class TestPutHBaseCell {
     }
 
     private TestRunner getTestRunner() {
-        final TestRunner runner = TestRunners.newTestRunner(PutHBaseCell.class);
+        final TestRunner runner = TestRunners.newTestRunner(new PutHBaseCell());
         runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, TABLE_NAME_KEY);
         runner.setProperty(PutHBaseCell.ROW_ID_FIELD, ROW_ID_KEY);
         runner.setProperty(PutHBaseCell.COLUMN_FAMILY_FIELD, COLUMN_FAMILY_KEY);
@@ -231,7 +231,7 @@ public class TestPutHBaseCell {
     public void testSingleRecordWithBinaryRowKey() throws IOException, InitializationException {
 
 
-        final TestRunner runner = TestRunners.newTestRunner(PutHBaseCell.class);
+        final TestRunner runner = TestRunners.newTestRunner(new PutHBaseCell());
         runner.setProperty(PutHBaseCell.TABLE_NAME_FIELD, TABLE_NAME_KEY);
         runner.setProperty(PutHBaseCell.ROW_ID_FIELD, ROW_ID_KEY);
         runner.setProperty(PutHBaseCell.ROW_ID_ENCODING_STRATEGY, PutHBaseCell.ROW_ID_ENCODING_BINARY.getValue());

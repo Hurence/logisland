@@ -130,7 +130,7 @@ public class MaxmindIpToGeoServiceTest {
     @UseDataProvider("testIpToGeoServiceProvider")
     public void testIpToGeoService(String ip, String locale, Map<String, Object> expectedResult) throws InitializationException, IOException {
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor
         final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService(locale);

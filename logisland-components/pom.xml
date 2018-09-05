@@ -4,7 +4,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
@@ -13,32 +13,28 @@
 
     <packaging>pom</packaging>
     <artifactId>logisland-components</artifactId>
+
     <modules>
         <!--
         <module>logisland-connectors</module>
-        <module>logisland-processors</module>
-        -->
+-->
         <module>logisland-services</module>
+
+        <module>logisland-processors</module>
+
     </modules>
 
     <build>
-
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Logisland-Version>${project.version}</Logisland-Version>
-                                <Logisland-Plugins-Export>${module.exports}</Logisland-Plugins-Export>
-                            </manifestEntries>
-                        </archive>
+                        <useSystemClassLoader>false</useSystemClassLoader>
+                        <argLine>-Dtests.security.manager=false</argLine>
                     </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -48,13 +44,17 @@
                             <goals>
                                 <goal>repackage</goal>
                             </goals>
+                            <phase>none</phase>
                         </execution>
                     </executions>
                     <configuration>
                         <layoutFactory implementation="com.hurence.logisland.packaging.LogislandPluginLayoutFactory">
+                            <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
                         </layoutFactory>
+
                         <excludeArtifactIds>connect-api,connect-runtime,connect-json,connect-transforms,kafka-clients,
-                            logisland-utils,logisland-api,commons-logging
+                            logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base,
+                            logisland-hadoop-utils
                         </excludeArtifactIds>
                         <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>
                     </configuration>
@@ -65,10 +65,39 @@
                             <version>${project.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>java</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <mainClass>com.hurence.logisland.packaging.LogislandRepackager</mainClass>
+                        <arguments>
+                            <argument>${project.build.directory}/${project.build.finalName}.${project.packaging}
+                            </argument>
+                            <argument>BOOT-INF/lib-provided</argument>
+                            <argument>${project.version}</argument>
+                        </arguments>
+                        <includePluginDependencies>true</includePluginDependencies>
+                    </configuration>
 
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-plugin-support</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
-
         </pluginManagement>
     </build>
 

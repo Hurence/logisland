@@ -41,7 +41,7 @@ public class EnrichRecordsTest {
         final DatastoreClientService service = new MockDatastoreService();
 
 
-        final TestRunner runner = TestRunners.newTestRunner(EnrichRecords.class);
+        final TestRunner runner = TestRunners.newTestRunner(new EnrichRecords());
         runner.setProperty(EnrichRecords.RECORD_KEY_FIELD, "record_id");
         runner.setProperty(EnrichRecords.COLLECTION_NAME, "test");
         runner.setProperty(EnrichRecords.DATASTORE_CLIENT_SERVICE, service.getIdentifier());

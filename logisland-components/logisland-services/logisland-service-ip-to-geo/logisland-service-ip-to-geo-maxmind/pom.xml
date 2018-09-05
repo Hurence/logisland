@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-ip-to-geo</artifactId>
-        <version>0.14.0</version>
+        <version>0.15.0</version>
     </parent>
 
 
@@ -14,9 +14,6 @@
     <name>Maxmind IP to Geo Service Plugin</name>
     <packaging>jar</packaging>
 
-    <properties>
-        <module.exports>com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService</module.exports>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -28,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-ip-to-geo-service-api</artifactId>
+            <artifactId>logisland-service-ip-to-geo-api</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -94,13 +91,22 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

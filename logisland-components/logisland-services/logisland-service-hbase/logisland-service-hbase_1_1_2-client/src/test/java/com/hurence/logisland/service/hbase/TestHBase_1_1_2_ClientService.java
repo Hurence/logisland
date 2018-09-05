@@ -76,7 +76,7 @@ public class TestHBase_1_1_2_ClientService {
 
     @Test
     public void testCustomValidate() throws InitializationException, IOException {
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         final String tableName = "logisland";
         final Table table = Mockito.mock(Table.class);
@@ -198,7 +198,7 @@ public class TestHBase_1_1_2_ClientService {
                 content.getBytes(StandardCharsets.UTF_8)));
         final PutRecord putFlowFile = new PutRecord(tableName, row.getBytes(StandardCharsets.UTF_8), columns, null);
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);
@@ -243,7 +243,7 @@ public class TestHBase_1_1_2_ClientService {
                 content2.getBytes(StandardCharsets.UTF_8)));
         final PutRecord putFlowFile2 = new PutRecord(tableName, row.getBytes(StandardCharsets.UTF_8), columns2, null);
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);
@@ -293,7 +293,7 @@ public class TestHBase_1_1_2_ClientService {
                 content2.getBytes(StandardCharsets.UTF_8)));
         final PutRecord putFlowFile2 = new PutRecord(tableName, row2.getBytes(StandardCharsets.UTF_8), columns2, null);
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);
@@ -321,7 +321,7 @@ public class TestHBase_1_1_2_ClientService {
     @Test
     public void testScan() throws InitializationException, IOException {
         final String tableName = "logisland";
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);
@@ -363,7 +363,7 @@ public class TestHBase_1_1_2_ClientService {
     @Test
     public void testScanWithValidFilter() throws InitializationException, IOException {
         final String tableName = "logisland";
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);
@@ -386,7 +386,7 @@ public class TestHBase_1_1_2_ClientService {
     @Test(expected = IllegalArgumentException.class)
     public void testScanWithInvalidFilter() throws InitializationException, IOException {
         final String tableName = "logisland";
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // Mock an HBase Table so we can verify the put operations later
         final Table table = Mockito.mock(Table.class);

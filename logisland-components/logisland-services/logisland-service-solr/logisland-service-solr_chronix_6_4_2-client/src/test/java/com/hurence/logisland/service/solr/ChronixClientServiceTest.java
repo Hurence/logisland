@@ -136,7 +136,7 @@ public class ChronixClientServiceTest {
 
             boolean result;
 
-            final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+            final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
             final DatastoreClientService service = configureClientService(runner);
 
             records.forEach(record -> service.put(CHRONIX_COLLECTION, record, false));

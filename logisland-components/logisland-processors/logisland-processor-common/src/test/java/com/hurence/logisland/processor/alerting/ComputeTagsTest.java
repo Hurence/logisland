@@ -15,7 +15,10 @@
  */
 package com.hurence.logisland.processor.alerting;
 
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.InitializationException;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.datastore.MockDatastoreService;
 import com.hurence.logisland.record.FieldDictionary;
@@ -23,39 +26,49 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.cache.CacheService;
-import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
-import com.hurence.logisland.service.cache.model.Cache;
-import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ComputeTagsTest {
 
+    private static class MockCacheService extends AbstractControllerService implements CacheService {
+
+        private Map<Object, Object> map = Collections.synchronizedMap(new HashMap<>());
+
+        @Override
+        public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Object get(Object o) {
+            return map.get(o);
+        }
+
+        @Override
+        public void set(Object o, Object o2) {
+            map.put(o,o2);
+        }
+    }
+
     @Test
-    public void testWithCustomCacheService() throws InitializationException {
+    public void testWithCustomCacheService() throws Exception {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
 
-        final CacheService<String, String> cacheService = new LRUKeyValueCacheService<String, String>() {
-            private final int cacheSize = 10;
 
-            @Override
-            protected Cache<String, String> createCache(ControllerServiceInitializationContext context) {
-                return new LRUCache<>(cacheSize);
-            }
-        };
-
-        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
+        final TestRunner runner = TestRunners.newTestRunner(new ComputeTags());
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
@@ -67,6 +80,8 @@ public class ComputeTagsTest {
 
         runner.addControllerService(service.getIdentifier(), service);
         runner.enableControllerService(service);
+
+        CacheService cacheService = new MockCacheService();
 
         runner.addControllerService("js_cache", cacheService);
         runner.enableControllerService(cacheService);
@@ -108,7 +123,7 @@ public class ComputeTagsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
+        final TestRunner runner = TestRunners.newTestRunner(new ComputeTags());
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
@@ -151,7 +166,7 @@ public class ComputeTagsTest {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
-        final TestRunner runner = TestRunners.newTestRunner(ComputeTags.class);
+        final TestRunner runner = TestRunners.newTestRunner(new ComputeTags());
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");

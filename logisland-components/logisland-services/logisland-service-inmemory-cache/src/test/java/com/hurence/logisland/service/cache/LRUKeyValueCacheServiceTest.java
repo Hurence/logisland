@@ -45,7 +45,7 @@ public class LRUKeyValueCacheServiceTest {
     @Test
     public void testCache() throws InitializationException, IOException {
 
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
+        final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor
         final CacheService<String, String> service = new MockCacheService<String, String>(3);

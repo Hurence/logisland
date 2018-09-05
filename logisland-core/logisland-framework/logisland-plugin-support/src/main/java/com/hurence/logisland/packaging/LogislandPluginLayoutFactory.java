@@ -31,16 +31,26 @@ import java.io.File;
  */
 public class LogislandPluginLayoutFactory implements LayoutFactory {
 
+    private String providedLibDir = "lib-provided";
+
     @Override
     public Layout getLayout(File source) {
         return new Layouts.None() {
             @Override
             public String getLibraryDestination(String libraryName, LibraryScope scope) {
                 if (scope.equals(LibraryScope.PROVIDED)) {
-                    return null;
+                    return providedLibDir;
                 }
                 return super.getLibraryDestination(libraryName, scope);
             }
         };
+    }
+
+    public String getProvidedLibDir() {
+        return providedLibDir;
+    }
+
+    public void setProvidedLibDir(String providedLibDir) {
+        this.providedLibDir = providedLibDir;
     }
 }
