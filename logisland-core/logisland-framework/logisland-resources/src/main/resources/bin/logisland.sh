@@ -2,6 +2,7 @@
 
 #. $(dirname $0)/launcher.sh
 
+
 case "$(uname -s)" in
 
    Darwin)
@@ -21,13 +22,17 @@ esac
 app_classpath=""
 for entry in "$lib_dir"/*
 do
-  if [ -z "$app_classpath" ]
+  if [ ! -d "$lib$entry" ]
   then
-    app_classpath="$lib$entry"
-  else
-    app_classpath="$lib$entry,$app_classpath"
+      if [ -z "$app_classpath" ]
+      then
+        app_classpath="$lib$entry"
+      else
+        app_classpath="$lib$entry,$app_classpath"
+      fi
   fi
 done
+
 
 
 
@@ -49,6 +54,39 @@ usage() {
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
+
+
+compare_versions () {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
 
 if [ $# -eq 0 ]
 then
@@ -113,6 +151,20 @@ then
 fi
 
 
+SPARK_VERSION=`${SPARK_HOME}/bin/spark-submit --version 2>&1 >/dev/null | grep -m 1 -o '[0-9]*\.[0-9]*\.[0-9]*'`
+
+engine_jar=""
+
+compare_versions $SPARK_VERSION 2.0.0
+    case $? in
+        2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_1_6-*.jar` ;;
+        *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
+    esac
+
+
+
+echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${ENGINE_JAR}"
+
 MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
 case ${MODE} in
   "yarn")
@@ -144,13 +196,12 @@ case $MODE in
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
      --conf spark.driver.extraJavaOptions="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" \
     --class ${app_mainclass} \
-    --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark*-engine*.jar \
+    --jars ${app_classpath} ${engine_jar} \
     -conf ${CONF_FILE}
 
     ;;
   yarn-cluster)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
 
@@ -178,31 +229,31 @@ case $MODE in
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_CORES}" ]
     then
- 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}" 
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
     fi
 
     DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_MEMORY}" ]
     then
- 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}" 
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
     fi
 
     EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_CORES}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
     fi
 
     EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_MEMORY}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
     fi
 
     EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_INSTANCES}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
     fi
 
     SPARK_YARN_MAX_APP_ATTEMPTS=`awk '{ if( $1 == "spark.yarn.maxAppAttempts:" ){ print $2 } }' ${CONF_FILE}`
@@ -254,14 +305,13 @@ case $MODE in
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
     --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties' \
     --class ${app_mainclass} \
-    --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark*-engine*.jar \
-    -conf ${CONF_FILE}
+    --jars ${app_classpath} ${engine_jar} \
+     -conf ${CONF_FILE}
 
     ;;
   yarn-client)
 
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
     app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
     YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client"
@@ -288,11 +338,12 @@ case $MODE in
     --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml' \
     --conf spark.metrics.conf=./metrics.properties \
     --class ${app_mainclass} \
-    --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark*-engine*.jar \
-    -conf ${CONF_FILE}
+    --jars ${app_classpath} ${engine_jar} \
+     -conf ${CONF_FILE}
     ;;
 esac
+
+
 
 
 

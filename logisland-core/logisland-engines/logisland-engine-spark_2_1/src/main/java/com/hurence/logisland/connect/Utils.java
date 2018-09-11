@@ -1,21 +1,22 @@
-/**
- * Copyright (C) 2016 Hurence (support@hurence.com)
+/*
+ *  * Copyright (C) 2018 Hurence (support@hurence.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 package com.hurence.logisland.connect;
 
-import com.hurence.logisland.stream.spark.StreamOptions;
+import com.hurence.logisland.stream.spark.provider.StreamOptions;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.distributed.DistributedConfig;
@@ -35,7 +36,7 @@ public class Utils {
      * Configuration definition for {@link MemoryOffsetBackingStore}
      */
     private static class MemoryConfig extends WorkerConfig {
-        public MemoryConfig(java.util.Map<String, String> props) {
+        public MemoryConfig(Map<String, String> props) {
             super(new ConfigDef(), props);
         }
     }
@@ -44,7 +45,7 @@ public class Utils {
      * Configuration definition for {@link FileOffsetBackingStore}
      */
     private static class FileConfig extends WorkerConfig {
-        public FileConfig(java.util.Map<String, String> props) {
+        public FileConfig(Map<String, String> props) {
             super(new ConfigDef()
                             .define(StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG,
                                     ConfigDef.Type.STRING,
@@ -58,7 +59,7 @@ public class Utils {
      * Configuration definition for {@link KafkaOffsetBackingStore}
      */
     private static class KafkaConfig extends WorkerConfig {
-        public KafkaConfig(java.util.Map<String, String> props) {
+        public KafkaConfig(Map<String, String> props) {
             super(new ConfigDef()
                             .define(BOOTSTRAP_SERVERS_CONFIG,
                                     ConfigDef.Type.LIST,
@@ -80,7 +81,7 @@ public class Utils {
         return ret;
     }
 
-    public static java.util.Map<String, String> propertiesToMap(String propertiesAsString) throws IOException {
+    public static Map<String, String> propertiesToMap(String propertiesAsString) throws IOException {
         Properties props = new Properties();
         props.load(new StringReader(propertiesAsString));
         return props.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));

@@ -66,6 +66,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${kafka.version}</version>
                 <optional>true</optional>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -202,6 +203,26 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
             <version>${spark.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <version>${kafka.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-runtime</artifactId>
+            <version>${kafka.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-json</artifactId>
+            <version>${kafka.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -409,6 +430,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <exclude>org.slf4j:*</exclude>
                                     <exclude>log4j:*</exclude>
                                     <exclude>org.yaml:*</exclude>
+                                    <exclude>org.eclipse.jetty:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>

@@ -66,6 +66,18 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
+            <version>2.1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging-api_${scala.binary.version}</artifactId>
+            <version>2.1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
@@ -77,6 +89,11 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-plugin-support</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -171,6 +188,7 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!--
         <dependency>
@@ -213,12 +231,19 @@
          <artifactId>logisland-botsearch-plugin</artifactId>
      </dependency>-->
 
-
+        <!-- ENGINES -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-engine-spark_2_1</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-engine-spark_1_6</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
     </dependencies>
 
     <properties>
