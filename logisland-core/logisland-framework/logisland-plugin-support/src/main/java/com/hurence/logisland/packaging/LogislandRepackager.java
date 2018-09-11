@@ -20,7 +20,7 @@ package com.hurence.logisland.packaging;
 
 import com.hurence.logisland.classloading.PluginClassLoader;
 import com.hurence.logisland.component.ConfigurableComponent;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 
 import java.io.File;

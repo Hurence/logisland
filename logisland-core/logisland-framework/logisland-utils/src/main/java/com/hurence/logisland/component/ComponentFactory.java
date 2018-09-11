@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,7 @@ import com.hurence.logisland.stream.StreamContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -63,7 +64,7 @@ public final class ComponentFactory {
             configuration.getControllerServiceConfigurations()
                     .forEach(engineContext::addControllerServiceConfiguration);
 
-            ((AbstractConfigurableComponent)engine).init(engineContext);
+            ((AbstractConfigurableComponent) engine).init(engineContext);
 
             logger.info("created engine {}", configuration.getComponent());
 
@@ -84,7 +85,7 @@ public final class ComponentFactory {
      */
     public static Optional<StreamContext> getStreamContext(StreamConfiguration configuration) {
         try {
-            final RecordStream recordStream =loadComponent(configuration.getComponent());
+            final RecordStream recordStream = loadComponent(configuration.getComponent());
             final StreamContext instance =
                     new StandardStreamContext(recordStream, configuration.getStream());
 
@@ -108,7 +109,7 @@ public final class ComponentFactory {
 
     public static Optional<ProcessContext> getProcessContext(ProcessorConfiguration configuration) {
         try {
-            final Processor processor =loadComponent(configuration.getComponent());
+            final Processor processor = loadComponent(configuration.getComponent());
             final ProcessContext processContext =
                     new StandardProcessContext(processor, configuration.getProcessor());
 
@@ -126,14 +127,14 @@ public final class ComponentFactory {
     }
 
 
-    public static <T> T loadComponent(String className)throws ClassNotFoundException {
+    public static <T extends Serializable> T loadComponent(String className) throws ClassNotFoundException {
         //first look for a plugin
         try {
-        try {
-            return PluginLoader.loadPlugin(className);
-        } catch (ClassNotFoundException cnfe) {
-            return (T)Class.forName(className).newInstance();
-        }
+            try {
+                return PluginLoader.loadPlugin(className);
+            } catch (ClassNotFoundException cnfe) {
+                return (T) Class.forName(className).newInstance();
+            }
         } catch (Exception e) {
             throw new ClassNotFoundException("Unable to find class " + className, e);
         }

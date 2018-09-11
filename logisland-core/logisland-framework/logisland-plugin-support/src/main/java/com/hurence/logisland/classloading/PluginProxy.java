@@ -17,13 +17,16 @@
 
 package com.hurence.logisland.classloading;
 
+import com.hurence.logisland.classloading.serialization.AutoProxiedSerializablePlugin;
+import com.hurence.logisland.classloading.serialization.SerializationMagik;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A cglib autoproxy creator.
@@ -32,21 +35,41 @@ import java.util.List;
  */
 public class PluginProxy {
 
-    private static class CglibProxyHandler implements MethodInterceptor {
-        private final Object delegate;
+    /**
+     * A method handler for our proxies.
+     *
+     * @author amarziali
+     */
+    private static class CglibProxyHandler implements MethodInterceptor, Serializable {
 
-        public CglibProxyHandler(Object delegate) {
+        private transient final Serializable delegate;
+
+        public CglibProxyHandler(Serializable delegate) {
             this.delegate = delegate;
         }
 
         public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+            if ("writeReplace".equals(method.getName())) {
+                return new AutoProxiedSerializablePlugin(SerializationUtils.serialize(delegate));
+            } else if ("resolveDelegate".equals(method.getName())) {
+                return delegate;
+            }
             Method delegateMethod = delegate.getClass().getMethod(method.getName(), method.getParameterTypes());
-            return delegateMethod.invoke(delegate, args);
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            ClassLoader toSet = delegate != null ? delegate.getClass().getClassLoader() : Thread.currentThread().getContextClassLoader();
+            try {
+                Thread.currentThread().setContextClassLoader(toSet);
+                return delegateMethod.invoke(delegate, args);
+            } finally {
+                if (toSet.equals(Thread.currentThread().getContextClassLoader())) {
+                    Thread.currentThread().setContextClassLoader(cl);
+                }
+            }
         }
     }
 
     private static Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
-        CglibProxyHandler handler = new CglibProxyHandler(object);
+        CglibProxyHandler handler = new CglibProxyHandler((Serializable) object);
 
         Enhancer enhancer = new Enhancer();
 
@@ -56,10 +79,14 @@ public class PluginProxy {
 
         enhancer.setCallback(handler);
 
-        if (interfaces != null) {
-            List<Class> il = new ArrayList<Class>();
+        Set<Class<?>> il = new LinkedHashSet<>();
+        il.add(SerializationMagik.class);
+        il.add(DelegateAware.class);
 
-            for (Class i : interfaces) {
+
+        if (interfaces != null) {
+
+            for (Class<?> i : interfaces) {
                 if (i.isInterface()) {
                     il.add(i);
                 }
@@ -80,23 +107,23 @@ public class PluginProxy {
      * @param object the object to proxy.
      * @return the proxied object.
      */
-    public static Object create(Object object) {
+    public static <T> T create(T object) {
 
-        Class superClass = null;
+        Class<?> superClass = null;
 
         // Check class
         try {
-            Class.forName(object.getClass().getSuperclass().getName());
+            Class.forName(object.getClass().getSuperclass().getName(), false, Thread.currentThread().getContextClassLoader());
             superClass = object.getClass().getSuperclass();
         } catch (ClassNotFoundException e) {
         }
 
-        Class[] interfaces = object.getClass().getInterfaces();
+        Class[] interfaces = getAllInterfaces(object);
 
         List<Class<?>> il = new ArrayList<>();
 
         // Check available interfaces
-        for (Class i : interfaces) {
+        for (Class<?> i : interfaces) {
             try {
                 Class.forName(i.getClass().getName());
                 il.add(i);
@@ -106,10 +133,117 @@ public class PluginProxy {
 
 
         if (superClass == null && il.size() == 0) {
-           return object;
+            return object;
         }
 
-        return createProxy(object, superClass, il.toArray(new Class[il.size()]), null);
+        return (T) createProxy(object, superClass, il.toArray(new Class[il.size()]), null);
+    }
+
+
+    public static <T> T unwrap(Object object) {
+        if (object instanceof DelegateAware) {
+            return (T)((DelegateAware) object).resolveDelegate();
+        }
+        return (T) object;
+    }
+
+    /**
+     * Return all interfaces that the given instance implements as an array,
+     * including ones implemented by superclasses.
+     *
+     * @param instance the instance to analyze for interfaces
+     * @return all interfaces that the given instance implements as an array
+     */
+    public static Class<?>[] getAllInterfaces(Object instance) {
+        return getAllInterfacesForClass(instance.getClass());
+    }
+
+    /**
+     * Return all interfaces that the given class implements as an array,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     *
+     * @param clazz the class to analyze for interfaces
+     * @return all interfaces that the given object implements as an array
+     */
+    public static Class<?>[] getAllInterfacesForClass(Class<?> clazz) {
+        return getAllInterfacesForClass(clazz, null);
+    }
+
+    /**
+     * Return all interfaces that the given class implements as an array,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     *
+     * @param clazz       the class to analyze for interfaces
+     * @param classLoader the ClassLoader that the interfaces need to be visible in
+     *                    (may be {@code null} when accepting all declared interfaces)
+     * @return all interfaces that the given object implements as an array
+     */
+    public static Class<?>[] getAllInterfacesForClass(Class<?> clazz, ClassLoader classLoader) {
+        return toClassArray(getAllInterfacesForClassAsSet(clazz, classLoader));
+    }
+
+    /**
+     * Return all interfaces that the given class implements as a Set,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     *
+     * @param clazz       the class to analyze for interfaces
+     * @param classLoader the ClassLoader that the interfaces need to be visible in
+     *                    (may be {@code null} when accepting all declared interfaces)
+     * @return all interfaces that the given object implements as a Set
+     */
+    public static Set<Class<?>> getAllInterfacesForClassAsSet(Class<?> clazz, ClassLoader classLoader) {
+        if (clazz.isInterface() && isVisible(clazz, classLoader)) {
+            return Collections.<Class<?>>singleton(clazz);
+        }
+        Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
+        Class<?> current = clazz;
+        while (current != null) {
+            Class<?>[] ifcs = current.getInterfaces();
+            for (Class<?> ifc : ifcs) {
+                interfaces.addAll(getAllInterfacesForClassAsSet(ifc, classLoader));
+            }
+            current = current.getSuperclass();
+        }
+        return interfaces;
+    }
+
+    /**
+     * Check whether the given class is visible in the given ClassLoader.
+     *
+     * @param clazz       the class to check (typically an interface)
+     * @param classLoader the ClassLoader to check against (may be {@code null},
+     *                    in which case this method will always return {@code true})
+     */
+    public static boolean isVisible(Class<?> clazz, ClassLoader classLoader) {
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        try {
+            Class<?> actualClass = classLoader.loadClass(clazz.getName());
+            return (clazz == actualClass);
+            // Else: different interface class found...
+        } catch (ClassNotFoundException ex) {
+            // No interface class found...
+            return false;
+        }
+    }
+
+    /**
+     * Copy the given {@code Collection} into a {@code Class} array.
+     * <p>The {@code Collection} must contain {@code Class} elements only.
+     *
+     * @param collection the {@code Collection} to copy
+     * @return the {@code Class} array
+     * @since 3.1
+     */
+    public static Class<?>[] toClassArray(Collection<Class<?>> collection) {
+        if (collection == null) {
+            return null;
+        }
+        return collection.toArray(new Class<?>[collection.size()]);
     }
 
 

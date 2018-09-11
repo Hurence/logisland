@@ -12,35 +12,79 @@
 
     <artifactId>logisland-engines</artifactId>
 
-    <profiles>
-        <!--  hdp 2.5 -->
-        <profile>
-            <id>hdp2.5</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>hdp</name>
-                    <value>2.5</value>
-                </property>
-            </activation>
-            <modules>
-                <module>logisland-spark_2_1-engine</module>
-            </modules>
-        </profile>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>2.0.0.RELEASE</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <layoutFactory implementation="com.hurence.logisland.packaging.LogislandPluginLayoutFactory">
+                            <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
+                        </layoutFactory>
 
-        <!--  hdp 2.4 -->
-        <profile>
-            <id>hdp2.4</id>
-            <activation>
-                <property>
-                    <name>hdp</name>
-                    <value>2.4</value>
-                </property>
-            </activation>
-            <modules>
-                <module>logisland-spark_1_6-engine</module>
-            </modules>
-        </profile>
-    </profiles>
+                        <excludeArtifactIds>connect-api,connect-runtime,connect-json,connect-transforms,
+                            logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base,
+                            logisland-hadoop-utils
+                        </excludeArtifactIds>
+                        <excludeGroupIds>org.slf4j,ch.qos.logback,log4j,org.scala-lang</excludeGroupIds>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-plugin-support</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>java</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <mainClass>com.hurence.logisland.packaging.LogislandRepackager</mainClass>
+                        <arguments>
+                            <argument>${project.build.directory}/${project.build.finalName}.${project.packaging}
+                            </argument>
+                            <argument>BOOT-INF/lib-provided</argument>
+                            <argument>${project.version}</argument>
+                        </arguments>
+                        <includePluginDependencies>true</includePluginDependencies>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-plugin-support</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+    <modules>
+        <module>logisland-engine-spark_2_1</module>
+        <module>logisland-engine-spark_1_6</module>
+    </modules>
+
 
 </project>

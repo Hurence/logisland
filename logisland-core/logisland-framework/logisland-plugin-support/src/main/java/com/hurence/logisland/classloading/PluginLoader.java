@@ -25,6 +25,7 @@ import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.jar.JarFile;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -61,8 +62,15 @@ public class PluginLoader {
      * Scan for plugins.
      */
     private static void scanAndRegisterPlugins() {
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader) cl).getURLs();
+        Set<URL> urls = new HashSet<>();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        while (cl != null) {
+            if (cl instanceof URLClassLoader) {
+                urls.addAll(Arrays.asList(((URLClassLoader) cl).getURLs()));
+                cl = cl.getParent();
+            }
+        }
+
 
         for (URL url : urls) {
             try {
