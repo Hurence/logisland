@@ -20,8 +20,7 @@ package com.hurence.logisland.classloading;
 import com.hurence.logisland.classloading.serialization.AutoProxiedSerializablePlugin;
 import com.hurence.logisland.classloading.serialization.SerializationMagik;
 import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+import net.sf.cglib.proxy.InvocationHandler;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
@@ -40,7 +39,7 @@ public class PluginProxy {
      *
      * @author amarziali
      */
-    private static class CglibProxyHandler implements MethodInterceptor, Serializable {
+    private static class CglibProxyHandler implements InvocationHandler, Serializable {
 
         private transient final Serializable delegate;
 
@@ -48,9 +47,11 @@ public class PluginProxy {
             this.delegate = delegate;
         }
 
-        public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        @Override
+        public Object invoke(Object o, Method method, Object[] args) throws Throwable {
+
             if ("writeReplace".equals(method.getName())) {
-                return new AutoProxiedSerializablePlugin(SerializationUtils.serialize(delegate));
+                return new AutoProxiedSerializablePlugin(delegate.getClass().getCanonicalName(), SerializationUtils.serialize(delegate));
             } else if ("resolveDelegate".equals(method.getName())) {
                 return delegate;
             }
@@ -73,7 +74,8 @@ public class PluginProxy {
 
         Enhancer enhancer = new Enhancer();
 
-        if (superClass != null) {
+
+        if (superClass != null && (interfaces == null || interfaces.length == 0)) {
             enhancer.setSuperclass(superClass);
         }
 
@@ -112,10 +114,14 @@ public class PluginProxy {
         Class<?> superClass = null;
 
         // Check class
-        try {
-            Class.forName(object.getClass().getSuperclass().getName(), false, Thread.currentThread().getContextClassLoader());
-            superClass = object.getClass().getSuperclass();
-        } catch (ClassNotFoundException e) {
+        Class<?> currentCls = object.getClass();
+        while (superClass == null) {
+            try {
+                Class.forName(currentCls.getSuperclass().getName());
+                superClass = currentCls.getSuperclass();
+            } catch (ClassNotFoundException e) {
+                currentCls = currentCls.getSuperclass();
+            }
         }
 
         Class[] interfaces = getAllInterfaces(object);
@@ -142,7 +148,7 @@ public class PluginProxy {
 
     public static <T> T unwrap(Object object) {
         if (object instanceof DelegateAware) {
-            return (T)((DelegateAware) object).resolveDelegate();
+            return (T) ((DelegateAware) object).resolveDelegate();
         }
         return (T) object;
     }
@@ -223,7 +229,8 @@ public class PluginProxy {
         }
         try {
             Class<?> actualClass = classLoader.loadClass(clazz.getName());
-            return (clazz == actualClass);
+            //return (clazz == actualClass);
+            return true;
             // Else: different interface class found...
         } catch (ClassNotFoundException ex) {
             // No interface class found...

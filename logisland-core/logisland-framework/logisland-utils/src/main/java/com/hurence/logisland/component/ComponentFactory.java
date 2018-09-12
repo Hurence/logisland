@@ -62,7 +62,16 @@ public final class ComponentFactory {
 
             // load all controller service initialization context
             configuration.getControllerServiceConfigurations()
-                    .forEach(engineContext::addControllerServiceConfiguration);
+                    .forEach(controllerServiceConfiguration -> {
+                        try {
+                            loadComponent(controllerServiceConfiguration.getComponent());
+                            engineContext.addControllerServiceConfiguration(controllerServiceConfiguration);
+
+                        } catch (ClassNotFoundException e) {
+                            throw new IllegalStateException("unable to instantiate service " + controllerServiceConfiguration.getControllerService() +
+                                    ". Please check that your configuration is correct and you installed all the required modules", e);
+                        }
+                    });
 
             ((AbstractConfigurableComponent) engine).init(engineContext);
 
@@ -72,9 +81,8 @@ public final class ComponentFactory {
             return Optional.of(engineContext);
 
         } catch (ClassNotFoundException e) {
-            logger.error("unable to instantiate engine {} : {}", configuration.getComponent(), e.toString());
+            throw new IllegalStateException("unable to instantiate engine " + configuration.getComponent(), e);
         }
-        return Optional.empty();
     }
 
     /**
@@ -102,9 +110,9 @@ public final class ComponentFactory {
             return Optional.of(instance);
 
         } catch (ClassNotFoundException e) {
-            logger.error("unable to instantiate processor {} : {}", configuration.getComponent(), e.toString());
+            throw new IllegalStateException("unable to instantiate stream " + configuration.getStream() +
+                    ". Please check that your configuration is correct and you installed all the required modules", e);
         }
-        return Optional.empty();
     }
 
     public static Optional<ProcessContext> getProcessContext(ProcessorConfiguration configuration) {
@@ -120,10 +128,10 @@ public final class ComponentFactory {
             logger.info("created processor {}", configuration.getComponent());
             return Optional.of(processContext);
         } catch (ClassNotFoundException e) {
-            logger.error("unable to instantiate processor {} : {}", configuration.getComponent(), e.toString());
+            throw new IllegalStateException("unable to instantiate processor " + configuration.getProcessor() +
+                    ". Please check that your configuration is correct and you installed all the required modules", e);
         }
 
-        return Optional.empty();
     }
 
 
@@ -131,7 +139,7 @@ public final class ComponentFactory {
         //first look for a plugin
         try {
             try {
-                return (T)PluginLoader.loadPlugin(className);
+                return (T) PluginLoader.loadPlugin(className);
             } catch (ClassNotFoundException cnfe) {
                 return (T) Class.forName(className).newInstance();
             }

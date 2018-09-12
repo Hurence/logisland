@@ -50,7 +50,7 @@ public class TestBulkAddElasticsearch {
         final String ES_INDEX_FIELD = "index_field";
         final String ES_TYPE_FIELD = "type_field";
 
-        final TestRunner runner = TestRunners.newTestRunner(BulkAddElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch");
         runner.setProperty(BulkAddElasticsearch.DEFAULT_INDEX, DEFAULT_INDEX);
         runner.setProperty(BulkAddElasticsearch.DEFAULT_TYPE, DEFAULT_TYPE);
         runner.setProperty(BulkAddElasticsearch.TIMEBASED_INDEX, TODAY_DATE_SUFFIX);

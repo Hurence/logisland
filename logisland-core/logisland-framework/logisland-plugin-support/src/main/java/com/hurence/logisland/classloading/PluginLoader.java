@@ -25,7 +25,6 @@ import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.jar.JarFile;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -125,9 +124,11 @@ public class PluginLoader {
      * @param className the name of plugin class to load
      * @param <U>       the return type.
      * @return an instance of the requested plugin
-     * @throws Exception
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
      */
-    public static <U> U loadPlugin(String className) throws Exception {
+    public static <U> U loadPlugin(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader cl = registry.get(className);
         if (cl == null) {
             throw new ClassNotFoundException("Unable to find plugin class " + className +

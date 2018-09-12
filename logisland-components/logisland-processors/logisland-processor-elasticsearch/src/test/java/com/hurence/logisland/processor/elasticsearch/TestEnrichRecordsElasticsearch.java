@@ -51,7 +51,7 @@ public class TestEnrichRecordsElasticsearch {
         final String docId3 = "id3";
 
         //////////////////
-        final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch");
 
         runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
         runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);
@@ -103,7 +103,7 @@ public class TestEnrichRecordsElasticsearch {
         final String ES_EXCLUDES = "es_excludes";
 
         //////////////////
-        final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch");
         runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);
         runner.setProperty(EnrichRecordsElasticsearch.ES_INDEX_FIELD, ES_INDEX);
         runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
@@ -145,7 +145,7 @@ public class TestEnrichRecordsElasticsearch {
         final String company = "mycompany.com";
 
         //////////////////
-        final TestRunner runner = TestRunners.newTestRunner(EnrichRecordsElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch");
 
         runner.setProperty(EnrichRecordsElasticsearch.ES_TYPE_FIELD, ES_TYPE);
         runner.setProperty(EnrichRecordsElasticsearch.RECORD_KEY_FIELD, RECORD_KEY_FIELD);

@@ -33,7 +33,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
     private volatile boolean enabled = true;
 
     @Override
-    public final void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
+    public void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
         this.identifier = context.getIdentifier();
         serviceLookup = context.getControllerServiceLookup();
         logger = context.getLogger();
@@ -49,7 +49,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
      * @return the {@link ControllerServiceLookup} that was passed to the
      * {@link #init(ControllerServiceInitializationContext)} method
      */
-    protected final ControllerServiceLookup getControllerServiceLookup() {
+    protected ControllerServiceLookup getControllerServiceLookup() {
         return serviceLookup;
     }
 
@@ -73,12 +73,12 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
 
 
     @OnEnabled
-    public final void enabled() {
+    public void enabled() {
         this.enabled = true;
     }
 
     @OnDisabled
-    public final void disabled() {
+    public void disabled() {
         this.enabled = false;
     }
 

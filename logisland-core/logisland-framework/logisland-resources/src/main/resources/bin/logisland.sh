@@ -163,7 +163,7 @@ compare_versions $SPARK_VERSION 2.0.0
 
 
 
-echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${ENGINE_JAR}"
+echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${engine_jar}"
 
 MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
 case ${MODE} in

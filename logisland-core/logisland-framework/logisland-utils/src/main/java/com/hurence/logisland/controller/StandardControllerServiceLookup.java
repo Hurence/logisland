@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.controller;
 
+import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
                     try {
 
 
-                        AbstractControllerService service = (AbstractControllerService) Class.forName(conf.getComponent()).newInstance();
+                        ControllerService service = PluginLoader.loadPlugin(conf.getComponent());
                         logger.info("loading controller service {}", new Object[]{conf.getComponent()});
                         ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
                         Map<String, String> properties = conf.getConfiguration();

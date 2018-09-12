@@ -51,7 +51,7 @@ public class TestMultiGetElasticsearch {
         final String docId3 = "id3";
 
         //////////////////
-        final TestRunner runner = TestRunners.newTestRunner(MultiGetElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch");
         runner.setProperty(MultiGetElasticsearch.ES_INDEX_FIELD, ES_INDEX_FIELD);
         runner.setProperty(MultiGetElasticsearch.ES_TYPE_FIELD, ES_TYPE_FIELD);
         runner.setProperty(MultiGetElasticsearch.ES_IDS_FIELD, ES_IDS_FIELD);
@@ -109,7 +109,7 @@ public class TestMultiGetElasticsearch {
         final String docId3 = "id3";
 
         //////////////////
-        final TestRunner runner = TestRunners.newTestRunner(MultiGetElasticsearch.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch");
         runner.setProperty(MultiGetElasticsearch.ES_INDEX_FIELD, ES_INDEX_FIELD);
         runner.setProperty(MultiGetElasticsearch.ES_TYPE_FIELD, ES_TYPE_FIELD);
         runner.setProperty(MultiGetElasticsearch.ES_IDS_FIELD, ES_IDS_FIELD);

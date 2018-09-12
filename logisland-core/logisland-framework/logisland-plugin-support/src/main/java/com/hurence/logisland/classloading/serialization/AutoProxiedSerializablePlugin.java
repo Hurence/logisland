@@ -17,6 +17,7 @@
 
 package com.hurence.logisland.classloading.serialization;
 
+import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.classloading.PluginProxy;
 
 import java.io.ByteArrayInputStream;
@@ -30,18 +31,20 @@ import java.io.Serializable;
  * @author amarziali
  */
 public class AutoProxiedSerializablePlugin implements Serializable {
-
+    private final String originalClassName;
     private final byte[] content;
 
-    public AutoProxiedSerializablePlugin(byte[] content) {
+    public AutoProxiedSerializablePlugin(String originalClassName, byte[] content) {
+        this.originalClassName = originalClassName;
         this.content = content;
     }
 
     Object readResolve() throws ObjectStreamException {
         try {
-            return PluginProxy.create(new ClassLoaderAwareObjectInputStream(new ByteArrayInputStream(content)).readObject());
+            return PluginProxy.create(new ClassLoaderAwareObjectInputStream(new ByteArrayInputStream(content),
+                    PluginLoader.getRegistry().getOrDefault(originalClassName, Thread.currentThread().getContextClassLoader())).readObject());
         } catch (Exception e) {
-            throw new InvalidObjectException("Unable to resolve plugin proxy class");
+            throw new InvalidObjectException("Unable to resolve plugin proxy class: " + e.getMessage());
         }
     }
 }

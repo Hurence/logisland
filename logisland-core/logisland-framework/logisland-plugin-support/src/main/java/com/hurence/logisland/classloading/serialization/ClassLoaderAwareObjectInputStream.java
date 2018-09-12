@@ -17,8 +17,6 @@
 
 package com.hurence.logisland.classloading.serialization;
 
-import com.hurence.logisland.classloading.PluginLoader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -35,16 +33,7 @@ public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
     private static final Map<String, Class<?>> primitiveTypes =
             new HashMap<>();
 
-    /**
-     * Constructor.
-     *
-     * @param in The <code>InputStream</code>.
-     * @throws java.io.IOException if an I/O error occurs while reading stream header.
-     * @see java.io.ObjectInputStream
-     */
-    public ClassLoaderAwareObjectInputStream(final InputStream in) throws IOException {
-        super(in);
-
+    static {
         primitiveTypes.put("byte", byte.class);
         primitiveTypes.put("short", short.class);
         primitiveTypes.put("int", int.class);
@@ -54,6 +43,21 @@ public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
         primitiveTypes.put("boolean", boolean.class);
         primitiveTypes.put("char", char.class);
         primitiveTypes.put("void", void.class);
+    }
+
+    private final ClassLoader scopedClassloader;
+
+    /**
+     * Constructor.
+     *
+     * @param in The <code>InputStream</code>.
+     * @param cl the scoped classloader
+     * @throws java.io.IOException if an I/O error occurs while reading stream header.
+     * @see java.io.ObjectInputStream
+     */
+    public ClassLoaderAwareObjectInputStream(final InputStream in, ClassLoader cl) throws IOException {
+        super(in);
+        this.scopedClassloader = cl;
     }
 
     /**
@@ -69,7 +73,7 @@ public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
     protected Class<?> resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         final String name = desc.getName();
         try {
-            return Class.forName(name, false, PluginLoader.getRegistry().getOrDefault(name, Thread.currentThread().getContextClassLoader()));
+            return Class.forName(name, false, scopedClassloader);
         } catch (final ClassNotFoundException ex) {
             final Class<?> cls = primitiveTypes.get(name);
             if (cls != null) {

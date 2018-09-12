@@ -79,7 +79,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
     private final boolean expressionLanguageSupported;
 
 
-    private Class<? extends ControllerService> controllerServiceDefinition;
+    private  transient Class<? extends ControllerService> controllerServiceDefinition;
 
 
     /**

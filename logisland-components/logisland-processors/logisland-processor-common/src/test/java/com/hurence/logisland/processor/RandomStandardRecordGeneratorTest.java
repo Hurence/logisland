@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,9 +34,9 @@ public class RandomStandardRecordGeneratorTest {
     @Test
     public void testLoadConfig() throws Exception {
 
-    	String avroSchema = loadResurceFileToString("/schemas/testLoadConfig-schema.json");
-    	
-        final TestRunner testRunner = TestRunners.newTestRunner(new GenerateRandomRecord());
+        String avroSchema = loadResurceFileToString("/schemas/testLoadConfig-schema.json");
+
+        final TestRunner testRunner = TestRunners.newTestRunner("com.hurence.logisland.processor.GenerateRandomRecord");
         testRunner.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA.getName(), avroSchema);
         testRunner.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT.getName(), "5");
         testRunner.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT.getName(), "20");
@@ -55,7 +55,7 @@ public class RandomStandardRecordGeneratorTest {
 
         String avroSchema = loadResurceFileToString("/schemas/testSchemaWithUnion.json");
 
-        final TestRunner testRunner = TestRunners.newTestRunner(new GenerateRandomRecord());
+        final TestRunner testRunner = TestRunners.newTestRunner("com.hurence.logisland.processor.GenerateRandomRecord");
         testRunner.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA.getName(), avroSchema);
         testRunner.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT.getName(), "1");
         testRunner.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT.getName(), "2");
@@ -69,10 +69,10 @@ public class RandomStandardRecordGeneratorTest {
         Assert.assertTrue(testRunner.getOutputRecords().size() >= 1);
     }
 
-	private String loadResurceFileToString(String resourceFile) throws Exception {
-		Path resourcePath = Paths.get(getClass().getResource(resourceFile).toURI());
-		return FileUtils.readFileToString(resourcePath.toFile());
-	}
+    private String loadResurceFileToString(String resourceFile) throws Exception {
+        Path resourcePath = Paths.get(getClass().getResource(resourceFile).toURI());
+        return FileUtils.readFileToString(resourcePath.toFile());
+    }
 
 
 }
