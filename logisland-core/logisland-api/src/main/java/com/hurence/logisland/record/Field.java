@@ -229,14 +229,6 @@ public class Field implements PropertyValue, Serializable {
         }
     }
 
-    @Override
-    public <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException {
-        try {
-            return (T) rawValue;
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("unable to convert field" + rawValue.toString() + " as a ControllerService");
-        }
-    }
 
     @Override
     public PropertyValue evaluate(Record record) {

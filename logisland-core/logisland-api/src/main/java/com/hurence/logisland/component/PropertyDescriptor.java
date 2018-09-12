@@ -57,7 +57,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
      * The allowable getAllFields for this property. If empty then the allowable
      * getAllFields are not constrained
      */
-    private final List<AllowableValue> allowableValues;
+    private transient final List<AllowableValue> allowableValues;
     /**
      * Determines whether the property is required for this processor
      */
@@ -79,7 +79,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
     private final boolean expressionLanguageSupported;
 
 
-    private  transient Class<? extends ControllerService> controllerServiceDefinition;
+    private transient Class<? extends ControllerService> controllerServiceDefinition;
 
 
     /**
@@ -87,7 +87,7 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
      * this property value. Any allowable getAllFields specified will be checked first
      * and any validators specified will be ignored.
      */
-    private final List<Validator> validators;
+    private transient final List<Validator> validators;
 
     protected PropertyDescriptor(final Builder builder) {
         this.displayName = builder.displayName == null ? builder.name : builder.displayName;

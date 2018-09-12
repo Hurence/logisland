@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
@@ -144,8 +145,8 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        cacheService = context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService(CacheService.class);
-        if(cacheService == null) {
+        cacheService = PluginProxy.create(PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService()));
+        if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
 
@@ -155,8 +156,8 @@ public class IpToFqdn extends IpAbstractProcessor {
 
         fqdnField = context.getPropertyValue(CONFIG_FQDN_FIELD).asString();
         overwrite = context.getPropertyValue(CONFIG_OVERWRITE_FQDN).asBoolean();
-        cacheValidityPeriodSec = (long)context.getPropertyValue(CONFIG_CACHE_MAX_TIME).asInteger();
-        resolutionTimeoutMs = (long)context.getPropertyValue(CONFIG_RESOLUTION_TIMEOUT).asInteger();
+        cacheValidityPeriodSec = (long) context.getPropertyValue(CONFIG_CACHE_MAX_TIME).asInteger();
+        resolutionTimeoutMs = (long) context.getPropertyValue(CONFIG_RESOLUTION_TIMEOUT).asInteger();
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
 
         if (!overwrite && record.hasField(fqdnField)) {
@@ -173,7 +174,7 @@ public class IpToFqdn extends IpAbstractProcessor {
         try {
             cacheEntry = cacheService.get(ip);
         } catch (Exception e) {
-            logger.trace("Could not use cache!");
+            logger.warn("Could not use cache!", e);
         }
 
         /**
@@ -199,7 +200,7 @@ public class IpToFqdn extends IpAbstractProcessor {
             InetAddress addr = null;
             try {
                 addr = InetAddress.getByName(ip);
-            } catch(UnknownHostException ex) {
+            } catch (UnknownHostException ex) {
                 logger.error("Error for ip {}, for record {}.", new Object[]{ip, record}, ex);
                 String msg = "Could not translate ip: '" + ip + "' into InetAddress, for record: '" + record.toString() + "'.\n Cause: " + ex.getMessage();
                 record.addError(ProcessError.RUNTIME_ERROR.toString(), msg);
@@ -211,8 +212,7 @@ public class IpToFqdn extends IpAbstractProcessor {
 
             fqdn = result.getFqdn();
             boolean timeout = (fqdn == null);
-            if (timeout)
-            {
+            if (timeout) {
                 // Timeout. For the moment, we do as if the FQDN could not have been resolved and store the IP.
                 // That way, following requests to for the same IP will not immediately trigger a new resolution
                 // request. The cache timeout will however allow to retry later. This also ends up with no FQDN field
@@ -220,8 +220,7 @@ public class IpToFqdn extends IpAbstractProcessor {
                 fqdn = ip;
             }
 
-            if (debug)
-            {
+            if (debug) {
                 // Add some debug fields
                 record.setField(fqdnField + DEBUG_OS_RESOLUTION_TIMEOUT_SUFFIX, FieldType.BOOLEAN, timeout);
                 record.setField(fqdnField + DEBUG_OS_RESOLUTION_TIME_MS_SUFFIX, FieldType.LONG, result.getResolutionTimeMs());
@@ -242,8 +241,7 @@ public class IpToFqdn extends IpAbstractProcessor {
         } else {
             // Ok got a FQDN matching the IP, enrich the record
             record.setField(fqdnField, FieldType.STRING, fqdn);
-            if (debug)
-            {
+            if (debug) {
                 // Add some debug fields
                 record.setField(fqdnField + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
             }
@@ -255,28 +253,23 @@ public class IpToFqdn extends IpAbstractProcessor {
     /**
      * Helper class for result of the ipToFqdn method
      */
-    private static class Result
-    {
+    private static class Result {
         private String fqdn = null;
         private long resolutionTimeMs = 0L;
 
-        public String getFqdn()
-        {
+        public String getFqdn() {
             return fqdn;
         }
 
-        public void setFqdn(String fqdn)
-        {
+        public void setFqdn(String fqdn) {
             this.fqdn = fqdn;
         }
 
-        public long getResolutionTimeMs()
-        {
+        public long getResolutionTimeMs() {
             return resolutionTimeMs;
         }
 
-        public void setResolutionMs(long resolutionTimeMs)
-        {
+        public void setResolutionMs(long resolutionTimeMs) {
             this.resolutionTimeMs = resolutionTimeMs;
         }
     }
@@ -291,8 +284,7 @@ public class IpToFqdn extends IpAbstractProcessor {
      * - null If timeout waiting for an answer from the subsystem.
      * Also the resolution time is returned in any case
      */
-    private Result ipToFqdn(InetAddress ip, Record record)
-    {
+    private Result ipToFqdn(InetAddress ip, Record record) {
         /**
          * We'll use the InetAddress.getCanonicalHostName method but it's a synchronized call and does not exist
          * in asynchronous mode. We don't want too wait too mush for a resolution so to implement a timeout, we
@@ -331,8 +323,7 @@ public class IpToFqdn extends IpAbstractProcessor {
             }
             stop = System.currentTimeMillis();
             executor.shutdownNow();
-        } else
-        {
+        } else {
             // No timeout, directly use the synchronized call
             start = System.currentTimeMillis();
             fqdn = ip.getCanonicalHostName();
@@ -360,26 +351,22 @@ public class IpToFqdn extends IpAbstractProcessor {
     /**
      * Cached entity
      */
-    private static class CacheEntry
-    {
+    private static class CacheEntry {
         // FQDN translated from the ip (or the ip if the FQDN could not be found)
         private String fqdn = null;
         // Time at which this cache entry has been stored in the cache service
         private long time = 0L;
 
-        public CacheEntry(String fqdn, long time)
-        {
+        public CacheEntry(String fqdn, long time) {
             this.fqdn = fqdn;
             this.time = time;
         }
 
-        public String getFqdn()
-        {
+        public String getFqdn() {
             return fqdn;
         }
 
-        public long getTime()
-        {
+        public long getTime() {
             return time;
         }
     }

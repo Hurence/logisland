@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.hbase;
 
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.service.hbase.HBaseClientService;
@@ -196,7 +197,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        clientService = context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
+        clientService = PluginProxy.unwrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if(clientService == null)
             logger.error("HBase client service is not initialized!");
 

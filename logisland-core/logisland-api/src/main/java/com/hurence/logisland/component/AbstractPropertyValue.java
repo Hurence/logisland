@@ -99,25 +99,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
         return serviceLookup.getControllerService(getRawValue());
     }
 
-    @Override
-    public <T extends ControllerService> T asControllerService(final Class<T> serviceType) throws IllegalArgumentException {
-        if (!serviceType.isInterface()) {
-            throw new IllegalArgumentException("ControllerServices may be referenced only via their interfaces; " + serviceType + " is not an interface");
-        }
-        if (getRawValue() == null || getRawValue().equals("") || serviceLookup == null) {
-            return null;
-        }
-
-        final ControllerService service = serviceLookup.getControllerService(getRawValue());
-        if (service == null) {
-            return null;
-        }
-        if (serviceType.isAssignableFrom(service.getClass())) {
-            return serviceType.cast(service);
-        }
-        throw new IllegalArgumentException("Controller Service with identifier " + getRawValue() + " is of type " + service.getClass() + " and cannot be cast to " + serviceType);
-    }
-
+    
     @Override
     public PropertyValue evaluate(Record record) {
         // does nothing

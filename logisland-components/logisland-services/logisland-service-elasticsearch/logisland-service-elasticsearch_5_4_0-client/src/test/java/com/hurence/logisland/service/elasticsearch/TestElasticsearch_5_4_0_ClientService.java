@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.elasticsearch;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
@@ -67,8 +68,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         }
 
         @Override
-        protected void createBulkProcessor(ControllerServiceInitializationContext context)
-        {
+        protected void createBulkProcessor(ControllerServiceInitializationContext context) {
             if (bulkProcessor != null) {
                 return;
             }
@@ -123,8 +123,7 @@ public class TestElasticsearch_5_4_0_ClientService {
 
     }
 
-    private ElasticsearchClientService configureElasticsearchClientService(final TestRunner runner) throws InitializationException
-    {
+    private ElasticsearchClientService configureElasticsearchClientService(final TestRunner runner) throws InitializationException {
         final MockElasticsearchClientService elasticsearchClientService = new MockElasticsearchClientService();
 
         runner.addControllerService("elasticsearchClient", elasticsearchClientService);
@@ -134,7 +133,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         runner.assertValid(elasticsearchClientService);
 
         // TODO : is this necessary ?
-        final ElasticsearchClientService service = runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService(ElasticsearchClientService.class);
+        final ElasticsearchClientService service = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         return service;
     }
 
@@ -350,7 +349,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         // Make sure a dummy query returns no result :
         documentIds.add(docId);
         try {
-            multiGetQueryRecords.add(new MultiGetQueryRecord(index, type,new String[]{"location", "id"},new String[]{}, documentIds));
+            multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, new String[]{"location", "id"}, new String[]{}, documentIds));
         } catch (InvalidMultiGetQueryRecordException e) {
             e.printStackTrace();
         }
@@ -358,7 +357,6 @@ public class TestElasticsearch_5_4_0_ClientService {
         Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
 
     }
-
 
 
     @Test
@@ -447,7 +445,7 @@ public class TestElasticsearch_5_4_0_ClientService {
 
         // Make sure a dummy query returns no result :
         documentIds.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "", new String[]{"dummy"}, new String[]{}, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
         Assert.assertEquals(0, multiGetResponseRecords.size()); // number of documents retrieved
 
@@ -465,7 +463,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         Assert.assertEquals(type1, multiGetResponseRecords.get(0).getTypeName());
         Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
         Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
-        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k,v) -> document1.get(k).equals(v.toString()));
+        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k, v) -> document1.get(k).equals(v.toString()));
 
         multiGetQueryRecords.clear();
         documentIds.clear();
@@ -482,22 +480,22 @@ public class TestElasticsearch_5_4_0_ClientService {
         multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getIndexName())); // verify that all retrieved are in index1
         multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(type1, responseRecord.getTypeName())); // verify that the type of all retrieved documents is type1
         multiGetResponseRecords.forEach(responseRecord -> {
-                if (responseRecord.getDocumentId() == docId1) {
-                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
-                    // verify that the 3 retrieved fields are the correct ones :
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
-                    // verify that the values of the 3 retrieved fields are the correct ones :
-                    Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
-                    Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
-                    Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
-                }
-                if (responseRecord.getDocumentId() == docId2)
-                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
-                if (responseRecord.getDocumentId() == docId3)
-                    Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
-            });
+            if (responseRecord.getDocumentId() == docId1) {
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
+                // verify that the 3 retrieved fields are the correct ones :
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
+                // verify that the values of the 3 retrieved fields are the correct ones :
+                Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
+                Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
+                Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
+            }
+            if (responseRecord.getDocumentId() == docId2)
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
+            if (responseRecord.getDocumentId() == docId3)
+                Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
+        });
 
         multiGetQueryRecords.clear();
         documentIds.clear();
@@ -512,7 +510,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null, fieldsToInclude, null, documentIds_2));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
@@ -534,31 +532,31 @@ public class TestElasticsearch_5_4_0_ClientService {
 
         List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
 
-        String errorMessage ="";
+        String errorMessage = "";
 
         // Validate null index behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord(null, null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The index name cannot be null");
+        Assert.assertEquals(errorMessage, "The index name cannot be null");
 
         // Validate empty index behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord("", null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The index name cannot be empty");
+        Assert.assertEquals(errorMessage, "The index name cannot be empty");
 
         // Validate null documentIds behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The list of document ids cannot be null");
+        Assert.assertEquals(errorMessage, "The list of document ids cannot be null");
 
         // Make sure no invalid MultiGetQueryRecord has been added to multiGetQueryRecords list :
         Assert.assertEquals(0, multiGetQueryRecords.size());

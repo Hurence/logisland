@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,8 @@
  */
 package com.hurence.logisland.connect.opc;
 
-import com.hurence.logisland.util.Tuple;
 import com.hurence.opc.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -43,7 +43,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonOpcSourceTask.class);
     private SmartOpcOperations opcOperations;
-    private TransferQueue<Tuple<Instant, OpcData>> transferQueue;
+    private TransferQueue<Pair<Instant, OpcData>> transferQueue;
     private OpcSession session;
     private Map<String, TagInfo> tagInfoMap;
     private ScheduledExecutorService pollingScheduler;
@@ -126,7 +126,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
                 pollingScheduler.scheduleAtFixedRate(() -> {
                             final Instant now = Instant.now();
                             v.stream().map(TagInfo::getTagId).map(lastValues::get).filter(Functions.not(Objects::isNull))
-                                    .map(data -> new Tuple<>(now, data)).forEach(transferQueue::add);
+                                    .map(data -> Pair.of(now, data)).forEach(transferQueue::add);
 
                         },
                         0, k.toNanos(), TimeUnit.NANOSECONDS)
@@ -146,7 +146,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
                     session.stream(subscriptionConfiguration, tagInfoMap.keySet().toArray(new String[tagInfoMap.size()]))
                             .forEach(opcData -> {
                                 if (tagInfoMap.get(opcData.getTag()).getStreamingMode().equals(StreamingMode.SUBSCRIBE)) {
-                                    transferQueue.add(new Tuple<>(hasServerSideSampling() ? opcData.getTimestamp() : Instant.now(), opcData));
+                                    transferQueue.add(Pair.of(hasServerSideSampling() ? opcData.getTimestamp() : Instant.now(), opcData));
                                 } else {
                                     lastValues.put(opcData.getTag(), opcData);
                                 }
@@ -169,7 +169,7 @@ public abstract class CommonOpcSourceTask extends SourceTask {
         if (transferQueue.isEmpty()) {
             Thread.sleep(minWaitTime);
         }
-        List<Tuple<Instant, OpcData>> ret = new ArrayList<>();
+        List<Pair<Instant, OpcData>> ret = new ArrayList<>();
         transferQueue.drainTo(ret);
         return ret.stream()
                 .map(tuple -> {

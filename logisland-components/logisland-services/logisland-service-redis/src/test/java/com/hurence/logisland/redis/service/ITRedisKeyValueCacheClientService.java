@@ -16,6 +16,7 @@
 package com.hurence.logisland.redis.service;
 
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
@@ -202,7 +203,7 @@ public class ITRedisKeyValueCacheClientService {
             final Serializer<String> stringSerializer = new StringSerializer();
             final Deserializer<String> stringDeserializer = new StringDeserializer();
 
-            final RedisKeyValueCacheService cacheClient = context.getPropertyValue(REDIS_MAP_CACHE).asControllerService(RedisKeyValueCacheService.class);
+            final RedisKeyValueCacheService cacheClient = PluginProxy.unwrap(context.getPropertyValue(REDIS_MAP_CACHE).asControllerService());
 
             try {
                 final long timestamp = System.currentTimeMillis();

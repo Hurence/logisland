@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.elasticsearch;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
@@ -131,7 +132,7 @@ public class TestElasticsearch_2_4_0_ClientService {
         runner.assertValid(elasticsearchClientService);
 
         // TODO : is this necessary ?
-        final ElasticsearchClientService service = runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService(ElasticsearchClientService.class);
+        final ElasticsearchClientService service = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         return service;
     }
 

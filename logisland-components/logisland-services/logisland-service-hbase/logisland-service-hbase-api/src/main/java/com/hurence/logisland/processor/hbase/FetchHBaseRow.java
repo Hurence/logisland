@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ import com.hurence.logisland.annotation.behavior.WritesAttribute;
 import com.hurence.logisland.annotation.behavior.WritesAttributes;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
@@ -27,12 +28,12 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.processor.ProcessException;
+import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.hbase.HBaseClientService;
 import com.hurence.logisland.service.hbase.scan.Column;
 import com.hurence.logisland.service.hbase.scan.ResultCell;
 import com.hurence.logisland.service.hbase.scan.ResultHandler;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.StringUtils;
 
@@ -162,7 +163,7 @@ public class FetchHBaseRow extends AbstractProcessor {
     @Override
     public void init(ProcessContext context) {
 
-        this.clientService = context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService(HBaseClientService.class);
+        this.clientService = PluginProxy.unwrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
             serializer = SerializerProvider.getSerializer(
                     context.getPropertyValue(RECORD_SERIALIZER).asString(),

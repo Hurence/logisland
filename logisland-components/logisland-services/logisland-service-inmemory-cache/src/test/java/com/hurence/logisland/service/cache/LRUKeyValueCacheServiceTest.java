@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.cache;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.service.cache.model.Cache;
@@ -27,7 +28,6 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
 
 /**
  * Created by gregoire on 19/05/17.
@@ -55,8 +55,8 @@ public class LRUKeyValueCacheServiceTest {
         runner.assertValid(service);
 
         // try to put a single cell
-        final CacheService cacheService = runner.getProcessContext().getPropertyValue(TestProcessor.CACHE_SERVICE)
-                .asControllerService(CacheService.class);
+        final CacheService cacheService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.CACHE_SERVICE)
+                .asControllerService());
 
         cacheService.set("1", "1");
         cacheService.set("2", "2");
@@ -79,7 +79,8 @@ public class LRUKeyValueCacheServiceTest {
         assertEquals("3", cacheService.get("3"));
         assertEquals("6", cacheService.get("6"));
     }
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
+
+    private class MockCacheService<K, V> extends LRUKeyValueCacheService<K, V> {
 
         private int cacheSize;
 
@@ -89,7 +90,7 @@ public class LRUKeyValueCacheServiceTest {
 
         @Override
         protected Cache<K, V> createCache(ControllerServiceInitializationContext context) throws IOException, InterruptedException {
-            return new LRUCache<K,V>(cacheSize);
+            return new LRUCache<K, V>(cacheSize);
         }
     }
 }

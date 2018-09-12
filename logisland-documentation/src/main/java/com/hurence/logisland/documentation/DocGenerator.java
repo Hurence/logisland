@@ -331,17 +331,17 @@ public class DocGenerator {
         try {
             FileUtils.copyDirectory(
                     new File("."),
-                    new File("../logisland-framework/logisland-resources/src/main/resources/docs"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs"),
                     new WildcardFileFilter("*.rst"));
 
             FileUtils.copyDirectory(
                     new File("tutorials"),
-                    new File("../logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
                     new WildcardFileFilter("*.rst"));
 
             FileUtils.copyDirectory(
                     new File("_static"),
-                    new File("../logisland-framework/logisland-resources/src/main/resources/docs/_static"));
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/_static"));
         } catch (IOException e) {
             logger.error("I/O error", e);
         }

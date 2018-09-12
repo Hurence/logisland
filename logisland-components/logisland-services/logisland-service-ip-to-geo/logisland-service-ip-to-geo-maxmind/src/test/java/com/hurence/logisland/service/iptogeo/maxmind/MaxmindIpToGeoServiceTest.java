@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.iptogeo.maxmind;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
@@ -139,8 +140,8 @@ public class MaxmindIpToGeoServiceTest {
         runner.setProperty(TestProcessor.IP_TO_GEO_SERVICE, "ipToGeoService");
         runner.assertValid(service);
 
-        final IpToGeoService ipToGeoService = runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
-                .asControllerService(IpToGeoService.class);
+        final IpToGeoService ipToGeoService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
+                .asControllerService());
 
         Map<String, Object> result = ipToGeoService.getGeoInfo(ip);
 

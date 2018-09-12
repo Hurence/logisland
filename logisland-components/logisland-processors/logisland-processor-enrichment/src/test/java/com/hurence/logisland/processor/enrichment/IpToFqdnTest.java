@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,13 +17,12 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
-import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
-import com.hurence.logisland.service.cache.model.Cache;
-import com.hurence.logisland.service.cache.model.LRUCache;
+import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -33,7 +32,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.net.util.IPAddressUtil;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class IpToFqdnTest {
 
@@ -43,7 +45,7 @@ public class IpToFqdnTest {
     public static final String OVERRIDE_FQDN = "true";
 
     public static final long TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND = 4000;
-    public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME = 7*3000;
+    public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME = 7 * 3000;
     public static final long TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME = 100;
 
     public static final long TIME_PROCESSING_INVALID_IP_MAX_IN_MILLISECOND = 100;
@@ -88,7 +90,7 @@ public class IpToFqdnTest {
 
 
         runner.enqueue(inputRecord, inputRecord2, inputRecord3, inputRecord4,
-                inputRecord5, inputRecord6, inputRecord7, inputRecord8 ,inputRecord9, inputRecord10,
+                inputRecord5, inputRecord6, inputRecord7, inputRecord8, inputRecord9, inputRecord10,
                 inputRecord11, inputRecord12);
 
         long start = System.currentTimeMillis();
@@ -102,11 +104,11 @@ public class IpToFqdnTest {
         long lastedInMilliseconds = end - start;
         String msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME +
                 "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
-        Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME);
+        Assert.assertTrue(msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_FIRST_TIME);
 
 
         runner.enqueue(inputRecord, inputRecord2, inputRecord3, inputRecord4,
-                inputRecord5, inputRecord6, inputRecord7, inputRecord8 ,inputRecord9, inputRecord10,
+                inputRecord5, inputRecord6, inputRecord7, inputRecord8, inputRecord9, inputRecord10,
                 inputRecord11, inputRecord12);
 
         start = System.currentTimeMillis();
@@ -120,7 +122,7 @@ public class IpToFqdnTest {
         lastedInMilliseconds = end - start;
         msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME +
                 "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
-        Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME);
+        Assert.assertTrue(msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_MAX_IN_MILLISECOND_SECOND_TIME);
     }
 
     @Test
@@ -142,7 +144,7 @@ public class IpToFqdnTest {
 
 
         runner.enqueue(inputRecord, inputRecord2, inputRecord3, inputRecord4,
-                inputRecord5, inputRecord6, inputRecord7, inputRecord8 ,inputRecord9, inputRecord10,
+                inputRecord5, inputRecord6, inputRecord7, inputRecord8, inputRecord9, inputRecord10,
                 inputRecord11, inputRecord12);
 
         long start = System.currentTimeMillis();
@@ -157,7 +159,7 @@ public class IpToFqdnTest {
         long lastedInMilliseconds = end - start;
         String msg = "processing should take less than '" + TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND +
                 "' millisecond. It lasted '" + lastedInMilliseconds + "' millisecond.";
-        Assert.assertTrue( msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND);
+        Assert.assertTrue(msg, lastedInMilliseconds < TIME_PROCESSING_FOR_TEN_RECORDS_WITH_SAME_IP_MAX_IN_MILLISECOND);
     }
 
     @Test
@@ -171,7 +173,7 @@ public class IpToFqdnTest {
         Assert.assertTrue(msg, firstRun < 2000);
 
         msg = "process of the same ip should not differ more than 1 second";
-        for (int i=0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             long diff = firstRun - processRecordIn(inputRecord, runner);
             Assert.assertTrue(msg, diff < 1000);
         }
@@ -224,8 +226,8 @@ public class IpToFqdnTest {
 
 
     @Test
-    public void testCache() throws InitializationException  {
-        final long TIME_MAX_PROCESSING_FIRST_DATA = 5*3000;
+    public void testCache() throws InitializationException {
+        final long TIME_MAX_PROCESSING_FIRST_DATA = 5 * 3000;
         final long TIME_MAX_PROCESSING_SECOND_DATA = 10;
         final TestRunner runner = getTestRunner();
         runner.setProperty("cache.size", "5");
@@ -261,7 +263,7 @@ public class IpToFqdnTest {
 
     @Test
     public void testNoCacheCache() throws InitializationException {
-        final long TIME_MAX_PROCESSING_FIRST_DATA = 5*3000;
+        final long TIME_MAX_PROCESSING_FIRST_DATA = 5 * 3000;
         final TestRunner runner = getTestRunner();
 
         final Record inputRecord = getRecordWithStringIp("1.2.4.6");// par10s29-in-f238.1e100.net
@@ -292,8 +294,10 @@ public class IpToFqdnTest {
         msg = "processing an ip which we do not have permission to resolve domain name should be faster than '" + TIME_MAX_PROCESSING_FIRST_DATA + "' ms";
         Assert.assertTrue(msg, end - start < TIME_MAX_PROCESSING_FIRST_DATA);
     }
+
     /**
      * Process a record and return the time that it took
+     *
      * @param record
      * @return
      */
@@ -308,7 +312,7 @@ public class IpToFqdnTest {
 
         runner.assertAllInputRecordsProcessed();
 
-        return end-start;
+        return end - start;
     }
 
     @Test
@@ -398,14 +402,14 @@ public class IpToFqdnTest {
     }
 
     private TestRunner getTestRunner() throws InitializationException {
-        final TestRunner runner = TestRunners.newTestRunner(IpToFqdn.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.enrichment.IpToFqdn");
         runner.setProperty(IpToFqdn.CONFIG_FQDN_FIELD, FQDN_FIELD_NAME);
         runner.setProperty(IpToFqdn.IP_ADDRESS_FIELD, IP_ADDRESS_FIELD_NAME);
         runner.setProperty(IpToFqdn.CONFIG_OVERWRITE_FQDN, OVERRIDE_FQDN);
         runner.setProperty(IpToFqdn.CONFIG_RESOLUTION_TIMEOUT, "1000");
         runner.setProperty(IpToFqdn.CONFIG_DEBUG, "true");
 
-        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        final MockCacheService<Object, Object> cacheService = new MockCacheService<>();
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(IpToFqdn.CONFIG_CACHE_SERVICE, "cacheService");
@@ -464,18 +468,6 @@ public class IpToFqdnTest {
         Assert.assertFalse(IPAddressUtil.isIPv6LiteralAddress(""));
     }
 
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
-
-        private int cacheSize;
-
-        public MockCacheService(final int cacheSize) {
-            this.cacheSize = cacheSize;
-        }
-
-        @Override
-        protected Cache<K, V> createCache(ControllerServiceInitializationContext context) throws IOException, InterruptedException {
-            return new LRUCache<K,V>(cacheSize);
-        }
-    }
-
 }
+
+

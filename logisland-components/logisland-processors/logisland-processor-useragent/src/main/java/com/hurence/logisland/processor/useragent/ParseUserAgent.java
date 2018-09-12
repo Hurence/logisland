@@ -29,7 +29,6 @@ import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
-import nl.basjes.parse.useragent.UserAgentAnalyzer.Builder;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,8 +96,6 @@ public class ParseUserAgent extends AbstractProcessor {
 
     private static final List<String> defaultFields = new UserAgentAnalyzer().getAllPossibleFieldNamesSorted();
 
-
-    private UserAgentAnalyzer uaa;
 
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)

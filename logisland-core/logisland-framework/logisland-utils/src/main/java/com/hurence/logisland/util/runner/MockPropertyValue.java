@@ -149,19 +149,7 @@ public class MockPropertyValue implements PropertyValue {
         return serviceLookup.getControllerService(rawValue);
     }
 
-    @Override
-    public <T extends ControllerService> T asControllerService(final Class<T> serviceType) throws IllegalArgumentException {
-        ensureExpressionsEvaluated();
-        if (rawValue == null || rawValue.equals("")) {
-            return null;
-        }
 
-        final ControllerService service = serviceLookup.getControllerService(rawValue);
-        if (serviceType.isAssignableFrom(service.getClass())) {
-            return serviceType.cast(service);
-        }
-        throw new IllegalArgumentException("Controller Service with identifier " + rawValue + " is of type " + service.getClass() + " and cannot be cast to " + serviceType);
-    }
 
     @Override
     public boolean isSet() {

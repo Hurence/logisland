@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,10 @@
 
 package com.hurence.logisland.processor.enrichment;
 
-import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.*;
-import com.hurence.logisland.service.cache.LRUKeyValueCacheService;
-import com.hurence.logisland.service.cache.model.Cache;
-import com.hurence.logisland.service.cache.model.LRUCache;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
-import com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -37,13 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(DataProviderRunner.class)
 public class IpToGeoTest {
@@ -173,21 +168,18 @@ public class IpToGeoTest {
 
     /**
      * Facility to get a comma separated list of geo fields
+     *
      * @param fields Fields
      * @return A usable list of fields for the processor configuration
      */
-    private static String fieldsToCsv(List<String> fields)
-    {
+    private static String fieldsToCsv(List<String> fields) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
-        for (String field : fields)
-        {
-            if (first)
-            {
+        for (String field : fields) {
+            if (first) {
                 sb.append(field);
                 first = false;
-            } else
-            {
+            } else {
                 sb.append(",").append(field);
             }
         }
@@ -196,7 +188,7 @@ public class IpToGeoTest {
 
     @Test
     @UseDataProvider("testHierarchicalProvider")
-    public void testHierarchical(String ip, String geoFields, String hierarchicalSuffix, Map<String, Object> expectedResult) throws InitializationException {
+    public void testHierarchical(String ip, String geoFields, String hierarchicalSuffix, Map<String, Object> expectedResult) throws Exception {
         final TestRunner runner = getTestRunner();
 
         runner.setProperty(IpToGeo.HIERARCHICAL, "true");
@@ -219,10 +211,10 @@ public class IpToGeoTest {
         outputRecord.assertFieldExists(fatherField);
 
         Field fatherFieldValue = outputRecord.getField(fatherField);
-        Map<String, Object> geoFieldsFromFather = (Map<String, Object>)fatherFieldValue.getRawValue();
+        Map<String, Object> geoFieldsFromFather = (Map<String, Object>) fatherFieldValue.getRawValue();
 
         // Check that a time has been added
-        int searchTimeMicros = (int)geoFieldsFromFather.get(GEO_FIELD_LOOKUP_TIME_MICROS);
+        int searchTimeMicros = (int) geoFieldsFromFather.get(GEO_FIELD_LOOKUP_TIME_MICROS);
         assertTrue("Should return non strictly positive search time but was " + searchTimeMicros + " micros", searchTimeMicros >= 0);
         // Of course, remove time to be able to compare maps
         geoFieldsFromFather.remove(GEO_FIELD_LOOKUP_TIME_MICROS);
@@ -234,12 +226,12 @@ public class IpToGeoTest {
     }
 
     @Test
-    public void testHierarchicalWithCache() throws InitializationException {
+    public void testHierarchicalWithCache() throws Exception {
         final TestRunner runner = getTestRunner();
         runner.setProperty("cache.size", "5");
         runner.setProperty("debug", "true");
 
-        final Record inputRecord =  getRecordWithStringIp("2.125.160.216");
+        final Record inputRecord = getRecordWithStringIp("2.125.160.216");
         final Record inputRecord2 = getRecordWithStringIp("2.125.160.216");
 
         String hierarchicalSuffix = null;
@@ -274,7 +266,7 @@ public class IpToGeoTest {
         outputRecord.assertFieldExists(fatherField);
 
         Field fatherFieldValue = outputRecord.getField(fatherField);
-        Map<String, Object> geoFieldsFromFather = (Map<String, Object>)fatherFieldValue.getRawValue();
+        Map<String, Object> geoFieldsFromFather = (Map<String, Object>) fatherFieldValue.getRawValue();
 
         // Of course, remove time to be able to compare maps
         geoFieldsFromFather.remove(GEO_FIELD_LOOKUP_TIME_MICROS);
@@ -405,7 +397,7 @@ public class IpToGeoTest {
 
     @Test
     @UseDataProvider("testFlatProvider")
-    public void testFlat(String ip, String geoFields, String flatSuffix, Map<String, Object> expectedResult) throws InitializationException {
+    public void testFlat(String ip, String geoFields, String flatSuffix, Map<String, Object> expectedResult) throws Exception {
         final TestRunner runner = getTestRunner();
 
         runner.setProperty(IpToGeo.HIERARCHICAL, "false");
@@ -446,22 +438,20 @@ public class IpToGeoTest {
 
     /**
      * Compares maps of geo fields with the expected ones
+     *
      * @param outputRecord
      * @param expectedResult
      */
-    private void compareMaps(Record outputRecord, Map<String, Object> expectedResult, String prefix)
-    {
+    private void compareMaps(Record outputRecord, Map<String, Object> expectedResult, String prefix) {
         assertEquals("Both maps should have the same number of fields\nExpected: " +
                         expectedResult + "\nGot: " + outputRecord
                 , expectedResult.size(), outputRecord.size());
         // outputRecord.size() does not count dictionnary fields time, type, record_id and record_type fields
 
-        for (Map.Entry<String, Object> entry : expectedResult.entrySet())
-        {
+        for (Map.Entry<String, Object> entry : expectedResult.entrySet()) {
             String expectedFieldName = entry.getKey();
             FieldType expectedFieldType = IpToGeo.supportedGeoFieldNames.get(expectedFieldName);
-            if (expectedFieldType == null)
-            {
+            if (expectedFieldType == null) {
                 // Handle subdivision and subdivision_isocode fields (geo_subdivision_0 is not geo_subdivision)
                 expectedFieldType = FieldType.STRING;
             }
@@ -483,19 +473,22 @@ public class IpToGeoTest {
         }
     }
 
-    private TestRunner getTestRunner() throws InitializationException {
+    private TestRunner getTestRunner() throws Exception {
 
-        final TestRunner runner = TestRunners.newTestRunner(IpToGeo.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.enrichment.IpToGeo");
         runner.setProperty(IpToGeo.IP_ADDRESS_FIELD, IP_ADDRESS_FIELD_NAME);
         runner.setProperty(IpToGeo.IP_TO_GEO_SERVICE, "ipToGeoService");
+        runner.setProperty("lookup.time", "true");
+
+        runner.setProperty("maxmind.database.uri", new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile()).toURI().toASCIIString());
 
         // create the controller service and link it to the test processor
-        final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService();
+        final IpToGeoService service = ComponentFactory.loadComponent("com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService");
         runner.addControllerService("ipToGeoService", service);
         runner.enableControllerService(service);
         runner.assertValid(service);
 
-        final MockCacheService<String, String> cacheService = new MockCacheService(20);
+        final MockCacheService<String, String> cacheService = new MockCacheService();
         runner.addControllerService("cacheService", cacheService);
         runner.enableControllerService(cacheService);
         runner.setProperty(IpToGeo.CONFIG_CACHE_SERVICE, "cacheService");
@@ -510,8 +503,8 @@ public class IpToGeoTest {
      * runner.addControllerService("ipToGeoService", service);
      * and vice versa (runner controller service not implemented, so workaround for the moment)
      */
-    private class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
-    {
+    /*
+    private class MockMaxmindIpToGeoService extends MaxmindIpToGeoService {
 
         // Use a small test DB file we got from https://github.com/maxmind/MaxMind-DB/tree/master/test-data
         // to avoid embedding a big maxmind db in our workspace
@@ -523,18 +516,7 @@ public class IpToGeoTest {
             super.init(context);
         }
     }
+    */
 
-    private class MockCacheService<K,V> extends LRUKeyValueCacheService<K,V> {
 
-        private int cacheSize;
-
-        public MockCacheService(final int cacheSize) {
-            this.cacheSize = cacheSize;
-        }
-
-        @Override
-        protected Cache<K, V> createCache(ControllerServiceInitializationContext context) throws IOException, InterruptedException {
-            return new LRUCache<K,V>(cacheSize);
-        }
-    }
 }

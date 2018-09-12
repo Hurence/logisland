@@ -11,20 +11,18 @@
     <packaging>pom</packaging>
 
     <artifactId>logisland-connectors</artifactId>
+    <name>Logisland Connectors</name>
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
+            <scope>provided</scope>
+            <version>0.10.1.0</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
     <modules>
-        <module>logisland-connector-jms</module>
-        <module>logisland-connector-jdbc</module>
         <module>logisland-connector-opc</module>
-        <module>logisland-connector-simulator</module>
-        <module>logisland-connector-blockchain</module>
-        <module>logisland-connector-ftp</module>
     </modules>
 
 

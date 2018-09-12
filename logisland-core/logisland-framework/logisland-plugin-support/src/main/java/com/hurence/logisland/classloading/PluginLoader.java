@@ -134,7 +134,16 @@ public class PluginLoader {
             throw new ClassNotFoundException("Unable to find plugin class " + className +
                     ". Please check your classpath");
         }
-        return (U) PluginProxy.create(cl.loadClass(className).newInstance());
+        ClassLoader thiz = Thread.currentThread().getContextClassLoader();
+        Object o;
+        try {
+            Class<?> cls = cl.loadClass(className);
+            Thread.currentThread().setContextClassLoader(cl);
+            o = cls.newInstance();
+        } finally {
+            Thread.currentThread().setContextClassLoader(thiz);
+        }
+        return (U) PluginProxy.create(o);
     }
 
 

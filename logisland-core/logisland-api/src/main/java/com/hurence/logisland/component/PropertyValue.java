@@ -34,21 +34,21 @@ public interface PropertyValue extends Serializable {
     /**
      * @return the raw property value as a string
      */
-    public Object getRawValue();
+    Object getRawValue();
 
 
     /**
      * @return an String representation of the property value, or
      * <code>null</code> if not set
      */
-    public String asString();
+    String asString();
 
     /**
      * @return an integer representation of the property value, or
      * <code>null</code> if not set
      * @throws NumberFormatException if not able to parse
      */
-    public Integer asInteger();
+    Integer asInteger();
 
 
 
@@ -56,7 +56,7 @@ public interface PropertyValue extends Serializable {
      * @return a Record representation of the property value, or
      * <code>null</code> if not set
      */
-    public Record asRecord();
+    Record asRecord();
 
 
     /**
@@ -64,27 +64,27 @@ public interface PropertyValue extends Serializable {
      * if not set
      * @throws NumberFormatException if not able to parse
      */
-    public Long asLong();
+    Long asLong();
 
     /**
      * @return a Boolean representation of the property value, or
      * <code>null</code> if not set
      */
-    public Boolean asBoolean();
+    Boolean asBoolean();
 
     /**
      * @return a Float representation of the property value, or
      * <code>null</code> if not set
      * @throws NumberFormatException if not able to parse
      */
-    public Float asFloat();
+    Float asFloat();
 
     /**
      * @return a Double representation of the property value, of
      * <code>null</code> if not set
      * @throws NumberFormatException if not able to parse
      */
-    public Double asDouble();
+    Double asDouble();
 
     /**
      * @param timeUnit specifies the TimeUnit to convert the time duration into
@@ -92,7 +92,7 @@ public interface PropertyValue extends Serializable {
      * in terms of the specified TimeUnit; if the property is not set, returns
      * <code>null</code>
      */
-    public Long asTimePeriod(TimeUnit timeUnit);
+    Long asTimePeriod(TimeUnit timeUnit);
 
 
 
@@ -101,7 +101,7 @@ public interface PropertyValue extends Serializable {
      * {@link PropertyDescriptor} for the associated property has a default
      * value, <code>false</code> otherwise
      */
-    public boolean isSet();
+    boolean isSet();
 
 
     /**
@@ -111,21 +111,6 @@ public interface PropertyValue extends Serializable {
      */
     ControllerService asControllerService();
 
-    /**
-     * @param <T> the generic type of the controller service
-     * @param serviceType the class of the Controller Service
-     * @return the ControllerService whose identifier is the raw value of the
-     * <code>this</code>, or <code>null</code> if either the value is not set or
-     * the value does not identify a ControllerService. The object returned by
-     * this method is explicitly cast to type specified, if the type specified
-     * is valid. Otherwise, throws an IllegalArgumentException
-     *
-     * @throws IllegalArgumentException if the value of <code>this</code> points
-     * to a ControllerService but that service is not of type
-     * <code>serviceType</code> or if <code>serviceType</code> references a
-     * class that is not an interface
-     */
-    <T extends ControllerService> T asControllerService(Class<T> serviceType) throws IllegalArgumentException;
 
     /**
      * In the case of PropertyDescriptors that do support expression language, the fill method allows to
@@ -133,6 +118,6 @@ public interface PropertyValue extends Serializable {
      * @param record
      * @return
      */
-    public PropertyValue evaluate(Record record);
+    PropertyValue evaluate(Record record);
 
 }

@@ -15,12 +15,9 @@
     <artifactId>logisland-components</artifactId>
 
     <modules>
-        <!--
         <module>logisland-connectors</module>
--->
         <module>logisland-services</module>
         <module>logisland-processors</module>
-
     </modules>
 
     <build>

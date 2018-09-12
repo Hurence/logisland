@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,8 @@
  */
 package com.hurence.logisland.service.cache;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
@@ -52,9 +52,9 @@ public class CSVKeyValueCacheServiceTest {
         runner.addControllerService("lookup_service", service);
         runner.enableControllerService(service);
 
-        final CSVKeyValueCacheService lookupService = runner.getProcessContext()
+        final CSVKeyValueCacheService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(TestProcessor.CACHE_SERVICE)
-                .asControllerService(CSVKeyValueCacheService.class);
+                .asControllerService());
 
         Record result = lookupService.get("D112.M_TI41.F_CV");
 
@@ -71,9 +71,6 @@ public class CSVKeyValueCacheServiceTest {
         assertEquals("Traçage (F_CV)", result.getField("description").asString());
         assertEquals("DEG", result.getField("engunits").asString());
         assertEquals("03/06/2014 10:32:18", result.getField("lastmodified").asString());
-
-
-
 
 
     }

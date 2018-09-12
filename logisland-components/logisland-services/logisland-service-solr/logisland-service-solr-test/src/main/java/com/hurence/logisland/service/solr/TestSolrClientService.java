@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.solr;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -32,7 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 abstract public class TestSolrClientService {
 
@@ -47,10 +51,10 @@ abstract public class TestSolrClientService {
     public final SolrRule solrRule = new SolrRule();
 
     abstract public String getVersion();
+
     abstract protected SolrClientService getMockClientService();
 
-    private SolrClientService configureSolrClientService(final TestRunner runner) throws InitializationException
-    {
+    private SolrClientService configureSolrClientService(final TestRunner runner) throws InitializationException {
         final SolrClientService solrClientService = getMockClientService();
 
         runner.addControllerService("solrClient", solrClientService);
@@ -60,7 +64,8 @@ abstract public class TestSolrClientService {
         runner.assertValid(solrClientService);
 
         // TODO : is this necessary ?
-        final SolrClientService service = runner.getProcessContext().getPropertyValue(TestProcessor.SOLR_CLIENT_SERVICE).asControllerService(SolrClientService.class);
+        final SolrClientService service = PluginProxy.unwrap(
+                runner.getProcessContext().getPropertyValue(TestProcessor.SOLR_CLIENT_SERVICE).asControllerService());
 
         return service;
     }
@@ -98,7 +103,7 @@ abstract public class TestSolrClientService {
         Assert.assertEquals(true, solrClientService.existsCollection("foo"));
 
         // Define another index
-        solrClientService.createCollection("bar",1, 0);
+        solrClientService.createCollection("bar", 1, 0);
         Assert.assertEquals(true, solrClientService.existsCollection("bar"));
 
         List<Map<String, Object>> mapping1 = new ArrayList<>();
@@ -198,7 +203,7 @@ abstract public class TestSolrClientService {
         solrClientService.put(collection, document1);
 
         Assert.assertEquals(2, solrClientService.countCollection(collection));
-        Assert.assertEquals(2, solrClientService.queryCount(nameKey+":"+nameValue, collection));
+        Assert.assertEquals(2, solrClientService.queryCount(nameKey + ":" + nameValue, collection));
     }
 
     @Test
@@ -280,7 +285,7 @@ abstract public class TestSolrClientService {
 
         // Make sure a dummy query returns no result :
         documentIds.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "",new String[]{"dummy"},new String[]{}, documentIds));
+        multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", "", new String[]{"dummy"}, new String[]{}, documentIds));
 
         try {
             multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
@@ -302,7 +307,7 @@ abstract public class TestSolrClientService {
         Assert.assertEquals(index1, multiGetResponseRecords.get(0).getCollectionName());
         Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
         Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
-        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k,v) -> document1.getField(k).asString().equals(v.toString()));
+        multiGetResponseRecords.get(0).getRetrievedFields().forEach((k, v) -> document1.getField(k).asString().equals(v.toString()));
 
         multiGetQueryRecords.clear();
         documentIds.clear();
@@ -318,22 +323,22 @@ abstract public class TestSolrClientService {
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
         multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getCollectionName())); // verify that all retrieved are in index1
         multiGetResponseRecords.forEach(responseRecord -> {
-                if (responseRecord.getDocumentId() == docId1) {
-                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
-                    // verify that the 3 retrieved fields are the correct ones :
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
-                    Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
-                    // verify that the values of the 3 retrieved fields are the correct ones :
-                    Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
-                    Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
-                    Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
-                }
-                if (responseRecord.getDocumentId() == docId2)
-                    Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
-                if (responseRecord.getDocumentId() == docId3)
-                    Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
-            });
+            if (responseRecord.getDocumentId() == docId1) {
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
+                // verify that the 3 retrieved fields are the correct ones :
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_1"));
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_beg_3"));
+                Assert.assertEquals(true, responseRecord.getRetrievedFields().containsKey("field_fin_1"));
+                // verify that the values of the 3 retrieved fields are the correct ones :
+                Assert.assertEquals("field_beg_1_document1_value", responseRecord.getRetrievedFields().get("field_beg_1").toString());
+                Assert.assertEquals("field_beg_3_document1_value", responseRecord.getRetrievedFields().get("field_beg_3").toString());
+                Assert.assertEquals("field_fin_1_document1_value", responseRecord.getRetrievedFields().get("field_fin_1").toString());
+            }
+            if (responseRecord.getDocumentId() == docId2)
+                Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document2, verify that 3 fields has been retrieved
+            if (responseRecord.getDocumentId() == docId3)
+                Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3, verify that 2 fields has been retrieved
+        });
 
         multiGetQueryRecords.clear();
         documentIds.clear();
@@ -348,7 +353,7 @@ abstract public class TestSolrClientService {
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null , fieldsToInclude, null, documentIds_2));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index2, null, fieldsToInclude, null, documentIds_2));
         multiGetResponseRecords = solrClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
@@ -371,31 +376,31 @@ abstract public class TestSolrClientService {
 
         List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
 
-        String errorMessage ="";
+        String errorMessage = "";
 
         // Validate null index behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord(null, null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The index name cannot be null");
+        Assert.assertEquals(errorMessage, "The index name cannot be null");
 
         // Validate empty index behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord("", null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The index name cannot be empty");
+        Assert.assertEquals(errorMessage, "The index name cannot be empty");
 
         // Validate null documentIds behaviour :
         try {
             multiGetQueryRecords.add(new MultiGetQueryRecord("dummy", null, null, null, null));
-        }  catch (InvalidMultiGetQueryRecordException e) {
+        } catch (InvalidMultiGetQueryRecordException e) {
             errorMessage = e.getMessage();
         }
-        Assert.assertEquals(errorMessage,"The list of document ids cannot be null");
+        Assert.assertEquals(errorMessage, "The list of document ids cannot be null");
 
         // Make sure no invalid MultiGetQueryRecord has been added to multiGetQueryRecords list :
         Assert.assertEquals(0, multiGetQueryRecords.size());

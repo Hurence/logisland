@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,20 +18,15 @@ package com.hurence.logisland.connect.opc.da;
 import com.google.gson.Gson;
 import com.hurence.logisland.connect.opc.CommonDefinitions;
 import com.hurence.logisland.connect.opc.OpcRecordFields;
-import com.hurence.logisland.util.Tuple;
-import javafx.util.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class OpcDaSourceConnectorTest {
 
@@ -54,7 +49,6 @@ public class OpcDaSourceConnectorTest {
         properties.put(OpcDaSourceConnector.PROPERTY_TAGS_DATA_TYPE_OVERRIDE, "0,8");
 
 
-
         connector.start(properties);
         OpcDaSourceTask task = new OpcDaSourceTask();
         task.start(connector.taskConfigs(1).get(0));
@@ -62,7 +56,7 @@ public class OpcDaSourceConnectorTest {
         Gson json = new Gson();
         es.scheduleAtFixedRate(() -> {
             try {
-                task.poll().stream().map(a->new Tuple<>(new Date((Long)a.sourceOffset().get(OpcRecordFields.SAMPLED_TIMESTAMP)), json.toJson(a))).forEach(System.out::println);
+                task.poll().stream().map(a -> org.apache.commons.lang3.tuple.Pair.of(new Date((Long) a.sourceOffset().get(OpcRecordFields.SAMPLED_TIMESTAMP)), json.toJson(a))).forEach(System.out::println);
             } catch (InterruptedException e) {
                 //do nothing
             }

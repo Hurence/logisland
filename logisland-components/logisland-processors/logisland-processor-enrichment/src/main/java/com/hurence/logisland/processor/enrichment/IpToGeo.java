@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 package com.hurence.logisland.processor.enrichment;
-import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.ProcessContext;
@@ -31,11 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
+
 @Tags({"geo", "enrich", "ip"})
 @CapabilityDescription("Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **"
         + IpAbstractProcessor.PROP_IP_ADDRESS_FIELD + "** property. By default, the geo information are put in a hierarchical structure. " +
         "That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field" +
-        " named X_geo. \"_geo\" is the default hierarchical suffix that may be changed with the **" + IpToGeo.PROP_HIERARCHICAL_SUFFIX  +
+        " named X_geo. \"_geo\" is the default hierarchical suffix that may be changed with the **" + IpToGeo.PROP_HIERARCHICAL_SUFFIX +
         "** property. If one wants to put the geo fields at the same level as the IP field, then the **" + IpToGeo.PROP_HIERARCHICAL + "** property should be set to false and then the geo attributes are " +
         " created at the same level as him with the naming pattern X_geo_<geo_field>. \"_geo_\" is the default flat suffix but this may be changed with the **" +
         IpToGeo.PROP_FLAT_SUFFIX + "** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **" +
@@ -217,8 +219,9 @@ public class IpToGeo extends IpAbstractProcessor {
          * Get the Ip to Geo Service
          */
 
-        ipToGeoService = context.getPropertyValue(IP_TO_GEO_SERVICE).asControllerService(IpToGeoService.class);
-        if(ipToGeoService == null) {
+        ipToGeoService = PluginProxy.create(
+                PluginProxy.unwrap(context.getPropertyValue(IP_TO_GEO_SERVICE).asControllerService()));
+        if (ipToGeoService == null) {
             logger.error("IpToGeoService service is not initialized!");
         }
 
@@ -244,8 +247,8 @@ public class IpToGeo extends IpAbstractProcessor {
             flatSuffix = propertyValue.asString();
         }
 
-        cacheService = context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService(CacheService.class);
-        if(cacheService == null) {
+        cacheService = PluginProxy.create(PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService()));
+        if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
     }
@@ -254,27 +257,21 @@ public class IpToGeo extends IpAbstractProcessor {
      * Get the list of geo fields to add
      * @return the list of geo fields to add
      */
-    private Set<String> getConfiguredGeoFieldNames() throws Exception
-    {
+    private Set<String> getConfiguredGeoFieldNames() throws Exception {
         Set<String> result = new HashSet<String>();
-        for (String field : geoFields.trim().split(","))
-        {
+        for (String field : geoFields.trim().split(",")) {
             field = field.trim();
-            if (supportedGeoFieldNames.containsKey(field))
-            {
+            if (supportedGeoFieldNames.containsKey(field)) {
                 result.add(field);
-                if (field.equals(GEO_FIELD_SUBDIVISION))
-                {
+                if (field.equals(GEO_FIELD_SUBDIVISION)) {
                     // Keep track of the fact that GEO_FIELD_SUBDIVISION is requested
                     needSubdivision = true;
                 }
-                if (field.equals(GEO_FIELD_SUBDIVISION_ISOCODE))
-                {
+                if (field.equals(GEO_FIELD_SUBDIVISION_ISOCODE)) {
                     // Keep track of the fact that GEO_FIELD_SUBDIVISION_ISOCODE is requested
                     needSubdivisionIsocode = true;
                 }
-            } else
-            {
+            } else {
                 throw new Exception("Unsupported geo field name: " + field);
             }
         }
@@ -321,8 +318,7 @@ public class IpToGeo extends IpAbstractProcessor {
             /**
              * Remove unwanted fields if some specific fields configured
              */
-            if (!allFields)
-            {
+            if (!allFields) {
                 try {
                     filterFields(geoInfo);
                 } catch (Exception e) {
@@ -334,15 +330,14 @@ public class IpToGeo extends IpAbstractProcessor {
                 // Store the geoInfo into the cache
                 cacheEntry = new CacheEntry(geoInfo, System.currentTimeMillis());
                 cacheService.set(ip, cacheEntry);
-             } catch (Exception e) {
-            logger.trace("Could not put entry in the cache:" + e.getMessage());
+            } catch (Exception e) {
+                logger.trace("Could not put entry in the cache:" + e.getMessage());
             }
         }
 
         final String ipAttributeName = context.getProperty(IP_ADDRESS_FIELD);
 
-        if (hierarchical)
-        {
+        if (hierarchical) {
             /**
              * Add the geo fields under a father field named <ip_field><hierarchical_suffix>:
              * Let's say the ip field is src_ip, then we'll create a father field named src_ip_geo
@@ -355,26 +350,22 @@ public class IpToGeo extends IpAbstractProcessor {
              * }
              */
             record.setField(ipAttributeName + hierarchicalSuffix, FieldType.MAP, geoInfo);
-            if (debug)
-            {
+            if (debug) {
                 // Add some debug fields
                 record.setField(ipAttributeName + hierarchicalSuffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
             }
-        } else
-        {
+        } else {
             /**
              * Add the geo fields as fields whose names are derived from the ip field:
              * <ip_field><flat_suffix>_geo_city, <ip_field><flat_suffix>_geo_longitude....
              */
-            for (Map.Entry<String, Object> entry : geoInfo.entrySet())
-            {
+            for (Map.Entry<String, Object> entry : geoInfo.entrySet()) {
                 addRecordField(record,
                         ipAttributeName + flatSuffix + entry.getKey(),
                         entry.getKey(),
                         entry.getValue());
             }
-            if (debug)
-            {
+            if (debug) {
                 // Add some debug fields
                 record.setField(ipAttributeName + flatSuffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
             }
@@ -387,44 +378,34 @@ public class IpToGeo extends IpAbstractProcessor {
      * @param geoInfo Map containing the fields returned by the Ip to Geo service
      * @throws Exception
      */
-    private void filterFields(Map<String, Object> geoInfo) throws Exception
-    {
+    private void filterFields(Map<String, Object> geoInfo) throws Exception {
         Set<String> requestedFields = getConfiguredGeoFieldNames();
 
-        for(Iterator<Map.Entry<String, Object>> iterator = geoInfo.entrySet().iterator();
-            iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<String, Object>> iterator = geoInfo.entrySet().iterator();
+             iterator.hasNext(); ) {
             Map.Entry<String, Object> entry = iterator.next();
             String geoFieldName = entry.getKey();
-            if(!requestedFields.contains(geoFieldName)) {
-                if (needSubdivision || needSubdivisionIsocode)
-                {
+            if (!requestedFields.contains(geoFieldName)) {
+                if (needSubdivision || needSubdivisionIsocode) {
                     // Requested Subdivision or SubdivisionIsocode or Both
-                    if (needSubdivision && needSubdivisionIsocode)
-                    {
+                    if (needSubdivision && needSubdivisionIsocode) {
                         // Requested Both Subdivision and SubdivisionIsocode
-                        if (!geoFieldName.startsWith(GEO_FIELD_SUBDIVISION))
-                        {
+                        if (!geoFieldName.startsWith(GEO_FIELD_SUBDIVISION)) {
                             iterator.remove();
                         }
-                    } else if (needSubdivision)
-                    {
+                    } else if (needSubdivision) {
                         // Requested Subdivision only
                         if (!geoFieldName.startsWith(GEO_FIELD_SUBDIVISION) ||
-                                geoFieldName.startsWith(GEO_FIELD_SUBDIVISION_ISOCODE))
-                        {
+                                geoFieldName.startsWith(GEO_FIELD_SUBDIVISION_ISOCODE)) {
                             iterator.remove();
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // Requested SubdivisionIsocode only
-                        if (!geoFieldName.startsWith(GEO_FIELD_SUBDIVISION_ISOCODE))
-                        {
+                        if (!geoFieldName.startsWith(GEO_FIELD_SUBDIVISION_ISOCODE)) {
                             iterator.remove();
                         }
                     }
-                } else
-                {
+                } else {
                     // Not a requested field, remove it
                     iterator.remove();
                 }
@@ -438,8 +419,7 @@ public class IpToGeo extends IpAbstractProcessor {
      * @param attributeName Geo field name
      * @param value Geo field value
      */
-    private void addRecordField(Record record, String attributeName, String geoFieldName, Object value)
-    {
+    private void addRecordField(Record record, String attributeName, String geoFieldName, Object value) {
 
         FieldType fieldType = supportedGeoFieldNames.get(geoFieldName);
         if (fieldType == null) // Handle subdivision and subdivision_isocode fields (geo_subdivision_0 is not geo_subdivision)
@@ -452,26 +432,22 @@ public class IpToGeo extends IpAbstractProcessor {
     /**
      * Cached entity
      */
-    private static class CacheEntry
-    {
+    private static class CacheEntry {
         // geoInfo translated from the ip (or the ip if the geoInfo could not be found)
         private Map<String, Object> geoInfo = null;
         // Time at which this cache entry has been stored in the cache service
         private long time = 0L;
 
-        public CacheEntry(Map<String, Object> geoInfo, long time)
-        {
+        public CacheEntry(Map<String, Object> geoInfo, long time) {
             this.geoInfo = geoInfo;
             this.time = time;
         }
 
-        public Map<String, Object> getGeoInfo()
-        {
+        public Map<String, Object> getGeoInfo() {
             return geoInfo;
         }
 
-        public long getTime()
-        {
+        public long getTime() {
             return time;
         }
     }
