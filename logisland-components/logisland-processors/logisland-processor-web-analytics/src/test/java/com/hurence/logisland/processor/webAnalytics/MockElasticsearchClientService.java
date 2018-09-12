@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 
@@ -40,9 +39,17 @@ public class MockElasticsearchClientService extends AbstractControllerService im
             this.document = document;
         }
 
-        public String getDocIndex() { return docIndex; }
-        public String getDocType() { return docType; }
-        public String getDocument() { return document; }
+        public String getDocIndex() {
+            return docIndex;
+        }
+
+        public String getDocType() {
+            return docType;
+        }
+
+        public String getDocument() {
+            return document;
+        }
     }
 
     private class MapDocument {
@@ -57,9 +64,17 @@ public class MockElasticsearchClientService extends AbstractControllerService im
             this.document = document;
         }
 
-        public String getDocIndex() { return docIndex; }
-        public String getDocType() { return docType; }
-        public Map<String, ?> getDocument() { return document; }
+        public String getDocIndex() {
+            return docIndex;
+        }
+
+        public String getDocType() {
+            return docType;
+        }
+
+        public Map<String, ?> getDocument() {
+            return document;
+        }
     }
 
     //private Map<String,Map<String, String>> putStringRecords = new HashMap<>();
@@ -92,7 +107,7 @@ public class MockElasticsearchClientService extends AbstractControllerService im
     }
 
     @Override
-    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) {
 
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
         multiGetQueryRecords.forEach(multiGetQueryRecord -> {
@@ -101,19 +116,20 @@ public class MockElasticsearchClientService extends AbstractControllerService im
             multiGetQueryRecord.getDocumentIds().forEach(id -> {
                 MultiGetResponseRecord multiGetResponseRecord = new MultiGetResponseRecord(index, type, id, null);
                 multiGetResponseRecords.add(multiGetResponseRecord);
-                    });
-                });
+            });
+        });
         return multiGetResponseRecords;
     }
+
     @Override
     public boolean existsIndex(String indexName) throws IOException {
 
-        for(int i = 0 ; i < stringDocuments.size(); i++) {
+        for (int i = 0; i < stringDocuments.size(); i++) {
             if (stringDocuments.get(i).getDocIndex().equals(indexName))
                 return true;
         }
 
-        for(int i = 0 ; i < mapDocuments.size(); i++) {
+        for (int i = 0; i < mapDocuments.size(); i++) {
             if (mapDocuments.get(i).getDocIndex().equals(indexName))
                 return true;
         }
@@ -163,12 +179,11 @@ public class MockElasticsearchClientService extends AbstractControllerService im
 
     @Override
     public String convertRecordToString(Record record) {
-        return ElasticsearchRecordConverter.convertToString(record);
+        return record.toString();
     }
 
     @Override
-    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue)
-    {
+    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue) {
         throw new UnsupportedOperationException();
     }
 

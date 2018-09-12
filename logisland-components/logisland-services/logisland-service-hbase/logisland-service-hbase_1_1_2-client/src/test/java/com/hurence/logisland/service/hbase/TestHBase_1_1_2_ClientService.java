@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.service.hbase;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.hadoop.KerberosProperties;
@@ -27,11 +28,7 @@ import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,21 +38,11 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestHBase_1_1_2_ClientService {
 
@@ -209,8 +196,8 @@ public class TestHBase_1_1_2_ClientService {
         runner.assertValid(service);
 
         // try to put a single cell
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                .asControllerService());
 
         hBaseClientService.put(tableName, Arrays.asList(putFlowFile));
 
@@ -254,8 +241,9 @@ public class TestHBase_1_1_2_ClientService {
         runner.assertValid(service);
 
         // try to put a multiple cells for the same row
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(
+                runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                        .asControllerService());
 
         hBaseClientService.put(tableName, Arrays.asList(putFlowFile1, putFlowFile2));
 
@@ -304,8 +292,8 @@ public class TestHBase_1_1_2_ClientService {
         runner.assertValid(service);
 
         // try to put a multiple cells with different rows
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                .asControllerService());
 
         hBaseClientService.put(tableName, Arrays.asList(putFlowFile1, putFlowFile2));
 
@@ -345,8 +333,8 @@ public class TestHBase_1_1_2_ClientService {
 
         // perform a scan and verify the four rows were returned
         final CollectingResultHandler handler = new CollectingResultHandler();
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                .asControllerService());
 
         hBaseClientService.scan(tableName, new ArrayList<Column>(), null, now, handler);
         assertEquals(4, handler.results.size());
@@ -375,8 +363,8 @@ public class TestHBase_1_1_2_ClientService {
 
         // perform a scan and verify the four rows were returned
         final CollectingResultHandler handler = new CollectingResultHandler();
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                .asControllerService());
 
         // make sure we parse the filter expression without throwing an exception
         final String filter = "PrefixFilter ('Row') AND PageFilter (1) AND FirstKeyOnlyFilter ()";
@@ -398,8 +386,9 @@ public class TestHBase_1_1_2_ClientService {
 
         // perform a scan and verify the four rows were returned
         final CollectingResultHandler handler = new CollectingResultHandler();
-        final HBaseClientService hBaseClientService = runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
-                .asControllerService(HBaseClientService.class);
+        final HBaseClientService hBaseClientService = PluginProxy.unwrap(
+                runner.getProcessContext().getPropertyValue(TestProcessor.HBASE_CLIENT_SERVICE)
+                        .asControllerService());
 
         // this should throw IllegalArgumentException
         final String filter = "this is not a filter";
@@ -429,7 +418,7 @@ public class TestHBase_1_1_2_ClientService {
     private void verifyPut(String row, String columnFamily, String columnQualifier, String content, Put put) {
         assertEquals(row, new String(put.getRow()));
 
-        NavigableMap<byte [], List<Cell>> familyCells = put.getFamilyCellMap();
+        NavigableMap<byte[], List<Cell>> familyCells = put.getFamilyCellMap();
         assertEquals(1, familyCells.size());
 
         Map.Entry<byte[], List<Cell>> entry = familyCells.firstEntry();
@@ -519,7 +508,7 @@ public class TestHBase_1_1_2_ClientService {
     // handler that saves results for verification
     private static final class CollectingResultHandler implements ResultHandler {
 
-        Map<String,ResultCell[]> results = new LinkedHashMap<>();
+        Map<String, ResultCell[]> results = new LinkedHashMap<>();
 
         @Override
         public void handle(byte[] row, ResultCell[] resultCells) {

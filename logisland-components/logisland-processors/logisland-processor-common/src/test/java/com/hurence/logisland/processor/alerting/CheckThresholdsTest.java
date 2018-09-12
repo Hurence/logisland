@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.alerting;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.processor.datastore.MockDatastoreService;
 import com.hurence.logisland.record.FieldDictionary;
@@ -51,9 +52,9 @@ public class CheckThresholdsTest {
         runner.addControllerService(service.getIdentifier(), service);
         runner.enableControllerService(service);
 
-        final DatastoreClientService lookupService = runner.getProcessContext()
+        final DatastoreClientService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
+                .asControllerService());
 
         Collection<Record> recordsToEnrich = getRecords();
         runner.assertValid();

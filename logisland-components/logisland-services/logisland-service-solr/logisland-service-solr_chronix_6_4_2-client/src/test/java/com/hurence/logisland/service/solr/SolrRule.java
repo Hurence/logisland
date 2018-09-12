@@ -47,8 +47,10 @@ public class SolrRule extends ExternalResource {
     @Override
     protected void before() throws Throwable {
 
-        FileUtils.deleteDirectory(new File("src/test/resources/solr/chronix/data"));
-        container = new CoreContainer("src/test/resources/solr");
+        String base = getClass().getResource("/solr/").getPath();
+
+        FileUtils.deleteDirectory(new File(base + "chronix/data"));
+        container = new CoreContainer(base);
         container.load();
 
         server = new EmbeddedSolrServer(container, "chronix" );

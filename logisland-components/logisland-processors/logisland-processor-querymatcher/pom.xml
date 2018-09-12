@@ -25,49 +25,40 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-plugins</artifactId>
+        <artifactId>logisland-processors</artifactId>
         <version>0.15.0</version>
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>logisland-querymatcher-plugin</artifactId>
+    <artifactId>logisland-processor-querymatcher</artifactId>
+
+    <name>Query Matcher Processor Plugin</name>
 
     <properties>
-
-        <!-- IMPORTANT WARING !!!
-
-             due to a bug in maven shading plugin : we have to rename manually
-             META-INF/services/* files with the correst pattern ${shaded.package}.org....
-
-             this is done in a post processing step with jar uf
-             this will fail if you update lucene version without updating src/main/resources files     -->
         <lucene.version>6.5.0</lucene.version>
         <luwak.version>1.5.0</luwak.version>
 
-        <!-- Configuration -->
-        <shaded.package>${logisland.shade.packageName}.querymatcher</shaded.package>
-
-        <!-- Encoding -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.github.flaxsearch</groupId>
             <artifactId>luwak</artifactId>
             <version>${luwak.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -78,136 +69,47 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>${lucene.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>${lucene.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.immutables.tools</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>4</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-
-                            <artifactSet>
-                                <includes>
-                                    <include>com.hurence.logisland:logisland-querymatcher-plugin</include>
-                                    <include>org.apache.lucene:*</include>
-                                    <include>com.github.flaxsearch:luwak</include>
-                                    <include>com.fasterxml.jackson:*</include>
-                                    <include>com.fasterxml.jackson.core:*</include>
-                                    <include>com.fasterxml.jackson.dataformat:*</include>
-                                    <include>org.hdrhistogram:HdrHistogram</include>
-                                    <include>io.netty:*</include>
-                                    <include>org.jboss.netty:*</include>
-                                    <include>com.thoughtworks.paranamer:*</include>
-                                    <include>org.tartarus.snowball:*</include>
-                                </includes>
-                            </artifactSet>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/license/**</exclude>
-                                        <exclude>META-INF/*</exclude>
-                                        <exclude>META-INF/maven/**</exclude>
-                                        <exclude>LICENSE</exclude>
-                                        <exclude>NOTICE</exclude>
-                                        <exclude>/*.txt</exclude>
-                                        <exclude>build.properties</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                            <relocations>
-
-                                <relocation>
-                                    <pattern>com.github</pattern>
-                                    <shadedPattern>${shaded.package}.com.github</shadedPattern>
-                                </relocation>
-
-                                <relocation>
-                                    <pattern>io</pattern>
-                                    <shadedPattern>${shaded.package}.io</shadedPattern>
-                                </relocation>
-
-
-                                <relocation>
-                                    <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>${shaded.package}.com.fasterxml</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.thoughtworks.paranamer</pattern>
-                                    <shadedPattern>${shaded.package}.com.thoughtworks.paranamer</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.jboss.netty</pattern>
-                                    <shadedPattern>${shaded.package}.org.jboss.netty</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.tartarus.snowball</pattern>
-                                    <shadedPattern>${shaded.package}.org.tartarus.snowball</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.lucene</pattern>
-                                    <shadedPattern>${shaded.package}.org.apache.lucene</shadedPattern>
-                                </relocation>
-
-
-                                <relocation>
-                                    <pattern>uk</pattern>
-                                    <shadedPattern>${shaded.package}.uk</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>ch</pattern>
-                                    <shadedPattern>${shaded.package}.ch</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
                 <executions>
                     <execution>
-                        <id>some-execution</id>
                         <phase>package</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>cd ${basedir}/src/main/resources; jar uf
-                        ${build.directory}/logisland-querymatcher-plugin-${project.version}.jar META-INF/services/*
-                    </executable>
-                </configuration>
             </plugin>
         </plugins>
     </build>

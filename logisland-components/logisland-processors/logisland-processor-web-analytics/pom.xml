@@ -22,21 +22,28 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-plugins</artifactId>
+        <artifactId>logisland-processors</artifactId>
         <version>0.15.0</version>
     </parent>
 
-    <artifactId>logisland-web-analytics-plugin</artifactId>
+    <artifactId>logisland-processor-web-analytics</artifactId>
+    <name>Web Analytics Processor Plugin</name>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -51,25 +58,47 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch-plugin</artifactId>
+            <artifactId>logisland-service-elasticsearch-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
+
+
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-elasticsearch_2_4_0-client-service</artifactId>
+            <artifactId>logisland-processor-common</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-common-processors-plugin</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-cache_key_value-service-api</artifactId>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -22,12 +22,14 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-plugins</artifactId>
+        <artifactId>logisland-processors</artifactId>
         <version>0.15.0</version>
     </parent>
 
-    <artifactId>logisland-cyber-security-plugin</artifactId>
+    <artifactId>logisland-processor-cyber-security</artifactId>
     <packaging>jar</packaging>
+
+    <name>Cyber Security Processor Plugin</name>
 
     <repositories>
         <!-- TODO : handle this repository inside logisland code-->
@@ -42,22 +44,35 @@
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <version>${hadoop.guava.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -73,6 +88,7 @@
             <groupId>org.krakenapps</groupId>
             <artifactId>kraken-pcap</artifactId>
             <version>1.7.1</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
@@ -85,4 +101,26 @@
             </exclusions>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

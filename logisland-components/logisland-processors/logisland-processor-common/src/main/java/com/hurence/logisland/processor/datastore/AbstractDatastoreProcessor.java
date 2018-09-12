@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.datastore;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -44,7 +45,7 @@ public abstract class AbstractDatastoreProcessor extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        datastoreClientService = context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService(DatastoreClientService.class);
+        datastoreClientService = PluginProxy.unwrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
         if (datastoreClientService == null) {
             logger.error("Datastore client service is not initialized!");
         }

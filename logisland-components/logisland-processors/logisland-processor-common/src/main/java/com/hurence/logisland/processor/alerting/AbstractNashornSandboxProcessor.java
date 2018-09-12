@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.alerting;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -206,7 +207,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         super.init(context);
         sandbox = NashornSandboxes.create();
 
-        CacheService<String, String> cacheService = context.getPropertyValue(JS_CACHE_SERVICE).asControllerService(CacheService.class);
+        CacheService<String, String> cacheService = PluginProxy.unwrap(context.getPropertyValue(JS_CACHE_SERVICE).asControllerService());
 
         //inject the right cache service (or the default one).
         if (cacheService != null) {
@@ -235,7 +236,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         sandbox.setMaxPreparedStatements(maxPreparedStatements); // because preparing scripts for execution is expensive
         sandbox.setExecutor(Executors.newSingleThreadExecutor());
 
-        datastoreClientService = context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService(DatastoreClientService.class);
+        datastoreClientService = PluginProxy.unwrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
         if (datastoreClientService == null) {
             logger.error("Datastore client service is not initialized!");
         }

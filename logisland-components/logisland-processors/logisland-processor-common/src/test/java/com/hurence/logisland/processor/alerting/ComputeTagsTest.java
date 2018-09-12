@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.alerting;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -86,14 +87,14 @@ public class ComputeTagsTest {
         runner.addControllerService("js_cache", cacheService);
         runner.enableControllerService(cacheService);
 
-        final DatastoreClientService lookupService = runner.getProcessContext()
+        final DatastoreClientService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
+                .asControllerService());
 
         Assert.assertNotNull(lookupService);
-        Assert.assertNotNull(runner.getProcessContext()
+        Assert.assertNotNull(PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(ComputeTags.JS_CACHE_SERVICE)
-                .asControllerService(CacheService.class));
+                .asControllerService()));
 
 
         Collection<Record> recordsToEnrich = getRecords();
@@ -135,9 +136,9 @@ public class ComputeTagsTest {
         runner.addControllerService(service.getIdentifier(), service);
         runner.enableControllerService(service);
 
-        final DatastoreClientService lookupService = runner.getProcessContext()
+        final DatastoreClientService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
+                .asControllerService());
 
         Collection<Record> recordsToEnrich = getRecords();
         runner.assertValid();
@@ -178,9 +179,9 @@ public class ComputeTagsTest {
         runner.addControllerService(service.getIdentifier(), service);
         runner.enableControllerService(service);
 
-        final DatastoreClientService lookupService = runner.getProcessContext()
+        final DatastoreClientService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(ComputeTags.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
+                .asControllerService());
 
         Collection<Record> recordsToEnrich = getRecords();
         runner.assertValid();

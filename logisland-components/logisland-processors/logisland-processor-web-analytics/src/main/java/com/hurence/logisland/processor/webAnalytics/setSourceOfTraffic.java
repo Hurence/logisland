@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,12 +17,14 @@ package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.processor.elasticsearch.AbstractElasticsearchProcessor;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
+import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
@@ -45,15 +47,15 @@ import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
         "including advertising/paying campaigns, search engines, social networks, referring sites or direct access. \n" +
         "When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. \n" +
         "To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available\n" +
-        "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM +"**)\n" +
+        "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM + "**)\n" +
         ", the referer (**" + PROP_REFERER + "** property) and the first visited page of the session (**" + PROP_FIRST_VISITED_PAGE + "** property).\n" +
         "By default the source of traffic informations are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
         " with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "_). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
         "Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **" + PROP_ES_INDEX + "** property) " +
-        "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field "+
+        "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field " +
         "(default being " + SEARCH_ENGINE_SITE + ") specified by the property **" + PROP_ES_SEARCH_ENGINE + "** with a value set to true. If the domain is a social network " +
         ", the related ES doc MUST have a boolean field (default being " + SOCIAL_NETWORK_SITE + ") specified by the property **" + PROP_ES_SOCIAL_NETWORK + "** with a value set to true. ")
-public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
+public class setSourceOfTraffic extends AbstractProcessor {
 
 
     private static final Logger logger = LoggerFactory.getLogger(setSourceOfTraffic.class);
@@ -82,6 +84,14 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     protected CacheService<String, CacheEntry> cacheService;
     static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
     protected boolean debug = false;
+
+    public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+            .name("elasticsearch.client.service")
+            .description("The instance of the Controller Service to use for accessing Elasticsearch.")
+            .required(true)
+            .identifiesControllerService(ElasticsearchClientService.class)
+            .build();
+
 
     public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
             .name(PROP_ES_INDEX)
@@ -277,37 +287,45 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
         return Collections.unmodifiableList(descriptors);
     }
 
+
+    protected ElasticsearchClientService elasticsearchClientService;
+
+    @Override
+    public boolean hasControllerService() {
+        return true;
+    }
+
+
     @Override
     public void init(final ProcessContext context) {
 
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
+        Object o = PluginProxy.unwrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
+        elasticsearchClientService = (ElasticsearchClientService) PluginProxy.create(o);
+        if (elasticsearchClientService == null) {
+            logger.error("Elasticsearch client service is not initialized!");
+        }
 
-        /**
-         * Get source of traffic service (aka Elasticsearch service) and the cache
-         */
-        super.init(context);
-
-        cacheService = context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService(CacheService.class);
-        if(cacheService == null) {
+        cacheService = PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
+        if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
     }
 
-    public void processSession(ProcessContext context, Record record)
-    {
-        final String utm_source_field         = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
-        final String utm_medium_field         = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
-        final String utm_campaign_field       = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
-        final String utm_content_field        = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
-        final String utm_term_field           = context.getPropertyValue(UTM_TERM_FIELD).asString();
+    public void processSession(ProcessContext context, Record record) {
+        final String utm_source_field = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
+        final String utm_medium_field = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
+        final String utm_campaign_field = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
+        final String utm_content_field = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
+        final String utm_term_field = context.getPropertyValue(UTM_TERM_FIELD).asString();
         final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
-        final String FLAT_SEPARATOR           = "_";
-        final String referer_field            = context.getPropertyValue(REFERER_FIELD).asString();
-        final boolean hierarchical             = context.getPropertyValue(HIERARCHICAL).asBoolean();
+        final String FLAT_SEPARATOR = "_";
+        final String referer_field = context.getPropertyValue(REFERER_FIELD).asString();
+        final boolean hierarchical = context.getPropertyValue(HIERARCHICAL).asBoolean();
 
         SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
         // Check if this is a custom campaign
-        if (record.getField(utm_source_field) != null){
+        if (record.getField(utm_source_field) != null) {
             String utm_source = null;
             try {
                 utm_source = URLDecoder.decode(record.getField(utm_source_field).asString(), "UTF-8");
@@ -316,7 +334,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 utm_source = record.getField(utm_source_field).asString();
             }
             sourceOfTraffic.setSource(utm_source);
-            if (record.getField(utm_campaign_field) != null){
+            if (record.getField(utm_campaign_field) != null) {
                 String utm_campaign = null;
                 try {
                     utm_campaign = URLDecoder.decode(record.getField(utm_campaign_field).asString(), "UTF-8");
@@ -326,7 +344,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 }
                 sourceOfTraffic.setCampaign(utm_campaign);
             }
-            if (record.getField(utm_medium_field) != null){
+            if (record.getField(utm_medium_field) != null) {
                 String utm_medium = null;
                 try {
                     utm_medium = URLDecoder.decode(record.getField(utm_medium_field).asString(), "UTF-8");
@@ -336,7 +354,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 }
                 sourceOfTraffic.setMedium(utm_medium);
             }
-            if (record.getField(utm_content_field) != null){
+            if (record.getField(utm_content_field) != null) {
                 String utm_content = null;
                 try {
                     utm_content = URLDecoder.decode(record.getField(utm_content_field).asString(), "UTF-8");
@@ -346,7 +364,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 }
                 sourceOfTraffic.setContent(utm_content);
             }
-            if (record.getField(utm_term_field) != null){
+            if (record.getField(utm_term_field) != null) {
                 String utm_term = null;
                 try {
                     utm_term = URLDecoder.decode(record.getField(utm_term_field).asString(), "UTF-8");
@@ -356,8 +374,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 }
                 sourceOfTraffic.setKeyword(utm_term);
             }
-        }
-        else if((record.getField(referer_field) != null) && (record.getField(referer_field).asString() != null)){
+        } else if ((record.getField(referer_field) != null) && (record.getField(referer_field).asString() != null)) {
             String referer = record.getField(referer_field).asString();
             URL referer_url = null;
             try {
@@ -369,23 +386,20 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
             String hostname = referer_url.getHost();
             String[] hostname_splitted = hostname.split("\\.");
             String domain = null;
-            if (hostname_splitted.length > 1){
-                domain = hostname_splitted[hostname_splitted.length-2];
-            }
-            else if (hostname_splitted.length == 1) {
+            if (hostname_splitted.length > 1) {
+                domain = hostname_splitted[hostname_splitted.length - 2];
+            } else if (hostname_splitted.length == 1) {
                 domain = hostname_splitted[0];
-            }
-            else {
+            } else {
                 return;
             }
             // Is referer under the webshop domain ?
-            if (is_refer_under_site_domain(domain, context, record)){
+            if (is_refer_under_site_domain(domain, context, record)) {
                 // This is a direct access
                 sourceOfTraffic.setSource(DIRECT_TRAFFIC);
                 sourceOfTraffic.setMedium("");
                 sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
-            }
-            else {
+            } else {
                 // Is the referer a known search engine ?
                 if (is_search_engine(domain, context, record)) {
                     // This is an organic search engine
@@ -396,8 +410,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                     // This is social network
                     sourceOfTraffic.setSource(domain);
                     sourceOfTraffic.setMedium(SOCIAL_NETWORK_SITE);
-                }
-                else {
+                } else {
                     // If the referer is not in the website domain, neither a search engine nor a social network,
                     // then it is a referring site
                     sourceOfTraffic.setSource(domain);
@@ -412,8 +425,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                     sourceOfTraffic.setReferral_path(referral_path);
                 }
             }
-        }
-        else {
+        } else {
             // Direct access
             sourceOfTraffic.setSource(DIRECT_TRAFFIC);
             sourceOfTraffic.setMedium("");
@@ -421,8 +433,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
         }
         if (hierarchical) {
             record.setField(SOURCE_OF_TRAFFIC_SUFFIX, FieldType.MAP, sourceOfTraffic.getSourceOfTrafficMap());
-        }
-        else {
+        } else {
             Map<String, Object> sot = sourceOfTraffic.getSourceOfTrafficMap();
             sot.forEach((k, v) -> {
                 record.setField(SOURCE_OF_TRAFFIC_SUFFIX + FLAT_SEPARATOR + k, supportedSourceOfTrafficFieldNames.get(k), v);
@@ -433,7 +444,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     private boolean is_refer_under_site_domain(String domain, ProcessContext context, Record record) {
         boolean res = false;
         String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
-        if (record.hasField(first_visited_page_field)){
+        if (record.hasField(first_visited_page_field)) {
             String first_page = record.getField(first_visited_page_field).asString();
             URL first_page_url = null;
             try {
@@ -445,19 +456,16 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
             String host = first_page_url.getHost();
             String[] host_array = host.split("\\.");
             String first_visited_page_domain;
-            if (host_array.length > 1){
-                first_visited_page_domain = host_array[host_array.length-2];
-            }
-            else if (host_array.length==1){
+            if (host_array.length > 1) {
+                first_visited_page_domain = host_array[host_array.length - 2];
+            } else if (host_array.length == 1) {
                 first_visited_page_domain = host_array[0];
-            }
-            else {
+            } else {
                 return res;
             }
-            if (domain.equals(first_visited_page_domain)){
-                res=true;
-            }
-            else {
+            if (domain.equals(first_visited_page_domain)) {
+                res = true;
+            } else {
                 res = false;
             }
         }
@@ -493,7 +501,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
         return has_domain_flag(domain, es_search_engine_field, context, record);
     }
 
-    private boolean has_domain_flag(String domain, String flag, ProcessContext context, Record record){
+    private boolean has_domain_flag(String domain, String flag, ProcessContext context, Record record) {
         final String source_of_traffic_suffix = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
         final long cacheValidityPeriodSec = context.getPropertyValue(CONFIG_CACHE_VALIDITY_TIMEOUT).asLong();
         boolean has_flag = false;
@@ -523,7 +531,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
             }
         }
 
-        if (sourceInfo == null){
+        if (sourceInfo == null) {
             fromCache = false;
             /**
              * Not in the cache or cache entry expired
@@ -539,7 +547,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
 
                 multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
-            } catch (InvalidMultiGetQueryRecordException e ){
+            } catch (InvalidMultiGetQueryRecordException e) {
                 // should never happen
                 e.printStackTrace();
             }
@@ -549,14 +557,13 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                 // Therefore it is neither a search engine nor a social network
                 sourceInfo = new HashMap();
                 sourceInfo.put(REFERRING_SITE, true);
-            }
-            else {
+            } else {
                 Optional<MultiGetResponseRecord> mgrr = multiGetResponseRecords.stream().findFirst();
                 MultiGetResponseRecord mgrr_record;
-                if (mgrr.isPresent()){
+                if (mgrr.isPresent()) {
                     mgrr_record = mgrr.get();
                     sourceInfo = new HashedMap();
-                    Map[] sourceInfoArray = { sourceInfo };
+                    Map[] sourceInfoArray = {sourceInfo};
                     if (mgrr_record.getRetrievedFields() != null) {
                         mgrr_record.getRetrievedFields().forEach((k, v) -> {
                                     String fieldName = k.toString();
@@ -565,8 +572,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
                                     sourceInfoArray[0].put(fieldName, fieldValue);
                                 }
                         );
-                    }
-                    else {
+                    } else {
                         // The domain is not known in the Elasticsearch special index
                         // Therefore it is neither a search engine nor a social network
                         sourceInfo = new HashMap();
@@ -586,13 +592,12 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
 
         if (sourceInfo != null) {
             if (sourceInfo.containsKey(flag)) {
-                boolean val = Boolean.parseBoolean((String)sourceInfo.get(flag));
+                boolean val = Boolean.parseBoolean((String) sourceInfo.get(flag));
                 has_flag = val;
             }
         }
 
-        if (debug)
-        {
+        if (debug) {
             // Add some debug fields
             record.setField(source_of_traffic_suffix + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
         }
@@ -602,26 +607,22 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     /**
      * Cached entity for search engine and social network sites
      */
-    private static class CacheEntry
-    {
+    private static class CacheEntry {
         // sourceInfo translated from the referer_hostname
         private Map<String, Object> sourceInfo = null;
         // Time at which this cache entry has been stored in the cache service
         private long time = 0L;
 
-        public CacheEntry(Map<String, Object> sourceInfo, long time)
-        {
+        public CacheEntry(Map<String, Object> sourceInfo, long time) {
             this.sourceInfo = sourceInfo;
             this.time = time;
         }
 
-        public Map<String, Object> getSourceInfo()
-        {
+        public Map<String, Object> getSourceInfo() {
             return sourceInfo;
         }
 
-        public long getTime()
-        {
+        public long getTime() {
             return time;
         }
     }
@@ -659,11 +660,11 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
             this.sourceOfTrafficMap.put(SOURCE_OF_TRAFIC_FIELD_REFERRAL_PATH, referral_path);
         }
 
-        public void setSource(String source){
+        public void setSource(String source) {
             this.sourceOfTrafficMap.put(SOURCE_OF_TRAFIC_FIELD_SOURCE, source);
         }
 
-        public SourceOfTrafficMap(){
+        public SourceOfTrafficMap() {
             setOrganic_searches(Boolean.FALSE); // By default we consider source of traffic to not be organic searches.
         }
     }

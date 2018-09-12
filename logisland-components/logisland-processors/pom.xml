@@ -25,7 +25,7 @@
         <version>0.15.0</version>
     </parent>
 
-
+    <name>Logisland processors package</name>
 
     <artifactId>logisland-processors</artifactId>
     <packaging>pom</packaging>
@@ -36,18 +36,19 @@
         <module>logisland-processor-useragent</module>
         <module>logisland-processor-scripting</module>
         <module>logisland-processor-enrichment</module>
+        <module>logisland-processor-querymatcher</module>
+        <module>logisland-processor-sampling</module>
+        <module>logisland-processor-excel</module>
+        <module>logisland-processor-web-analytics</module>
+        <module>logisland-processor-outlier-detection</module>
+        <!--
+        <module>logisland-processor-botsearch</module>
+        -->
+        <module>logisland-processor-cyber-security</module>
+
 
 
         <!--
-        <module>logisland-processor-botsearch</module>
-        <module>logisland-processor-cyber-security</module>
-        <module>logisland-processor-excel</module>
-        <module>logisland-processor-outlier-detection</module>
-        <module>logisland-processor-querymatcher</module>
-        <module>logisland-processor-sampling</module>
-        <module>logisland-processor-scripting</module>
-        <module>logisland-processor-useragent</module>
-        <module>logisland-processor-web-analytics</module>
         -->
     </modules>
 </project>

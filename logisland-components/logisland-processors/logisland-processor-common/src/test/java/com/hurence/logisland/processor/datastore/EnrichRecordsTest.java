@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.processor.datastore;
 
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -50,9 +51,9 @@ public class EnrichRecordsTest {
 
         getLookupRecords().forEach(r -> service.put("test", r, false));
 
-        final DatastoreClientService lookupService = runner.getProcessContext()
+        final DatastoreClientService lookupService = PluginProxy.unwrap(runner.getProcessContext()
                 .getPropertyValue(EnrichRecords.DATASTORE_CLIENT_SERVICE)
-                .asControllerService(MockDatastoreService.class);
+                .asControllerService());
 
 
         Collection<Record> recordsToEnrich = getRecords();

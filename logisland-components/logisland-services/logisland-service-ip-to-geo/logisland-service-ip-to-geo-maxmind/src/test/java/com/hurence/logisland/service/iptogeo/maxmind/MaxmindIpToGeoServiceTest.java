@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,6 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.service.iptogeo.IpToGeoService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
-
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -31,8 +29,10 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -134,7 +134,7 @@ public class MaxmindIpToGeoServiceTest {
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor
-        final IpToGeoService service = (IpToGeoService)new MockMaxmindIpToGeoService(locale);
+        final IpToGeoService service = (IpToGeoService) new MockMaxmindIpToGeoService(locale);
         runner.addControllerService("ipToGeoService", service);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.IP_TO_GEO_SERVICE, "ipToGeoService");
@@ -146,7 +146,7 @@ public class MaxmindIpToGeoServiceTest {
         Map<String, Object> result = ipToGeoService.getGeoInfo(ip);
 
         // Check that a time has been added
-        int searchTimeMicros = (int)result.get(GEO_FIELD_LOOKUP_TIME_MICROS);
+        int searchTimeMicros = (int) result.get(GEO_FIELD_LOOKUP_TIME_MICROS);
         assertTrue("Should return non strictly positive search time but was " + searchTimeMicros + " micros", searchTimeMicros >= 0);
 
         // Of course, remove time to be able to compare maps
@@ -163,10 +163,8 @@ public class MaxmindIpToGeoServiceTest {
      * runner.addControllerService("ipToGeoService", service);
      * and vice versa (runner controller service not implemented, so workaround for the moment)
      */
-    public class MockMaxmindIpToGeoService extends MaxmindIpToGeoService
-    {
-        public MockMaxmindIpToGeoService(String locale)
-        {
+    public class MockMaxmindIpToGeoService extends MaxmindIpToGeoService {
+        public MockMaxmindIpToGeoService(String locale) {
             super.locale = locale;
         }
 

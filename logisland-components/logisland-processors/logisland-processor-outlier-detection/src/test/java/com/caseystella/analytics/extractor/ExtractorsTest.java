@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,10 +17,7 @@ package com.caseystella.analytics.extractor;
 
 import com.caseystella.analytics.DataPoint;
 import com.google.common.collect.Iterables;
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
-import com.hurence.logisland.util.string.Multiline;
-import org.apache.commons.lang3.Conversion;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,36 +26,61 @@ import java.text.SimpleDateFormat;
 public class ExtractorsTest {
 
     /**
-     {
-         "keyConverter" : "NOOP"
-       , "valueConverter" : "CSVConverter"
-       , "valueConverterConfig" : {
-                                    "columnMap" : {
-                                                  "sensor1_ts" : 0
-                                                 ,"sensor1_value" : 1
-                                                 ,"sensor2_ts" : 4
-                                                 ,"sensor2_value" : 5
-                                                 ,"plant_id" : 7
-                                                  }
-                                  }
-       , "measurements" : [
-            {
-             "source" : "sensor_1"
-            ,"timestampField" : "sensor1_ts"
-            ,"measurementField" : "sensor1_value"
-            ,"metadataFields" : [ "plant_id"]
-            }
-           ,{
-             "source" : "sensor_2"
-            ,"timestampField" : "sensor2_ts"
-            ,"measurementField" : "sensor2_value"
-            ,"metadataFields" : [ "plant_id"]
-            }
-                          ]
-     }
+     * {
+     * "keyConverter" : "NOOP"
+     * , "valueConverter" : "CSVConverter"
+     * , "valueConverterConfig" : {
+     * "columnMap" : {
+     * "sensor1_ts" : 0
+     * ,"sensor1_value" : 1
+     * ,"sensor2_ts" : 4
+     * ,"sensor2_value" : 5
+     * ,"plant_id" : 7
+     * }
+     * }
+     * , "measurements" : [
+     * {
+     * "source" : "sensor_1"
+     * ,"timestampField" : "sensor1_ts"
+     * ,"measurementField" : "sensor1_value"
+     * ,"metadataFields" : [ "plant_id"]
+     * }
+     * ,{
+     * "source" : "sensor_2"
+     * ,"timestampField" : "sensor2_ts"
+     * ,"measurementField" : "sensor2_value"
+     * ,"metadataFields" : [ "plant_id"]
+     * }
+     * ]
+     * }
      */
-    @Multiline
-    public static String extractorConfig;
+    public static String extractorConfig = "{\n" +
+            "      \"keyConverter\" : \"NOOP\"\n" +
+            "      , \"valueConverter\" : \"CSVConverter\"\n" +
+            " , \"valueConverterConfig\" : {\n" +
+            " \"columnMap\" : {\n" +
+            " \"sensor1_ts\" : 0\n" +
+            " ,\"sensor1_value\" : 1\n" +
+            " ,\"sensor2_ts\" : 4\n" +
+            " ,\"sensor2_value\" : 5\n" +
+            " ,\"plant_id\" : 7\n" +
+            " }\n" +
+            " }\n" +
+            " , \"measurements\" : [\n" +
+            " {\n" +
+            " \"source\" : \"sensor_1\"\n" +
+            " ,\"timestampField\" : \"sensor1_ts\"\n" +
+            " ,\"measurementField\" : \"sensor1_value\"\n" +
+            " ,\"metadataFields\" : [ \"plant_id\"]\n" +
+            " }\n" +
+            " ,{\n" +
+            " \"source\" : \"sensor_2\"\n" +
+            " ,\"timestampField\" : \"sensor2_ts\"\n" +
+            " ,\"measurementField\" : \"sensor2_value\"\n" +
+            " ,\"metadataFields\" : [ \"plant_id\"]\n" +
+            " }\n" +
+            " ]\n" +
+            " }";
 
     @Test
     public void testExtractor() throws Exception {
@@ -94,31 +116,30 @@ public class ExtractorsTest {
     }
 
     /**
-     {
-         "valueConverter" : "CSVConverter"
-       , "valueConverterConfig" : {
-                                    "columnMap" : {
-                                                  "physician_specialty" : 1
-                                                 ,"transaction_date" : 2
-                                                 ,"transaction_amount" : 3
-                                                 ,"transaction_reason" : 4
-                                                  }
-                                  }
-       , "measurements" : [
-            {
-             "sourceFields" : [ "physician_specialty", "transaction_reason" ]
-            ,"timestampField" : "transaction_date"
-            ,"timestampConverter" : "DateConverter"
-            ,"timestampConverterConfig" : {
-                                            "format" : "yyyy-MM-dd"
-                                          }
-            ,"measurementField" : "transaction_amount"
-            }
-                          ]
-     }
+     * 
      */
-    @Multiline
-    public static String fraudExtractorConfig;
+    public static String fraudExtractorConfig = "{\n" +
+            " \"valueConverter\" : \"CSVConverter\"\n" +
+            " , \"valueConverterConfig\" : {\n" +
+            " \"columnMap\" : {\n" +
+            " \"physician_specialty\" : 1\n" +
+            " ,\"transaction_date\" : 2\n" +
+            " ,\"transaction_amount\" : 3\n" +
+            " ,\"transaction_reason\" : 4\n" +
+            " }\n" +
+            " }\n" +
+            " , \"measurements\" : [\n" +
+            " {\n" +
+            " \"sourceFields\" : [ \"physician_specialty\", \"transaction_reason\" ]\n" +
+            " ,\"timestampField\" : \"transaction_date\"\n" +
+            " ,\"timestampConverter\" : \"DateConverter\"\n" +
+            " ,\"timestampConverterConfig\" : {\n" +
+            " \"format\" : \"yyyy-MM-dd\"\n" +
+            " }\n" +
+            " ,\"measurementField\" : \"transaction_amount\"\n" +
+            " }\n" +
+            " ]\n" +
+            " }";
 
     @Test
     public void testFraudExtractor() throws Exception {
