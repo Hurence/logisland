@@ -38,7 +38,7 @@ import java.util.jar.Manifest;
  * A plugin is assumed to:
  * <p>
  * <li>
- * <ul>Have a 'Logisland-PLugins-Export' manifest entry containing a comma separated classes the archive is exporting.</ul>
+ * <ul>Have a 'Logisland-Module-Exports' manifest entry containing a comma separated classes the archive is exporting.</ul>
  * <ul>Be packaged like a spring boot jar archive (with BOOT-INF/classes and BOOT-INF/lib). See https://docs.spring.io/spring-boot/docs/current/maven-plugin/repackage-mojo.html for more information.</ul>
  * </li>
  *
@@ -48,8 +48,8 @@ public class PluginLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(PluginLoader.class);
 
-    private static final Attributes.Name MANIFEST_ATTRIBUTE_PLUGINS_EXPORT = new Attributes.Name("Logisland-Plugins-Export");
-    private static final Attributes.Name MANIFEST_ATTRIBUTE_LOGISLAND_VERSION = new Attributes.Name("Logisland-Version");
+    private static final Attributes.Name MANIFEST_ATTRIBUTE_MODULE_EXPORTS = new Attributes.Name("Logisland-Module-Exports");
+    private static final Attributes.Name MANIFEST_ATTRIBUTE_MODULE_VERSION = new Attributes.Name("Logisland-Module-Version");
     private static final Map<String, ClassLoader> registry = Collections.synchronizedMap(new HashMap<>());
 
     static {
@@ -84,9 +84,9 @@ public class PluginLoader {
                 }
                 Manifest manifest = archive.getManifest();
                 if (manifest != null) {
-                    String exportedPlugins = manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_PLUGINS_EXPORT);
+                    String exportedPlugins = manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_MODULE_EXPORTS);
                     if (exportedPlugins != null) {
-                        String version = StringUtils.defaultIfEmpty(manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_LOGISLAND_VERSION), "UNKNOWN");
+                        String version = StringUtils.defaultIfEmpty(manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_MODULE_VERSION), "UNKNOWN");
 
                         logger.info("Loading plugins from jar {}", archive.getUrl().toExternalForm());
                         List<URL> urlList = new ArrayList<>();

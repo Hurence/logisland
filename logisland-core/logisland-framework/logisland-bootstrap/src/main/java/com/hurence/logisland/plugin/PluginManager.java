@@ -17,9 +17,33 @@
 
 package com.hurence.logisland.plugin;
 
+import org.apache.ivy.Ivy;
+import org.apache.ivy.core.module.id.ModuleId;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.core.resolve.ResolveOptions;
+import org.apache.ivy.core.settings.IvySettings;
+
+import java.io.File;
+
 public class PluginManager {
 
     public static void main(String args[]) throws Exception {
+
+        IvySettings settings = new IvySettings();
+        if (args.length > 1) {
+            settings.load(new File(args[1]));
+        } else {
+            settings.load(IvySettings.getDefaultSettingsURL());
+        }
+
+        Ivy ivy = Ivy.newInstance(settings);
+        //ModuleRevisionId revisionId =  ModuleRevisionId.parse("com.hurence.logisland#logisland-opc-connector;0.15.0");
+        ModuleRevisionId revisionId =  new ModuleRevisionId(new ModuleId("com.hurence.logisland", "logisland-connector-opc"), "0.15.0");
+        System.out.println(revisionId.getRevision());
+        System.out.println(ivy.resolve(revisionId, new ResolveOptions(), true));
+        System.out.println(ivy.findModule(revisionId));
+
+
 
     }
 }

@@ -64,8 +64,8 @@ public class LogislandRepackager {
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()) && ConfigurableComponent.class.isAssignableFrom(clazz))
                 .map(Class::getCanonicalName)
                 .collect(Collectors.joining(","));
-        mf.getMainAttributes().putValue("Logisland-Plugins-Export", foundPluginList);
-        mf.getMainAttributes().putValue("Logisland-Plugins-Version", args[2]);
+        mf.getMainAttributes().putValue("Logisland-Module-Exports", foundPluginList);
+        mf.getMainAttributes().putValue("Logisland-Module-Version", args[2]);
 
         classLoader.close();
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(destFilename), mf);
