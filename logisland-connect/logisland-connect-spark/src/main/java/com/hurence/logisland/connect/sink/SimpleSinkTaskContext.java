@@ -69,6 +69,11 @@ public class SimpleSinkTaskContext implements SinkTaskContext {
 
     }
 
+    @Override
+    public void requestCommit() {
+        //not implemented
+    }
+
     public boolean assignThenState(int partition) {
         return state.computeIfAbsent(partition, p -> true);
     }

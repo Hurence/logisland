@@ -29,6 +29,7 @@ import org.apache.kafka.connect.storage.OffsetStorageWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.SerializedOffset;
@@ -37,10 +38,12 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.unsafe.types.UTF8String;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.Tuple2;
+import scala.collection.JavaConversions;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -178,7 +181,7 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
         Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
                 !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
 
-        Map<Integer, List<Row>> current =
+        Map<Integer, List<InternalRow>> current =
                 new LinkedHashMap<>(bufferedRecords.subMap(startOff, Long.parseLong(end.json()) + 1))
                         .keySet().stream()
                         .flatMap(offset -> {
@@ -190,14 +193,15 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                             return Stream.empty();
                         })
                         .map(Tuple2::_2)
-                        .map(sourceRecord -> new GenericRow(new Object[]{
-                                sourceRecord.topic(),
-                                sourceRecord.sourcePartition().toString(),
-                                sourceRecord.sourceOffset().toString(),
+                        .map(sourceRecord -> InternalRow.fromSeq(JavaConversions.<Object>asScalaBuffer(Arrays.asList(
+                                UTF8String.fromString(sourceRecord.topic()),
+                                UTF8String.fromString(sourceRecord.sourcePartition().toString()),
+                                UTF8String.fromString(sourceRecord.sourceOffset().toString()),
                                 keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
                                 valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
-                        })).collect(Collectors.groupingBy(row -> Objects.hashCode(row.getString(1))));
-        return sqlContext.createDataFrame(new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA);
+                        )).toSeq()))
+                        .collect(Collectors.groupingBy(row -> Objects.hashCode((row.getString(1)))));
+        return sqlContext.internalCreateDataFrame(new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA, true);
 
 
     }
