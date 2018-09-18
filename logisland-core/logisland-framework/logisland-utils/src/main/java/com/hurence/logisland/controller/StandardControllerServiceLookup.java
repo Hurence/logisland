@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  */
 package com.hurence.logisland.controller;
 
-import com.hurence.logisland.classloading.PluginLoader;
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
                     try {
 
 
-                        ControllerService service = PluginLoader.loadPlugin(conf.getComponent());
+                        ControllerService service = ComponentFactory.loadComponent(conf.getComponent());
                         logger.info("loading controller service {}", new Object[]{conf.getComponent()});
                         ControllerServiceInitializationContext context = new StandardControllerServiceContext(service, conf.getControllerService());
                         Map<String, String> properties = conf.getConfiguration();
@@ -73,10 +73,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
                         controllerServiceMap.put(conf.getControllerService(), service);
                         service.initialize(context);
                         logger.info("service initialization complete {}", new Object[]{service});
-                    } catch (IllegalAccessException |
-                            IllegalArgumentException |
-                            ClassNotFoundException |
-                            InstantiationException e) {
+                    } catch (IllegalArgumentException | ClassNotFoundException e) {
                         logger.error("unable to load class {} : {} ", new Object[]{conf, e.toString()});
                     } catch (InitializationException e) {
                         logger.error("unable to initialize class {} : {} ", new Object[]{conf, e.toString()});

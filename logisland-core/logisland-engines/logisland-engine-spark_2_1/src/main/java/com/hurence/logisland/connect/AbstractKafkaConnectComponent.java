@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,8 @@
 package com.hurence.logisland.connect;
 
 
+import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.connect.source.KafkaConnectStreamSourceProvider;
 import org.apache.kafka.connect.connector.Connector;
 import org.apache.kafka.connect.connector.ConnectorContext;
@@ -28,11 +30,7 @@ import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -75,13 +73,13 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
                                          Converter valueConverter,
                                          OffsetBackingStore offsetBackingStore,
                                          int maxTasks,
-                                         Class<? extends T> connectorClass) {
+                                         String connectorClass) {
         try {
             this.sqlContext = sqlContext;
             this.maxTasks = maxTasks;
             //instantiate connector
-            this.connectorName = connectorClass.getCanonicalName();
-            connector = connectorClass.newInstance();
+            this.connectorName = connectorClass;
+            connector = ComponentFactory.loadComponent(connectorClass);
             //create converters
             this.keyConverter = keyConverter;
             this.valueConverter = valueConverter;
@@ -105,7 +103,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
                 }
             };
 
-            LOGGER.info("Starting connector {}", connectorClass.getCanonicalName());
+            LOGGER.info("Starting connector {}", connectorClass);
             connector.initialize(connectorContext);
             this.offsetBackingStore = offsetBackingStore;
 
@@ -140,7 +138,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
      * @throws IllegalAccessException if task instantiation fails.
      * @throws InstantiationException if task instantiation fails.
      */
-    protected void createAndStartAllTasks() throws IllegalAccessException, InstantiationException {
+    protected void createAndStartAllTasks() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         if (!startWatch.compareAndSet(false, true)) {
             throw new IllegalStateException("Connector is already started");
         }
@@ -151,7 +149,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
         LOGGER.info("Creating {} tasks for connector {}", configs.size(), connectorName());
         for (Map<String, String> conf : configs) {
             //create the task
-            U task = taskClass.newInstance();
+            U task = PluginProxy.create(taskClass.newInstance());
             initialize(task);
             task.start(conf);
             tasks.add(task);
@@ -214,6 +212,24 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
      */
     public boolean isRunning() {
         return startWatch.get();
+    }
+
+    private Object executeInScopedClassLoader(String m, Object instance, Object...args){
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+            Class[] argsType = new Class[0];
+            if (args != null) {
+                argsType = Arrays.stream(args).map(Object::getClass).toArray(a->new Class[a]);
+            }
+            return instance.getClass().getMethod(m, argsType).invoke(instance, args);
+        } catch (Exception e) {
+            throw new IllegalStateException("Exception occurred while executing method " + m, e);
+        } finally {
+            if (cl != null) {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
+        }
     }
 }
 

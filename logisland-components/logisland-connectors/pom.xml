@@ -17,8 +17,7 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
             <scope>provided</scope>
-            <version>0.10.1.0</version>
-            <optional>true</optional>
+            <version>0.10.2.0</version>
         </dependency>
     </dependencies>
     <modules>

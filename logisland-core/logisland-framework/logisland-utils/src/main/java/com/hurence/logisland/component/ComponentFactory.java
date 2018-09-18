@@ -31,7 +31,6 @@ import com.hurence.logisland.stream.StreamContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -135,7 +134,7 @@ public final class ComponentFactory {
     }
 
 
-    public static <T extends Serializable> T loadComponent(String className) throws ClassNotFoundException {
+    public static <T> T loadComponent(String className) throws ClassNotFoundException {
         //first look for a plugin
         try {
             try {

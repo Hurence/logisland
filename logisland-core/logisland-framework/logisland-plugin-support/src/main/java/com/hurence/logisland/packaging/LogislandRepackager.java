@@ -18,16 +18,13 @@
 package com.hurence.logisland.packaging;
 
 
-import com.hurence.logisland.classloading.PluginClassLoader;
-import com.hurence.logisland.component.ConfigurableComponent;
 import org.apache.commons.io.IOUtils;
-import org.springframework.boot.loader.LaunchedURLClassLoader;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Modifier;
-import java.net.URL;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -43,31 +40,25 @@ public class LogislandRepackager {
 
 
     public static void main(String args[]) throws Exception {
-        JarFile file = new JarFile(args[0]);
-        String destFilename = args[0] + "-tmp";
+        execute(args[0], args[2], args[3], args[1].split(","));
 
-        //first build the manifest
-        LaunchedURLClassLoader classLoader = new PluginClassLoader(new URL[]{new File(args[0]).toURI().toURL()}, Thread.currentThread().getContextClassLoader());
+    }
+
+    public static void execute(String jarFile, String providedLibPath, String version, String... parentClasses) throws Exception {
+        JarFile file = new JarFile(jarFile);
+        String destFilename = jarFile + "-tmp";
+
+
         Manifest mf = file.getManifest();
         String springBootClasses = mf.getMainAttributes().getValue("Spring-Boot-Classes");
         //first collect classes
-        String foundPluginList = file.stream().map(JarEntry::getName)
-                .filter(s -> s.startsWith(springBootClasses) && s.endsWith(".class") && !s.contains("$"))
-                .map(s -> s.substring(springBootClasses.length(), s.length() - ".class".length()).replace("/", "."))
-                .map(s -> {
-                    try {
-                        return classLoader.loadClass(s);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Unable to resolve classes", e);
-                    }
-                })
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()) && ConfigurableComponent.class.isAssignableFrom(clazz))
-                .map(Class::getCanonicalName)
-                .collect(Collectors.joining(","));
+        String foundPluginList = ModuleFinder.findOfType(new File(jarFile).toURI().toURL(),
+                springBootClasses,
+                new LinkedHashSet<>(Arrays.asList(parentClasses)))
+                .stream().collect(Collectors.joining(","));
         mf.getMainAttributes().putValue("Logisland-Module-Exports", foundPluginList);
-        mf.getMainAttributes().putValue("Logisland-Module-Version", args[2]);
+        mf.getMainAttributes().putValue("Logisland-Module-Version", version);
 
-        classLoader.close();
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(destFilename), mf);
 
         Enumeration<JarEntry> enumeration = file.entries();
@@ -76,7 +67,7 @@ public class LogislandRepackager {
             if (entry.getName().equals("META-INF/MANIFEST.MF")) {
                 continue;
             }
-            if (entry.getName().startsWith(args[1])) {
+            if (entry.getName().startsWith(providedLibPath)) {
                 continue;
             }
             jos.putNextEntry(entry);
@@ -85,8 +76,10 @@ public class LogislandRepackager {
         }
         jos.close();
         file.close();
-        new File(args[0]).delete();
-        new File(destFilename).renameTo(new File(args[0]));
+        new File(jarFile).delete();
+        new File(destFilename).renameTo(new File(jarFile));
+
 
     }
+
 }

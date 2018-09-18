@@ -58,7 +58,7 @@ public class KafkaConnectStreamSink extends AbstractKafkaConnectComponent<SinkCo
                                   OffsetBackingStore offsetBackingStore,
                                   int maxTasks,
                                   String topic,
-                                  Class<? extends SinkConnector> connectorClass) {
+                                  String connectorClass) {
         super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass);
         this.topic = topic;
     }

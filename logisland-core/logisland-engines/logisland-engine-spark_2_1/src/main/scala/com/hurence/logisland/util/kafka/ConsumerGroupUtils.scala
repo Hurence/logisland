@@ -25,8 +25,10 @@ import kafka.utils._
 import org.I0Itec.zkclient.exception.ZkNoNodeException
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.errors.BrokerNotAvailableException
+import org.apache.kafka.common.network.ListenerName
 import org.apache.kafka.common.protocol.{Errors, SecurityProtocol}
 import org.apache.kafka.common.security.JaasUtils
+
 import scala.collection.{Set, mutable}
 
 class ConsumerGroupUtils(val zkUrl: String) {
@@ -76,7 +78,7 @@ class ConsumerGroupUtils(val zkUrl: String) {
     private def getZkConsumer(brokerId: Int): Option[SimpleConsumer] = {
         try {
             zkUtils.getBrokerInfo(brokerId)
-                .map(_.getBrokerEndPoint(SecurityProtocol.PLAINTEXT))
+                .map(_.getBrokerEndPoint(ListenerName.forSecurityProtocol(SecurityProtocol.PLAINTEXT)))
                 .map(endPoint => new SimpleConsumer(endPoint.host, endPoint.port, 10000, 100000, "ConsumerGroupCommand"))
                 .orElse(throw new BrokerNotAvailableException("Broker id %d does not exist".format(brokerId)))
         } catch {

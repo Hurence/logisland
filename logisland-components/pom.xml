@@ -14,6 +14,11 @@
     <packaging>pom</packaging>
     <artifactId>logisland-components</artifactId>
 
+    <properties>
+        <logisland.component.name>${project.name}</logisland.component.name>
+        <logisland.component.description>${project.description}</logisland.component.description>
+    </properties>
+
     <modules>
         <module>logisland-connectors</module>
         <module>logisland-services</module>
@@ -71,6 +76,7 @@
                         <arguments>
                             <argument>${project.build.directory}/${project.build.finalName}.${project.packaging}
                             </argument>
+                            <argument>com.hurence.logisland.component.ConfigurableComponent</argument>
                             <argument>BOOT-INF/lib-provided</argument>
                             <argument>${project.version}</argument>
                         </arguments>

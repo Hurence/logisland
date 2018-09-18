@@ -44,7 +44,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-loader-tools</artifactId>
             <version>2.0.0.RELEASE</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
@@ -52,6 +51,10 @@
             <version>3.2.6</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>

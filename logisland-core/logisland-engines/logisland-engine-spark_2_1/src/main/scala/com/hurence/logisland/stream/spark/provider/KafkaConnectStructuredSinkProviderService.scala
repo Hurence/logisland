@@ -111,7 +111,7 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
                     offsetBackingStoreInstance,
                     maxConfigurations,
                     topic,
-                    Class.forName(delegateConnectorClass).asInstanceOf[Class[_ <: SinkConnector]])
+                    delegateConnectorClass)
                 writer.start()
             }
 

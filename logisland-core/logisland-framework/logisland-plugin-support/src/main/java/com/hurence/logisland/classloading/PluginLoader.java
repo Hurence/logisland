@@ -30,7 +30,6 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
@@ -48,8 +47,6 @@ public class PluginLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(PluginLoader.class);
 
-    private static final Attributes.Name MANIFEST_ATTRIBUTE_MODULE_EXPORTS = new Attributes.Name("Logisland-Module-Exports");
-    private static final Attributes.Name MANIFEST_ATTRIBUTE_MODULE_VERSION = new Attributes.Name("Logisland-Module-Version");
     private static final Map<String, ClassLoader> registry = Collections.synchronizedMap(new HashMap<>());
 
     static {
@@ -84,22 +81,18 @@ public class PluginLoader {
                 }
                 Manifest manifest = archive.getManifest();
                 if (manifest != null) {
-                    String exportedPlugins = manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_MODULE_EXPORTS);
+                    String exportedPlugins = manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_EXPORTS);
                     if (exportedPlugins != null) {
-                        String version = StringUtils.defaultIfEmpty(manifest.getMainAttributes().getValue(MANIFEST_ATTRIBUTE_MODULE_VERSION), "UNKNOWN");
+                        String version = StringUtils.defaultIfEmpty(manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_VERSION), "UNKNOWN");
 
                         logger.info("Loading plugins from jar {}", archive.getUrl().toExternalForm());
-                        List<URL> urlList = new ArrayList<>();
 
 
-                        for (Archive a : archive.getNestedArchives(PluginLoader::isNestedArchive)) {
-                            urlList.add(a.getUrl());
-                        }
+                        final Archive arc = archive;
 
 
                         Arrays.stream(exportedPlugins.split(",")).map(String::trim).forEach(s -> {
-                            if (registry.putIfAbsent(s,
-                                    new PluginClassLoader(urlList.toArray(new URL[urlList.size()]), Thread.currentThread().getContextClassLoader())) == null) {
+                            if (registry.putIfAbsent(s, PluginClassloaderBuilder.build(arc)) == null) {
                                 logger.info("Registered plugin '{}' version '{}'", s, version);
                             }
                         });
@@ -110,11 +103,6 @@ public class PluginLoader {
                 logger.error("Unable to load plugin from " + url.toExternalForm(), e);
             }
         }
-    }
-
-
-    private static boolean isNestedArchive(Archive.Entry entry) {
-        return (entry.isDirectory() && entry.getName().equals("BOOT-INF/classes/")) || entry.getName().startsWith("BOOT-INF/lib/");
     }
 
 

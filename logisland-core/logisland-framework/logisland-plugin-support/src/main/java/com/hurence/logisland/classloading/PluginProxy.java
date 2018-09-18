@@ -19,6 +19,7 @@ package com.hurence.logisland.classloading;
 
 import com.hurence.logisland.classloading.serialization.AutoProxiedSerializablePlugin;
 import com.hurence.logisland.classloading.serialization.SerializationMagik;
+import com.hurence.logisland.component.AbstractConfigurableComponent;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.InvocationHandler;
 import org.apache.commons.lang3.SerializationUtils;
@@ -41,21 +42,24 @@ public class PluginProxy {
      */
     private static class CglibProxyHandler implements InvocationHandler, Serializable {
 
-        private transient final Serializable delegate;
+        private transient final Object delegate;
 
-        public CglibProxyHandler(Serializable delegate) {
+        public CglibProxyHandler(Object delegate) {
             this.delegate = delegate;
         }
 
         @Override
         public Object invoke(Object o, Method method, Object[] args) throws Throwable {
-
-            if ("writeReplace".equals(method.getName())) {
-                return new AutoProxiedSerializablePlugin(delegate.getClass().getCanonicalName(), SerializationUtils.serialize(delegate));
-            } else if ("resolveDelegate".equals(method.getName())) {
+            if (delegate instanceof Serializable) {
+                if ("writeReplace".equals(method.getName())) {
+                    return new AutoProxiedSerializablePlugin(delegate.getClass().getCanonicalName(), SerializationUtils.serialize((Serializable) delegate));
+                }
+            }
+            if ("resolveDelegate".equals(method.getName())) {
                 return delegate;
             }
             Method delegateMethod = delegate.getClass().getMethod(method.getName(), method.getParameterTypes());
+
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             ClassLoader toSet = delegate != null ? delegate.getClass().getClassLoader() : Thread.currentThread().getContextClassLoader();
             try {
@@ -70,12 +74,12 @@ public class PluginProxy {
     }
 
     private static Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
-        CglibProxyHandler handler = new CglibProxyHandler((Serializable) object);
+        CglibProxyHandler handler = new CglibProxyHandler(object);
 
         Enhancer enhancer = new Enhancer();
 
 
-        if (superClass != null && (interfaces == null || interfaces.length == 0)) {
+        if (superClass != null && !AbstractConfigurableComponent.class.isAssignableFrom(superClass)) {
             enhancer.setSuperclass(superClass);
         }
 

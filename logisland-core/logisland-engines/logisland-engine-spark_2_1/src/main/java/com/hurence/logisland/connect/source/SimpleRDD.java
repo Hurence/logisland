@@ -20,7 +20,7 @@ import org.apache.spark.Partition;
 import org.apache.spark.SparkContext;
 import org.apache.spark.TaskContext;
 import org.apache.spark.rdd.RDD;
-import org.apache.spark.sql.Row;
+import org.apache.spark.sql.catalyst.InternalRow;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.reflect.ClassTag$;
@@ -34,18 +34,18 @@ import java.util.Map;
  *
  * @author amarziali
  */
-public class SimpleRDD extends RDD<Row> {
+public class SimpleRDD extends RDD<InternalRow> {
 
-    final Map<Integer, List<Row>> data;
+    final Map<Integer, List<InternalRow>> data;
 
-    public SimpleRDD(SparkContext _sc, Map<Integer, List<Row>> data) {
+    public SimpleRDD(SparkContext _sc, Map<Integer, List<InternalRow>> data) {
         super(_sc, JavaConversions.collectionAsScalaIterable(Collections.<Dependency<?>>emptyList()).toSeq(),
-                ClassTag$.MODULE$.apply(Row.class));
+                ClassTag$.MODULE$.apply(InternalRow.class));
         this.data = data;
     }
 
     @Override
-    public Iterator<Row> compute(Partition split, TaskContext context) {
+    public Iterator<InternalRow> compute(Partition split, TaskContext context) {
         return JavaConversions.collectionAsScalaIterable(data.get(((SimplePartition)split).getHash())).iterator();
     }
 
@@ -60,4 +60,5 @@ public class SimpleRDD extends RDD<Row> {
         return ret;
 
     }
+    
 }

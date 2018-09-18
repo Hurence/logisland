@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * A plugin classloader doing parent last resolution.
@@ -35,15 +38,24 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
         ClassLoader.registerAsParallelCapable();
     }
 
+    private final Set<Pattern> classFilterPatterns = new HashSet<>();
+
     /**
      * Constructor that accepts a specific classloader as parent.
      *
-     * @param urls   the list of urls from which to load classes and resources for this plugin.
-     * @param parent the parent classloader to be used for delegation for classes that were
-     *               not found or should not be loaded in isolation by this classloader.
+     * @param urls                the list of urls from which to load classes and resources for this plugin.
+     * @param parentFirstPatterns list of class pattern that will be resolved first by the parent.
+     * @param parent              the parent classloader to be used for delegation for classes that were
+     *                            not found or should not be loaded in isolation by this classloader.
      */
-    public PluginClassLoader(URL[] urls, ClassLoader parent) {
+    public PluginClassLoader(URL[] urls, String[] parentFirstPatterns, ClassLoader parent) {
         super(urls, parent);
+        //add defaults
+        classFilterPatterns.add(Pattern.compile("java.*"));
+        classFilterPatterns.add(Pattern.compile("scala.*"));
+        for (String parentFirstPattern : parentFirstPatterns) {
+            classFilterPatterns.add(Pattern.compile(parentFirstPattern));
+        }
     }
 
 
@@ -51,14 +63,18 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
     protected synchronized Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
-            Class<?> klass = findLoadedClass(name);
-            if (klass == null) {
-                try {
-                    klass = findClass(name);
+            Class<?> klass = null;
+            if (classFilterPatterns.stream().anyMatch(p->p.matcher(name).matches())) {
+                klass = findLoadedClass(name);
 
-                } catch (ClassNotFoundException e) {
-                    // Not found in loader's path. Search in parents.
-                    log.trace("Class '{}' not found. Delegating to parent", name);
+                if (klass == null) {
+                    try {
+                        klass = findClass(name);
+
+                    } catch (ClassNotFoundException e) {
+                        // Not found in loader's path. Search in parents.
+                        log.trace("Class '{}' not found. Delegating to parent", name);
+                    }
                 }
             }
             if (klass == null) {

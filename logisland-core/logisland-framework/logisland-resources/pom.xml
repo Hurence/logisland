@@ -26,6 +26,14 @@
     <artifactId>logisland-resources</artifactId>
     <packaging>pom</packaging>
     <description>holds common resources used to build installers</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-documentation</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
