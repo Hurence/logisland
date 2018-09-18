@@ -158,7 +158,13 @@ engine_jar=""
 compare_versions $SPARK_VERSION 2.0.0
     case $? in
         2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_1_6-*.jar` ;;
-        *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
+        *) compare_versions $SPARK_VERSION 2.3.0
+            case $? in
+                2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
+                *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
+
+            esac
+           ;;
     esac
 
 

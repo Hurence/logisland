@@ -5,10 +5,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-engines</artifactId>
+        <artifactId>logisland-engine-spark_2_X</artifactId>
         <version>0.15.0</version>
     </parent>
-    <artifactId>logisland-engine-spark_2_1</artifactId>
+    <artifactId>logisland-engine-spark_2_common</artifactId>
     <packaging>jar</packaging>
 
 
@@ -40,46 +40,31 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
                 <version>2.1.2</version>
                 <scope>provided</scope>
-                <optional>true</optional>
+                
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_${scala.binary.version}</artifactId>
-                <version>${kafka.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_${scala.binary.version}</artifactId>
-                <version>${kafka.version}</version>
-                <classifier>test</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-clients</artifactId>
-                <version>${kafka.version}</version>
-                <optional>true</optional>
+                
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-tools</artifactId>
-                <version>${kafka.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>${kafka.version}</version>
-                <classifier>test</classifier>
-                <scope>test</scope>
+                <scope>compile</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.11</artifactId>
+                <version>${kafka.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
@@ -114,20 +99,31 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
-                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
-                <optional>true</optional>
             </dependency>
+
+
             <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka-assembly_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-                <optional>true</optional>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_${scala.binary.version}</artifactId>
+                <classifier>test</classifier>
+                <version>${kafka.version}</version>
+                <scope>test</scope>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka.version}</version>
+                <classifier>test</classifier>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -136,42 +132,51 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
+            
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
+            
             <scope>provided</scope>
         </dependency>
 
+
+
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-plugin-support</artifactId>
+            <version>${project.version}</version>
+            
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
             <version>2.1.2</version>
-            <optional>true</optional>
+            
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
 
         <dependency>
             <groupId>com.groupon.dse</groupId>
             <artifactId>spark-metrics</artifactId>
             <version>2.0.0</version>
-            <optional>true</optional>
+            
         </dependency>
 
         <!-- spark dependencies -->
@@ -179,37 +184,36 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_${scala.binary.version}</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
-            <optional>true</optional>
+            
         </dependency>
 
 
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
-            <version>2.2.0</version>
-            <optional>true</optional>
+            <version>${spark.version}</version>
         </dependency>
 
 
@@ -217,19 +221,19 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
             <version>${kafka.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-runtime</artifactId>
             <version>${kafka.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-json</artifactId>
             <version>${kafka.version}</version>
-            <optional>true</optional>
+            
         </dependency>
 
 
@@ -238,44 +242,44 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
             <version>${jackson.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
             <version>${jackson.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
             <version>${jackson.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
-            <optional>true</optional>
+            
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.version}</version>
-            <optional>true</optional>
+            
         </dependency>
 
 
@@ -283,7 +287,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.1.3.Final</version>
-            <optional>true</optional>
+            
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.glassfish/javax.el -->
@@ -291,7 +295,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
             <version>3.0.0</version>
-            <optional>true</optional>
+            
         </dependency>
 
 
@@ -300,7 +304,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <scope>provided</scope>
-            <optional>true</optional>
+            
         </dependency>
 
 
@@ -320,26 +324,31 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_${scala.binary.version}</artifactId>
             <classifier>test</classifier>
-            <version>${kafka.version}</version>
-
             <scope>test</scope>
         </dependency>
+
+
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>${kafka.version}</version>
             <classifier>test</classifier>
             <scope>test</scope>
         </dependency>
-
 
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-core</artifactId>
             <version>${swagger-core-version}</version>
-            <optional>true</optional>
+            
         </dependency>
 
         <dependency>
@@ -355,7 +364,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp-urlconnection</artifactId>
             <version>3.10.0</version>
-            <optional>true</optional>
+            
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
@@ -422,56 +431,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </javacArgs>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.immutables.tools</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>com.fasterxml*:*</exclude>
-                                    <exclude>org.scala-lang:*</exclude>
-                                    <exclude>org.scalatest:*</exclude>
-                                    <exclude>org.apache.zookeeper:*</exclude>
-                                    <exclude>com.google.guava:*</exclude>
-                                    <exclude>org.apache.commons:*</exclude>
-                                    <exclude>org.slf4j:*</exclude>
-                                    <exclude>log4j:*</exclude>
-                                    <exclude>org.yaml:*</exclude>
-                                    <exclude>org.eclipse.jetty:*</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/license/**</exclude>
-                                        <exclude>META-INF/*</exclude>
-                                        <exclude>META-INF/maven/**</exclude>
-                                        <exclude>LICENSE</exclude>
-                                        <exclude>NOTICE</exclude>
-                                        <exclude>/*.txt</exclude>
-                                        <exclude>build.properties</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-
         </plugins>
     </build>
+
+
 </project>

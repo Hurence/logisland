@@ -19,6 +19,7 @@ package com.hurence.logisland.connect.source;
 
 import com.hurence.logisland.connect.AbstractKafkaConnectComponent;
 import com.hurence.logisland.stream.spark.provider.StreamOptions;
+import com.hurence.logisland.util.spark.SparkPlatform;
 import org.apache.kafka.connect.runtime.WorkerSourceTaskContext;
 import org.apache.kafka.connect.source.SourceConnector;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -31,8 +32,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.catalyst.InternalRow$;
-import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.sql.execution.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.SerializedOffset;
 import org.apache.spark.sql.execution.streaming.Source;
@@ -52,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Kafka connect to spark sql streaming bridge.
@@ -99,6 +99,11 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
     private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> uncommittedRecords =
             Collections.synchronizedSortedMap(new TreeMap<>());
     private final Map<SourceTask, Thread> busyTasks = Collections.synchronizedMap(new IdentityHashMap<>());
+
+    private final SparkPlatform sparkPlatform = StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(ServiceLoader.load(SparkPlatform.class).iterator(), Spliterator.ORDERED),
+            false).findFirst().orElseThrow(() -> new IllegalStateException("SparkPlatform service spi not defined. " +
+            "Unable to continue"));
 
 
     /**
@@ -178,8 +183,6 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
 
     @Override
     public Dataset<Row> getBatch(Option<Offset> start, Offset end) {
-
-
         Long startOff = start.isDefined() ? Long.parseLong(start.get().json()) :
                 !bufferedRecords.isEmpty() ? bufferedRecords.firstKey() : 0L;
 
@@ -198,12 +201,12 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                         .map(sourceRecord -> InternalRow.fromSeq(JavaConversions.<Object>asScalaBuffer(Arrays.asList(
                                 UTF8String.fromString(sourceRecord.topic()),
                                 UTF8String.fromString(sourceRecord.sourcePartition().toString()),
-                                        UTF8String.fromString(sourceRecord.sourceOffset().toString()),
+                                UTF8String.fromString(sourceRecord.sourceOffset().toString()),
                                 keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
                                 valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
                         )).toSeq()))
                         .collect(Collectors.groupingBy(row -> Objects.hashCode((row.getString(1)))));
-        return sqlContext.internalCreateDataFrame(new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA);
+        return sparkPlatform.createStreamingDataFrame(sqlContext, new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA);
 
 
     }

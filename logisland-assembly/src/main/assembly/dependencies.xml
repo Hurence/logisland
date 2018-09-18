@@ -38,6 +38,7 @@
                 <exclude>logisland-resources</exclude>
                 <exclude>logisland-documentation</exclude>
                 <exclude>logisland-engine-spark_2_1</exclude>
+                <exclude>logisland-engine-spark_2_3</exclude>
                 <exclude>logisland-engine-spark_1_6</exclude>
             </excludes>
         </dependencySet>
@@ -50,6 +51,7 @@
             <fileMode>0660</fileMode>
             <useTransitiveFiltering>true</useTransitiveFiltering>
            <includes>
+               <include>logisland-engine-spark_2_3</include>
                <include>logisland-engine-spark_2_1</include>
                <include>logisland-engine-spark_1_6</include>
            </includes>
