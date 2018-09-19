@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbstractMongoDBControllerService extends AbstractControllerService {
+public abstract class AbstractMongoDBControllerService extends AbstractControllerService {
 
     static final String WRITE_CONCERN_ACKNOWLEDGED = "ACKNOWLEDGED";
     static final String WRITE_CONCERN_UNACKNOWLEDGED = "UNACKNOWLEDGED";

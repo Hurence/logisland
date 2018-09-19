@@ -225,10 +225,10 @@ public class DocGenerator {
      * @throws IOException            ioe
      */
     private static void document(final File docsDir, final Class<? extends ConfigurableComponent> componentClass, final String writerType)
-            throws InstantiationException, IllegalAccessException, IOException, InitializationException {
+            throws InstantiationException, IllegalAccessException, IOException, InitializationException, ClassNotFoundException {
 
         logger.info("Documenting: " + componentClass);
-        final ConfigurableComponent component = componentClass.newInstance();
+        final ConfigurableComponent component = PluginLoader.loadPlugin(componentClass.getCanonicalName());
         final ConfigurableComponentInitializer initializer = getComponentInitializer(componentClass);
         initializer.initialize(component);
 

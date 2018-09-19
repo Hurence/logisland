@@ -20,6 +20,7 @@ import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -99,7 +100,7 @@ public class HtmlDocumentationWriter implements DocumentationWriter {
      * @return the class name of the component
      */
     protected String getTitle(final ConfigurableComponent configurableComponent) {
-        return configurableComponent.getClass().getSimpleName();
+        return PluginProxy.unwrap(configurableComponent).getClass().getSimpleName();
     }
 
     /**
