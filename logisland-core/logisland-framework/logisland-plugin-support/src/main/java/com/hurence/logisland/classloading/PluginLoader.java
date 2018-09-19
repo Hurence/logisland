@@ -85,7 +85,7 @@ public class PluginLoader {
                     if (exportedPlugins != null) {
                         String version = StringUtils.defaultIfEmpty(manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_VERSION), "UNKNOWN");
 
-                        logger.info("Loading plugins from jar {}", archive.getUrl().toExternalForm());
+                        logger.info("Loading components from module {}", archive.getUrl().toExternalForm());
 
 
                         final Archive arc = archive;
@@ -93,14 +93,14 @@ public class PluginLoader {
 
                         Arrays.stream(exportedPlugins.split(",")).map(String::trim).forEach(s -> {
                             if (registry.putIfAbsent(s, PluginClassloaderBuilder.build(arc)) == null) {
-                                logger.info("Registered plugin '{}' version '{}'", s, version);
+                                logger.info("Registered component '{}' version '{}'", s, version);
                             }
                         });
                     }
                 }
 
             } catch (Exception e) {
-                logger.error("Unable to load plugin from " + url.toExternalForm(), e);
+                logger.error("Unable to load components from " + url.toExternalForm(), e);
             }
         }
     }
@@ -119,7 +119,7 @@ public class PluginLoader {
     public static <U> U loadPlugin(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader cl = registry.get(className);
         if (cl == null) {
-            throw new ClassNotFoundException("Unable to find plugin class " + className +
+            throw new ClassNotFoundException("Unable to find component with class " + className +
                     ". Please check your classpath");
         }
         ClassLoader thiz = Thread.currentThread().getContextClassLoader();

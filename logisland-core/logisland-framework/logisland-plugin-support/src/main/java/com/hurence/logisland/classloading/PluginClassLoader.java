@@ -64,7 +64,7 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
             throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
             Class<?> klass = null;
-            if (classFilterPatterns.stream().anyMatch(p->p.matcher(name).matches())) {
+            if (classFilterPatterns.stream().noneMatch(p->p.matcher(name).matches())) {
                 klass = findLoadedClass(name);
 
                 if (klass == null) {
