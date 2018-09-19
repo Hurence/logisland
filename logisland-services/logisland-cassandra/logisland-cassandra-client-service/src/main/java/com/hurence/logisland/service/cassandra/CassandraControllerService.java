@@ -25,6 +25,7 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
@@ -345,8 +346,12 @@ public class CassandraControllerService extends AbstractControllerService implem
             stillSomeRecords = true;
             queue.add(new RecordToIndex(collectionName.toLowerCase(), record));
         } else {
-            if (record == null)
-                getLogger().error("Null collectionName for the record " + record);
+            if ( (record != null) && (collectionName == null) )
+            {
+                record.addError(ProcessError.UNKNOWN_ERROR.toString(),
+                        "Trying to bulkput to Cassandra with a null collection name");
+            }
+
             if (record == null)
                 getLogger().error("Trying to add a null record in the queue");
         }

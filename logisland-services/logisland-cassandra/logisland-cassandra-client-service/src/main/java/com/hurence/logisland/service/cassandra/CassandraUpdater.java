@@ -17,6 +17,7 @@ package com.hurence.logisland.service.cassandra;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -298,8 +299,10 @@ public class CassandraUpdater implements Runnable {
                         if (tableData == null)
                         {
                             if (!collectionName.equals(END_OF_TEST)) {
-                                logger.error("The following record cannot be sent to Cassandra because table " + collectionName +
-                                        " does not exist: " + record);
+                                record.addError(ProcessError.UNKNOWN_ERROR.toString(),
+                                        "Cannot find cassandra collection definition for collection " + collectionName);
+                                logger.error("\"Cannot find cassandra collection definition for collection " + collectionName +
+                                        " for this record: " + record);
                             } else
                             {
                                 // Collection is END_OF_TEST
