@@ -1,5 +1,15 @@
 #########################################################################################################
-# Logisland configuration script tempate
+# Logisland configuration script template
+#
+# WARNING: In this example, the cassandra keyspace and table where apache logs are to be saved must already
+# exist.
+#
+# Create the keyspace with cqlsh:
+# CREATE KEYSPACE IF NOT EXISTS  logisland WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+#
+# Create the table with cqlsh:
+# CREATE TABLE logisland.apache (record_id text PRIMARY KEY, bytes_out int, http_method text, http_query text, http_status text, http_version text, identd text, record_time timestamp, src_ip text, user text);
+# 
 #########################################################################################################
 
 version: 0.15.0
@@ -47,11 +57,6 @@ engine:
       configuration:
         cassandra.hosts: sandbox
         cassandra.port: 9042
-        cassandra.keyspace: logisland
-        cassandra.table: apache
-        cassandra.table.fields: record_id:text,src_ip:text,identd:text,user:text,record_time:timestamp,http_method:text,http_query:text,http_version:text,http_status:text,bytes_out:int
-        cassandra.table.primary_key: record_id
-        cassandra.schema.create: true
         cassandra.with-ssl: false
         cassandra.with-credentials: false
         cassandra.credentials.user:
@@ -94,6 +99,7 @@ engine:
         - processor: solr_publisher
           component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
-          documentation: "indexes processed events in SolR"
+          documentation: "Indexes processed events in Cassandra"
           configuration:
             datastore.client.service: datastore_service
+            default.collection: logisland.apache
