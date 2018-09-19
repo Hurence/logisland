@@ -20,6 +20,7 @@ package com.hurence.logisland.classloading;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
+import org.springframework.boot.loader.archive.Archive;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
     }
 
     private final Set<Pattern> classFilterPatterns = new HashSet<>();
+    private final ModuleInfo moduleInfo;
 
     /**
      * Constructor that accepts a specific classloader as parent.
@@ -48,8 +50,9 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
      * @param parent              the parent classloader to be used for delegation for classes that were
      *                            not found or should not be loaded in isolation by this classloader.
      */
-    public PluginClassLoader(URL[] urls, String[] parentFirstPatterns, ClassLoader parent) {
+    public PluginClassLoader(ModuleInfo moduleInfo, URL[] urls, String[] parentFirstPatterns, ClassLoader parent) {
         super(urls, parent);
+        this.moduleInfo = moduleInfo;
         //add defaults
         classFilterPatterns.add(Pattern.compile("java.*"));
         classFilterPatterns.add(Pattern.compile("scala.*"));
@@ -85,5 +88,9 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
             }
             return klass;
         }
+    }
+
+    public ModuleInfo getModuleInfo() {
+        return moduleInfo;
     }
 }

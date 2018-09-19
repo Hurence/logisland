@@ -79,6 +79,9 @@
                             <argument>com.hurence.logisland.component.ConfigurableComponent</argument>
                             <argument>BOOT-INF/lib-provided</argument>
                             <argument>${project.version}</argument>
+                            <argument>${groupId}:${artifactId}:${version}</argument>
+                            <argument>${name}</argument>
+                            <argument>${description}</argument>
                         </arguments>
                         <includePluginDependencies>true</includePluginDependencies>
                     </configuration>

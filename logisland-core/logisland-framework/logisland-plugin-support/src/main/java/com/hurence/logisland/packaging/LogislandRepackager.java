@@ -18,6 +18,7 @@
 package com.hurence.logisland.packaging;
 
 
+import com.hurence.logisland.classloading.ManifestAttributes;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -40,11 +41,17 @@ public class LogislandRepackager {
 
 
     public static void main(String args[]) throws Exception {
-        execute(args[0], args[2], args[3], args[1].split(","));
+        execute(args[0], args[2], args[3], args[4], args[5], args[6], args[1].split(","));
 
     }
 
-    public static void execute(String jarFile, String providedLibPath, String version, String... parentClasses) throws Exception {
+    public static void execute(String jarFile,
+                               String providedLibPath,
+                               String version,
+                               String artifact,
+                               String name,
+                               String description,
+                               String... parentClasses) throws Exception {
         JarFile file = new JarFile(jarFile);
         String destFilename = jarFile + "-tmp";
 
@@ -56,8 +63,12 @@ public class LogislandRepackager {
                 springBootClasses,
                 new LinkedHashSet<>(Arrays.asList(parentClasses)))
                 .stream().collect(Collectors.joining(","));
-        mf.getMainAttributes().putValue("Logisland-Module-Exports", foundPluginList);
-        mf.getMainAttributes().putValue("Logisland-Module-Version", version);
+        mf.getMainAttributes().putValue(ManifestAttributes.MODULE_EXPORTS.toString(), foundPluginList);
+        mf.getMainAttributes().putValue(ManifestAttributes.MODULE_VERSION.toString(), version);
+        mf.getMainAttributes().putValue(ManifestAttributes.MODULE_ARTIFACT.toString(), artifact);
+        mf.getMainAttributes().putValue(ManifestAttributes.MODULE_NAME.toString(), name);
+        mf.getMainAttributes().putValue(ManifestAttributes.MODULE_DESCRIPTION.toString(), description);
+
 
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(destFilename), mf);
 

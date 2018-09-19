@@ -24,6 +24,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Attributes;
 
 public class PluginClassloaderBuilder {
 
@@ -39,9 +40,14 @@ public class PluginClassloaderBuilder {
             for (Archive a : archive.getNestedArchives(PluginClassloaderBuilder::isNestedArchive)) {
                 urlList.add(a.getUrl());
             }
-            String parentFirstPatterns  = archive.getManifest().getMainAttributes().getValue(ManifestAttributes.CLASSLOADER_PARENT_FIRST);
-
-            return new PluginClassLoader(urlList.toArray(new URL[urlList.size()]),
+            Attributes attributes = archive.getManifest().getMainAttributes();
+            String parentFirstPatterns = attributes.getValue(ManifestAttributes.CLASSLOADER_PARENT_FIRST);
+            ModuleInfo moduleInfo = new ModuleInfo(attributes.getValue(ManifestAttributes.MODULE_NAME),
+                    attributes.getValue(ManifestAttributes.MODULE_DESCRIPTION),
+                    archive.getUrl().toString(),
+                    attributes.getValue(ManifestAttributes.MODULE_ARTIFACT),
+                    attributes.getValue(ManifestAttributes.MODULE_VERSION));
+            return new PluginClassLoader(moduleInfo, urlList.toArray(new URL[urlList.size()]),
                     parentFirstPatterns != null ? parentFirstPatterns.split(",") : new String[0],
                     Thread.currentThread().getContextClassLoader());
 

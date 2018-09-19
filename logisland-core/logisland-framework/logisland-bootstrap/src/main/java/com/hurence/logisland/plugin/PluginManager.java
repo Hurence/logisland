@@ -204,6 +204,7 @@ public class PluginManager {
                     }
                 }).toArray(a -> new URL[a]),
                 Thread.currentThread().getContextClassLoader()));
+        //TODO changeme
         LogislandRepackager.main(new String[]{"/Users/amarziali/test.jar", "org.apache.kafka.connect.connector.Connector", "BOOT-INF/lib-provided", "0.15.0"});
     }
 }

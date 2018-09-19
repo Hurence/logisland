@@ -23,6 +23,9 @@ public interface ManifestAttributes {
 
     Attributes.Name MODULE_EXPORTS = new Attributes.Name("Logisland-Module-Exports");
     Attributes.Name MODULE_VERSION = new Attributes.Name("Logisland-Module-Version");
+    Attributes.Name MODULE_ARTIFACT = new Attributes.Name("Logisland-Module-Artifact");
+    Attributes.Name MODULE_NAME = new Attributes.Name("Logisland-Module-Name");
+    Attributes.Name MODULE_DESCRIPTION = new Attributes.Name("Logisland-Module-Description");
     Attributes.Name CLASSLOADER_PARENT_FIRST = new Attributes.Name("Classloader-Parent-First");
 
 }
