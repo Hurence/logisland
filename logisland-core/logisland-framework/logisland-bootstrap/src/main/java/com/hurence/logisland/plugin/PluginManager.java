@@ -86,7 +86,9 @@ public class PluginManager {
     public static void main(String... args) throws Exception {
         System.out.println(BannerLoader.loadBanner());
 
-        File logislandHome = System.getenv("LOGISLAND_HOME") != null ? new File(System.getenv("LOGISLAND_HOME")) : null;
+        String logislandHome = new File(PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
+        System.out.println("Using Logisland home: " + logislandHome);
+        logislandHome = "/Users/amarziali/Code/official/logisland/logisland-assembly/target/logisland-0.15.0-bin/logisland-0.15.0";
         Options options = new Options();
         OptionGroup mainGroup = new OptionGroup()
                 .addOption(OptionBuilder
@@ -108,25 +110,16 @@ public class PluginManager {
 
         mainGroup.setRequired(true);
         options.addOptionGroup(mainGroup);
-        options
-                .addOption(OptionBuilder
-                        .withDescription("Print this help.")
-                        .withLongOpt("help")
-                        .create("h"))
-                .addOption(OptionBuilder
-                        .withDescription("Logisland home directory (default will use env variable LOGISLAND_HOME")
-                        .withArgName("logisland_home")
-                        .hasArgs(1)
-                        .isRequired(logislandHome == null || (logislandHome.exists() && logislandHome.isDirectory()))
-                        .withLongOpt("logisland-home")
-                        .create());
+        options.addOption(OptionBuilder
+                .withDescription("Print this help.")
+                .withLongOpt("help")
+                .create("h"));
+
 
         try {
             CommandLine commandLine = new PosixParser().parse(options, args);
             if (commandLine.hasOption("l")) {
                 System.out.println("Gathering information");
-
-            } else if (commandLine.hasOption("l")) {
 
             } else if (commandLine.hasOption("i")) {
 
@@ -145,7 +138,7 @@ public class PluginManager {
 
     private static void printUsage(Options options) {
         new HelpFormatter().printHelp(180,
-                "logisland-components", "\n", options, "\n",
+                "components.sh", "\n", options, "\n",
                 true);
 
     }
@@ -166,7 +159,6 @@ public class PluginManager {
         ivy.bind();
         ModuleRevisionId revisionId = new ModuleRevisionId(new ModuleId("com.hurence.logisland", "logisland-connector-opc"), "0.15.0");
         Set<ArtifactDownloadReport> toBePackaged = downloadArtifacts(ivy, revisionId, new String[]{"default", "compile", "runtime"});
-        // toBePackaged.addAll(downloadArtifacts(ivy, new ModuleRevisionId(new ModuleId("org.apache.activemq", "activemq-all"), "5.15.5"),  new String[]{"default", "compile", "runtime"}));
 
         Set<ArtifactDownloadReport> environment = downloadArtifacts(ivy, revisionId, new String[]{"provided"});
         Set<ArtifactDownloadReport> excluded = toBePackaged.stream()
