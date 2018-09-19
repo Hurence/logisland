@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static com.hurence.logisland.service.cassandra.CassandraControllerService.END_OF_TEST;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(DataProviderRunner.class)
@@ -51,11 +52,11 @@ public class CassandraServiceTest {
     // Use these ones instead if you want to use the "docker cassandra start" instead of embedded cassandra server maven plugin instance
     // Or use "mvn -DfailIfNoTests=false [clean] test -Dtest=CassandraServiceTest" If want to use embedded
     // cassandra server maven plugin running only this test out of the IDE
-//    private final static String CASSANDRA_HOST = "172.17.0.4"; // Set the right docker container ip
+//    private final static String CASSANDRA_HOST = "172.17.0.6"; // Set the right docker container ip
 //    private final static String CASSANDRA_PORT = "9042";
 
-    private final static String TEST_KEYSPACE = "testKeySpace";
-    private final static String TEST_TABLE = "testTable";
+    private final static String TEST_KEYSPACE_A = "testkeyspace_a";
+    private final static String TEST_KEYSPACE_B = "testkeyspace_b";
 
     private static Cluster cluster;
     private static Session session;
@@ -81,8 +82,9 @@ public class CassandraServiceTest {
          * A last one with some spaces, UPPERCASES and a dot as well as accent and special characters: &é"'(-è_çà),;:=%ù$ãẽĩõũ.
          */
 
-        String tableFields0 = "testText:text";
-        String tablePrimaryKey0 = "testText";
+        String tableName0 = TEST_KEYSPACE_A + ".table0";
+        String createTableCql0 = "CREATE TABLE IF NOT EXISTS " + tableName0
+                + " (testText text PRIMARY KEY);";
 
         List<Map<Field, CassandraType>> table0 = new ArrayList<Map<Field, CassandraType>>();
         Map<Field, CassandraType> row = new HashMap<Field, CassandraType>();
@@ -139,8 +141,9 @@ public class CassandraServiceTest {
          * d6328472-b571-4f61-a82e-fe4344228292 215462
          */
 
-        String tableFields1 = "testUuid:uuid,testInt:int";
-        String tablePrimaryKey1 = "testUuid";
+        String tableName1 = TEST_KEYSPACE_A + ".table1";
+        String createTableCql1 = "CREATE TABLE IF NOT EXISTS " + tableName1
+                + " (testUuid uuid PRIMARY KEY, testInt int);";
 
         List<Map<Field, CassandraType>> table1 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -162,8 +165,9 @@ public class CassandraServiceTest {
          * d6328472-b571-4f61-a82e-fe4344228292 215462  456789.123456 -4568
          */
 
-        String tableFields2 = "testUuid:uuid,testInt:int,testFloat:float,testSmallint:smallint";
-        String tablePrimaryKey2 = "testUuid,testInt,testSmallint";
+        String tableName2 = TEST_KEYSPACE_A + ".table2";
+        String createTableCql2 = "CREATE TABLE IF NOT EXISTS " + tableName2
+                + " (testUuid uuid, testInt int, testFloat float, testSmallint smallint, PRIMARY KEY (testUuid,testInt,testSmallint));";
 
         List<Map<Field, CassandraType>> table2 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -189,8 +193,9 @@ public class CassandraServiceTest {
          * -127        -4568        -954123 -8623463688247 -10128544682
          */
 
-        String tableFields3 = "testTinyint:tinyint,testSmallint:smallint,testInt:int,testBigint:bigint,testVarint:varint";
-        String tablePrimaryKey3 = "testTinyint";
+        String tableName3 = TEST_KEYSPACE_A + ".table3";
+        String createTableCql3 = "CREATE TABLE IF NOT EXISTS " + tableName3
+                + " (testTinyint tinyint PRIMARY KEY, testSmallint smallint, testInt int, testBigint bigint, testVarint varint);";
 
         List<Map<Field, CassandraType>> table3 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -218,8 +223,9 @@ public class CassandraServiceTest {
          * -4712568.6423844 -74125448522.9985544221 -542212145454577.2151321145451
          */
 
-        String tableFields4 = "testFloat:float,testDouble:double,testDecimal:decimal";
-        String tablePrimaryKey4 = "testFloat";
+        String tableName4 = TEST_KEYSPACE_B + ".table4";
+        String createTableCql4 = "CREATE TABLE IF NOT EXISTS " + tableName4
+                + " (testFloat float PRIMARY KEY, testDouble double, testDecimal decimal);";
 
         List<Map<Field, CassandraType>> table4 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -243,8 +249,9 @@ public class CassandraServiceTest {
          * -2          false       {0x0a, 0x02, 0xff}
          */
 
-        String tableFields5 = "testTinyint:tinyint,testBoolean:boolean,testBlob:blob";
-        String tablePrimaryKey5 = "testTinyint";
+        String tableName5 = TEST_KEYSPACE_B + ".table5";
+        String createTableCql5 = "CREATE TABLE IF NOT EXISTS " + tableName5
+                + " (testTinyint tinyint PRIMARY KEY, testBoolean boolean, testBlob blob);";
 
         List<Map<Field, CassandraType>> table5 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -268,8 +275,9 @@ public class CassandraServiceTest {
          * 2011-02-03T04:05:00.000+0000 2011-02-03 08:12:54.123456789
          */
 
-        String tableFields6 = "testTimestamp:timestamp,testDate:date,testTime:time";
-        String tablePrimaryKey6 = "testTimestamp";
+        String tableName6 = TEST_KEYSPACE_B + ".table6";
+        String createTableCql6 = "CREATE TABLE IF NOT EXISTS " + tableName6
+                + " (testTimestamp timestamp PRIMARY KEY, testDate date, testTime time);";
 
         List<Map<Field, CassandraType>> table6 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
@@ -285,13 +293,227 @@ public class CassandraServiceTest {
         table6.add(row);
 
         Object[][] inputs = {
-                {table0, tableFields0, tablePrimaryKey0, "table0"},
-                {table1, tableFields1, tablePrimaryKey1, "table1"},
-                {table2, tableFields2, tablePrimaryKey2, "table2"},
-                {table3, tableFields3, tablePrimaryKey3, "table3"},
-                {table4, tableFields4, tablePrimaryKey4, "table4"},
-                {table5, tableFields5, tablePrimaryKey5, "table5"},
-                {table6, tableFields6, tablePrimaryKey6, "table6"}
+                {table0, tableName0, createTableCql0},
+                {table1, tableName1, createTableCql1},
+                {table2, tableName2, createTableCql2},
+                {table3, tableName3, createTableCql3},
+                {table4, tableName4, createTableCql4},
+                {table5, tableName5, createTableCql5},
+                {table6, tableName6, createTableCql6}
+        };
+
+        return inputs;
+    }
+
+    @DataProvider
+    public static Object[][] test2CollectionsBulkPutProvider() {
+
+        /**
+         * Table0 (simplest, text)
+         *
+         * testText
+         *
+         * hello
+         * this
+         * is
+         * a
+         * simple
+         * table
+         * with
+         * some
+         * text
+         * values
+         * A last one with some spaces, UPPERCASES and a dot as well as accent and special characters: &é"'(-è_çà),;:=%ù$ãẽĩõũ.
+         */
+
+        String tableName0 = TEST_KEYSPACE_A + ".table0";
+        String createTableCql0 = "CREATE TABLE IF NOT EXISTS " + tableName0
+                + " (testText text PRIMARY KEY);";
+
+        List<Map<Field, CassandraType>> table0 = new ArrayList<Map<Field, CassandraType>>();
+        Map<Field, CassandraType> row = new HashMap<Field, CassandraType>();
+
+        row.put(new Field("testText", FieldType.STRING, "hello"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "this"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "is"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "a"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "simple"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "table"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "with"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "some"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "text"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "values"), CassandraType.TEXT);
+        table0.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testText", FieldType.STRING, "A last one with some spaces, UPPERCASES and a dot as well as accent and special characters: &é\"'(-è_çà),;:=%ù$ãẽĩõũâêîôû."), CassandraType.TEXT);
+        table0.add(row);
+
+        /**
+         * Table1 (simple, simple primary key, uuid)
+         *
+         * testUuid                             testInt
+         *
+         * d6328472-b571-4f61-a82e-fe4344228291 215461
+         * d6328472-b571-4f61-a82e-fe4344228292 215462
+         */
+
+        String tableName1 = TEST_KEYSPACE_A + ".table1";
+        String createTableCql1 = "CREATE TABLE IF NOT EXISTS " + tableName1
+                + " (testUuid uuid PRIMARY KEY, testInt int);";
+
+        List<Map<Field, CassandraType>> table1 = new ArrayList<Map<Field, CassandraType>>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228291"), CassandraType.UUID);
+        row.put(new Field("testInt", FieldType.INT, 215461), CassandraType.INT);
+        table1.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228292"), CassandraType.UUID);
+        row.put(new Field("testInt", FieldType.INT, 215462), CassandraType.INT);
+        table1.add(row);
+
+        /**
+         * Table2 (simple, composite primary key)
+         *
+         * testUuid                             testInt testFloat     testSmallint
+         *
+         * d6328472-b571-4f61-a82e-fe4344228291 215461  123.456       12546
+         * d6328472-b571-4f61-a82e-fe4344228292 215462  456789.123456 -4568
+         */
+
+        String tableName2 = TEST_KEYSPACE_A + ".table2";
+        String createTableCql2 = "CREATE TABLE IF NOT EXISTS " + tableName2
+                + " (testUuid uuid, testInt int, testFloat float, testSmallint smallint, PRIMARY KEY (testUuid,testInt,testSmallint));";
+
+        List<Map<Field, CassandraType>> table2 = new ArrayList<Map<Field, CassandraType>>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228291"), CassandraType.UUID);
+        row.put(new Field("testInt", FieldType.INT, 215461), CassandraType.INT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float)123.456), CassandraType.FLOAT);
+        row.put(new Field("testSmallint", FieldType.INT, 12546), CassandraType.SMALLINT);
+        table2.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228292"), CassandraType.UUID);
+        row.put(new Field("testInt", FieldType.INT, 215462), CassandraType.INT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float)456789.123456), CassandraType.FLOAT);
+        row.put(new Field("testSmallint", FieldType.INT, -4568), CassandraType.SMALLINT);
+        table2.add(row);
+
+        /**
+         * Table3 (all integers)
+         *
+         * testTinyint testSmallint testInt testBigint     testVarint
+         *
+         * 123         12546        1563489 9623545688581  11123545688
+         * -127        -4568        -954123 -8623463688247 -10128544682
+         */
+
+        String tableName3 = TEST_KEYSPACE_A + ".table3";
+        String createTableCql3 = "CREATE TABLE IF NOT EXISTS " + tableName3
+                + " (testTinyint tinyint PRIMARY KEY, testSmallint smallint, testInt int, testBigint bigint, testVarint varint);";
+
+        List<Map<Field, CassandraType>> table3 = new ArrayList<Map<Field, CassandraType>>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testTinyint", FieldType.INT, 123), CassandraType.TINYINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short)12546), CassandraType.SMALLINT);
+        row.put(new Field("testInt", FieldType.INT, 1563489), CassandraType.INT);
+        row.put(new Field("testBigint", FieldType.LONG, 9623545688581L), CassandraType.BIGINT);
+        row.put(new Field("testVarint", FieldType.LONG, new BigInteger("11123545688")), CassandraType.VARINT);
+        table3.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testTinyint", FieldType.INT, -127), CassandraType.TINYINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short)-4568), CassandraType.SMALLINT);
+        row.put(new Field("testInt", FieldType.INT, -954123), CassandraType.INT);
+        row.put(new Field("testBigint", FieldType.LONG, -8623463688247L), CassandraType.BIGINT);
+        row.put(new Field("testVarint", FieldType.LONG, new BigInteger("-10128544682")), CassandraType.VARINT);
+        table3.add(row);
+
+        /**
+         * Table4 (all decimals)
+         *
+         * testFloat        testDouble              testDecimal
+         *
+         * 5984632.254893   14569874235.1254857623  477552233116699.4885451212353
+         * -4712568.6423844 -74125448522.9985544221 -542212145454577.2151321145451
+         */
+
+        String tableName4 = TEST_KEYSPACE_B + ".table4";
+        String createTableCql4 = "CREATE TABLE IF NOT EXISTS " + tableName4
+                + " (testFloat float PRIMARY KEY, testDouble double, testDecimal decimal);";
+
+        List<Map<Field, CassandraType>> table4 = new ArrayList<Map<Field, CassandraType>>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testFloat", FieldType.FLOAT, (float)5984632.254893), CassandraType.FLOAT);
+        row.put(new Field("testDouble", FieldType.DOUBLE, 14569874235.1254857623), CassandraType.DOUBLE);
+        row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("477552233116699.4885451212353")), CassandraType.DECIMAL);
+        table4.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testFloat", FieldType.FLOAT, (float)-4712568.6423844), CassandraType.FLOAT);
+        row.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.31225), CassandraType.DOUBLE);
+        row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-342212145454577.24565")), CassandraType.DECIMAL);
+        table4.add(row);
+
+        /**
+         * Table5 (blob and boolean)
+         *
+         * testTinyint testBoolean testBlob
+         *
+         * 1           true        this is a blob
+         * -2          false       {0x0a, 0x02, 0xff}
+         */
+
+        String tableName5 = TEST_KEYSPACE_B + ".table5";
+        String createTableCql5 = "CREATE TABLE IF NOT EXISTS " + tableName5
+                + " (testTinyint tinyint PRIMARY KEY, testBoolean boolean, testBlob blob);";
+
+        List<Map<Field, CassandraType>> table5 = new ArrayList<Map<Field, CassandraType>>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testTinyint", FieldType.INT, 1), CassandraType.TINYINT);
+        row.put(new Field("testBoolean", FieldType.BOOLEAN, true), CassandraType.BOOLEAN);
+        row.put(new Field("testBlob", FieldType.BYTES, "this is a blob".getBytes()), CassandraType.BLOB);
+        table5.add(row);
+
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testTinyint", FieldType.INT, -2), CassandraType.TINYINT);
+        row.put(new Field("testBoolean", FieldType.BOOLEAN, false), CassandraType.BOOLEAN);
+        row.put(new Field("testBlob", FieldType.BYTES, new byte[] {0xa, 0x2, (byte) 0xff}), CassandraType.BLOB);
+        table5.add(row);
+
+        Object[][] inputs = {
+                {table0, tableName0, createTableCql0, table1, tableName1, createTableCql1},
+                {table2, tableName2, createTableCql2, table3, tableName3, createTableCql3},
+                {table4, tableName4, createTableCql4, table5, tableName5, createTableCql5}
         };
 
         return inputs;
@@ -325,9 +547,10 @@ public class CassandraServiceTest {
     public void cleanupCassandra()
     {
         /**
-         * Delete table
+         * Delete keyspaces
          */
-        StringBuffer sb = new StringBuffer("DROP TABLE IF EXISTS " + TEST_KEYSPACE + "." + TEST_TABLE);
+
+        StringBuffer sb = new StringBuffer("DROP KEYSPACE IF EXISTS " + TEST_KEYSPACE_A);
         String statement = sb.toString();
         ResultSet resultSet = session.execute(sb.toString());
         if (!resultSet.wasApplied())
@@ -335,10 +558,7 @@ public class CassandraServiceTest {
             Assert.fail("Statement not applied: " + statement);
         }
 
-        /**
-         * Delete keyspace
-         */
-        sb = new StringBuffer("DROP KEYSPACE IF EXISTS " + TEST_KEYSPACE);
+        sb = new StringBuffer("DROP KEYSPACE IF EXISTS " + TEST_KEYSPACE_B);
         statement = sb.toString();
         resultSet = session.execute(sb.toString());
         if (!resultSet.wasApplied())
@@ -346,46 +566,142 @@ public class CassandraServiceTest {
             Assert.fail("Statement not applied: " + statement);
         }
 
-        echo("Cassandra DB cleared");
+        /**
+         * Create keyspaces
+         */
+
+        sb = new StringBuffer("CREATE KEYSPACE IF NOT EXISTS " + TEST_KEYSPACE_A
+                + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};");
+        statement = sb.toString();
+        resultSet = session.execute(sb.toString());
+        if (!resultSet.wasApplied())
+        {
+            Assert.fail("Statement not applied: " + statement);
+        }
+
+        sb = new StringBuffer("CREATE KEYSPACE IF NOT EXISTS " + TEST_KEYSPACE_B
+                + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};");
+        statement = sb.toString();
+        resultSet = session.execute(sb.toString());
+        if (!resultSet.wasApplied())
+        {
+            Assert.fail("Statement not applied: " + statement);
+        }
+
+        echo("Cassandra DB cleared and prepared");
     }
 
     @Test
     @UseDataProvider("testBulkPutProvider")
-    public void testBulkPut(List<Map<Field, CassandraType>> insertedAndExpectedRows, String tableFields,
-                            String tablePrimaryKey, String tableName) throws InitializationException {
+    public void testBulkPut(List<Map<Field, CassandraType>> insertedAndExpectedRows, String tableName, String createTableCql)
+            throws InitializationException {
+
+        /**
+         * Create the table
+         */
+        ResultSet resultSet = session.execute(createTableCql);
+        if (!resultSet.wasApplied())
+        {
+            Assert.fail("Statement not applied: " + createTableCql);
+        }
+
 
         final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
 
         final CassandraControllerService service = new CassandraControllerService();
         runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
         runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.KEYSPACE.getName(), TEST_KEYSPACE);
-        runner.setProperty(CassandraControllerService.TABLE.getName(), TEST_TABLE);
-        runner.setProperty(CassandraControllerService.TABLE_FIELDS.getName(), tableFields);
-        runner.setProperty(CassandraControllerService.TABLE_PRIMARY_KEY.getName(), tablePrimaryKey);
-        runner.setProperty(CassandraControllerService.CREATE_SCHEMA.getName(), "true");
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "2000");
+        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
         runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
         runner.enableControllerService(service);
 
-        bulkInsert(service, insertedAndExpectedRows);
+        /**
+         * Bulk insert records
+         */
+        bulkInsert(service, insertedAndExpectedRows, tableName);
 
+        service.bulkPut(END_OF_TEST, new StandardRecord()); // Signal end of test
+        service.waitForFlush();
+
+        /**
+         * Check table content
+         */
         checkCassandraTable(session, insertedAndExpectedRows, tableName);
 
         runner.disableControllerService(service); // Disconnect service from cassandra
     }
 
+    @Test
+    @UseDataProvider("test2CollectionsBulkPutProvider")
+    public void test2CollectionsBulkPut(
+            List<Map<Field, CassandraType>> insertedAndExpectedRows1, String tableName1, String createTableCql1,
+            List<Map<Field, CassandraType>> insertedAndExpectedRows2, String tableName2, String createTableCql2)
+            throws InitializationException {
+
+        /**
+         * Create the table 1
+         */
+        ResultSet resultSet = session.execute(createTableCql1);
+        if (!resultSet.wasApplied())
+        {
+            Assert.fail("Statement not applied: " + createTableCql1);
+        }
+
+        /**
+         * Create the table 2
+         */
+        resultSet = session.execute(createTableCql2);
+        if (!resultSet.wasApplied())
+        {
+            Assert.fail("Statement not applied: " + createTableCql2);
+        }
+
+
+        final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
+
+        final CassandraControllerService service = new CassandraControllerService();
+        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
+        runner.addControllerService("cassandra_service", service);
+        runner.enableControllerService(service);
+
+        /**
+         * Bulk insert records for table 1
+         */
+        bulkInsert(service, insertedAndExpectedRows1, tableName1);
+
+        /**
+         * Bulk insert records for table 2
+         */
+        bulkInsert(service, insertedAndExpectedRows2, tableName2);
+
+        service.bulkPut(END_OF_TEST, new StandardRecord()); // Signal end of test
+        service.waitForFlush();
+
+        /**
+         * Check table 1 content
+         */
+        checkCassandraTable(session, insertedAndExpectedRows1, tableName1);
+
+        /**
+         * Check table 2 content
+         */
+        checkCassandraTable(session, insertedAndExpectedRows2, tableName2);
+
+        runner.disableControllerService(service); // Disconnect service from cassandra
+    }
+
     // Adds the provided list of records to the cassandra service
-    private void bulkInsert(CassandraControllerService service, List<Map<Field, CassandraType>> rows)
+    private void bulkInsert(CassandraControllerService service, List<Map<Field, CassandraType>> rows, String tableName)
     {
         rows.forEach(
                 row -> {
-                    service.bulkPut(null, rowToRecord(row));
+                    service.bulkPut(tableName, rowToRecord(row));
                 }
         );
-
-        service.waitForFlush();
     }
 
     // Create a record from a map of fields
@@ -406,7 +722,7 @@ public class CassandraServiceTest {
     // Checks that table contains the expected lines
     private void checkCassandraTable(Session session, List<Map<Field, CassandraType>> expectedRows, String tableName)
     {
-        StringBuffer sb = new StringBuffer("SELECT * FROM " + TEST_KEYSPACE + "." + TEST_TABLE);
+        StringBuffer sb = new StringBuffer("SELECT * FROM " + tableName);
         String statement = sb.toString();
         ResultSet resultSet = session.execute(sb.toString());
         if (!resultSet.wasApplied())
@@ -418,13 +734,11 @@ public class CassandraServiceTest {
 
         // Now check that lines are all expected ones
         Iterator<Row> iterator = resultSet.iterator();
-        int nRows = 0;
         while(iterator.hasNext())
         {
             Row row = iterator.next();
             echo("Trying to find matching expected row for row: " + row);
             findRow(row, expectedRows, tableName);
-            nRows++;
         }
     }
 

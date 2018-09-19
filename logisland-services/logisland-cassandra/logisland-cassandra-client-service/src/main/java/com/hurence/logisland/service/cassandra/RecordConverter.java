@@ -108,13 +108,14 @@ public class RecordConverter {
     /**
      * Converts a logisland record into a list of cassandra values to insert
      * @param record
-     * @param fieldsToType map of fields to use and their expected cassandra type
+     * @param fieldsToType ordered map of fields to use and their expected cassandra type
      * @return
      * @throws Exception
      */
-    public static List<Object> convertInsert(Record record, Map<String, CassandraType> fieldsToType) throws Exception {
+    public static List<Object> convertInsert(Record record, LinkedHashMap<String, CassandraType> fieldsToType) throws Exception {
 
         List<Object> result = new ArrayList<Object>();
+        Map<String, String> lowerCaseToUpperCaseFields = null;
 
         for (Map.Entry<String, CassandraType> entry : fieldsToType.entrySet())
         {
@@ -122,13 +123,52 @@ public class RecordConverter {
             Field field = record.getField(fieldName);
             if (field == null)
             {
-                throw new Exception("Field " + fieldName + " does not exist in record: " + record);
+                // The lowercase version of the field name does not exist, see if an uppercase version exists
+                logger.debug("Field " + fieldName + " does not exist in record: " + record + " Trying to use an uppercase version.");
+                if (lowerCaseToUpperCaseFields == null)
+                {
+                    // Lazy load
+                    lowerCaseToUpperCaseFields = upperCaseFields(record);
+                }
+
+                String upperCaseField = lowerCaseToUpperCaseFields.get(fieldName);
+                if (upperCaseField != null)
+                {
+                    field = record.getField(upperCaseField);
+                }
+
+                if (field == null)
+                {
+                    result.add(null);
+                    continue; // Go to next field
+                }
             }
+
             CassandraType cassandraType = entry.getValue();
             result.add(convertToCassandraValue(field, cassandraType));
         }
 
         return result;
+    }
+
+    /**
+     * From the field names of the record, constructs a map that maps the lowercase version of the field name
+     * to the original field name. i.e:
+     * lowercaseversion -> LOWERCASEVERSION
+     * anotherone -> AnotherOne
+     * @param record
+     * @return
+     */
+    private static Map<String, String> upperCaseFields(Record record)
+    {
+        Map<String, String> lowerCaseToUpperCaseFields = new HashMap<String, String>();
+
+        record.getAllFields().forEach(field -> {
+            String fieldName = field.getName();
+            lowerCaseToUpperCaseFields.put(fieldName.toLowerCase(), fieldName);
+        });
+
+        return lowerCaseToUpperCaseFields;
     }
 
     /**
@@ -139,6 +179,12 @@ public class RecordConverter {
      * @throws Exception
      */
     private static Object convertToCassandraValue(Field field, CassandraType cassandraType) throws Exception {
+
+        // Handle null values: return default null value
+        if (field.getRawValue() == null)
+        {
+            return null;
+        }
 
         switch(cassandraType)
         {

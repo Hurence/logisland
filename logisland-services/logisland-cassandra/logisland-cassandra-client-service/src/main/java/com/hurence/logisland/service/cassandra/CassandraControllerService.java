@@ -38,24 +38,44 @@ import java.util.concurrent.*;
 
 @Tags({"cassandra", "service"})
 @CapabilityDescription(
-        "Provides a controller service that wraps most of the functionality of the Cassandra driver."
+        "Provides a controller service that for the moment only allows to bulkput records into cassandra."
 )
 public class CassandraControllerService extends AbstractControllerService implements CassandraClientService {
 
     private Cluster cluster;
     private Session session;
-    private String keyspace;
-    private String table;
-    Map<String, CassandraType> fieldsToType = new HashMap<String, CassandraType>();
-    List<String> primaryFields = new ArrayList<String>();
-    private boolean createSchema = true;
     private boolean ssl = false;
     private boolean credentials = false;
     private CassandraUpdater updater;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private long flushInterval;
-    final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(100000);
+    final BlockingQueue<RecordToIndex> queue = new ArrayBlockingQueue<>(100000);
     volatile boolean stillSomeRecords = false; // Unit tests only code
+
+    /**
+     * Holds a record to index and its meta data
+     */
+    static class RecordToIndex
+    {
+        // Destination keyspace.table
+        private String collectionName = null;
+        // Record to index
+        private Record record;
+
+        public RecordToIndex(String collectionName, Record record)
+        {
+            this.collectionName = collectionName;
+            this.record = record;
+        }
+
+        public String getCollectionName() {
+            return collectionName;
+        }
+
+        public Record getRecord() {
+            return record;
+        }
+    }
 
     protected static final PropertyDescriptor HOSTS = new PropertyDescriptor.Builder()
             .name("cassandra.hosts")
@@ -71,52 +91,6 @@ public class CassandraControllerService extends AbstractControllerService implem
             .description("Cassandra cluster port")
             .required(true)
             .addValidator(StandardValidators.PORT_VALIDATOR)
-            .build();
-
-    protected static final PropertyDescriptor KEYSPACE = new PropertyDescriptor.Builder()
-            .name("cassandra.keyspace")
-            .displayName("Cassandra keyspace name")
-            .description("The name of the keyspace to use")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
-    protected static final PropertyDescriptor TABLE = new PropertyDescriptor.Builder()
-            .name("cassandra.table")
-            .displayName("Cassandra table name")
-            .description("The name of the table to use in the keyspace")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
-    protected static final PropertyDescriptor TABLE_FIELDS = new PropertyDescriptor.Builder()
-            .name("cassandra.table.fields")
-            .displayName("Cassandra table fields and types")
-            .description("Tne names of the table fields and their cassandra types. For a bulkput, each field must be an " +
-                    "existing incoming logisland record field. The format of this property is: <record_field1>:<cassandra_type1>[,<record_fieldN>:<cassandra_typeN>]. " +
-                    "Example: record_id:uuid,record_time:timestamp,intValue,textValue.")
-            .required(true)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .build();
-
-    protected static final PropertyDescriptor TABLE_PRIMARY_KEY = new PropertyDescriptor.Builder()
-            .name("cassandra.table.primary_key")
-            .displayName("Cassandra table primary key")
-            .description("Tne ordered names of the fields forming the primary key in the table to create. " +
-                    "The format of this property is: primaryKeyField[,<nextPrimaryKeyFieldN>]. " +
-                    "Example: record_id,intValue")
-            .required(true)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .build();
-
-    protected static final PropertyDescriptor CREATE_SCHEMA = new PropertyDescriptor.Builder()
-            .name("cassandra.schema.create")
-            .displayName("Create or not the cassandra schema if it does not exist.")
-            .description("If this property is true, then if they do not exist, the keyspace and the table with its defined fields and primary key will be created at initialization time." +
-                    "Otherwise, all these elements are expected to already exist in the cassandra cluster")
-            .required(false)
-            .defaultValue("true")
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor WITH_SSL = new PropertyDescriptor.Builder()
@@ -157,11 +131,6 @@ public class CassandraControllerService extends AbstractControllerService implem
 
         descriptors.add(HOSTS);
         descriptors.add(PORT);
-        descriptors.add(KEYSPACE);
-        descriptors.add(TABLE);
-        descriptors.add(TABLE_FIELDS);
-        descriptors.add(TABLE_PRIMARY_KEY);
-        descriptors.add(CREATE_SCHEMA);
         descriptors.add(WITH_SSL);
         descriptors.add(WITH_CREDENTIALS);
         descriptors.add(CREDENTIALS_USER);
@@ -246,137 +215,7 @@ public class CassandraControllerService extends AbstractControllerService implem
 
         getLogger().info("Connected to Cassandra");
 
-        /**
-         * Get other configuration properties
-         */
-
-        keyspace = context.getPropertyValue(KEYSPACE).asString();
-        table = context.getPropertyValue(TABLE).asString();
-        getTableFields(context.getPropertyValue(TABLE_FIELDS).asString());
-        getTablePrimaryKey(context.getPropertyValue(TABLE_PRIMARY_KEY).asString());
-
-        if (context.getPropertyValue(CREATE_SCHEMA).isSet())
-            createSchema = context.getPropertyValue(CREATE_SCHEMA).asBoolean();
-
-        if (createSchema)
-        {
-            createSchema();
-        }
-
         startUpdater(context);
-    }
-
-    /**
-     * Creates the schema that is:
-     * - the keyspace if it does not exist
-     * - the table if it does not exist
-     */
-    private void createSchema() {
-
-        getLogger().info("Creating cassandra schema (keyspace and table) if it does not exist");
-
-        /**
-         * Create keyspace
-         */
-
-        String statement = "CREATE KEYSPACE IF NOT EXISTS " + keyspace + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};";
-        getLogger().debug(statement);
-        session.execute(statement);
-
-        /**
-         * Create table
-         *
-         * CREATE TABLE IF NOT EXISTS keyspace.table (
-         *     foo uuid,
-         *     bar int,
-         *     last text,
-         *     PRIMARY KEY (foo, bar)
-         * );
-         */
-
-        StringBuffer sb = new StringBuffer("CREATE TABLE IF NOT EXISTS " + keyspace + "." + table + " (\n");
-        fieldsToType.forEach(
-                (field, type) -> { sb.append(field).append(" ").append(type.getValue()).append(",\n"); }
-        );
-        sb.append("PRIMARY KEY (");
-        boolean first = true;
-        for (String field : primaryFields) {
-                if (first) {
-                    first = false;
-                } else
-                {
-                    sb.append(", ");
-                }
-                sb.append(field);
-        }
-        sb.append(")\n);");
-        statement = sb.toString();
-        getLogger().info(statement);
-        session.execute(statement);
-    }
-
-    /**
-     * Parses value of TABLE_FIELDS
-     * @param value
-     */
-    private void getTableFields(String value) throws InitializationException {
-
-        String[] fieldAndTypes = value.split(",");
-        for (String fieldAndTypeString : fieldAndTypes)
-        {
-            String[] fieldAndType = fieldAndTypeString.trim().split(":");
-
-            if (fieldAndType.length != 2 )
-            {
-                throw new InitializationException("missing ':' character separator in <" + fieldAndTypeString + ">");
-            }
-
-            String field = fieldAndType[0].trim();
-            if (field.length() == 0)
-            {
-                throw new InitializationException("missing field name in <" + fieldAndTypeString + ">");
-            }
-            String type = fieldAndType[1];
-            if (type.length() == 0)
-            {
-                throw new InitializationException("missing type name in <" + fieldAndTypeString + ">");
-            }
-
-            CassandraType cassandraType = null;
-            try {
-                cassandraType = CassandraType.fromValue(type);
-            } catch (Exception e) {
-                throw new InitializationException(e);
-            }
-            fieldsToType.put(field, cassandraType);
-        }
-    }
-
-    /**
-     * Parses value of TABLE_PRIMARY_KEY
-     * @param value
-     */
-    private void getTablePrimaryKey(String value) throws InitializationException {
-
-        String[] fields = value.split(",");
-        for (String field : fields)
-        {
-            field = field.trim();
-
-            if (field.length() == 0)
-            {
-                throw new InitializationException("Empty field in <" + value + ">");
-            }
-
-            // Check that the field is in the declared table fields
-            CassandraType cassandraType = fieldsToType.get(field);
-            if (cassandraType == null)
-            {
-                throw new InitializationException("Undefined field <" + field + "> in table fields list");
-            }
-
-            primaryFields.add(field);
-        }
     }
 
     // Note: we use the @OnDisabled facility here so that unit test can call proper disconnection with
@@ -409,7 +248,7 @@ public class CassandraControllerService extends AbstractControllerService implem
         // setup a thread pool of cassandra updaters
         int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
         flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-        updater = new CassandraUpdater(cluster, session, keyspace, table, queue , batchSize, this, flushInterval);
+        updater = new CassandraUpdater(cluster, session, queue , batchSize, this, flushInterval);
 
         executorService.execute(updater);
     }
@@ -472,26 +311,19 @@ public class CassandraControllerService extends AbstractControllerService implem
         return false;
     }
 
+    // Special collection name used in unit test to know when the last record of the test is treated
+    public static final String END_OF_TEST = "endoftest";
+
     /**
      * Unit tests only code
      */
     public void waitForFlush()
     {
-        // First wait for empty queue
-        while (!queue.isEmpty())
-        {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                getLogger().error("Interrupted while waiting for cassandra updater flush [step 1]");
-            }
-        }
-
         // Then wait for all records sent to cassandra
         while (this.stillSomeRecords)
         {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 getLogger().error("Interrupted while waiting for cassandra updater flush [step 2]");
             }
@@ -509,11 +341,15 @@ public class CassandraControllerService extends AbstractControllerService implem
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        if (record != null) {
+        if ( (collectionName != null) && (record != null) ) {
             stillSomeRecords = true;
-            queue.add(record);
-        } else
-            getLogger().debug("Trying to add null record in the queue");
+            queue.add(new RecordToIndex(collectionName.toLowerCase(), record));
+        } else {
+            if (record == null)
+                getLogger().error("Null collectionName for the record " + record);
+            if (record == null)
+                getLogger().error("Trying to add a null record in the queue");
+        }
     }
 
     @Override
