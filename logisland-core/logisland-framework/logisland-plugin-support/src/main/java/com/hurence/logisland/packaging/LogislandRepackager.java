@@ -41,7 +41,9 @@ public class LogislandRepackager {
 
 
     public static void main(String args[]) throws Exception {
-        execute(args[0], args[2], args[3], args[4], args[5], args[6], args[1].split(","));
+        execute(args[0], args[2], args[3], args[4], args[5], args[6],
+                args.length > 7 ? args[7].split(",") : new String[0],
+                args[1].split(","));
 
     }
 
@@ -51,6 +53,7 @@ public class LogislandRepackager {
                                String artifact,
                                String name,
                                String description,
+                               String[] classLoaderParentFirst,
                                String... parentClasses) throws Exception {
         JarFile file = new JarFile(jarFile);
         String destFilename = jarFile + "-tmp";
@@ -68,6 +71,13 @@ public class LogislandRepackager {
         mf.getMainAttributes().putValue(ManifestAttributes.MODULE_ARTIFACT.toString(), artifact);
         mf.getMainAttributes().putValue(ManifestAttributes.MODULE_NAME.toString(), name);
         mf.getMainAttributes().putValue(ManifestAttributes.MODULE_DESCRIPTION.toString(), description);
+        if (classLoaderParentFirst != null && classLoaderParentFirst.length > 0) {
+            mf.getMainAttributes().putValue(ManifestAttributes.CLASSLOADER_PARENT_FIRST.toString(),
+                    Arrays.stream(classLoaderParentFirst)
+                            .map(String::trim)
+                            .collect(Collectors.joining(",")));
+
+        }
 
 
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(destFilename), mf);

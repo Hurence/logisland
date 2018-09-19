@@ -96,7 +96,7 @@ public class RunPython extends AbstractProcessor {
     private String logislandDependenciesPath = null;
     
     // Python interpreter
-    private PythonInterpreter pythonInterpreter = null;
+    private transient PythonInterpreter pythonInterpreter = null;
 
     // Reference to the python processor object (instance of the user's processor code)
     private PyObject pyProcessor = null;

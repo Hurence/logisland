@@ -58,7 +58,6 @@ public class RstDocumentationWriter implements DocumentationWriter {
 
             rstWriter.writeTransition();
             rstWriter.writeInternalReference(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
-            writeModuleName(configurableComponent, rstWriter);
             writeDescription(configurableComponent, rstWriter);
             writeTags(configurableComponent, rstWriter);
             writeProperties(configurableComponent, rstWriter);
@@ -156,22 +155,17 @@ public class RstDocumentationWriter implements DocumentationWriter {
         rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
         rstWriter.println(getDescription(configurableComponent));
 
-
-
-        rstWriter.writeSectionTitle(3, "Class");
-        rstWriter.println(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
-    }
-
-
-    protected void writeModuleName(final ConfigurableComponent configurableComponent,
-                                   final RstPrintWriter rstWriter) {
         PluginClassLoader cl = (PluginClassLoader)PluginLoader.getRegistry().get(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
         if (cl != null) {
             rstWriter.writeSectionTitle(3, "Module");
             rstWriter.println(cl.getModuleInfo().getArtifact());
         }
 
+        rstWriter.writeSectionTitle(3, "Class");
+        rstWriter.println(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
     }
+
+
 
 
     /**

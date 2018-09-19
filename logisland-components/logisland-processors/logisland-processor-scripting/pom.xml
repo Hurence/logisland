@@ -73,6 +73,14 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <requiresUnpack>
+                        <dependency>
+                            <groupId>org.python</groupId>
+                            <artifactId>jython-standalone</artifactId>
+                        </dependency>
+                    </requiresUnpack>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

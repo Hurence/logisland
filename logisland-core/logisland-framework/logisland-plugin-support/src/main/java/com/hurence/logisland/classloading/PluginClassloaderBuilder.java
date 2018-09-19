@@ -44,7 +44,7 @@ public class PluginClassloaderBuilder {
             String parentFirstPatterns = attributes.getValue(ManifestAttributes.CLASSLOADER_PARENT_FIRST);
             ModuleInfo moduleInfo = new ModuleInfo(attributes.getValue(ManifestAttributes.MODULE_NAME),
                     attributes.getValue(ManifestAttributes.MODULE_DESCRIPTION),
-                    archive.getUrl().toString(),
+                    archive.getUrl().getFile(),
                     attributes.getValue(ManifestAttributes.MODULE_ARTIFACT),
                     attributes.getValue(ManifestAttributes.MODULE_VERSION));
             return new PluginClassLoader(moduleInfo, urlList.toArray(new URL[urlList.size()]),
