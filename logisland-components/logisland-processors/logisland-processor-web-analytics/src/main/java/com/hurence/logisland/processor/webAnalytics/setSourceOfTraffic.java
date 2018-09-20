@@ -300,13 +300,12 @@ public class setSourceOfTraffic extends AbstractProcessor {
     public void init(final ProcessContext context) {
 
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
-        Object o = PluginProxy.unwrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
-        elasticsearchClientService = (ElasticsearchClientService) PluginProxy.create(o);
+        elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         if (elasticsearchClientService == null) {
             logger.error("Elasticsearch client service is not initialized!");
         }
 
-        cacheService = PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
+        cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
         if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }

@@ -207,7 +207,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         super.init(context);
         sandbox = NashornSandboxes.create();
 
-        CacheService<String, String> cacheService = PluginProxy.unwrap(context.getPropertyValue(JS_CACHE_SERVICE).asControllerService());
+        CacheService<String, String> cacheService = PluginProxy.rewrap(context.getPropertyValue(JS_CACHE_SERVICE).asControllerService());
 
         //inject the right cache service (or the default one).
         if (cacheService != null) {
@@ -236,7 +236,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         sandbox.setMaxPreparedStatements(maxPreparedStatements); // because preparing scripts for execution is expensive
         sandbox.setExecutor(Executors.newSingleThreadExecutor());
 
-        datastoreClientService = PluginProxy.unwrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
+        datastoreClientService = PluginProxy.rewrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
         if (datastoreClientService == null) {
             logger.error("Datastore client service is not initialized!");
         }

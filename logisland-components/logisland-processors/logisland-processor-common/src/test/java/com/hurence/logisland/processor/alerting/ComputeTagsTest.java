@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,9 @@
 package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.classloading.PluginProxy;
-import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.datastore.MockDatastoreService;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -30,8 +28,6 @@ import com.hurence.logisland.service.cache.CacheService;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ComputeTagsTest {
 
-    private static class MockCacheService extends AbstractControllerService implements CacheService {
+    public static class MockCacheService extends AbstractControllerService implements CacheService {
 
         private Map<Object, Object> map = Collections.synchronizedMap(new HashMap<>());
 
@@ -58,7 +54,7 @@ public class ComputeTagsTest {
 
         @Override
         public void set(Object o, Object o2) {
-            map.put(o,o2);
+            map.put(o, o2);
         }
     }
 
@@ -66,7 +62,6 @@ public class ComputeTagsTest {
     public void testWithCustomCacheService() throws Exception {
         final DatastoreClientService service = new MockDatastoreService();
         getCacheRecords().forEach(r -> service.put("test", r, false));
-
 
 
         final TestRunner runner = TestRunners.newTestRunner(new ComputeTags());

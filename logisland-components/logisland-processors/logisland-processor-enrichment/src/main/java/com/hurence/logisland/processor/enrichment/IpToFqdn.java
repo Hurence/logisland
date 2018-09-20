@@ -35,7 +35,7 @@ import java.util.concurrent.*;
 
 /**
  * Processor to resolve an IP into a FQDN (Fully Qualified Domain Name).
- *
+ * <p>
  * An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the
  * IP address.
  */
@@ -145,7 +145,7 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        cacheService = PluginProxy.create(PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService()));
+        cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
         if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
@@ -276,7 +276,8 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     /**
      * Request to the OS the translation of the IP address into a FQDN
-     * @param ip IP to resolve
+     *
+     * @param ip     IP to resolve
      * @param record The record in which one can add error if any during resolution attempt
      * @return Three possibilities for the FQDN:
      * - The FQDN matching the IP

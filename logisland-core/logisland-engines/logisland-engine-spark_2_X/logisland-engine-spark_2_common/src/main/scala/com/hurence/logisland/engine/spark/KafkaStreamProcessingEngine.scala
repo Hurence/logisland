@@ -574,11 +574,13 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
                 })
 
                 try {
-                    val ssc = getCurrentSparkStreamingContext(sc);
-                    ssc.stop(stopSparkContext = false, stopGracefully = true)
+                    if (!sc.isStopped) {
+                        val ssc = getCurrentSparkStreamingContext(sc);
+                        ssc.stop(stopSparkContext = false, stopGracefully = true)
+                    }
 
                 } finally {
-                    if (doStopSparkContext) {
+                    if (doStopSparkContext && !sc.isStopped) {
                         try {
                             sc.stop();
                         } catch {

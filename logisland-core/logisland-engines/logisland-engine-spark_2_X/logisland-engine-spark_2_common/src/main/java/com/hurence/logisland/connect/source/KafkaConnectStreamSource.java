@@ -199,9 +199,9 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                         })
                         .map(Tuple2::_2)
                         .map(sourceRecord -> InternalRow.fromSeq(JavaConversions.<Object>asScalaBuffer(Arrays.asList(
-                                UTF8String.fromString(sourceRecord.topic()),
-                                UTF8String.fromString(sourceRecord.sourcePartition().toString()),
-                                UTF8String.fromString(sourceRecord.sourceOffset().toString()),
+                                toUTFString(sourceRecord.topic()),
+                                toUTFString(sourceRecord.sourcePartition()),
+                                toUTFString(sourceRecord.sourceOffset()),
                                 keyConverter.fromConnectData(sourceRecord.topic(), sourceRecord.keySchema(), sourceRecord.key()),
                                 valueConverter.fromConnectData(sourceRecord.topic(), sourceRecord.valueSchema(), sourceRecord.value())
                         )).toSeq()))
@@ -209,6 +209,13 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
         return sparkPlatform.createStreamingDataFrame(sqlContext, new SimpleRDD(sqlContext.sparkContext(), current), DATA_SCHEMA);
 
 
+    }
+
+    private UTF8String toUTFString(Object o) {
+        if (o != null) {
+            return UTF8String.fromString(o.toString());
+        }
+        return UTF8String.EMPTY_UTF8;
     }
 
     @Override

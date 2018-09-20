@@ -157,6 +157,14 @@ public class PluginProxy {
         return (T) object;
     }
 
+    public static <T> T rewrap(Object object) {
+        Object o = PluginProxy.unwrap(object);
+        if (o != null) {
+            return (T) PluginProxy.create(o);
+        }
+        return null;
+    }
+
     /**
      * Return all interfaces that the given instance implements as an array,
      * including ones implemented by superclasses.

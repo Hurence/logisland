@@ -219,8 +219,7 @@ public class IpToGeo extends IpAbstractProcessor {
          * Get the Ip to Geo Service
          */
 
-        ipToGeoService = PluginProxy.create(
-                PluginProxy.unwrap(context.getPropertyValue(IP_TO_GEO_SERVICE).asControllerService()));
+        ipToGeoService = PluginProxy.rewrap(context.getPropertyValue(IP_TO_GEO_SERVICE).asControllerService());
         if (ipToGeoService == null) {
             logger.error("IpToGeoService service is not initialized!");
         }
@@ -247,7 +246,7 @@ public class IpToGeo extends IpAbstractProcessor {
             flatSuffix = propertyValue.asString();
         }
 
-        cacheService = PluginProxy.create(PluginProxy.unwrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService()));
+        cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
         if (cacheService == null) {
             logger.error("Cache service is not initialized!");
         }
@@ -255,6 +254,7 @@ public class IpToGeo extends IpAbstractProcessor {
 
     /**
      * Get the list of geo fields to add
+     *
      * @return the list of geo fields to add
      */
     private Set<String> getConfiguredGeoFieldNames() throws Exception {
@@ -375,6 +375,7 @@ public class IpToGeo extends IpAbstractProcessor {
 
     /**
      * Filter fields returned by the Ip to Geo service according to the configured ones
+     *
      * @param geoInfo Map containing the fields returned by the Ip to Geo service
      * @throws Exception
      */
@@ -415,9 +416,10 @@ public class IpToGeo extends IpAbstractProcessor {
 
     /**
      * Add the provided geo field to the record
-     * @param record Record to update
+     *
+     * @param record        Record to update
      * @param attributeName Geo field name
-     * @param value Geo field value
+     * @param value         Geo field value
      */
     private void addRecordField(Record record, String attributeName, String geoFieldName, Object value) {
 

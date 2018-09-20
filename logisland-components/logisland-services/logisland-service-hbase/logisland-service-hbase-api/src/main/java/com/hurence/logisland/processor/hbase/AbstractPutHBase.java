@@ -197,7 +197,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        clientService = PluginProxy.unwrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
+        clientService = PluginProxy.rewrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if(clientService == null)
             logger.error("HBase client service is not initialized!");
 
