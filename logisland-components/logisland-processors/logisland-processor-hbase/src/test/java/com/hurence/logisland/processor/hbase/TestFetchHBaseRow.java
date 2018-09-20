@@ -20,7 +20,6 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.serializer.JsonSerializer;
-import com.hurence.logisland.serializer.KryoSerializer;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
@@ -29,10 +28,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 

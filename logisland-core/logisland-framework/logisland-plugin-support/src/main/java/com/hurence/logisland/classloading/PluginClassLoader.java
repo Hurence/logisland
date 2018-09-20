@@ -56,6 +56,7 @@ public class PluginClassLoader extends LaunchedURLClassLoader {
         //add defaults
         classFilterPatterns.add(Pattern.compile("java.*"));
         classFilterPatterns.add(Pattern.compile("scala.*"));
+        classFilterPatterns.add(Pattern.compile("org.w3c.dom.*"));
         for (String parentFirstPattern : parentFirstPatterns) {
             classFilterPatterns.add(Pattern.compile(parentFirstPattern));
         }

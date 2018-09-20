@@ -819,6 +819,43 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
+
+FetchHBaseRow
+-------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:0.15.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.FetchHBaseRow
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
+   "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
+   "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.FilterRecords: 
 
 FilterRecords
@@ -1473,6 +1510,48 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "confidence.enabled", "Enable confidence reporting. Each field will report a confidence attribute with a value comprised between 0 and 10000.", "", "false", "", ""
    "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "", ""
    "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.hbase.PutHBaseCell: 
+
+PutHBaseCell
+------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-processor-hbase:0.15.0
+
+Class
+_____
+com.hurence.logisland.processor.hbase.PutHBaseCell
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property supports the  `Expression Language <expression-language.html>`_ .
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
+   "**table.name.field**", "The field containing the name of the HBase Table to put data into", "", "null", "", "**true**"
+   "row.identifier.field", "Specifies  field containing the Row ID to use when inserting data into HBase", "", "null", "", "**true**"
+   "row.identifier.encoding.strategy", "Specifies the data type of Row ID used when inserting data into HBase. The default behavior is to convert the row id to a UTF-8 byte array. Choosing Binary will convert a binary formatted string to the correct byte[] representation. The Binary option should be used if you are using Binary row keys in HBase", "String (Stores the value of row id as a UTF-8 String.), Binary (Stores the value of the rows id as a binary byte array. It expects that the row id is a binary formatted string.)", "String", "", ""
+   "**column.family.field**", "The field containing the  Column Family to use when inserting data into HBase", "", "null", "", "**true**"
+   "**column.qualifier.field**", "The field containing the  Column Qualifier to use when inserting data into HBase", "", "null", "", "**true**"
+   "**batch.size**", "The maximum number of Records to process in a single execution. The Records will be grouped by table, and a single Put per table will be performed.", "", "25", "", ""
+   "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
+   "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
+   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+   "column.family.default", "The column family to use if column family field is not set", "", "null", "", ""
+   "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "", ""
 
 ----------
 
