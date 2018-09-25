@@ -19,18 +19,15 @@ package com.hurence.logisland.packaging;
 
 
 import com.hurence.logisland.classloading.ManifestAttributes;
-import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.LinkedHashSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 
 /**
  * An hazardous repackager.
@@ -40,13 +37,6 @@ import java.util.stream.Collectors;
 public class LogislandRepackager {
 
 
-    public static void main(String args[]) throws Exception {
-        execute(args[0], args[2], args[3], args[4], args[5], args[6],
-                args.length > 7 ? args[7].split(",") : new String[0],
-                args[1].split(","));
-
-    }
-
     public static void execute(String jarFile,
                                String providedLibPath,
                                String version,
@@ -54,12 +44,13 @@ public class LogislandRepackager {
                                String name,
                                String description,
                                String[] classLoaderParentFirst,
+                               String[] apiArtifacts,
                                String... parentClasses) throws Exception {
-        JarFile file = new JarFile(jarFile);
+        JarInputStream inputStream = new JarInputStream(new FileInputStream(jarFile));
         String destFilename = jarFile + "-tmp";
 
 
-        Manifest mf = file.getManifest();
+        Manifest mf = inputStream.getManifest();
         String springBootClasses = mf.getMainAttributes().getValue("Spring-Boot-Classes");
         //first collect classes
         String foundPluginList = ModuleFinder.findOfType(new File(jarFile).toURI().toURL(),
@@ -81,26 +72,66 @@ public class LogislandRepackager {
 
 
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(destFilename), mf);
-
-        Enumeration<JarEntry> enumeration = file.entries();
-        while (enumeration.hasMoreElements()) {
-            JarEntry entry = enumeration.nextElement();
-            if (entry.getName().equals("META-INF/MANIFEST.MF")) {
-                continue;
-            }
-            if (entry.getName().startsWith(providedLibPath)) {
-                continue;
-            }
-            jos.putNextEntry(entry);
-            jos.write(IOUtils.toByteArray(file.getInputStream(entry)));
-            jos.closeEntry();
-        }
+        writeToJar(inputStream, jos, apiArtifacts, providedLibPath, false);
         jos.close();
-        file.close();
+
         new File(jarFile).delete();
         new File(destFilename).renameTo(new File(jarFile));
-
-
     }
+
+    private static byte[] copyStream(InputStream in, ZipEntry entry) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        long size = entry.getSize();
+        if (size > -1) {
+            byte[] buffer = new byte[1024 * 4];
+            int n = 0;
+            long count = 0;
+            while (-1 != (n = in.read(buffer)) && count < size) {
+                baos.write(buffer, 0, n);
+                count += n;
+            }
+        } else {
+            while (true) {
+                int b = in.read();
+                if (b == -1) {
+                    break;
+                }
+                baos.write(b);
+            }
+        }
+        baos.close();
+        return baos.toByteArray();
+    }
+
+
+    private static void writeToJar(JarInputStream jis, JarOutputStream jos, String[] apiArtifacts, String providedLibPath,
+                                   boolean skipMetaInf) throws Exception {
+
+
+        try (JarInputStream jarInputStream = jis) {
+            ZipEntry jarEntry;
+            while ((jarEntry = jarInputStream.getNextEntry()) != null) {
+                final ZipEntry entry = jarEntry;
+
+                if ((skipMetaInf && entry.getName().startsWith("META-INF/")) || entry.getName().equals("META-INF/MANIFEST.MF")) {
+                    continue;
+                } else if (apiArtifacts != null && Arrays.stream(apiArtifacts).anyMatch(s -> entry.getName().endsWith(s))) {
+
+                    writeToJar(new JarInputStream(new ByteArrayInputStream(copyStream(jis, entry))),
+                            jos, null, null, true);
+                    continue;
+
+
+                } else if (providedLibPath != null && entry.getName().startsWith(providedLibPath)) {
+                    continue;
+                } else {
+                    jos.putNextEntry(entry);
+                    jos.write(copyStream(jis, entry));
+                    jos.closeEntry();
+                }
+            }
+        }
+    }
+
 
 }

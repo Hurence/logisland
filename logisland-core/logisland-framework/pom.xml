@@ -34,6 +34,7 @@
         <module>logisland-hadoop-utils</module>
         <module>logisland-scripting</module>
         <module>logisland-plugin-support</module>
+        <module>logisland-maven-plugin</module>
     </modules>
 
 

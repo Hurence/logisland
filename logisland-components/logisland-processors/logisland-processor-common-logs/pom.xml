@@ -71,8 +71,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <phase>package</phase>

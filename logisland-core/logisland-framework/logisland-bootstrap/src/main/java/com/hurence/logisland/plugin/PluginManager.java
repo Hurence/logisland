@@ -242,7 +242,7 @@ public class PluginManager {
                         manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_NAME),
                         manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_VERSION)));
                 Arrays.stream(manifest.getMainAttributes().getValue(ManifestAttributes.MODULE_EXPORTS).split(","))
-                        .map(String::trim).forEach(s-> System.out.println("\t" + s));
+                        .map(String::trim).forEach(s -> System.out.println("\t" + s));
 
 
             } else {
@@ -289,6 +289,7 @@ public class PluginManager {
                         "Logisland Component for " + artifact,
                         "Logisland Component for " + artifact,
                         new String[]{"org.apache.kafka.*"},
+                        new String[0],
                         "org.apache.kafka.connect.connector.Connector");
             }
             System.out.println("Install done!");

@@ -90,12 +90,14 @@ public class PluginLoader {
 
                         final Archive arc = archive;
 
+                        if (StringUtils.isNotBlank(exportedPlugins)) {
+                            Arrays.stream(exportedPlugins.split(",")).map(String::trim).forEach(s -> {
+                                if (registry.putIfAbsent(s, PluginClassloaderBuilder.build(arc)) == null) {
+                                    logger.info("Registered component '{}' version '{}'", s, version);
+                                }
 
-                        Arrays.stream(exportedPlugins.split(",")).map(String::trim).forEach(s -> {
-                            if (registry.putIfAbsent(s, PluginClassloaderBuilder.build(arc)) == null) {
-                                logger.info("Registered component '{}' version '{}'", s, version);
-                            }
-                        });
+                            });
+                        }
                     }
                 }
 
