@@ -26,6 +26,8 @@ Contents:
    concepts
    architecture
    developer
+   plugins
+   connectors
    tutorials/index
    api
    rest-api

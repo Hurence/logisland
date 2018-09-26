@@ -17,44 +17,44 @@ In order to seamlessy integrate both world, we just wrapped out the kafka connec
 
 This allows you to leverage the existing kafka connectors library to import data into a logisland pipeline without having the need to make use of any another middleware or ETL system.
 
-Scope & Roadmap
+Prerequisites
+-------------
+
+You can use this functionality only with a spark engine >= 2.1.x
+
+Getting started
 ---------------
 
-Today only kafka-connect sources are available.
+In order to use a kafka connect source or sink you have to package and install the required libraries to the logisland lib folder.
 
-Sinks will be probably supported in future relases of logisland.
-
-.. note::
- Please note that kafka connect requires at least kafka 0.10.0.0. Logisland build for hadoop 2.4 / spark 1.6 is hence not supporting this feature.
+Hopefully it can be easily done by using the *components.sh* tool.
 
 
-Building
---------
+.. code-block:: sh
 
-Logisland comes with a connectors bundle but those connectors are not bundled by default. You are required to build logisland from sources in order to package the connectors you need into logisland uber jar.
-
-Actually when building with maven you need to pass some java properties depending on the connector(s) you would like to include.
-
-Please refer to the following table for the details:
+  bin/components.sh -i <plugin_artifact>
 
 
-+--------------------------+----------------------------------------------------------------------------------+------------------------------+
-| Connector                | URL                                                                              |  Build flag                  |
-+==========================+=========================+========================================================+==============================+
-| Simulator                | https://github.com/jcustenborder/kafka-connect-simulator                         | None (Built in)              |
-+--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
-| OPC-DA (IIoT)            | https://github.com/Hurence/logisland                                             | None (Built in)              |
-+--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
-| OPC-UA (IIoT)            | https://github.com/Hurence/logisland                                             | None (Built in)              |
-+--------------------------+-------------------------+--------------------------------------------------------+------------------------------+
-| FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | -DwithConnectFtp             |
-+--------------------------+----------------------------------------------------------------------------------+------------------------------+
-| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | -DwithConnectBlockchain      |
-+--------------------------+----------------------------------------------------------------------------------+------------------------------+
-| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | None (Built in)              |
-+--------------------------+----------------------------------------------------------------------------------+------------------------------+
-| JDBC                     | https://docs.confluent.io/current/connect/connect-jdbc/docs/index.html           | None (Built in)              |
-+--------------------------+----------------------------------------------------------------------------------+------------------------------+
+The plugin artifact should be provided according this format: *groupId:artifactId:version* where groupId, artifactId and version refer to the maven artifact you're going to install.
+
+Some examples, with the suggested artifacts to use, in the following table:
+
++--------------------------+-------------------------+--------------------------------------------------------+------------------------------------------------------------------------+
+| Connector                | URL                                                                              |  Artifact                                                              |
++==========================+=========================+========================================================+========================================================================+
+| Simulator                | https://github.com/jcustenborder/kafka-connect-simulator                         | com.github.jcustenborder.kafka.connect:kafka-connect-simulator:0.1.118 |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+| OPC-DA / OPC-UA (IIoT)   | https://github.com/Hurence/logisland                                             | com.hurence.logisland:logisland-connector-opc:<logisland_version>      |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+| FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | com.eneco:kafka-connect-ftp:0.1.4                                      |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | com.datamountaineer:kafka-connect-blockchain:1.1.0                     |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | com.datamountaineer:kafka-connect-jms:1.1.0                            |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+| JDBC                     | https://docs.confluent.io/current/connect/connect-jdbc/docs/index.html           | io.confluent:kafka-connect-jdbc:5.0.0                                  |
++--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
+
 
 
 Configuring
