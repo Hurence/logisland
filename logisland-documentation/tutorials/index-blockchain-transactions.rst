@@ -17,10 +17,11 @@ This will allow us to run some dashboarding and visual data analysis as well.
 1. Logisland job setup
 ----------------------
 
-.. note::
+Install the blockchain connector if not already done.
 
-  To run this tutorial you have to package the blockchain connector into the logisland deployable jar.
-  You can do this simply by building logisland from sources passing the option *-DwithConnectBlockchain* to maven.
+.. code-block:: sh
+
+   bin/components.sh -i com.datamountaineer:kafka-connect-blockchain:1.1.0
 
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 

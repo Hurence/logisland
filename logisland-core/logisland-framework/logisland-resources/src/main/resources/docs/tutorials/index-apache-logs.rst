@@ -9,7 +9,27 @@ In the following getting started tutorial we'll drive you through the process of
 
 Note, it is possible to store data in different datastores. In this tutorial, we will see the case of ElasticSearch and Solr.
 
-1. Logisland job setup
+
+1.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed elasticsearch, mongo and solr modules (depending on which base you will use).
+
+If not you can just do it through the components.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-mongodb-client:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-solr_6_6_2-client:0.15.0
+
+
+
+2. Logisland job setup
 ----------------------
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 
@@ -225,7 +245,7 @@ You have to create the db logisland with the collection apache.
 
 
 
-2. Launch the script
+3. Launch the script
 --------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
@@ -248,7 +268,7 @@ For Mongo :
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/index-apache-logs-mongo.yml
 
-3. Inject some Apache logs into the system
+4. Inject some Apache logs into the system
 ------------------------------------------
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 
@@ -273,7 +293,7 @@ Let's send the first 500000 lines of NASA http access over July 1995 to LogIslan
     head -n 500 NASA_access_log_Jul95 | kafkacat -b sandbox:9092 -t logisland_raw
 
 
-4. Monitor your spark jobs and Kafka topics
+5. Monitor your spark jobs and Kafka topics
 -------------------------------------------
 Now go to `http://sandbox:4050/streaming/ <http://sandbox:4050/streaming/>`_ to see how fast Spark can process
 your data
@@ -286,7 +306,7 @@ Another tool can help you to tweak and monitor your processing `http://sandbox:9
 .. image:: /_static/kafka-mgr.png
 
 
-5. Inspect the logs
+6. Inspect the logs
 ---------------------------------
 
 Kibana

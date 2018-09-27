@@ -11,6 +11,20 @@ We can call this functionality *Logisland connect*.
 
 1. Logisland job setup
 ----------------------
+
+For this tutorial please make sure to already have installed elasticsearch and excel modules.
+
+If not you can just do it through the components.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+    bin/components.sh -i com.github.jcustenborder.kafka.connect:kafka-connect-simulator:0.1.118
+
+
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 
 .. code-block:: sh

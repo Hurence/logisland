@@ -98,7 +98,22 @@ Or you can use 'localhost' instead of 'sandbox' where applicable.
 
     If you have your own Spark and Kafka cluster, you can download the `latest release <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
 
-2. Transform Bro events into Logisland records
+
+2.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed elasticsearch and excel modules.
+
+If not you can just do it through the components.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:0.15.0
+
+
+3. Transform Bro events into Logisland records
 ----------------------------------------------
 
 For this tutorial we will receive Bro events and notices and send them to Elastiscearch. The configuration file for this tutorial is
@@ -267,7 +282,7 @@ We will come back to these settings and what they do in the section where we see
 
  .. _StartBroContainer:
 
-3. Start the Docker container with Bro
+4. Start the Docker container with Bro
 --------------------------------------
 
 For this tutorial, we provide Bro as a Docker image that you can `build yourself <https://github.com/Hurence/logisland/tree/master/logisland-docker/bro>`_ or pull from Docker Hub.
@@ -307,7 +322,7 @@ Start a Bro container from the Bro image:
     # or if your are on mac os
     docker-machine ip default
 
-4. Configure Bro to send events to Kafka
+5. Configure Bro to send events to Kafka
 ----------------------------------------
 
 In the following steps, if you want a new shell to your running bro container, do as necessary:
@@ -442,7 +457,7 @@ Then start the bro service: use the ``deploy`` command in broctl session:
    Everytime you modify the ``$BRO_HOME/share/bro/site/local.bro`` configuration file, you must re-issue a ``deploy`` command so that
    changes are taken into account.
 
-5. Generate some Bro events and notices
+6. Generate some Bro events and notices
 ---------------------------------------
 
 Now that everything is in place you can generate some network activity in the Bro container to generate some events and see them indexed in ElasticSearch.

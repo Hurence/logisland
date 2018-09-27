@@ -14,8 +14,22 @@ In particular, we'll use the Prosys OPC-UA simulation server you can download fo
 Please also remember to always turn on the simulation server before running the logisland job.
 
 
+1.Install required components
+-----------------------------
 
-1. Logisland job setup
+For this tutorial please make sure to already have installed elasticsearch and OPC modules.
+If not you can just do it through the componentes.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-connector-opc:0.15.0
+
+
+2. Logisland job setup
 ----------------------
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 
@@ -174,7 +188,7 @@ Then, the last processor will index our records into elasticsearch
         es.type.field: record_type
 
 
-2. Launch the script
+3. Launch the script
 --------------------
 Just ensure the Prosys OPC-UA server is up and running and that on the *Simulation* tab the simulation is ticked.
 
@@ -187,7 +201,7 @@ Then you can execute:
 
 
 
-3. Inspect the records
+4. Inspect the records
 ----------------------
 
 

@@ -1781,6 +1781,118 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.service.solr.Solr_5_5_5_ClientService: 
+
+Solr_5_5_5_ClientService
+------------------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_5_5_5-client:0.15.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_5_5_5_ClientService
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
+   "bulk.size", "bulk size in MB", "", "5", "", ""
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "", ""
+   "**solr.collection**", "name of the collection to use", "", "null", "", ""
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "", ""
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "", ""
+   "flush.interval", "flush interval in ms", "", "500", "", ""
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "", ""
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService: 
+
+Solr_6_4_2_ChronixClientService
+-------------------------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:0.15.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "", ""
+   "**solr.collection**", "name of the collection to use", "", "null", "", ""
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "", ""
+   "flush.interval", "flush interval in ms", "", "500", "", ""
+   "group.by", "The field the chunk should be grouped by", "", "", "", ""
+
+----------
+
+.. _com.hurence.logisland.service.solr.Solr_6_6_2_ClientService: 
+
+Solr_6_6_2_ClientService
+------------------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-service-solr_6_6_2-client:0.15.0
+
+Class
+_____
+com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
+   "bulk.size", "bulk size in MB", "", "5", "", ""
+   "**solr.cloud**", "is slor cloud enabled", "", "false", "", ""
+   "**solr.collection**", "name of the collection to use", "", "null", "", ""
+   "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "", ""
+   "solr.concurrent.requests", "setConcurrentRequests", "", "2", "", ""
+   "flush.interval", "flush interval in ms", "", "500", "", ""
+   "schema.update_timeout", "Schema update timeout interval in s", "", "15", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.SplitField: 
 
 SplitField

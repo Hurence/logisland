@@ -97,13 +97,13 @@ public class PluginManager {
         Options options = new Options();
         OptionGroup mainGroup = new OptionGroup()
                 .addOption(OptionBuilder
-                        .withDescription("Install a component. It can be either a plugin or a connector.")
+                        .withDescription("Install a component. It can be either a logisland plugin or a kafka connect module.")
                         .withArgName("artifact")
                         .hasArgs(1)
                         .withLongOpt("install")
                         .create("i"))
                 .addOption(OptionBuilder
-                        .withDescription("Removes a component. It can be either a plugin or a connector.")
+                        .withDescription("Removes a component. It can be either a logisland plugin or a kafka connect module.")
                         .withArgName("artifact")
                         .hasArgs(1)
                         .withLongOpt("remove")

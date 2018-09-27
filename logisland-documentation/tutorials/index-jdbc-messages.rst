@@ -14,7 +14,19 @@ The JDBC data will leverage the JDBC connector available as part of logisland co
 
 
 
-1. Installing H2 datatabase
+1.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed the kafka connect jdbc connector.
+
+If not you can just do it through the componentes.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -r com.hurence.logisland.repackaged:kafka-connect-jdbc:5.0.0
+
+
+2. Installing H2 datatabase
 ---------------------------
 
 In this tutorial we'll use `H2 Database <http://h2database.com/html/main.html>`_.
@@ -61,7 +73,7 @@ With the URL JDBC parameter set to `jdbc:h2:tcp://sandbox:9999/~/test` you shoul
 
 
 
-2. Logisland job setup
+3. Logisland job setup
 ----------------------
 
 The interesting part in this tutorial is how to setup the JDBC stream.
@@ -120,7 +132,7 @@ First of all a ``FlatMap`` processor takes out the value and key (required when 
 
 
 
-3. Launch the script
+4. Launch the script
 --------------------
 Now run the logisland job that will poll updates of new records inserted into `logisland.apache` table
 

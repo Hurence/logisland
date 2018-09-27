@@ -38,6 +38,28 @@ You can find the steps to start the Docker image and start the LogIsland server 
 However, you'll start the server with a different configuration file (that already includes the necessary modifications)
 
 
+
+Install required components
+___________________________
+
+For this tutorial please make sure to already have installed required modules.
+
+If not you can just do it through the components.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-enrichment:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-useragent:0.15.0
+
+
+
+
+
 Stream 1 : modify the stream to analyze the User-Agent string
 _____________________________________________________________
 

@@ -14,7 +14,23 @@ to compute some metrics and then add a `MatchQuery </plugins.html#matchquery>`_ 
 
     Be sure to know of to launch a logisland Docker environment by reading the `prerequisites <./prerequisites.html>`_ section
 
-1. Logisland job setup
+
+1.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed elasticsearch modules. If not you can just
+do it through the componentes.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+
+
+
+2. Logisland job setup
 ----------------------
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here :
 
@@ -106,7 +122,7 @@ Here we will compute every x seconds, the top twenty `src_ip` for connections co
 The result of the query will be pushed into to `logisland_aggregations` topic as new `top_client_metrics` Record containing `connections_count` and `avg_bytes_out` fields.
 
 
-the third match some criterias to send some alerts
+the third match some criteria to send some alerts
 
 .. code-block:: yaml
 
@@ -122,7 +138,7 @@ the third match some criterias to send some alerts
 
 
 
-2. Launch the script
+3. Launch the script
 --------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
@@ -131,7 +147,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/aggregate-events.yml
 
-3. Inject some Apache logs into the system
+4. Inject some Apache logs into the system
 ------------------------------------------
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 

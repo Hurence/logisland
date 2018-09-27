@@ -13,7 +13,21 @@ We will use mainly the `MatchQuery </plugins.html#matchquery>`_ Processor.
     Be sure to know of to launch a logisland Docker environment by reading the `prerequisites <./prerequisites.html>`_ section
 
 
-0. Logisland job setup
+1.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed elasticsearch modules.
+
+If not you can just do it through the components.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+
+2. Logisland job setup
 ----------------------
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here :
 
@@ -77,7 +91,7 @@ here is an example of matching record :
       }
 
 
-2. Launch the script
+3. Launch the script
 --------------------
 For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
@@ -86,7 +100,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/match-queries.yml
 
-3. Inject some Apache logs into the system
+4. Inject some Apache logs into the system
 ------------------------------------------
 Now we're going to send some logs to ``logisland_raw`` Kafka topic.
 

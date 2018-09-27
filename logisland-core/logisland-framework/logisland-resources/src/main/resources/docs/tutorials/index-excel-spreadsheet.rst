@@ -11,7 +11,22 @@ Both XLSX and old XLS file format are supported.
 
 Note, it is possible to store data in different datastores. In this tutorial, we will see the case of ElasticSearch only.
 
-1. Logisland job setup
+1.Install required components
+-----------------------------
+
+For this tutorial please make sure to already have installed elasticsearch and excel modules.
+If not you can just do it through the componentes.sh command line:
+
+.. code-block:: sh
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+
+    bin/components.sh -i com.hurence.logisland:logisland-processor-excel:0.15.0
+
+
+2. Logisland job setup
 ----------------------
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 
@@ -138,7 +153,7 @@ The second processor  will handle ``Records`` produced by the ``ExcelExtract`` t
         es.type.field: record_type
 
 
-2. Launch the script
+3. Launch the script
 --------------------
 For this tutorial we will handle an excel file. We will process it with an ExcelExtract that will produce a bunch of Records and we'll send them to Elastiscearch
 Connect a shell to your logisland container to launch the following streaming jobs.
@@ -149,7 +164,7 @@ For ElasticSearch :
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/index-excel-spreadsheet.yml
 
-3. Inject an excel file into the system
+4. Inject an excel file into the system
 ---------------------------------------
 Now we're going to send a file to ``logisland_raw`` Kafka topic.
 
