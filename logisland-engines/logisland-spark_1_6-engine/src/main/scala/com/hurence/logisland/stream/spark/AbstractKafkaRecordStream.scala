@@ -47,6 +47,7 @@ import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
@@ -291,20 +292,35 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
               * previous values :
               *    refresh.leader.backoff.ms -> 1000
               */
-            val kafkaStreamsParams = Map(
-                "metadata.broker.list" -> brokerList,
-                "bootstrap.servers" -> brokerList,
-                "group.id" -> appName,
-                "refresh.leader.backoff.ms" -> "5000",
-                "auto.offset.reset" -> "largest"
+            var kafkaStreamsParams = Map(
+              "metadata.broker.list" -> brokerList,
+              "bootstrap.servers" -> brokerList,
+              "group.id" -> appName,
+              "refresh.leader.backoff.ms" -> "5000"
             )
+            val autoOffsetResetProp = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+            val autoOffsetReset = if (autoOffsetResetProp.isSet) {
+                val value = autoOffsetResetProp.asString
+                if ( ! AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.validate(value).isValid ) {
+                    logger.error(s"Invalid value '${value}' for property ${AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.getName()}")
+                    throw new IllegalStateException(s"Invalid value '${value}' for property ${AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.getName()}");
+                }
+                value
+            }
+            else {
+                null
+            }
+
+            if ( autoOffsetReset != null ) {
+                kafkaStreamsParams = kafkaStreamsParams + (ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> autoOffsetReset)
+            }
 
             val offsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
                     || offsets.isEmpty) {
 
-                logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
+                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $autoOffsetReset")
                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
                     ssc,
                     kafkaStreamsParams,
