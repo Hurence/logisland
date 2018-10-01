@@ -129,7 +129,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.immutables.tools</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -141,10 +140,18 @@ http://www.w3.org/2001/XMLSchema-instance ">
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <artifactSet>
+                                <includes>
+                                    <include>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</include>
+                                    <include>com.fasterxml.jackson.datatype:jackson-datatype-jdk8</include>
+                                    <include>com.hurence.logisland:logisland-engine-spark_2_common</include>
+                                    <include>*:*</include>
+                                </includes>
                                 <excludes>
-                                    <exclude>com.fasterxml*:*</exclude>
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>com.fasterxml.jackson.databind:*</exclude>
+                                    <exclude>com.fasterxml.jackson.jaxrs*:*</exclude>
+                                    <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations</exclude>
                                     <exclude>org.scala-lang:*</exclude>
                                     <exclude>org.scalatest:*</exclude>
                                     <exclude>org.apache.zookeeper:*</exclude>
@@ -154,6 +161,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
                                     <exclude>log4j:*</exclude>
                                     <exclude>org.yaml:*</exclude>
                                     <exclude>org.eclipse.jetty:*</exclude>
+                                    <exclude>org.glassfish.hk2*:*</exclude>
+                                    <exclude>org.glassfish.jersey*:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -178,8 +187,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                     </execution>
                 </executions>
             </plugin>
-
-
         </plugins>
     </build>
 </project>

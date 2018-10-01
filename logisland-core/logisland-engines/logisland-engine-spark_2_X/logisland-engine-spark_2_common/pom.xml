@@ -238,18 +238,18 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-            <scope>provided</scope>
-            
-        </dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+        <scope>provided</scope>
+
+    </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
             <version>${jackson.version}</version>
-            
+
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -275,12 +275,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>${jackson.version}</version>
             
         </dependency>
+        <!--
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.version}</version>
-            
+
         </dependency>
+            -->
 
 
         <dependency>
