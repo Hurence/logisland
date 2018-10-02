@@ -79,10 +79,10 @@ Along with this we need to put some configuration (In general you can always ref
 |  kc.data.key.converter.properties               | The properties to be provided to the key converter       |
 |                                                 |                                                          |
 +-------------------------------------------------+----------------------------------------------------------+
-|  kc.data.value.converter                        | The class of the converter to be used for the key.       |
+|  kc.data.value.converter                        | The class of the converter to be used for the value.     |
 |                                                 | Please refer to `Choosing the right converter`_ section  |
 +-------------------------------------------------+----------------------------------------------------------+
-|  kc.data.value.converter.properties             | The properties to be provided to the key converter       |
+|  kc.data.value.converter.properties             | The properties to be provided to the value converter     |
 |                                                 |                                                          |
 +-------------------------------------------------+----------------------------------------------------------+
 |  kc.connector.properties                        | The properties to be provided to the connector and       |
