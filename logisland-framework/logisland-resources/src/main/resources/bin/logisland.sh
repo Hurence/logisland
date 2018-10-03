@@ -35,6 +35,7 @@ app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
 
 
 MODE="default"
+SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
 
@@ -112,10 +113,15 @@ then
   exit 1
 fi
 
+# ----------------------------------------------------------------
+# find the spark-submit mode
+# can be either local, standalone, mesos or yarn
+# ----------------------------------------------------------------
 
 MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
 case ${MODE} in
   "yarn")
+    SPARK_MASTER=${MODE}
     EXTRA_MODE=`awk '{ if( $1 == "spark.yarn.deploy-mode:" ){ print $2 } }' ${CONF_FILE}`
     if [ -z "${EXTRA_MODE}" ]
     then
@@ -133,9 +139,18 @@ case ${MODE} in
     ;;
 esac
 
+
+if [[ "${MODE}" =~ "mesos" ]]
+then
+    SPARK_MASTER=${MODE}
+    MODE="mesos"
+fi
+
+
+
 if [ ! -z "${VERBOSE_OPTIONS}" ]
 then
-  echo "Starting with mode \"${MODE}\""
+  echo "Starting with mode \"${MODE}\" on master \"${SPARK_MASTER}\""
 fi
 
 case $MODE in
@@ -178,31 +193,31 @@ case $MODE in
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_CORES}" ]
     then
- 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}" 
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
     fi
 
     DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_MEMORY}" ]
     then
- 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}" 
+ 	 YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
     fi
 
     EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_CORES}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
     fi
 
     EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_MEMORY}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
     fi
 
     EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${EXECUTORS_INSTANCES}" ]
     then
-         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}" 
+         YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
     fi
 
     SPARK_YARN_MAX_APP_ATTEMPTS=`awk '{ if( $1 == "spark.yarn.maxAppAttempts:" ){ print $2 } }' ${CONF_FILE}`
@@ -292,6 +307,68 @@ case $MODE in
     ${lib_dir}/logisland-spark*-engine*.jar \
     -conf ${CONF_FILE}
     ;;
+
+  mesos)
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
+    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+    MESOS_OPTIONS="--master ${SPARK_MASTER}"
+
+
+    DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${DRIVER_CORES}" ]
+    then
+ 	 MESOS_OPTIONS="${MESOS_OPTIONS} --driver-cores ${DRIVER_CORES}"
+    fi
+
+    DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${DRIVER_MEMORY}" ]
+    then
+ 	 MESOS_OPTIONS="${MESOS_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
+    fi
+
+    EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_CORES}" ]
+    then
+         MESOS_OPTIONS="${MESOS_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
+    fi
+
+    EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_MEMORY}" ]
+    then
+         MESOS_OPTIONS="${MESOS_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
+    fi
+
+    EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${EXECUTORS_INSTANCES}" ]
+    then
+         MESOS_OPTIONS="${MESOS_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
+    fi
+
+
+    TOTAL_EXECUTOR_CORES=`awk '{ if( $1 == "spark.cores.max:" ){ print $2 } }' ${CONF_FILE}`
+    if [ ! -z "${TOTAL_EXECUTOR_CORES}" ]
+    then
+         MESOS_OPTIONS="${MESOS_OPTIONS} --total-executor-cores ${TOTAL_EXECUTOR_CORES}"
+    fi
+
+    MESOS_NATIVE_JAVA_LIBRARY=`awk '{ if( $1 == "java.library.path:" ){ print $2 } }' ${CONF_FILE}`
+
+
+
+    #--deploy-mode cluster \
+    #--supervise \
+    #--executor-memory 20G \
+   # --total-executor-cores 100 \
+
+    export MESOS_NATIVE_JAVA_LIBRARY="${MESOS_NATIVE_JAVA_LIBRARY}"
+    ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${MESOS_OPTIONS} \
+    --class ${app_mainclass} \
+    --jars ${app_classpath} \
+    ${lib_dir}/logisland-spark*-engine*.jar \
+    -conf ${CONF_FILE}
+    ;;
+
 esac
 
 

@@ -52,6 +52,8 @@ services:
     ports:
       - '5601:5601'
 
+
+
   # Logisland container : does nothing but launching
   logisland:
     container_name: logisland
