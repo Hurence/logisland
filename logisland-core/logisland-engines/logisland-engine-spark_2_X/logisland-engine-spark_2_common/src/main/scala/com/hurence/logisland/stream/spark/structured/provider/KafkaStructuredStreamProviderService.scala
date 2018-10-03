@@ -245,7 +245,7 @@ class KafkaStructuredStreamProviderService() extends AbstractControllerService w
                     /**
                       * push outgoing events and errors to Kafka
                       */
-                    sender.value.send(streamContext.getPropertyValue(WRITE_TOPICS).asString,
+                    sender.value.send(outputTopics.mkString(","),
                         getOrElse(value, FieldDictionary.RECORD_KEY, new Array[Byte](0)),
                         getOrElse(value, FieldDictionary.RECORD_VALUE, new Array[Byte](0)))
 
