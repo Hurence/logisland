@@ -20,6 +20,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.elasticsearch.AbstractElasticsearchProcessor;
+import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.cache.CacheService;
@@ -37,17 +38,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
 
 @Tags({"session", "traffic", "source", "web", "analytics"})
 @CapabilityDescription("Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, \n" +
         "including advertising/paying campaigns, search engines, social networks, referring sites or direct access. \n" +
-        "When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. \n" +
+        "When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. \n" +
         "To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available\n" +
         "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM +"**)\n" +
         ", the referer (**" + PROP_REFERER + "** property) and the first visited page of the session (**" + PROP_FIRST_VISITED_PAGE + "** property).\n" +
-        "By default the source of traffic informations are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
+        "By default the source of traffic information are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
         " with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "_). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
         "Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **" + PROP_ES_INDEX + "** property) " +
         "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field "+
@@ -81,6 +83,10 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     private static final String DIRECT_TRAFFIC = "direct";
     protected CacheService<String, CacheEntry> cacheService;
     static final String DEBUG_FROM_CACHE_SUFFIX = "_from_cache";
+    private static final String GOOGLE = "google";
+    private static final String CPC = "cpc";
+    private static final String ADWORDS = "adwords";
+    private static final String DOUBLECLICK = "DoubleClick";
     protected boolean debug = false;
 
     public static final PropertyDescriptor ES_INDEX_FIELD = new PropertyDescriptor.Builder()
@@ -234,7 +240,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
     public static final String SOURCE_OF_TRAFIC_FIELD_KEYWORD = "keyword";
 
     /**
-     * Wether source of trafic is an organic search or not for the web session
+     * Whether source of traffic is an organic search or not for the web session
      */
     public static final String SOURCE_OF_TRAFIC_FIELD_ORGANIC_SEARCHES = "organic_search";
 
@@ -293,6 +299,12 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
         }
     }
 
+    /**
+     * The regular expressions for matching the parameter ?gclid= (adwords) or ?gclsrc= (DoubleClick).
+     */
+    private static final Pattern ADWORDS_RE = Pattern.compile(".*[\\&\\?]gclid=\\s*([^\\&\\?]+)\\&?.*");
+    private static final Pattern DOUBLECLICK_RE = Pattern.compile(".*[\\&\\?]gclsrc=\\s*([^\\&\\?]+)\\&?.*");
+
     public void processSession(ProcessContext context, Record record)
     {
         final String utm_source_field         = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
@@ -300,14 +312,27 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
         final String utm_campaign_field       = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
         final String utm_content_field        = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
         final String utm_term_field           = context.getPropertyValue(UTM_TERM_FIELD).asString();
+        final String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
         final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
         final String FLAT_SEPARATOR           = "_";
         final String referer_field            = context.getPropertyValue(REFERER_FIELD).asString();
         final boolean hierarchical             = context.getPropertyValue(HIERARCHICAL).asBoolean();
 
         SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
+
+        // Check if location contains the parameter ?gclid= (adwords) or ?gclsrc= (DoubleClick).
+        final Field locationField = record.getField(first_visited_page_field);
+        final String location = locationField!=null ? locationField.asString() : null;
+        final boolean adwords = location!=null && ADWORDS_RE.matcher(location).matches();
+        if (adwords || (location!=null && DOUBLECLICK_RE.matcher(location).matches())){
+            sourceOfTraffic.setSource(GOOGLE);
+            sourceOfTraffic.setMedium(CPC);
+            sourceOfTraffic.setCampaign(adwords ? ADWORDS : DOUBLECLICK);
+            sourceOfTraffic.setContent(adwords ? ADWORDS : DOUBLECLICK);
+            sourceOfTraffic.setKeyword(adwords ? ADWORDS : DOUBLECLICK);
+        }
         // Check if this is a custom campaign
-        if (record.getField(utm_source_field) != null){
+        else if (record.getField(utm_source_field) != null){
             String utm_source = null;
             try {
                 utm_source = URLDecoder.decode(record.getField(utm_source_field).asString(), "UTF-8");
@@ -628,7 +653,7 @@ public class setSourceOfTraffic extends AbstractElasticsearchProcessor {
 
     private static class SourceOfTrafficMap {
         // sourceInfo translated from the ip (or the ip if the sourceInfo could not be found)
-        private Map<String, Object> sourceOfTrafficMap = new HashMap();
+        private Map<String, Object> sourceOfTrafficMap = new HashMap<>();
 
         public Map<String, Object> getSourceOfTrafficMap() {
             return sourceOfTrafficMap;

@@ -40,3 +40,4 @@ Contents:
    mqtt-to-historian
    iiot-opc-ua
    integrate-kafka-connect
+   index-jdbc-messages
