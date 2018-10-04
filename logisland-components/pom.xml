@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland</artifactId>
+        <version>0.15.0</version>
+    </parent>
+
+    <packaging>pom</packaging>
+    <artifactId>logisland-components</artifactId>
+
+    <properties>
+        <logisland.component.name>${project.name}</logisland.component.name>
+        <logisland.component.description>${project.description}</logisland.component.description>
+    </properties>
+
+    <modules>
+        <module>logisland-connectors</module>
+        <module>logisland-services</module>
+        <module>logisland-processors</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>2.0.0.RELEASE</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <layoutFactory implementation="com.hurence.logisland.packaging.LogislandPluginLayoutFactory">
+                            <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
+                        </layoutFactory>
+
+                        <excludeArtifactIds>connect-api,connect-runtime,connect-json,connect-transforms,kafka-clients,
+                            logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base
+                        </excludeArtifactIds>
+                        <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-plugin-support</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <providedLibFolder>BOOT-INF/lib-provided</providedLibFolder>
+                        <exportedBaseClasses>
+                            <value>com.hurence.logisland.component.ConfigurableComponent</value>
+                        </exportedBaseClasses>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-maven-plugin</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+</project>

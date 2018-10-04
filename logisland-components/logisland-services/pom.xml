@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-components</artifactId>
+        <version>0.15.0</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>logisland-services</artifactId>
+
+    <modules>
+        <module>logisland-service-cassandra</module>
+        <module>logisland-service-mongodb</module>
+        <module>logisland-service-inmemory-cache</module>
+        <module>logisland-service-ip-to-geo</module>
+        <module>logisland-service-redis</module>
+        <module>logisland-service-hbase</module>
+        <module>logisland-service-solr</module>
+        <module>logisland-service-elasticsearch</module>
+
+    </modules>
+
+
+</project>

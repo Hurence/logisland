@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-components</artifactId>
+        <version>0.15.0</version>
+    </parent>
+
+    <name>Logisland processors package</name>
+
+    <artifactId>logisland-processors</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>logisland-processor-common</module>
+        <module>logisland-processor-common-logs</module>
+        <module>logisland-processor-elasticsearch</module>
+        <module>logisland-processor-hbase</module>
+        <module>logisland-processor-useragent</module>
+        <module>logisland-processor-scripting</module>
+        <module>logisland-processor-enrichment</module>
+        <module>logisland-processor-querymatcher</module>
+        <module>logisland-processor-sampling</module>
+        <module>logisland-processor-excel</module>
+        <module>logisland-processor-web-analytics</module>
+        <module>logisland-processor-outlier-detection</module>
+        <!--
+        <module>logisland-processor-botsearch</module>
+        -->
+        <module>logisland-processor-cyber-security</module>
+
+
+
+        <!--
+        -->
+    </modules>
+</project>

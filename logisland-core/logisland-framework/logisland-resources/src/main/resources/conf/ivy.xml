@@ -1,0 +1,37 @@
+<!--
+  ~  * Copyright (C) 2018 Hurence (support@hurence.com)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~         http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<ivysettings>
+    <settings defaultResolver="default"/>
+    <property name="m2-pattern"
+              value="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[module]-[revision](-[classifier])"
+              override="false"/>
+    <resolvers>
+        <chain name="default">
+            <filesystem name="local-maven2" m2compatible="true" checkmodified="true">
+                <artifact pattern="${m2-pattern}.[ext]"/>
+                <ivy pattern="${m2-pattern}.pom"/>
+            </filesystem>
+            <ibiblio name="central" m2compatible="true"/>
+            <ibiblio name="jcenter" m2compatible="true" root="http://jcenter.bintray.com"/>
+            <ibiblio name="confluent" m2compatible="true" root="http://packages.confluent.io/maven/"/>
+            <ibiblio name="openscada" m2compatible="true" root="http://neutronium.openscada.org/maven/"
+                     checkmodified="true" changingPattern="*-SNAPSHOT"/>
+            <ibiblio name="jitpack" m2compatible="true" root="https://jitpack.io"/>
+        </chain>
+    </resolvers>
+</ivysettings>
