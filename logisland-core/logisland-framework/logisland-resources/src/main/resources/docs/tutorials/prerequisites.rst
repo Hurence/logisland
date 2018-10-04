@@ -54,10 +54,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v0.15.0/logisland-0.15.0-bin-hdp2.5.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v1.0.0-RC1/logisland-1.0.0-RC1-bin-hdp2.5.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-0.15.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-1.0.0-RC1/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 

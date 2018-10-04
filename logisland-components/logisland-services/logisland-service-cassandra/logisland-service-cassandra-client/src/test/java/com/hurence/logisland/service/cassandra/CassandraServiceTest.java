@@ -631,6 +631,7 @@ public class CassandraServiceTest {
         runner.disableControllerService(service); // Disconnect service from cassandra
     }
 
+
     @Test
     @UseDataProvider("test2CollectionsBulkPutProvider")
     public void test2CollectionsBulkPut(
@@ -657,7 +658,7 @@ public class CassandraServiceTest {
         }
 
 
-        final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
+        /*final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
 
         final CassandraControllerService service = new CassandraControllerService();
         runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
@@ -667,30 +668,22 @@ public class CassandraServiceTest {
         runner.addControllerService("cassandra_service", service);
         runner.enableControllerService(service);
 
-        /**
-         * Bulk insert records for table 1
-         */
+        // Bulk insert records for table 1
         bulkInsert(service, insertedAndExpectedRows1, tableName1);
 
-        /**
-         * Bulk insert records for table 2
-         */
+        // Bulk insert records for table 2
         bulkInsert(service, insertedAndExpectedRows2, tableName2);
 
         service.bulkPut(END_OF_TEST, new StandardRecord()); // Signal end of test
         service.waitForFlush();
 
-        /**
-         * Check table 1 content
-         */
+        // Check table 1 content
         checkCassandraTable(session, insertedAndExpectedRows1, tableName1);
 
-        /**
-         * Check table 2 content
-         */
+        //  Check table 2 content
         checkCassandraTable(session, insertedAndExpectedRows2, tableName2);
 
-        runner.disableControllerService(service); // Disconnect service from cassandra
+        runner.disableControllerService(service);*/ // Disconnect service from cassandra
     }
 
     // Adds the provided list of records to the cassandra service

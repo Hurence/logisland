@@ -19,13 +19,13 @@ If not you can just do it through the components.sh command line:
 
 .. code-block:: sh
 
-    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC1
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC1
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-mongodb-client:0.15.0
+    bin/components.sh -i com.hurence.logisland:logisland-service-mongodb-client:1.0.0-RC1
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-solr_6_6_2-client:0.15.0
+    bin/components.sh -i com.hurence.logisland:logisland-service-solr_6_6_2-client:1.0.0-RC1
 
 
 

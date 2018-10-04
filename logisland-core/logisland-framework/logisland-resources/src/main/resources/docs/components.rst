@@ -13,7 +13,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -44,7 +44,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -75,7 +75,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC1
 
 Class
 _____
@@ -111,7 +111,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -146,7 +146,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:0.15.0
+com.hurence.logisland:logisland-service-cassandra-client:1.0.0-RC1
 
 Class
 _____
@@ -167,11 +167,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**Cassandra hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "", ""
    "**Cassandra port**", "Cassandra cluster port", "", "null", "", ""
-   "**Cassandra keyspace name**", "The name of the keyspace to use", "", "null", "", ""
-   "**Cassandra table name**", "The name of the table to use in the keyspace", "", "null", "", ""
-   "**Cassandra table fields and types**", "Tne names of the table fields and their cassandra types. For a bulkput, each field must be an existing incoming logisland record field. The format of this property is: <record_field1>:<cassandra_type1>[,<record_fieldN>:<cassandra_typeN>]. Example: record_id:uuid,record_time:timestamp,intValue,textValue.", "", "null", "", ""
-   "**Cassandra table primary key**", "Tne ordered names of the fields forming the primary key in the table to create. The format of this property is: primaryKeyField[,<nextPrimaryKeyFieldN>]. Example: record_id,intValue", "", "null", "", ""
-   "Create or not the cassandra schema if it does not exist.", "If this property is true, then if they do not exist, the keyspace and the table with its defined fields and primary key will be created at initialization time.Otherwise, all these elements are expected to already exist in the cassandra cluster", "", "true", "", ""
    "Use SSL.", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "", ""
    "Use credentials.", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "", ""
    "User name.", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "", ""
@@ -190,7 +185,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -275,7 +270,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -360,7 +355,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -443,7 +438,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:0.15.0
+com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC1
 
 Class
 _____
@@ -488,7 +483,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -512,7 +507,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -544,7 +539,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-outlier-detection:0.15.0
+com.hurence.logisland:logisland-processor-outlier-detection:1.0.0-RC1
 
 Class
 _____
@@ -603,7 +598,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:0.15.0
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.0.0-RC1
 
 Class
 _____
@@ -649,7 +644,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:0.15.0
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC1
 
 Class
 _____
@@ -695,7 +690,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -731,7 +726,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC1
 
 Class
 _____
@@ -767,7 +762,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -791,7 +786,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-excel:0.15.0
+com.hurence.logisland:logisland-processor-excel:1.0.0-RC1
 
 Class
 _____
@@ -827,7 +822,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:0.15.0
+com.hurence.logisland:logisland-processor-hbase:1.0.0-RC1
 
 Class
 _____
@@ -864,7 +859,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -896,7 +891,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -932,7 +927,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -965,7 +960,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:0.15.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.0.0-RC1
 
 Class
 _____
@@ -1001,7 +996,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:0.15.0
+com.hurence.logisland:logisland-processor-enrichment:1.0.0-RC1
 
 Class
 _____
@@ -1038,7 +1033,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:0.15.0
+com.hurence.logisland:logisland-processor-enrichment:1.0.0-RC1
 
 Class
 _____
@@ -1076,7 +1071,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:0.15.0
+com.hurence.logisland:logisland-processor-querymatcher:1.0.0-RC1
 
 Class
 _____
@@ -1112,7 +1107,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:0.15.0
+com.hurence.logisland:logisland-processor-querymatcher:1.0.0-RC1
 
 Class
 _____
@@ -1148,7 +1143,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1184,7 +1179,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:0.15.0
+com.hurence.logisland:logisland-service-mongodb-client:1.0.0-RC1
 
 Class
 _____
@@ -1222,7 +1217,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1258,7 +1253,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:0.15.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC1
 
 Class
 _____
@@ -1294,7 +1289,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1325,7 +1320,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:0.15.0
+com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC1
 
 Class
 _____
@@ -1356,7 +1351,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common-logs:0.15.0
+com.hurence.logisland:logisland-processor-common-logs:1.0.0-RC1
 
 Class
 _____
@@ -1387,7 +1382,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:0.15.0
+com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC1
 
 Class
 _____
@@ -1420,7 +1415,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:0.15.0
+com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC1
 
 Class
 _____
@@ -1452,7 +1447,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1483,7 +1478,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-useragent:0.15.0
+com.hurence.logisland:logisland-processor-useragent:1.0.0-RC1
 
 Class
 _____
@@ -1521,7 +1516,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:0.15.0
+com.hurence.logisland:logisland-processor-hbase:1.0.0-RC1
 
 Class
 _____
@@ -1563,7 +1558,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:0.15.0
+com.hurence.logisland:logisland-service-redis:1.0.0-RC1
 
 Class
 _____
@@ -1613,7 +1608,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1644,7 +1639,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-scripting:0.15.0
+com.hurence.logisland:logisland-processor-scripting:1.0.0-RC1
 
 Class
 _____
@@ -1680,7 +1675,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-sampling:0.15.0
+com.hurence.logisland:logisland-processor-sampling:1.0.0-RC1
 
 Class
 _____
@@ -1714,7 +1709,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1745,7 +1740,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1789,7 +1784,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_5_5_5-client:0.15.0
+com.hurence.logisland:logisland-service-solr_5_5_5-client:1.0.0-RC1
 
 Class
 _____
@@ -1827,7 +1822,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:0.15.0
+com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.0.0-RC1
 
 Class
 _____
@@ -1863,7 +1858,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:0.15.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.0.0-RC1
 
 Class
 _____
@@ -1901,7 +1896,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1935,7 +1930,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -1972,7 +1967,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -2005,7 +2000,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:0.15.0
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
 
 Class
 _____
@@ -2042,7 +2037,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:0.15.0
+com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC1
 
 Class
 _____
