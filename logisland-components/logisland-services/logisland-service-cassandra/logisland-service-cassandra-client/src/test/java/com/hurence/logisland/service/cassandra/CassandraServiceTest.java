@@ -658,7 +658,7 @@ public class CassandraServiceTest {
         }
 
 
-        /*final TestRunner runner = TestRunners.newTestRunner(BulkPut.class);
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
         runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
@@ -683,7 +683,7 @@ public class CassandraServiceTest {
         //  Check table 2 content
         checkCassandraTable(session, insertedAndExpectedRows2, tableName2);
 
-        runner.disableControllerService(service);*/ // Disconnect service from cassandra
+        runner.disableControllerService(service); // Disconnect service from cassandra
     }
 
     // Adds the provided list of records to the cassandra service
