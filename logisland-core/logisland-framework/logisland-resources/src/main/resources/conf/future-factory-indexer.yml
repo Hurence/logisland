@@ -1,0 +1,119 @@
+#########################################################################################################
+# Logisland configuration for future factory project
+#########################################################################################################
+
+version: 1.0.0-RC1
+documentation: LogIsland future factory job
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Index some apache logs with logisland
+  configuration:
+    spark.app.name: FutureFactory
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 1G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 2000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 10000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4040
+
+  controllerServiceConfigurations:
+
+    # Elasticsearch service 
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      type: service
+      documentation: elasticsearch service
+      configuration:
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER_NAME}
+        batch.size: 5000
+
+  streamConfigurations:
+
+#    # indexing stream
+#    - stream: indexing_stream
+#      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+#      type: processor
+#      documentation: a processor that push events to ES
+#      configuration:
+#        kafka.input.topics: ffact_domain,ffact_products,ffact_events
+#        kafka.output.topics: none
+#        kafka.error.topics: logisland_errors
+#        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+#        kafka.output.topics.serializer: none
+#        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+#        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+#        kafka.zookeeper.quorum: ${ZK_QUORUM}
+#        kafka.topic.autoCreate: true
+#        kafka.topic.default.partitions: 4
+#        kafka.topic.default.replicationFactor: 1
+#      processorConfigurations:
+#
+#        # Bulk add to elasticsearch
+#        - processor: es_publisher
+#          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+#          type: processor
+#          documentation: a processor that indexes processed events in elasticsearch
+#          configuration:
+#            elasticsearch.client.service: elasticsearch_service
+#            default.index: future_factory
+#            default.type: event
+#            timebased.index: today
+#            es.index.field: search_index
+#            es.type.field: record_type
+
+
+
+
+    # alerting stream
+    - stream: query_matching_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that match query in parrallel
+      configuration:
+        kafka.input.topics: ffact_events
+        kafka.output.topics: ffact_metrics
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: 51.15.164.141:9092
+        kafka.zookeeper.quorum: 51.15.164.141:2181
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 1
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+        - processor: match_query
+          component: com.hurence.logisland.processor.MatchQuery
+          type: processor
+          documentation: a parser that produce events from future factory events
+          configuration:
+            policy.onmatch: first
+            record.type.updatePolicy: overwrite
+            policy.onmiss: discard
+            numeric.fields: severity,value
+            severity_medium: severity:[0.5 TO 1.5]
+            severity_high: severity:[2 TO 4]
+            value_too_high: value:[99 TO 500]
+            output.record.type: sensor_alert

@@ -20,6 +20,10 @@ import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginClassLoader;
+import com.hurence.logisland.classloading.PluginClassloaderBuilder;
+import com.hurence.logisland.classloading.PluginLoader;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -53,7 +57,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
             final RstPrintWriter rstWriter = new RstPrintWriter(streamToWriteTo, true);
 
             rstWriter.writeTransition();
-            rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
+            rstWriter.writeInternalReference(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
             writeDescription(configurableComponent, rstWriter);
             writeTags(configurableComponent, rstWriter);
             writeProperties(configurableComponent, rstWriter);
@@ -75,7 +79,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
      * @return the class name of the component
      */
     protected String getTitle(final ConfigurableComponent configurableComponent) {
-        return configurableComponent.getClass().getSimpleName();
+        return PluginProxy.unwrap(configurableComponent).getClass().getSimpleName();
     }
 
 
@@ -151,9 +155,17 @@ public class RstDocumentationWriter implements DocumentationWriter {
         rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
         rstWriter.println(getDescription(configurableComponent));
 
+        PluginClassLoader cl = (PluginClassLoader)PluginLoader.getRegistry().get(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
+        if (cl != null) {
+            rstWriter.writeSectionTitle(3, "Module");
+            rstWriter.println(cl.getModuleInfo().getArtifact());
+        }
+
         rstWriter.writeSectionTitle(3, "Class");
-        rstWriter.println(configurableComponent.getClass().getCanonicalName());
+        rstWriter.println(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
     }
+
+
 
 
     /**

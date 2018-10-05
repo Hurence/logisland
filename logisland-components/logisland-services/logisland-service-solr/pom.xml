@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hurence.logisland</groupId>
+        <artifactId>logisland-services</artifactId>
+        <version>1.0.0-RC1</version>
+    </parent>
+
+    <artifactId>logisland-service-solr</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Logisland Solr Service Packages</name>
+
+
+    <properties>
+
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+
+    <modules>
+        <module>logisland-service-solr-api</module>
+        <module>logisland-service-solr-test</module>
+        <module>logisland-service-solr_5_5_5-client</module>
+        <module>logisland-service-solr_6_6_2-client</module>
+        <module>logisland-service-solr_chronix_6_4_2-client</module>
+
+    </modules>
+</project>

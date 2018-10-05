@@ -1,0 +1,132 @@
+#########################################################################################################
+# Logisland configuration script template
+#########################################################################################################
+
+version: 1.0.0-RC1
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+#########################################################################################################
+# engine
+engine:
+  component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
+  type: engine
+  documentation: Main Logisland job entry point
+  configuration:
+    spark.app.name: LogislandTutorial
+    spark.master: local[4]
+    spark.driver.memory: 1G
+    spark.driver.cores: 1
+    spark.executor.memory: 3G
+    spark.executor.instances: 4
+    spark.executor.cores: 2
+    spark.yarn.queue: default
+    spark.yarn.maxAppAttempts: 4
+    spark.yarn.am.attemptFailuresValidityInterval: 1h
+    spark.yarn.max.executor.failures: 20
+    spark.yarn.executor.failuresValidityInterval: 1h
+    spark.task.maxFailures: 8
+    spark.serializer: org.apache.spark.serializer.KryoSerializer
+    spark.streaming.batchDuration: 4000
+    spark.streaming.backpressure.enabled: false
+    spark.streaming.unpersist: false
+    spark.streaming.blockInterval: 500
+    spark.streaming.kafka.maxRatePerPartition: 3000
+    spark.streaming.timeout: -1
+    spark.streaming.unpersist: false
+    spark.streaming.kafka.maxRetries: 3
+    spark.streaming.ui.retainedBatches: 200
+    spark.streaming.receiver.writeAheadLog.enable: false
+    spark.ui.port: 4050
+
+  controllerServiceConfigurations:
+
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
+      type: service
+      documentation: elasticsearch 2.4.0 service implementation
+      configuration:
+        hosts: ${ES_HOSTS}
+        cluster.name: elasticsearch
+        batch.size: 2000
+
+  streamConfigurations:
+
+    # parsing
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: stream
+      documentation: a processor that links
+      configuration:
+        kafka.input.topics: logisland_raw
+        kafka.output.topics: logisland_events
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: none
+        kafka.output.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        avro.output.schema: >
+          {  "version":1,
+             "type": "record",
+             "name": "com.hurence.logisland.record.apache_log",
+             "fields": [
+               { "name": "record_errors",   "type": [ {"type": "array", "items": "string"},"null"] },
+               { "name": "record_raw_key", "type": ["string","null"] },
+               { "name": "record_raw_value", "type": ["string","null"] },
+               { "name": "record_id",   "type": ["string"] },
+               { "name": "record_time", "type": ["long"] },
+               { "name": "record_type", "type": ["string"] },
+               { "name": "src_ip",      "type": ["string","null"] },
+               { "name": "http_method", "type": ["string","null"] },
+               { "name": "bytes_out",   "type": ["long","null"] },
+               { "name": "http_query",  "type": ["string","null"] },
+               { "name": "http_version","type": ["string","null"] },
+               { "name": "http_status", "type": ["string","null"] },
+               { "name": "identd",      "type": ["string","null"] },
+               { "name": "user",        "type": ["string","null"] }    ]}
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 4
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # parse apache logs
+        - processor: apache_parser
+          component: com.hurence.logisland.processor.SplitText
+          type: parser
+          documentation: a parser that produce events from an apache log REGEX
+          configuration:
+            value.regex: (\S+)\s+(\S+)\s+(\S+)\s+\[([\w:\/]+\s[+\-]\d{4})\]\s+"(\S+)\s+(\S+)\s*(\S*)"\s+(\S+)\s+(\S+)
+            value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
+
+    # indexing
+    - stream: indexing_stream
+      component: com.hurence.logisland.stream.spark.KafkaRecordStreamParallelProcessing
+      type: processor
+      documentation: a processor that push events to ES
+      configuration:
+        kafka.input.topics: logisland_events,logisland_metrics,logisland_aggregates
+        kafka.output.topics: none
+        kafka.error.topics: logisland_errors
+        kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
+        kafka.output.topics.serializer: none
+        kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
+        kafka.metadata.broker.list: ${KAFKA_BROKERS}
+        kafka.zookeeper.quorum: ${ZK_QUORUM}
+        kafka.topic.autoCreate: true
+        kafka.topic.default.partitions: 2
+        kafka.topic.default.replicationFactor: 1
+      processorConfigurations:
+
+        # Bulk add to elasticsearch
+        - processor: es_publisher
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          type: processor
+          documentation: a processor that trace the processed events
+          configuration:
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
+            default.type: event
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
+
