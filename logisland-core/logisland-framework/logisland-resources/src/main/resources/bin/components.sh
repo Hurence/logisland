@@ -1,6 +1,7 @@
 #!/bin/sh
 
-LOGISLAND_HOME=$(dirname $(dirname "$0"))
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+LOGISLAND_HOME=$(dirname ${CURRENT_DIR})
 
 # Find the java binary
 if [ -n "${JAVA_HOME}" ]; then
