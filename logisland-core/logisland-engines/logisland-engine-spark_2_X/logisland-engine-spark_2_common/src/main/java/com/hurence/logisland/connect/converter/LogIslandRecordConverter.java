@@ -30,7 +30,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -89,14 +91,14 @@ public class LogIslandRecordConverter implements Converter {
             return new SchemaAndValue(schema, toObjectRecursive(r, schema));
         } catch (IOException ioe) {
             throw new DataException("Unexpected IO Exception occurred while serializing data [topic " + topic + "]", ioe);
-        }    }
+        }
+    }
 
 
     public Object toObjectRecursive(Object o, Schema schema) {
         if (o instanceof Collection) {
-            return  ((Collection<?>) o).stream().map(elem -> toObjectRecursive(elem, schema.schema()));
-        }
-        else if (o instanceof Map) {
+            return ((Collection<?>) o).stream().map(elem -> toObjectRecursive(elem, schema.schema()));
+        } else if (o instanceof Map) {
             Struct ret = new Struct(schema);
             ((Map<?, ?>) o).forEach((k, v) -> ret.put(k.toString(), toObjectRecursive(o, schema.field(k.toString()).schema())));
             return ret;
@@ -163,7 +165,13 @@ public class LogIslandRecordConverter implements Converter {
                 case INT32:
                     return new Field(name, FieldType.INT, value);
                 case INT64:
-                    return new Field(name, FieldType.LONG, value);
+                    Object toSet = value;
+                    if (value instanceof Date) {
+                        toSet = ((Date) value).getTime();
+                    } else if (value instanceof Instant) {
+                        toSet = ((Instant) value).toEpochMilli();
+                    }
+                    return new Field(name, FieldType.LONG, toSet);
                 case FLOAT32:
                     return new Field(name, FieldType.FLOAT, value);
                 case FLOAT64:
@@ -179,7 +187,9 @@ public class LogIslandRecordConverter implements Converter {
                     } else if (value instanceof ByteBuffer) {
                         bytes = ((ByteBuffer) value).array();
                     } else {
-                        throw new DataException("Invalid type for bytes type: " + value.getClass());
+                        //throw new DataException("Invalid type for bytes type: " + value.getClass());
+                        //AM: fix to handle special cases (see oracle jdbc issues)
+                        return new Field(name, FieldType.STRING, value != null ? value.toString() : value);
                     }
                     return new Field(name, FieldType.BYTES, bytes);
                 case ARRAY: {

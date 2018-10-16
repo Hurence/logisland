@@ -50,7 +50,6 @@ object StreamOptions {
         .description("The class canonical name of the kafka connector to use.")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .addValidator(StandardValidators.TYPE_VALIDATOR(classOf[Connector]))
         .build
 
     val KAFKA_CONNECT_CONNECTOR_PROPERTIES = new PropertyDescriptor.Builder()

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package com.hurence.logisland.engine.spark.remote;
 
+import com.hurence.logisland.component.ComponentFactory;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
@@ -58,8 +59,7 @@ public class RemoteApiComponentFactory {
      */
     public StreamContext getStreamContext(Stream stream) {
         try {
-            final RecordStream recordStream =
-                    (RecordStream) Class.forName(stream.getComponent()).newInstance();
+            final RecordStream recordStream = ComponentFactory.loadComponent(stream.getComponent());
             final StreamContext instance =
                     new StandardStreamContext(recordStream, stream.getName());
 
@@ -79,7 +79,7 @@ public class RemoteApiComponentFactory {
             logger.info("created stream {}", stream.getName());
             return instance;
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException("unable to instantiate stream " + stream.getName(), e);
         }
     }
@@ -92,8 +92,7 @@ public class RemoteApiComponentFactory {
      */
     public ProcessContext getProcessContext(Processor processor) {
         try {
-            final com.hurence.logisland.processor.Processor processorInstance =
-                    (com.hurence.logisland.processor.Processor) Class.forName(processor.getComponent()).newInstance();
+            final com.hurence.logisland.processor.Processor processorInstance = ComponentFactory.loadComponent(processor.getComponent());
             final ProcessContext processContext =
                     new StandardProcessContext(processorInstance, processor.getName());
 
@@ -109,7 +108,7 @@ public class RemoteApiComponentFactory {
 
             logger.info("created processor {}", processor);
             return processContext;
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException("unable to instantiate processor " + processor.getName(), e);
         }
 
@@ -124,7 +123,7 @@ public class RemoteApiComponentFactory {
      */
     public ControllerServiceConfiguration getControllerServiceConfiguration(Service service) {
         try {
-            ControllerService cs = (ControllerService) Class.forName(service.getComponent()).newInstance();
+            ControllerService cs = ComponentFactory.loadComponent(service.getComponent());
             ControllerServiceConfiguration configuration = new ControllerServiceConfiguration();
             configuration.setControllerService(service.getName());
             configuration.setComponent(service.getComponent());
@@ -234,8 +233,8 @@ public class RemoteApiComponentFactory {
 
     private Map<String, String> configureComponent(ConfigurableComponent component, Collection<Property> properties) {
         final Map<String, Property> propertyMap = properties.stream().collect(Collectors.toMap(Property::getKey, Function.identity()));
-       return propertyMap.keySet().stream().map(component::getPropertyDescriptor)
-               .filter(propertyDescriptor -> propertyDescriptor != null)
+        return propertyMap.keySet().stream().map(component::getPropertyDescriptor)
+                .filter(propertyDescriptor -> propertyDescriptor != null)
                 .filter(propertyDescriptor -> propertyMap.containsKey(propertyDescriptor.getName()) ||
                         (propertyDescriptor.getDefaultValue() != null && propertyDescriptor.isRequired()))
                 .collect(Collectors.toMap(PropertyDescriptor::getName, propertyDescriptor -> {
