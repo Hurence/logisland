@@ -24,34 +24,22 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.string.JsonUtil;
 import com.hurence.logisland.validator.StandardValidators;
-import com.hurence.logisland.validator.ValidationContext;
-import com.hurence.logisland.validator.ValidationResult;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.ImageHtmlEmail;
-import org.apache.commons.mail.SimpleEmail;
-import org.apache.commons.mail.resolver.DataSourceClassPathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Tags({"json"})
 @CapabilityDescription(
-        "The SetFlatJsonAsAttributes processor reads the content of a string field containing a simple flat json " +
-                "string and sets each json attribute as a field of the current record. A flat json is a json " +
-                "document containing only first level attributes i.e: {\"attribute1\": \"simpleValue1\", " +
-                "\"attribute2\": \"simpleValue2\"}. That is, the value of a first level json attribute is only a " +
-                "simple type, not an object nor an array. Note that this could be achieved with the EvaluateJsonPath " +
-                "attributes, but this implies to declare each json first level attribute in the configuration " +
-                "and also to know by advance every one of them. Whereas for this simple case, " +
-                "the SetFlatJsonAsAttributes processor does not require such a configuration and will work with any " +
-                "incoming flat json, regardless of the list of first level attributes.")
-public class SetFlatJsonAsAttributes extends AbstractProcessor {
+        "The SetJsonAsFields processor reads the content of a string field containing a json  string and sets each " +
+                "json attribute as a field of the current record. Note that this could be achieved with the " +
+                "EvaluateJsonPath processor, but this implies to declare each json first level attribute in the " +
+                "configuration and also to know by advance every one of them. Whereas for this simple case, " +
+                "the SetJsonAsFields processor does not require such a configuration and will work with any " +
+                "incoming json, regardless of the list of first level attributes.")
+public class SetJsonAsFields extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(SetFlatJsonAsAttributes.class);
+    private static Logger logger = LoggerFactory.getLogger(SetJsonAsFields.class);
 
     // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
     private boolean debug = false;
@@ -136,7 +124,7 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
-        logger.debug("Initializing SetFlatJsonAsAttributes Processor");
+        logger.debug("Initializing SetJsonAsFields Processor");
     }
   
     @Override
@@ -144,7 +132,7 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
     {
         if (debug)
         {
-            logger.info("SetFlatJsonAsAttributes Processor records input: " + records);
+            logger.info("SetJsonAsFields Processor records input: " + records);
         }
 
         /**
@@ -174,7 +162,7 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
 
         if (debug)
         {
-            logger.info("SetFlatJsonAsAttributes Processor records output: " + records);
+            logger.info("SetJsonAsFields Processor records output: " + records);
         }
         return records;
     }
@@ -378,7 +366,7 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
      */
     private void displayConfig()
     {
-        StringBuilder sb = new StringBuilder("SetFlatJsonAsAttributes Processor configuration:");
+        StringBuilder sb = new StringBuilder("SetJsonAsFields Processor configuration:");
         sb.append("\n" + JSON_FIELD.getName() + ": " + jsonField);
         sb.append("\n" + KEEP_JSON_FIELD.getName() + ": " + keepJsonField);
         sb.append("\n" + OVERWRITE_EXISTING_FIELD.getName() + ": " + overwriteExistingField);

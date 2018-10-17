@@ -31,9 +31,9 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class SetFlatJsonAsAttributesTest {
+public class SetJsonAsFieldsTest {
     
-    private static Logger logger = LoggerFactory.getLogger(SetFlatJsonAsAttributesTest.class);
+    private static Logger logger = LoggerFactory.getLogger(SetJsonAsFieldsTest.class);
     
     // Bro conn input event
     private static final String SIMPLE_JSON =
@@ -64,7 +64,7 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJson() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
@@ -146,11 +146,11 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonRemoveJson() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
-        testRunner.setProperty(SetFlatJsonAsAttributes.KEEP_JSON_FIELD, "true");
+        testRunner.setProperty(SetJsonAsFields.KEEP_JSON_FIELD, "true");
         testRunner.enqueue(record);
         testRunner.clearQueues();
         testRunner.run();
@@ -229,8 +229,8 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonCustomField() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.setProperty(SetFlatJsonAsAttributes.JSON_FIELD, "customField");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
+        testRunner.setProperty(SetJsonAsFields.JSON_FIELD, "customField");
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField("customField", SIMPLE_JSON);
@@ -312,9 +312,9 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonCustomFieldRemoveJson() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.setProperty(SetFlatJsonAsAttributes.JSON_FIELD, "customField");
-        testRunner.setProperty(SetFlatJsonAsAttributes.KEEP_JSON_FIELD, "true");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
+        testRunner.setProperty(SetJsonAsFields.JSON_FIELD, "customField");
+        testRunner.setProperty(SetJsonAsFields.KEEP_JSON_FIELD, "true");
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField("customField", SIMPLE_JSON);
@@ -396,7 +396,7 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonOverwrite() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
@@ -479,8 +479,8 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonNoOverwrite() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.setProperty(SetFlatJsonAsAttributes.OVERWRITE_EXISTING_FIELD, "false");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
+        testRunner.setProperty(SetJsonAsFields.OVERWRITE_EXISTING_FIELD, "false");
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
@@ -563,8 +563,8 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonOmitNullAttributes() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.setProperty(SetFlatJsonAsAttributes.OMIT_NULL_ATTRIBUTES, "true");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
+        testRunner.setProperty(SetJsonAsFields.OMIT_NULL_ATTRIBUTES, "true");
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
@@ -645,8 +645,8 @@ public class SetFlatJsonAsAttributesTest {
      */
     @Test
     public void testSimpleJsonOmitEmptyStringAttributes() {
-        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.setProperty(SetFlatJsonAsAttributes.OMIT_EMPTY_STRING_ATTRIBUTES, "true");
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetJsonAsFields());
+        testRunner.setProperty(SetJsonAsFields.OMIT_EMPTY_STRING_ATTRIBUTES, "true");
         testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
