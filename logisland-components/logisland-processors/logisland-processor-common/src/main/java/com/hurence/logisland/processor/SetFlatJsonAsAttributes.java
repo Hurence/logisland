@@ -59,12 +59,16 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
     private String jsonField = FieldDictionary.RECORD_VALUE;
     private boolean keepJsonField = false;
     private boolean overwriteExistingField = true;
+    private boolean omitNullAttributes = false;
+    private boolean omitEmptyStringAttributes = false;
 
     // Easy trick to not allow debugging without changing the logger level but instead using a configuration key
     private static final String KEY_DEBUG = "debug";
     private static final String KEY_JSON_FIELD = "json.field";
     private static final String KEY_KEEP_JSON_FIELD = "keep.json.field";
     private static final String KEY_OVERWRITE_EXISTING_FIELD = "overwrite.existing.field";
+    private static final String KEY_OMIT_NULL_ATTRIBUTES = "omit.null.attributes";
+    private static final String KEY_OMIT_EMPTY_STRING_ATTRIBUTES = "omit.empty.string.attributes";
     
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
             .name(KEY_DEBUG)
@@ -98,6 +102,23 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
             .defaultValue("true")
             .build();
 
+    public static final PropertyDescriptor OMIT_NULL_ATTRIBUTES = new PropertyDescriptor.Builder()
+            .name(KEY_OMIT_NULL_ATTRIBUTES)
+            .description("Omit json attributes with null values. Default is false so to set them as null record fields")
+            .required(true)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
+    public static final PropertyDescriptor OMIT_EMPTY_STRING_ATTRIBUTES = new PropertyDescriptor.Builder()
+            .name(KEY_OMIT_EMPTY_STRING_ATTRIBUTES)
+            .description("Omit json attributes with empty string values. Default is false so to set them as empty " +
+                    "string record fields")
+            .required(true)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .build();
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         
@@ -106,6 +127,8 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
         descriptors.add(JSON_FIELD);
         descriptors.add(KEEP_JSON_FIELD);
         descriptors.add(OVERWRITE_EXISTING_FIELD);
+        descriptors.add(OMIT_NULL_ATTRIBUTES);
+        descriptors.add(OMIT_EMPTY_STRING_ATTRIBUTES);
 
         return Collections.unmodifiableList(descriptors);
     }
@@ -197,6 +220,14 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
 
             if (value instanceof String)
             {
+                if (omitEmptyStringAttributes)
+                {
+                    if (value.equals(""))
+                    {
+                        // Skip empty string attributes
+                        continue;
+                    }
+                }
                 record.setStringField(key, value.toString());
             } else if (value instanceof Integer)
             {
@@ -221,6 +252,11 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
                 record.setField(new Field(key, FieldType.BOOLEAN, value));
             } else if (value == null)
             {
+                if (omitNullAttributes)
+                {
+                    // Skip null attributes
+                    continue;
+                }
                 record.setField(new Field(key, FieldType.NULL, null));
             } else
             {
@@ -294,6 +330,40 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
             } else
             {
                 overwriteExistingField = true;
+            }
+        }
+
+        /**
+         * Handle the OMIT_NULL_ATTRIBUTES property
+         */
+        if (descriptor.equals(OMIT_NULL_ATTRIBUTES))
+        {
+            if (newValue != null)
+            {
+                if (newValue.equalsIgnoreCase("true"))
+                {
+                    omitNullAttributes = true;
+                }
+            } else
+            {
+                omitNullAttributes = false;
+            }
+        }
+
+        /**
+         * Handle the OMIT_EMPTY_STRING_ATTRIBUTES property
+         */
+        if (descriptor.equals(OMIT_EMPTY_STRING_ATTRIBUTES))
+        {
+            if (newValue != null)
+            {
+                if (newValue.equalsIgnoreCase("true"))
+                {
+                    omitEmptyStringAttributes = true;
+                }
+            } else
+            {
+                omitEmptyStringAttributes = false;
             }
         }
         

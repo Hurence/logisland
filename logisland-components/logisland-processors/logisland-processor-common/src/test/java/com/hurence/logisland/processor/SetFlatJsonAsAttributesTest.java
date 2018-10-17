@@ -38,7 +38,7 @@ public class SetFlatJsonAsAttributesTest {
     // Bro conn input event
     private static final String SIMPLE_JSON =
             "{" +
-                    "\"nullString\": null," +
+                    "\"nullAttribute\": null," +
                     "\"emptyString\": \"\"," +
                     "\"attributeString1\": \"attributeString1Value\"," +
                     "\"attributeString2\": \"attributeString2Value\"," +
@@ -79,8 +79,8 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
@@ -162,8 +162,8 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
@@ -230,8 +230,8 @@ public class SetFlatJsonAsAttributesTest {
     @Test
     public void testSimpleJsonCustomField() {
         final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.assertValid();
         testRunner.setProperty(SetFlatJsonAsAttributes.JSON_FIELD, "customField");
+        testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField("customField", SIMPLE_JSON);
         testRunner.enqueue(record);
@@ -245,8 +245,8 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
@@ -313,9 +313,9 @@ public class SetFlatJsonAsAttributesTest {
     @Test
     public void testSimpleJsonCustomFieldRemoveJson() {
         final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.assertValid();
         testRunner.setProperty(SetFlatJsonAsAttributes.JSON_FIELD, "customField");
         testRunner.setProperty(SetFlatJsonAsAttributes.KEEP_JSON_FIELD, "true");
+        testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField("customField", SIMPLE_JSON);
         testRunner.enqueue(record);
@@ -329,8 +329,8 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
@@ -412,8 +412,8 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
@@ -480,8 +480,8 @@ public class SetFlatJsonAsAttributesTest {
     @Test
     public void testSimpleJsonNoOverwrite() {
         final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
-        testRunner.assertValid();
         testRunner.setProperty(SetFlatJsonAsAttributes.OVERWRITE_EXISTING_FIELD, "false");
+        testRunner.assertValid();
         Record record = new StandardRecord("json_event");
         record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
         record.setStringField("attributeString1", "existingValueToNotOverwrite");
@@ -496,14 +496,178 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
-        out.assertFieldExists("nullString");
-        out.assertNullField("nullString");
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
 
         out.assertFieldExists("emptyString");
         out.assertFieldEquals("emptyString", "");
 
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "existingValueToNotOverwrite"); // Should have not been overwritten
+
+        out.assertFieldExists("attributeString2");
+        out.assertFieldEquals("attributeString2", "attributeString2Value");
+
+        out.assertFieldExists("attributeInt1");
+        out.assertFieldEquals("attributeInt1", 9);
+
+        out.assertFieldExists("attributeInt2");
+        out.assertFieldEquals("attributeInt2", 7800);
+
+        out.assertFieldExists("attributeBoolean1");
+        out.assertFieldEquals("attributeBoolean1", true);
+
+        out.assertFieldExists("attributeBoolean2");
+        out.assertFieldEquals("attributeBoolean2", false);
+
+        out.assertFieldExists("attributeFloat1");
+        out.assertFieldEquals("attributeFloat1", (float)123.456);
+
+        out.assertFieldExists("attributeFloat2");
+        out.assertFieldEquals("attributeFloat2", (float)12.12345);
+
+        out.assertFieldExists("attributeDouble1");
+        out.assertFieldEquals("attributeDouble1", (double)1235234567.3215);
+
+        out.assertFieldExists("attributeDouble2");
+        out.assertFieldEquals("attributeDouble2", (double)8259434578.32265415);
+
+        out.assertFieldExists("attributeLong1");
+        out.assertFieldEquals("attributeLong1", (long)32345678910L);
+
+        out.assertFieldExists("attributeLong2");
+        out.assertFieldEquals("attributeLong2", (long)25643297851L);
+
+        out.assertFieldExists("attributeListString");
+        List<String> attributeListString = (List<String>)out.getField("attributeListString").getRawValue();
+        assertEquals(Arrays.asList("attributeListStringValue1", "attributeListStringValue2"), attributeListString);
+
+        out.assertFieldExists("attributeListInt");
+        List<Integer> attributeListInt = (List<Integer>)out.getField("attributeListInt").getRawValue();
+        assertEquals(Arrays.asList(1123, 7456), attributeListInt);
+
+        out.assertFieldExists("attributeMap");
+        Map<String, Object> attributeMap = (Map<String, Object>)out.getField("attributeMap").getRawValue();
+        String attributeMapValueString = (String)attributeMap.get("attributeMapValueString");
+        assertEquals("attributeMapValueStringValue", attributeMapValueString);
+        Integer attributeMapValueInt = (Integer)attributeMap.get("attributeMapValueInt");
+        assertEquals(new Integer(2456), attributeMapValueInt);
+        Boolean attributeMapValueBoolean = (Boolean)attributeMap.get("attributeMapValueBoolean");
+        assertEquals(false, attributeMapValueBoolean);
+
+        out.assertFieldNotExists(FieldDictionary.RECORD_VALUE);
+    }
+
+    /**
+     * Test with simple document in record_value field, omitting null attributes
+     */
+    @Test
+    public void testSimpleJsonOmitNullAttributes() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
+        testRunner.setProperty(SetFlatJsonAsAttributes.OMIT_NULL_ATTRIBUTES, "true");
+        testRunner.assertValid();
+        Record record = new StandardRecord("json_event");
+        record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldNotExists("nullAttribute");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
+
+        out.assertFieldExists("attributeString1");
+        out.assertFieldEquals("attributeString1", "attributeString1Value");
+
+        out.assertFieldExists("attributeString2");
+        out.assertFieldEquals("attributeString2", "attributeString2Value");
+
+        out.assertFieldExists("attributeInt1");
+        out.assertFieldEquals("attributeInt1", 9);
+
+        out.assertFieldExists("attributeInt2");
+        out.assertFieldEquals("attributeInt2", 7800);
+
+        out.assertFieldExists("attributeBoolean1");
+        out.assertFieldEquals("attributeBoolean1", true);
+
+        out.assertFieldExists("attributeBoolean2");
+        out.assertFieldEquals("attributeBoolean2", false);
+
+        out.assertFieldExists("attributeFloat1");
+        out.assertFieldEquals("attributeFloat1", (float)123.456);
+
+        out.assertFieldExists("attributeFloat2");
+        out.assertFieldEquals("attributeFloat2", (float)12.12345);
+
+        out.assertFieldExists("attributeDouble1");
+        out.assertFieldEquals("attributeDouble1", (double)1235234567.3215);
+
+        out.assertFieldExists("attributeDouble2");
+        out.assertFieldEquals("attributeDouble2", (double)8259434578.32265415);
+
+        out.assertFieldExists("attributeLong1");
+        out.assertFieldEquals("attributeLong1", (long)32345678910L);
+
+        out.assertFieldExists("attributeLong2");
+        out.assertFieldEquals("attributeLong2", (long)25643297851L);
+
+        out.assertFieldExists("attributeListString");
+        List<String> attributeListString = (List<String>)out.getField("attributeListString").getRawValue();
+        assertEquals(Arrays.asList("attributeListStringValue1", "attributeListStringValue2"), attributeListString);
+
+        out.assertFieldExists("attributeListInt");
+        List<Integer> attributeListInt = (List<Integer>)out.getField("attributeListInt").getRawValue();
+        assertEquals(Arrays.asList(1123, 7456), attributeListInt);
+
+        out.assertFieldExists("attributeMap");
+        Map<String, Object> attributeMap = (Map<String, Object>)out.getField("attributeMap").getRawValue();
+        String attributeMapValueString = (String)attributeMap.get("attributeMapValueString");
+        assertEquals("attributeMapValueStringValue", attributeMapValueString);
+        Integer attributeMapValueInt = (Integer)attributeMap.get("attributeMapValueInt");
+        assertEquals(new Integer(2456), attributeMapValueInt);
+        Boolean attributeMapValueBoolean = (Boolean)attributeMap.get("attributeMapValueBoolean");
+        assertEquals(false, attributeMapValueBoolean);
+
+        out.assertFieldNotExists(FieldDictionary.RECORD_VALUE);
+    }
+
+    /**
+     * Test with simple document in record_value field, omitting empty string attributes
+     */
+    @Test
+    public void testSimpleJsonOmitEmptyStringAttributes() {
+        final TestRunner testRunner = TestRunners.newTestRunner(new SetFlatJsonAsAttributes());
+        testRunner.setProperty(SetFlatJsonAsAttributes.OMIT_EMPTY_STRING_ATTRIBUTES, "true");
+        testRunner.assertValid();
+        Record record = new StandardRecord("json_event");
+        record.setStringField(FieldDictionary.RECORD_VALUE, SIMPLE_JSON);
+        testRunner.enqueue(record);
+        testRunner.clearQueues();
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+
+        out.assertFieldExists(FieldDictionary.RECORD_TYPE);
+        out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldExists("nullAttribute");
+        out.assertNullField("nullAttribute");
+
+        out.assertFieldNotExists("emptyString");
+
+        out.assertFieldExists("attributeString1");
+        out.assertFieldEquals("attributeString1", "attributeString1Value");
 
         out.assertFieldExists("attributeString2");
         out.assertFieldEquals("attributeString2", "attributeString2Value");
