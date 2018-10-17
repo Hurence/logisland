@@ -38,6 +38,8 @@ public class SetFlatJsonAsAttributesTest {
     // Bro conn input event
     private static final String SIMPLE_JSON =
             "{" +
+                    "\"nullString\": null," +
+                    "\"emptyString\": \"\"," +
                     "\"attributeString1\": \"attributeString1Value\"," +
                     "\"attributeString2\": \"attributeString2Value\"," +
                     "\"attributeInt1\": 9," +
@@ -76,6 +78,12 @@ public class SetFlatJsonAsAttributesTest {
         
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
         
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "attributeString1Value");
@@ -154,6 +162,12 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
+
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "attributeString1Value");
 
@@ -230,6 +244,12 @@ public class SetFlatJsonAsAttributesTest {
 
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
 
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "attributeString1Value");
@@ -309,6 +329,12 @@ public class SetFlatJsonAsAttributesTest {
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
 
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
+
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "attributeString1Value");
 
@@ -385,6 +411,12 @@ public class SetFlatJsonAsAttributesTest {
 
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
 
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "attributeString1Value");
@@ -463,6 +495,12 @@ public class SetFlatJsonAsAttributesTest {
 
         out.assertFieldExists(FieldDictionary.RECORD_TYPE);
         out.assertFieldEquals(FieldDictionary.RECORD_TYPE, "json_event");
+
+        out.assertFieldExists("nullString");
+        out.assertNullField("nullString");
+
+        out.assertFieldExists("emptyString");
+        out.assertFieldEquals("emptyString", "");
 
         out.assertFieldExists("attributeString1");
         out.assertFieldEquals("attributeString1", "existingValueToNotOverwrite"); // Should have not been overwritten

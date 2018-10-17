@@ -219,6 +219,9 @@ public class SetFlatJsonAsAttributes extends AbstractProcessor {
             } else if (value instanceof Boolean)
             {
                 record.setField(new Field(key, FieldType.BOOLEAN, value));
+            } else if (value == null)
+            {
+                record.setField(new Field(key, FieldType.NULL, null));
             } else
             {
                 // Unrecognized value type, use string
