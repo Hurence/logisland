@@ -88,26 +88,12 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
             .defaultValue(FieldDictionary.RECORD_VALUE)
             .build();
 
-
-    private List<PropertyDescriptor> properties;
-
-    private final ConcurrentMap<String, JsonPath> cachedJsonPathMap = new ConcurrentHashMap<>();
-
-    @Override
-    public void init(final ProcessContext context) {
-
-        final List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(RETURN_TYPE);
-        properties.add(PATH_NOT_FOUND);
-        properties.add(NULL_VALUE_DEFAULT_REPRESENTATION);
-        properties.add(JSON_INPUT_FIELD);
-        this.properties = Collections.unmodifiableList(properties);
-    }
+    // Needs to be transient due to not serializable JsonPath
+    private transient final ConcurrentMap<String, JsonPath> cachedJsonPathMap = new ConcurrentHashMap<>();
 
     @Override
     protected Collection<ValidationResult> customValidate(final ValidationContext context) {
         final List<ValidationResult> results = new ArrayList<>(super.customValidate(context));
-
 
         int jsonPathCount = 0;
 
@@ -122,14 +108,17 @@ public class EvaluateJsonPath extends AbstractJsonPathProcessor {
                     .explanation("Exactly one JsonPath must be set if using d").build());
         }
 
-
         return results;
     }
 
-
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+        final List<PropertyDescriptor> properties = new ArrayList<>();
+        properties.add(RETURN_TYPE);
+        properties.add(PATH_NOT_FOUND);
+        properties.add(NULL_VALUE_DEFAULT_REPRESENTATION);
+        properties.add(JSON_INPUT_FIELD);
+        return Collections.unmodifiableList(properties);
     }
 
     @Override
