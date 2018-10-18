@@ -20,6 +20,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
@@ -47,7 +48,10 @@ public class RemoveFields extends AbstractProcessor {
     public static final PropertyDescriptor FIELDS_TO_REMOVE = new PropertyDescriptor.Builder()
             .name(KEY_FIELDS_TO_REMOVE)
             .description("A comma separated list of field names to remove (e.g. 'policyid,date_raw'). Usage of this " +
-                    "property is mutually exclusive with the " + KEY_FIELDS_TO_KEEP + " property")
+                    "property is mutually exclusive with the " + KEY_FIELDS_TO_KEEP + " property. In any case the " +
+                    "technical logisland fields " + FieldDictionary.RECORD_ID + ", " + FieldDictionary.RECORD_TIME +
+                    " and " + FieldDictionary.RECORD_TYPE + " are not removed even if specified in the list to " +
+                    "remove.")
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
@@ -56,7 +60,9 @@ public class RemoveFields extends AbstractProcessor {
             .name(KEY_FIELDS_TO_KEEP)
             .description("A comma separated list of field names to keep (e.g. 'policyid,date_raw'. All other fields " +
                     "will be removed. Usage of this property is mutually exclusive with the " + FIELDS_TO_REMOVE +
-                    " property")
+                    " property. In any case the technical logisland fields " + FieldDictionary.RECORD_ID +
+                    ", " + FieldDictionary.RECORD_TIME + " and " + FieldDictionary.RECORD_TYPE + " are not removed " +
+                    "even if not specified in the list to keep.")
             .required(false)
             .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
             .build();
@@ -98,9 +104,13 @@ public class RemoveFields extends AbstractProcessor {
                     }
                     else
                     {
-                        // Keep mode
-                        if (!fieldsToKeep.contains(fieldName)) {
-                            record.removeField(fieldName);
+                        if (!fieldName.equals(FieldDictionary.RECORD_ID)
+                                && !fieldName.equals(FieldDictionary.RECORD_TIME)
+                                && !fieldName.equals(FieldDictionary.RECORD_TYPE)) {
+                            // Keep mode
+                            if (!fieldsToKeep.contains(fieldName)) {
+                                record.removeField(fieldName);
+                            }
                         }
                     }
                 });

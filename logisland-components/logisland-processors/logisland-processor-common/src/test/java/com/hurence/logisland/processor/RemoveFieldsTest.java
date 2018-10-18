@@ -134,8 +134,7 @@ public class RemoveFieldsTest extends BaseSyslogTest {
 
         Record record1 = getRecord1();
         TestRunner testRunner = TestRunners.newTestRunner(new RemoveFields());
-        // Keep record_type otherwise cannot get outputRecord
-        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1,"+ FieldDictionary.RECORD_TYPE);
+        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -156,8 +155,7 @@ public class RemoveFieldsTest extends BaseSyslogTest {
 
         Record record1 = getRecord1();
         TestRunner testRunner = TestRunners.newTestRunner(new RemoveFields());
-        // Keep record_type otherwise cannot get outputRecord
-        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1,long1,"+ FieldDictionary.RECORD_TYPE);
+        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1,long1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -179,8 +177,7 @@ public class RemoveFieldsTest extends BaseSyslogTest {
 
         Record record1 = getRecord1();
         TestRunner testRunner = TestRunners.newTestRunner(new RemoveFields());
-        // Keep record_type otherwise cannot get outputRecord
-        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string3,"+ FieldDictionary.RECORD_TYPE);
+        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string3");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -200,8 +197,7 @@ public class RemoveFieldsTest extends BaseSyslogTest {
     public void testKeepTwiceAfield() throws FileNotFoundException, IOException, ParseException, URISyntaxException {
         Record record1 = getRecord1();
         TestRunner testRunner = TestRunners.newTestRunner(new RemoveFields());
-        // Keep record_type otherwise cannot get outputRecord
-        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1,string1,"+ FieldDictionary.RECORD_TYPE);
+        testRunner.setProperty(RemoveFields.FIELDS_TO_KEEP, "string1,string1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
