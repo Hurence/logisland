@@ -111,7 +111,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             val processor = processorContext.getProcessor
 
                             val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
-                                processorContext.getName + ".processing_time_ms").time()
+                                processorContext.getIdentifier + ".processing_time_ms").time()
                             /**
                               * convert incoming Kafka messages into Records
                               * if there's no serializer we assume that we need to compute a Record from K/V
@@ -150,7 +150,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               * compute metrics
                               */
                             ProcessorMetrics.computeMetrics(
-                                pipelineMetricPrefix + processorContext.getName + ".",
+                                pipelineMetricPrefix + processorContext.getIdentifier + ".",
                                 incomingEvents,
                                 outgoingEvents,
                                 offsetRange.fromOffset,

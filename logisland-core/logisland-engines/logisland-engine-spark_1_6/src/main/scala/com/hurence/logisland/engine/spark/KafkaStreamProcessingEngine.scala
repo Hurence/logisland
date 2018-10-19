@@ -407,7 +407,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
-        SparkUtils.customizeLogLevels
+
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
         UserMetricsSystem.initialize(sc, "LogislandMetrics")

@@ -56,13 +56,12 @@ import com.hurence.logisland.component.{AllowableValue, ComponentContext, Proper
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
-import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -404,8 +403,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         @transient val sparkContext = getCurrentSparkContext()
 
-        SparkUtils.customizeLogLevels
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
+
+
+
 
         /**
           * shutdown context gracefully

@@ -43,6 +43,7 @@ MODE="default"
 SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
+APP_NAME=""
 
 usage() {
   echo "Usage:"
@@ -175,7 +176,7 @@ compare_versions $SPARK_VERSION 2.0.0
 
 
 echo "Detected spark version ${SPARK_VERSION}. We'll automatically plug in engine jar ${engine_jar}"
-
+APP_NAME=`awk '{ if( $1 == "spark.app.name:" ){ print $2 } }' ${CONF_FILE}`
 MODE=`awk '{ if( $1 == "spark.master:" ){ print $2 } }' ${CONF_FILE}`
 case ${MODE} in
   "yarn")
@@ -215,19 +216,18 @@ case $MODE in
   local*)
 
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-     --conf spark.driver.extraJavaOptions="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" \
+     --conf spark.driver.extraJavaOptions="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
+     --conf spark.executor.extraJavaOptions="-Dlog4j.configuration=\"file:${lib_dir}/../conf/log4j.properties\"" \
+     --conf spark.metrics.namespace="${APP_NAME}"  \
+     --conf spark.metrics.conf="${lib_dir}/../monitoring/metrics.properties"  \
     --class ${app_mainclass} \
     --jars ${app_classpath} ${engine_jar} \
     -conf ${CONF_FILE}
 
     ;;
   yarn-cluster)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
 
-
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties --conf spark.metrics.namespace=\"${APP_NAME}\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
 
 
     if [ ! -z "$YARN_APP_NAME" ]
@@ -332,10 +332,7 @@ case $MODE in
     ;;
   yarn-client)
 
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client"
+    YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client --conf spark.metrics.namespace=\"${APP_NAME}\""
 
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
     if [ ! -z "${DRIVER_CORES}" ]
@@ -364,10 +361,8 @@ case $MODE in
     ;;
 
   mesos)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-    MESOS_OPTIONS="--master ${SPARK_MASTER}"
+
+    MESOS_OPTIONS="--master ${SPARK_MASTER} --conf spark.metrics.namespace=\"${APP_NAME}\""
 
 
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
@@ -419,8 +414,7 @@ case $MODE in
     export MESOS_NATIVE_JAVA_LIBRARY="${MESOS_NATIVE_JAVA_LIBRARY}"
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${MESOS_OPTIONS} \
     --class ${app_mainclass} \
-    --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark*-engine*.jar \
+    --jars ${app_classpath} ${engine_jar} \
     -conf ${CONF_FILE}
     ;;
 

@@ -121,7 +121,7 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                           * compute metrics
                           */
                         val processorMetrics = ProcessorMetrics.computeMetrics(
-                            "debug." + processorContext.getName + ".",
+                            "debug." + processorContext.getIdentifier + ".",
                             incomingEvents,
                             outgoingEvents,
                             offsetRange.fromOffset,

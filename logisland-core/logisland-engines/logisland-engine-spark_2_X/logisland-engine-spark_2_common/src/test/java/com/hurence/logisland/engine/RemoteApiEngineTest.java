@@ -66,7 +66,7 @@ public class RemoteApiEngineTest {
             // start the engine
             final EngineContext engineContext = engineInstance.get();
             engineInstance.get().getEngine().start(engineContext);
-            SparkUtils.customizeLogLevels();
+
 
             engineContext.getEngine().awaitTermination(engineContext);
 

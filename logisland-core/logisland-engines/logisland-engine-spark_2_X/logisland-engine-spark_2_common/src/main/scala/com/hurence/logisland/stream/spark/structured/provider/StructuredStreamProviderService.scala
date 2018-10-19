@@ -116,7 +116,7 @@ trait StructuredStreamProviderService extends ControllerService {
                         val processor = processorContext.getProcessor
 
                         val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
-                            processorContext.getName + ".processing_time_ms").time()
+                            processorContext.getIdentifier + ".processing_time_ms").time()
 
 
                         // injects controller service lookup into processor context
@@ -133,7 +133,7 @@ trait StructuredStreamProviderService extends ControllerService {
 
                         // compute metrics
                         ProcessorMetrics.computeMetrics(
-                            pipelineMetricPrefix + processorContext.getName + ".",
+                            pipelineMetricPrefix + processorContext.getIdentifier + ".",
                             inEnvents,
                             processingRecords,
                             0,
