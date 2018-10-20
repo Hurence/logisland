@@ -70,7 +70,7 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
         val topicName = streamContext.getPropertyValue(StreamProperties.WRITE_TOPICS).asString().split(",")(0).trim
 
         def writer() = controllerServiceLookupSink.value.getControllerService(getIdentifier).asInstanceOf[KafkaConnectStructuredSinkProviderService]
-            .createWriter(SparkSession.builder().getOrCreate().sqlContext, topicName)
+            .createWriter(SparkSession.builder().getOrCreate().sqlContext, streamContext, topicName)
 
         df2/*.repartition(maxPartitions, df2.col("key"))*/
             .writeStream
@@ -94,7 +94,7 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
     }
 
 
-    def createWriter(sqlContext: SQLContext, topic: String): KafkaConnectStreamSink =
+    def createWriter(sqlContext: SQLContext, streamContext: StreamContext, topic: String): KafkaConnectStreamSink =
         synchronized {
 
             if (writer == null) {
@@ -111,7 +111,8 @@ class KafkaConnectStructuredSinkProviderService extends KafkaConnectBaseProvider
                     offsetBackingStoreInstance,
                     maxConfigurations,
                     topic,
-                    delegateConnectorClass)
+                    delegateConnectorClass,
+                    streamContext.getIdentifier)
                 writer.start()
             }
 

@@ -53,6 +53,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
     protected final Converter keyConverter;
     protected final Converter valueConverter;
     protected final int maxTasks;
+    protected final String streamId;
 
 
     /**
@@ -65,7 +66,8 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
      * @param offsetBackingStore  the backing store implementation (can be in-memory, file based, kafka based, etc...)
      * @param maxTasks            the maximum theoretical number of tasks this source should spawn.
      * @param connectorClass      the class of kafka connect source connector to wrap.
-     *                            =
+     *                            @param streamId the Stream id.
+     *
      */
     public AbstractKafkaConnectComponent(SQLContext sqlContext,
                                          Map<String, String> connectorProperties,
@@ -73,7 +75,8 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
                                          Converter valueConverter,
                                          OffsetBackingStore offsetBackingStore,
                                          int maxTasks,
-                                         String connectorClass) {
+                                         String connectorClass,
+                                         String streamId) {
         try {
             this.sqlContext = sqlContext;
             this.maxTasks = maxTasks;
@@ -84,6 +87,7 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
             this.keyConverter = keyConverter;
             this.valueConverter = valueConverter;
             this.connectorProperties = connectorProperties;
+            this.streamId = streamId;
 
             //Create the connector context
             final ConnectorContext connectorContext = new ConnectorContext() {
@@ -214,22 +218,6 @@ public abstract class AbstractKafkaConnectComponent<T extends Connector, U exten
         return startWatch.get();
     }
 
-    private Object executeInScopedClassLoader(String m, Object instance, Object...args){
-        ClassLoader cl = null;
-        try {
-            cl = Thread.currentThread().getContextClassLoader();
-            Class[] argsType = new Class[0];
-            if (args != null) {
-                argsType = Arrays.stream(args).map(Object::getClass).toArray(a->new Class[a]);
-            }
-            return instance.getClass().getMethod(m, argsType).invoke(instance, args);
-        } catch (Exception e) {
-            throw new IllegalStateException("Exception occurred while executing method " + m, e);
-        } finally {
-            if (cl != null) {
-                Thread.currentThread().setContextClassLoader(cl);
-            }
-        }
-    }
+
 }
 
