@@ -166,7 +166,26 @@ public class Field implements PropertyValue, Serializable {
 
     @Override
     public Boolean asBoolean() {
-        return (rawValue == null) ? null : (boolean) rawValue;
+        if(rawValue == null)
+            return null;
+
+        try{
+            boolean result = (boolean) rawValue;
+            return result;
+        }catch (Exception ex){
+
+
+                boolean result = asString().equalsIgnoreCase("y") ||
+                        asString().equalsIgnoreCase("y") ||
+                        asString().equalsIgnoreCase("yes") ||
+                        asString().equalsIgnoreCase("t") ||
+                        asString().equalsIgnoreCase("true") ||
+                        asString().equalsIgnoreCase("1") ;
+                return result;
+
+
+        }
+
     }
 
     @Override
