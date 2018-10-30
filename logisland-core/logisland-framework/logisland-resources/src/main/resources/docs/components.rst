@@ -206,53 +206,104 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
@@ -291,53 +342,104 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
@@ -376,53 +478,104 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
@@ -774,7 +927,17 @@ None.
 
 Properties
 __________
-This component has no required or optional properties.
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**return.type**", "Indicates the desired return type of the JSON Path expressions.  Selecting 'auto-detect' will set the return type to 'json'  or 'scalar' ", "json, scalar", "scalar", "", ""
+   "**path.not.found.behavior**", "Indicates how to handle missing JSON path expressions. Selecting 'warn' will generate a warning when a JSON path expression is not found.", "warn, ignore", "ignore", "", ""
+   "**Null Value Representation**", "Indicates the desired representation of JSON Path expressions resulting in a null value.", "empty string, the string 'null'", "empty string", "", ""
+   "**json.input.field.name**", "the name of the field containing the json string", "", "record_value", "", ""
 
 ----------
 
@@ -844,7 +1007,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
    "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
-   "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of ""<colFamily>:<colQualifier>"" pairs to fetch. To return all columns for a given family, leave off the qualifier such as ""<colFamily1>,<colFamily2>"".", "", "null", "", "**true**"
    "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
    "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
@@ -1627,7 +1790,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**fields.to.remove**", "the comma separated list of field names (e.g. 'policyid,date_raw'", "", "null", "", ""
+   "fields.to.remove", "A comma separated list of field names to remove (e.g. 'policyid,date_raw'). Usage of this property is mutually exclusive with the fields.to.keep property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if specified in the list to remove.", "", "null", "", ""
+   "fields.to.keep", "A comma separated list of field names to keep (e.g. 'policyid,date_raw'. All other fields will be removed. Usage of this property is mutually exclusive with the PropertyDescriptor[fields.to.remove] property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if not specified in the list to keep.", "", "null", "", ""
 
 ----------
 
@@ -1773,6 +1937,42 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
    "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
    "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SetJsonAsFields: 
+
+SetJsonAsFields
+---------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.SetJsonAsFields
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are written to stdout.", "", "false", "", ""
+   "**json.field**", "Field name of the string field that contains the json document to parse.", "", "record_value", "", ""
+   "**keep.json.field**", "Keep the original json field or not. Default is false so default is to remove the json field.", "", "false", "", ""
+   "**overwrite.existing.field**", "Overwrite an existing record field or not. Default is true so default is to remove the conflicting field.", "", "true", "", ""
+   "**omit.null.attributes**", "Omit json attributes with null values. Default is false so to set them as null record fields", "", "false", "", ""
+   "**omit.empty.string.attributes**", "Omit json attributes with empty string values. Default is false so to set them as empty string record fields", "", "false", "", ""
 
 ----------
 

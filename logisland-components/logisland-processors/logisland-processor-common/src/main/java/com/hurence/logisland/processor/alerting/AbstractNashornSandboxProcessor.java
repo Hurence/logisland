@@ -69,7 +69,8 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
     public static final PropertyDescriptor ALLOw_NO_BRACE = new PropertyDescriptor.Builder()
             .name("allow.no.brace")
             .description("Force, to check if all blocks are enclosed with curly braces \"{}\".\n" +
-                    "<p>\n" +
+                    ".. raw:: html\n" +
+                    "  <p>\n" +
                     "  Explanation: all loops (for, do-while, while, and if-else, and functions\n" +
                     "  should use braces, because poison_pill() function will be inserted after\n" +
                     "  each open brace \"{\", to ensure interruption checking. Otherwise simple\n" +
@@ -85,8 +86,8 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
                     "  </pre>\n" +
                     "  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}\n" +
                     "  which make JVM unstable.\n" +
-                    "</p>\n" +
-                    "<p>\n" +
+                    "  </p>\n" +
+                    "  <p>\n" +
                     "  Properly writen code (even in bad intention) like:\n" +
                     "  <pre>\n" +
                     "    while(true) { while(true) {\n" +
@@ -102,10 +103,10 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
                     "    }\n" +
                     "  </pre>\n" +
                     "  which finish nicely when interrupted.\n" +
-                    "<p>\n" +
+                    "  <p>\n" +
                     "  For legacy code, this check can be turned off, but with no guarantee, the\n" +
                     "  JS thread will gracefully finish when interrupted.\n" +
-                    "</p>")
+                    "  </p>")
             .required(false)
             .defaultValue("false")
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
@@ -114,14 +115,15 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
     public static final PropertyDescriptor MAX_PREPARED_STATEMENTS = new PropertyDescriptor.Builder()
             .name("max.prepared.statements")
             .description("The size of prepared statements LRU cache. Default 0 (disabled).\n" +
-                    "<p>\n" +
-                    "  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to\n" +
+                    ".. raw:: html\n" +
+                    "  <p>\n" +
+                    "  Each statements when setMaxCPUTime(long) is set is prepared to\n" +
                     "  quit itself when time exceeded. To execute only once this procedure per\n" +
                     "  statement set this value.\n" +
-                    "</p>\n" +
-                    "<p>\n" +
-                    "  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.\n" +
-                    "</p>")
+                    "  </p>\n" +
+                    "  <p>\n" +
+                    "  When setMaxCPUTime(long) is set 0, this value is ignored.\n" +
+                    "  </p>\n")
             .required(false)
             .defaultValue("30")
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
