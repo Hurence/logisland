@@ -88,8 +88,8 @@ public class FetchHBaseRow extends AbstractProcessor {
 
     public static final PropertyDescriptor COLUMNS_FIELD = new PropertyDescriptor.Builder()
             .name("columns.field")
-            .description("The field containing an optional comma-separated list of \"<colFamily>:<colQualifier>\" pairs to fetch. To return all columns " +
-                    "for a given family, leave off the qualifier such as \"<colFamily1>,<colFamily2>\".")
+            .description("The field containing an optional comma-separated list of \"\"<colFamily>:<colQualifier>\"\" pairs to fetch. To return all columns " +
+                    "for a given family, leave off the qualifier such as \"\"<colFamily1>,<colFamily2>\"\".")
             .required(false)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.createRegexMatchingValidator(COLUMNS_PATTERN))

@@ -22,7 +22,6 @@ import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginClassLoader;
 import com.hurence.logisland.classloading.PluginLoader;
-import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -56,7 +55,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
             final RstPrintWriter rstWriter = new RstPrintWriter(streamToWriteTo, true);
 
             rstWriter.writeTransition();
-            rstWriter.writeInternalReference(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
+            rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
             writeDescription(configurableComponent, rstWriter);
             writeTags(configurableComponent, rstWriter);
             writeProperties(configurableComponent, rstWriter);
@@ -78,7 +77,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
      * @return the class name of the component
      */
     protected String getTitle(final ConfigurableComponent configurableComponent) {
-        return PluginProxy.unwrap(configurableComponent).getClass().getSimpleName();
+        return configurableComponent.getClass().getSimpleName();
     }
 
 
@@ -154,14 +153,14 @@ public class RstDocumentationWriter implements DocumentationWriter {
         rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
         rstWriter.println(getDescription(configurableComponent));
 
-        PluginClassLoader cl = (PluginClassLoader) PluginLoader.getRegistry().get(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
+        PluginClassLoader cl = (PluginClassLoader) PluginLoader.getRegistry().get(configurableComponent.getClass().getCanonicalName());
         if (cl != null) {
             rstWriter.writeSectionTitle(3, "Module");
             rstWriter.println(cl.getModuleInfo().getArtifact());
         }
 
         rstWriter.writeSectionTitle(3, "Class");
-        rstWriter.println(PluginProxy.unwrap(configurableComponent).getClass().getCanonicalName());
+        rstWriter.println(configurableComponent.getClass().getCanonicalName());
     }
 
 
@@ -183,13 +182,8 @@ public class RstDocumentationWriter implements DocumentationWriter {
             description = "No description provided.";
         }
 
-        return sanitize(description);
-    }
+        return description;
 
-
-    private String sanitize(String s) {
-        return s.replace("\"", "\"\"")
-                .replace("\n", "\n\n   ");
     }
 
     /**
@@ -240,15 +234,15 @@ public class RstDocumentationWriter implements DocumentationWriter {
 
                 rstWriter.print("   \"");
                 if (property.isRequired()) {
-                    rstWriter.printStrong(property.getDisplayName());
+                    rstWriter.printStrong(property.getName());
                 } else {
-                    rstWriter.print(property.getDisplayName());
+                    rstWriter.print(property.getName());
                 }
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
                 if (property.getDescription() != null && property.getDescription().trim().length() > 0) {
-                    rstWriter.print(sanitize(property.getDescription()));
+                    rstWriter.print(property.getDescription().replace("\n", "\n\n   "));
                 } else {
                     rstWriter.print("No Description Provided.");
                 }

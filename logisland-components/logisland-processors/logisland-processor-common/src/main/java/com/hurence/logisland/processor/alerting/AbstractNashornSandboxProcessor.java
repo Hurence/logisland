@@ -68,12 +68,12 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
 
     public static final PropertyDescriptor ALLOw_NO_BRACE = new PropertyDescriptor.Builder()
             .name("allow.no.brace")
-            .description("Force, to check if all blocks are enclosed with curly braces \"{}\".\n" +
+            .description("Force, to check if all blocks are enclosed with curly braces \"\"{}\"\".\n" +
                     ".. raw:: html\n" +
                     "  <p>\n" +
                     "  Explanation: all loops (for, do-while, while, and if-else, and functions\n" +
                     "  should use braces, because poison_pill() function will be inserted after\n" +
-                    "  each open brace \"{\", to ensure interruption checking. Otherwise simple\n" +
+                    "  each open brace \"\"{\"\", to ensure interruption checking. Otherwise simple\n" +
                     "  code like:\n" +
                     "  <pre>\n" +
                     "    while(true) while(true) {\n" +

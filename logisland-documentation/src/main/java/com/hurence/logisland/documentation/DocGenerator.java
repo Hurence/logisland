@@ -16,6 +16,7 @@
 package com.hurence.logisland.documentation;
 
 import com.hurence.logisland.classloading.PluginLoader;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerService;
@@ -228,7 +229,7 @@ public class DocGenerator {
             throws InstantiationException, IllegalAccessException, IOException, InitializationException, ClassNotFoundException {
 
         logger.info("Documenting: " + componentClass);
-        final ConfigurableComponent component = PluginLoader.loadPlugin(componentClass.getCanonicalName());
+        final ConfigurableComponent component = PluginProxy.unwrap(PluginLoader.loadPlugin(componentClass.getCanonicalName()));
         final ConfigurableComponentInitializer initializer = getComponentInitializer(componentClass);
         initializer.initialize(component);
 
