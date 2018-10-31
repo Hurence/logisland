@@ -18,6 +18,7 @@ package com.hurence.logisland.record;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.util.FormatUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,7 +167,11 @@ public class Field implements PropertyValue, Serializable {
 
     @Override
     public Boolean asBoolean() {
-        return (rawValue == null) ? null : (boolean) rawValue;
+        if(rawValue == null)
+            return null;
+
+        return BooleanUtils.toBoolean(rawValue.toString());
+
     }
 
     @Override
