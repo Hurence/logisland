@@ -774,7 +774,17 @@ None.
 
 Properties
 __________
-This component has no required or optional properties.
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**return.type**", "Indicates the desired return type of the JSON Path expressions.  Selecting 'auto-detect' will set the return type to 'json'  or 'scalar' ", "json, scalar", "scalar", "", ""
+   "**path.not.found.behavior**", "Indicates how to handle missing JSON path expressions. Selecting 'warn' will generate a warning when a JSON path expression is not found.", "warn, ignore", "ignore", "", ""
+   "**Null Value Representation**", "Indicates the desired representation of JSON Path expressions resulting in a null value.", "empty string, the string 'null'", "empty string", "", ""
+   "**json.input.field.name**", "the name of the field containing the json string", "", "record_value", "", ""
 
 ----------
 
@@ -1627,7 +1637,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**fields.to.remove**", "the comma separated list of field names (e.g. 'policyid,date_raw'", "", "null", "", ""
+   "fields.to.remove", "A comma separated list of field names to remove (e.g. 'policyid,date_raw'). Usage of this property is mutually exclusive with the fields.to.keep property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if specified in the list to remove.", "", "null", "", ""
+   "fields.to.keep", "A comma separated list of field names to keep (e.g. 'policyid,date_raw'. All other fields will be removed. Usage of this property is mutually exclusive with the PropertyDescriptor[fields.to.remove] property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if not specified in the list to keep.", "", "null", "", ""
 
 ----------
 
@@ -1773,6 +1784,42 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "mail.to", "Comma separated list of email recipients. If not set, the record must have a mail_to field and allow_overwrite configuration key should be true.", "", "null", "", ""
    "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "", ""
    "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "", ""
+
+----------
+
+.. _com.hurence.logisland.processor.SetJsonAsFields: 
+
+SetJsonAsFields
+---------------
+No description provided.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.SetJsonAsFields
+
+Tags
+____
+None.
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are written to stdout.", "", "false", "", ""
+   "**json.field**", "Field name of the string field that contains the json document to parse.", "", "record_value", "", ""
+   "**keep.json.field**", "Keep the original json field or not. Default is false so default is to remove the json field.", "", "false", "", ""
+   "**overwrite.existing.field**", "Overwrite an existing record field or not. Default is true so default is to remove the conflicting field.", "", "true", "", ""
+   "**omit.null.attributes**", "Omit json attributes with null values. Default is false so to set them as null record fields", "", "false", "", ""
+   "**omit.empty.string.attributes**", "Omit json attributes with empty string values. Default is false so to set them as empty string record fields", "", "false", "", ""
 
 ----------
 
