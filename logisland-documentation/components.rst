@@ -9,7 +9,8 @@ You'll find here the list of all usable Processors, Engines, Services and other 
 
 AddFields
 ---------
-No description provided.
+Add one or more field with a default value
+...
 
 Module
 ______
@@ -21,7 +22,7 @@ com.hurence.logisland.processor.AddFields
 
 Tags
 ____
-None.
+record, fields, Add
 
 Properties
 __________
@@ -34,13 +35,23 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
 ----------
 
 .. _com.hurence.logisland.processor.ApplyRegexp: 
 
 ApplyRegexp
 -----------
-No description provided.
+This processor is used to create a new set of fields from one field (using regexp).
 
 Module
 ______
@@ -52,7 +63,7 @@ com.hurence.logisland.processor.ApplyRegexp
 
 Tags
 ____
-None.
+parser, regex, log, record
 
 Properties
 __________
@@ -65,13 +76,27 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field (keep only old field)", "keep_only_old_field", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.ApplyRegexp`_ 
+
 ----------
 
 .. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
 
 BulkAddElasticsearch
 --------------------
-No description provided.
+Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor
 
 Module
 ______
@@ -83,7 +108,7 @@ com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
 
 Tags
 ____
-None.
+elasticsearch
 
 Properties
 __________
@@ -107,7 +132,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 BulkPut
 -------
-No description provided.
+Indexes the content of a Record in a Datastore using bulk processor
 
 Module
 ______
@@ -119,7 +144,7 @@ com.hurence.logisland.processor.datastore.BulkPut
 
 Tags
 ____
-None.
+datastore, record, put, bulk
 
 Properties
 __________
@@ -142,7 +167,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 CassandraControllerService
 --------------------------
-No description provided.
+Provides a controller service that for the moment only allows to bulkput records into cassandra.
 
 Module
 ______
@@ -154,7 +179,7 @@ com.hurence.logisland.service.cassandra.CassandraControllerService
 
 Tags
 ____
-None.
+cassandra, service
 
 Properties
 __________
@@ -165,12 +190,12 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**Cassandra hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "", ""
-   "**Cassandra port**", "Cassandra cluster port", "", "null", "", ""
-   "Use SSL.", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "", ""
-   "Use credentials.", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "", ""
-   "User name.", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "", ""
-   "User password.", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "", ""
+   "**cassandra.hosts**", "Cassandra cluster hosts as a comma separated value list", "", "null", "", ""
+   "**cassandra.port**", "Cassandra cluster port", "", "null", "", ""
+   "cassandra.with-ssl", "If this property is true, use SSL. Default is no SSL (false).", "", "false", "", ""
+   "cassandra.with-credentials", "If this property is true, use credentials. Default is no credentials (false).", "", "false", "", ""
+   "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "", ""
+   "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "", ""
    "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
    "bulk.size", "bulk size in MB", "", "5", "", ""
    "flush.interval", "flush interval in ms", "", "500", "", ""
@@ -181,7 +206,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 CheckAlerts
 -----------
-No description provided.
+Add one or more field with a default value
 
 Module
 ______
@@ -193,7 +218,7 @@ com.hurence.logisland.processor.alerting.CheckAlerts
 
 Tags
 ____
-None.
+record, alerting, thresholds, opc, tag
 
 Properties
 __________
@@ -206,53 +231,104 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
@@ -260,13 +336,27 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "profile.activation.condition", "A javascript expression that activates this alerting profile when true", "", "0==0", "", ""
    "alert.criticity", "from 0 to ...", "", "0", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
 ----------
 
 .. _com.hurence.logisland.processor.alerting.CheckThresholds: 
 
 CheckThresholds
 ---------------
-No description provided.
+Compute threshold cross from given formulas.
+- each dynamic property will return a new record according to the formula definition
+- the record name will be set to the property name
+- the record time will be set to the current timestamp
+
 
 Module
 ______
@@ -278,7 +368,7 @@ com.hurence.logisland.processor.alerting.CheckThresholds
 
 Tags
 ____
-None.
+record, threshold, tag, alerting
 
 Properties
 __________
@@ -291,53 +381,104 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
@@ -345,13 +486,28 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.ttl", "How long (in ms) do the record will remain in cache", "", "30000", "", ""
    "min.update.time.ms", "The minimum amount of time (in ms) that we expect between two consecutive update of the same threshold record", "", "200", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
+
 ----------
 
 .. _com.hurence.logisland.processor.alerting.ComputeTags: 
 
 ComputeTags
 -----------
-No description provided.
+Compute tag cross from given formulas.
+- each dynamic property will return a new record according to the formula definition
+- the record name will be set to the property name
+- the record time will be set to the current timestamp
+
+a threshold_cross has the following properties : count, sum, avg, time, duration, value
 
 Module
 ______
@@ -363,7 +519,7 @@ com.hurence.logisland.processor.alerting.ComputeTags
 
 Tags
 ____
-None.
+record, fields, Add
 
 Properties
 __________
@@ -376,57 +532,118 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "max.cpu.time", "maximum CPU time in milliseconds allowed for script execution.", "", "100", "", ""
    "max.memory", "maximum memory in Bytes which JS executor thread can allocate", "", "51200", "", ""
-   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces "{}".
-<p>
-  Explanation: all loops (for, do-while, while, and if-else, and functions
-  should use braces, because poison_pill() function will be inserted after
-  each open brace "{", to ensure interruption checking. Otherwise simple
-  code like:
-  <pre>
-    while(true) while(true) {
-      // do nothing
-    }
-  </pre>
-  or even:
-  <pre>
-    while(true)
-  </pre>
-  cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
-  which make JVM unstable.
-</p>
-<p>
-  Properly writen code (even in bad intention) like:
-  <pre>
-    while(true) { while(true) {
-      // do nothing
-    }}
-  </pre>
-  will be changed into:
-  <pre>
-    while(true) {poison_pill(); 
-      while(true) {poison_pill();
-        // do nothing
-      }
-    }
-  </pre>
-  which finish nicely when interrupted.
-<p>
-  For legacy code, this check can be turned off, but with no guarantee, the
-  JS thread will gracefully finish when interrupted.
-</p>", "", "false", "", ""
+   "allow.no.brace", "Force, to check if all blocks are enclosed with curly braces ""{}"".
+
+   .. raw:: html
+
+     <p>
+
+     Explanation: all loops (for, do-while, while, and if-else, and functions
+
+     should use braces, because poison_pill() function will be inserted after
+
+     each open brace ""{"", to ensure interruption checking. Otherwise simple
+
+     code like:
+
+     <pre>
+
+       while(true) while(true) {
+
+         // do nothing
+
+       }
+
+     </pre>
+
+     or even:
+
+     <pre>
+
+       while(true)
+
+     </pre>
+
+     cause unbreakable loop, which force this sandbox to use {@link Thread#stop()}
+
+     which make JVM unstable.
+
+     </p>
+
+     <p>
+
+     Properly writen code (even in bad intention) like:
+
+     <pre>
+
+       while(true) { while(true) {
+
+         // do nothing
+
+       }}
+
+     </pre>
+
+     will be changed into:
+
+     <pre>
+
+       while(true) {poison_pill(); 
+
+         while(true) {poison_pill();
+
+           // do nothing
+
+         }
+
+       }
+
+     </pre>
+
+     which finish nicely when interrupted.
+
+     <p>
+
+     For legacy code, this check can be turned off, but with no guarantee, the
+
+     JS thread will gracefully finish when interrupted.
+
+     </p>", "", "false", "", ""
    "max.prepared.statements", "The size of prepared statements LRU cache. Default 0 (disabled).
-<p>
-  Each statements when {@link #setMaxCPUTime(long)} is set is prepared to
-  quit itself when time exceeded. To execute only once this procedure per
-  statement set this value.
-</p>
-<p>
-  When {@link #setMaxCPUTime(long)} is set 0, this value is ignored.
-</p>", "", "30", "", ""
+
+   .. raw:: html
+
+     <p>
+
+     Each statements when setMaxCPUTime(long) is set is prepared to
+
+     quit itself when time exceeded. To execute only once this procedure per
+
+     statement set this value.
+
+     </p>
+
+     <p>
+
+     When setMaxCPUTime(long) is set 0, this value is ignored.
+
+     </p>
+
+   ", "", "30", "", ""
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "datastore.cache.collection", "The collection where to find cached objects", "", "test", "", ""
    "js.cache.service", "The cache service to be used to store already sanitized JS expressions. If not specified a in-memory unlimited hash map will be used.", "", "null", "", ""
    "output.record.type", "the type of the output record", "", "event", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to add", "a default value", "Add a field to the record with the default value", ""
 
 ----------
 
@@ -434,7 +651,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ConsolidateSession
 ------------------
-No description provided.
+The ConsolidateSession processor is the Logisland entry point to get and process events from the Web Analytics.As an example here is an incoming event from the Web Analytics:
+
+"fields": [{ "name": "timestamp",              "type": "long" },{ "name": "remoteHost",             "type": "string"},{ "name": "record_type",            "type": ["null", "string"], "default": null },{ "name": "record_id",              "type": ["null", "string"], "default": null },{ "name": "location",               "type": ["null", "string"], "default": null },{ "name": "hitType",                "type": ["null", "string"], "default": null },{ "name": "eventCategory",          "type": ["null", "string"], "default": null },{ "name": "eventAction",            "type": ["null", "string"], "default": null },{ "name": "eventLabel",             "type": ["null", "string"], "default": null },{ "name": "localPath",              "type": ["null", "string"], "default": null },{ "name": "q",                      "type": ["null", "string"], "default": null },{ "name": "n",                      "type": ["null", "int"],    "default": null },{ "name": "referer",                "type": ["null", "string"], "default": null },{ "name": "viewportPixelWidth",     "type": ["null", "int"],    "default": null },{ "name": "viewportPixelHeight",    "type": ["null", "int"],    "default": null },{ "name": "screenPixelWidth",       "type": ["null", "int"],    "default": null },{ "name": "screenPixelHeight",      "type": ["null", "int"],    "default": null },{ "name": "partyId",                "type": ["null", "string"], "default": null },{ "name": "sessionId",              "type": ["null", "string"], "default": null },{ "name": "pageViewId",             "type": ["null", "string"], "default": null },{ "name": "is_newSession",          "type": ["null", "boolean"],"default": null },{ "name": "userAgentString",        "type": ["null", "string"], "default": null },{ "name": "pageType",               "type": ["null", "string"], "default": null },{ "name": "UserId",                 "type": ["null", "string"], "default": null },{ "name": "B2Bunit",                "type": ["null", "string"], "default": null },{ "name": "pointOfService",         "type": ["null", "string"], "default": null },{ "name": "companyID",              "type": ["null", "string"], "default": null },{ "name": "GroupCode",              "type": ["null", "string"], "default": null },{ "name": "userRoles",              "type": ["null", "string"], "default": null },{ "name": "is_PunchOut",            "type": ["null", "string"], "default": null }]The ConsolidateSession processor groups the records by sessions and compute the duration between now and the last received event. If the distance from the last event is beyond a given threshold (by default 30mn), then the session is considered closed.The ConsolidateSession is building an aggregated session object for each active session.This aggregated object includes: - The actual session duration. - A boolean representing wether the session is considered active or closed.   Note: it is possible to ressurect a session if for instance an event arrives after a session has been marked closed. - User related infos: userId, B2Bunit code, groupCode, userRoles, companyId - First visited page: URL - Last visited page: URL The properties to configure the processor are: - sessionid.field:          Property name containing the session identifier (default: sessionId). - timestamp.field:          Property name containing the timestamp of the event (default: timestamp). - session.timeout:          Timeframe of inactivity (in seconds) after which a session is considered closed (default: 30mn). - visitedpage.field:        Property name containing the page visited by the customer (default: location). - fields.to.return:         List of fields to return in the aggregated object. (default: N/A)
 
 Module
 ______
@@ -446,7 +665,7 @@ com.hurence.logisland.processor.webAnalytics.ConsolidateSession
 
 Tags
 ____
-None.
+analytics, web, session
 
 Properties
 __________
@@ -479,7 +698,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ConvertFieldsType
 -----------------
-No description provided.
+Converts a field value into the given type. does nothing if conversion is not possible
 
 Module
 ______
@@ -491,11 +710,21 @@ com.hurence.logisland.processor.ConvertFieldsType
 
 Tags
 ____
-None.
+type, fields, update, convert
 
 Properties
 __________
 This component has no required or optional properties.
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field", "the new type", "convert field value into new type", **true**
 
 ----------
 
@@ -503,7 +732,7 @@ This component has no required or optional properties.
 
 DebugStream
 -----------
-No description provided.
+This is a processor that logs incoming records
 
 Module
 ______
@@ -515,7 +744,7 @@ com.hurence.logisland.processor.DebugStream
 
 Tags
 ____
-None.
+record, debug
 
 Properties
 __________
@@ -535,7 +764,22 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 DetectOutliers
 --------------
-No description provided.
+Outlier Analysis: A Hybrid Approach
+
+In order to function at scale, a two-phase approach is taken
+
+For every data point
+
+- Detect outlier candidates using a robust estimator of variability (e.g. median absolute deviation) that uses distributional sketching (e.g. Q-trees)
+- Gather a biased sample (biased by recency)
+- Extremely deterministic in space and cheap in computation
+
+For every outlier candidate
+
+- Use traditional, more computationally complex approaches to outlier analysis (e.g. Robust PCA) on the biased sample
+- Expensive computationally, but run infrequently
+
+This becomes a data filter which can be attached to a timeseries data stream within a distributed computational framework (i.e. Storm, Spark, Flink, NiFi) to detect outliers.
 
 Module
 ______
@@ -547,7 +791,7 @@ com.hurence.logisland.processor.DetectOutliers
 
 Tags
 ____
-None.
+analytic, outlier, record, iot, timeseries
 
 Properties
 __________
@@ -594,7 +838,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Elasticsearch_2_4_0_ClientService
 ---------------------------------
-No description provided.
+Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
@@ -606,7 +850,7 @@ com.hurence.logisland.service.elasticsearch.Elasticsearch_2_4_0_ClientService
 
 Tags
 ____
-None.
+elasticsearch, client
 
 Properties
 __________
@@ -640,7 +884,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Elasticsearch_5_4_0_ClientService
 ---------------------------------
-No description provided.
+Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
@@ -652,7 +896,7 @@ com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
 
 Tags
 ____
-None.
+elasticsearch, client
 
 Properties
 __________
@@ -686,7 +930,16 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 EnrichRecords
 -------------
-No description provided.
+Enrich input records with content indexed in datastore using multiget queries.
+Each incoming record must be possibly enriched with information stored in datastore. 
+The plugin properties are :
+- es.index (String)            : Name of the datastore index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
+- es.key (String)              : Name of the datastore key on which the multiget query will be performed. This field is mandatory.
+- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document.
 
 Module
 ______
@@ -698,7 +951,7 @@ com.hurence.logisland.processor.datastore.EnrichRecords
 
 Tags
 ____
-None.
+datastore, enricher
 
 Properties
 __________
@@ -722,7 +975,16 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 EnrichRecordsElasticsearch
 --------------------------
-No description provided.
+Enrich input records with content indexed in elasticsearch using multiget queries.
+Each incoming record must be possibly enriched with information stored in elasticsearch. 
+The plugin properties are :
+- es.index (String)            : Name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
+- es.key (String)              : Name of the elasticsearch key on which the multiget query will be performed. This field is mandatory.
+- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
 
 Module
 ______
@@ -734,7 +996,7 @@ com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch
 
 Tags
 ____
-None.
+elasticsearch
 
 Properties
 __________
@@ -758,7 +1020,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 EvaluateJsonPath
 ----------------
-No description provided.
+Evaluates one or more JsonPath expressions against the content of a FlowFile. The results of those expressions are assigned to Records Fields depending on configuration of the Processor. JsonPaths are entered by adding user-defined properties; the name of the property maps to the Field Name into which the result will be placed. The value of the property must be a valid JsonPath expression. A Return Type of 'auto-detect' will make a determination based off the configured destination. If the JsonPath evaluates to a JSON array or JSON object and the Return Type is set to 'scalar' the Record will be routed to error. A Return Type of JSON can return scalar values if the provided JsonPath evaluates to the specified value. If the expression matches nothing, Fields will be created with empty strings as the value 
 
 Module
 ______
@@ -770,7 +1032,7 @@ com.hurence.logisland.processor.EvaluateJsonPath
 
 Tags
 ____
-None.
+JSON, evaluate, JsonPath
 
 Properties
 __________
@@ -786,13 +1048,23 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**Null Value Representation**", "Indicates the desired representation of JSON Path expressions resulting in a null value.", "empty string, the string 'null'", "empty string", "", ""
    "**json.input.field.name**", "the name of the field containing the json string", "", "record_value", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "A Record field", "A JsonPath expression", "will be set to any JSON objects that match the JsonPath. ", ""
+
 ----------
 
 .. _com.hurence.logisland.processor.excel.ExcelExtract: 
 
 ExcelExtract
 ------------
-No description provided.
+Consumes a Microsoft Excel document and converts each worksheet's line to a structured record. The processor is assuming to receive raw excel file as input record.
 
 Module
 ______
@@ -804,7 +1076,7 @@ com.hurence.logisland.processor.excel.ExcelExtract
 
 Tags
 ____
-None.
+excel, processor, poi
 
 Properties
 __________
@@ -815,12 +1087,12 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "Sheets to Extract", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "", ""
-   "Columns To Skip", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "", ""
-   "Field names mapping", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "", ""
-   "Number of Rows to Skip", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "", ""
+   "sheets", "Comma separated list of Excel document sheet names that should be extracted from the excel document. If this property is left blank then all of the sheets will be extracted from the Excel document. You can specify regular expressions. Any sheets not specified in this value will be ignored.", "", "", "", ""
+   "skip.columns", "Comma delimited list of column numbers to skip. Use the columns number and not the letter designation. Use this to skip over columns anywhere in your worksheet that you don't want extracted as part of the record.", "", "", "", ""
+   "field.names", "The comma separated list representing the names of columns of extracted cells. Order matters! You should use either field.names either field.row.header but not both together.", "", "null", "", ""
+   "skip.rows", "The row number of the first row to start processing.Use this to skip over rows of data at the top of your worksheet that are not part of the dataset.Empty rows of data anywhere in the spreadsheet will always be skipped, no matter what this value is set to.", "", "0", "", ""
    "record.type", "Default type of record", "", "excel_record", "", ""
-   "Use a row header as field names mapping", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "", ""
+   "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "", ""
 
 ----------
 
@@ -828,7 +1100,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 FetchHBaseRow
 -------------
-No description provided.
+Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the table and row id directly in the processor, or it may be used to dynamically fetch rows by referencing the table and row id from incoming flow files.
 
 Module
 ______
@@ -840,7 +1112,7 @@ com.hurence.logisland.processor.hbase.FetchHBaseRow
 
 Tags
 ____
-None.
+hbase, scan, fetch, get, enrich
 
 Properties
 __________
@@ -854,7 +1126,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
    "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
-   "columns.field", "The field containing an optional comma-separated list of "<colFamily>:<colQualifier>" pairs to fetch. To return all columns for a given family, leave off the qualifier such as "<colFamily1>,<colFamily2>".", "", "null", "", "**true**"
+   "columns.field", "The field containing an optional comma-separated list of ""<colFamily>:<colQualifier>"" pairs to fetch. To return all columns for a given family, leave off the qualifier such as ""<colFamily1>,<colFamily2>"".", "", "null", "", "**true**"
    "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
    "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
@@ -865,7 +1137,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 FilterRecords
 -------------
-No description provided.
+Keep only records based on a given field value
 
 Module
 ______
@@ -877,7 +1149,7 @@ com.hurence.logisland.processor.FilterRecords
 
 Tags
 ____
-None.
+record, fields, remove, delete
 
 Properties
 __________
@@ -897,7 +1169,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 FlatMap
 -------
-No description provided.
+Converts each field records into a single flatten record
+...
 
 Module
 ______
@@ -909,7 +1182,7 @@ com.hurence.logisland.processor.FlatMap
 
 Tags
 ____
-None.
+record, fields, flatmap, flatten
 
 Properties
 __________
@@ -933,7 +1206,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 GenerateRandomRecord
 --------------------
-No description provided.
+This is a processor that make random records given an Avro schema
 
 Module
 ______
@@ -945,7 +1218,7 @@ com.hurence.logisland.processor.GenerateRandomRecord
 
 Tags
 ____
-None.
+record, avro, generator
 
 Properties
 __________
@@ -966,7 +1239,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 HBase_1_1_2_ClientService
 -------------------------
-No description provided.
+Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files are provided, they will be loaded first, and the values of the additional properties will override the values from the configuration files. In addition, any user defined properties on the processor will also be passed to the HBase configuration.
 
 Module
 ______
@@ -978,7 +1251,7 @@ com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService
 
 Tags
 ____
-None.
+hbase, client
 
 Properties
 __________
@@ -996,13 +1269,23 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "hbase.client.retries", "The number of times the HBase client will retry connecting. Required if Hadoop Configuration Files are not provided.", "", "3", "", ""
    "phoenix.client.jar.location", "The full path to the Phoenix client JAR. Required if Phoenix is installed on top of HBase.", "", "null", "", "**true**"
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", ""
+
 ----------
 
 .. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
 
 IpToFqdn
 --------
-No description provided.
+Translates an IP address into a FQDN (Fully Qualified Domain Name). An input field from the record has the IP as value. An new field is created and its value is the FQDN matching the IP address. The resolution mechanism is based on the underlying operating system. The resolution request may take some time, specially if the IP address cannot be translated into a FQDN. For these reasons this processor relies on the logisland cache service so that once a resolution occurs or not, the result is put into the cache. That way, the real request for the same IP is not re-triggered during a certain period of time, until the cache entry expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours to let the time to the underlying DNS system to be potentially updated.
 
 Module
 ______
@@ -1014,7 +1297,7 @@ com.hurence.logisland.processor.enrichment.IpToFqdn
 
 Tags
 ____
-None.
+dns, ip, fqdn, domain, address, fqhn, reverse, resolution, enrich
 
 Properties
 __________
@@ -1039,7 +1322,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 IpToGeo
 -------
-No description provided.
+Looks up geolocation information for an IP address. The attribute that contains the IP address to lookup must be provided in the **ip.address.field** property. By default, the geo information are put in a hierarchical structure. That is, if the name of the IP field is 'X', then the the geo attributes added by enrichment are added under a father field named X_geo. "_geo" is the default hierarchical suffix that may be changed with the **geo.hierarchical.suffix** property. If one wants to put the geo fields at the same level as the IP field, then the **geo.hierarchical** property should be set to false and then the geo attributes are  created at the same level as him with the naming pattern X_geo_<geo_field>. "_geo_" is the default flat suffix but this may be changed with the **geo.flat.suffix** property. The IpToGeo processor requires a reference to an Ip to Geo service. This must be defined in the **iptogeo.service** property. The added geo fields are dependant on the underlying Ip to Geo service. The **geo.fields** property must contain the list of geo fields that should be created if data is available for  the IP to resolve. This property defaults to "*" which means to add every available fields. If one only wants a subset of the fields,  one must define a comma separated list of fields as a value for the **geo.fields** property. The list of the available geo fields is in the description of the **geo.fields** property.
 
 Module
 ______
@@ -1051,7 +1334,7 @@ com.hurence.logisland.processor.enrichment.IpToGeo
 
 Tags
 ____
-None.
+geo, enrich, ip
 
 Properties
 __________
@@ -1077,7 +1360,25 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MatchIP
 -------
-No description provided.
+IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_
+
+You can use this processor to handle custom events matching IP address (CIDR)
+The record sent from a matching an IP address record is tagged appropriately.
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
 
 Module
 ______
@@ -1089,7 +1390,7 @@ com.hurence.logisland.processor.MatchIP
 
 Tags
 ____
-None.
+analytic, percolator, record, record, query, lucene
 
 Properties
 __________
@@ -1107,13 +1408,41 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "", ""
    "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "query", "some Lucene query", "generate a new record when this query is matched", **true**
+
 ----------
 
 .. _com.hurence.logisland.processor.MatchQuery: 
 
 MatchQuery
 ----------
-No description provided.
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+	message:'bad exception'
+	error_count:[10 TO *]
+	bytes_out:5000
+	user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+
+	don't forget to set numeric fields property to handle correctly numeric ranges queries
 
 Module
 ______
@@ -1125,7 +1454,7 @@ com.hurence.logisland.processor.MatchQuery
 
 Tags
 ____
-None.
+analytic, percolator, record, record, query, lucene
 
 Properties
 __________
@@ -1143,13 +1472,23 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "policy.onmiss", "the policy applied to miss events: 'discard' (default value) drop events that did not match any query;'forward' include also events that did not match any query.", "", "discard", "", ""
    "include.input.records", "if set to true all the input records are copied to output", "", "true", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "query", "some Lucene query", "generate a new record when this query is matched", **true**
+
 ----------
 
 .. _com.hurence.logisland.processor.ModifyId: 
 
 ModifyId
 --------
-No description provided.
+modify id of records or generate it following defined rules
 
 Module
 ______
@@ -1161,7 +1500,7 @@ com.hurence.logisland.processor.ModifyId
 
 Tags
 ____
-None.
+record, id, idempotent, generate, modify
 
 Properties
 __________
@@ -1185,7 +1524,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MongoDBControllerService
 ------------------------
-No description provided.
+Provides a controller service that wraps most of the functionality of the MongoDB driver.
 
 Module
 ______
@@ -1197,7 +1536,7 @@ com.hurence.logisland.service.mongodb.MongoDBControllerService
 
 Tags
 ____
-None.
+mongo, mongodb, service
 
 Properties
 __________
@@ -1208,14 +1547,14 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**Mongo URI**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "", "**true**"
-   "**Mongo Database Name**", "The name of the database to use", "", "null", "", "**true**"
-   "**Mongo Collection Name**", "The name of the collection to use", "", "null", "", "**true**"
+   "**mongo.uri**", "MongoURI, typically of the form: mongodb://host1[:port1][,host2[:port2],...]", "", "null", "", "**true**"
+   "**mongo.db.name**", "The name of the database to use", "", "null", "", "**true**"
+   "**mongo.collection.name**", "The name of the collection to use", "", "null", "", "**true**"
    "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
    "bulk.size", "bulk size in MB", "", "5", "", ""
    "bulk.mode", "Bulk mode (insert or upsert)", "Insert (Insert records whose key must be unique), Insert or Update (Insert records if not already existing or update the record if already existing)", "insert", "", ""
    "flush.interval", "flush interval in ms", "", "500", "", ""
-   "**Write Concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "", ""
+   "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "", ""
 
 ----------
 
@@ -1223,7 +1562,21 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MultiGet
 --------
-No description provided.
+Retrieves a content from datastore using datastore multiget queries.
+Each incoming record contains information regarding the datastore multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+- collection (String) : name of the datastore collection on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- type (String) : name of the datastore type on which the multiget query will be performed. This field is not mandatory.
+- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one datastore retrieved document. This data is stored in these fields :
+- collection (same field name as the incoming record) : name of the datastore collection.
+- type (same field name as the incoming record) : name of the datastore type.
+- id (same field name as the incoming record) : retrieved document id.
+- a list of String fields containing :
+   * field name : the retrieved field name
+   * field value : the retrieved field value
 
 Module
 ______
@@ -1235,7 +1588,7 @@ com.hurence.logisland.processor.datastore.MultiGet
 
 Tags
 ____
-None.
+datastore, get, multiget
 
 Properties
 __________
@@ -1259,7 +1612,21 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 MultiGetElasticsearch
 ---------------------
-No description provided.
+Retrieves a content indexed in elasticsearch using elasticsearch multiget queries.
+Each incoming record contains information regarding the elasticsearch multiget query that will be performed. This information is stored in record fields whose names are configured in the plugin properties (see below) :
+- index (String) : name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- type (String) : name of the elasticsearch type on which the multiget query will be performed. This field is not mandatory.
+- ids (String) : comma separated list of document ids to fetch. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
+- includes (String) : comma separated list of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
+- excludes (String) : comma separated list of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
+
+Each outcoming record holds data of one elasticsearch retrieved document. This data is stored in these fields :
+- index (same field name as the incoming record) : name of the elasticsearch index.
+- type (same field name as the incoming record) : name of the elasticsearch type.
+- id (same field name as the incoming record) : retrieved document id.
+- a list of String fields containing :
+   * field name : the retrieved field name
+   * field value : the retrieved field value
 
 Module
 ______
@@ -1271,7 +1638,7 @@ com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch
 
 Tags
 ____
-None.
+elasticsearch
 
 Properties
 __________
@@ -1295,7 +1662,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 NormalizeFields
 ---------------
-No description provided.
+Changes the name of a field according to a provided name mapping
+...
 
 Module
 ______
@@ -1307,7 +1675,7 @@ com.hurence.logisland.processor.NormalizeFields
 
 Tags
 ____
-None.
+record, fields, normalizer
 
 Properties
 __________
@@ -1320,13 +1688,113 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**conflict.resolution.policy**", "what to do when a field with the same name already exists ?", "nothing to do (leave record as it was), overwrite existing field (if field already exist), keep only old field and delete the other (keep only old field and delete the other), keep old field and new one (creates an alias for the new field)", "do_nothing", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative mapping", "a comma separated list of possible field name", "when a field has a name contained in the list it will be renamed with this property field name", **true**
+
 ----------
 
 .. _com.hurence.logisland.processor.bro.ParseBroEvent: 
 
 ParseBroEvent
 -------------
-No description provided.
+The ParseBroEvent processor is the Logisland entry point to get and process `Bro <https://www.bro.org>`_ events. The `Bro-Kafka plugin <https://github.com/bro/bro-plugins/tree/master/kafka>`_ should be used and configured in order to have Bro events sent to Kafka. See the `Bro/Logisland tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-bro-events.html>`_ for an example of usage for this processor. The ParseBroEvent processor does some minor pre-processing on incoming Bro events from the Bro-Kafka plugin to adapt them to Logisland.
+
+Basically the events coming from the Bro-Kafka plugin are JSON documents with a first level field indicating the type of the event. The ParseBroEvent processor takes the incoming JSON document, sets the event type in a record_type field and sets the original sub-fields of the JSON event as first level fields in the record. Also any dot in a field name is transformed into an underscore. Thus, for instance, the field id.orig_h becomes id_orig_h. The next processors in the stream can then process the Bro events generated by this ParseBroEvent processor.
+
+As an example here is an incoming event from Bro:
+
+{
+
+   "conn": {
+
+     "id.resp_p": 9092,
+
+     "resp_pkts": 0,
+
+     "resp_ip_bytes": 0,
+
+     "local_orig": true,
+
+     "orig_ip_bytes": 0,
+
+     "orig_pkts": 0,
+
+     "missed_bytes": 0,
+
+     "history": "Cc",
+
+     "tunnel_parents": [],
+
+     "id.orig_p": 56762,
+
+     "local_resp": true,
+
+     "uid": "Ct3Ms01I3Yc6pmMZx7",
+
+     "conn_state": "OTH",
+
+     "id.orig_h": "172.17.0.2",
+
+     "proto": "tcp",
+
+     "id.resp_h": "172.17.0.3",
+
+     "ts": 1487596886.953917
+
+   }
+
+ }
+
+It gets processed and transformed into the following Logisland record by the ParseBroEvent processor:
+
+"@timestamp": "2017-02-20T13:36:32Z"
+
+"record_id": "6361f80a-c5c9-4a16-9045-4bb51736333d"
+
+"record_time": 1487597792782
+
+"record_type": "conn"
+
+"id_resp_p": 9092
+
+"resp_pkts": 0
+
+"resp_ip_bytes": 0
+
+"local_orig": true
+
+"orig_ip_bytes": 0
+
+"orig_pkts": 0
+
+"missed_bytes": 0
+
+"history": "Cc"
+
+"tunnel_parents": []
+
+"id_orig_p": 56762
+
+"local_resp": true
+
+"uid": "Ct3Ms01I3Yc6pmMZx7"
+
+"conn_state": "OTH"
+
+"id_orig_h": "172.17.0.2"
+
+"proto": "tcp"
+
+"id_resp_h": "172.17.0.3"
+
+"ts": 1487596886.953917
 
 Module
 ______
@@ -1338,7 +1806,7 @@ com.hurence.logisland.processor.bro.ParseBroEvent
 
 Tags
 ____
-None.
+bro, security, IDS, NIDS
 
 Properties
 __________
@@ -1357,7 +1825,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ParseGitlabLog
 --------------
-No description provided.
+The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs. This allows for instance to monitor activities in your Gitlab server. The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records. You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.
 
 Module
 ______
@@ -1369,7 +1837,7 @@ com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog
 
 Tags
 ____
-None.
+logs, gitlab
 
 Properties
 __________
@@ -1388,7 +1856,14 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ParseNetflowEvent
 -----------------
-No description provided.
+The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor is the Logisland entry point to  process Netflow (V5) events. NetFlow is a feature introduced on Cisco routers that provides the ability to collect IP network traffic.We can distinguish 2 components:
+
+	-Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one or more flow collectors
+
+	-Flow collector: responsible for reception, storage and pre-processing of flow data received from a flow exporter
+The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)
+Netflow are sent to kafka in order to be processed by logisland.
+In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. this traffic will be sent to port 2055. The we rely on nifi to listen of that port for   incoming netflow (V5) traffic and send them to a kafka topic. The Netflow processor could thus treat these events and generate corresponding logisland records. The following processors in the stream can then process the Netflow records generated by this processor.
 
 Module
 ______
@@ -1400,7 +1875,7 @@ com.hurence.logisland.processor.netflow.ParseNetflowEvent
 
 Tags
 ____
-None.
+netflow, security
 
 Properties
 __________
@@ -1421,7 +1896,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ParseNetworkPacket
 ------------------
-No description provided.
+The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode).  In batch mode, the processor decodes the bytes of the incoming pcap record, where a Global header followed by a sequence of [packet header, packet data] pairs are stored. Then, each incoming pcap event is parsed into n packet records. The fields of packet headers are then extracted and made available in dedicated record fields. See the `Capturing Network packets tutorial <http://logisland.readthedocs.io/en/latest/tutorials/indexing-network-packets.html>`_ for an example of usage of this processor.
 
 Module
 ______
@@ -1433,7 +1908,7 @@ com.hurence.logisland.processor.networkpacket.ParseNetworkPacket
 
 Tags
 ____
-None.
+PCap, security, IDS, NIDS
 
 Properties
 __________
@@ -1453,7 +1928,8 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ParseProperties
 ---------------
-No description provided.
+Parse a field made of key=value fields separated by spaces
+a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,2 & 3 to the current Record
 
 Module
 ______
@@ -1465,7 +1941,7 @@ com.hurence.logisland.processor.ParseProperties
 
 Tags
 ____
-None.
+record, properties, parser
 
 Properties
 __________
@@ -1484,7 +1960,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ParseUserAgent
 --------------
-No description provided.
+The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest. There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them. This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.
 
 Module
 ______
@@ -1496,7 +1972,7 @@ com.hurence.logisland.processor.useragent.ParseUserAgent
 
 Tags
 ____
-None.
+User-Agent, clickstream, DMP
 
 Properties
 __________
@@ -1522,7 +1998,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 PutHBaseCell
 ------------
-No description provided.
+Adds the Contents of a Record to HBase as the value of a single cell
 
 Module
 ______
@@ -1534,7 +2010,7 @@ com.hurence.logisland.processor.hbase.PutHBaseCell
 
 Tags
 ____
-None.
+hadoop, hbase
 
 Properties
 __________
@@ -1564,7 +2040,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 RedisKeyValueCacheService
 -------------------------
-No description provided.
+A controller service for caching records by key value pair with LRU (last recently used) strategy. using LinkedHashMap
 
 Module
 ______
@@ -1576,7 +2052,7 @@ com.hurence.logisland.redis.service.RedisKeyValueCacheService
 
 Tags
 ____
-None.
+cache, service, key, value, pair, redis
 
 Properties
 __________
@@ -1587,25 +2063,25 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
    :widths: 20,60,30,20,10,10
 
-   "**Redis Mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "", ""
-   "**Connection String**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "", ""
-   "**Database Index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "", ""
-   "**Communication Timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "", ""
-   "**Cluster Max Redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "", ""
-   "Sentinel Master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "", ""
-   "Password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", ""
-   "**Pool - Max Total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "", ""
-   "**Pool - Max Idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "", ""
-   "**Pool - Min Idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "", ""
-   "**Pool - Block When Exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "", ""
-   "**Pool - Max Wait Time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "", ""
-   "**Pool - Min Evictable Idle Time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "", ""
-   "**Pool - Time Between Eviction Runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "", ""
-   "**Pool - Num Tests Per Eviction Run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "", ""
-   "**Pool - Test On Create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "", ""
-   "**Pool - Test On Borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "", ""
-   "**Pool - Test On Return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "", ""
-   "**Pool - Test While Idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "", ""
+   "**redis.mode**", "The type of Redis being communicated with - standalone, sentinel, or clustered.", "standalone (A single standalone Redis instance.), sentinel (Redis Sentinel which provides high-availability. Described further at https://redis.io/topics/sentinel), cluster (Clustered Redis which provides sharding and replication. Described further at https://redis.io/topics/cluster-spec)", "standalone", "", ""
+   "**connection.string**", "The connection string for Redis. In a standalone instance this value will be of the form hostname:port. In a sentinel instance this value will be the comma-separated list of sentinels, such as host1:port1,host2:port2,host3:port3. In a clustered instance this value will be the comma-separated list of cluster masters, such as host1:port,host2:port,host3:port.", "", "null", "", ""
+   "**database.index**", "The database index to be used by connections created from this connection pool. See the databases property in redis.conf, by default databases 0-15 will be available.", "", "0", "", ""
+   "**communication.timeout**", "The timeout to use when attempting to communicate with Redis.", "", "10 seconds", "", ""
+   "**cluster.max.redirects**", "The maximum number of redirects that can be performed when clustered.", "", "5", "", ""
+   "sentinel.master", "The name of the sentinel master, require when Mode is set to Sentinel", "", "null", "", ""
+   "password", "The password used to authenticate to the Redis server. See the requirepass property in redis.conf.", "", "null", "**true**", ""
+   "**pool.max.total**", "The maximum number of connections that can be allocated by the pool (checked out to clients, or idle awaiting checkout). A negative value indicates that there is no limit.", "", "8", "", ""
+   "**pool.max.idle**", "The maximum number of idle connections that can be held in the pool, or a negative value if there is no limit.", "", "8", "", ""
+   "**pool.min.idle**", "The target for the minimum number of idle connections to maintain in the pool. If the configured value of Min Idle is greater than the configured value for Max Idle, then the value of Max Idle will be used instead.", "", "0", "", ""
+   "**pool.block.when.exhausted**", "Whether or not clients should block and wait when trying to obtain a connection from the pool when the pool has no available connections. Setting this to false means an error will occur immediately when a client requests a connection and none are available.", "true, false", "true", "", ""
+   "**pool.max.wait.time**", "The amount of time to wait for an available connection when Block When Exhausted is set to true.", "", "10 seconds", "", ""
+   "**pool.min.evictable.idle.time**", "The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.", "", "60 seconds", "", ""
+   "**pool.time.between.eviction.runs**", "The amount of time between attempting to evict idle connections from the pool.", "", "30 seconds", "", ""
+   "**pool.num.tests.per.eviction.run**", "The number of connections to tests per eviction attempt. A negative value indicates to test all connections.", "", "-1", "", ""
+   "**pool.test.on.create**", "Whether or not connections should be tested upon creation.", "true, false", "false", "", ""
+   "**pool.test.on.borrow**", "Whether or not connections should be tested upon borrowing from the pool.", "true, false", "false", "", ""
+   "**pool.test.on.return**", "Whether or not connections should be tested upon returning to the pool.", "true, false", "false", "", ""
+   "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "", ""
    "**record.recordSerializer**", "the way to serialize/deserialize the record", "kryo serialization (serialize events as json blocs), avro serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), byte array serialization (serialize events as byte arrays), Kura Protobuf serialization (serialize events as Kura protocol buffer), no serialization (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "", ""
 
 ----------
@@ -1614,7 +2090,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 RemoveFields
 ------------
-No description provided.
+Removes a list of fields defined by a comma separated list of field names or keeps only fields defined by a comma separated list of field names.
 
 Module
 ______
@@ -1626,7 +2102,7 @@ com.hurence.logisland.processor.RemoveFields
 
 Tags
 ____
-None.
+record, fields, remove, delete, keep
 
 Properties
 __________
@@ -1646,7 +2122,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 RunPython
 ---------
-No description provided.
+ !!!! WARNING !!!!
+
+The RunPython processor is currently an experimental feature : it is delivered as is, with the current set of features and is subject to modifications in API or anything else in further logisland releases without warnings. There is no tutorial yet. If you want to play with this processor, use the python-processing.yml example and send the apache logs of the index apache logs tutorial. The debug stream processor at the end of the stream should output events in stderr file of the executors from the spark console.
+
+This processor allows to implement and run a processor written in python. This can be done in 2 ways. Either directly defining the process method code in the **script.code.process** configuration property or poiting to an external python module script file in the **script.path** configuration property. Directly defining methods is called the inline mode whereas using a script file is called the file mode. Both ways are mutually exclusive. Whether using the inline of file mode, your python code may depend on some python dependencies. If the set of python dependencies already delivered with the Logisland framework is not sufficient, you can use the **dependencies.path** configuration property to give their location. Currently only the nltk python library is delivered with Logisland.
 
 Module
 ______
@@ -1658,7 +2138,7 @@ com.hurence.logisland.processor.scripting.python.RunPython
 
 Tags
 ____
-None.
+scripting, python
 
 Properties
 __________
@@ -1682,7 +2162,24 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SampleRecords
 -------------
-No description provided.
+Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_
+
+you can use this processor to handle custom events defined by lucene queries
+a new record is added to output each time a registered query is matched
+
+A query is expressed as a lucene query against a field like for example: 
+
+.. code::
+
+   message:'bad exception'
+   error_count:[10 TO *]
+   bytes_out:5000
+   user_name:tom*
+
+Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations
+
+.. warning::
+   don't forget to set numeric fields property to handle correctly numeric ranges queries
 
 Module
 ______
@@ -1694,7 +2191,7 @@ com.hurence.logisland.processor.SampleRecords
 
 Tags
 ____
-None.
+analytic, sampler, record, iot, timeseries
 
 Properties
 __________
@@ -1716,7 +2213,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SelectDistinctRecords
 ---------------------
-No description provided.
+Keep only distinct records based on a given field
 
 Module
 ______
@@ -1728,7 +2225,7 @@ com.hurence.logisland.processor.SelectDistinctRecords
 
 Tags
 ____
-None.
+record, fields, remove, delete
 
 Properties
 __________
@@ -1747,7 +2244,17 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SendMail
 --------
-No description provided.
+The SendMail processor is aimed at sending an email (like for instance an alert email) from an incoming record. There are three ways an incoming record can generate an email according to the special fields it must embed. Here is a list of the record fields that generate a mail and how they work:
+
+- **mail_text**: this is the simplest way for generating a mail. If present, this field means to use its content (value) as the payload of the mail to send. The mail is sent in text format if there is only this special field in the record. Otherwise, used with either mail_html or mail_use_template, the content of mail_text is the aletrnative text to the HTML mail that is generated.
+
+- **mail_html**: this field specifies that the mail should be sent as HTML and the value of the field is mail payload. If mail_text is also present, its value is used as the alternative text for the mail. mail_html cannot be used with mail_use_template: only one of those two fields should be present in the record.
+
+- **mail_use_template**: If present, this field specifies that the mail should be sent as HTML and the HTML content is to be generated from the template in the processor configuration key **html.template**. The template can contain parameters which must also be present in the record as fields. See documentation of html.template for further explanations. mail_use_template cannot be used with mail_html: only one of those two fields should be present in the record.
+
+ If **allow_overwrite** configuration key is true, any mail.* (dot format) configuration key may be overwritten with a matching field in the record of the form mail_* (underscore format). For instance if allow_overwrite is true and mail.to is set to config_address@domain.com, a record generating a mail with a mail_to field set to record_address@domain.com will send a mail to record_address@domain.com.
+
+ Apart from error records (when he is unable to process the incoming record or to send the mail), this processor is not expected to produce any output records.
 
 Module
 ______
@@ -1759,7 +2266,7 @@ com.hurence.logisland.processor.SendMail
 
 Tags
 ____
-None.
+smtp, email, e-mail, mail, mailer, sendmail, message, alert, html
 
 Properties
 __________
@@ -1791,7 +2298,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SetJsonAsFields
 ---------------
-No description provided.
+The SetJsonAsFields processor reads the content of a string field containing a json  string and sets each json attribute as a field of the current record. Note that this could be achieved with the EvaluateJsonPath processor, but this implies to declare each json first level attribute in the configuration and also to know by advance every one of them. Whereas for this simple case, the SetJsonAsFields processor does not require such a configuration and will work with any incoming json, regardless of the list of first level attributes.
 
 Module
 ______
@@ -1803,7 +2310,7 @@ com.hurence.logisland.processor.SetJsonAsFields
 
 Tags
 ____
-None.
+json
 
 Properties
 __________
@@ -1827,7 +2334,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Solr_5_5_5_ClientService
 ------------------------
-No description provided.
+Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
@@ -1839,7 +2346,7 @@ com.hurence.logisland.service.solr.Solr_5_5_5_ClientService
 
 Tags
 ____
-None.
+solr, client
 
 Properties
 __________
@@ -1865,7 +2372,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Solr_6_4_2_ChronixClientService
 -------------------------------
-No description provided.
+Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
@@ -1877,7 +2384,7 @@ com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
 
 Tags
 ____
-None.
+solr, client
 
 Properties
 __________
@@ -1901,7 +2408,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Solr_6_6_2_ClientService
 ------------------------
-No description provided.
+Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
@@ -1913,7 +2420,7 @@ com.hurence.logisland.service.solr.Solr_6_6_2_ClientService
 
 Tags
 ____
-None.
+solr, client
 
 Properties
 __________
@@ -1939,7 +2446,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SplitField
 ----------
-No description provided.
+This processor is used to create a new set of fields from one field (using split).
 
 Module
 ______
@@ -1951,7 +2458,7 @@ com.hurence.logisland.processor.SplitField
 
 Tags
 ____
-None.
+parser, split, log, record
 
 Properties
 __________
@@ -1967,13 +2474,27 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "split.counter.enable", "Enable the counter of items returned by the split", "", "false", "", ""
    "split.counter.suffix", "Enable the counter of items returned by the split", "", "Counter", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative split field", "another split that could match", "This processor is used to create a new set of fields from one field (using split).", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.SplitField`_ 
+
 ----------
 
 .. _com.hurence.logisland.processor.SplitText: 
 
 SplitText
 ---------
-No description provided.
+This is a processor that is used to split a String into fields according to a given Record mapping
 
 Module
 ______
@@ -1985,7 +2506,7 @@ com.hurence.logisland.processor.SplitText
 
 Tags
 ____
-None.
+parser, regex, log, record
 
 Properties
 __________
@@ -2003,6 +2524,20 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.type", "default type of record", "", "record", "", ""
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
    "timezone.record.time", "what is the time zone of the string formatted date for 'record_time' field.", "", "UTC", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has not matched. It must be in the form alt.value.regex.1 and alt.value.fields.1", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.SplitTextMultiline`_ 
 
 ----------
 
@@ -2043,7 +2578,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 SplitTextWithProperties
 -----------------------
-No description provided.
+This is a processor that is used to split a String into fields according to a given Record mapping
 
 Module
 ______
@@ -2055,7 +2590,7 @@ com.hurence.logisland.processor.SplitTextWithProperties
 
 Tags
 ____
-None.
+parser, regex, log, record
 
 Properties
 __________
@@ -2074,13 +2609,35 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "keep.raw.content", "do we add the initial raw content ?", "", "true", "", ""
    "**properties.field**", "the field containing the properties to split and treat", "", "properties", "", ""
 
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has not matched. It must be in the form alt.value.regex.1 and alt.value.fields.1", **true**
+
+See Also:
+_________
+`com.hurence.logisland.processor.SplitTextMultiline`_ 
+
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic: 
 
 setSourceOfTraffic
 ------------------
-No description provided.
+Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
+including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
+When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. 
+To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
+i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
+, the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
+By default the source of traffic informations are placed in a flat structure (specified by the **source_of_traffic.suffix** property
+ with a default value of source_of_traffic_). To work properly the setSourceOfTraffic processor needs to have access to an 
+Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
 
 Module
 ______
@@ -2092,7 +2649,7 @@ com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic
 
 Tags
 ____
-None.
+session, traffic, source, web, analytics
 
 Properties
 __________

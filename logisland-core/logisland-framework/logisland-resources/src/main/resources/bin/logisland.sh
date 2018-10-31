@@ -47,11 +47,11 @@ YARN_CLUSTER_OPTIONS=""
 usage() {
   echo "Usage:"
   echo
-  echo " `basename $0` --conf <yml-configuguration-file> [--yarn-cluster] [--spark-home <spark-home-directory>]"
+  echo " `basename $0` --conf <yml-configuration-file> [--yarn-cluster] [--spark-home <spark-home-directory>]"
   echo
   echo "Options:"
   echo
-  echo "  --conf <yml-configuguration-file> : provides the configuration file"
+  echo "  --conf <yml-configuration-file> : provides the configuration file"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }
@@ -222,10 +222,6 @@ case $MODE in
 
     ;;
   yarn-cluster)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
-
 
     YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties  --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
 
@@ -332,9 +328,6 @@ case $MODE in
     ;;
   yarn-client)
 
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-engine[^,]*-spark_[^,-]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
     YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client"
 
     DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
@@ -364,9 +357,7 @@ case $MODE in
     ;;
 
   mesos)
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/logisland-spark_[^,-]*-engine[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/guava-[^,]*.jar,#,#'`
-    app_classpath=`echo ${app_classpath} | sed 's#,/[^,]*/elasticsearch-[^,]*.jar,#,#'`
+
     MESOS_OPTIONS="--master ${SPARK_MASTER}"
 
 
@@ -419,8 +410,7 @@ case $MODE in
     export MESOS_NATIVE_JAVA_LIBRARY="${MESOS_NATIVE_JAVA_LIBRARY}"
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${MESOS_OPTIONS} \
     --class ${app_mainclass} \
-    --jars ${app_classpath} \
-    ${lib_dir}/logisland-spark*-engine*.jar \
+    --jars ${app_classpath} ${engine_jar} \
     -conf ${CONF_FILE}
     ;;
 
