@@ -50,6 +50,70 @@ public class ConvertFieldsTypeTest extends BaseSyslogTest {
 	}
 
 
+    @Test
+    public void testBooleanConversion() {
+
+        Record record = getRecord();
+
+        record.setField("boolField", FieldType.STRING, "true");
+
+
+        TestRunner testRunner = TestRunners.newTestRunner(new ConvertFieldsType());
+        testRunner.setProperty("boolField", "bool");
+        testRunner.assertValid();
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+        outputRecord.assertRecordSizeEquals(6);
+        outputRecord.assertFieldEquals("boolField",  true);
+
+
+
+        testRunner.clearQueues();
+        record.setField("boolField", FieldType.STRING, "True");
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+        outputRecord.assertRecordSizeEquals(6);
+        outputRecord.assertFieldEquals("boolField",  true);
+
+        testRunner.clearQueues();
+        record.setField("boolField", FieldType.STRING, "0");
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+        outputRecord.assertRecordSizeEquals(6);
+        outputRecord.assertFieldEquals("boolField",  false);
+
+
+        testRunner.clearQueues();
+        record.setField("boolField", FieldType.INT, 0);
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+        outputRecord.assertRecordSizeEquals(6);
+        outputRecord.assertFieldEquals("boolField",  false);
+
+
+      /*  testRunner.clearQueues();
+        record.setField("boolField", FieldType.INT, 1);
+        testRunner.enqueue(record);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        outputRecord = testRunner.getOutputRecords().get(0);
+        outputRecord.assertRecordSizeEquals(6);
+        outputRecord.assertFieldEquals("boolField",  true);*/
+    }
+
 	@Test
 	public void testBasicConversion() {
 
@@ -96,7 +160,7 @@ public class ConvertFieldsTypeTest extends BaseSyslogTest {
         outputRecord.assertFieldEquals("string1",  0);
         outputRecord.assertFieldEquals("int1",  1);
         outputRecord.assertFieldNotEquals("int1",  "1");
-        outputRecord.assertFieldEquals("long1",  1L);
+        outputRecord.assertFieldEquals("long1",  false);
         outputRecord.assertFieldEquals("float1",  3.4f);
         outputRecord.assertFieldEquals("float2",  3);
     }
