@@ -34,6 +34,8 @@ import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.xpath.XPathEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
@@ -65,16 +67,19 @@ import static javax.xml.xpath.XPathConstants.STRING;
 
 public class EvaluateXPath extends AbstractProcessor {
 
+    private static final String XPATH_FACTORY_IMPL = "net.sf.saxon.xpath.XPathFactoryImpl";
+    private static Logger logger = LoggerFactory.getLogger(EvaluateXPath.class);
+
     protected HashMap<String, XPathExpression> xpathRules = new HashMap<String, XPathExpression>();
 
     public static final PropertyDescriptor SOURCE = new PropertyDescriptor.Builder()
-            .name("Source")
+            .name("source")
             .description("Indicates the attribute containing the xml data to evaluate xpath against.")
             .required(true)
             .build();
 
     public static final PropertyDescriptor VALIDATE_DTD = new PropertyDescriptor.Builder()
-            .name("Validate DTD")
+            .name("validate_dtd")
             .description("Specifies whether or not the XML content should be validated against the DTD.")
             .required(true)
             .allowableValues("true", "false")
@@ -103,21 +108,15 @@ public class EvaluateXPath extends AbstractProcessor {
 
     private final AtomicReference<XPathFactory> factoryRef = new AtomicReference<>();
 
-    static {
-        System.setProperty("javax.xml.xpath.XPathFactory:" + NamespaceConstant.OBJECT_MODEL_SAXON, "net.sf.saxon.xpath.XPathFactoryImpl");
-    }
 
     @Override
     public void init(ProcessContext context) {
-        final List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(SOURCE);
-        properties.add(VALIDATE_DTD);
-        properties.add(CONFLICT_RESOLUTION_POLICY);
-        this.properties = Collections.unmodifiableList(properties);
         try {
-            factoryRef.set(XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON));
+            factoryRef.set(XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,
+                    XPATH_FACTORY_IMPL,
+                    ClassLoader.getSystemClassLoader()));
         } catch (XPathFactoryConfigurationException e) {
-            e.printStackTrace();
+            logger.warn(e.toString());
         }
         final XPathFactory factory = factoryRef.get();
 
@@ -143,7 +142,11 @@ public class EvaluateXPath extends AbstractProcessor {
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+        final List<PropertyDescriptor> properties = new ArrayList<>();
+        properties.add(SOURCE);
+        properties.add(VALIDATE_DTD);
+        properties.add(CONFLICT_RESOLUTION_POLICY);
+        return Collections.unmodifiableList(properties);
     }
 
 
@@ -165,8 +168,6 @@ public class EvaluateXPath extends AbstractProcessor {
         if (records.isEmpty()) {
             return records;
         }
-
-        final ComponentLog logger = getLogger();
 
         final String sourceAttrName = context.getPropertyValue(SOURCE).asString();
         final String conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
@@ -196,16 +197,16 @@ public class EvaluateXPath extends AbstractProcessor {
                         xmlStringBuilder.toString().getBytes("UTF-8"));
                 xmlDoc = docBuilder.parse(input);
             } catch (ParserConfigurationException e) {
-                e.printStackTrace();
+                logger.warn(e.toString());
                 continue recordLoop;
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                logger.warn(e.toString());
                 continue recordLoop;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.warn(e.toString());
                 continue recordLoop;
             } catch (SAXException e) {
-                e.printStackTrace();
+                logger.warn(e.toString());
                 continue recordLoop;
             }
 
@@ -258,7 +259,9 @@ public class EvaluateXPath extends AbstractProcessor {
         @Override
         public ValidationResult validate(final String subject, final String input) {
             try {
-                XPathFactory factory = XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON);
+                XPathFactory factory = XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,
+                        XPATH_FACTORY_IMPL,
+                        ClassLoader.getSystemClassLoader());
                 final XPathEvaluator evaluator = (XPathEvaluator) factory.newXPath();
 
                 String error = null;

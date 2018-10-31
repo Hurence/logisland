@@ -168,9 +168,9 @@ public class EvaluateXPathTest {
         Record record1 = new StandardRecord()
                 .setField("attrSource", FieldType.STRING,
                         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                                "<FAP:Message xmlns:FAP=\"urn:st-com:ST:FAP\">" +
+                                "<FAP:Message xmlns:FAP=\"urn:test-com:TEST:FAP\">" +
                                 "<FAP:Body>" +
-                                "<lotId xmlns=\"urn:st-com:ST:FAP:MES:txn\">Q836556</lotId>" +
+                                "<lotId xmlns=\"urn:test-com:TEST:FAP:MES:txn\">Q836556</lotId>" +
                                 "</FAP:Body>" +
                                 "</FAP:Message>")
                 .setField("attr1", FieldType.STRING,"default");
@@ -199,8 +199,8 @@ public class EvaluateXPathTest {
         Record record1 = new StandardRecord()
                 .setField("attrSource", FieldType.STRING,
                         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                                "<FAP:Message xmlns:FAP=\"urn:st-com:ST:FAP\">" +
-                                "<FAP:Header xmlns=\"urn:st-com:ST:FAP:MES:txn\">" +
+                                "<FAP:Message xmlns:FAP=\"urn:test-com:TEST:FAP\">" +
+                                "<FAP:Header xmlns=\"urn:test-com:TEST:FAP:MES:txn\">" +
                                   "<FAP:SenderID>300W</FAP:SenderID>" +
                                   "<FAP:ReceiverID>EXTERNALSYSTEM</FAP:ReceiverID>" +
                                   "<FAP:TID>749686529</FAP:TID>" +
@@ -213,15 +213,15 @@ public class EvaluateXPathTest {
                                   "<FAP:ErrMess/>" +
                                 "</FAP:Header>" +
                                 "<FAP:Body>" +
-                                "<txn:FwStepChangeForLot xmlns:txn=\"urn:st-com:ST:FAP:MES:txn\">" +
-                                  "<lotId xmlns=\"urn:st-com:ST:FAP:MES:txn\">Q836556</lotId>" +
-                                  "<timeStamp xmlns=\"urn:st-com:ST:FAP:MES:txn\">5349</timeStamp>" +
-                                  "<stepId xmlns=\"urn:st-com:ST:FAP:MES:txn\">IMPL_NWPIX2-01.0</stepId>" +
-                                  "<stepHandle xmlns=\"urn:st-com:ST:FAP:MES:txn\">240.1.30-IMPL_NWPIX2.1.10</stepHandle>" +
-                                  "<currentRuleIndex xmlns=\"urn:st-com:ST:FAP:MES:txn\">1</currentRuleIndex>" +
-                                  "<stepProcessingStatus xmlns=\"urn:st-com:ST:FAP:MES:txn\">Processing</stepProcessingStatus>" +
-                                  "<stepDisplayStatus xmlns=\"urn:st-com:ST:FAP:MES:txn\">ExecutingJOBPREP</stepDisplayStatus>" +
-                                  "<location xmlns=\"urn:st-com:ST:FAP:MES:txn\">IVISM01</location>" +
+                                "<txn:FwStepChangeForLot xmlns:txn=\"urn:test-com:TEST:FAP:MES:txn\">" +
+                                  "<lotId xmlns=\"urn:test-com:TEST:FAP:MES:txn\">Q836556</lotId>" +
+                                  "<timeStamp xmlns=\"urn:test-com:TEST:FAP:MES:txn\">5349</timeStamp>" +
+                                  "<stepId xmlns=\"urn:test-com:TEST:FAP:MES:txn\">IMPL_NWPIX2-01.0</stepId>" +
+                                  "<stepHandle xmlns=\"urn:test-com:TEST:FAP:MES:txn\">240.1.30-IMPL_NWPIX2.1.10</stepHandle>" +
+                                  "<currentRuleIndex xmlns=\"urn:test-com:TEST:FAP:MES:txn\">1</currentRuleIndex>" +
+                                  "<stepProcessingStatus xmlns=\"urn:test-com:TEST:FAP:MES:txn\">Processing</stepProcessingStatus>" +
+                                  "<stepDisplayStatus xmlns=\"urn:test-com:TEST:FAP:MES:txn\">ExecutingJOBPREP</stepDisplayStatus>" +
+                                  "<location xmlns=\"urn:test-com:TEST:FAP:MES:txn\">IVISM01</location>" +
                                 "</txn:FwStepChangeForLot>" +
                                 "</FAP:Body>" +
                                 "</FAP:Message>")
