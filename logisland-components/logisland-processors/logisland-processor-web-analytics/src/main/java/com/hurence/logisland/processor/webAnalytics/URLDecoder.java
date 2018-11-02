@@ -21,7 +21,6 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
-import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -115,6 +114,7 @@ public class URLDecoder extends AbstractProcessor {
                         record.setField(fieldName, fieldType, decodedValue);
                     }
                 } catch (UnsupportedEncodingException e) {
+                    logger.warn(e.toString());
                 }
             }
         });
