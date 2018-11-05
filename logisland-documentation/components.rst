@@ -1060,6 +1060,49 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.xml.EvaluateXPath: 
+
+EvaluateXPath
+-------------
+Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to new attributes in the records, depending on configuration of the Processor. XPaths are entered by adding user-defined properties; the name of the property maps to the Attribute Name into which the result will be placed. The value of the property must be a valid XPath expression. If the expression matches nothing, no attributes is added. 
+
+Module
+______
+com.hurence.logisland:logisland-processor-xml:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.xml.EvaluateXPath
+
+Tags
+____
+XML, evaluate, XPath
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**source**", "Indicates the attribute containing the xml data to evaluate xpath against.", "", "null", "", ""
+   "**validate_dtd**", "Specifies whether or not the XML content should be validated against the DTD.", "true, false", "true", "", ""
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", ""
+
+----------
+
 .. _com.hurence.logisland.processor.excel.ExcelExtract: 
 
 ExcelExtract
@@ -2622,6 +2665,49 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
+
+----------
+
+.. _com.hurence.logisland.processor.webAnalytics.URLDecoder: 
+
+URLDecoder
+----------
+Decode one or more field containing an URL with possibly special chars encoded
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.webAnalytics.URLDecoder
+
+Tags
+____
+record, fields, Decode
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**decode.fields**", "List of fields (URL) to decode", "", "null", "", ""
+   "charset", "Charset to use to decode the URL", "", "UTF-8", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "fields to decode", "a default value", "Decode one or more fields from the record ", ""
 
 ----------
 

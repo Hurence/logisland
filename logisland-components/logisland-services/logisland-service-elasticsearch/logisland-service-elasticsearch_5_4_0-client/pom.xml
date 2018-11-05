@@ -120,6 +120,14 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <apiArtifacts>
+                        <apiArtifact>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-service-elasticsearch-api</artifactId>
+                        </apiArtifact>
+                    </apiArtifacts>
+                </configuration>
             </plugin>
         </plugins>
     </build>
