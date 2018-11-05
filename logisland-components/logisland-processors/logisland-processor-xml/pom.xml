@@ -96,6 +96,14 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <apiArtifacts>
+                        <apiArtifact>
+                            <groupId>net.sf.saxon</groupId>
+                            <artifactId>Saxon-HE</artifactId>
+                        </apiArtifact>
+                    </apiArtifacts>
+                </configuration>
             </plugin>
         </plugins>
     </build>
