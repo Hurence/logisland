@@ -114,7 +114,7 @@ public class EvaluateXPath extends AbstractProcessor {
         try {
             factoryRef.set(XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,
                     XPATH_FACTORY_IMPL,
-                    ClassLoader.getSystemClassLoader()));
+                    Thread.currentThread().getContextClassLoader()));
         } catch (XPathFactoryConfigurationException e) {
             logger.warn(e.toString());
         }
@@ -261,7 +261,7 @@ public class EvaluateXPath extends AbstractProcessor {
             try {
                 XPathFactory factory = XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,
                         XPATH_FACTORY_IMPL,
-                        ClassLoader.getSystemClassLoader());
+                        Thread.currentThread().getContextClassLoader());
                 final XPathEvaluator evaluator = (XPathEvaluator) factory.newXPath();
 
                 String error = null;
