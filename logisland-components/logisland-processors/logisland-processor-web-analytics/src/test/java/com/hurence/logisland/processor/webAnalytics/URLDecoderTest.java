@@ -155,4 +155,25 @@ public class URLDecoderTest {
         out.assertFieldEquals("url2", expectedDecodedUrlVal2);
         out.assertFieldEquals("val4", expectedDecodedVal4);
     }
+
+    @Test
+    public void testNoMatchingField() {
+
+        Record record1 = getRecord1();
+
+        TestRunner testRunner = TestRunners.newTestRunner(new URLDecoder());
+        testRunner.setProperty("decode.fields", "nonExistingField");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(record1.size());
+        out.assertFieldEquals("string1", "value1");
+        out.assertFieldEquals("url1", urlVal1);
+        out.assertFieldEquals("url2", urlVal2);
+        out.assertFieldEquals("val4", val4);
+    }
 }
