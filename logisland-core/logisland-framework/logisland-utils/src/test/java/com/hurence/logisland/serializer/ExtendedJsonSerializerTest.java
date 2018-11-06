@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Date;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -212,4 +213,57 @@ public class ExtendedJsonSerializerTest {
         assertTrue(deserializedRecord.getTime().getTime() == 1493286300033L);
     }
 
+    @Test
+    public void testFormatDate() throws Exception {
+        final String schema = "{\n" +
+                "  \"version\": 1,\n" +
+                "  \"type\": \"record\",\n" +
+                "  \"namespace\": \"test\",\n" +
+                "  \"name\": \"test\",\n" +
+                "  \"fields\": [  \n" +
+                "    {\n" +
+                "      \"name\": \"myDateAsString\",\n" +
+                "      \"type\":  {\n" +
+                "        \"type\": \"int\",\n" +
+                "        \"logicalType\": \"date\"\n" +
+                "      }\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"myTimestampAsString\",\n" +
+                "      \"type\":  {\n" +
+                "        \"type\": \"long\",\n" +
+                "        \"logicalType\": \"timestamp-millis\"\n" +
+                "      }\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"myTimestampAsEpoch\",\n" +
+                "      \"type\":  {\n" +
+                "        \"type\": \"long\",\n" +
+                "        \"logicalType\": \"timestamp-millis\"\n" +
+                "      }\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"unformattedDate\",\n" +
+                "      \"type\":  \"long\"\n" +
+                "    }\n" +
+                " ]\n" +
+                "}\n";
+
+        final String json = "{\n" +
+                "  \"myTimestampAsEpoch\": 1541494638000,\n" +
+                "  \"myTimestampAsString\" : \"2018-11-06T08:57:18.000Z\",\n" +
+                "  \"myDateAsString\": \"20181106\",\n" +
+                "  \"unformattedDate\" : 1541494638000\n" +
+                "}";
+
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer(schema);
+        final Record record = serializer.deserialize(new ByteArrayInputStream(json.getBytes("UTF8")));
+        System.out.println(record);
+        assertEquals(FieldType.DATETIME, record.getField("myTimestampAsEpoch").getType());
+        assertEquals(FieldType.DATETIME, record.getField("myTimestampAsString").getType());
+        assertEquals(FieldType.DATETIME, record.getField("myDateAsString").getType());
+        assertEquals(FieldType.LONG, record.getField("unformattedDate").getType());
+
+    }
 }
