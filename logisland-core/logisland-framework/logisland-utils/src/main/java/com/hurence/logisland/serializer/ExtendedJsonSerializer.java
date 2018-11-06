@@ -147,7 +147,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     public ExtendedJsonSerializer(String schemaString) {
         if (schemaString != null) {
-            final Schema.Parser parser = new Schema.Parser();
+            final Schema.Parser parser = new Schema.Parser().setValidate(false);
             try {
                 schema = parser.parse(schemaString);
             } catch (Exception e) {

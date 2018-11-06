@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,10 +24,11 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -36,9 +37,6 @@ import static org.junit.Assert.assertTrue;
  * @author tom
  */
 public class ExtendedJsonSerializerTest {
-
-
-
 
 
     @Test
@@ -124,8 +122,6 @@ public class ExtendedJsonSerializerTest {
                 "}";
 
 
-
-
         final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer(schema);
         ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
         Record deserializedRecord = serializer.deserialize(bais);
@@ -137,8 +133,6 @@ public class ExtendedJsonSerializerTest {
 
         System.out.println(new String(baos.toByteArray()));
     }
-
-
 
 
     @Test
@@ -162,7 +156,7 @@ public class ExtendedJsonSerializerTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         Record deserializedRecord = serializer.deserialize(bais);
 
-       // assertEquals(record.getAllFieldsSorted(), deserializedRecord.getAllFieldsSorted());
+        // assertEquals(record.getAllFieldsSorted(), deserializedRecord.getAllFieldsSorted());
 
     }
 
