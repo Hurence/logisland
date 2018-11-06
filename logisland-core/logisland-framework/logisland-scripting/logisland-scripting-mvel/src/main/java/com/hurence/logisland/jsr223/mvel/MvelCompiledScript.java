@@ -25,6 +25,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.mvel2.MVEL;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 
 public class MvelCompiledScript extends CompiledScript {
 
@@ -41,14 +43,15 @@ public class MvelCompiledScript extends CompiledScript {
 		if (this.expression.length()==0) {
 			throw new IllegalArgumentException("expression should not be empty" );
 		}
-		this.compiledExpression = MVEL.compileExpression(this.expression);
+		this.compiledExpression = MVEL.compileGetExpression(this.expression);
 	}
 	
 	@Override
 	public Object eval(ScriptContext context) throws ScriptException {
 		try {
 			Bindings map = context.getBindings(ScriptContext.ENGINE_SCOPE);
-			return MVEL.executeExpression(compiledExpression, map);
+			VariableResolverFactory functionFactory = new MapVariableResolverFactory(map);
+			return MVEL.executeExpression(compiledExpression, map, functionFactory);
 		}
 		catch (Throwable t) {
 			return null;
