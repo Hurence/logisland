@@ -36,6 +36,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Basic but complete Json {@link RecordSerializer}.
@@ -98,11 +99,11 @@ public class ExtendedJsonSerializer implements RecordSerializer {
                             break;
                         case ARRAY:
                             final Map<String, Object> tmpMap = new LinkedHashMap<>();
-                            Object[] filtered = ((List<Object>) value).stream().map(o -> {
+                            List<Object> filtered = ((List<Object>) value).stream().map(o -> {
                                 tmpMap.clear();
                                 doFilter(tmpMap, null, o, currentSchema.getElementType());
                                 return tmpMap.get(null);
-                            }).toArray();
+                            }).collect(Collectors.toList());
                             map.put(name, filtered);
                             break;
                         case INT:
