@@ -56,10 +56,7 @@ public class RecordConverter {
         Document document = new Document("_id", record.getId());
 
         record.getFieldsEntrySet().forEach(entry -> {
-
             document.put(entry.getKey(), entry.getValue().getRawValue());
-
-
 
         });
 

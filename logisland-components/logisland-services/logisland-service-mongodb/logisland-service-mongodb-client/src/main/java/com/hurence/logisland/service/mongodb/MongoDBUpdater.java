@@ -17,12 +17,14 @@ package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
+import com.hurence.logisland.util.Tuple;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ import java.util.stream.Collectors;
 public class MongoDBUpdater implements Runnable {
 
 
-    private final BlockingQueue<Record> records;
+    private final BlockingQueue<Tuple<Record, Bson>> records;
     private final int batchSize;
     private final long flushInterval;
     private volatile int batchedUpdates = 0;
@@ -55,7 +57,7 @@ public class MongoDBUpdater implements Runnable {
 
     public MongoDBUpdater(MongoDatabase db,
                           MongoCollection<Document> col,
-                          BlockingQueue<Record> records,
+                          BlockingQueue<Tuple<Record, Bson>> records,
                           int batchSize,
                           long flushInterval,
                           String bulkMode) {
@@ -71,15 +73,15 @@ public class MongoDBUpdater implements Runnable {
 
     @Override
     public void run() {
-        List<Document> batchBuffer = new ArrayList<>();
+        List<Tuple<Document, Bson>> batchBuffer = new ArrayList<>();
 
         while (true) {
 
             // process record if one
             try {
-                Record record = records.take();
+                Tuple<Record, Bson> record = records.take();
                 if (record != null) {
-                    batchBuffer.add(RecordConverter.convert(record));
+                    batchBuffer.add(new Tuple<>(RecordConverter.convert(record.getKey()), record.getValue()));
                     batchedUpdates++;
                 }
             } catch (InterruptedException e) {
@@ -94,16 +96,14 @@ public class MongoDBUpdater implements Runnable {
                 //use moustache operator to avoid composing strings when not needed
                 logger.debug("committing {} records to Mongo after {} ns", batchedUpdates, (currentTS - lastTS));
 
-                if (DatastoreClientService.BULK_MODE_UPSERT.getValue().equals(bulkMode)) {
-
-
+                if (MongoDBControllerService.BULK_MODE_UPSERT.getValue().equals(bulkMode)) {
                     ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
                     col.bulkWrite(batchBuffer.stream().map(document -> new ReplaceOneModel<>(
-                            Filters.eq("_id", document.getString("_id")),
-                            document,
+                            document.getValue(),
+                            document.getKey(),
                             replaceOptions)).collect(Collectors.toList()));
                 } else {
-                    col.insertMany(batchBuffer);
+                    col.insertMany(batchBuffer.stream().map(Tuple::getKey).collect(Collectors.toList()));
                 }
 
                 lastTS = currentTS;
