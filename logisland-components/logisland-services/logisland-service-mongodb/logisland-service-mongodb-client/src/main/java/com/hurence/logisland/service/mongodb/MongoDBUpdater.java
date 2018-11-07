@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,10 @@
 package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.util.Tuple;
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
@@ -31,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -39,18 +39,15 @@ import java.util.stream.Collectors;
  */
 public class MongoDBUpdater implements Runnable {
 
-
+    private static volatile int threadCount = 0;
     private final BlockingQueue<Tuple<Record, Bson>> records;
     private final int batchSize;
     private final long flushInterval;
-    private volatile int batchedUpdates = 0;
-    private volatile long lastTS = 0;
+    private long lastTS = 0;
     private final String bulkMode;
-
     private final MongoDatabase db;
     private final MongoCollection<Document> col;
 
-    private static volatile int threadCount = 0;
 
     private Logger logger = LoggerFactory.getLogger(MongoDBUpdater.class.getName() + threadCount);
 
@@ -76,45 +73,54 @@ public class MongoDBUpdater implements Runnable {
         List<Tuple<Document, Bson>> batchBuffer = new ArrayList<>();
 
         while (true) {
-
-            // process record if one
             try {
-                Tuple<Record, Bson> record = records.take();
+                Tuple<Record, Bson> record = records.poll(flushInterval, TimeUnit.MILLISECONDS);
                 if (record != null) {
                     batchBuffer.add(new Tuple<>(RecordConverter.convert(record.getKey()), record.getValue()));
-                    batchedUpdates++;
                 }
+                long currentTS = System.nanoTime();
+                if (batchBuffer.size() > 0 &&
+                        ((currentTS - lastTS) >= flushInterval * 1000000 || batchBuffer.size() >= batchSize)) {
+                    //use moustache operator to avoid composing strings when not needed
+                    logger.debug("committing {} records to Mongo after {} ns", batchBuffer.size(), (currentTS - lastTS));
+
+                    if (MongoDBControllerService.BULK_MODE_UPSERT.getValue().equals(bulkMode)) {
+                        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
+                        //split batches by 500 document each max
+                        for (int i = 0; i < batchBuffer.size(); i+=500) {
+                            try {
+                                col.bulkWrite(batchBuffer.stream().skip(i).limit(500)
+                                        .map(document -> new ReplaceOneModel<>(
+                                                document.getValue(),
+                                                document.getKey(),
+                                                replaceOptions)).collect(Collectors.toList()));
+                            } catch (MongoBulkWriteException bwe) {
+                                bwe.getWriteErrors().forEach(error -> {
+                                    if (error.getCode() != 11000) {
+                                        logger.warn("MongoDB updater got error: {}", error);
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        col.insertMany(batchBuffer.stream().map(Tuple::getKey).collect(Collectors.toList()));
+                    }
+                    lastTS = currentTS;
+                    batchBuffer = new ArrayList<>();
+                }
+
             } catch (InterruptedException e) {
                 //here we should exit the loop
-                logger.warn("Interrupted while waiting", e);
+                logger.info("Interrupted while waiting: {}", e.getMessage());
                 break;
-            }
-
-            //
-            long currentTS = System.nanoTime();
-            if ((currentTS - lastTS) >= flushInterval * 1000000 || batchedUpdates >= batchSize) {
-                //use moustache operator to avoid composing strings when not needed
-                logger.debug("committing {} records to Mongo after {} ns", batchedUpdates, (currentTS - lastTS));
-
-                if (MongoDBControllerService.BULK_MODE_UPSERT.getValue().equals(bulkMode)) {
-                    ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
-                    col.bulkWrite(batchBuffer.stream().map(document -> new ReplaceOneModel<>(
-                            document.getValue(),
-                            document.getKey(),
-                            replaceOptions)).collect(Collectors.toList()));
-                } else {
-                    col.insertMany(batchBuffer.stream().map(Tuple::getKey).collect(Collectors.toList()));
-                }
-
-                lastTS = currentTS;
-                batchBuffer = new ArrayList<>();
-                batchedUpdates = 0;
+            } catch (Exception e) {
+                logger.error("Unrecoverable error from MongoDB updater. Loosing data!", e);
+                batchBuffer.clear();
+                lastTS = System.nanoTime();
             }
         }
-
-
-        // Thread.sleep(10);
     }
+
 }
 
 
