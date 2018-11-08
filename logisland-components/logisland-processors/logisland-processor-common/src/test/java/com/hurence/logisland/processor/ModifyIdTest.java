@@ -24,7 +24,6 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.util.time.DateUtil;
-import org.apache.avro.Schema;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -230,10 +229,10 @@ public class ModifyIdTest {
     @Test
     public void testPerf() {
         Record record1 = getRecord1();
-        Schema schema = RecordSchemaUtil.generateSchema(record1);
+
 
         TestRunner generator = TestRunners.newTestRunner(new GenerateRandomRecord());
-        generator.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA, schema.toString());
+        generator.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA,  RecordSchemaUtil.generateSchema(record1).toString());
         generator.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT, "10000");
         generator.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT, "20000");
         generator.run();
