@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2016 Hurence (support@hurence.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2016 Hurence (support@hurence.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 /**
   * Copyright (C) 2016 Hurence (bailet.thomas@gmail.com)
   *
@@ -36,15 +36,14 @@ import java.util.Collections
 
 import com.hurence.logisland.component.PropertyDescriptor
 import com.hurence.logisland.record.{FieldDictionary, FieldType}
+import com.hurence.logisland.stream.StreamProperties._
 import com.hurence.logisland.util.spark.SparkUtils
-import com.hurence.logisland.validator.StandardValidators
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.slf4j.LoggerFactory
-import com.hurence.logisland.stream.spark._
-import com.hurence.logisland.stream.StreamProperties._
 
 
 class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
@@ -66,6 +65,22 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
         descriptors.add(DATE_FORMAT)
         descriptors.add(INPUT_FORMAT)
         Collections.unmodifiableList(descriptors)
+    }
+
+    private def sanitizeSchema(dataType: DataType): DataType = {
+        dataType match {
+            case structType: StructType =>
+                DataTypes.createStructType(structType.fields.map(f =>
+                    DataTypes.createStructField(f.name.replaceAll("[:,-]", "_"), sanitizeSchema(f.dataType), f.nullable, f.metadata)
+                ))
+            case arrayType: ArrayType =>
+                DataTypes.createArrayType(sanitizeSchema(arrayType.elementType), arrayType.containsNull)
+            case mapType: MapType =>
+                DataTypes.createMapType(sanitizeSchema(mapType.keyType), sanitizeSchema(mapType.valueType), mapType.valueContainsNull)
+            case other => other
+        }
+
+
     }
 
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
@@ -120,7 +135,6 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                     })
 
 
-
                 if (!records.isEmpty()) {
                     var df: DataFrame = null;
                     val inputFormat = streamContext.getPropertyValue(INPUT_FORMAT).asString()
@@ -140,7 +154,15 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                         df = sqlContext.createDataFrame(rows, schema)
                     } else {
                         if ("json".equals(inputFormat)) {
-                            df = sqlContext.read.json(records.map(record=> record.getField(FieldDictionary.RECORD_VALUE).asString()))
+                            import sqlContext.implicits._
+                            val rdf = records.map(record => (record.getType, record.getField(FieldDictionary.RECORD_DAYTIME).asString))
+                                .toDF(FieldDictionary.RECORD_TYPE, FieldDictionary.RECORD_DAYTIME)
+                            val json = sqlContext.read.json(records.map(record => record.getField(FieldDictionary.RECORD_VALUE).asString()))
+                            val merged = rdf.rdd.zip(json.rdd)
+                                .map {
+                                    case (rowLeft, rowRight) => Row.fromSeq(rowLeft.toSeq ++ rowRight.toSeq)
+                                }
+                            df = sqlContext.createDataFrame(merged, StructType(rdf.schema.fields ++ sanitizeSchema(json.schema).asInstanceOf[StructType].fields))
                         } else {
                             throw new IllegalArgumentException(s"Input format $inputFormat is not supported")
                         }
@@ -178,7 +200,7 @@ class KafkaRecordStreamHDFSBurner extends AbstractKafkaRecordStream {
                     /**
                       * save latest offset to Zookeeper
                       */
-                //    offsetRanges.foreach(offsetRange => zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange))
+                    //    offsetRanges.foreach(offsetRange => zkSink.value.saveOffsetRangesToZookeeper(appName, offsetRange))
                 }
 
             }
