@@ -211,58 +211,6 @@ public class setSourceOfTrafficTest extends BaseSyslogTest {
         out.assertFieldEquals("source_of_traffic_medium", "referral");
     }
 
-    @Test
-    public void testAdwords() throws InitializationException {
-        // Test the adword case with presence of gclid parameter.
-        Record record1 = new StandardRecord();
-        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.html?gclid=XXX");
-
-        TestRunner testRunner = getTestRunner();
-
-        testRunner.assertValid();
-        testRunner.setProperty("cache.size", "5");
-        testRunner.setProperty("debug", "true");
-        testRunner.setProperty("source.out.field", "source_of_traffic");
-        testRunner.setProperty("source_of_traffic.hierarchical", "false");
-        testRunner.enqueue(record1);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
-
-        MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldEquals("source_of_traffic_source", "google");
-        out.assertFieldEquals("source_of_traffic_medium", "cpc");
-        out.assertFieldEquals("source_of_traffic_campaign", "adwords");
-        out.assertFieldEquals("source_of_traffic_content", "adwords");
-        out.assertFieldEquals("source_of_traffic_keyword", "adwords");
-    }
-
-    @Test
-    public void testDoubleClick() throws InitializationException {
-        // Test the DoubleClick case with presence of gclsrc parameter.
-        Record record1 = new StandardRecord();
-        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.html?gclsrc=XXX");
-
-        TestRunner testRunner = getTestRunner();
-
-        testRunner.assertValid();
-        testRunner.setProperty("cache.size", "5");
-        testRunner.setProperty("debug", "true");
-        testRunner.setProperty("source.out.field", "source_of_traffic");
-        testRunner.setProperty("source_of_traffic.hierarchical", "false");
-        testRunner.enqueue(record1);
-        testRunner.run();
-        testRunner.assertAllInputRecordsProcessed();
-        testRunner.assertOutputRecordsCount(1);
-
-        MockRecord out = testRunner.getOutputRecords().get(0);
-        out.assertFieldEquals("source_of_traffic_source", "google");
-        out.assertFieldEquals("source_of_traffic_medium", "cpc");
-        out.assertFieldEquals("source_of_traffic_campaign", "DoubleClick");
-        out.assertFieldEquals("source_of_traffic_content", "DoubleClick");
-        out.assertFieldEquals("source_of_traffic_keyword", "DoubleClick");
-    }
-
     private TestRunner getTestRunner() throws InitializationException {
 
         final TestRunner runner = TestRunners.newTestRunner(setSourceOfTraffic.class);
