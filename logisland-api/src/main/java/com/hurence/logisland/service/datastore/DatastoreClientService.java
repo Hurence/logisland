@@ -28,7 +28,7 @@ import java.util.*;
 
 
 @Tags({"datastore", "record", "service"})
-@CapabilityDescription("A controller service for accessing an abstract datastore.")
+@CapabilityDescription("A controller service for accessing an abstract datatore.")
 public interface DatastoreClientService extends ControllerService {
 
     PropertyDescriptor FLUSH_INTERVAL = new PropertyDescriptor.Builder()
