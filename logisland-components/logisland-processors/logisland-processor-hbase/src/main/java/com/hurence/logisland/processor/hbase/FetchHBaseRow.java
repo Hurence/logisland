@@ -66,7 +66,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
     public static final PropertyDescriptor TABLE_NAME_DEFAULT = new PropertyDescriptor.Builder()
             .name("table.name.default")
-            .description("The table table to use if table name field is not set")
+            .description("The table to use if table name field is not set")
             .required(false)
             .build();
 
@@ -80,7 +80,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
     public static final PropertyDescriptor ROW_ID_FIELD = new PropertyDescriptor.Builder()
             .name("row.identifier.field")
-            .description("The field containing the  identifier of the row to fetch.")
+            .description("The field containing the identifier of the row to fetch.")
             .required(true)
             .expressionLanguageSupported(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
