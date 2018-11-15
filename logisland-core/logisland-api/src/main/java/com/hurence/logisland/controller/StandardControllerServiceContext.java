@@ -52,7 +52,7 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         final String setPropertyValue = getProperty(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new StandardPropertyValue(propValue);
+        return PropertyValueFactory.getInstance(descriptor, propValue, getControllerServiceLookup());
     }
 
     @Override

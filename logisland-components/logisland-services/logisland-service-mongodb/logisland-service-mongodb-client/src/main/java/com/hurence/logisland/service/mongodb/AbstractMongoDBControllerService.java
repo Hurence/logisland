@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.annotation.lifecycle.OnStopped;
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ConfigurationContext;
@@ -26,15 +27,12 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.MongoClientURI;
-import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AbstractMongoDBControllerService extends AbstractControllerService {
 
@@ -101,15 +99,33 @@ public abstract class AbstractMongoDBControllerService extends AbstractControlle
             .defaultValue(WRITE_CONCERN_ACKNOWLEDGED)
             .build();
 
-    static List<PropertyDescriptor> descriptors = new ArrayList<>();
+    public static final PropertyDescriptor UPSERT_CONDITION = new PropertyDescriptor.Builder()
+            .name("mongo.bulk.upsert.condition")
+            .displayName("Upsert condition")
+            .description("A custom condition for the bulk upsert (Filter for the bulkwrite). " +
+                    "If not specified the standard condition is to match same id ('_id': data._id)")
+            .required(false)
+            .defaultValue("${'{ \"_id\" :\"' + record_id + '\"}'}")
+            .expressionLanguageSupported(true)
+            .build();
 
-    static {
-        descriptors.add(URI);
-        descriptors.add(DATABASE_NAME);
-        descriptors.add(COLLECTION_NAME);
-       /* descriptors.add(SSL_CONTEXT_SERVICE);
-        descriptors.add(CLIENT_AUTH);*/
-    }
+
+    public static final AllowableValue BULK_MODE_INSERT = new AllowableValue("insert", "Insert", "Insert records whose key must be unique");
+    public static final AllowableValue BULK_MODE_UPSERT = new AllowableValue("upsert", "Insert or Update",
+            "Insert records if not already existing or update the record if already existing");
+
+
+    public static final PropertyDescriptor BULK_MODE = new PropertyDescriptor.Builder()
+            .name("mongo.bulk.mode")
+            .description("Bulk mode (insert or upsert)")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(BULK_MODE_INSERT, BULK_MODE_UPSERT)
+            .defaultValue(BULK_MODE_INSERT.getValue())
+            .build();
+
+
+
 
     protected MongoClient mongoClient;
 
@@ -191,36 +207,4 @@ public abstract class AbstractMongoDBControllerService extends AbstractControlle
         return context.getPropertyValue(URI).evaluate(null).asString();
     }
 
-    protected WriteConcern getWriteConcern(final ConfigurationContext context) {
-        final String writeConcernProperty = context.getPropertyValue(WRITE_CONCERN).asString();
-        WriteConcern writeConcern = null;
-        switch (writeConcernProperty) {
-            case WRITE_CONCERN_ACKNOWLEDGED:
-                writeConcern = WriteConcern.ACKNOWLEDGED;
-                break;
-            case WRITE_CONCERN_UNACKNOWLEDGED:
-                writeConcern = WriteConcern.UNACKNOWLEDGED;
-                break;
-            case WRITE_CONCERN_FSYNCED:
-                writeConcern = WriteConcern.FSYNCED;
-                break;
-            case WRITE_CONCERN_JOURNALED:
-                writeConcern = WriteConcern.JOURNALED;
-                break;
-            case WRITE_CONCERN_REPLICA_ACKNOWLEDGED:
-                writeConcern = WriteConcern.REPLICA_ACKNOWLEDGED;
-                break;
-            case WRITE_CONCERN_MAJORITY:
-                writeConcern = WriteConcern.MAJORITY;
-                break;
-            default:
-                writeConcern = WriteConcern.ACKNOWLEDGED;
-        }
-        return writeConcern;
-    }
-
-    @Override
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return descriptors;
-    }
 }
