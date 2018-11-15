@@ -57,7 +57,7 @@ services:
   # Logisland container : does nothing but launching
   logisland:
     container_name: logisland
-    image: hurence/logisland:1.0.0-RC1
+    image: hurence/logisland:1.0.0-RC2
     command: tail -f bin/logisland.sh
     #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
     links:
