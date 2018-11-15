@@ -13,6 +13,13 @@ Workflows
 This section explains how to perform common activities such as reporting a bug or merging a pull request.
 
 
+Internal dev (aka logisland team)
++++++++++++++++++++++++++++++++++
+
+We're using GitFlow for github so read carefully the docs :
+`<https://datasift.github.io/gitflow/GitFlowForGitHub.html>`_
+
+
 Coding Guidelines
 +++++++++++++++++
 
