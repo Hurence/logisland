@@ -100,7 +100,7 @@ the next processing step is to  assign `bytes_out` field as `record_value`
         - processor: normalize_fields
           component: com.hurence.logisland.processor.NormalizeFields
           type: parser
-          documentation: change current id to src_ip
+          documentation: change field name 'bytes_out' to `record_value`
           configuration:
             conflict.resolution.policy: overwrite_existing
             record_value: bytes_out
@@ -141,7 +141,7 @@ and then cast `record_value` as a double
             record_value: double
 
 The next processing step wil compute a dynamic Tag value from a Javascript expression.
-here a new record with an `record_id` set to `computed1` and as a `record_value` the resulting expression of `cache("logisland.hurence.com").value * 10.2`
+Here a new record with an `record_id` set to `computed1` and as a `record_value` the resulting expression of `cache("logisland.hurence.com").value * 10.2`
 
 .. code-block:: yaml
 
@@ -160,7 +160,7 @@ here a new record with an `record_id` set to `computed1` and as a `record_value`
             max.memory: 64800000
             max.prepared.statements: 5
             allow.no.brace: false
-            computed1: return cache("ppp-mia-30.shadow.net").value * 10.2;
+            computed1: return cache("logisland.hurence.com").value * 10.2;
 
 The last processor will handle all the ``Records`` of this stream to index them into datastore previously defined (Redis)
 
