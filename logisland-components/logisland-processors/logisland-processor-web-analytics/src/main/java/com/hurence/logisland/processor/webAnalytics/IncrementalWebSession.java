@@ -2,10 +2,11 @@ package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
-import com.hurence.logisland.processor.elasticsearch.AbstractElasticsearchProcessor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -81,7 +82,7 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         "\n"
 )
 public class IncrementalWebSession
-       extends AbstractElasticsearchProcessor
+       extends AbstractProcessor
 {
     /**
      * The extra character added in case a missed new session is detected. In that case the original session identifier
@@ -355,6 +356,28 @@ public class IncrementalWebSession
     public List<PropertyDescriptor> getSupportedPropertyDescriptors()
     {
         return SUPPORTED_PROPERTY_DESCRIPTORS;
+    }
+
+    /**
+     * The elasticsearch service.
+     */
+    private ElasticsearchClientService elasticsearchClientService;
+
+    @Override
+    public boolean hasControllerService()
+    {
+        return true;
+    }
+
+    @Override
+    public void init(final ProcessContext context)
+    {
+        this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE)
+                                                                    .asControllerService());
+        if (elasticsearchClientService == null)
+        {
+            LOG.error("Elasticsearch client service is not initialized!");
+        }
     }
 
     @Override
@@ -762,14 +785,14 @@ public class IncrementalWebSession
                            .filter(record -> isFieldAssigned(record.getField(_SESSION_ID_FIELD))
                                           && isFieldAssigned(record.getField(_TIMESTAMP_FIELD)))
                            // Create web-event from record.
-                           .map(record -> new WebEvent(record))
+                           .map(WebEvent::new)
                            // Group records per session Id.
-                           .collect(Collectors.groupingBy(record-> record.getSessionId()))
+                           .collect(Collectors.groupingBy(WebEvent::getSessionId))
                            // Ignore keys (sessionId) and stream over list of associated events.
                            .values()
                            .stream()
                            // Wrapped grouped web-events of sessionId in WebEvents.
-                           .map(list -> new Events(list))
+                           .map(Events::new)
                            .collect(Collectors.toList());
 
             return result;

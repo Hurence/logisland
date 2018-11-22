@@ -18,24 +18,26 @@ package com.hurence.logisland.processor.webAnalytics;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchRecordConverter;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -82,7 +84,7 @@ public class IncrementalWebSessionTest
         "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
         "sessionId" , "SESSIONID"
     }, new Object[]{
-        "h2kTimestamp" , 1538756201154L,
+        "h2kTimestamp" , 1538756201154L, // timeout
         "location" , "https://www.zitec-shop.com/en/schragkugellager-718-tn/p-G1156005137",
         "sessionId" , "SESSIONID"
     }, new Object[]{
@@ -106,7 +108,7 @@ public class IncrementalWebSessionTest
         "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
         "sessionId" , "SESSIONID"
     }, new Object[]{
-        "h2kTimestamp" , 1538767062429L,
+        "h2kTimestamp" , 1538767062429L, // timeout
         "location" , "https://www.zitec-shop.com/en/kugelfuhrungswagen-vierreihig/p-G1156007584",
         "sessionId" , "SESSIONID"
     }, new Object[]{
@@ -122,7 +124,7 @@ public class IncrementalWebSessionTest
         "location" , "https://www.zitec-shop.com/en/search/?text=nah",
         "sessionId" , "SESSIONID"
     }, new Object[]{
-        "h2kTimestamp" , 1538780539746L,
+        "h2kTimestamp" , 1538780539746L, // timeout
         "location" , "https://www.zitec-shop.com/en/search/?text=nah",
         "sessionId" , "SESSIONID"
     }, new Object[]{
@@ -260,11 +262,6 @@ public class IncrementalWebSessionTest
         "h2kTimestamp" , 1538780748044L,
         "location" , "https://www.zitec-shop.com/en/sealed-spherical-roller-bearings-ws222-e1/p-G1112006937",
         "sessionId" , "0:jmw62hh3:ef5kWpbpKDNBG5IyGBARUQLemW3JP0PP"}
-
-
-
-
-
     };
 
     private static final String SESSION_INDEX = "openanalytics_websessions";
@@ -408,30 +405,9 @@ public class IncrementalWebSessionTest
         testRunner.assertOutputErrorCount(0);
 
         // One webSession expected.
-        testRunner.assertOutputRecordsCount(1);
-
-        final Record firstEvent = events.get(0);
-        final Record lastEvent = events.get(2);
-        final String user = firstEvent.getField(USER_ID)==null?null:firstEvent.getField(USER_ID).asString();
-
-        final MockRecord doc = getRecord((String)firstEvent.getField(SESSION_ID).getRawValue(), testRunner.getOutputRecords());
-
-        new WebSessionChecker(doc).sessionId(firstEvent.getField(SESSION_ID).getRawValue())
-                                  .Userid(user)
-                                  .record_type("consolidate-session")
-                                  .record_id(firstEvent.getField(SESSION_ID).getRawValue())
-                                  .firstEventDateTime(firstEvent.getField(TIMESTAMP).asLong())
-                                  .h2kTimestamp((Long)firstEvent.getField(TIMESTAMP).getRawValue())
-                                  .firstVisitedPage(firstEvent.getField(VISITED_PAGE).getRawValue())
-                                  .eventsCounter(3)
-                                  .lastEventDateTime(lastEvent.getField(TIMESTAMP).asLong())
-                                  .lastVisitedPage(lastEvent.getField(VISITED_PAGE).getRawValue())
-                                  .sessionDuration((lastEvent.getField(TIMESTAMP).asLong() // lastEvent.getField(TIMESTAMP)
-                                                            -firstEvent.getField(TIMESTAMP).asLong())/1000)
-                                  .is_sessionActive((Instant.now().toEpochMilli()
-                                                             -lastEvent.getField(TIMESTAMP).asLong())/1000<SESSION_TIMEOUT)
-                                  .sessionInactivityDuration(SESSION_TIMEOUT);
+        testRunner.assertOutputRecordsCount(4);
     }
+
     //    @Test
     public void testCreateOneSessionMultipleEventsData()
             throws Exception
@@ -1025,7 +1001,7 @@ public class IncrementalWebSessionTest
     private TestRunner newTestRunner()
             throws InitializationException
     {
-        final TestRunner runner = TestRunners.newTestRunner(IncrementalWebSession.class);
+        final TestRunner runner = TestRunners.newTestRunner(new IncrementalWebSession());
 
         runner.addControllerService("elasticsearchClient", elasticsearchClient);
         runner.enableControllerService(elasticsearchClient);
@@ -1130,7 +1106,7 @@ public class IncrementalWebSessionTest
     /**
      * A test implementation of ElasticsearchClientService that performs read/write in a map.
      */
-    private static final class ESC
+    public static final class ESC
             extends AbstractControllerService
             implements ElasticsearchClientService
     {
@@ -1250,8 +1226,8 @@ public class IncrementalWebSessionTest
 //                                                    .collect(Collectors.toMap(Map.Entry::getKey,
 //                                                                              Map.Entry::getValue));
 
-            System.out.println(String.format("Saving index=%s,type=%s,id=%s",
-                                             docIndex, docType, optionalId.get()));
+//            System.out.println(String.format("Saving index=%s,type=%s,id=%s",
+//                                             docIndex, docType, optionalId.get()));
             documents.put(toId(docIndex, docType, optionalId.get()), document);
         }
 
@@ -1292,9 +1268,71 @@ public class IncrementalWebSessionTest
         public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue) { return 0; }
 
         @Override
-        public String convertRecordToString(Record record) { return ElasticsearchRecordConverter.convertToString(record);}
+        public String convertRecordToString(Record record) { return convertToString(record);}
 
         @Override
         public List<PropertyDescriptor> getSupportedPropertyDescriptors(){ return Collections.emptyList(); }
+    }
+
+    /**
+     * Converts an Event into an Elasticsearch document
+     * to be indexed later
+     *
+     * @param record
+     * @return
+     */
+    public static String convertToString(Record record) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String document = "";
+
+            // convert event_time as ISO for ES
+            if (record.hasField(FieldDictionary.RECORD_TIME)) {
+                try {
+                    DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
+                    document += "@timestamp : ";
+                    document += dateParser.print(record.getField(FieldDictionary.RECORD_TIME).asLong()) + ", ";
+                } catch (Exception ex) {
+                    System.err.println(String.format("unable to parse record_time iso date for {}", record));
+                }
+            }
+
+            // add all other records
+            for (Iterator<Field> i = record.getAllFieldsSorted().iterator(); i.hasNext();) {
+                Field field = i.next();
+                String fieldName = field.getName().replaceAll("\\.", "_");
+
+                switch (field.getType()) {
+
+                    case STRING:
+                        document += fieldName + " : " + field.asString();
+                        break;
+                    case INT:
+                        document += fieldName + " : " + field.asInteger().toString();
+                        break;
+                    case LONG:
+                        document += fieldName + " : " + field.asLong().toString();
+                        break;
+                    case FLOAT:
+                        document += fieldName + " : " + field.asFloat().toString();
+                        break;
+                    case DOUBLE:
+                        document += fieldName + " : " + field.asDouble().toString();
+                        break;
+                    case BOOLEAN:
+                        document += fieldName + " : " + field.asBoolean().toString();
+                        break;
+                    default:
+                        document += fieldName + " : " + field.getRawValue().toString();
+                        break;
+                }
+            }
+
+            return document;
+        } catch (Throwable ex) {
+            System.err.println(String.format("unable to convert record : %s, %s", record, ex.toString()));
+        }
+        return null;
     }
 }
