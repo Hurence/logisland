@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
@@ -347,6 +349,18 @@ public class setSourceOfTraffic extends AbstractProcessor {
             sourceOfTraffic.setCampaign(adwords ? ADWORDS : DOUBLECLICK);
             sourceOfTraffic.setContent(adwords ? ADWORDS : DOUBLECLICK);
             sourceOfTraffic.setKeyword(adwords ? ADWORDS : DOUBLECLICK);
+
+            try {
+                String[] params = new URI(location).getQuery().split("&");
+                for(String param: params) {
+                    String[] token = param.split("campaign=");
+                    if ( token.length==2) {
+                        sourceOfTraffic.setCampaign(token[1]);
+                    }
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }
         // Check if this is a custom campaign
         else if (record.getField(utm_source_field) != null) {
@@ -400,14 +414,22 @@ public class setSourceOfTraffic extends AbstractProcessor {
             }
         } else if ((record.getField(referer_field) != null) && (record.getField(referer_field).asString() != null)) {
             String referer = record.getField(referer_field).asString();
-            URL referer_url = null;
+            String hostname;
             try {
-                referer_url = new URL(referer);
+                hostname = new URL(referer).getHost();
             } catch (MalformedURLException e) {
+                // Avoid printStackTrace() in logs in case scheme is android-app.
+                try {
+                    if ( "android-app".equals(new URI(referer).getScheme()) ) {
+                        return;
+                    }
+                } catch (URISyntaxException e2) {
+                    e2.printStackTrace();
+                    return;
+                }
                 e.printStackTrace();
                 return;
             }
-            String hostname = referer_url.getHost();
             String[] hostname_splitted = hostname.split("\\.");
             String domain = null;
             if (hostname_splitted.length > 1) {
