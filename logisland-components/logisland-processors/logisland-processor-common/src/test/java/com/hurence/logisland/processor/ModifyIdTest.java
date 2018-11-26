@@ -318,4 +318,30 @@ public class ModifyIdTest {
 
 
     }
+
+    @Test
+    public void testSha256() throws NoSuchAlgorithmException {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
+        testRunner.setProperty(CHARSET_TO_USE_FOR_HASH, "UTF8");
+        testRunner.assertValid();
+
+        /**
+         * ERRORS
+         */
+        String rawValue = "B014AB16AM";
+        Record record1 = getRecord1().setStringField(FieldDictionary.RECORD_VALUE,rawValue);
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        StringBuilder stb = new StringBuilder();
+        stb.append(rawValue);
+
+        outputRecord.assertFieldEquals(FieldDictionary.RECORD_ID,  "c16b10c028f11c10eb3f5804aeaa20109e8d0c589c49a4be3943f20a4d1e6833");
+
+
+    }
 }
