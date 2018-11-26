@@ -30,9 +30,9 @@ import java.util.*;
 
 @Tags({"record", "threshold", "tag", "alerting"})
 @CapabilityDescription("Compute threshold cross from given formulas.\n" +
-        "            each dynamic property will return a new record according to the formula definition\n" +
-        "            the record name will be set to the property name\n" +
-        "            the record time will be set to the current timestamp")
+        "- each dynamic property will return a new record according to the formula definition\n" +
+        "- the record name will be set to the property name\n" +
+        "- the record time will be set to the current timestamp\n")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",

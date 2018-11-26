@@ -34,7 +34,8 @@ public enum FieldType {
     MAP,
     ENUM,
     BOOLEAN,
-    UNION;
+    UNION,
+    DATETIME;
 
     public String toString() {
         return name;

@@ -42,6 +42,7 @@
         <module>logisland-processor-excel</module>
         <module>logisland-processor-web-analytics</module>
         <module>logisland-processor-outlier-detection</module>
+        <module>logisland-processor-xml</module>
         <!--
         <module>logisland-processor-botsearch</module>
         -->

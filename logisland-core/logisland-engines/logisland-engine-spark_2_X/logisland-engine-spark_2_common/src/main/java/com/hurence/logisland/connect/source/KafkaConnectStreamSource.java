@@ -20,6 +20,7 @@ package com.hurence.logisland.connect.source;
 import com.hurence.logisland.connect.AbstractKafkaConnectComponent;
 import com.hurence.logisland.stream.spark.provider.StreamOptions;
 import com.hurence.logisland.util.spark.SparkPlatform;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.connect.runtime.WorkerSourceTaskContext;
 import org.apache.kafka.connect.source.SourceConnector;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -28,6 +29,7 @@ import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.OffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.apache.kafka.connect.storage.OffsetStorageWriter;
+import org.apache.kafka.connect.util.ConnectorTaskId;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
@@ -48,6 +50,7 @@ import scala.collection.JavaConversions;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -92,8 +95,9 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConnectStreamSource.class);
 
     private final AtomicLong counter = new AtomicLong();
+    private final AtomicInteger taskCounter = new AtomicInteger();
 
-    protected final OffsetStorageWriter offsetStorageWriter;
+    private final Map<SourceTask, OffsetStorageWriter> offsetWriterMap = new IdentityHashMap<>();
     private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> bufferedRecords =
             Collections.synchronizedSortedMap(new TreeMap<>());
     private final SortedMap<Long, List<Tuple2<SourceTask, SourceRecord>>> uncommittedRecords =
@@ -116,7 +120,7 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
      * @param offsetBackingStore  the backing store implementation (can be in-memory, file based, kafka based, etc...)
      * @param maxTasks            the maximum theoretical number of tasks this source should spawn.
      * @param connectorClass      the class of kafka connect source connector to wrap.
-     *                            =
+     * @param streamId            the id of the underlying stream
      */
     public KafkaConnectStreamSource(SQLContext sqlContext,
                                     Map<String, String> connectorProperties,
@@ -124,17 +128,22 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
                                     Converter valueConverter,
                                     OffsetBackingStore offsetBackingStore,
                                     int maxTasks,
-                                    String connectorClass) {
-        super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass);
-        this.offsetStorageWriter = new OffsetStorageWriter(offsetBackingStore, connector.getClass().getCanonicalName(),
-                createInternalConverter(true), createInternalConverter(false));
+                                    String connectorClass,
+                                    String streamId) {
+        super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass, streamId);
+
     }
 
 
     @Override
     protected void initialize(SourceTask task) {
-        task.initialize(new WorkerSourceTaskContext(new OffsetStorageReaderImpl(offsetBackingStore,
-                connector.getClass().getCanonicalName(), createInternalConverter(true), createInternalConverter(false))));
+        int taskId = taskCounter.incrementAndGet();
+        ConnectorTaskId connectorTaskId = new ConnectorTaskId(StringUtils.join(new String[]{streamId, connectorName}, '#'), taskId);
+        task.initialize(new WorkerSourceTaskContext(new OffsetStorageReaderImpl(offsetBackingStore, connectorTaskId.toString(),
+                createInternalConverter(true), createInternalConverter(false))));
+        offsetWriterMap.put(task, new OffsetStorageWriter(offsetBackingStore, connectorTaskId.toString(),
+                createInternalConverter(true), createInternalConverter(false)));
+
     }
 
 
@@ -146,6 +155,10 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
     @Override
     protected void createAndStartAllTasks() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         counter.set(0);
+        taskCounter.set(0);
+        busyTasks.clear();
+        bufferedRecords.clear();
+        offsetWriterMap.clear();
         super.createAndStartAllTasks();
     }
 
@@ -231,7 +244,7 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
 
         recordsToCommit.forEach(tuple -> {
             try {
-                offsetStorageWriter.offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
+                offsetWriterMap.get(tuple._1()).offset(tuple._2().sourcePartition(), tuple._2().sourceOffset());
                 tuple._1().commitRecord(tuple._2());
             } catch (Exception e) {
                 LOGGER.warn("Unable to commit record " + tuple._2(), e);
@@ -245,20 +258,22 @@ public class KafkaConnectStreamSource extends AbstractKafkaConnectComponent<Sour
             }
         });
         //now flush offset writer
-        try {
-            if (offsetStorageWriter.beginFlush()) {
-                offsetStorageWriter.doFlush((error, result) -> {
-                    if (error == null) {
-                        LOGGER.debug("Flushing till offset {} with result {}", end, result);
-                    } else {
-                        LOGGER.error("Unable to commit records till source offset " + end, error);
+        offsetWriterMap.values().forEach(offsetStorageWriter -> {
+            try {
+                if (offsetStorageWriter.beginFlush()) {
+                    offsetStorageWriter.doFlush((error, result) -> {
+                        if (error == null) {
+                            LOGGER.debug("Flushing till offset {} with result {}", end, result);
+                        } else {
+                            LOGGER.error("Unable to commit records till source offset " + end, error);
 
-                    }
-                }).get(30, TimeUnit.SECONDS);
+                        }
+                    }).get(30, TimeUnit.SECONDS);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Unable to commit records till source offset " + end, e);
             }
-        } catch (Exception e) {
-            LOGGER.error("Unable to commit records till source offset " + end, e);
-        }
+        });
     }
 
 

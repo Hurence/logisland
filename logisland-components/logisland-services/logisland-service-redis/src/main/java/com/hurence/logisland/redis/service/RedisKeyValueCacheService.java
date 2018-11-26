@@ -36,7 +36,6 @@ import com.hurence.logisland.util.Tuple;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
-import org.apache.avro.Schema;
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
@@ -334,9 +333,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     private RecordSerializer getSerializer(String inSerializerClass, String schemaContent) {
 
         if (inSerializerClass.equals(AVRO_SERIALIZER.getValue())) {
-            Schema.Parser parser = new Schema.Parser();
-            Schema inSchema = parser.parse(schemaContent);
-            new AvroSerializer(inSchema);
+            return new AvroSerializer(schemaContent);
         } else if (inSerializerClass.equals(JSON_SERIALIZER.getValue())) {
             return new JsonSerializer();
         } else if (inSerializerClass.equals(BYTESARRAY_SERIALIZER.getValue())) {

@@ -71,8 +71,8 @@ RUN cd ${SRC_DIR}; \
     
 # Download, build and install Bro-Kafka plugin 
 RUN cd ${SRC_DIR}; \
-    git clone https://github.com/bro/bro-plugins.git; \
-    cd bro-plugins/kafka;  \
+    git clone https://github.com/apache/metron-bro-plugin-kafka.git; \
+    cd metron-bro-plugin-kafka; \
     ./configure --install-root=${BRO_BASE_DIR}/lib/bro/plugins --bro-dist=${SRC_DIR}/bro --with-librdkafka=${INSTALL_DIR}/lib; \
     make; \
     make install;

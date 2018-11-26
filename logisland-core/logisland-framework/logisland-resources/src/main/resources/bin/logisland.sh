@@ -48,11 +48,11 @@ APP_NAME=""
 usage() {
   echo "Usage:"
   echo
-  echo " `basename $0` --conf <yml-configuguration-file> [--yarn-cluster] [--spark-home <spark-home-directory>]"
+  echo " `basename $0` --conf <yml-configuration-file> [--yarn-cluster] [--spark-home <spark-home-directory>]"
   echo
   echo "Options:"
   echo
-  echo "  --conf <yml-configuguration-file> : provides the configuration file"
+  echo "  --conf <yml-configuration-file> : provides the configuration file"
   echo "  --spark-home : sets the SPARK_HOME (defaults to \$SPARK_HOME environment variable)"
   echo "  --help : displays help"
 }

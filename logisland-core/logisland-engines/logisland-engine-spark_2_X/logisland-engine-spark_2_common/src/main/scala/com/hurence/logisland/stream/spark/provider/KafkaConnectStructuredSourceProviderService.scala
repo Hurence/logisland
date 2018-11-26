@@ -71,7 +71,7 @@ class KafkaConnectStructuredSourceProviderService extends KafkaConnectBaseProvid
             .option(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS.getName, delegateConnectorClass)
             .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE.getName, offsetBackingStore)
             .option(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES.getName, offsetBackingStoreProperties)
-            .load()
+            .load(streamContext.getIdentifier)
             //Topic, Partition, Key, Value
             .as[(String, String, String, Array[Byte], Array[Byte])]
             .map(r =>

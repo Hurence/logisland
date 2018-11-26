@@ -55,7 +55,8 @@ public class KafkaConnectStreamSourceProvider implements StreamSourceProvider {
                     valueConverter,
                     offsetBackingStore,
                     Integer.parseInt(parameters.get(StreamOptions.KAFKA_CONNECT_MAX_TASKS().getName()).get()),
-                    parameters.get(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS().getName()).get());
+                    parameters.get(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS().getName()).get(),
+                    parameters.get("path").get());
             ret.start();
             return ret;
         } catch (Exception e) {

@@ -24,7 +24,6 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.util.time.DateUtil;
-import org.apache.avro.Schema;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -230,10 +229,10 @@ public class ModifyIdTest {
     @Test
     public void testPerf() {
         Record record1 = getRecord1();
-        Schema schema = RecordSchemaUtil.generateSchema(record1);
+
 
         TestRunner generator = TestRunners.newTestRunner(new GenerateRandomRecord());
-        generator.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA, schema.toString());
+        generator.setProperty(GenerateRandomRecord.OUTPUT_SCHEMA,  RecordSchemaUtil.generateSchema(record1).toString());
         generator.setProperty(GenerateRandomRecord.MIN_EVENTS_COUNT, "10000");
         generator.setProperty(GenerateRandomRecord.MAX_EVENTS_COUNT, "20000");
         generator.run();
@@ -316,6 +315,32 @@ public class ModifyIdTest {
         String id = hexString.toString();
 
         outputRecord.assertFieldEquals(FieldDictionary.RECORD_ID,  id);
+
+
+    }
+
+    @Test
+    public void testSha256() throws NoSuchAlgorithmException {
+        final TestRunner testRunner = TestRunners.newTestRunner(new ModifyId());
+        testRunner.setProperty(ModifyId.STRATEGY, ModifyId.HASH_FIELDS_STRATEGY.getValue());
+        testRunner.setProperty(CHARSET_TO_USE_FOR_HASH, "UTF8");
+        testRunner.assertValid();
+
+        /**
+         * ERRORS
+         */
+        String rawValue = "B014AB16AM";
+        Record record1 = getRecord1().setStringField(FieldDictionary.RECORD_VALUE,rawValue);
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+        MockRecord outputRecord = testRunner.getOutputRecords().get(0);
+
+        StringBuilder stb = new StringBuilder();
+        stb.append(rawValue);
+
+        outputRecord.assertFieldEquals(FieldDictionary.RECORD_ID,  "c16b10c028f11c10eb3f5804aeaa20109e8d0c589c49a4be3943f20a4d1e6833");
 
 
     }

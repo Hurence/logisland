@@ -51,7 +51,7 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
     }
 
     @Override
-    public ControllerService getControllerService(String serviceIdentifier) {
+    public synchronized ControllerService getControllerService(String serviceIdentifier) {
 
         // check if the service has been loaded
         if (!controllerServiceMap.containsKey(serviceIdentifier)) {
@@ -69,9 +69,8 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
                         Map<String, String> properties = conf.getConfiguration();
                         properties.keySet().forEach(name -> context.setProperty(name, properties.get(name)));
 
-
-                        controllerServiceMap.put(conf.getControllerService(), service);
                         service.initialize(context);
+                        controllerServiceMap.put(conf.getControllerService(), service);
                         logger.info("service initialization complete {}", new Object[]{service});
                     } catch (IllegalArgumentException | ClassNotFoundException e) {
                         logger.error("unable to load class {} : {} ", new Object[]{conf, e.toString()});

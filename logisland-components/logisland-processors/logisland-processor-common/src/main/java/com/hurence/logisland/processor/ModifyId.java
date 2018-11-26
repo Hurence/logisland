@@ -25,6 +25,8 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,12 +186,7 @@ public class ModifyId extends AbstractProcessor {
                             }
                             digest.update(stb.toString().getBytes(charset));
                             byte[] digested = digest.digest();
-                            StringBuffer hexString = new StringBuffer();
-                            for (int i = 0; i < digested.length; i++) {
-                                hexString.append(Integer.toHexString(0xFF & digested[i]));
-                            }
-
-                            record.setId(hexString.toString());
+                            record.setId(Hex.encodeHexString(digested));
                         }
                     };
                 } catch (NoSuchAlgorithmException e) {

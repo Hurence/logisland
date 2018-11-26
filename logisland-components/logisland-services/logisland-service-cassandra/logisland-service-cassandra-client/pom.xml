@@ -25,7 +25,14 @@
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver.version}</version>
+            <classifier>shaded</classifier>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -93,6 +100,7 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

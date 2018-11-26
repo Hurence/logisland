@@ -19,6 +19,7 @@ package com.hurence.logisland.connect.sink;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.hurence.logisland.connect.AbstractKafkaConnectComponent;
+import com.hurence.logisland.connect.source.KafkaConnectStreamSourceProvider;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.data.SchemaAndValue;
@@ -51,6 +52,18 @@ public class KafkaConnectStreamSink extends AbstractKafkaConnectComponent<SinkCo
     private final String topic;
     private final AtomicLong counter = new AtomicLong();
 
+    /**
+     * Base constructor.
+     *
+     * @param sqlContext          the spark sql context.
+     * @param connectorProperties the connector related properties.
+     * @param keyConverter        the converter for the data key
+     * @param valueConverter      the converter for the data body
+     * @param offsetBackingStore  the backing store implementation (can be in-memory, file based, kafka based, etc...)
+     * @param maxTasks            the maximum theoretical number of tasks this source should spawn.
+     * @param connectorClass      the class of kafka connect source connector to wrap.
+     * @param streamId            the id of the underlying stream
+     */
     public KafkaConnectStreamSink(SQLContext sqlContext,
                                   Map<String, String> connectorProperties,
                                   Converter keyConverter,
@@ -58,8 +71,9 @@ public class KafkaConnectStreamSink extends AbstractKafkaConnectComponent<SinkCo
                                   OffsetBackingStore offsetBackingStore,
                                   int maxTasks,
                                   String topic,
-                                  String connectorClass) {
-        super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass);
+                                  String connectorClass,
+                                  String streamId) {
+        super(sqlContext, connectorProperties, keyConverter, valueConverter, offsetBackingStore, maxTasks, connectorClass, streamId);
         this.topic = topic;
     }
 

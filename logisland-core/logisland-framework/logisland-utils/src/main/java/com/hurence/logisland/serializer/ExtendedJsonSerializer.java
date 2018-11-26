@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,13 +15,14 @@
  */
 package com.hurence.logisland.serializer;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.time.DateUtil;
+import org.apache.avro.LogicalType;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Basic but complete Json {@link RecordSerializer}.
@@ -65,47 +70,69 @@ public class ExtendedJsonSerializer implements RecordSerializer {
                 map.put(name, null);
             } else {
                 final Schema currentSchema = field != null ? field.schema() : schema;
-                switch (currentSchema.getType()) {
-                    case FLOAT:
-                        map.put(name, Float.parseFloat(value.toString()));
-                        break;
-                    case LONG:
-                        map.put(name, Long.parseLong(value.toString()));
-                        break;
-                    case ARRAY:
-                        final Map<String, Object> tmpMap = new LinkedHashMap<>();
-                        Object[] filtered = ((List<Object>) value).stream().map(o -> {
-                            tmpMap.clear();
-                            doFilter(tmpMap, null, o, currentSchema.getElementType());
-                            return tmpMap.get(null);
-                        }).toArray();
-                        map.put(name, filtered);
-                        break;
-                    case INT:
-                        map.put(name, Integer.parseInt(value.toString()));
-                        break;
-                    case DOUBLE:
-                        map.put(name, Double.parseDouble(value.toString()));
-                        break;
-                    case BOOLEAN:
-                        map.put(name, Boolean.parseBoolean(value.toString()));
-                        break;
-                    case MAP:
-                        Map<String, Object> tmpStruct = new LinkedHashMap<>();
-                        ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpStruct, k, v, currentSchema.getValueType()));
-                        map.put(name, tmpStruct);
-                        break;
-                    case RECORD:
-                        Map<String, Object> tmpRecord = new LinkedHashMap<>();
-                        ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpRecord, k, v, currentSchema));
-                        map.put(name, tmpRecord);
-                        break;
-                    default:
-                        map.put(name, value.toString());
-                        break;
+                LogicalType logicalType = currentSchema.getLogicalType();
+                if (logicalType instanceof LogicalTypes.Date ||
+                        logicalType instanceof LogicalTypes.TimestampMillis) {
+                    if (value instanceof Number) {
+                        map.put(name, new Date(((Number) value).longValue()));
+                    } else {
+                        try {
+                            map.put(name, new Date(Instant.parse(value.toString()).toEpochMilli()));
+                        } catch (DateTimeParseException ignored) {
+                            try {
+                                //falling back to logisland date parser
+                                map.put(name, DateUtil.parse(value.toString()));
+                            } catch (ParseException pe) {
+                                logger.warn("Error converting field {} with value {} to date : {}",
+                                        field.name(), value, pe.getMessage());
+                            }
+                        }
+                    }
+
+                } else {
+                    switch (currentSchema.getType()) {
+                        case FLOAT:
+                            map.put(name, Float.parseFloat(value.toString()));
+                            break;
+                        case LONG:
+                            map.put(name, Long.parseLong(value.toString()));
+                            break;
+                        case ARRAY:
+                            final Map<String, Object> tmpMap = new LinkedHashMap<>();
+                            List<Object> filtered = ((List<Object>) value).stream().map(o -> {
+                                tmpMap.clear();
+                                doFilter(tmpMap, null, o, currentSchema.getElementType());
+                                return tmpMap.get(null);
+                            }).collect(Collectors.toList());
+                            map.put(name, filtered);
+                            break;
+                        case INT:
+                            map.put(name, Integer.parseInt(value.toString()));
+                            break;
+                        case DOUBLE:
+                            map.put(name, Double.parseDouble(value.toString()));
+                            break;
+                        case BOOLEAN:
+                            map.put(name, Boolean.parseBoolean(value.toString()));
+                            break;
+                        case MAP:
+                            Map<String, Object> tmpStruct = new LinkedHashMap<>();
+                            ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpStruct, k, v, currentSchema.getValueType()));
+                            map.put(name, tmpStruct);
+                            break;
+                        case RECORD:
+                            Map<String, Object> tmpRecord = new LinkedHashMap<>();
+                            ((Map<String, Object>) value).forEach((k, v) -> doFilter(tmpRecord, k, v, currentSchema));
+                            map.put(name, tmpRecord);
+                            break;
+                        default:
+                            map.put(name, value.toString());
+                            break;
+                    }
                 }
             }
         }
+
     }
 
     public Map<String, Object> filterWithSchema(Map<String, Object> in) {
@@ -121,7 +148,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
 
     public ExtendedJsonSerializer(String schemaString) {
         if (schemaString != null) {
-            final Schema.Parser parser = new Schema.Parser();
+            final Schema.Parser parser = new Schema.Parser().setValidate(false);
             try {
                 schema = parser.parse(schemaString);
             } catch (Exception e) {
@@ -179,7 +206,7 @@ public class ExtendedJsonSerializer implements RecordSerializer {
             } else if (value instanceof Double) {
                 ret = new Field(name, FieldType.DOUBLE, value);
             } else if (value instanceof Date) {
-                ret = new Field(name, FieldType.LONG, ((Date) value).getTime());
+                ret = new Field(name, FieldType.DATETIME, value);
             } else {
                 ret = new Field(name, FieldType.STRING, value);
             }

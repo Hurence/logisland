@@ -133,12 +133,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro</artifactId>
-                <version>1.7.7</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.esotericsoftware.kryo</groupId>
                 <artifactId>kryo</artifactId>
                 <version>2.21</version>
@@ -465,6 +459,11 @@
             </activation>
             <dependencies>
 
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-processor-xml</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-processor-web-analytics</artifactId>
