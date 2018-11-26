@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.useragent;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -94,7 +95,20 @@ public class ParseUserAgent extends AbstractProcessor {
 //            "AgentNameVersionMajor"
 //            );
 
-    private static final List<String> defaultFields = new UserAgentAnalyzer().getAllPossibleFieldNamesSorted();
+    private static final List<String> defaultFields;
+
+    static {
+        // is there a better way?
+        ClassLoader cl = PluginLoader.getRegistry().get(ParseUserAgent.class.getCanonicalName());
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
+        //will never be null
+        try {
+            Thread.currentThread().setContextClassLoader(cl);
+            defaultFields = new UserAgentAnalyzer().getAllPossibleFieldNamesSorted();
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
+    }
 
 
     public static final PropertyDescriptor DEBUG = new PropertyDescriptor.Builder()
