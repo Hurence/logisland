@@ -21,17 +21,23 @@ import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import com.hurence.logisland.util.Tuple;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import org.bson.BSON;
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,13 +56,13 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     private MongoDatabase db;
     private MongoCollection<Document> col;
     private MongoDBUpdater updater;
+    private PropertyValue upsertCondition;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    final BlockingQueue<Record> queue = new ArrayBlockingQueue<>(100000);
+    final BlockingQueue<Tuple<Record, Bson>> queue = new ArrayBlockingQueue<>(100000);
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> descriptors = new ArrayList<>();
-
         descriptors.add(URI);
         descriptors.add(DATABASE_NAME);
         descriptors.add(COLLECTION_NAME);
@@ -65,8 +71,7 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
         descriptors.add(BULK_MODE);
         descriptors.add(FLUSH_INTERVAL);
         descriptors.add(WRITE_CONCERN);
-       /* descriptors.add(SSL_CONTEXT_SERVICE);
-        descriptors.add(CLIENT_AUTH);*/
+        descriptors.add(UPSERT_CONDITION);
         return descriptors;
     }
 
@@ -93,6 +98,7 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
         long flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
         String bulkMode = context.getPropertyValue(BULK_MODE).asString();
         updater = new MongoDBUpdater(db, col, queue, batchSize, flushInterval, bulkMode);
+        upsertCondition = context.getPropertyValue(UPSERT_CONDITION);
         executorService.execute(updater);
     }
 
@@ -263,10 +269,11 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
 
     @Override
     public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        if (record != null)
-            queue.add(record);
-        else
-            getLogger().debug("trying to add null record in the queue");
+        if (record != null) {
+            String cond = upsertCondition != null ? upsertCondition.evaluate(record).asString() : null;
+            queue.add(new Tuple<>(record, cond != null ? BsonDocument.parse(cond) : null));
+
+        }
     }
 
     @Override
@@ -281,14 +288,6 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
 
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
-
-/**        List<Document> documents = new ArrayList<>();
- multiGetQueryRecords.forEach(record -> record.getDocumentIds()
- .forEach( id -> documents.add(new Document("_id", new ObjectId(id)))));
-
-
- return RecordConverter.convert(this.fi));*/
-
         throw new UnsupportedOperationException("TODO multiGet");
     }
 
@@ -300,7 +299,6 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     @Override
     public Collection<Record> query(String query) {
         throw new UnsupportedOperationException("TODO query");
-        //return null;
     }
 
     @Override

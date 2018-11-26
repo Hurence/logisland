@@ -16,6 +16,8 @@
 package com.hurence.logisland.jsr223.mvel;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Objects;
 
 import javax.script.Bindings;
@@ -25,6 +27,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.mvel2.MVEL;
+import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 
 public class MvelCompiledScript extends CompiledScript {
 
@@ -41,14 +46,14 @@ public class MvelCompiledScript extends CompiledScript {
 		if (this.expression.length()==0) {
 			throw new IllegalArgumentException("expression should not be empty" );
 		}
-		this.compiledExpression = MVEL.compileExpression(this.expression);
+		this.compiledExpression = new ExpressionCompiler(this.expression).compile();
 	}
 	
 	@Override
 	public Object eval(ScriptContext context) throws ScriptException {
 		try {
 			Bindings map = context.getBindings(ScriptContext.ENGINE_SCOPE);
-			return MVEL.executeExpression(compiledExpression, map);
+			return MVEL.executeExpression(compiledExpression, Collections.unmodifiableMap(new HashMap<>(map)));
 		}
 		catch (Throwable t) {
 			return null;

@@ -1139,6 +1139,38 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 ----------
 
+.. _com.hurence.logisland.processor.ExpandMapFields: 
+
+ExpandMapFields
+---------------
+Expands the content of a MAP field to the root.
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.ExpandMapFields
+
+Tags
+____
+record, fields, Expand, Map
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**fields.to.expand**", "Comma separated list of fields of type map that will be expanded to the root", "", "null", "", ""
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
 
 FetchHBaseRow
@@ -1671,9 +1703,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**mongo.collection.name**", "The name of the collection to use", "", "null", "", "**true**"
    "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
    "bulk.size", "bulk size in MB", "", "5", "", ""
-   "bulk.mode", "Bulk mode (insert or upsert)", "Insert (Insert records whose key must be unique), Insert or Update (Insert records if not already existing or update the record if already existing)", "insert", "", ""
+   "mongo.bulk.mode", "Bulk mode (insert or upsert)", "Insert (Insert records whose key must be unique), Insert or Update (Insert records if not already existing or update the record if already existing)", "insert", "", ""
    "flush.interval", "flush interval in ms", "", "500", "", ""
    "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "", ""
+   "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ "_id" :"' + record_id + '"}'}", "", "**true**"
 
 ----------
 

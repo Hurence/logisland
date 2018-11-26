@@ -113,6 +113,10 @@ public class RecordSchemaUtil {
         return builder.toString();
     }
 
+    public static Schema compileSchema(String schema) {
+        return new Schema.Parser().parse(schema);
+    }
+
     public static synchronized Record convertToValidRecord(final Record inputRecord, final Schema schema) {
         final Record outputRecord = new StandardRecord(inputRecord.getType());
 

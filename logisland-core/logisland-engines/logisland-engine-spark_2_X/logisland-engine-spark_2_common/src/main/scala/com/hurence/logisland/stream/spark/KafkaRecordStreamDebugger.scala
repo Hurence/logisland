@@ -142,8 +142,8 @@ class KafkaRecordStreamDebugger extends AbstractKafkaRecordStream {
                     if (streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).isSet) {
                         try {
                             val strSchema = streamContext.getPropertyValue(AVRO_OUTPUT_SCHEMA).asString()
-                            val parser = new Schema.Parser
-                            val schema = parser.parse(strSchema)
+                            val schema = RecordSchemaUtil.compileSchema(strSchema)
+
 
                             outgoingEvents = outgoingEvents.map(record => RecordSchemaUtil.convertToValidRecord(record, schema))
                         } catch {

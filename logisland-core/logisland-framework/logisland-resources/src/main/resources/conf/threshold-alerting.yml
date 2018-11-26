@@ -91,7 +91,7 @@ engine:
         - processor: normalize_fields
           component: com.hurence.logisland.processor.NormalizeFields
           type: parser
-          documentation: change current id to src_ip
+          documentation: change field name 'bytes_out' to `record_value`
           configuration:
             conflict.resolution.policy: overwrite_existing
             record_value: bytes_out

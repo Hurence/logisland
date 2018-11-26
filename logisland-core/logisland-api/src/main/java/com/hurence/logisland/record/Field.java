@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -156,6 +157,8 @@ public class Field implements PropertyValue, Serializable {
         } else {
             if (rawValue instanceof Number) {
                 return ((Number) rawValue).longValue();
+            } else if (rawValue instanceof Date) {
+              return ((Date) rawValue).getTime();
             } else {
                 try {
                     return Long.parseLong(rawValue.toString());
