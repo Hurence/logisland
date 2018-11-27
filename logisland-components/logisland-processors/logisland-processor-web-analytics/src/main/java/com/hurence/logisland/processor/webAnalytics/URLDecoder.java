@@ -42,6 +42,8 @@ public class URLDecoder extends AbstractProcessor {
     private static final Logger logger = LoggerFactory.getLogger(URLDecoder.class);
     private static final String UTF8_CHARSET = "UTF-8";
     private final HashSet<String> fieldsToDecode = new HashSet();
+    private final static String UTF8_PERCENT_ENCODED_CHAR = "%25";
+    private String percentEncodedChar = UTF8_PERCENT_ENCODED_CHAR;
 
     private static final PropertyDescriptor FIELDS_TO_DECODE_PROP = new PropertyDescriptor.Builder()
             .name("decode.fields")
@@ -80,10 +82,18 @@ public class URLDecoder extends AbstractProcessor {
 
     public void init(ProcessContext context){
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
+        String charset = context.getPropertyValue(CHARSET_PROP).asString();
+
         String[] fieldsArr = commaSeparatedFields.split("\\s*,\\s*");
         for (String field:fieldsArr
              ) {
             fieldsToDecode.add(field);
+        }
+        try {
+            percentEncodedChar = java.net.URLEncoder.encode("%", charset);
+        } catch (UnsupportedEncodingException e1) {
+            percentEncodedChar=UTF8_PERCENT_ENCODED_CHAR; // Default to UTF-8 encoded char
+            logger.warn(e1.toString());
         }
     }
 
@@ -104,20 +114,35 @@ public class URLDecoder extends AbstractProcessor {
         }
         fields.forEach(fieldName -> {
             // field is already here
-            if (record.hasField(fieldName))  {
+            if (record.hasField(fieldName)) {
                 String value = record.getField(fieldName).asString();
-                try {
-                    String decodedValue = java.net.URLDecoder.decode(value, charset);
-                    if (! decodedValue.equals(value)) {
-                        final FieldType fieldType = record.getField(fieldName).getType();
-                        record.removeField(fieldName);
-                        record.setField(fieldName, fieldType, decodedValue);
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    logger.warn(e.toString());
-                }
+                decode(value,charset,record,fieldName,true);
             }
         });
     }
+
+    private void decode (String value, String charset, Record record, String fieldName, boolean tryTrick)
+    {
+        String decodedValue = null;
+        try {
+            decodedValue = java.net.URLDecoder.decode(value, charset);
+            if (!decodedValue.equals(value)) {
+                final FieldType fieldType = record.getField(fieldName).getType();
+                record.removeField(fieldName);
+                record.setField(fieldName, fieldType, decodedValue);
+            }
+        } catch (IllegalArgumentException e) {
+            if (tryTrick) {
+                value = value.replaceAll("%(?![0-9A-F]{2})", percentEncodedChar);
+                decode(value, charset, record, fieldName, false);
+            }
+            else {
+                logger.warn(e.toString());
+            }
+        } catch (Exception e){
+            logger.warn(e.toString());
+        }
+    }
+
 
 }
