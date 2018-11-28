@@ -133,7 +133,7 @@ public class URLDecoder extends AbstractProcessor {
             }
         } catch (IllegalArgumentException e) {
             if (tryTrick) {
-                value = value.replaceAll("%(?![0-9A-F]{2})", percentEncodedChar);
+                value = value.replaceAll("%(?![0-9a-fA-F]{2})", percentEncodedChar);
                 decode(value, charset, record, fieldName, false);
             }
             else {
