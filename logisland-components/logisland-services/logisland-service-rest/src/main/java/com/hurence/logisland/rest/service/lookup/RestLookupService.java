@@ -26,12 +26,14 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
+import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.lookup.RecordLookupService;
 import com.hurence.logisland.util.string.StringUtils;
@@ -63,7 +65,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 })
 public class RestLookupService extends AbstractControllerService implements RecordLookupService {
     static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
-            .name("rest-lookup-url")
+            .name("rest.lookup.url")
             .displayName("URL")
             .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs, " +
                     "not flowfile attributes.")
@@ -72,13 +74,44 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor RECORD_READER = new PropertyDescriptor.Builder()
-            .name("rest-lookup-record-reader")
-            .displayName("Record Reader")
-            .description("The record reader to use for loading the payload and handling it as a record set.")
+    public static final AllowableValue AVRO_SERIALIZER =
+            new AllowableValue(AvroSerializer.class.getName(), "avro serialization", "serialize events as avro blocs");
+
+    public static final AllowableValue JSON_SERIALIZER =
+            new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+
+    public static final AllowableValue STRING_SERIALIZER =
+            new AllowableValue(StringSerializer.class.getName(), "json serialization", "serialize events as json blocs");
+
+    public static final AllowableValue KRYO_SERIALIZER =
+            new AllowableValue(KryoSerializer.class.getName(), "kryo serialization", "serialize events as json blocs");
+
+    public static final AllowableValue NO_SERIALIZER =
+            new AllowableValue("none", "no serialization", "send events as bytes");
+
+    public static final PropertyDescriptor RECORD_SERIALIZER = new PropertyDescriptor.Builder()
+            .name("record.serializer")
+            .description("the serializer needed for loading the payload and handling it as a record set.")
             .expressionLanguageSupported(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, STRING_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+            .defaultValue(JSON_SERIALIZER.getValue())
+            .build();
+
+//    static final PropertyDescriptor RECORD_READER = new PropertyDescriptor.Builder()
+//            .name("rest-lookup-record-reader")
+//            .displayName("Record Reader")
+//            .description("The record reader to use for loading the payload and handling it as a record set.")
+//            .expressionLanguageSupported(false)
 //            .identifiesControllerService(RecordReaderFactory.class)
-            .required(true)
+//            .required(true)
+//            .build();
+
+    static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
+            .name("record.schema")
+            .description("the schema definition for the serializer")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     static final PropertyDescriptor SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
@@ -109,13 +142,13 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^[\\x20-\\x7e\\x80-\\xff]+$")))
             .build();
     public static final PropertyDescriptor PROP_DIGEST_AUTH = new PropertyDescriptor.Builder()
-            .name("rest-lookup-digest-auth")
+            .name("rest.lookup.digest.auth")
             .displayName("Use Digest Authentication")
             .description("Whether to communicate with the website using Digest Authentication. 'Basic Authentication Username' and 'Basic Authentication Password' are used "
                     + "for authentication.")
             .required(false)
             .defaultValue("false")
-            .allowableValues("true", "false")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
     //TODO
@@ -135,7 +168,8 @@ public class RestLookupService extends AbstractControllerService implements Reco
     static {
         DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
                 URL,
-                RECORD_READER,
+                RECORD_SERIALIZER,
+                RECORD_SCHEMA,
                 SSL_CONTEXT_SERVICE,//TODO
 //                PROXY_CONFIGURATION_SERVICE,
                 PROP_BASIC_AUTH_USERNAME,
@@ -151,7 +185,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
     }
 
 //    private volatile ProxyConfigurationService proxyConfigurationService;
-//    private volatile RecordReaderFactory readerFactory;
+    private volatile RecordSerializer serializer;
     private volatile OkHttpClient client;
     private volatile Map<String, String> headers;
     private volatile PropertyValue urlTemplate;
@@ -163,8 +197,13 @@ public class RestLookupService extends AbstractControllerService implements Reco
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
         try {
-//            readerFactory = context.getProperty(RECORD_READER).asControllerService(RecordReaderFactory.class);
-
+            if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
+                serializer = SerializerProvider.getSerializer(
+                        context.getPropertyValue(RECORD_SERIALIZER).asString(),
+                        context.getPropertyValue(RECORD_SCHEMA).asString());
+            } else {
+                serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
+            }
             //TODO
 //            proxyConfigurationService = context.getProperty(PROXY_CONFIGURATION_SERVICE)
 //                    .asControllerService(ProxyConfigurationService.class);
@@ -299,17 +338,14 @@ public class RestLookupService extends AbstractControllerService implements Reco
         return client.newCall(request).execute();
     }
 
-    private Record handleResponse(InputStream is) { // throws SchemaNotFoundException, MalformedRecordException, IOException {
-        //TODO
-//        try (RecordReader reader = readerFactory.createRecordReader(context, is, getLogger())) {
-//
-//            Record record = reader.nextRecord();
-//            return record;
-//        } catch (Exception ex) {
-//            is.close();
-//            throw ex;
-//        }
-        return null;
+    private Record handleResponse(InputStream is) throws IOException {
+        try {
+            Record record = serializer.deserialize(is);;
+            return record;
+        } catch (Exception ex) {
+            is.close();
+            throw ex;
+        }
     }
 
     private Request buildRequest(final String mimeType, final String method, final String body, final String endpoint) {

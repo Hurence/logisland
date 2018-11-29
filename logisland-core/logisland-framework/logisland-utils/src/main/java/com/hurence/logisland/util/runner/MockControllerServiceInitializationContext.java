@@ -30,6 +30,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -39,9 +41,11 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     private final String identifier;
     private final ComponentLog logger;
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
+    private final ControllerService controllerService;
 
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
+        this.controllerService = controllerService;
         this.logger = new MockComponentLogger();
     }
 
@@ -105,8 +109,15 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
-        properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
-        return new ValidationResult.Builder().valid(true).build();
+        PropertyDescriptor descriptor = controllerService.getPropertyDescriptor(propertyName);
+        if (!properties.containsKey(descriptor)) {
+            logger.warn("property '" + propertyName + "' does not exist on " + identifier);
+            properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
+            return new ValidationResult.Builder().valid(true).build();
+        } else {
+            properties.put(descriptor, propertyValue);
+            return descriptor.validate(propertyValue);
+        }
     }
 
     @Override
@@ -121,9 +132,14 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public PropertyValue getPropertyValue(final String propertyName) {
-
-
-       return new MockPropertyValue(properties.get(new PropertyDescriptor.Builder().name(propertyName).build()));
+        PropertyDescriptor descriptor = controllerService.getPropertyDescriptor(propertyName);
+        if (descriptor == null)
+            return new MockPropertyValue(properties.get(new PropertyDescriptor.Builder().name(propertyName).build()));
+        if (properties.containsKey(descriptor)) {
+            return  new MockPropertyValue(properties.get(descriptor));
+        } else {
+            return new MockPropertyValue(descriptor.getDefaultValue());
+        }
     }
 
     @Override
