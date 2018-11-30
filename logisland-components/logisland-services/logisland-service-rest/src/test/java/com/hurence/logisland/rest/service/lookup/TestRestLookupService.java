@@ -51,17 +51,13 @@ public class TestRestLookupService {
         //TODO add custom validate rule ?
         //should be invalid
         runner.addControllerService("restLookupService", service);
-        runner.enableControllerService(service);
         runner.assertNotValid(service);
-        runner.removeControllerService(service);
 
         // conf file with no zk properties should be valid
-        service =  new MockRestLookUpService();
         runner.addControllerService("restLookupService", service);
         runner.setProperty(service, MockRestLookUpService.URL, "src/test/resources/hbase-site.xml");
-        runner.enableControllerService(service);
-
         runner.assertValid(service);
+        runner.enableControllerService(service);
         runner.removeControllerService(service);
     }
 
@@ -136,6 +132,9 @@ public class TestRestLookupService {
         outputRecord2.assertFieldEquals("name", "jésus");
         outputRecord2.assertRecordSizeEquals(1);
     }
+
+    //TODO test with a proxy
+    //TODO test with SSL
 
 
     // Override methods to create a mock service that can return staged data

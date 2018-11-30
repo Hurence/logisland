@@ -26,6 +26,7 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
+import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -37,8 +38,13 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
 import com.hurence.logisland.service.lookup.RecordLookupService;
+import com.hurence.logisland.service.proxy.ProxyConfiguration;
+import com.hurence.logisland.service.proxy.ProxyConfigurationService;
+import com.hurence.logisland.service.proxy.ProxySpec;
 import com.hurence.logisland.util.string.StringUtils;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import com.hurence.logisland.validator.Validator;
 import okhttp3.*;
 
@@ -143,10 +149,9 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
             .build();
 
-    //TODO
-//    private static final ProxySpec[] PROXY_SPECS = {ProxySpec.HTTP_AUTH, ProxySpec.SOCKS};
-//    public static final PropertyDescriptor PROXY_CONFIGURATION_SERVICE
-//            = ProxyConfiguration.createProxyConfigPropertyDescriptor(true, PROXY_SPECS);
+    private static final ProxySpec[] PROXY_SPECS = {ProxySpec.HTTP_AUTH, ProxySpec.SOCKS};
+    public static final PropertyDescriptor PROXY_CONFIGURATION_SERVICE
+            = ProxyConfiguration.createProxyConfigPropertyDescriptor(true, PROXY_SPECS);
 
     static final String MIME_TYPE_KEY = "mime.type";
     static final String BODY_KEY = "request.body";
@@ -163,7 +168,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
                 RECORD_SERIALIZER,
                 RECORD_SCHEMA,
                 SSL_CONTEXT_SERVICE,//TODO
-//                PROXY_CONFIGURATION_SERVICE,
+                PROXY_CONFIGURATION_SERVICE,
                 PROP_BASIC_AUTH_USERNAME,
                 PROP_BASIC_AUTH_PASSWORD,
                 PROP_DIGEST_AUTH
@@ -176,7 +181,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
         return DESCRIPTORS;
     }
 
-//    private volatile ProxyConfigurationService proxyConfigurationService;
+    private volatile ProxyConfigurationService proxyConfigurationService;
     private volatile RecordSerializer serializer;
     private volatile OkHttpClient client;
     private volatile Map<String, String> headers;
@@ -198,18 +203,17 @@ public class RestLookupService extends AbstractControllerService implements Reco
             } else {
                 serializer = SerializerProvider.getSerializer(context.getPropertyValue(RECORD_SERIALIZER).asString(), null);
             }
-            //TODO
-//            proxyConfigurationService = context.getProperty(PROXY_CONFIGURATION_SERVICE)
-//                    .asControllerService(ProxyConfigurationService.class);
 
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-            //TODO
             setAuthenticator(builder, context);
 
-//            if (proxyConfigurationService != null) {
-//                setProxy(builder);
-//            }
+            proxyConfigurationService = PluginProxy.rewrap(
+                    context.getPropertyValue(PROXY_CONFIGURATION_SERVICE).asControllerService()
+            );
+            if (proxyConfigurationService != null) {
+                setProxy(builder);
+            }
 
             //TODO
 //            final SSLContextService sslService = context.getProperty(SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
@@ -233,7 +237,6 @@ public class RestLookupService extends AbstractControllerService implements Reco
     public void onDisable() {
         this.urlTemplate = null;
     }
-    //TODO START//TODO START//TODO START//TODO START//TODO START//TODO START//TODO START//TODO START
 
     private void buildHeaders(ControllerServiceInitializationContext context) {
         headers = new HashMap<>();
@@ -248,21 +251,20 @@ public class RestLookupService extends AbstractControllerService implements Reco
     }
 
     private void setProxy(OkHttpClient.Builder builder) {
-        //TODO
-//        ProxyConfiguration config = proxyConfigurationService.getConfiguration();
-//        if (!config.getProxyType().equals(Proxy.Type.DIRECT)) {
-//            final Proxy proxy = config.createProxy();
-//            builder.proxy(proxy);
-//
-//            if (config.hasCredential()){
-//                builder.proxyAuthenticator((route, response) -> {
-//                    final String credential= Credentials.basic(config.getProxyUserName(), config.getProxyUserPassword());
-//                    return response.request().newBuilder()
-//                            .header("Proxy-Authorization", credential)
-//                            .build();
-//                });
-//            }
-//        }
+        ProxyConfiguration config = proxyConfigurationService.getConfiguration();
+        if (!config.getProxyType().equals(Proxy.Type.DIRECT)) {
+            final Proxy proxy = config.createProxy();
+            builder.proxy(proxy);
+
+            if (config.hasCredential()){
+                builder.proxyAuthenticator((route, response) -> {
+                    final String credential= Credentials.basic(config.getProxyUserName(), config.getProxyUserPassword());
+                    return response.request().newBuilder()
+                            .header("Proxy-Authorization", credential)
+                            .build();
+                });
+            }
+        }
     }
 
     @Override
