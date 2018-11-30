@@ -24,6 +24,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.File;
@@ -40,13 +41,18 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     private final String identifier;
     private final ComponentLog logger;
-    private final Map<PropertyDescriptor, String> properties = new HashMap<>();
+    private final Map<PropertyDescriptor, String> properties;
     private final ControllerService controllerService;
 
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
         this.controllerService = controllerService;
         this.logger = new MockComponentLogger();
+        this.properties = controllerService.getPropertyDescriptors().stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        p -> p.getDefaultValue() == null ? "" : p.getDefaultValue()
+                ));
     }
 
 
@@ -63,7 +69,7 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public String getProperty(PropertyDescriptor property) {
-        return null;
+        return properties.get(property);
     }
 
     @Override
@@ -136,9 +142,9 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         if (descriptor == null)
             return new MockPropertyValue(properties.get(new PropertyDescriptor.Builder().name(propertyName).build()));
         if (properties.containsKey(descriptor)) {
-            return  new MockPropertyValue(properties.get(descriptor));
+            return  new MockPropertyValue(properties.get(descriptor), this, VariableRegistry.EMPTY_REGISTRY, descriptor);
         } else {
-            return new MockPropertyValue(descriptor.getDefaultValue());
+            return  new MockPropertyValue(descriptor.getDefaultValue(), this, VariableRegistry.EMPTY_REGISTRY, descriptor);
         }
     }
 

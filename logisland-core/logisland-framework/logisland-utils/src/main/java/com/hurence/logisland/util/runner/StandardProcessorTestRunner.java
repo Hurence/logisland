@@ -323,13 +323,11 @@ public class StandardProcessorTestRunner implements TestRunner {
 
         try {
          //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
-
-
             final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(service.getIdentifier()));
             initContext.addControllerServices(context);
 
-            for(PropertyDescriptor prop :  context.getProperties().keySet()) {
-                initContext.setProperty(prop.getName(), context.getPropertyValue(prop.getName()).asString());
+            for(Map.Entry<PropertyDescriptor, String> entry :  configuration.getProperties().entrySet()) {
+                initContext.setProperty(entry.getKey().getName(), entry.getValue());
             }
 
             ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, initContext);
@@ -380,9 +378,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
         initContext.addControllerServices(context);
 
-        for(PropertyDescriptor prop :  context.getProperties().keySet()) {
-            initContext.setProperty(prop.getName(), context.getPropertyValue(prop.getName()).asString());
-        }
         service.initialize(initContext);
 
         final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
