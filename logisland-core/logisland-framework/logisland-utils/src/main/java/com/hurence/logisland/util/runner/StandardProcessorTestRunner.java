@@ -39,6 +39,7 @@ import com.hurence.logisland.annotation.lifecycle.OnRemoved;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
+import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
@@ -321,6 +322,8 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new IllegalStateException("Cannot enable Controller Service " + service + " because it is not disabled");
         }
 
+        assertValid(service);
+
         try {
          //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
             final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(service.getIdentifier()));
@@ -378,7 +381,9 @@ public class StandardProcessorTestRunner implements TestRunner {
         final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
         initContext.addControllerServices(context);
 
-        service.initialize(initContext);
+        for(Map.Entry<String, String> entry :  properties.entrySet()) {
+            initContext.setProperty(entry.getKey(), entry.getValue());
+        }
 
         final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
         for (final Map.Entry<String, String> entry : properties.entrySet()) {
@@ -392,6 +397,12 @@ public class StandardProcessorTestRunner implements TestRunner {
         }
 
         context.addControllerService(identifier, service, resolvedProps, null);
+        //needed to associate identifier to service see AbstractControllerService
+        try {
+            service.initialize(initContext);
+        } catch (InitializationException ex) {
+            logger.error("Error during initialization", ex);
+        }
     }
 
     @Override
@@ -419,7 +430,6 @@ public class StandardProcessorTestRunner implements TestRunner {
     public void assertValid(final ControllerService service) {
 
         final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
-
 
         final Collection<ValidationResult> results = context.getControllerService(service.getIdentifier()).validate(validationContext);
 
