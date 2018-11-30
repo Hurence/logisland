@@ -32,6 +32,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
+import com.hurence.logisland.logging.LogLevel;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.service.lookup.LookupFailureException;
@@ -47,6 +48,7 @@ import java.io.InputStream;
 import java.net.Proxy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
@@ -67,11 +69,10 @@ public class RestLookupService extends AbstractControllerService implements Reco
     static final PropertyDescriptor URL = new PropertyDescriptor.Builder()
             .name("rest.lookup.url")
             .displayName("URL")
-            .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs, " +
-                    "not flowfile attributes.")
+            .description("The URL for the REST endpoint. Expression language is evaluated against the lookup key/value pairs")
             .expressionLanguageSupported(false)
             .required(true)
-            .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
+            .addValidator(StandardValidators.URL_VALIDATOR)
             .build();
 
     public static final AllowableValue AVRO_SERIALIZER =
@@ -98,18 +99,9 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .defaultValue(JSON_SERIALIZER.getValue())
             .build();
 
-//    static final PropertyDescriptor RECORD_READER = new PropertyDescriptor.Builder()
-//            .name("rest-lookup-record-reader")
-//            .displayName("Record Reader")
-//            .description("The record reader to use for loading the payload and handling it as a record set.")
-//            .expressionLanguageSupported(false)
-//            .identifiesControllerService(RecordReaderFactory.class)
-//            .required(true)
-//            .build();
-
     static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
             .name("record.schema")
-            .description("the schema definition for the serializer")
+            .description("the schema definition for the deserializer (for response payload)")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -188,10 +180,12 @@ public class RestLookupService extends AbstractControllerService implements Reco
     private volatile RecordSerializer serializer;
     private volatile OkHttpClient client;
     private volatile Map<String, String> headers;
-    private volatile PropertyValue urlTemplate;
+    private volatile String urlTemplate;
     private volatile String basicUser;
     private volatile String basicPass;
     private volatile boolean isDigest;
+    private volatile Pattern urlCoordinatePattern = Pattern.compile("\\$\\{([^}]*)\\}");
+    private volatile Matcher matcher;
 
     @Override
     @OnEnabled
@@ -228,7 +222,8 @@ public class RestLookupService extends AbstractControllerService implements Reco
 
             buildHeaders(context);
 
-            urlTemplate = context.getPropertyValue(URL);
+            urlTemplate = context.getProperty(URL);
+            matcher = urlCoordinatePattern.matcher(urlTemplate);
         } catch (Exception e) {
             throw new InitializationException(e);
         }
@@ -272,10 +267,10 @@ public class RestLookupService extends AbstractControllerService implements Reco
 
     @Override
     public Optional<Record> lookup(Record coordinates) throws LookupFailureException {
-        final String endpoint = urlTemplate.evaluate(coordinates).asString();
-        final String mimeType = coordinates.getField(MIME_TYPE_KEY).asString();
-        final String method   = coordinates.getField(METHOD_KEY).asStringOpt().orElse("get").trim().toLowerCase();
-        final String body     = coordinates.getField(BODY_KEY).asString();
+        final String endpoint = evaluateEndPoint(coordinates);
+        final String mimeType = coordinates.hasField(MIME_TYPE_KEY) ? coordinates.getField(MIME_TYPE_KEY).asString() : null;
+        final String method   = coordinates.hasField(METHOD_KEY) ? coordinates.getField(METHOD_KEY).asString().trim().toLowerCase() : "get";
+        final String body     = coordinates.hasField(BODY_KEY) ? coordinates.getField(BODY_KEY).asString() : null;
 
         validateVerb(method);
 
@@ -313,9 +308,25 @@ public class RestLookupService extends AbstractControllerService implements Reco
 
             return Optional.ofNullable(record);
         } catch (Exception e) {
-            getLogger().error("Could not execute lookup.", e);
+            getLogger().error(String.format("Could not execute lookup at endpoint '%s'.", endpoint), e);
             throw new LookupFailureException(e);
         }
+    }
+
+    protected String evaluateEndPoint(Record coordinates) throws LookupFailureException {
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            if (!coordinates.hasField(key)) {
+                throw new LookupFailureException(
+                        String.format("coordinates did not contain required '%s' field for evaluating url template '%s'.", key, urlTemplate)
+                );
+            }
+            matcher.appendReplacement(sb, coordinates.getField(key).asString());
+        }
+        matcher.appendTail(sb);
+        matcher.reset();//reset matcher
+        return sb.toString();
     }
 
     protected void validateVerb(String method) throws LookupFailureException {
@@ -340,7 +351,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
 
     private Record handleResponse(InputStream is) throws IOException {
         try {
-            Record record = serializer.deserialize(is);;
+            Record record = serializer.deserialize(is);
             return record;
         } catch (Exception ex) {
             is.close();
