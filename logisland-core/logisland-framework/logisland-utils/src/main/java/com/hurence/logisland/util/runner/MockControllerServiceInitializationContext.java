@@ -24,6 +24,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.File;
@@ -42,7 +43,8 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
-        this.logger = new MockComponentLogger();
+        this.logger = new StandardComponentLogger(identifier, controllerService);
+
     }
 
 

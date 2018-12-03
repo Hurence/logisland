@@ -32,7 +32,7 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
 
     public StandardControllerServiceContext(final ControllerService controllerService, final String identifier) {
         super(controllerService, identifier);
-        this.logger =  new StandardComponentLogger(identifier, StandardControllerServiceContext.class);
+        this.logger =  new StandardComponentLogger(identifier, controllerService);
     }
 
 

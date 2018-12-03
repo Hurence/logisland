@@ -40,7 +40,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
         this.identifier = identifier;
     }
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractConfigurableComponent.class);
 
     /**
      * Allows subclasses to perform their own validation on the already set
