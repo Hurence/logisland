@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,12 +58,12 @@ public class DebugStream extends AbstractProcessor {
             .allowableValues(JSON, STRING)
             .build();
 
-    public static final PropertyDescriptor RECORD_TYPES = new PropertyDescriptor.Builder()
-            .name("record.types")
-            .description("comma separated list of record to include. all if empty")
+    public static final PropertyDescriptor JVM_DUMP = new PropertyDescriptor.Builder()
+            .name("jvm.dump")
+            .description("if processor should log jvm dump or not")
             .required(false)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .defaultValue("")
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("true")
             .build();
 
 
@@ -69,16 +71,29 @@ public class DebugStream extends AbstractProcessor {
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(SERIALIZER);
-        descriptors.add(RECORD_TYPES);
-
+        descriptors.add(JVM_DUMP);
         return Collections.unmodifiableList(descriptors);
     }
 
+    private volatile MemoryMXBean memBean;
+
+
+    @Override
+    public void init(ProcessContext context) {
+        if (memBean == null) {
+            memBean = ManagementFactory.getMemoryMXBean();
+        }
+    }
 
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        String[] recordTypesToInclude = context.getPropertyValue(RECORD_TYPES).asString().split(",");
+        if (context.getPropertyValue(JVM_DUMP).asBoolean()) {
+            System.gc();
+            getLogger().info("heap mem after gc: {} in processor {}", new Object[]{memBean.getHeapMemoryUsage(), this.getIdentifier()});
+            getLogger().info("non heap mem after gc: {} in processor {}", new Object[]{memBean.getNonHeapMemoryUsage(), this.getIdentifier()});
+        }
+
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
             if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {
