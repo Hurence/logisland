@@ -374,7 +374,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             try {
                 val bais = new ByteArrayInputStream(rawEvent._2)
-                val deserialized = serializer.deserialize(bais)
+                val deserialized: Record = serializer.deserialize(bais)
                 bais.close()
 
                 Some(deserialized)
