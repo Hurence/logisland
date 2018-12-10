@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document."
 )
 public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
-    private static Logger logger = LoggerFactory.getLogger(EnrichRecordsElasticsearch.class);
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
             .name("record.key")
@@ -155,7 +154,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                     includesFieldName = context.getPropertyValue(ES_INCLUDES_FIELD).evaluate(record).asString();
                 } catch (Throwable t) {
                     record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in executing EL. Error: " + t.getMessage());
-                    logger.error("Cannot interpret EL : " + record, t);
+                    getLogger().error("Cannot interpret EL : " + record, t);
                 }
 
                 if (recordKeyName != null) {
@@ -184,9 +183,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
                 multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
             } catch (InvalidMultiGetQueryRecordException e ){
-                // should never happen
-                e.printStackTrace();
-                // TODO : Fix above
+                getLogger().error("error while multiGet elasticsearch", e);
             }
 
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
@@ -395,7 +392,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                             }
                         }
                         catch(Exception e){
-                            logger.warn("issue while matching on fieldname, exception {}", fieldName, e.getMessage());
+                            getLogger().warn("issue while matching on fieldname {}", new Object[]{fieldName}, e);
                         }
                     }
                 }

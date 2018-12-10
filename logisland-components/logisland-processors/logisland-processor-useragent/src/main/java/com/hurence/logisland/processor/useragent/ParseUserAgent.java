@@ -49,8 +49,6 @@ public class ParseUserAgent extends AbstractProcessor {
 
     private static final Object sync = new Object();
 
-    private static Logger logger = LoggerFactory.getLogger(ParseUserAgent.class);
-
     private boolean debug;
     private String userAgentField;
     private boolean useCache;
@@ -224,7 +222,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        logger.debug("Initializing User-Agent Processor");
+        getLogger().debug("Initializing User-Agent Processor");
 
         debug = context.getPropertyValue(DEBUG).asBoolean();
         userAgentField = context.getPropertyValue(USERAGENT_FIELD).asString();
@@ -237,14 +235,14 @@ public class ParseUserAgent extends AbstractProcessor {
         ambiguityEnabled = context.getPropertyValue(AMBIGUITY_ENABLED).asBoolean();
 
         if (debug) {
-            logger.info(KEY_USERAGENT_FIELD + "\t: " + userAgentField);
-            logger.info(KEY_USERAGENT_KEEP + "\t: " + userAgentKeep);
-            logger.info(KEY_DEBUG + "\t: " + debug);
-            logger.info(KEY_CACHE_ENABLED + "\t: " + useCache);
-            logger.info(KEY_CACHE_SIZE + "\t: " + cacheSize);
-            logger.info(KEY_FIELDS_TO_RETURN + "\t: " + selectedFields);
-            logger.info(KEY_CONFIDENCE_ENABLED + "\t: " + confidenceEnabled);
-            logger.info(KEY_AMBIGUITY_ENABLED + "\t: " + ambiguityEnabled);
+            getLogger().info(KEY_USERAGENT_FIELD + "\t: " + userAgentField);
+            getLogger().info(KEY_USERAGENT_KEEP + "\t: " + userAgentKeep);
+            getLogger().info(KEY_DEBUG + "\t: " + debug);
+            getLogger().info(KEY_CACHE_ENABLED + "\t: " + useCache);
+            getLogger().info(KEY_CACHE_SIZE + "\t: " + cacheSize);
+            getLogger().info(KEY_FIELDS_TO_RETURN + "\t: " + selectedFields);
+            getLogger().info(KEY_CONFIDENCE_ENABLED + "\t: " + confidenceEnabled);
+            getLogger().info(KEY_AMBIGUITY_ENABLED + "\t: " + ambiguityEnabled);
         }
 
         if (Singleton.get() == null) {
@@ -274,7 +272,7 @@ public class ParseUserAgent extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         if (debug) {
-            logger.debug("User-Agent Processor records input: " + records);
+            getLogger().debug("User-Agent Processor records input: " + records);
         }
 
 
@@ -286,7 +284,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
             Field uaField = record.getField(userAgentField);
             if (uaField == null) {
-                logger.info("Skipping record. Field '" + userAgentField + "' does not exists in record");
+                getLogger().info("Skipping record. Field '" + userAgentField + "' does not exists in record");
                 continue;
             }
 
@@ -314,9 +312,8 @@ public class ParseUserAgent extends AbstractProcessor {
                     record.setField(new Field("ambiguity", FieldType.INT, agent.getAmbiguityCount()));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
                 record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in User-agent decoding");
-                logger.error("Cannot parse User-Agent content: " + record);
+                getLogger().error("Cannot parse User-Agent content: " + record, t);
                 continue;
             } finally {
                 if (pool != null && uaa != null) {
@@ -330,7 +327,7 @@ public class ParseUserAgent extends AbstractProcessor {
         }
 
         if (debug) {
-            logger.debug("User-Agent Processor records output: " + records);
+            getLogger().debug("User-Agent Processor records output: " + records);
         }
         return records;
     }

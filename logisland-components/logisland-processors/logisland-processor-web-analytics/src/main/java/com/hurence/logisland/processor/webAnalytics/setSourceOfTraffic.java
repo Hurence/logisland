@@ -32,14 +32,9 @@ import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordB
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.collections.map.HashedMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -61,8 +56,6 @@ import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
         ", the related ES doc MUST have a boolean field (default being " + SOCIAL_NETWORK_SITE + ") specified by the property **" + PROP_ES_SOCIAL_NETWORK + "** with a value set to true. ")
 public class setSourceOfTraffic extends AbstractProcessor {
 
-
-    private static final Logger logger = LoggerFactory.getLogger(setSourceOfTraffic.class);
     protected static final String PROP_ES_INDEX = "es.index";
     private static final String PROP_ES_TYPE = "es.type";
     protected static final String PROP_ES_SEARCH_ENGINE = "es.search_engine.field";
@@ -310,12 +303,12 @@ public class setSourceOfTraffic extends AbstractProcessor {
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
         elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         if (elasticsearchClientService == null) {
-            logger.error("Elasticsearch client service is not initialized!");
+            getLogger().error("Elasticsearch client service is not initialized!");
         }
 
         cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
         if (cacheService == null) {
-            logger.error("Cache service is not initialized!");
+            getLogger().error("Cache service is not initialized!");
         }
     }
 
@@ -359,7 +352,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                     }
                 }
             } catch (URISyntaxException e) {
-                e.printStackTrace();
+                getLogger().error("URISyntaxException", e);
             }
         }
         // Check if this is a custom campaign
@@ -368,7 +361,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
             try {
                 utm_source = URLDecoder.decode(record.getField(utm_source_field).asString(), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                getLogger().error("UnsupportedEncodingException", e);
                 utm_source = record.getField(utm_source_field).asString();
             }
             sourceOfTraffic.setSource(utm_source);
@@ -377,7 +370,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 try {
                     utm_campaign = URLDecoder.decode(record.getField(utm_campaign_field).asString(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    getLogger().error("UnsupportedEncodingException", e);
                     utm_campaign = record.getField(utm_campaign_field).asString();
                 }
                 sourceOfTraffic.setCampaign(utm_campaign);
@@ -387,7 +380,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 try {
                     utm_medium = URLDecoder.decode(record.getField(utm_medium_field).asString(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    getLogger().error("UnsupportedEncodingException", e);
                     utm_medium = record.getField(utm_medium_field).asString();
                 }
                 sourceOfTraffic.setMedium(utm_medium);
@@ -397,7 +390,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 try {
                     utm_content = URLDecoder.decode(record.getField(utm_content_field).asString(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    getLogger().error("UnsupportedEncodingException", e);
                     utm_content = record.getField(utm_content_field).asString();
                 }
                 sourceOfTraffic.setContent(utm_content);
@@ -407,7 +400,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 try {
                     utm_term = URLDecoder.decode(record.getField(utm_term_field).asString(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    getLogger().error("UnsupportedEncodingException", e);
                     utm_term = record.getField(utm_term_field).asString();
                 }
                 sourceOfTraffic.setKeyword(utm_term);
@@ -418,16 +411,16 @@ public class setSourceOfTraffic extends AbstractProcessor {
             try {
                 hostname = new URL(referer).getHost();
             } catch (MalformedURLException e) {
-                // Avoid printStackTrace() in logs in case scheme is android-app.
+                // Avoid error in logs in case scheme is android-app.
                 try {
                     if ( "android-app".equals(new URI(referer).getScheme()) ) {
                         return;
                     }
                 } catch (URISyntaxException e2) {
-                    e2.printStackTrace();
+                    getLogger().error("URISyntaxException for referer", e2);
                     return;
                 }
-                e.printStackTrace();
+                getLogger().error("MalformedURLException for referer", e);
                 return;
             }
             String[] hostname_splitted = hostname.split("\\.");
@@ -465,7 +458,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                     try {
                         referral_path = URLDecoder.decode(referer, "UTF-8");
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        getLogger().error("UnsupportedEncodingException", e);
                         referral_path = referer;
                     }
                     sourceOfTraffic.setReferral_path(referral_path);
@@ -496,7 +489,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
             try {
                 first_page_url = new URL(first_page);
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                getLogger().error("MalformedURLException", e);
                 return res;
             }
             String host = first_page_url.getHost();
@@ -558,7 +551,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
         try {
             cacheEntry = cacheService.get(domain);
         } catch (Exception e) {
-            logger.trace("Could not use cache!");
+            getLogger().trace("Could not use cache!");
         }
         /**
          * If something in the cache, get it and be sure it is not obsolete
@@ -594,8 +587,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
 
                 multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
             } catch (InvalidMultiGetQueryRecordException e) {
-                // should never happen
-                e.printStackTrace();
+                getLogger().error("error while multiget", e);
             }
 
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
@@ -632,7 +624,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 cacheEntry = new CacheEntry(sourceInfo, System.currentTimeMillis());
                 cacheService.set(domain, cacheEntry);
             } catch (Exception e) {
-                logger.trace("Could not put entry in the cache:" + e.getMessage());
+                getLogger().trace("Could not put entry in the cache:" + e.getMessage());
             }
         }
 

@@ -376,7 +376,7 @@ public class IncrementalWebSession
                                                                     .asControllerService());
         if (elasticsearchClientService == null)
         {
-            LOG.error("Elasticsearch client service is not initialized!");
+            getLogger().error("Elasticsearch client service is not initialized!");
         }
     }
 
@@ -448,11 +448,6 @@ public class IncrementalWebSession
     }
 
     /**
-     * The logger.
-     */
-    private static Logger LOG = LoggerFactory.getLogger(IncrementalWebSession.class);
-
-    /**
      * If {@code true} prints additional logs.
      */
     private boolean _DEBUG = false;
@@ -469,11 +464,11 @@ public class IncrementalWebSession
         {
             if ( args.length == 0 )
             {
-                LOG.debug(format);
+                getLogger().debug(format);
             }
             else
             {
-                LOG.debug(String.format(format + "\n", args));
+                getLogger().debug(String.format(format + "\n", args));
             }
         }
     }
@@ -821,7 +816,7 @@ public class IncrementalWebSession
             catch (final InvalidMultiGetQueryRecordException e)
             {
                 // should never happen
-                e.printStackTrace();
+                getLogger().error("error while executing multiGet elasticsearch", e);
             }
 
             debug("Retrieved %d documents from elasticsearch.", esResponse.size());

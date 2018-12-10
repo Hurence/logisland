@@ -28,8 +28,6 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -50,7 +48,6 @@ import java.util.stream.Collectors;
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document."
 )
 public class EnrichRecords extends AbstractDatastoreProcessor {
-    private static Logger logger = LoggerFactory.getLogger(EnrichRecords.class);
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()
             .name("record.key")
@@ -154,7 +151,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                     includesFieldName = context.getPropertyValue(INCLUDES_FIELD).evaluate(record).asString();
                 } catch (Throwable t) {
                     record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in executing EL. Error: " + t.getMessage());
-                    logger.error("Cannot interpret EL : " + record, t);
+                    getLogger().error("Cannot interpret EL : " + record, t);
                 }
 
 
@@ -187,9 +184,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
 
                 multiGetResponseRecords = datastoreClientService.multiGet(mgqrs);
             } catch (InvalidMultiGetQueryRecordException e) {
-                // should never happen
-                e.printStackTrace();
-                // TODO : Fix above
+                getLogger().error("error while multiger", e);
             }
 
             if (multiGetResponseRecords == null || multiGetResponseRecords.isEmpty()) {
@@ -391,7 +386,7 @@ public class EnrichRecords extends AbstractDatastoreProcessor {
                                 return true;
                             }
                         } catch (Exception e) {
-                            logger.warn("issue while matching on fieldname, exception {}", fieldName, e.getMessage());
+                            getLogger().warn("issue while matching on fieldname {}", new Object[]{fieldName}, e);
                         }
                     }
                 }

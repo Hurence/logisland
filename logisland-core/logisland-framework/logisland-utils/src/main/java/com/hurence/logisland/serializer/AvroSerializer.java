@@ -38,6 +38,8 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,6 +53,7 @@ import java.util.Objects;
 public class AvroSerializer implements RecordSerializer {
 
     private final Schema schema;
+    private Logger logger = LoggerFactory.getLogger(AvroSerializer.class);
 
     public AvroSerializer(final Schema schema) {
         this.schema = schema;
@@ -161,7 +164,7 @@ public class AvroSerializer implements RecordSerializer {
 
             return record;
         } catch (Throwable t) {
-            t.printStackTrace();
+            logger.error("error while deserializing", t);
             throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }

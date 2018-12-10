@@ -63,7 +63,6 @@ public class MatchQuery extends AbstractProcessor {
     protected OnMissPolicy onMissPolicy;
     protected OnMatchPolicy onMatchPolicy;
     protected RecordTypeUpdatePolicy recordTypeUpdatePolicy;
-    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
 
     public static final PropertyDescriptor NUMERIC_FIELDS = new PropertyDescriptor.Builder()
             .name("numeric.fields")
@@ -222,10 +221,8 @@ public class MatchQuery extends AbstractProcessor {
                 MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
                 monitor.update(mq);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
-            e.printStackTrace();
+        } catch (IOException|UpdateException e) {
+            getLogger().error("error while creating Monitor", e);
         }
 
 
@@ -278,7 +275,7 @@ public class MatchQuery extends AbstractProcessor {
         try {
             matches = monitor.match(DocumentBatch.of(inputDocs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
-            logger.error("Could not match documents", e);
+            getLogger().error("Could not match documents", e);
             return outRecords;
         }
 
