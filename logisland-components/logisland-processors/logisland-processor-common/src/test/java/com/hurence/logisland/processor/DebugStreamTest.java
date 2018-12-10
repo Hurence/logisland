@@ -52,12 +52,12 @@ public class DebugStreamTest {
         testRunner.assertOutputRecordsCount(12);
         testRunner.enqueue(records);
         testRunner.run();
-        testRunner.assertOutputRecordsCount(12);
-        testRunner.enqueue(records);
-        testRunner.run();
         testRunner.assertOutputRecordsCount(15);
         testRunner.enqueue(records);
         testRunner.run();
         testRunner.assertOutputRecordsCount(18);
+        testRunner.enqueue(records);
+        testRunner.run();
+        testRunner.assertOutputRecordsCount(21);
     }
 }
