@@ -56,7 +56,6 @@ import org.apache.commons.lang3.tuple.Pair;
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
 public class MatchIP extends MatchQuery {
 
-    private static Logger logger = LoggerFactory.getLogger(MatchIP.class);
     private HashMap<String, HashSet<Pair<String, Pattern>>> ipRegexps;
     private HashMap<String, MatchingRule> regexpMatchingRules;
     private final String ipSyntax = "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d+$";
@@ -147,13 +146,11 @@ public class MatchIP extends MatchQuery {
                         ipRegexps.put(queryField, regexpVals);
                     }
                 }
-
             }
         }
 
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
-
             // TODO infer numeric type here
             if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
                 final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
@@ -161,17 +158,13 @@ public class MatchIP extends MatchQuery {
                     queryMatcher.setNumericField(numericField);
                 }
             }
-
-
             //monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
             for (MatchingRule rule : matchingRules.values()) {
                 MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
                 monitor.update(mq);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
-            e.printStackTrace();
+        } catch (IOException|UpdateException e) {
+            getLogger().error("error while initializing Monitor", e);
         }
 
 
@@ -179,10 +172,6 @@ public class MatchIP extends MatchQuery {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
-        // may have not been initialized
-        if (monitor == null)
-            init(context);
 
         // convert all numeric fields to double to get numeric range working ...
         final List<Record> outRecords = new ArrayList<>();
@@ -211,7 +200,7 @@ public class MatchIP extends MatchQuery {
         try {
             matches = monitor.match(DocumentBatch.of(inputDocs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
-            logger.error("Could not match documents", e);
+            getLogger().error("Could not match documents", e);
             return outRecords;
         }
 
