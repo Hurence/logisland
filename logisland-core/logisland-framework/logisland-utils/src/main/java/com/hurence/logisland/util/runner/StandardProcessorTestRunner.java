@@ -109,6 +109,11 @@ public class StandardProcessorTestRunner implements TestRunner {
         inputRecordsQueue.clear();
     }
 
+    @Override
+    public void setProcessorIdentifier(String identifier) {
+        this.context.setIdentifier(identifier);
+    }
+
 
     @Override
     public void assertValid() {

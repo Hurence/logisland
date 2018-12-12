@@ -140,7 +140,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
             String typeName = evaluatePropAsString(record, context, ES_TYPE_FIELD);
             String includesFieldName = evaluatePropAsString(record, context, ES_INCLUDES_FIELD);
 
-            if (recordKeyName != null) {
+            if (recordKeyName != null && indexName != null && typeName != null) {
                 try {
                     // Includes :
                     String[] includesArray = null;
@@ -152,18 +152,23 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
                     recordsToEnrich.add(new ImmutableTriple(record, asUniqueKey(indexName, typeName, recordKeyName), includeFields));
                 } catch (Throwable t) {
                     record.setStringField(FieldDictionary.RECORD_ERRORS, "Can not request ElasticSearch with " + indexName + " "  + typeName + " " + recordKeyName);
-                    getLogger().error("Processor {}: Can not request ElasticSearch with : \n" +
-                            "index: {}, type: {}, recordKey: {}", new Object[]{this.getIdentifier(), record, indexName, typeName, recordKeyName}, t);
+                    getLogger().error("Can not request ElasticSearch with index: {}, type: {}, recordKey: {}, record id is :\n{}",
+                            new Object[]{ indexName, typeName, recordKeyName, record.getId() },
+                            t);
                 }
+            } else {
+                getLogger().warn("Can not request ElasticSearch with " +
+                        "index: {}, type: {}, recordKey: {}, record id is :\n{}",
+                        new Object[]{ indexName, typeName, recordKeyName, record.getId() });
             }
         }
 
         List<MultiGetResponseRecord> multiGetResponseRecords = null;
         try {
             List<MultiGetQueryRecord> mgqrs = mgqrBuilder.build();
-
+            if (mgqrs.isEmpty()) return records;
             multiGetResponseRecords = elasticsearchClientService.multiGet(mgqrs);
-        } catch (InvalidMultiGetQueryRecordException e ){
+        } catch (InvalidMultiGetQueryRecordException e ) {
             getLogger().error("error while multiGet elasticsearch", e);
         }
 

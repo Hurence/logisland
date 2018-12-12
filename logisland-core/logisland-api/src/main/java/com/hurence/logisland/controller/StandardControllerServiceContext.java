@@ -24,15 +24,8 @@ import java.io.File;
 
 public class StandardControllerServiceContext extends AbstractConfiguredComponent implements ComponentContext, ControllerServiceInitializationContext {
 
-
-
-    private final ComponentLog logger;
-
-
-
     public StandardControllerServiceContext(final ControllerService controllerService, final String identifier) {
         super(controllerService, identifier);
-        this.logger =  new StandardComponentLogger(identifier, controllerService);
     }
 
 
@@ -70,10 +63,6 @@ public class StandardControllerServiceContext extends AbstractConfiguredComponen
         return null;
     }
 
-    @Override
-    public ComponentLog getLogger() {
-        return logger;
-    }
 
     @Override
     public String getKerberosServicePrincipal() {
