@@ -268,6 +268,7 @@ public class IncrementalWebSessionTest
     private static final String SESSION_TYPE = "sessions";
     private static final String EVENT_INDEX = "openanalytics_webevents";
     private static final String EVENT_TYPE = "event";
+    private static final String MAPPING_INDEX = "openanalytics_mappings";
 
     private static final String SESSION_ID = "sessionId";
     private static final String TIMESTAMP = "h2kTimestamp";
@@ -782,7 +783,7 @@ public class IncrementalWebSessionTest
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
         // One webSession expected.
-        Assert.assertEquals(1+eventCount, this.elasticsearchClient.documents.size());
+        Assert.assertEquals(1+1+eventCount, this.elasticsearchClient.documents.size());
         testRunner.assertOutputRecordsCount(1);
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
@@ -848,8 +849,8 @@ public class IncrementalWebSessionTest
         testRunner.assertAllInputRecordsProcessed();
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
-        // One webSession expected.
-        Assert.assertEquals(1+eventCount, this.elasticsearchClient.documents.size());
+        // One webSession + 2 webEvents + 1 mapping expected in elasticsearch.
+        Assert.assertEquals(1+eventCount+1, this.elasticsearchClient.documents.size());
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
@@ -899,8 +900,8 @@ public class IncrementalWebSessionTest
         testRunner.assertOutputRecordsCount(2);
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
-        // Two webSessions expected in elasticsearch.
-        Assert.assertEquals(2+eventCount, this.elasticsearchClient.documents.size());
+        // 2 webSessions + 2 webEvents + 1 mapping expected in elasticsearch.
+        Assert.assertEquals(2+eventCount+1, this.elasticsearchClient.documents.size());
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
@@ -1011,6 +1012,7 @@ public class IncrementalWebSessionTest
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_FIELD, SESSION_TYPE);
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_FIELD, EVENT_INDEX);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_FIELD, EVENT_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_INDEX);
 
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
