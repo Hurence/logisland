@@ -77,18 +77,13 @@ public class MatchIP extends MatchQuery {
 
     @Override
     public void init(final ProcessContext context) {
-
-        keywordAnalyzer = new KeywordAnalyzer();
-        standardAnalyzer = new StandardAnalyzer();
-        stopAnalyzer = new StopAnalyzer();
-        matchingRules = new HashMap<>();
         regexpMatchingRules = new HashMap<>();
-        onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
-        onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
-        recordTypeUpdatePolicy = RecordTypeUpdatePolicy.valueOf(context.getPropertyValue(RECORD_TYPE_UPDATE_POLICY).asString());
-        NumericQueryParser queryMatcher = new NumericQueryParser("field");
         luceneAttrsToQuery = new HashSet<String>();
+        super.init(context);
+    }
 
+    @Override
+    protected void updateMatchingRules(ProcessContext context) {
         // loop over dynamic properties to add rules
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
@@ -148,26 +143,6 @@ public class MatchIP extends MatchQuery {
                 }
             }
         }
-
-        try {
-            monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
-            // TODO infer numeric type here
-            if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
-                final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
-                for (String numericField : numericFields) {
-                    queryMatcher.setNumericField(numericField);
-                }
-            }
-            //monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
-            for (MatchingRule rule : matchingRules.values()) {
-                MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
-                monitor.update(mq);
-            }
-        } catch (IOException|UpdateException e) {
-            getLogger().error("error while initializing Monitor", e);
-        }
-
-
     }
 
     @Override

@@ -221,6 +221,7 @@ public class ParseUserAgent extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
         getLogger().debug("Initializing User-Agent Processor");
 
         debug = context.getPropertyValue(DEBUG).asBoolean();

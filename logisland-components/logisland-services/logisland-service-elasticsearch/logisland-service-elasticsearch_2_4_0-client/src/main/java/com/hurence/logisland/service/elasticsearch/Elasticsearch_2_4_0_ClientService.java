@@ -105,6 +105,7 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        super.init(context);
         synchronized(this) {
             try {
                 createElasticsearchClient(context);

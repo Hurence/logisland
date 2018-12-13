@@ -299,7 +299,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-
+        super.init(context);
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
         elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         if (elasticsearchClientService == null) {

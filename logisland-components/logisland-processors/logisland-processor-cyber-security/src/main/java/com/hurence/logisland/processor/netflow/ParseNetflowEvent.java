@@ -94,6 +94,7 @@ public class ParseNetflowEvent extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         logger.debug("Initializing Netflow Processor");
     }
     

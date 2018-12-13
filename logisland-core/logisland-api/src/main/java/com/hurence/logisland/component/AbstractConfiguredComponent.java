@@ -245,5 +245,4 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     }
 
 
-
 }

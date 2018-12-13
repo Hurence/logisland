@@ -99,6 +99,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             this.redisConnectionPool = new RedisConnectionPool();
             this.redisConnectionPool.init(context);

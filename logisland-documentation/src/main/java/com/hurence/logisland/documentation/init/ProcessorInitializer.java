@@ -42,7 +42,7 @@ public class ProcessorInitializer implements ConfigurableComponentInitializer {
         Processor processor = (Processor) component;
 
 
-        final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
+        final ComponentLog logger = new MockComponentLogger(component.getIdentifier() == null ? "" : component.getIdentifier(), component);
         final MockProcessContext context = new MockProcessContext(processor);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, processor, logger, context);
     }

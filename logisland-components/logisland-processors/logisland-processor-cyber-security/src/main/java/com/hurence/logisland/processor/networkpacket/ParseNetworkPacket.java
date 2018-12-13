@@ -79,6 +79,7 @@ public class ParseNetworkPacket extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         debug = context.getPropertyValue(DEBUG_PROPERTY).asBoolean();
 
         if (debug) {

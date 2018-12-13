@@ -88,6 +88,7 @@ public class MaxmindIpToGeoService extends AbstractControllerService implements 
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
 
             if (context.getPropertyValue(MAXMIND_DATABASE_FILE_URI).isSet()) {

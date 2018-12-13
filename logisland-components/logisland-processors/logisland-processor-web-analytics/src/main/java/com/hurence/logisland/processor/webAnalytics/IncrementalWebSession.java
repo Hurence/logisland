@@ -372,6 +372,7 @@ public class IncrementalWebSession
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE)
                                                                     .asControllerService());
         if (elasticsearchClientService == null)

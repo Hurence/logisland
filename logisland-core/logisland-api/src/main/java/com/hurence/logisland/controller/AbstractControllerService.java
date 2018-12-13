@@ -33,11 +33,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
     @Override
     public void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
         serviceLookup = context.getControllerServiceLookup();
-        try {
-            init(context);
-        } catch (IOException e) {
-            throw  new InitializationException(e);
-        }
+        init(context);
     }
 
     /**
@@ -55,7 +51,7 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
      * @param context of initialization context
      * @throws InitializationException if unable to init
      */
-    protected void init(final ControllerServiceInitializationContext context) throws InitializationException, IOException {
+    protected void init(final ControllerServiceInitializationContext context) throws InitializationException {
         super.init(context);
     }
 
