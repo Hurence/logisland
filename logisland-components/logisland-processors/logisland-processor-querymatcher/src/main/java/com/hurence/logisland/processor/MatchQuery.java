@@ -197,7 +197,6 @@ public class MatchQuery extends AbstractProcessor {
 
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
-
             // TODO infer numeric type here
             if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
                 final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
@@ -232,12 +231,17 @@ public class MatchQuery extends AbstractProcessor {
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
         // may have not been initialized
         if (monitor == null)
             init(context);
+        try {
+            return internalProcess(context, records);
+        } finally {
+           stop();
+        }
+    }
 
-
+    protected Collection<Record> internalProcess(ProcessContext context, Collection<Record> records) {
         // convert all numeric fields to double to get numeric range working ...
         final List<Record> outRecords = new ArrayList<>();
         final List<InputDocument> inputDocs = new ArrayList<>();
@@ -299,14 +303,32 @@ public class MatchQuery extends AbstractProcessor {
         final MatchHandlers.MatchHandler matchHandler = _matchHandler;
         for (DocumentMatches<QueryMatch> docMatch : matches) {
             docMatch.getMatches().forEach(queryMatch ->
-                matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
-                                         context,
-                                         matchingRules.get(queryMatch.getQueryId()),
-                                         recordTypeUpdatePolicy)
+                    matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
+                            context,
+                            matchingRules.get(queryMatch.getQueryId()),
+                            recordTypeUpdatePolicy)
             );
 
         }
-
         return matchHandler.outputRecords();
+    }
+
+    public void stop() {
+        try {//necessary as currently processor instances are not kept between batches (avoid memory leak)
+            if (monitor != null) {
+                monitor.close();
+            }
+        } catch (IOException ex) {
+            getLogger().error("Error while closing monitor", ex);
+        }
+        if (keywordAnalyzer != null) {
+            keywordAnalyzer.close();
+        }
+        if (standardAnalyzer != null) {
+            standardAnalyzer.close();
+        }
+        if (stopAnalyzer != null) {
+            stopAnalyzer.close();
+        }
     }
 }

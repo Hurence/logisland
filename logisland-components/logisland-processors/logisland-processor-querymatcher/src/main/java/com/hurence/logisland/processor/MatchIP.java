@@ -146,8 +146,7 @@ public class MatchIP extends MatchQuery {
     }
 
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
+    protected Collection<Record> internalProcess(ProcessContext context, Collection<Record> records) {
         // convert all numeric fields to double to get numeric range working ...
         final List<Record> outRecords = new ArrayList<>();
         final List<InputDocument> inputDocs = new ArrayList<>();
@@ -198,10 +197,10 @@ public class MatchIP extends MatchQuery {
         final MatchHandlers.MatchHandler matchHandler = _matchHandler;
         for (DocumentMatches<QueryMatch> docMatch : matches) {
             docMatch.getMatches().forEach(queryMatch ->
-                matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
-                                         context,
-                                         matchingRules.get(queryMatch.getQueryId()),
-                                         recordTypeUpdatePolicy)
+                    matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
+                            context,
+                            matchingRules.get(queryMatch.getQueryId()),
+                            recordTypeUpdatePolicy)
             );
         }
         if (ipRegexps != null && ipRegexps.size() > 0) {
