@@ -100,6 +100,10 @@ public class IncrementalWebSession
     private static final String PROP_ES_SESSION_TYPE = "es.session.type";
     private static final String PROP_ES_EVENT_INDEX = "es.event.index";
     private static final String PROP_ES_EVENT_TYPE = "es.event.type";
+    private static final String PROP_ES_SESSION_MAPPING_INDEX = "es.mapping.index";
+
+    private static final String MAPPING_EVENT_TYPE = "mapping";
+    private static final String MAPPING_FIELD = "sessionId";
 
     /**
      * Extra fields - for convenience - avoiding to parse the human readable first and last timestamps.
@@ -152,6 +156,14 @@ public class IncrementalWebSession
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_EVENT_TYPE)
                     .description("Name of the ES type of web event documents.")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .build();
+
+    static final PropertyDescriptor ES_SESSION_MAPPING_INDEX_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_SESSION_MAPPING_INDEX)
+                    .description("Name of the ES index containing the mapping of web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
@@ -281,45 +293,61 @@ public class IncrementalWebSession
                     .defaultValue("lastEventDateTime")
                     .build();
 
-    static final PropertyDescriptor UTM_SOURCE_FIELD = new PropertyDescriptor.Builder()
-            .name("utm_source.field")
-            .description("Name of the field containing the utm_source value in the session")
-            .required(false)
-            .defaultValue("utm_source")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    static final PropertyDescriptor NEW_SESSION_REASON_FIELD =
+            new PropertyDescriptor.Builder()
+                    .name("newSessionReason.out.field")
+                    .description("the name of the field containing the reason why a new session was created => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("reasonForNewSession")
+                    .build();
 
-    static final PropertyDescriptor UTM_CAMPAIGN_FIELD = new PropertyDescriptor.Builder()
-            .name("utm_campaign.field")
-            .description("Name of the field containing the utm_campaign value in the session")
-            .required(false)
-            .defaultValue("utm_campaign")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    static final PropertyDescriptor TRANSACTION_IDS =
+            new PropertyDescriptor.Builder()
+                    .name("transactionIds.out.field")
+                    .description("the name of the field containing all transactionIds => will override default value if set")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .defaultValue("transactionIds")
+                    .build();
+    /**
+     * The source identified for the web session
+     */
+    public static final String SOURCE_OF_TRAFFIC_FIELD_SOURCE = "source";
 
-    static final PropertyDescriptor UTM_MEDIUM_FIELD = new PropertyDescriptor.Builder()
-            .name("utm_medium.field")
-            .description("Name of the field containing the utm_medium value in the session")
-            .required(false)
-            .defaultValue("utm_medium")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    /**
+     * The medium identified for the web session
+     */
+    public static final String SOURCE_OF_TRAFFIC_FIELD_MEDIUM = "medium";
 
-    static final PropertyDescriptor UTM_CONTENT_FIELD = new PropertyDescriptor.Builder()
-            .name("utm_content.field")
-            .description("Name of the field containing the utm_content value in the session")
-            .required(false)
-            .defaultValue("utm_content")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    /**
+     * The campaign identified for the web session
+     */
+    public static final String SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN = "campaign";
 
-    static final PropertyDescriptor UTM_TERM_FIELD = new PropertyDescriptor.Builder()
-            .name("utm_term.field")
-            .description("Name of the field containing the utm_term value in the session")
-            .required(false)
-            .defaultValue("utm_term")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    /**
+     * The content identified for the web session
+     */
+    public static final String SOURCE_OF_TRAFFIC_FIELD_CONTENT = "content";
+
+    /**
+     * The term/keyword identified for the web session
+     */
+    public static final String SOURCE_OF_TRAFFIC_FIELD_KEYWORD = "keyword";
+
+    protected static final String PROP_SOURCE_OF_TRAFFIC_SUFFIX = "source_of_traffic.suffix";
+    protected static final String SOURCE_OF_TRAFFIC_SUFFIX_NAME = "source_of_traffic";
+    private static final String DIRECT_TRAFFIC = "direct";
+
+    private final String FLAT_SEPARATOR = "_";
+    private static final PropertyDescriptor SOURCE_OF_TRAFFIC_PREFIX_FIELD =
+            new PropertyDescriptor.Builder()
+                 .name(PROP_SOURCE_OF_TRAFFIC_SUFFIX)
+                 .description("Prefix for the source of the traffic related fields")
+                 .required(false)
+                 .defaultValue(SOURCE_OF_TRAFFIC_SUFFIX_NAME)
+                 .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                 .build();
 
     /**
      * The properties of this processor.
@@ -330,6 +358,7 @@ public class IncrementalWebSession
                                                        ES_SESSION_TYPE_FIELD,
                                                        ES_EVENT_INDEX_FIELD,
                                                        ES_EVENT_TYPE_FIELD,
+                                                       ES_SESSION_MAPPING_INDEX_FIELD,
                                                        SESSION_ID_FIELD,
                                                        TIMESTAMP_FIELD,
                                                        VISITED_PAGE_FIELD,
@@ -344,11 +373,9 @@ public class IncrementalWebSession
                                                        EVENTS_COUNTER_FIELD,
                                                        FIRST_EVENT_DATETIME_FIELD,
                                                        LAST_EVENT_DATETIME_FIELD,
-                                                       UTM_SOURCE_FIELD,
-                                                       UTM_CAMPAIGN_FIELD,
-                                                       UTM_MEDIUM_FIELD,
-                                                       UTM_CONTENT_FIELD,
-                                                       UTM_TERM_FIELD,
+                                                       NEW_SESSION_REASON_FIELD,
+                                                       TRANSACTION_IDS,
+                                                       SOURCE_OF_TRAFFIC_PREFIX_FIELD,
                                                        // Service
                                                        ELASTICSEARCH_CLIENT_SERVICE));
 
@@ -500,10 +527,65 @@ public class IncrementalWebSession
     }
 
     /**
+     * This interface defines the result of a check a of session against an event.
+     * If the result is valid then the reason is empty; otherwise the reason contains a description of why the check
+     * is not valid.
+     */
+    interface SessionCheckResult
+    {
+        /**
+         * Returns {@code true} is the event is applicable to the session incrementally, {@code false} otherwise.
+         * If {@code false} is returned then a new session must be created from the provided event and the provided
+         * session closed.
+         *
+         * @return {@code true} is the event is applicable to the session, {@code false} otherwise.
+         */
+        boolean isValid();
+
+        /**
+         * The reason why the check is not valid.
+         *
+         * @return the reason why the check is not valid.
+         */
+        String reason();
+    }
+
+    /**
+     * A singleton for valid check.
+     */
+    private final static SessionCheckResult VALID = new SessionCheckResult()
+    {
+        @Override
+        public boolean isValid() { return true; }
+
+        @Override
+        public String reason() { return null; }
+    };
+
+
+    private static class InvalidSessionCheckResult
+                   implements SessionCheckResult
+    {
+        private final String reason;
+
+        public InvalidSessionCheckResult(final String reason) { this.reason = reason; }
+
+        @Override
+        public boolean isValid() { return false; }
+
+        @Override
+        public String reason() { return this.reason; }
+    }
+
+    private final static SessionCheckResult DAY_OVERLAP = new InvalidSessionCheckResult("Day overlap");
+    private final static SessionCheckResult SESSION_TIMEDOUT = new InvalidSessionCheckResult("Session timed-out");
+    private final static SessionCheckResult SOURCE_OF_TRAFFIC = new InvalidSessionCheckResult("Source of traffic differed");
+
+    /**
      * This interface defines rules to test whether an event can be applied to a session or not. In case it can not
      * be applied then a new session must be created.
      */
-    public interface SessionCheck
+    interface SessionCheck
     {
         /**
          * Returns {@code true} is the event is applicable to the session incrementally, {@code false} otherwise.
@@ -514,7 +596,7 @@ public class IncrementalWebSession
          * @param event   the event to apply to the session.
          * @return {@code true} is the event is applicable to the session, {@code false} otherwise.
          */
-        boolean isValid(Execution.WebSession session, Execution.WebEvent event);
+        SessionCheckResult isValid(Execution.WebSession session, Execution.WebEvent event);
     }
 
     /**
@@ -539,16 +621,19 @@ public class IncrementalWebSession
         private final String _FIRST_EVENT_DATETIME_FIELD;
         private final String _LAST_EVENT_DATETIME_FIELD;
         private final String _SESSION_INACTIVITY_DURATION_FIELD;
-        private final String _UTM_SOURCE_FIELD;
-        private final String _UTM_CAMPAIGN_FIELD;
-        private final String _UTM_MEDIUM_FIELD;
-        private final String _UTM_CONTENT_FIELD;
-        private final String _UTM_TERM_FIELD;
+        private final String _NEW_SESSION_REASON_FIELD;
+        private final String _TRANSACTION_IDS;
+        private final String _SOT_SOURCE_FIELD;
+        private final String _SOT_CAMPAIGN_FIELD;
+        private final String _SOT_MEDIUM_FIELD;
+        private final String _SOT_CONTENT_FIELD;
+        private final String _SOT_KEYWORD_FIELD;
 
         private final String _ES_SESSION_INDEX_FIELD;
         private final String _ES_SESSION_TYPE_FIELD;
         private final String _ES_EVENT_INDEX_FIELD;
         private final String _ES_EVENT_TYPE_FIELD;
+        private final String _ES_SESSION_MAPPING_INDEX_FIELD;
 
         private final Collection<SessionCheck> checker;
 
@@ -579,12 +664,16 @@ public class IncrementalWebSession
             this._LAST_EVENT_DATETIME_FIELD = context.getPropertyValue(LAST_EVENT_DATETIME_FIELD).asString();
             this._SESSION_INACTIVITY_DURATION_FIELD = context.getPropertyValue(SESSION_INACTIVITY_DURATION_FIELD)
                                                              .asString();
+            this._NEW_SESSION_REASON_FIELD = context.getPropertyValue(NEW_SESSION_REASON_FIELD).asString();
+            this._TRANSACTION_IDS = context.getPropertyValue(TRANSACTION_IDS).asString();
 
-            this._UTM_SOURCE_FIELD = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
-            this._UTM_CAMPAIGN_FIELD = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
-            this._UTM_MEDIUM_FIELD = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
-            this._UTM_CONTENT_FIELD = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
-            this._UTM_TERM_FIELD = context.getPropertyValue(UTM_TERM_FIELD).asString();
+            final String sotPrefix = context.getPropertyValue(SOURCE_OF_TRAFFIC_PREFIX_FIELD).asString() + FLAT_SEPARATOR;
+
+            this._SOT_SOURCE_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_SOURCE;
+            this._SOT_CAMPAIGN_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CAMPAIGN;
+            this._SOT_MEDIUM_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_MEDIUM;
+            this._SOT_CONTENT_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_CONTENT;
+            this._SOT_KEYWORD_FIELD = sotPrefix + SOURCE_OF_TRAFFIC_FIELD_KEYWORD;
 
             this._ES_SESSION_INDEX_FIELD = context.getPropertyValue(ES_SESSION_INDEX_FIELD).asString();
             Objects.requireNonNull(this._ES_SESSION_INDEX_FIELD, "Property required: " + ES_SESSION_INDEX_FIELD);
@@ -594,6 +683,8 @@ public class IncrementalWebSession
             Objects.requireNonNull(this._ES_EVENT_INDEX_FIELD, "Property required: " + ES_EVENT_INDEX_FIELD);
             this._ES_EVENT_TYPE_FIELD = context.getPropertyValue(ES_EVENT_TYPE_FIELD).asString();
             Objects.requireNonNull(this._ES_EVENT_TYPE_FIELD, "Property required: " + ES_EVENT_TYPE_FIELD);
+            this._ES_SESSION_MAPPING_INDEX_FIELD = context.getPropertyValue(ES_SESSION_MAPPING_INDEX_FIELD).asString();
+            Objects.requireNonNull(this._ES_SESSION_MAPPING_INDEX_FIELD, "Property required: " + ES_SESSION_MAPPING_INDEX_FIELD);
 
             this.checker = Arrays.asList(
                 // Day overlap
@@ -605,16 +696,16 @@ public class IncrementalWebSession
                     final ZonedDateTime timestamp = event.getTimestamp();
 
                     boolean isValid = firstEvent.getDayOfYear() == timestamp.getDayOfYear()
-                                              && lastEvent.getDayOfYear() == timestamp.getDayOfYear()
-                                              && firstEvent.getYear() == timestamp.getYear()
-                                              && lastEvent.getYear() == timestamp.getYear();
+                                   && lastEvent.getDayOfYear() == timestamp.getDayOfYear()
+                                   && firstEvent.getYear() == timestamp.getYear()
+                                   && lastEvent.getYear() == timestamp.getYear();
 
                     if ( _DEBUG && !isValid )
                     {
                         debug("'Day overlap' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid;
+                    return isValid? VALID : DAY_OVERLAP;
                 },
 
                 // Timeout exceeded
@@ -630,44 +721,22 @@ public class IncrementalWebSession
                               " timeout=" + this._SESSION_INACTIVITY_TIMEOUT + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid;
+                    return isValid? VALID : SESSION_TIMEDOUT;
                 },
 
                 // One Campaign Per Session—Each visit to your site from a different campaign—organic or paid—triggers a
-                // new session, regardless of the actual time elapsed in the current session. Specifically, a change in
-                // value for any of the following campaign URL parameters triggers a new session:
-                // utm_source
-                // utm_medium
-                // utm_term
-                // utm_content
-                // utm_campaign
-                // utm_id (NOT SUPPORTED)
-                // gclid/gclsrc (DEDICATED CHECK)
+                // new session, regardless of the actual time elapsed in the current session.
                 (session, event) ->
                 {
-                    boolean isValid = Objects.deepEquals(session.getSourceOfTraffic(), event.getSourceOfTraffic());
+                    boolean isValid = Objects.equals(event.getValue(_SOT_SOURCE_FIELD), DIRECT_TRAFFIC) ||
+                                      Objects.deepEquals(session.getSourceOfTraffic(), event.getSourceOfTraffic());
 
                     if ( _DEBUG && !isValid )
                     {
                         debug("'Fields of traffic' isValid=" + isValid + " session-id=" + session.getSessionId());
                     }
 
-                    return isValid;
-                },
-
-                // Google adwords (gclid)
-                // Google DoubleClick (gclsrc)
-                (session, event) ->
-                {
-                    boolean isValid = !GCLID.matcher(event.getVisitedPage()).matches()
-                                   && !GCLSRC.matcher(event.getVisitedPage()).matches();
-
-                    if ( _DEBUG && !isValid )
-                    {
-                        debug("'gclid/gclsrc' isValid=" + isValid + " session-id=" + session.getSessionId());
-                    }
-
-                    return isValid;
+                    return isValid? VALID : SOURCE_OF_TRAFFIC;
                 });
         }
 
@@ -703,7 +772,24 @@ public class IncrementalWebSession
         public Collection<Record> process(final Collection<Record> records)
             throws ProcessException
         {
-            debug("Starting processing. Incoming records size=%d ", records.size());
+//            debug("\n\n--------------------------------------------------------------------");
+//            debug("Starting processing on %s '%s' %s. Incoming records size=%d ",
+//                  ManagementFactory.getRuntimeMXBean().getName(),
+//                  Thread.currentThread().getName(),
+//                  Thread.currentThread().getId(),
+//                  records.size());
+//            records.forEach(record -> debug(record.getId()));
+
+            try
+            {
+                elasticsearchClientService.refreshIndex(_ES_SESSION_INDEX_FIELD);
+                elasticsearchClientService.refreshIndex(_ES_SESSION_MAPPING_INDEX_FIELD);
+            }
+            catch(final Exception e)
+            {
+                getLogger().error("Unable to refresh indices " + _ES_SESSION_INDEX_FIELD + ", " + _ES_SESSION_MAPPING_INDEX_FIELD,
+                          e);
+            }
 
             // Convert records to web-events grouped by session-id. Indeed each instance of Events contains a list of
             // sorted web-event grouped by session identifiers.
@@ -730,6 +816,16 @@ public class IncrementalWebSession
             final Collection<Record> result = rewriters.stream()
                                                        .flatMap(rewriter -> rewriter.getSessions().stream())
                                                        .collect(Collectors.toList());
+
+            // Save last sessionId in mapping index.
+            // <sessionId> -> <sessionId>#?
+            rewriters.stream()
+                     .forEach(sessions ->
+                elasticsearchClientService.bulkPut(_ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_EVENT_TYPE,
+                                                   Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
+                                                   Optional.of(sessions.getSessionId())));
+
+
 
             debug("Processing done. Outcoming records size=%d ", result.size());
 
@@ -804,9 +900,10 @@ public class IncrementalWebSession
          */
         private Collection<Sessions> processEvents(final Collection<Events> webEvents)
         {
-            // Retrieve all documents from elasticsearch.
+            // First retrieve mapping of last sessions.
+            // Eg sessionId -> sessionId#XX
             final MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
-            webEvents.forEach(events -> mgqrBuilder.add(_ES_SESSION_INDEX_FIELD, _ES_SESSION_TYPE_FIELD,
+            webEvents.forEach(events -> mgqrBuilder.add(_ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_EVENT_TYPE,
                                                         null, events.getSessionId()));
 
             List<MultiGetResponseRecord> esResponse = null;
@@ -818,6 +915,42 @@ public class IncrementalWebSession
             {
                 // should never happen
                 getLogger().error("error while executing multiGet elasticsearch", e);
+            }
+
+            // Documents have only one field "sessionId" that corresponds to last session.
+            Map<String/*sessionId*/, String/*sessionId#<last>*/> _mappings = Collections.emptyMap();
+            if ( ! esResponse.isEmpty() )
+            {
+                _mappings =
+                     esResponse.stream()
+                               .collect(Collectors.toMap(response -> response.getDocumentId(),
+                                                         response -> response.getRetrievedFields().get(MAPPING_FIELD)));
+            }
+
+            final Map<String/*sessionId*/, String/*sessionId#<last>*/> mappings = _mappings;
+
+            // Retrieve all last sessionId from elasticsearch.
+            final MultiGetQueryRecordBuilder sessionBuilder = new MultiGetQueryRecordBuilder();
+            if ( ! mappings.isEmpty() )
+            {
+                webEvents.forEach(events ->
+                {
+                    String sessionId = events.getSessionId();
+                    String mappedSessionId = mappings.get(sessionId); // last processed session id (#?)
+                    sessionBuilder.add(_ES_SESSION_INDEX_FIELD, _ES_SESSION_TYPE_FIELD,
+                                       null, mappedSessionId!=null?mappedSessionId:sessionId);
+                });
+            }
+
+            esResponse = null;
+            try
+            {
+                esResponse = elasticsearchClientService.multiGet(sessionBuilder.build());
+            }
+            catch (final InvalidMultiGetQueryRecordException e)
+            {
+                // should never happen
+                e.printStackTrace();
             }
 
             debug("Retrieved %d documents from elasticsearch.", esResponse.size());
@@ -835,7 +968,8 @@ public class IncrementalWebSession
             // Applies all events to session documents and collect results.
             final Collection<Sessions> result =
                     webEvents.stream()
-                             .map(events -> new Sessions(sessionDocs.get(events.getSessionId())).processEvents(events))
+                             .map(events -> new Sessions(events.getSessionId(),
+                                                         sessionDocs.get(events.getSessionId())).processEvents(events))
                              .collect(Collectors.toList());
 
             return result;
@@ -893,14 +1027,14 @@ public class IncrementalWebSession
          * @return {@code true} if the specified web-event checked against the provided web-session is valid;
          *         {@code false} otherwise.
          */
-        private boolean isEventApplicable(final WebSession webSession,
-                                          final WebEvent webEvent)
+        private SessionCheckResult isEventApplicable(final WebSession webSession,
+                                                     final WebEvent webEvent)
         {
-            boolean result = true;
+            SessionCheckResult result = VALID;
             for (final SessionCheck check : checker)
             {
                 result = check.isValid(webSession, webEvent);
-                if (!result)
+                if (!result.isValid())
                 {
                     break;
                 }
@@ -914,23 +1048,49 @@ public class IncrementalWebSession
          */
         private class Sessions
         {
-            // Oldest web session retrieved from datastore.
-            private final WebSession firstSession;
+            private final String sessionId;
+
+            // Last processed web session retrieved from datastore.
+            private final WebSession lastSession;
 
             // The resulting sessions from the processed web events.
-            private final Collection<WebSession> processedSessions = new ArrayList<>();
+            // MAKE SURE LAST SESSION IS AT LAST POSITION!!!
+            private final List<WebSession> processedSessions = new ArrayList<>();
             private long eventCount;
 
             /**
              * Create a new instance of this class.
-             * The provided web sessions are sorted chronologically and only the first one is used as starting point to
+             * The provided web sessions are sorted chronologically and only the last one is used as starting point to
              * process all web events.
              *
              * @param storedSessions the sessions stored in the datastore.
              */
-            public Sessions(final Collection<WebSession> storedSessions)
+            public Sessions(final String sessionId,
+                            final Collection<WebSession> storedSessions)
             {
-                this.firstSession = storedSessions==null ? null : Collections.min(storedSessions);
+                this.sessionId = sessionId;
+
+                this.lastSession = storedSessions==null ? null : Collections.max(storedSessions);
+
+                if ( _DEBUG )
+                {
+                    debug("storedSessions=" +
+                          (storedSessions == null ? null :
+                                                    storedSessions.stream()
+                                                                  .map(webSession -> webSession.record.getId())
+                                                                  .collect(Collectors.joining(" "))) +
+                          ", last=" + (lastSession == null ? null : lastSession.record.getId()));
+                }
+            }
+
+            /**
+             * Returns the session identifier of this session.
+             *
+             * @return the session identifier of this session.
+             */
+            public String getSessionId()
+            {
+                return this.sessionId;
             }
 
             /**
@@ -944,7 +1104,7 @@ public class IncrementalWebSession
             {
                 debug("Applying %d events to session '%s'", events.size(), events.getSessionId());
 
-                if ( this.firstSession != null )
+                if ( this.lastSession != null )
                 {
                     // One or more sessions were already stored in datastore.
                     final Iterator<WebEvent> eventIterator = events.iterator();
@@ -957,7 +1117,7 @@ public class IncrementalWebSession
                     while (eventIterator.hasNext())
                     {
                         event = eventIterator.next();
-                        outsideTimeWindow = !firstSession.containsTimestamp(event.timestamp);
+                        outsideTimeWindow = !lastSession.containsTimestamp(event.timestamp);
                         if (outsideTimeWindow)
                         {
                             break;
@@ -970,8 +1130,11 @@ public class IncrementalWebSession
                         // Recreates a list from the first event outside of the time window included.
                         final Events nextEvents = new Events(events.tailSet(event));
 
+                        final String sessionIdOfCurrentSession = this.lastSession.getSessionId();
+                        nextEvents.forEach(toRename -> toRename.rename(sessionIdOfCurrentSession));
+
                         // Resume from first session.
-                        this.processEvents(firstSession, nextEvents);
+                        this.processEvents(lastSession, nextEvents);
                     }
                 }
                 else
@@ -1019,7 +1182,9 @@ public class IncrementalWebSession
                     final WebEvent event = iterator.next();
                     eventCount++;
 
-                    if ( isEventApplicable(session, event) )
+                    final SessionCheckResult isSessionValid = isEventApplicable(session, event);
+
+                    if ( isSessionValid.isValid() )
                     {
                         // No invalid check found.
                         session.add(event);
@@ -1036,6 +1201,8 @@ public class IncrementalWebSession
                         final Collection<WebEvent> renamedEvents = events.tailSet(event);
                         // Rewrite all remaining web-events with new session identifier.
                         renamedEvents.forEach(toRename -> toRename.rename(newSessionId));
+                        // Mark event that triggered the new sessions with the reason.
+                        event.record.setField(_NEW_SESSION_REASON_FIELD, FieldType.STRING, isSessionValid.reason());
 
                         final Events nextEvents = new Events(renamedEvents);
 
@@ -1055,6 +1222,27 @@ public class IncrementalWebSession
                 return processedSessions.stream()
                                         .map(item -> item.record)
                                         .collect(Collectors.toSet());
+            }
+
+            /**
+             * Returns the last sessionId (#?) of this session container.
+             *
+             * @return the last sessionId (#?) of this session container.
+             */
+            public String getLastSessionId()
+            {
+                String result = this.sessionId;
+
+                if ( !this.processedSessions.isEmpty() )
+                {
+                    result = this.processedSessions.get(this.processedSessions.size()-1).getSessionId();
+                }
+                else {
+                    getLogger().error("Invalid state: session container for '" + this.sessionId + "' is empty. " +
+                              "At least one session is expected");
+                }
+
+                return result;
             }
         }
 
@@ -1352,6 +1540,26 @@ public class IncrementalWebSession
                     record.setField(_SESSION_DURATION_FIELD, FieldType.LONG, sessionDuration);
                 }
 
+                // Extra
+                final Field transactionIdField = event.record.getField("transactionId");
+                if ( isFieldAssigned(transactionIdField)
+                  && (!"undefined".equalsIgnoreCase(transactionIdField.asString()))
+                  && (!transactionIdField.asString().isEmpty()) )
+                {
+                    final Field transactionIdsField = this.record.getField("transactionIds");
+                    Collection<String> transactionIds;
+                    if ( !isFieldAssigned(transactionIdField) )
+                    {
+                        transactionIds = (Collection<String>)transactionIdsField.getRawValue();
+                    }
+                    else
+                    {
+                        transactionIds = new ArrayList<>();
+                        this.record.setField(_TRANSACTION_IDS, FieldType.ARRAY, transactionIds);
+                    }
+                    transactionIds.add(transactionIdField.asString());
+                }
+
                 if ( ! record.isValid() )
                 {
                     record.getFieldsEntrySet().forEach(entry ->
@@ -1389,7 +1597,8 @@ public class IncrementalWebSession
                 }
                 else
                 {
-                    return 0;
+                    throw new IllegalStateException("Two sessions can no share same timestamp:" + this.toString()
+                    +" vs " + session.toString());
                 }
             }
 
@@ -1429,19 +1638,18 @@ public class IncrementalWebSession
 
             public String getSourceOfTraffic()
             {
-                return concatFieldsOfTraffic((String)this.getValue(_UTM_SOURCE_FIELD),
-                                             (String)this.getValue(_UTM_MEDIUM_FIELD),
-                                             (String)this.getValue(_UTM_CAMPAIGN_FIELD),
-                                             (String)this.getValue(_UTM_TERM_FIELD),
-                                             (String)this.getValue(_UTM_CONTENT_FIELD));
+                return concatFieldsOfTraffic((String)this.getValue(_SOT_SOURCE_FIELD),
+                                             (String)this.getValue(_SOT_MEDIUM_FIELD),
+                                             (String)this.getValue(_SOT_CAMPAIGN_FIELD),
+                                             (String)this.getValue(_SOT_KEYWORD_FIELD),
+                                             (String)this.getValue(_SOT_CONTENT_FIELD));
             }
 
             @Override
             public String toString()
             {
-                return "WebSession{sessionId='" + this.getSessionId() +
-                       "', first=" + this.getFirstEvent() +
-                       ", last=" + this.getLastEvent() + "}";
+                return "WebSession{" + record.getField(_FIRST_EVENT_DATETIME_FIELD).asString() +
+                       "-" + record.getField(_LAST_EVENT_DATETIME_FIELD).asString() + "}";
             }
         }
 
@@ -1495,16 +1703,18 @@ public class IncrementalWebSession
 
             public void rename(final String sessionId)
             {
+                debug("Rename " + this.record.getId() + " from " + super.getSessionId() + " to " + sessionId);
                 this.sessionId = sessionId;
+                this.record.setField("originalSessionId", FieldType.STRING, super.getSessionId());
             }
 
             public String getSourceOfTraffic()
             {
-                return concatFieldsOfTraffic((String)this.getValue(_UTM_SOURCE_FIELD),
-                                             (String)this.getValue(_UTM_MEDIUM_FIELD),
-                                             (String)this.getValue(_UTM_CAMPAIGN_FIELD),
-                                             (String)this.getValue(_UTM_TERM_FIELD),
-                                             (String)this.getValue(_UTM_CONTENT_FIELD));
+                return concatFieldsOfTraffic((String)this.getValue(_SOT_SOURCE_FIELD),
+                                             (String)this.getValue(_SOT_MEDIUM_FIELD),
+                                             (String)this.getValue(_SOT_CAMPAIGN_FIELD),
+                                             (String)this.getValue(_SOT_KEYWORD_FIELD),
+                                             (String)this.getValue(_SOT_CONTENT_FIELD));
             }
 
             /**
@@ -1524,7 +1734,7 @@ public class IncrementalWebSession
                                         }
                                     });
 
-                this.record.setField(_SESSION_ID_FIELD, FieldType.STRING, this.sessionId);
+                result.setField(_SESSION_ID_FIELD, FieldType.STRING, this.getSessionId());
 
                 return result;
             }
@@ -1532,7 +1742,7 @@ public class IncrementalWebSession
             @Override
             public String toString()
             {
-                return "WebEvent{sessionId='" + sessionId + "', timestamp=" + timestamp + '}';
+                return "WebEvent{sessionId='" + this.getSessionId() + "', timestamp=" + timestamp + '}';
             }
         }
 

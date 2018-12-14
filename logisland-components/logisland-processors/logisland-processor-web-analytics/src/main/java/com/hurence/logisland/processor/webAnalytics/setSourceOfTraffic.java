@@ -318,25 +318,23 @@ public class setSourceOfTraffic extends AbstractProcessor {
     private static final Pattern ADWORDS_RE = Pattern.compile(".*[\\&\\?]gclid=\\s*([^\\&\\?]+)\\&?.*");
     private static final Pattern DOUBLECLICK_RE = Pattern.compile(".*[\\&\\?]gclsrc=\\s*([^\\&\\?]+)\\&?.*");
 
-    public void processSession(ProcessContext context, Record record) {
-        final String utm_source_field = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
-        final String utm_medium_field = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
-        final String utm_campaign_field = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
-        final String utm_content_field = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
-        final String utm_term_field = context.getPropertyValue(UTM_TERM_FIELD).asString();
-        final String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
-        final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
-        final String FLAT_SEPARATOR = "_";
-        final String referer_field = context.getPropertyValue(REFERER_FIELD).asString();
-        final boolean hierarchical = context.getPropertyValue(HIERARCHICAL).asBoolean();
+    /**
+     * Returns {@code true} if the specified location contains an adwords or doubleclick parameter; {@code false}
+     * otherwise. If adwords/doubleclick is detected then the provided source of traffic instance is set
+     * accordingly.
+     *
+     * @param location the location to check for adwords/doubleclick presence.
+     * @param sourceOfTraffic the source of traffic object to set if needed.
+     *
+     * @return {@code true} if the specified location contains an adwords or doubleclick parameter;
+     *         {@code false} otherwise.
+     */
+    private boolean adwords(final String location, final SourceOfTrafficMap sourceOfTraffic) {
+        boolean processed = false;
 
-        SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
-
-        // Check if location contains the parameter ?gclid= (adwords) or ?gclsrc= (DoubleClick).
-        final Field locationField = record.getField(first_visited_page_field);
-        final String location = locationField!=null ? locationField.asString() : null;
         final boolean adwords = location!=null && ADWORDS_RE.matcher(location).matches();
-        if (adwords || (location!=null && DOUBLECLICK_RE.matcher(location).matches())){
+        if (adwords || (location!=null && DOUBLECLICK_RE.matcher(location).matches())) {
+            processed = true;
             sourceOfTraffic.setSource(GOOGLE);
             sourceOfTraffic.setMedium(CPC);
             sourceOfTraffic.setCampaign(adwords ? ADWORDS : DOUBLECLICK);
@@ -354,6 +352,33 @@ public class setSourceOfTraffic extends AbstractProcessor {
             } catch (URISyntaxException e) {
                 getLogger().error("URISyntaxException", e);
             }
+        }
+        return processed;
+    }
+
+    public void processSession(ProcessContext context, Record record) {
+        final String utm_source_field = context.getPropertyValue(UTM_SOURCE_FIELD).asString();
+        final String utm_medium_field = context.getPropertyValue(UTM_MEDIUM_FIELD).asString();
+        final String utm_campaign_field = context.getPropertyValue(UTM_CAMPAIGN_FIELD).asString();
+        final String utm_content_field = context.getPropertyValue(UTM_CONTENT_FIELD).asString();
+        final String utm_term_field = context.getPropertyValue(UTM_TERM_FIELD).asString();
+        final String first_visited_page_field = context.getPropertyValue(FIRST_VISITED_PAGE_FIELD).asString();
+        final String SOURCE_OF_TRAFFIC_SUFFIX = context.getPropertyValue(SOURCE_OF_TRAFFIC_SUFFIX_FIELD).asString();
+        final String FLAT_SEPARATOR = "_";
+        final String referer_field = context.getPropertyValue(REFERER_FIELD).asString();
+        final boolean hierarchical = context.getPropertyValue(HIERARCHICAL).asBoolean();
+
+        SourceOfTrafficMap sourceOfTraffic = new SourceOfTrafficMap();
+
+        // Check if location contains the parameter ?gclid= (adwords) or ?gclsrc= (DoubleClick).
+        final Field locationField = record.getField(first_visited_page_field);
+        final String location = locationField!=null ? locationField.asString() : null;
+
+        final Field referenceField = record.getField(referer_field);
+        final String referer = referenceField!=null ? referenceField.asString() : null;
+
+        if (adwords(location, sourceOfTraffic) || adwords(referer, sourceOfTraffic)) {
+            // Already processed.
         }
         // Check if this is a custom campaign
         else if (record.getField(utm_source_field) != null) {
@@ -405,8 +430,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 }
                 sourceOfTraffic.setKeyword(utm_term);
             }
-        } else if ((record.getField(referer_field) != null) && (record.getField(referer_field).asString() != null)) {
-            String referer = record.getField(referer_field).asString();
+        } else if (referer != null) {
             String hostname;
             try {
                 hostname = new URL(referer).getHost();
@@ -438,6 +462,7 @@ public class setSourceOfTraffic extends AbstractProcessor {
                 sourceOfTraffic.setSource(DIRECT_TRAFFIC);
                 sourceOfTraffic.setMedium("");
                 sourceOfTraffic.setCampaign(DIRECT_TRAFFIC);
+
             } else {
                 // Is the referer a known search engine ?
                 if (is_search_engine(domain, context, record)) {
