@@ -21,6 +21,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
@@ -215,11 +216,11 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
         try {
             return context.getPropertyValue(descriptor).evaluate(record).asString();
         } catch (Throwable t) {
-            record.setStringField(FieldDictionary.RECORD_ERRORS,
-                    "Processor " + this.getIdentifier() + " :Failure in executing EL for property '"+
+            record.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(),
+                    " :Failure in executing EL for property '"+
                             descriptor.getName() + "'. Error: " + t.getMessage());
-            getLogger().error("Processor {}: Cannot interpret EL for property '{}' and record : '{}'",
-                    new Object[]{ this.getIdentifier(), descriptor.getName(), record }, t);
+            getLogger().error("Cannot interpret EL for property '{}' and record : '{}'",
+                    new Object[]{ descriptor.getName(), record }, t);
             return null;
         }
     }

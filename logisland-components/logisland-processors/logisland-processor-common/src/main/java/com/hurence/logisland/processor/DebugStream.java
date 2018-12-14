@@ -89,12 +89,12 @@ public class DebugStream extends AbstractProcessor {
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        getLogger().info("processing {} records in processor {}", new Object[]{collection.size(), this.getIdentifier()});
+        getLogger().info("processing {} records", new Object[]{collection.size()});
 
         if (context.getPropertyValue(JVM_DUMP).asBoolean()) {
             System.gc();
-            getLogger().info("heap mem after gc: {} in processor {}", new Object[]{memBean.getHeapMemoryUsage(), this.getIdentifier()});
-            getLogger().info("non heap mem after gc: {} in processor {}", new Object[]{memBean.getNonHeapMemoryUsage(), this.getIdentifier()});
+            getLogger().info("heap mem after gc: {}", new Object[]{memBean.getHeapMemoryUsage()});
+            getLogger().info("non heap mem after gc: {}", new Object[]{memBean.getNonHeapMemoryUsage()});
         }
 
         if (collection.size() != 0) {
