@@ -40,8 +40,6 @@ import java.util.List;
 @CapabilityDescription("This is a processor that logs incoming records")
 public class DebugStream extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(DebugStream.class);
-
 
     public static final AllowableValue JSON = new AllowableValue("json", "Json serialization",
             "serialize events as json blocs");
@@ -58,20 +56,11 @@ public class DebugStream extends AbstractProcessor {
             .allowableValues(JSON, STRING)
             .build();
 
-    public static final PropertyDescriptor JVM_DUMP = new PropertyDescriptor.Builder()
-            .name("jvm.dump")
-            .description("if processor should log jvm dump or not")
-            .required(false)
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .defaultValue("true")
-            .build();
-
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(SERIALIZER);
-        descriptors.add(JVM_DUMP);
         return Collections.unmodifiableList(descriptors);
     }
 
@@ -91,12 +80,6 @@ public class DebugStream extends AbstractProcessor {
 
         getLogger().info("processing {} records", new Object[]{collection.size()});
 
-        if (context.getPropertyValue(JVM_DUMP).asBoolean()) {
-            System.gc();
-            getLogger().info("heap mem after gc: {}", new Object[]{memBean.getHeapMemoryUsage()});
-            getLogger().info("non heap mem after gc: {}", new Object[]{memBean.getNonHeapMemoryUsage()});
-        }
-
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
             if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {
@@ -115,10 +98,10 @@ public class DebugStream extends AbstractProcessor {
                 try {
                     baos.close();
                 } catch (IOException e) {
-                    logger.debug("error {} ", e.getCause());
+                    getLogger().debug("error {} ", e.getCause());
                 }
 
-                logger.info(new String(baos.toByteArray()));
+                getLogger().info(new String(baos.toByteArray()));
 
 
             });

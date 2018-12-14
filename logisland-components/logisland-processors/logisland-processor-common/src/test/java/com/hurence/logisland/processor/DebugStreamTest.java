@@ -13,7 +13,7 @@ import java.util.Collection;
 public class DebugStreamTest {
 
     @Test
-    public void trtetytry() {
+    public void testLogOfDebugStream() {
         Collection<Record> records = new ArrayList<>();
 
 
@@ -32,9 +32,8 @@ public class DebugStreamTest {
                 .setField("b", FieldType.STRING, "b3")
                 .setField("c", FieldType.LONG, 3));
 
-        DebugStream proc = new DebugStream();
-        proc.setIdentifier("debug_1");
-        TestRunner testRunner = TestRunners.newTestRunner(proc);
+        TestRunner testRunner = TestRunners.newTestRunner(new DebugStream());
+        testRunner.setProcessorIdentifier("debug_1");
         testRunner.assertValid();
         testRunner.enqueue(records);
         testRunner.run();
