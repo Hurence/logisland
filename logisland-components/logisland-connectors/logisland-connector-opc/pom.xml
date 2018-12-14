@@ -42,19 +42,6 @@
             <version>3.7</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.60</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.60</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!--
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
