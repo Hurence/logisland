@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,8 +39,6 @@ import java.util.List;
 @Tags({"record", "debug"})
 @CapabilityDescription("This is a processor that logs incoming records")
 public class DebugStream extends AbstractProcessor {
-
-    private static Logger logger = LoggerFactory.getLogger(DebugStream.class);
 
 
     public static final AllowableValue JSON = new AllowableValue("json", "Json serialization",
@@ -56,29 +56,30 @@ public class DebugStream extends AbstractProcessor {
             .allowableValues(JSON, STRING)
             .build();
 
-    public static final PropertyDescriptor RECORD_TYPES = new PropertyDescriptor.Builder()
-            .name("record.types")
-            .description("comma separated list of record to include. all if empty")
-            .required(false)
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .defaultValue("")
-            .build();
-
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(SERIALIZER);
-        descriptors.add(RECORD_TYPES);
-
         return Collections.unmodifiableList(descriptors);
     }
 
+    private volatile MemoryMXBean memBean;
+
+
+    @Override
+    public void init(ProcessContext context) {
+        super.init(context);
+        if (memBean == null) {
+            memBean = ManagementFactory.getMemoryMXBean();
+        }
+    }
 
     @Override
     public Collection<Record> process(final ProcessContext context, final Collection<Record> collection) {
 
-        String[] recordTypesToInclude = context.getPropertyValue(RECORD_TYPES).asString().split(",");
+        getLogger().info("processing {} records", new Object[]{collection.size()});
+
         if (collection.size() != 0) {
             RecordSerializer serializer = null;
             if (context.getPropertyValue(SERIALIZER).asString().equals(JSON.getValue())) {
@@ -97,10 +98,10 @@ public class DebugStream extends AbstractProcessor {
                 try {
                     baos.close();
                 } catch (IOException e) {
-                    logger.debug("error {} ", e.getCause());
+                    getLogger().debug("error {} ", e.getCause());
                 }
 
-                logger.info(new String(baos.toByteArray()));
+                getLogger().info(new String(baos.toByteArray()));
 
 
             });

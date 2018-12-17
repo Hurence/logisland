@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.StandardValidationContext;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -33,6 +35,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     protected final String id;
     protected final ConfigurableComponent component;
+    protected final ComponentLog componentLog;
 
     protected final AtomicReference<String> name;
     protected final AtomicReference<String> annotationData = new AtomicReference<>();
@@ -46,6 +49,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         this.id = id;
         this.component = component;
         this.name = new AtomicReference<>(component.getClass().getSimpleName());
+        this.componentLog = new StandardComponentLogger(id, component);
     }
 
     @Override
@@ -236,8 +240,9 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         return component.validate(context);
     }
 
-
-
+    public ComponentLog getLogger() {
+        return componentLog;
+    }
 
 
 }

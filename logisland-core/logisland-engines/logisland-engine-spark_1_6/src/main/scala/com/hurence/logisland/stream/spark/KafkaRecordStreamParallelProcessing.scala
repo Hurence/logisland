@@ -145,7 +145,6 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                         var firstPass = true
                         var incomingEvents: util.Collection[Record] = Collections.emptyList()
                         var outgoingEvents: util.Collection[Record] = Collections.emptyList()
-                        val processingMetrics: util.Collection[Record] = new util.ArrayList[Record]()
 
                         streamContext.getProcessContexts.foreach(processorContext => {
                             val startTime = System.currentTimeMillis()

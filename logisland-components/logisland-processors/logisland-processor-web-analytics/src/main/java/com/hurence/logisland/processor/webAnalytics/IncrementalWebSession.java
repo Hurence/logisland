@@ -399,11 +399,12 @@ public class IncrementalWebSession
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         this.elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE)
                                                                     .asControllerService());
         if (elasticsearchClientService == null)
         {
-            LOG.error("Elasticsearch client service is not initialized!");
+            getLogger().error("Elasticsearch client service is not initialized!");
         }
     }
 
@@ -475,11 +476,6 @@ public class IncrementalWebSession
     }
 
     /**
-     * The logger.
-     */
-    private static Logger LOG = LoggerFactory.getLogger(IncrementalWebSession.class);
-
-    /**
      * If {@code true} prints additional logs.
      */
     private boolean _DEBUG = false;
@@ -496,11 +492,11 @@ public class IncrementalWebSession
         {
             if ( args.length == 0 )
             {
-                LOG.debug(System.currentTimeMillis() + " " + format);
+                getLogger().debug(format);
             }
             else
             {
-                LOG.debug(String.format(System.currentTimeMillis() + " " + format + "\n", args));
+                getLogger().debug(String.format(format + "\n", args));
             }
         }
     }
@@ -791,7 +787,7 @@ public class IncrementalWebSession
             }
             catch(final Exception e)
             {
-                LOG.error("Unable to refresh indices " + _ES_SESSION_INDEX_FIELD + ", " + _ES_SESSION_MAPPING_INDEX_FIELD,
+                getLogger().error("Unable to refresh indices " + _ES_SESSION_INDEX_FIELD + ", " + _ES_SESSION_MAPPING_INDEX_FIELD,
                           e);
             }
 
@@ -918,7 +914,7 @@ public class IncrementalWebSession
             catch (final InvalidMultiGetQueryRecordException e)
             {
                 // should never happen
-                e.printStackTrace();
+                getLogger().error("error while executing multiGet elasticsearch", e);
             }
 
             // Documents have only one field "sessionId" that corresponds to last session.
@@ -1242,7 +1238,7 @@ public class IncrementalWebSession
                     result = this.processedSessions.get(this.processedSessions.size()-1).getSessionId();
                 }
                 else {
-                    LOG.error("Invalid state: session container for '" + this.sessionId + "' is empty. " +
+                    getLogger().error("Invalid state: session container for '" + this.sessionId + "' is empty. " +
                               "At least one session is expected");
                 }
 

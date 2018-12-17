@@ -81,6 +81,7 @@ public class URLDecoder extends AbstractProcessor {
     }
 
     public void init(ProcessContext context){
+        super.init(context);
         String commaSeparatedFields = context.getPropertyValue(FIELDS_TO_DECODE_PROP).asString();
         String charset = context.getPropertyValue(CHARSET_PROP).asString();
 

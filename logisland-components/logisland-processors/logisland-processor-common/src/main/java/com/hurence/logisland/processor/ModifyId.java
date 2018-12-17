@@ -161,6 +161,7 @@ public class ModifyId extends AbstractProcessor {
 
     @Override
     public void init(ProcessContext context) {
+        super.init(context);
         if (context.getPropertyValue(STRATEGY).isSet()) {
             if (context.getPropertyValue(STRATEGY).getRawValue().equals(RANDOM_UUID_STRATEGY.getValue())) {
                 idBuilder = new IdBuilder() {

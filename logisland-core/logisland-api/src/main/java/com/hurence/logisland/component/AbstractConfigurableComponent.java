@@ -15,6 +15,8 @@
  */
 package com.hurence.logisland.component;
 
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -26,21 +28,20 @@ import java.util.*;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
-
-    protected String identifier = "";
-
-
+    protected String identifier;
+    protected ComponentLog componentLogger;
+    private static Logger logger = LoggerFactory.getLogger(AbstractConfigurableComponent.class);
 
     @Override
     public String getIdentifier() {
         return identifier;
     }
 
+
+    @Deprecated
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-
-    private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 
     /**
      * Allows subclasses to perform their own validation on the already set
@@ -214,7 +215,16 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * Provides subclasses the ability to perform initialization logic
      */
     public void init(final ComponentContext context) {
-        // Provided for subclasses to override
+        identifier = context.getIdentifier();
+        componentLogger = context.getLogger();
+    }
+
+    /**
+     * @return the logger that has been provided to the component by the
+     * framework in its init method
+     */
+    protected ComponentLog getLogger() {
+        return componentLogger;
     }
 
 
@@ -226,7 +236,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
 
     @Override
     public String toString() {
-        return "AbstractConfigurableComponent{}";
+        return getClass().getSimpleName() + "[id=" + getIdentifier() + "]";
     }
 
 }

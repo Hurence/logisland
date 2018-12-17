@@ -119,6 +119,8 @@ public class ParseBroEvent extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+
+        super.init(context);
         logger.debug("Initializing Bro Processor");
     }
     

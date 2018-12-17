@@ -49,8 +49,6 @@ public class ParseUserAgent extends AbstractProcessor {
 
     private static final Object sync = new Object();
 
-    private static Logger logger = LoggerFactory.getLogger(ParseUserAgent.class);
-
     private boolean debug;
     private String userAgentField;
     private boolean useCache;
@@ -98,7 +96,7 @@ public class ParseUserAgent extends AbstractProcessor {
     private static final List<String> defaultFields;
 
     static {
-        // is there a better way?
+        //is there a better way?
         ClassLoader cl = PluginLoader.getRegistry().get(ParseUserAgent.class.getCanonicalName());
         ClassLoader current = Thread.currentThread().getContextClassLoader();
         //will never be null
@@ -200,7 +198,6 @@ public class ParseUserAgent extends AbstractProcessor {
             .defaultValue(String.join(", ", defaultFields))
             .build();
 
-
     // TODO :  add the following params
     // Resource file with regex ???
 
@@ -224,7 +221,8 @@ public class ParseUserAgent extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        logger.debug("Initializing User-Agent Processor");
+        super.init(context);
+        getLogger().debug("Initializing User-Agent Processor");
 
         debug = context.getPropertyValue(DEBUG).asBoolean();
         userAgentField = context.getPropertyValue(USERAGENT_FIELD).asString();
@@ -237,17 +235,18 @@ public class ParseUserAgent extends AbstractProcessor {
         ambiguityEnabled = context.getPropertyValue(AMBIGUITY_ENABLED).asBoolean();
 
         if (debug) {
-            logger.info(KEY_USERAGENT_FIELD + "\t: " + userAgentField);
-            logger.info(KEY_USERAGENT_KEEP + "\t: " + userAgentKeep);
-            logger.info(KEY_DEBUG + "\t: " + debug);
-            logger.info(KEY_CACHE_ENABLED + "\t: " + useCache);
-            logger.info(KEY_CACHE_SIZE + "\t: " + cacheSize);
-            logger.info(KEY_FIELDS_TO_RETURN + "\t: " + selectedFields);
-            logger.info(KEY_CONFIDENCE_ENABLED + "\t: " + confidenceEnabled);
-            logger.info(KEY_AMBIGUITY_ENABLED + "\t: " + ambiguityEnabled);
+            getLogger().info(KEY_USERAGENT_FIELD + "\t: " + userAgentField);
+            getLogger().info(KEY_USERAGENT_KEEP + "\t: " + userAgentKeep);
+            getLogger().info(KEY_DEBUG + "\t: " + debug);
+            getLogger().info(KEY_CACHE_ENABLED + "\t: " + useCache);
+            getLogger().info(KEY_CACHE_SIZE + "\t: " + cacheSize);
+            getLogger().info(KEY_FIELDS_TO_RETURN + "\t: " + selectedFields);
+            getLogger().info(KEY_CONFIDENCE_ENABLED + "\t: " + confidenceEnabled);
+            getLogger().info(KEY_AMBIGUITY_ENABLED + "\t: " + ambiguityEnabled);
         }
 
         if (Singleton.get() == null) {
+            getLogger().debug("Initializing UserAgentAnalyzerPool");
             synchronized (sync) {
                 if (Singleton.get() == null) {
 
@@ -274,65 +273,72 @@ public class ParseUserAgent extends AbstractProcessor {
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         if (debug) {
-            logger.debug("User-Agent Processor records input: " + records);
+            getLogger().debug("User-Agent Processor records input: " + records);
+        }
+        UserAgentAnalyzerPool pool = null;
+        UserAgentAnalyzer uaa = null;
+        try {
+            pool = (UserAgentAnalyzerPool) Singleton.get();
+            getLogger().debug("borrow UserAgentAnalyzer from pool");
+            uaa = pool.borrowObject();
+            processRecords(records, uaa);
+        } catch (Throwable t) {
+            getLogger().error("Error retrieving user-agent-analyser from pool", t);
+            for (Record record : records) {
+                record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure retrieving user-agent-analyser from pool");
+            }
+        } finally {
+            if (pool != null && uaa != null) {
+                pool.returnObject(uaa);
+            }
         }
 
+        if (debug) {
+            getLogger().debug("User-Agent Processor records output: " + records);
+        }
+        return records;
+    }
 
-        // BEGIN BIG HACK
-        init(context);
-        // END BIG HACK
-
+    private void processRecords(Collection<Record> records, UserAgentAnalyzer uaa) {
         for (Record record : records) {
 
             Field uaField = record.getField(userAgentField);
             if (uaField == null) {
-                logger.info("Skipping record. Field '" + userAgentField + "' does not exists in record");
+                getLogger().info("Skipping record. Field '" + userAgentField + "' does not exists in record");
                 continue;
             }
 
             String recordValue = (String) uaField.getRawValue();
-            UserAgentAnalyzerPool pool = null;
-            UserAgentAnalyzer uaa = null;
 
+
+            UserAgent agent;
             try {
-                pool = (UserAgentAnalyzerPool) Singleton.get();
-                uaa = pool.borrowObject();
-
-                UserAgent agent = uaa.parse(recordValue);
-
-                for (String field : selectedFields) {
-                    String value = agent.getValue(field);
-                    if (value != null && !value.isEmpty()) {
-                        record.setStringField(field, value);
-                    }
-                    if (confidenceEnabled) {
-                        record.setField(new Field(field + ".confidence", FieldType.LONG, agent.getConfidence(field)));
-                    }
-                }
-
-                if (ambiguityEnabled) {
-                    record.setField(new Field("ambiguity", FieldType.INT, agent.getAmbiguityCount()));
-                }
+                agent = uaa.parse(recordValue);
             } catch (Throwable t) {
-                t.printStackTrace();
                 record.setStringField(FieldDictionary.RECORD_ERRORS, "Failure in User-agent decoding");
-                logger.error("Cannot parse User-Agent content: " + record);
+                getLogger().error("Cannot parse User-Agent content: " + record, t);
                 continue;
-            } finally {
-                if (pool != null && uaa != null) {
-                    pool.returnObject(uaa);
+            }
+
+            for (String field : selectedFields) {
+                String value = agent.getValue(field);
+                if (value != null && !value.isEmpty()) {
+                    record.setStringField(field, value);
+                }
+                if (confidenceEnabled) {
+                    record.setField(new Field(field + ".confidence", FieldType.LONG, agent.getConfidence(field)));
                 }
             }
+
+            if (ambiguityEnabled) {
+                record.setField(new Field("ambiguity", FieldType.INT, agent.getAmbiguityCount()));
+            }
+
 
             if (!userAgentKeep) {
                 record.removeField(userAgentField);
             }
         }
-
-        if (debug) {
-            logger.debug("User-Agent Processor records output: " + records);
-        }
-        return records;
     }
 
     // TODO :

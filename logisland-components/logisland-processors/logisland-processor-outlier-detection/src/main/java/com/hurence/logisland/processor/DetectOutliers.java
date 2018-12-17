@@ -350,6 +350,7 @@ public class DetectOutliers extends AbstractProcessor {
 
     @Override
     public void init(ProcessContext context) {
+        super.init(context);
         logger.info("init");
 
         outlierConfig = new OutlierConfig();
