@@ -8,6 +8,7 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -96,7 +97,7 @@ public class IncrementalWebSession
      */
     private static final String OUTPUT_RECORD_TYPE = "consolidate-session";
 
-    private static final String PROP_ES_SESSION_INDEX = "es.session.index";
+    private static final String PROP_ES_SESSION_INDEX = "es.session.index.field";
     private static final String PROP_ES_SESSION_TYPE = "es.session.type";
     private static final String PROP_ES_EVENT_INDEX = "es.event.index";
     private static final String PROP_ES_EVENT_TYPE = "es.event.type";
@@ -131,7 +132,7 @@ public class IncrementalWebSession
     static final PropertyDescriptor ES_SESSION_INDEX_FIELD =
             new PropertyDescriptor.Builder()
                     .name(PROP_ES_SESSION_INDEX)
-                    .description("Name of the ES index containing the web session documents.")
+                    .description("Name of the field in the record defining the ES index containing the web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
@@ -510,14 +511,65 @@ public class IncrementalWebSession
      */
     private static Map<String, Object> toMap(final Record record)
     {
+        return toMap(record, false);
+    }
+
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     * @param innerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    private static Map<String, Object> toMap(final Record record,
+                                             final boolean innerRecord)
+    {
         try
         {
             final Map<String, Object> result = new HashMap<>();
 
             record.getFieldsEntrySet()
                   .stream()
-                  .forEach(entry -> result.put(entry.getKey(), entry.getValue().getRawValue()));
-
+                  .forEach(entry ->
+                  {
+                      if ( !innerRecord || (innerRecord && ! FieldDictionary.contains(entry.getKey())) )
+                      {
+                          Object value = entry.getValue().getRawValue();
+                          switch(entry.getValue().getType())
+                          {
+                              case RECORD:
+                                  value = toMap((Record)value, true);
+                                  break;
+                              case ARRAY:
+                                  Collection collection;
+                                  if ( value instanceof Collection )
+                                  {
+                                      collection = (Collection)value;
+                                  }
+                                  else
+                                  {
+                                      collection = Arrays.asList(value);
+                                  }
+                                  final List list = new ArrayList(collection.size());
+                                  for(final Object item: collection)
+                                  {
+                                      if ( item instanceof Record )
+                                      {
+                                          list.add(toMap((Record)item, true));
+                                      }
+                                      else
+                                      {
+                                          list.add(item);
+                                      }
+                                  }
+                                  value = list;
+                                  break;
+                              default:
+                          }
+                          result.put(entry.getKey(), value);
+                      }
+                  });
             return result;
         }
         catch(Exception e)
@@ -780,17 +832,6 @@ public class IncrementalWebSession
 //                  records.size());
 //            records.forEach(record -> debug(record.getId()));
 
-            try
-            {
-                elasticsearchClientService.refreshIndex(_ES_SESSION_INDEX_FIELD);
-                elasticsearchClientService.refreshIndex(_ES_SESSION_MAPPING_INDEX_FIELD);
-            }
-            catch(final Exception e)
-            {
-                getLogger().error("Unable to refresh indices " + _ES_SESSION_INDEX_FIELD + ", " + _ES_SESSION_MAPPING_INDEX_FIELD,
-                          e);
-            }
-
             // Convert records to web-events grouped by session-id. Indeed each instance of Events contains a list of
             // sorted web-event grouped by session identifiers.
             final Collection<Events> events = toWebEvents(records);
@@ -937,7 +978,10 @@ public class IncrementalWebSession
                 {
                     String sessionId = events.getSessionId();
                     String mappedSessionId = mappings.get(sessionId); // last processed session id (#?)
-                    sessionBuilder.add(_ES_SESSION_INDEX_FIELD, _ES_SESSION_TYPE_FIELD,
+                    // Retrieve the name of the index that contains the websessions.
+                    // The chaining calls are on purpose as any NPE would mean something is wrong.
+                    final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
+                    sessionBuilder.add(sessionIndexName, _ES_SESSION_TYPE_FIELD,
                                        null, mappedSessionId!=null?mappedSessionId:sessionId);
                 });
             }
