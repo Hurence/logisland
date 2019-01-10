@@ -52,7 +52,7 @@ public class StandardStreamContext extends AbstractConfiguredComponent implement
     private ControllerServiceLookup controllerServiceLookup;
 
     @Override
-    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
         this.controllerServiceLookup = controllerServiceLookup;
     }
 

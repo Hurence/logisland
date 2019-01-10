@@ -25,13 +25,13 @@ import java.io.Closeable;
 public interface ProcessContext extends ComponentContext {
 
     /**
-     * Adds the given {@link ControllerServiceLookup}  so that the
+     * set the given {@link ControllerServiceLookup}  so that the
      * configured Processor can access it
      *
      * @param controllerServiceLookup the service
      * @throws InitializationException ie
      */
-    void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
+    void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
 
     Processor getProcessor();
 }

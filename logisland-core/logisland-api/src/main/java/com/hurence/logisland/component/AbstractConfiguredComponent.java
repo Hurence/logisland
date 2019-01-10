@@ -37,34 +37,18 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     protected final ConfigurableComponent component;
     protected final ComponentLog componentLog;
 
-    protected final AtomicReference<String> name;
-    protected final AtomicReference<String> annotationData = new AtomicReference<>();
-
     private final Lock lock = new ReentrantLock();
     protected final ConcurrentMap<PropertyDescriptor, String> properties = new ConcurrentHashMap<>();
-
-    private static Logger logger = LoggerFactory.getLogger(AbstractConfiguredComponent.class);
 
     public AbstractConfiguredComponent(final ConfigurableComponent component, final String id) {
         this.id = id;
         this.component = component;
-        this.name = new AtomicReference<>(component.getClass().getSimpleName());
         this.componentLog = new StandardComponentLogger(id, component);
     }
 
     @Override
     public String getIdentifier() {
         return id;
-    }
-
-    @Override
-    public String getName() {
-        return name.get();
-    }
-
-    @Override
-    public void setName(final String name) {
-        this.name.set(Objects.requireNonNull(name).intern());
     }
 
     @Override
@@ -83,7 +67,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
             result = descriptor.validate(value);
             if (!result.isValid()) {
                 //throw new IllegalArgumentException(result.toString());
-                logger.warn(result.toString());
+                getLogger().warn(result.toString());
             }
 
             final String oldValue = properties.put(descriptor, value);
@@ -218,7 +202,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         final Collection<ValidationResult> validationResults = getValidationErrors();
         for (final ValidationResult result : validationResults) {
             if (!result.isValid()) {
-                logger.info("invalid property {}", result.getExplanation());
+                getLogger().info("invalid property {}", new Object[]{result.getExplanation()});
                 return false;
             }
         }

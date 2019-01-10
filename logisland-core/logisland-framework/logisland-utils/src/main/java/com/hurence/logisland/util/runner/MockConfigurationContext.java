@@ -102,11 +102,6 @@ public class MockConfigurationContext implements ControllerServiceInitialization
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-    @Override
     public boolean removeProperty(String name) {
         return false;
     }
@@ -114,11 +109,6 @@ public class MockConfigurationContext implements ControllerServiceInitialization
     @Override
     public Map<PropertyDescriptor, String> getProperties() {
         return new HashMap<>(this.properties);
-    }
-
-    @Override
-    public String getName() {
-        return null;
     }
 
     @Override

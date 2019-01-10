@@ -234,11 +234,11 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
                                     val pipelineTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix + "Pipeline.processing_time_ms").time()
 
                                     streamContext.getProcessContexts.foreach(processorContext => {
-                                        UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getName + ".processing_time_ms")
+                                        UserMetricsSystem.timer(pipelineMetricPrefix + processorContext.getIdentifier + ".processing_time_ms")
                                             .time()
                                             .stop()
 
-                                        ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getName + ".")
+                                        ProcessorMetrics.resetMetrics(pipelineMetricPrefix + processorContext.getIdentifier + ".")
                                     })
                                     pipelineTimerContext.stop()
                                 }
