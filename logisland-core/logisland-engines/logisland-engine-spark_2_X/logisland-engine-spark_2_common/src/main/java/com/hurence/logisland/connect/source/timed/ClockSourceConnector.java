@@ -42,19 +42,21 @@ public class ClockSourceConnector extends SourceConnector {
     public static final String HAS_PREVIOUS_RECORD_CONFIG = "has.previous.record";
     public static final String CURRENT_RECORD_ID_VALUE_CONFIG = "current.record.id.value";
 
+
+    public static final long RATE_DEFAULT = 60000;
     public static final String POLL_CRON_SCHEDULER_DEFAULT = null;
-    public static final String SNAPSHOT_FIELD_DEFAULT = "record_snapshot";
-    public static final String TSID_FIELD_DEFAULT = "ts_id";
+    public static final String SNAPSHOT_FIELD_DEFAULT = null;
+    public static final String TSID_FIELD_DEFAULT = null;
     public static final String DATE_FIELD_DEFAULT = null;
     public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss z";
     public static final String RECORD_ID_FIELD_DEFAULT = "id";
     public static final boolean HAS_ONGOING_RECORD_DEFAULT = false;
     public static final boolean HAS_PREVIOUS_RECORD_DEFAULT = false;
-    public static final String CURRENT_RECORD_ID_VALUE_DEFAULT = "fsv";
+    public static final String CURRENT_RECORD_ID_VALUE_DEFAULT = "clockRecord";
 
 
     private static final ConfigDef CONFIG = new ConfigDef()
-            .define(RATE, ConfigDef.Type.LONG, null, ConfigDef.Importance.HIGH, "The clock rate in milliseconds")
+            .define(RATE, ConfigDef.Type.LONG, RATE_DEFAULT, ConfigDef.Importance.HIGH, "The clock rate in milliseconds")
             .define(POLL_CRON_SCHEDULER_CONFIG, ConfigDef.Type.STRING, POLL_CRON_SCHEDULER_DEFAULT, ConfigDef.Importance.HIGH, "The cron expression")
             .define(SNAPSHOT_FIELD_CONFIG, ConfigDef.Type.STRING, SNAPSHOT_FIELD_DEFAULT, ConfigDef.Importance.HIGH, "Name of the field containing the snapshot id")
             .define(TSID_FIELD_CONFIG, ConfigDef.Type.STRING, TSID_FIELD_DEFAULT, ConfigDef.Importance.HIGH, "Name of the field containing the ordering column")
