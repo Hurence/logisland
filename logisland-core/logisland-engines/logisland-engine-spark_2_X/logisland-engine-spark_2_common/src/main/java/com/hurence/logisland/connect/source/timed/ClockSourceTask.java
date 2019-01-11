@@ -56,6 +56,7 @@ public class ClockSourceTask extends SourceTask {
     private long previousRecordSnapshot = -1;
     private static long TSID_DEFAULT = -1;
     private String dateFormat;
+    private String dateTimezone;
 
 
 
@@ -70,6 +71,7 @@ public class ClockSourceTask extends SourceTask {
         dateField = props.get(ClockSourceConnector.DATE_FIELD_CONFIG);
         recordIdValue = props.get(ClockSourceConnector.CURRENT_RECORD_ID_VALUE_CONFIG);
         dateFormat = props.get(ClockSourceConnector.DATE_FORMAT_CONFIG);
+        dateTimezone = props.get(ClockSourceConnector.DATE_TIMEZONE_CONFIG);
 
         // Check if cron should be used && Generate a cron object once for further use
         if ((cronExpr != null) && (cronExpr.isEmpty() != true)) {
@@ -105,14 +107,6 @@ public class ClockSourceTask extends SourceTask {
             Thread.sleep(rate);
         }
 
-        // Build current record
-        /*SourceRecord sr = new SourceRecord(
-                null,
-                null,
-                "",
-                Schema.STRING_SCHEMA,
-                "");*/
-
         // Build the schema if not created yet
         if (finalSchema == null) {
             SchemaBuilder newSchema = SchemaBuilder.struct();
@@ -135,22 +129,13 @@ public class ClockSourceTask extends SourceTask {
         if (useSnapshot) {
             recordVal.put(snapshotField, recordSnapshot);
             if (useDate){
-                //convert seconds to milliseconds
-                Date date = new Date(recordSnapshot*1000);
-                // format of the date
-                SimpleDateFormat jdf = new SimpleDateFormat(dateFormat);
-                jdf.setTimeZone(TimeZone.getTimeZone("CET"));
-                String jdate = jdf.format(date);
+                String jdate = secToString(recordSnapshot, dateFormat, dateTimezone);
                 recordVal.put(dateField, jdate);
             }
         }
         if (useTSID) {
             recordVal.put(tsidField, recordSnapshot);
         }
-
-        /*sr = new SourceRecord(sr.sourcePartition(), sr.sourceOffset(), sr.topic(),
-                sr.kafkaPartition(), sr.keySchema(), sr.key(), finalSchema, recordVal,
-                sr.timestamp());*/
 
         SourceRecord sr = new SourceRecord(
                 null,
@@ -174,12 +159,7 @@ public class ClockSourceTask extends SourceTask {
                     if (useSnapshot) {
                         orVal.put(snapshotField, recordSnapshot);
                         if (useDate){
-                            //convert seconds to milliseconds
-                            Date date = new Date(recordSnapshot*1000);
-                            // format of the date
-                            SimpleDateFormat jdf = new SimpleDateFormat(dateFormat);
-                            jdf.setTimeZone(TimeZone.getTimeZone("CET"));
-                            String jdate = jdf.format(date);
+                            String jdate = secToString(recordSnapshot, dateFormat, dateTimezone);
                             orVal.put(dateField, jdate);
                         }
                     }
@@ -203,12 +183,7 @@ public class ClockSourceTask extends SourceTask {
                     if (useSnapshot) {
                         prVal.put(snapshotField, previousRecordSnapshot);
                         if (useDate){
-                            //convert seconds to milliseconds
-                            Date date = new Date(previousRecordSnapshot*1000);
-                            // format of the date
-                            SimpleDateFormat jdf = new SimpleDateFormat(dateFormat);
-                            jdf.setTimeZone(TimeZone.getTimeZone("CET"));
-                            String jdate = jdf.format(date);
+                            String jdate = secToString(previousRecordSnapshot, dateFormat, dateTimezone);
                             prVal.put(dateField, jdate);
                         }
                     }
@@ -238,5 +213,19 @@ public class ClockSourceTask extends SourceTask {
     @Override
     public String version() {
         return "1.0";
+    }
+
+    /*
+     * Return the timeInSec in a Human Readable
+     * format (dateFormat) using the timezone given in parameter.
+     */
+    private String secToString(long timeInSec, String dateFormat, String timezone){
+        //convert seconds to milliseconds
+        Date date = new Date(timeInSec*1000);
+        // format of the date
+        SimpleDateFormat jdf = new SimpleDateFormat(dateFormat);
+        jdf.setTimeZone(TimeZone.getTimeZone(timezone));
+        String jdate = jdf.format(date);
+        return jdate;
     }
 }

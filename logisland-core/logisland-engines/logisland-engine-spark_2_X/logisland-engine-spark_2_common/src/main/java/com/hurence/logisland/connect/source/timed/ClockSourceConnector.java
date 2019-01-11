@@ -37,6 +37,7 @@ public class ClockSourceConnector extends SourceConnector {
     public static final String TSID_FIELD_CONFIG = "tsid.field";
     public static final String DATE_FIELD_CONFIG = "date.field";
     public static final String DATE_FORMAT_CONFIG = "date.format";
+    public static final String DATE_TIMEZONE_CONFIG = "date.timezone";
     public static final String RECORD_ID_FIELD_CONFIG = "record.id.field";
     public static final String HAS_ONGOING_RECORD_CONFIG = "has.ongoing.record";
     public static final String HAS_PREVIOUS_RECORD_CONFIG = "has.previous.record";
@@ -49,6 +50,7 @@ public class ClockSourceConnector extends SourceConnector {
     public static final String TSID_FIELD_DEFAULT = null;
     public static final String DATE_FIELD_DEFAULT = null;
     public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss z";
+    public static final String DATE_TIMEZONE_DEFAULT = "CET";
     public static final String RECORD_ID_FIELD_DEFAULT = "id";
     public static final boolean HAS_ONGOING_RECORD_DEFAULT = false;
     public static final boolean HAS_PREVIOUS_RECORD_DEFAULT = false;
@@ -62,6 +64,7 @@ public class ClockSourceConnector extends SourceConnector {
             .define(TSID_FIELD_CONFIG, ConfigDef.Type.STRING, TSID_FIELD_DEFAULT, ConfigDef.Importance.HIGH, "Name of the field containing the ordering column")
             .define(DATE_FIELD_CONFIG, ConfigDef.Type.STRING, DATE_FIELD_DEFAULT, ConfigDef.Importance.HIGH, "Name of the field containing the date in human readable format")
             .define(DATE_FORMAT_CONFIG, ConfigDef.Type.STRING, DATE_FORMAT_DEFAULT, ConfigDef.Importance.HIGH, "Format to use to display date in human readable-format")
+            .define(DATE_TIMEZONE_CONFIG, ConfigDef.Type.STRING, DATE_TIMEZONE_DEFAULT, ConfigDef.Importance.HIGH, "Timezone to use to display date in human readable-format")
             .define(RECORD_ID_FIELD_CONFIG, ConfigDef.Type.STRING, RECORD_ID_FIELD_DEFAULT, ConfigDef.Importance.HIGH, "Name of the field containing the id of the record")
             .define(HAS_ONGOING_RECORD_CONFIG, ConfigDef.Type.BOOLEAN, HAS_ONGOING_RECORD_DEFAULT, ConfigDef.Importance.HIGH, "If set to true, it will produce an additional record with ongoing snapshot details")
             .define(HAS_PREVIOUS_RECORD_CONFIG, ConfigDef.Type.BOOLEAN, HAS_PREVIOUS_RECORD_DEFAULT, ConfigDef.Importance.HIGH, "If set to true, it will produce an additional record with previous snapshot details")
@@ -77,6 +80,7 @@ public class ClockSourceConnector extends SourceConnector {
     private boolean hasOngoingRecordDefault;
     private boolean hasPreviousRecordDefault;
     private String formatDateValue;
+    private String timezoneDateValue;
 
     @Override
     public String version() {
@@ -95,6 +99,7 @@ public class ClockSourceConnector extends SourceConnector {
         hasPreviousRecordDefault = (boolean) CONFIG.parse(props).get(HAS_PREVIOUS_RECORD_CONFIG);
         currentRecordIdValue = (String) CONFIG.parse(props).get(CURRENT_RECORD_ID_VALUE_CONFIG);
         formatDateValue = (String) CONFIG.parse(props).get(DATE_FORMAT_CONFIG);
+        timezoneDateValue = (String) CONFIG.parse(props).get(DATE_TIMEZONE_CONFIG);
     }
 
     @Override
@@ -115,8 +120,8 @@ public class ClockSourceConnector extends SourceConnector {
         mapConfig.put(HAS_ONGOING_RECORD_CONFIG, Boolean.toString(hasOngoingRecordDefault));
         mapConfig.put(HAS_PREVIOUS_RECORD_CONFIG, Boolean.toString(hasPreviousRecordDefault));
         mapConfig.put(DATE_FORMAT_CONFIG, formatDateValue);
+        mapConfig.put(DATE_TIMEZONE_CONFIG, timezoneDateValue);
         return Collections.singletonList(mapConfig);
-        //return Collections.singletonList(Collections.singletonMap(RATE, Long.toString(rate)));
     }
 
     @Override
