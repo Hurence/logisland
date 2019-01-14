@@ -32,7 +32,27 @@ import org.springframework.scheduling.support.CronSequenceGenerator;
 /**
  * {@link SourceTask} for {@link ClockSourceConnector}
  *
- * @author amarziali
+ * @author amarziali, jarnou
+ *
+ * The ClockSourceTask is a kafka connect service controller designed to
+ * generate a/(a set of) record(s) on a regular basis.
+ * It can be either on a rate (in milliseconds) or on a cron basis (cron expression).
+ *
+ * Note: If both rate and cron are specified in the configuration of the controller,
+ * the cron takes precedence over the rate.
+ *
+ * It is possible to add a field in the produced record containing a value
+ * (number of seconds since 1970) corresponding to the time at which the record has been
+ * produced and another field containing the date in a human-readable format in a
+ * specified timezone (CET being the default)
+ *
+ * By the way:
+ * It is also possible in addition to the standard record produced to generate 2 additional records.
+ * One is containing the data (snaphot, date) for the ongoing 'clock', and another one for the
+ * previous one.
+ * The use-case for these 2 additional records is the update of a table of snapshots for instance.
+ * The idea is to have a list of all snapshots, as well as the ongoing and the previous one.
+ *
  */
 public class ClockSourceTask extends SourceTask {
 
@@ -86,6 +106,22 @@ public class ClockSourceTask extends SourceTask {
         useDate = (dateField != null) ? true : false;
         hasOngoingRecord = new Boolean(props.get(ClockSourceConnector.HAS_ONGOING_RECORD_CONFIG));
         hasPreviousRecord = new Boolean(props.get(ClockSourceConnector.HAS_PREVIOUS_RECORD_CONFIG));
+
+        // Build the schema if not created yet
+        if (finalSchema == null) {
+            SchemaBuilder newSchema = SchemaBuilder.struct();
+            newSchema.field(recordIdField, Schema.STRING_SCHEMA);
+            if (useSnapshot) {
+                newSchema.field(snapshotField, Schema.INT64_SCHEMA);
+            }
+            if (useTSID) {
+                newSchema.field(tsidField, Schema.INT64_SCHEMA);
+            }
+            if (useDate) {
+                newSchema.field(dateField, Schema.STRING_SCHEMA);
+            }
+            finalSchema = newSchema.build();
+        }
     }
 
     @Override
@@ -106,23 +142,6 @@ public class ClockSourceTask extends SourceTask {
             }
             Thread.sleep(rate);
         }
-
-        // Build the schema if not created yet
-        if (finalSchema == null) {
-            SchemaBuilder newSchema = SchemaBuilder.struct();
-            newSchema.field(recordIdField, Schema.STRING_SCHEMA);
-            if (useSnapshot) {
-                newSchema.field(snapshotField, Schema.INT64_SCHEMA);
-            }
-            if (useTSID) {
-                newSchema.field(tsidField, Schema.INT64_SCHEMA);
-            }
-            if (useDate) {
-                newSchema.field(dateField, Schema.STRING_SCHEMA);
-            }
-            finalSchema = newSchema.build();
-        }
-
 
         Struct recordVal = new Struct(finalSchema);
         recordVal.put(recordIdField, recordIdValue);
