@@ -43,7 +43,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
     public AbstractConfiguredComponent(final ConfigurableComponent component, final String id) {
         this.id = id;
         this.component = component;
-        this.componentLog = new StandardComponentLogger(id, component);
+        this.componentLog = new StandardComponentLogger(id, this);
     }
 
     @Override
@@ -178,7 +178,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
 
     @Override
     public String toString() {
-        return component.toString();
+        return getClass().getSimpleName() + "[id=" + getIdentifier() + "]";
     }
 
 
@@ -215,7 +215,6 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         return validate(new StandardValidationContext(getProperties()));
     }
 
-
     public abstract void verifyModifiable() throws IllegalStateException;
 
     @Override
@@ -224,6 +223,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         return component.validate(context);
     }
 
+    @Override
     public ComponentLog getLogger() {
         return componentLog;
     }
