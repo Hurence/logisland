@@ -1,0 +1,25 @@
+version: 0.9.5
+documentation: LogIsland analytics main config file. Put here every engine or component config
+
+engine:
+  type: engine
+  documentation: Main Logisland job entry point
+  configuration:
+    fake.settings: 301
+  streamConfigurations:
+
+    - stream: parsing_stream
+      component: com.hurence.logisland.stream.MockRecordStream
+      type: stream
+      documentation: a processor that links
+      configuration:
+        mock.chain: oula
+
+      processorConfigurations:
+
+        - processor: mock_processor
+          component: com.hurence.logisland.util.runner.MockProcessor
+          type: parser
+          documentation: a parser that produce events from a REGEX
+          configuration:
+            fake.message: yala

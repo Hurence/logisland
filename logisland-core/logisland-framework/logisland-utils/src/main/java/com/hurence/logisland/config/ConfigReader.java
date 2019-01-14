@@ -16,6 +16,7 @@
 package com.hurence.logisland.config;
 
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.hurence.logisland.util.string.StringUtils;
@@ -46,7 +47,10 @@ public class ConfigReader {
      * @throws Exception
      */
     public static LogislandConfiguration loadConfig(String configFilePath) throws Exception {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory()
+                .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
+
         File configFile = new File(configFilePath);
 
         if (!configFile.exists()) {
@@ -55,9 +59,17 @@ public class ConfigReader {
 
         // replace all host from environment variables
         String fileContent = StringUtils.resolveEnvVars(readFile(configFilePath, Charset.defaultCharset()), "localhost");
-        //String fileContent = readFile(configFilePath, Charset.defaultCharset());
 
-        return mapper.readValue(fileContent, LogislandConfiguration.class);
+        LogislandConfiguration logislandConf = mapper.readValue(fileContent, LogislandConfiguration.class);
+        checkLogislandConf(logislandConf);
+
+        return logislandConf;
+    }
+
+    private static void checkLogislandConf(LogislandConfiguration conf) throws IllegalArgumentException {
+        if (conf.getEngine().getComponent() == null || conf.getEngine().getComponent().isEmpty()) {
+            throw new IllegalArgumentException("key 'component' is missing or empty for engine in configuration file");
+        }
     }
 
 }
