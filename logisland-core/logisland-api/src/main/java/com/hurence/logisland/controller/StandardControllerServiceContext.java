@@ -17,12 +17,10 @@ package com.hurence.logisland.controller;
 
 
 import com.hurence.logisland.component.*;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
 
 import java.io.File;
 
-public class StandardControllerServiceContext extends AbstractConfiguredComponent implements ComponentContext, ControllerServiceInitializationContext {
+public class StandardControllerServiceContext extends AbstractConfiguredComponent implements ControllerServiceInitializationContext, ComponentContext {
 
     public StandardControllerServiceContext(final ControllerService controllerService, final String identifier) {
         super(controllerService, identifier);
