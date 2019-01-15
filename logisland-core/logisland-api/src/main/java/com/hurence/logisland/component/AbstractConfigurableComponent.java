@@ -28,7 +28,7 @@ import java.util.*;
 
 public abstract class AbstractConfigurableComponent implements ConfigurableComponent {
 
-    protected String identifier;
+    protected String identifier = "";
     protected ComponentLog componentLogger;
     private static Logger logger = LoggerFactory.getLogger(AbstractConfigurableComponent.class);
 
@@ -224,6 +224,9 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * framework in its init method
      */
     protected ComponentLog getLogger() {
+        if (componentLogger==null) {
+            componentLogger = new StandardComponentLogger(this.getIdentifier(), this);
+        }
         return componentLogger;
     }
 
