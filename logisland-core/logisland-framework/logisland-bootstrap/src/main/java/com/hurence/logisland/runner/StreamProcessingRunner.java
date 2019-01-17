@@ -24,6 +24,7 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.channels.IllegalChannelGroupException;
 import java.util.Optional;
 
 
@@ -73,23 +74,28 @@ public class StreamProcessingRunner {
 
             // instantiate engine and all the processor from the config
             engineInstance = ComponentFactory.getEngineContext(sessionConf.getEngine());
-            assert engineInstance.isPresent();
-            assert engineInstance.get().isValid();
-
+            if (!engineInstance.isPresent()) {
+                throw new IllegalArgumentException("engineInstance could not be instantiated");
+            }
+            if (!engineInstance.get().isValid()) {
+                throw new IllegalArgumentException("engineInstance is not valid with input configuration !");
+            }
             logger.info("starting Logisland session version {}", sessionConf.getVersion());
             logger.info(sessionConf.getDocumentation());
         } catch (Exception e) {
-            logger.error("unable to launch runner : {}", e);
+            logger.error("unable to launch runner", e);
         }
-
+        String engineName = engineInstance.get().getEngine().getIdentifier();
         try {
             // start the engine
             EngineContext engineContext = engineInstance.get();
+            logger.info("start engine {}", engineName);
             engineInstance.get().getEngine().start(engineContext);
+            logger.info("awaitTermination for engine {}", engineName);
             engineContext.getEngine().awaitTermination(engineContext);
             System.exit(0);
         } catch (Exception e) {
-            logger.error("something went bad while running the job : {}", e);
+            logger.error("something went bad while running the job {} : {}", engineName, e);
             System.exit(-1);
         }
 

@@ -423,7 +423,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()

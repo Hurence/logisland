@@ -32,7 +32,6 @@ script:
   # Build
   - echo -en "travis_fold:start:logisland-w-hdp${hdp}\\r"
   - mvn clean install -Pfull | grep -v 'Download.* http'
- # - mvn package -Dhdp=${hdp} -Pdocker -f logisland-docker/pom.xml
   - echo -en "travis_fold:end:logisland-w-hdp${hdp}\\r"
   # Integration tests
   # The 'hdp' variable is substituted in 'docker-compose.yml' and 'it.sh'.
@@ -65,6 +64,7 @@ install:
 notifications:
   email:
     - bailet.thomas@gmail.com
+    - s.h.gregoire@gmail.com
 
   webhooks:
     urls:
