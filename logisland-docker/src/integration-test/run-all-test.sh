@@ -45,8 +45,8 @@ run_test() {
 }
 
 main() {
-
-    cp ../../../logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz ../../full-container/logisland-1.0.0-RC1-bin.tar.gz
+    my_dir="$(dirname "$0")"
+    cp ${my_dir}/../../../logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz ${my_dir}/../../full-container/logisland-1.0.0-RC1-bin.tar.gz
     declare -i FINAL_EXIT_CODE=0
     # catch unexpected failures, do cleanup and output an error message
     trap 'cleanup ; printf "${RED}Tests Failed For Unexpected Reasons${NC}\n"'\
@@ -68,7 +68,7 @@ main() {
     "engine-spark_2_X/KafkaStreamProcessingEngine/StructuredStream" \
     )
 #    Uncomment beneath line to test a unique test
-#    declare -a -r test_to_run_paths=("engine-spark_2_X/KafkaStreamProcessingEngine/StructuredStream")
+#    declare -a -r test_to_run_paths=("engine-spark_2_X/KafkaStreamProcessingEngine/KafkaRecordStreamSQLAggregator")
     echo "Will execute those integration tests: ${test_to_run_paths[@]}"
 
     for test_path in "${test_to_run_paths[@]}"
