@@ -1,22 +1,24 @@
 LogIsland integration tests
 ===========================
 
-We suppose you are in root project directory
+These tests are used to be sure we do not break already implemented engine and streams.
+
+We could add integration test of all current tutorial latters.
 
 Lanching tests
 --------------
 
-Building current logisland docker
+You need to have docker and docker-compose installed. Those tests use the current version of logisland in your local machine,
+it build a logisland image based on logisland-assembly/target/logisland-*.tar.gz file. So you must have install logsialnd with this command before running the test
 
 .. code-block:: sh
 
-    # build logisland
     mvn clean install -Pfull
-    cp logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz logisland-docker/container/logisland-1.0.0-RC1-bin.tar.gz
-    # go in our working dir
-    cd logisland-docker/src/integration-test
-    # run all integration tests
-    # First time should be longer if you have not needed images.
+
+Now just run the script with sudo (for using docker).
+
+.. code-block:: sh
+
     sudo ./run-all-test.sh
 
 

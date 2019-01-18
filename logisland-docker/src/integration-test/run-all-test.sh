@@ -6,8 +6,8 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 # kill and remove any running containers
 cleanup () {
-  docker-compose -p ci --log-level ERROR kill 1>/dev/null 2>/dev/null
-  docker-compose -p ci --log-level ERROR rm -f 1>/dev/null 2>/dev/null
+  docker-compose -p ci kill 1>/dev/null 2>/dev/null
+  docker-compose -p ci rm -f 1>/dev/null 2>/dev/null
 }
 
 # Runs the test specified in argument.
@@ -19,7 +19,7 @@ run_test() {
     #go into path
     cd ${TEST_PATH}
     # build and run the composed services
-    docker-compose -p ci --log-level ERROR build 1>/dev/null 2>/dev/null && docker-compose -p ci --log-level ERROR up -d 1>/dev/null 2>/dev/null
+    docker-compose -p ci build 1>/dev/null 2>/dev/null && docker-compose -p ci up -d 1>/dev/null 2>/dev/null
     if [[ $? -ne 0 ]] ; then
       printf "${RED}Docker Compose Failed in test ${TEST_NAME} ${NC}\n"
       exit -1
@@ -45,6 +45,8 @@ run_test() {
 }
 
 main() {
+
+    cp ../../../logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz ../../full-container/logisland-1.0.0-RC1-bin.tar.gz
     declare -i FINAL_EXIT_CODE=0
     # catch unexpected failures, do cleanup and output an error message
     trap 'cleanup ; printf "${RED}Tests Failed For Unexpected Reasons${NC}\n"'\
@@ -79,6 +81,7 @@ main() {
         # inspect the output of the test and display respective message
         if [[ -z ${TEST_EXIT_CODE_RETURNED+x} ]] || [[ "${TEST_EXIT_CODE_RETURNED}" -ne 0 ]] ; then
           FINAL_EXIT_CODE=${TEST_EXIT_CODE}
+          break;
         fi
     done
 
