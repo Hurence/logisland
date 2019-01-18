@@ -39,10 +39,10 @@ main() {
     echo "sending input in kafka"
     EXPECTED_DOCS_COUNT=$(${DEBUG}; wc "${INPUT_FILE_PATH}" | awk '{print $1}')
     echo "EXPECTED_DOCS_COUNT ${EXPECTED_DOCS_COUNT}"
-#    echo "cat ${INPUT_FILE_PATH} | ${KAFKACAT_BIN} -P -b ${KAFKA_BROKER_URL} -t ${KAFKA_INPUT_TOPIC}"
     echo "cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}"
     cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}
     abort_if "${?}" "Unable to send input ${INPUT_FILE_PATH}  into ${KAFKA_INPUT_TOPIC}. Aborting."
+    sleep 5
 
     echo "check that we received it"
 
