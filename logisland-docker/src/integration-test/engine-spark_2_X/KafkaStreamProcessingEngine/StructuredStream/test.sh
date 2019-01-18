@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-my_dir="$(dirname "$0")"
-source ${my_dir}/../../../util.sh
+source /shared/util.sh
 # main class that test
 main() {
     echo "initializing variables"

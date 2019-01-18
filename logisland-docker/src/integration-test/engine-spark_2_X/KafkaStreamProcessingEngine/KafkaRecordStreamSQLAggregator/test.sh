@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-my_dir="$(dirname "$0")"
-source ${my_dir}/../../../util.sh
+source /shared/util.sh
 
 # main class that test
 main() {
@@ -44,7 +43,7 @@ main() {
     echo "cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}"
     cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}
     abort_if "${?}" "Unable to send input ${INPUT_FILE_PATH}  into ${KAFKA_INPUT_TOPIC}. Aborting."
-    sleep 5
+    sleep 10
 
     echo "check that we received it"
     #Test first stream pipe

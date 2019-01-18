@@ -35,6 +35,7 @@ services:
       - "9999:9999"
     volumes:
       - .:/conf
+      - ../../../docker-compose-shared-volume:/shared
 #    environment:
 #      KAFKA_ADVERTISED_PORT: 9092
 #      KAFKA_ADVERTISED_HOST_NAME: kafka
