@@ -52,7 +52,7 @@ main() {
     ${KAFKA_HOME}/bin/kafka-console-consumer.sh --topic ${KAFKA_OUTPUT_TOPIC} \
     --zookeeper ${ZK_QUORUM} \
     --from-beginning \
-    --timeout-ms 2000 \
+    --timeout-ms 10000 \
     | grep '\"id\" :' \
     | wc -l \
     )

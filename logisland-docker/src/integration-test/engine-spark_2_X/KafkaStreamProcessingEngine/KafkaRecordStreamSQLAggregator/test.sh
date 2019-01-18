@@ -25,8 +25,8 @@ main() {
 
     echo "starting logisland with ${CONF_FILE}"
     nohup bin/logisland.sh --conf /conf/${CONF_FILE} & > ${CONF_FILE}_job.log
-    sleep 10
     echo "waiting 10 seconds for job to initialize"
+    sleep 10
 
     echo "some check before sending data"
     file_present "${INPUT_FILE_PATH}"
@@ -43,6 +43,7 @@ main() {
     echo "cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}"
     cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}
     abort_if "${?}" "Unable to send input ${INPUT_FILE_PATH}  into ${KAFKA_INPUT_TOPIC}. Aborting."
+    echo "waiting 10 seconds for job to process records"
     sleep 10
 
     echo "check that we received it"
@@ -66,8 +67,8 @@ main() {
     fi
 
     #Test second stream pipe
-    sleep 5
-    echo "waiting 5 seconds for job to initialize"
+    sleep 10
+    echo "waiting 10 seconds for job to process records"
 #    ${KAFKA_HOME}/bin/kafka-console-consumer.sh --topic ${KAFKA_OUTPUT_TOPIC_2} \
 #    --zookeeper ${ZK_QUORUM} \
 #    --from-beginning \
@@ -90,7 +91,7 @@ main() {
     ${KAFKA_HOME}/bin/kafka-console-consumer.sh --topic ${KAFKA_OUTPUT_TOPIC_2} \
     --zookeeper ${ZK_QUORUM} \
     --from-beginning \
-    --timeout-ms 2000 \
+    --timeout-ms 10000 \
     | grep '\"id\" :' \
     | wc -l \
     )
