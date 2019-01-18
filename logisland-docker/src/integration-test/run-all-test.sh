@@ -17,7 +17,7 @@ run_test() {
     TEST_NAME=$1
     TEST_PATH=$2
     #go into path
-    cd ${TEST_PATH}
+    cd ${my_dir}/${TEST_PATH}
     # build and run the composed services
     docker-compose -p ci build 1>/dev/null 2>/dev/null && docker-compose -p ci up -d 1>/dev/null 2>/dev/null
     if [[ $? -ne 0 ]] ; then
