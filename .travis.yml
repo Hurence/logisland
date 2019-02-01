@@ -28,9 +28,10 @@ language: java
 #  - docker-compose --version
 
 script:
-  # Build with travis_wait so it does not time_out after 10 minutes without output
-  - travis_wait mvn clean install -Pfull > build-with-test.logs
-  - cat build-with-test.logs | grep -v 'Download.* http'
+  # Build
+  # use travis_wait so it does not time_out after 10 minutes without output
+  # use -q so there's not too much output for travis (4Mb max)
+  - travis_wait mvn clean install -Pfull -q
 
 jdk:
   - oraclejdk8
