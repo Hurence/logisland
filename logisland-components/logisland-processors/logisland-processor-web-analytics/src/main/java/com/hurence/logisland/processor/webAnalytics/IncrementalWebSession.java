@@ -847,7 +847,7 @@ public class IncrementalWebSession
                       elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
                               _ES_EVENT_TYPE_NAME,
                                                          map,
-                                                         Optional.of((String)map.get("record_id")));
+                                                         Optional.of((String)map.get(FieldDictionary.RECORD_ID)));
                   });
             elasticsearchClientService.flushBulkProcessor();
 
