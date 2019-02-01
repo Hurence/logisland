@@ -29,7 +29,8 @@ language: java
 
 script:
   # Build
-  - mvn clean install -Pfull
+  - mvn clean install -Pfull > build-with-test.logs
+  - cat build-with-test.logs | grep -v 'Download.* http'
 
 jdk:
   - oraclejdk8
