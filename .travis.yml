@@ -29,9 +29,9 @@ language: java
 
 script:
   # Build
-  # use travis_wait so it does not time_out after 10 minutes without output
+  # use travis_wait so it does not time_out after 10 minutes without output (unfortunately that seems to not work)
   # use -q so there's not too much output for travis (4Mb max)
-  - travis_wait mvn clean install -Pfull -q
+  - mvn clean install -Pfull -q
 
 jdk:
   - oraclejdk8
