@@ -101,7 +101,7 @@ public class IncrementalWebSession
     private static final String PROP_ES_EVENT_INDEX_PREFIX = "es.event.index.prefix";
     private static final String PROP_ES_EVENT_TYPE_NAME = "es.event.type.name";
 
-    private static final String MAPPING_EVENT_TYPE = "mapping";
+    private static final String ES_MAPPING_EVENT_TYPE_NAME = "mapping";
     private static final String MAPPING_FIELD = "sessionId";
 
     /**
@@ -860,7 +860,7 @@ public class IncrementalWebSession
             // <sessionId> -> <sessionId>#?
             rewriters.stream()
                      .forEach(sessions ->
-                elasticsearchClientService.bulkPut(_ES_SESSION_INDEX_NAME, MAPPING_EVENT_TYPE,
+                elasticsearchClientService.bulkPut(_ES_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TYPE_NAME,
                                                    Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
                                                    Optional.of(sessions.getSessionId())));
 
@@ -942,7 +942,7 @@ public class IncrementalWebSession
             // First retrieve mapping of last sessions.
             // Eg sessionId -> sessionId#XX
             final MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
-            webEvents.forEach(events -> mgqrBuilder.add(_ES_SESSION_INDEX_NAME, MAPPING_EVENT_TYPE,
+            webEvents.forEach(events -> mgqrBuilder.add(_ES_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TYPE_NAME,
                                                         null, events.getSessionId()));
 
             List<MultiGetResponseRecord> esResponse = null;
@@ -992,7 +992,7 @@ public class IncrementalWebSession
             catch (final InvalidMultiGetQueryRecordException e)
             {
                 // should never happen
-                e.printStackTrace();
+                getLogger().error("error while executing multiGet elasticsearch", e);
             }
 
             debug("Retrieved %d documents from elasticsearch.", esResponse.size());

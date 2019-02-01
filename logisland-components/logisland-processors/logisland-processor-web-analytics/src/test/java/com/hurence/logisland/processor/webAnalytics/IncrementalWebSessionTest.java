@@ -1045,7 +1045,7 @@ public class IncrementalWebSessionTest
             this.setField(SESSION_ID, FieldType.STRING, sessionId)
                 .setField(USER_ID, FieldType.STRING, userId)
                 .setField(TIMESTAMP, FieldType.STRING, timestamp)
-                .setField(SESSION_INDEX, FieldType.STRING, "Cyril")
+                .setField(SESSION_INDEX, FieldType.STRING, SESSION_INDEX)
                 .setField(VISITED_PAGE, FieldType.STRING, url)
                 .setField("record_id", FieldType.STRING, String.valueOf(id));
         }
