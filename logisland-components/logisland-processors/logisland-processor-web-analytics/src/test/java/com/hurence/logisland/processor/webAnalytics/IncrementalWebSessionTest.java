@@ -1013,7 +1013,7 @@ public class IncrementalWebSessionTest
         runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);
         runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
         runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_NAME, MAPPING_INDEX);
+        runner.setProperty(IncrementalWebSession.ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, MAPPING_INDEX);
 
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
