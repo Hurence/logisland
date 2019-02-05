@@ -751,6 +751,7 @@ public class IncrementalWebSessionTest
                                   .check(B2BUNIT, null);
     }
 
+
     @Test
     public void testUpdateOneWebSessionNow()
             throws Exception
@@ -1009,10 +1010,10 @@ public class IncrementalWebSessionTest
         runner.setProperty(setSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_FIELD, SESSION_INDEX);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_FIELD, SESSION_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_FIELD, EVENT_INDEX);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_FIELD, EVENT_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_INDEX);
+        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, MAPPING_INDEX);
 
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
@@ -1044,6 +1045,7 @@ public class IncrementalWebSessionTest
             this.setField(SESSION_ID, FieldType.STRING, sessionId)
                 .setField(USER_ID, FieldType.STRING, userId)
                 .setField(TIMESTAMP, FieldType.STRING, timestamp)
+                .setField(SESSION_INDEX, FieldType.STRING, SESSION_INDEX)
                 .setField(VISITED_PAGE, FieldType.STRING, url)
                 .setField("record_id", FieldType.STRING, String.valueOf(id));
         }
@@ -1099,7 +1101,7 @@ public class IncrementalWebSessionTest
         public WebSessionChecker check(final String name, final Object expectedValue)
         {
             final Field field = this.record.getField(name);
-            Assert.assertEquals(expectedValue==null?null:expectedValue,
+            Assert.assertEquals(expectedValue,
                                 field!=null?field.getRawValue():null);
             return this;
         }
