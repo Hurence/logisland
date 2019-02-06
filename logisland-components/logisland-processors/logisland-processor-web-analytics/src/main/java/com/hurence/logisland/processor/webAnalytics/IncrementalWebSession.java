@@ -534,38 +534,40 @@ public class IncrementalWebSession
                       if ( !innerRecord || (innerRecord && ! FieldDictionary.contains(entry.getKey())) )
                       {
                           Object value = entry.getValue().getRawValue();
-                          switch(entry.getValue().getType())
-                          {
-                              case RECORD:
-                                  value = toMap((Record)value, true);
-                                  break;
-                              case ARRAY:
-                                  Collection collection;
-                                  if ( value instanceof Collection )
-                                  {
-                                      collection = (Collection)value;
-                                  }
-                                  else
-                                  {
-                                      collection = Arrays.asList(value);
-                                  }
-                                  final List list = new ArrayList(collection.size());
-                                  for(final Object item: collection)
-                                  {
-                                      if ( item instanceof Record )
+                          if (value != null) {
+                              switch(entry.getValue().getType())
+                              {
+                                  case RECORD:
+                                      value = toMap((Record)value, true);
+                                      break;
+                                  case ARRAY:
+                                      Collection collection;
+                                      if ( value instanceof Collection )
                                       {
-                                          list.add(toMap((Record)item, true));
+                                          collection = (Collection)value;
                                       }
                                       else
                                       {
-                                          list.add(item);
+                                          collection = Arrays.asList(value);
                                       }
-                                  }
-                                  value = list;
-                                  break;
-                              default:
+                                      final List list = new ArrayList(collection.size());
+                                      for(final Object item: collection)
+                                      {
+                                          if ( item instanceof Record )
+                                          {
+                                              list.add(toMap((Record)item, true));
+                                          }
+                                          else
+                                          {
+                                              list.add(item);
+                                          }
+                                      }
+                                      value = list;
+                                      break;
+                                  default:
+                              }
+                              result.put(entry.getKey(), value);
                           }
-                          result.put(entry.getKey(), value);
                       }
                   });
             return result;
