@@ -43,8 +43,8 @@ main() {
     echo "cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}"
     cat ${INPUT_FILE_PATH} | ${KAFKA_HOME}/bin/kafka-console-producer.sh --broker-list ${KAFKA_BROKER_URL} --topic ${KAFKA_INPUT_TOPIC}
     abort_if "${?}" "Unable to send input ${INPUT_FILE_PATH}  into ${KAFKA_INPUT_TOPIC}. Aborting."
-    echo "waiting 10 seconds for job to process records"
-    sleep 10
+    echo "waiting 20 seconds for job to process records"
+    sleep 20
 
     echo "check that we received it"
     #Test first stream pipe

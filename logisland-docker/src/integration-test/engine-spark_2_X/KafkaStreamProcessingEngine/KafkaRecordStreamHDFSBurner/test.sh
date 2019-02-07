@@ -26,8 +26,8 @@ main() {
 
     echo "starting logisland with ${CONF_FILE}"
     nohup bin/logisland.sh --conf /conf/${CONF_FILE} & > ${CONF_FILE}_job.log
-    sleep 10
-    echo "waiting 10 seconds for job to initialize"
+    sleep 20
+    echo "waiting 20 seconds for job to initialize"
 
     echo "some check before sending data"
     file_present "${INPUT_FILE_PATH}"
