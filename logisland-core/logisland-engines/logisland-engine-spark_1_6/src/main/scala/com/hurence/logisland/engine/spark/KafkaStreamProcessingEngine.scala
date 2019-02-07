@@ -305,6 +305,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(KafkaStreamProcessingEngine.SPARK_APP_NAME)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MASTER)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MONITORING_DRIVER_PORT)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_DRIVER_MEMORY)
