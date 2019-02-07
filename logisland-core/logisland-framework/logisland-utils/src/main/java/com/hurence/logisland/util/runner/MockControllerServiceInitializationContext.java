@@ -54,12 +54,6 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-
-    @Override
     public String getProperty(PropertyDescriptor property) {
         return null;
     }
@@ -138,8 +132,4 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return properties;
     }
 
-    @Override
-    public String getName() {
-        return null;
-    }
 }

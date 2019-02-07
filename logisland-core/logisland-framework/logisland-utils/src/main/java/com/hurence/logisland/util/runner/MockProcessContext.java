@@ -225,22 +225,12 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
     }
 
     @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
     public ComponentLog getLogger() {
         return new StandardComponentLogger(this.getIdentifier(), this.component);
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-    @Override
-    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
 
     }
 

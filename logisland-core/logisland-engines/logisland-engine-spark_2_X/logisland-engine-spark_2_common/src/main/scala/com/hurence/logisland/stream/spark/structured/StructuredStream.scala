@@ -123,7 +123,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
             val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-            streamContext.addControllerServiceLookup(controllerServiceLookup)
+            streamContext.setControllerServiceLookup(controllerServiceLookup)
 
 
             val readStreamService = streamContext.getPropertyValue(READ_TOPICS_CLIENT_SERVICE)
@@ -134,6 +134,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             streamContext.getProcessContexts().clear();
             streamContext.getProcessContexts().addAll(
                 PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
+
             val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
 
             // apply windowing

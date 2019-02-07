@@ -17,7 +17,7 @@ package com.hurence.logisland.annotation.lifecycle;
 
 
 
-import com.hurence.logisland.controller.ConfigurationContext;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.controller.ControllerService;
 
 import java.lang.annotation.*;
@@ -31,7 +31,7 @@ import java.lang.annotation.*;
  *
  * <p>
  * Methods using this annotation are permitted to take zero arguments or to take
- * a single argument of type {@link ConfigurationContext}. If a method with this
+ * a single argument of type {@link ComponentContext}. If a method with this
  * annotation throws a Throwable, a log message and bulletin will be issued for
  * the service, but the service will still be marked as Disabled. The failing
  * method will not be called again until the service is enabled and disabled again.

@@ -4,10 +4,11 @@ MAINTAINER support@hurence.com
 USER root
 
 # Logisland
-COPY logisland-*.tar.gz /usr/local/
+COPY logisland-*.tar.gz /usr/local/logisland-current-bin.tar.gz
 RUN cd /usr/local; \
-    tar -xzf logisland-*.tar.gz; \
-    ln -s /usr/local/logisland-1.0.0-RC1 /usr/local/logisland; \
+    mkdir logisland-current-bin; \
+    tar -xzf logisland-current-bin.tar.gz -C ./logisland-current-bin --strip-components 1; \
+    ln -s /usr/local/logisland-current-bin /usr/local/logisland; \
     mkdir /usr/local/logisland/log; \
     rm -f /usr/local/*.gz
 ENV LOGISLAND_HOME /usr/local/logisland

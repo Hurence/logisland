@@ -15,7 +15,7 @@
  */
 package com.hurence.logisland.annotation.lifecycle;
 
-import com.hurence.logisland.controller.ConfigurationContext;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.controller.ControllerService;
 
 import java.lang.annotation.*;
@@ -34,7 +34,7 @@ import java.lang.annotation.*;
  * <p>
  * Methods using this annotation must take either 0 arguments or a single
  * argument of type
- * {@link ConfigurationContext ConfigurationContext}.
+ * {@link ComponentContext ComponentContext}.
  * </p>
  *
  * <p>

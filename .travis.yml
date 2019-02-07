@@ -32,6 +32,8 @@ script:
   # use travis_wait so it does not time_out after 10 minutes without output (unfortunately that seems to not work)
   # use -q so there's not too much output for travis (4Mb max)
   - mvn clean install -Pfull -q
+  # Integrations tests
+  - sudo logisland-docker/src/integration-test/run-all-test.sh
 
 jdk:
   - oraclejdk8
@@ -42,6 +44,7 @@ install:
 notifications:
   email:
     - bailet.thomas@gmail.com
+    - s.h.gregoire@gmail.com
 
   webhooks:
     urls:

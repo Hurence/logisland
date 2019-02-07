@@ -13,7 +13,6 @@
     <properties>
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
         <jackson.version>2.6.6</jackson.version>
     </properties>
 

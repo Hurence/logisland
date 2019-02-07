@@ -30,8 +30,8 @@ public class MockRecordStream extends AbstractRecordStream {
 
 
     public static final PropertyDescriptor FAKE_MESSAGE = new PropertyDescriptor.Builder()
-            .name("fake.message")
-            .description("a fake message")
+            .name("mock.chain")
+            .description("a fake property")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("yoyo")

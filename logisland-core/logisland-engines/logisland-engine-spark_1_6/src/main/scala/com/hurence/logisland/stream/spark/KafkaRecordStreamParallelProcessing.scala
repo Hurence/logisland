@@ -150,7 +150,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                             val startTime = System.currentTimeMillis()
                             val processor = processorContext.getProcessor
                             val processorTimerContext = UserMetricsSystem.timer(pipelineMetricPrefix +
-                                processorContext.getName + ".processingTime").time()
+                                processorContext.getIdentifier + ".processingTime").time()
 
                             if (firstPass) {
                                 /**
@@ -181,7 +181,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               */
                             if (processor.hasControllerService) {
                                 val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-                                processorContext.addControllerServiceLookup(controllerServiceLookup)
+                                processorContext.setControllerServiceLookup(controllerServiceLookup)
                             }
                             processor.init(processorContext)
                             outgoingEvents = processor.process(processorContext, incomingEvents)
@@ -190,7 +190,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               * compute metrics
                               */
                             val processorMetrics = ProcessorMetrics.computeMetrics(
-                                pipelineMetricPrefix + processorContext.getName + ".",
+                                pipelineMetricPrefix + processorContext.getIdentifier + ".",
                                 incomingEvents,
                                 outgoingEvents,
                                 offsetRange.fromOffset,

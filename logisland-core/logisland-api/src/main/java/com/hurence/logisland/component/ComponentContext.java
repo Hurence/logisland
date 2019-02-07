@@ -77,12 +77,6 @@ public interface ComponentContext extends ConfiguredComponent {
      */
     Map<PropertyDescriptor, String> getProperties();
 
-
-    /**
-     * @return the configured name of this processor
-     */
-    String getName();
-
     /**
      * @return a logger that can be used to log important events in a standard
      * way and generate bulletins when appropriate

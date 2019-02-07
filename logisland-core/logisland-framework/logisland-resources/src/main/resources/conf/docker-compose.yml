@@ -34,7 +34,6 @@ services:
       - transport.host=0.0.0.0
       - xpack.security.enabled=false
     hostname: elasticsearch
-    container_name: elasticsearch
     image: 'docker.elastic.co/elasticsearch/elasticsearch:5.4.0'
     ports:
       - '9200:9200'
@@ -46,7 +45,6 @@ services:
     environment:
       - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
     image: 'docker.elastic.co/kibana/kibana:5.4.0'
-    container_name: kibana
     links:
       - elasticsearch
     ports:
@@ -72,7 +70,6 @@ services:
     volumes:
       - ./conf/logisland:/conf
       - ./data/logisland:/data
-    container_name: logisland
     extra_hosts:
       - "sandbox:172.17.0.1"
 
