@@ -8,6 +8,7 @@ import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Field;
+import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -16,8 +17,6 @@ import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQuery
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
 import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -96,13 +95,13 @@ public class IncrementalWebSession
      */
     private static final String OUTPUT_RECORD_TYPE = "consolidate-session";
 
-    private static final String PROP_ES_SESSION_INDEX = "es.session.index";
-    private static final String PROP_ES_SESSION_TYPE = "es.session.type";
-    private static final String PROP_ES_EVENT_INDEX = "es.event.index";
-    private static final String PROP_ES_EVENT_TYPE = "es.event.type";
-    private static final String PROP_ES_SESSION_MAPPING_INDEX = "es.mapping.index";
+    private static final String PROP_ES_SESSION_INDEX_FIELD = "es.session.index.field";
+    private static final String PROP_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME = "es.mapping.event.to.session.index.name";
+    private static final String PROP_ES_SESSION_TYPE_NAME = "es.session.type.name";
+    private static final String PROP_ES_EVENT_INDEX_PREFIX = "es.event.index.prefix";
+    private static final String PROP_ES_EVENT_TYPE_NAME = "es.event.type.name";
 
-    private static final String MAPPING_EVENT_TYPE = "mapping";
+    private static final String ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME = "mapping";
     private static final String MAPPING_FIELD = "sessionId";
 
     /**
@@ -130,39 +129,23 @@ public class IncrementalWebSession
 
     static final PropertyDescriptor ES_SESSION_INDEX_FIELD =
             new PropertyDescriptor.Builder()
-                    .name(PROP_ES_SESSION_INDEX)
-                    .description("Name of the ES index containing the web session documents.")
+                    .name(PROP_ES_SESSION_INDEX_FIELD)
+                    .description("Name of the field in the record defining the ES index containing the web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    static final PropertyDescriptor ES_SESSION_TYPE_FIELD =
+    static final PropertyDescriptor ES_SESSION_TYPE_NAME =
             new PropertyDescriptor.Builder()
-                    .name(PROP_ES_SESSION_TYPE)
+                    .name(PROP_ES_SESSION_TYPE_NAME)
                     .description("Name of the ES type of web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
-    static final PropertyDescriptor ES_EVENT_INDEX_FIELD =
+    static final PropertyDescriptor ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME =
             new PropertyDescriptor.Builder()
-                    .name(PROP_ES_EVENT_INDEX)
-                    .description("Name of the ES index containing the web event documents.")
-                    .required(true)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .build();
-
-    static final PropertyDescriptor ES_EVENT_TYPE_FIELD =
-            new PropertyDescriptor.Builder()
-                    .name(PROP_ES_EVENT_TYPE)
-                    .description("Name of the ES type of web event documents.")
-                    .required(true)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .build();
-
-    static final PropertyDescriptor ES_SESSION_MAPPING_INDEX_FIELD =
-            new PropertyDescriptor.Builder()
-                    .name(PROP_ES_SESSION_MAPPING_INDEX)
+                    .name(PROP_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME)
                     .description("Name of the ES index containing the mapping of web session documents.")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -184,6 +167,22 @@ public class IncrementalWebSession
                     .required(false)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .defaultValue("sessionId")
+                    .build();
+
+    static final PropertyDescriptor ES_EVENT_INDEX_PREFIX =
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_EVENT_INDEX_PREFIX)
+                    .description("Prefix of the index containing the web event documents.")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .build();
+
+    static final PropertyDescriptor ES_EVENT_TYPE_NAME =
+            new PropertyDescriptor.Builder()
+                    .name(PROP_ES_EVENT_TYPE_NAME)
+                    .description("Name of the ES type of web event documents.")
+                    .required(true)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .build();
 
     static final PropertyDescriptor TIMESTAMP_FIELD =
@@ -355,10 +354,10 @@ public class IncrementalWebSession
     private final static List<PropertyDescriptor> SUPPORTED_PROPERTY_DESCRIPTORS =
             Collections.unmodifiableList(Arrays.asList(DEBUG,
                                                        ES_SESSION_INDEX_FIELD,
-                                                       ES_SESSION_TYPE_FIELD,
-                                                       ES_EVENT_INDEX_FIELD,
-                                                       ES_EVENT_TYPE_FIELD,
-                                                       ES_SESSION_MAPPING_INDEX_FIELD,
+                                                       ES_SESSION_TYPE_NAME,
+                                                       ES_EVENT_INDEX_PREFIX,
+                                                       ES_EVENT_TYPE_NAME,
+                    ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME,
                                                        SESSION_ID_FIELD,
                                                        TIMESTAMP_FIELD,
                                                        VISITED_PAGE_FIELD,
@@ -510,14 +509,67 @@ public class IncrementalWebSession
      */
     private static Map<String, Object> toMap(final Record record)
     {
+        return toMap(record, false);
+    }
+
+    /**
+     * Returns the conversion of a record to a map where all {@code null} values were removed.
+     *
+     * @param record the record to convert.
+     * @param innerRecord if {@code true} special dictionnary fields are ignored; included otherwise.
+     *
+     * @return the conversion of a record to a map where all {@code null} values were removed.
+     */
+    private static Map<String, Object> toMap(final Record record,
+                                             final boolean innerRecord)
+    {
         try
         {
             final Map<String, Object> result = new HashMap<>();
 
             record.getFieldsEntrySet()
                   .stream()
-                  .forEach(entry -> result.put(entry.getKey(), entry.getValue().getRawValue()));
-
+                  .forEach(entry ->
+                  {
+                      if ( !innerRecord || (innerRecord && ! FieldDictionary.contains(entry.getKey())) )
+                      {
+                          Object value = entry.getValue().getRawValue();
+                          if (value != null) {
+                              switch(entry.getValue().getType())
+                              {
+                                  case RECORD:
+                                      value = toMap((Record)value, true);
+                                      break;
+                                  case ARRAY:
+                                      Collection collection;
+                                      if ( value instanceof Collection )
+                                      {
+                                          collection = (Collection)value;
+                                      }
+                                      else
+                                      {
+                                          collection = Arrays.asList(value);
+                                      }
+                                      final List list = new ArrayList(collection.size());
+                                      for(final Object item: collection)
+                                      {
+                                          if ( item instanceof Record )
+                                          {
+                                              list.add(toMap((Record)item, true));
+                                          }
+                                          else
+                                          {
+                                              list.add(item);
+                                          }
+                                      }
+                                      value = list;
+                                      break;
+                                  default:
+                              }
+                              result.put(entry.getKey(), value);
+                          }
+                      }
+                  });
             return result;
         }
         catch(Exception e)
@@ -630,10 +682,10 @@ public class IncrementalWebSession
         private final String _SOT_KEYWORD_FIELD;
 
         private final String _ES_SESSION_INDEX_FIELD;
-        private final String _ES_SESSION_TYPE_FIELD;
-        private final String _ES_EVENT_INDEX_FIELD;
-        private final String _ES_EVENT_TYPE_FIELD;
-        private final String _ES_SESSION_MAPPING_INDEX_FIELD;
+        private final String _ES_SESSION_TYPE_NAME;
+        private final String _ES_EVENT_INDEX_PREFIX;
+        private final String _ES_EVENT_TYPE_NAME;
+        private final String _ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME;
 
         private final Collection<SessionCheck> checker;
 
@@ -677,14 +729,14 @@ public class IncrementalWebSession
 
             this._ES_SESSION_INDEX_FIELD = context.getPropertyValue(ES_SESSION_INDEX_FIELD).asString();
             Objects.requireNonNull(this._ES_SESSION_INDEX_FIELD, "Property required: " + ES_SESSION_INDEX_FIELD);
-            this._ES_SESSION_TYPE_FIELD = context.getPropertyValue(ES_SESSION_TYPE_FIELD).asString();
-            Objects.requireNonNull(this._ES_SESSION_TYPE_FIELD, "Property required: " + ES_SESSION_TYPE_FIELD);
-            this._ES_EVENT_INDEX_FIELD = context.getPropertyValue(ES_EVENT_INDEX_FIELD).asString();
-            Objects.requireNonNull(this._ES_EVENT_INDEX_FIELD, "Property required: " + ES_EVENT_INDEX_FIELD);
-            this._ES_EVENT_TYPE_FIELD = context.getPropertyValue(ES_EVENT_TYPE_FIELD).asString();
-            Objects.requireNonNull(this._ES_EVENT_TYPE_FIELD, "Property required: " + ES_EVENT_TYPE_FIELD);
-            this._ES_SESSION_MAPPING_INDEX_FIELD = context.getPropertyValue(ES_SESSION_MAPPING_INDEX_FIELD).asString();
-            Objects.requireNonNull(this._ES_SESSION_MAPPING_INDEX_FIELD, "Property required: " + ES_SESSION_MAPPING_INDEX_FIELD);
+            this._ES_SESSION_TYPE_NAME = context.getPropertyValue(ES_SESSION_TYPE_NAME).asString();
+            Objects.requireNonNull(this._ES_SESSION_TYPE_NAME, "Property required: " + ES_SESSION_TYPE_NAME);
+            this._ES_EVENT_INDEX_PREFIX = context.getPropertyValue(ES_EVENT_INDEX_PREFIX).asString();
+            Objects.requireNonNull(this._ES_EVENT_INDEX_PREFIX, "Property required: " + ES_EVENT_INDEX_PREFIX);
+            this._ES_EVENT_TYPE_NAME = context.getPropertyValue(ES_EVENT_TYPE_NAME).asString();
+            Objects.requireNonNull(this._ES_EVENT_TYPE_NAME, "Property required: " + ES_EVENT_TYPE_NAME);
+            this._ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME = context.getPropertyValue(ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME).asString();
+            Objects.requireNonNull(this._ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, "Property required: " + ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME);
 
             this.checker = Arrays.asList(
                 // Day overlap
@@ -757,7 +809,7 @@ public class IncrementalWebSession
          */
         private String toEventIndexName(final ZonedDateTime date)
         {
-            return _ES_EVENT_INDEX_FIELD + "." + EVENT_SUFFIX_FORMATTER.format(date);
+            return _ES_EVENT_INDEX_PREFIX + "." + EVENT_SUFFIX_FORMATTER.format(date);
         }
 
         /**
@@ -780,17 +832,6 @@ public class IncrementalWebSession
 //                  records.size());
 //            records.forEach(record -> debug(record.getId()));
 
-            try
-            {
-                elasticsearchClientService.refreshIndex(_ES_SESSION_INDEX_FIELD);
-                elasticsearchClientService.refreshIndex(_ES_SESSION_MAPPING_INDEX_FIELD);
-            }
-            catch(final Exception e)
-            {
-                getLogger().error("Unable to refresh indices " + _ES_SESSION_INDEX_FIELD + ", " + _ES_SESSION_MAPPING_INDEX_FIELD,
-                          e);
-            }
-
             // Convert records to web-events grouped by session-id. Indeed each instance of Events contains a list of
             // sorted web-event grouped by session identifiers.
             final Collection<Events> events = toWebEvents(records);
@@ -806,9 +847,9 @@ public class IncrementalWebSession
                       final Map<String, Object> map = toMap(event.cloneRecord());
 
                       elasticsearchClientService.bulkPut(toEventIndexName(event.getTimestamp()),
-                                                         _ES_EVENT_TYPE_FIELD,
+                              _ES_EVENT_TYPE_NAME,
                                                          map,
-                                                         Optional.of((String)map.get("record_id")));
+                                                         Optional.of((String)map.get(FieldDictionary.RECORD_ID)));
                   });
             elasticsearchClientService.flushBulkProcessor();
 
@@ -821,7 +862,7 @@ public class IncrementalWebSession
             // <sessionId> -> <sessionId>#?
             rewriters.stream()
                      .forEach(sessions ->
-                elasticsearchClientService.bulkPut(_ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_EVENT_TYPE,
+                elasticsearchClientService.bulkPut(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME,
                                                    Collections.singletonMap(MAPPING_FIELD, sessions.getLastSessionId()),
                                                    Optional.of(sessions.getSessionId())));
 
@@ -903,7 +944,7 @@ public class IncrementalWebSession
             // First retrieve mapping of last sessions.
             // Eg sessionId -> sessionId#XX
             final MultiGetQueryRecordBuilder mgqrBuilder = new MultiGetQueryRecordBuilder();
-            webEvents.forEach(events -> mgqrBuilder.add(_ES_SESSION_MAPPING_INDEX_FIELD, MAPPING_EVENT_TYPE,
+            webEvents.forEach(events -> mgqrBuilder.add(_ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, ES_MAPPING_EVENT_TO_SESSION_TYPE_NAME,
                                                         null, events.getSessionId()));
 
             List<MultiGetResponseRecord> esResponse = null;
@@ -937,7 +978,10 @@ public class IncrementalWebSession
                 {
                     String sessionId = events.getSessionId();
                     String mappedSessionId = mappings.get(sessionId); // last processed session id (#?)
-                    sessionBuilder.add(_ES_SESSION_INDEX_FIELD, _ES_SESSION_TYPE_FIELD,
+                    // Retrieve the name of the index that contains the websessions.
+                    // The chaining calls are on purpose as any NPE would mean something is wrong.
+                    final String sessionIndexName = events.first().getValue(_ES_SESSION_INDEX_FIELD).toString();
+                    sessionBuilder.add(sessionIndexName, _ES_SESSION_TYPE_NAME,
                                        null, mappedSessionId!=null?mappedSessionId:sessionId);
                 });
             }
@@ -950,7 +994,7 @@ public class IncrementalWebSession
             catch (final InvalidMultiGetQueryRecordException e)
             {
                 // should never happen
-                e.printStackTrace();
+                getLogger().error("error while executing multiGet elasticsearch", e);
             }
 
             debug("Retrieved %d documents from elasticsearch.", esResponse.size());

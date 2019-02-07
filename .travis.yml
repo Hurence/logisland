@@ -1,10 +1,10 @@
 sudo: required
 
-services:
-  - docker
+#services:
+#  - docker
 
-env:
-  DOCKER_COMPOSE_VERSION: 1.13.0
+#env:
+#  DOCKER_COMPOSE_VERSION: 1.13.0
 
 cache:
   directories:
@@ -14,22 +14,24 @@ cache:
 
 language: java
 
-before_install:
-  # Update Docker.
-  - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-
-  # Upgrade/install docker-compose.
-  - sudo rm -f /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-  # Print out the current docker-compose version.
-  - docker-compose --version
+#before_install:
+#  # Update Docker.
+#  - sudo apt-get update
+#  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+#
+#  # Upgrade/install docker-compose.
+#  - sudo rm -f /usr/local/bin/docker-compose
+#  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+#  - chmod +x docker-compose
+#  - sudo mv docker-compose /usr/local/bin
+#  # Print out the current docker-compose version.
+#  - docker-compose --version
 
 script:
   # Build
-  - mvn clean install -Pfull | grep -v 'Download.* http'
+  # use travis_wait so it does not time_out after 10 minutes without output (unfortunately that seems to not work)
+  # use -q so there's not too much output for travis (4Mb max)
+  - mvn clean install -Pfull -q
   # Integrations tests
   - sudo logisland-docker/src/integration-test/run-all-test.sh
 

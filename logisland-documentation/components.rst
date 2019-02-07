@@ -1397,11 +1397,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "", ""
-   "**es.session.index**", "Name of the ES index containing the web session documents.", "", "null", "", ""
-   "**es.session.type**", "Name of the ES type of web session documents.", "", "null", "", ""
-   "**es.event.index**", "Name of the ES index containing the web event documents.", "", "null", "", ""
-   "**es.event.type**", "Name of the ES type of web event documents.", "", "null", "", ""
-   "**es.mapping.index**", "Name of the ES index containing the mapping of web session documents.", "", "null", "", ""
+   "**es.session.index.field**", "Name of the field in the record defining the ES index containing the web session documents.", "", "null", "", ""
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "", ""
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "", ""
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "", ""
+   "**es.mapping.event.to.session.index.name**", "Name of the ES index containing the mapping of web session documents.", "", "null", "", ""
    "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "", ""
    "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "", ""
    "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "", ""
