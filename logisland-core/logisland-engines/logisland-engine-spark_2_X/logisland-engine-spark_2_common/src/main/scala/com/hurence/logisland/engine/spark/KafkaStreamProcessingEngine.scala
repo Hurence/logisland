@@ -70,6 +70,14 @@ import scala.collection.JavaConversions._
 
 object KafkaStreamProcessingEngine {
 
+
+    val SPARK_PROPERTIES_FILE_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+      .name("spark.properties.file.path")
+      .description("for using --properties-file option while submitting spark job")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
     val SPARK_MONITORING_DRIVER_PORT: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
         .name("spark.monitoring.driver.port")
         .description("The port for exposing monitoring metrics")
@@ -499,6 +507,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
 
         Collections.unmodifiableList(descriptors)
     }
