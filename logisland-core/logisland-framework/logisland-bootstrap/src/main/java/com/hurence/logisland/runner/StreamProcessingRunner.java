@@ -84,6 +84,7 @@ public class StreamProcessingRunner {
             logger.info(sessionConf.getDocumentation());
         } catch (Exception e) {
             logger.error("unable to launch runner", e);
+            System.exit(-1);
         }
         String engineName = engineInstance.get().getEngine().getIdentifier();
         try {

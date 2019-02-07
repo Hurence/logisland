@@ -202,7 +202,7 @@ public abstract class AbstractConfiguredComponent implements ConfigurableCompone
         final Collection<ValidationResult> validationResults = getValidationErrors();
         for (final ValidationResult result : validationResults) {
             if (!result.isValid()) {
-                getLogger().info("invalid property {}", new Object[]{result.getExplanation()});
+                getLogger().warn("invalid property {}", new Object[]{result.getExplanation()});
                 return false;
             }
         }
