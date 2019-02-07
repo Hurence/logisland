@@ -71,14 +71,14 @@ main() {
     echo "waiting 5 seconds for job to initialize"
 
 
-    if [ -d "kafka_to_hdfs" ]; then
+    if [[ -d "kafka_to_hdfs" ]]; then
         echo "directory kafka_to_hdfs has correctly been created"
     else
         echo "directory kafka_to_hdfs has not correctly been created"
         exit 1
     fi
 
-    if [ -d "kafka_to_hdfs/record_daytime=1995-07-01/record_type=apache_log/" ]; then
+    if [[ -d "kafka_to_hdfs/record_daytime=1995-07-01/record_type=apache_log/" ]]; then
         echo "directory 'kafka_to_hdfs/record_daytime=1995-07-01/record_type=apache_log/' has correctly been created"
     else
         echo "directory 'kafka_to_hdfs/record_daytime=1995-07-01/record_type=apache_log/' has not correctly been created"

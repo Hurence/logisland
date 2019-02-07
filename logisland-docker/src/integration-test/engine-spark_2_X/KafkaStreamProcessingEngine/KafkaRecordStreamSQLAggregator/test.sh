@@ -102,7 +102,7 @@ main() {
         exit 0
     else
         #As of today 17/01/2019 I am not sure 35 events is really the expected number but this way this will at least detect regression
-        echo "second stream did not receive 35 events as expected"
+        echo "second stream did not receive 35 events as expected but ${REAL_DOCS_COUNT}"
         exit 1
     fi
 }
