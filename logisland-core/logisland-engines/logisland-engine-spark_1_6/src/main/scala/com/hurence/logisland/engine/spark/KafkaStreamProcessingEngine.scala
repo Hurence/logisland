@@ -35,6 +35,13 @@ import scala.collection.JavaConversions._
 
 object KafkaStreamProcessingEngine {
 
+    val SPARK_MONITORING_DRIVER_PORT: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+        .name("spark.monitoring.driver.port")
+        .description("The port for exposing monitoring metrics")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+        .build
+
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("The url to Spark Master")

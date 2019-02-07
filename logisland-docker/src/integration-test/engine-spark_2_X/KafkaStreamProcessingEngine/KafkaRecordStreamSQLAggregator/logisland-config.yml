@@ -14,6 +14,7 @@ engine:
   configuration:
     spark.app.name: QueryMatchingDemo
     spark.master: local[1]
+    spark.monitoring.driver.port: 7092
     spark.driver.memory: 1g
     spark.driver.cores: 1
     spark.executor.memory: 2g

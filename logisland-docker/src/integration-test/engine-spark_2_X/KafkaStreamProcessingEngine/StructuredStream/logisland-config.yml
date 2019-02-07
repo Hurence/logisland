@@ -8,6 +8,7 @@ engine:
   configuration:
     spark.app.name: LogislandConnect
     spark.master: local[2]
+    spark.monitoring.driver.port: 7092
     spark.driver.memory: 512M
     spark.driver.cores: 1
     spark.executor.memory: 512M
