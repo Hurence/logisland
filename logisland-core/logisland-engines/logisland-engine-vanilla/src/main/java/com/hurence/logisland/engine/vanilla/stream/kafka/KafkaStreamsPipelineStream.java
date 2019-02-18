@@ -21,8 +21,10 @@ import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.stream.AbstractRecordStream;
-import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.stream.StreamContext;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
@@ -31,31 +33,27 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class KafkaParallelProcessingStream extends AbstractRecordStream {
+public class KafkaStreamsPipelineStream extends AbstractRecordStream {
 
     private final ComponentLog logger = getLogger();
 
     private KafkaStreams streams;
 
-    private static final PropertyDescriptor PROPERTY_APPLICATION_ID = new PropertyDescriptor.Builder()
-            .name("application.id")
-            .description("The application ID")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .required(true)
-            .build();
-
-    private static final PropertyDescriptor PROPERTY_BOOTSTRAP_SERVERS = new PropertyDescriptor.Builder()
-            .name("bootstrap.servers")
-            .description("List of kafka nodes to connect to")
-            .addValidator(StandardValidators.COMMA_SEPARATED_LIST_VALIDATOR)
-            .required(true)
-            .build();
 
     @Override
-
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Arrays.asList(PROPERTY_APPLICATION_ID, PROPERTY_BOOTSTRAP_SERVERS);
+        return Arrays.asList(
+                StreamProperties.PROPERTY_BOOTSTRAP_SERVERS,
+                StreamProperties.READ_TOPICS,
+                StreamProperties.AVRO_INPUT_SCHEMA,
+                StreamProperties.AVRO_OUTPUT_SCHEMA,
+                StreamProperties.KAFKA_MANUAL_OFFSET_RESET,
+                StreamProperties.READ_TOPICS_SERIALIZER,
+                StreamProperties.WRITE_TOPICS,
+                StreamProperties.WRITE_TOPICS_SERIALIZER
+        );
     }
+
 
     @Override
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(String propertyDescriptorName) {
@@ -75,11 +73,33 @@ public class KafkaParallelProcessingStream extends AbstractRecordStream {
     @Override
     public void init(ComponentContext context) {
         super.init(context);
+        StreamContext streamContext = (StreamContext) context;
         Topology topology = new Topology();
         Properties properties = new Properties();
-        context.getProperties().forEach((propertyDescriptor, s) -> properties.put(propertyDescriptor.getName(), s));
-        streams = new KafkaStreams(topology, properties);
+        String streamId = streamContext.getStream().getIdentifier();
+        String sourceId = "source_" + streamId;
+        String pipelineId = "pipeline_" + streamId;
+        String sinkId = "sink_" + streamId;
+        properties.put(StreamProperties.PROPERTY_APPLICATION_ID.getName(), streamId);
+        properties.put(StreamProperties.PROPERTY_BOOTSTRAP_SERVERS.getName(),
+                streamContext.getPropertyValue(StreamProperties.PROPERTY_BOOTSTRAP_SERVERS).asString());
 
+        context.getProperties().forEach((propertyDescriptor, s) -> {
+            if (propertyDescriptor.isDynamic()) {
+                properties.put(propertyDescriptor.getName(), s);
+            }
+        });
+        topology
+                .addSource(Topology.AutoOffsetReset.valueOf(StringUtils.upperCase(streamContext.getPropertyValue(StreamProperties.KAFKA_MANUAL_OFFSET_RESET).asString())),
+                        sourceId, streamContext.getPropertyValue(StreamProperties.READ_TOPICS).asString().split(","))
+                .addProcessor(pipelineId,
+                        () -> new LogislandPipelineProcessor(streamContext),
+                        sourceId);
+        for (String outTopic : streamContext.getPropertyValue(StreamProperties.WRITE_TOPICS).asString().split(",")) {
+            topology.addSink(sinkId + "_" + outTopic, outTopic, new ByteArraySerializer(),
+                    new ByteArraySerializer(), pipelineId);
+        }
+        streams = new KafkaStreams(topology, properties);
     }
 
     @Override
