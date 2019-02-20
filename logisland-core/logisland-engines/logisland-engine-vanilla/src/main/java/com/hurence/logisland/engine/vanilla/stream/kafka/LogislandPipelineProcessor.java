@@ -22,6 +22,7 @@ import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.serializer.RecordSerializer;
 import com.hurence.logisland.serializer.SerializerProvider;
 import com.hurence.logisland.stream.StreamContext;
@@ -75,8 +76,12 @@ public class LogislandPipelineProcessor extends AbstractProcessor<byte[], byte[]
                 processContext.getProcessor().init(processContext);
             }
             //now init serializers
-            deserializer = buildSerializer(streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString(),
-                    streamContext.getPropertyValue(StreamProperties.AVRO_INPUT_SCHEMA).asString());
+            if (streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString().equals(StreamProperties.NO_SERIALIZER.getValue())) {
+                deserializer = null;
+            } else {
+                deserializer = buildSerializer(streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString(),
+                        streamContext.getPropertyValue(StreamProperties.AVRO_INPUT_SCHEMA).asString());
+            }
             serializer = buildSerializer(streamContext.getPropertyValue(StreamProperties.WRITE_TOPICS_SERIALIZER).asString(),
                     streamContext.getPropertyValue(StreamProperties.AVRO_OUTPUT_SCHEMA).asString());
 
@@ -91,10 +96,17 @@ public class LogislandPipelineProcessor extends AbstractProcessor<byte[], byte[]
     @Override
     public void process(byte[] key, byte[] value) {
         Record record = null;
-        try {
-            record = deserializer.deserialize(new ByteArrayInputStream(value));
-        } catch (Exception e) {
-            logger.error("Unable to serialize record: {}", e.getMessage());
+        if (deserializer != null) {
+            try {
+                record = deserializer.deserialize(new ByteArrayInputStream(value));
+
+            } catch (Exception e) {
+                logger.error("Unable to serialize record: {}", e.getMessage());
+            }
+        } else {
+            String ks = key != null ? new String(key) : "";
+            String vs = value != null ? new String(value) : "";
+            record = RecordUtils.getKeyValueRecord(ks, vs);
         }
 
         if (record != null) {
