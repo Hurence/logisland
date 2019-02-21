@@ -171,17 +171,17 @@ then
   java_cp=$(echo $lib_dir/*.jar | tr ' ' ':')
   engine_jar=`ls ${lib_dir}/engines/logisland-engine-vanilla-*.jar`
   MIN_MEM=`awk '{ if( $1 == "jvm.heap.min:" ){ print $2 } }' ${CONF_FILE}`
-  MAX_MEM=`awk '{ if( $1 == "jvm.heap.min:" ){ print $2 } }' ${CONF_FILE}`
+  MAX_MEM=`awk '{ if( $1 == "jvm.heap.max:" ){ print $2 } }' ${CONF_FILE}`
 
   JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
 
   if [ ! -z "${MIN_MEM}" ]
   then
-    JAVA_OPTS=${JAVA_OPTS} -Xms ${MIN_MEM}
+    JAVA_OPTS="${JAVA_OPTS} -Xms${MIN_MEM}"
   fi
   if [ ! -z "${MAX_MEM}" ]
   then
-    JAVA_OPTS=${JAVA_OPTS} -Xmx ${MAX_MEM}
+    JAVA_OPTS="${JAVA_OPTS} -Xmx${MAX_MEM}"
   fi
 
   if [ ! -z "${VERBOSE_OPTIONS}" ]
@@ -191,10 +191,10 @@ then
 
   if [ ! -z "${JAVA_HOME}" ]
   then
-    CURRENT_JAVA_EXEC=${JAVA_HOME}/bin/java
+    CURRENT_JAVA_EXEC="${JAVA_HOME}/bin/java"
   fi
 
-  $CURRENT_JAVA_EXEC ${JAVA_OPTS} -cp ${java_cp}:${engine_jar} \
+  ${CURRENT_JAVA_EXEC} ${JAVA_OPTS} -cp ${java_cp}:${engine_jar} \
     com.hurence.logisland.runner.StreamProcessingRunner \
     -conf ${CONF_FILE}
 

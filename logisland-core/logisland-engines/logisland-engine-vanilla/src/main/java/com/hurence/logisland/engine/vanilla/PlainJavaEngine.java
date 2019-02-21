@@ -26,10 +26,15 @@ import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.stream.AbstractRecordStream;
 import com.hurence.logisland.stream.StreamContext;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Java plain engine for logisland.
+ *
+ * @author amarziali
+ */
 public class PlainJavaEngine extends AbstractProcessingEngine {
 
     private final ComponentLog logger = getLogger();
@@ -38,7 +43,10 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Collections.emptyList();
+        return Arrays.asList(
+                EngineProperties.JVM_HEAP_MEM_MIN,
+                EngineProperties.JVM_HEAP_MEM_MAX
+        );
     }
 
     @Override
@@ -56,6 +64,9 @@ public class PlainJavaEngine extends AbstractProcessingEngine {
             }
         }
         countDownLatch = new CountDownLatch(engineContext.getStreamContexts().size());
+        Runtime.getRuntime().addShutdownHook(new Thread(()-> {
+            shutdown(engineContext);
+        }));
         logger.info("Started");
 
 
