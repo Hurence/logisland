@@ -75,14 +75,14 @@ Replace all versions in the below code by the required versions (spark version, 
 
 The Kafka distributions are available at this address: <https://kafka.apache.org/downloads> 
 
-Last tested and supported version of kafka is: **2.11** with preferred tested release : **0.10.0.0** 
-Last tested supported version of Spark is: **2.1.0** on hadoop **2.7** but you should choose the Spark version that is compatible with your environment and hadoop  installation if you have one. Check at this URL what is available : http://d3kbcqa49mib13.cloudfront.net/
+Last tested and supported version of scala version for kafka is: **2.11** with preferred release of kafka : **0.10.2.2** 
+Last tested supported version of Spark is: **2.3.1** but you should choose the Spark version that is compatible with your environment and hadoop installation if you have one (for example Spark **2.1.0** on hadoop **2.7**) . Check at this URL what is available : http://d3kbcqa49mib13.cloudfront.net/
 
 .. code-block:: sh
 
     # install Kafka & start a zookeeper node + a broker
-    curl -s https://www-us.apache.org/dist/kafka/<kafka_release>/kafka_<kafka_version>-<kafka_release>.tgz | tar -xz -C /usr/local/
-    cd /usr/local/kafka_<kafka_version>-<kafka_release>
+    curl -s https://www-us.apache.org/dist/kafka/<kafka_release>/kafka_scala_version>-<kafka_release>.tgz | tar -xz -C /usr/local/
+    cd /usr/local/kafka_<scala_version>-<kafka_release>
     nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
     JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.log 2>&1 &
 
