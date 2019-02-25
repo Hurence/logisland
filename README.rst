@@ -45,7 +45,7 @@ You can follow one getting started guide through the
 
 Building Logisland
 ------------------
-to build from the source just clone source and package with maven
+to build from the source just clone source and package with maven (logisland requires a **maven 3.5.2** version and beyond)
 
 .. code-block::
 
