@@ -51,9 +51,16 @@ to build from the source just clone source and package with maven
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
-    mvn clean install
+    mvn clean package -Pfull
+    
+If some tests are not passing re-run the latest command skipping the tests
 
-the final package is available at `logisland-assembly/target/logisland-0.15.0-bin-hdp2.5.tar.gz`
+.. code-block::
+
+    mvn clean package -Pfull -skipTests
+
+
+The final package is available at `logisland-assembly/target/logisland-<logisland-version>-bin-hdp<hdp-version>.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -63,6 +70,8 @@ Quick start
 Local Setup
 +++++++++++
 Alternatively you can deploy **logisland** on any linux server from which Kafka and Spark are available
+
+Replace all versions in the below code by the required versions (spark version, logisland version on specific HDP version, kafka version etc.) 
 
 The Kafka distributions are available at this address: <https://kafka.apache.org/downloads> 
 
@@ -78,13 +87,13 @@ Replace kafka_version and kafka_release in the below code to install the require
     nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
     JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.log 2>&1 &
 
-    # install Spark 2.1.0
-    curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
-    export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
+    # install Spark
+    curl -s http://d3kbcqa49mib13.cloudfront.net/spark-<spark-version>-bin-hadoop<hadoop-version>.tgz | tar -xz -C /usr/local/
+    export SPARK_HOME=/usr/local/spark-<spark-version>-bin-hadoop<hadoop-version>
 
-    # install Logisland 0.15.0
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-0.15.0-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-0.15.0
+    # install Logisland
+    curl -s https://github.com/Hurence/logisland/releases/download/v<logisland-version>/logisland-<logisland-version>-bin-hdp<hdp-version>.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-<logisland-version>
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
