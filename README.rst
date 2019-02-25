@@ -64,11 +64,17 @@ Local Setup
 +++++++++++
 Alternatively you can deploy **logisland** on any linux server from which Kafka and Spark are available
 
+The Kafka distributions are available at this address: <https://kafka.apache.org/downloads> 
+
+Currently supported version of kafka is: **0.10.0.0** 
+
+Replace kafka_version in the below code to install the required kafka.
+
 .. code-block:: sh
 
-    # install Kafka 0.10.0.0 & start a zookeeper node + a broker
-    curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar -xz -C /usr/local/
-    cd /usr/local/kafka_2.11-0.10.0.0
+    # install Kafka & start a zookeeper node + a broker
+    curl -s https://www-us.apache.org/dist/kafka/<kafka_version>/kafka_2.11-<kafka_version>.tgz | tar -xz -C /usr/local/
+    cd /usr/local/kafka_2.11-<kafka_version>
     nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
     JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.log 2>&1 &
 
