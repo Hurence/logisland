@@ -21,6 +21,8 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: sandbox
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_JMX_PORT: 7071
+    extra_hosts:
+          - "sandbox:172.17.0.1"
 
   # ES container
   # make sure to increase vm.max_map_count kernel setting like documented here :
