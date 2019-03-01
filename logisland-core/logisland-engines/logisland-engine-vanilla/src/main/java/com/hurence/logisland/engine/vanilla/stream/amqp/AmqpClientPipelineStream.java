@@ -140,7 +140,6 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                 receiver.setPrefetch(credits);
                 receiver.handler((delivery, message) -> {
                     try {
-
                         Record record;
                         if (deserializer == null) {
                             record = RecordUtils.getKeyValueRecord(StringUtils.defaultIfEmpty(message.getSubject(), ""), new String(extractBodyContent(message.getBody())));

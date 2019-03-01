@@ -30,16 +30,15 @@ import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.BsonSerializer;
-import com.hurence.logisland.serializer.JsonSerializer;
 import io.vertx.core.Vertx;
 import io.vertx.proton.ProtonHelper;
 import io.vertx.proton.ProtonServer;
 import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.messaging.Data;
 import org.apache.qpid.proton.message.Message;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,9 +57,9 @@ public class AmqpClientPipelineStreamTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AmqpClientPipelineStreamTest.class);
 
-    private static ProtonServer server;
-    private static final TransferQueue<Message> inQueue = new LinkedTransferQueue<>();
-    private static final TransferQueue<Message> outQueue = new LinkedTransferQueue<>();
+    private ProtonServer server;
+    private final TransferQueue<Message> inQueue = new LinkedTransferQueue<>();
+    private final TransferQueue<Message> outQueue = new LinkedTransferQueue<>();
 
 
     public static class ChangeKeyProcessor extends AbstractProcessor {
@@ -86,13 +85,13 @@ public class AmqpClientPipelineStreamTest {
         }
     }
 
-    @AfterClass
-    public static void stopAmqpDummyServer() {
+    @After
+    public void stopAmqpDummyServer() {
         server.close();
     }
 
-    @BeforeClass
-    public static void startAmqpDummyServer() throws Exception {
+    @Before
+    public void startAmqpDummyServer() throws Exception {
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         int port;
         try (ServerSocket tmp = new ServerSocket(0)) {
@@ -138,17 +137,13 @@ public class AmqpClientPipelineStreamTest {
             }).senderOpenHandler(sender -> {
                 sender.setSource(sender.getRemoteSource());
                 sender.setTarget(sender.getRemoteTarget());
-                sender.setAutoSettle(true);
                 Vertx.currentContext().owner().setPeriodic(1, id -> {
-                    if (sender.isOpen() && !sender.sendQueueFull()) {
-                        try {
-                            Message m = inQueue.take();
-                            if (m != null) {
-                                sender.send(m);
-                            }
-                        } catch (InterruptedException ie) {
-                            Vertx.currentContext().owner().cancelTimer(id);
+                    if (sender.isOpen() && !sender.sendQueueFull() && !inQueue.isEmpty()) {
+                        Message m = inQueue.remove();
+                        if (m != null) {
+                            sender.send(m);
                         }
+
 
                     }
                 });
@@ -288,8 +283,6 @@ public class AmqpClientPipelineStreamTest {
 
 
     }
-
-
 
 
 }
