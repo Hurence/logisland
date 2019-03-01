@@ -146,7 +146,7 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                         } else {
                             record = deserializer.deserialize(new ByteArrayInputStream(extractBodyContent(message.getBody())));
                             if (!record.hasField(FieldDictionary.RECORD_KEY)) {
-                                record.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, message.getAddress());
+                                record.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, message.getSubject());
                             }
                         }
 

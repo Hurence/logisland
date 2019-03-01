@@ -27,10 +27,7 @@ import de.undercouch.bson4jackson.BsonFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class BsonSerializer implements RecordSerializer {
 
@@ -40,7 +37,8 @@ public class BsonSerializer implements RecordSerializer {
     public void serialize(OutputStream objectDataOutput, Record record) throws RecordSerializationException {
         try {
             objectMapper.writeValue(objectDataOutput,
-                    record.getAllFieldsSorted().stream().collect(Collectors.toMap(Field::getName, Field::getRawValue)));
+                    record.getAllFieldsSorted().stream().collect(LinkedHashMap::new,
+                            (m, v) -> m.put(v.getName(), v.getRawValue()), HashMap::putAll));
         } catch (Exception e) {
             throw new RecordSerializationException("Unable to serialize record", e);
         }
