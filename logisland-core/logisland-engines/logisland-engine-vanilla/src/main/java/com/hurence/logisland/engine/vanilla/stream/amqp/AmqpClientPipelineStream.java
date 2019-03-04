@@ -104,7 +104,6 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY).asLong(),
                 streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_BACKOFF).asDouble());
 
-        CompletableFuture<ProtonConnection> completableFuture = new CompletableFuture<>();
         try {
             setupConnection();
         } catch (Throwable t) {
@@ -141,6 +140,7 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
         }
         protonClient.connect(options, hostname, port, user, password, event -> {
             if (event.failed()) {
+                handleConnectionFailure(false);
                 completableFuture.completeExceptionally(event.cause());
                 return;
             }
@@ -291,23 +291,9 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
             }
         } finally {
             if (connectionControl.shouldReconnect()) {
-                connectionControl.scheduleReconnect((vertx) -> {
-                    CompletableFuture.supplyAsync(this::setupConnection)
-                            .whenComplete((connection, throwable) -> {
-                                try {
-                                    if (connection != null) {
-                                        connection.get();
-                                    }
-                                    getLogger().info("AMQP connection started");
-                                } catch (Throwable throwable1) {
-                                    throwable = throwable1;
-                                }
-                                if (throwable != null) {
-                                    getLogger().warn("Error connecting to remote AMQP peer: " + throwable.getMessage());
-                                    handleConnectionFailure(false);
-                                }
-                            });
-                });
+                connectionControl.scheduleReconnect((vertx) -> CompletableFuture.supplyAsync(this::setupConnection));
+
+
             }
         }
     }

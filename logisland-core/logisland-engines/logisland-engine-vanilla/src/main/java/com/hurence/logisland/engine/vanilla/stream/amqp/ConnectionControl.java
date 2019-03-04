@@ -26,6 +26,7 @@ import java.time.Instant;
 
 class ConnectionControl {
 
+    @FunctionalInterface
     public interface ReconnectHandler {
         void reconnect(Vertx vertx) throws Exception;
     }
@@ -35,9 +36,9 @@ class ConnectionControl {
 
     private long currentDelay = 0;
 
-    private long maxDelay;
-    private long startDelay;
-    private double backoff;
+    private final long maxDelay;
+    private final long startDelay;
+    private final double backoff;
     private volatile boolean running = true;
 
     public ConnectionControl(long maxDelay, long startDelay, double backoff) {

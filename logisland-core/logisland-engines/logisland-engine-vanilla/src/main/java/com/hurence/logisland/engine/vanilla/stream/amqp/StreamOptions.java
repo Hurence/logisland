@@ -56,7 +56,7 @@ public interface StreamOptions {
             .build();
 
     PropertyDescriptor CONNECTION_RECONNECT_MAX_DELAY = new PropertyDescriptor.Builder()
-            .name("connection.reconnect.initial.delay")
+            .name("connection.reconnect.max.delay")
             .required(false)
             .defaultValue("30000")
             .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
