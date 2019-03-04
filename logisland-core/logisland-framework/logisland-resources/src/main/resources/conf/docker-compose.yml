@@ -1,4 +1,4 @@
-version: "2"
+version: '2'
 services:
 
   zookeeper:
@@ -6,7 +6,7 @@ services:
     image: hurence/zookeeper
     hostname: zookeeper
     ports:
-      - "2181:2181"
+      - '2181:2181'
 
   kafka:
     container_name: kafka
@@ -15,12 +15,14 @@ services:
     links:
       - zookeeper
     ports:
-      - "9092:9092"
+      - '9092:9092'
     environment:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ADVERTISED_HOST_NAME: sandbox
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_JMX_PORT: 7071
+    extra_hosts:
+      - 'sandbox:172.17.0.1'
 
   # ES container
   # make sure to increase vm.max_map_count kernel setting like documented here :
@@ -28,7 +30,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     environment:
-      - ES_JAVA_OPT="-Xms1G -Xmx1G"
+      - ES_JAVA_OPT='-Xms1G -Xmx1G'
       - cluster.name=es-logisland
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
@@ -64,14 +66,14 @@ services:
       - elasticsearch
       - redis
     ports:
-      - "4050:4050"
-      - "8082:8082"
-      - "9999:9999"
+      - '4050:4050'
+      - '8082:8082'
+      - '9999:9999'
     volumes:
       - ./conf/logisland:/conf
       - ./data/logisland:/data
     extra_hosts:
-      - "sandbox:172.17.0.1"
+      - 'sandbox:172.17.0.1'
 
   redis:
     container_name: redis
