@@ -47,6 +47,30 @@ public interface StreamOptions {
             .description("Connection port")
             .build();
 
+    PropertyDescriptor CONNECTION_RECONNECT_INITIAL_DELAY = new PropertyDescriptor.Builder()
+            .name("connection.reconnect.initial.delay")
+            .required(false)
+            .defaultValue("1000")
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .description("Initial reconnection delay in milliseconds")
+            .build();
+
+    PropertyDescriptor CONNECTION_RECONNECT_MAX_DELAY = new PropertyDescriptor.Builder()
+            .name("connection.reconnect.initial.delay")
+            .required(false)
+            .defaultValue("30000")
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .description("Maximum reconnection delay in milliseconds")
+            .build();
+
+    PropertyDescriptor CONNECTION_RECONNECT_BACKOFF = new PropertyDescriptor.Builder()
+            .name("connection.reconnect.backoff")
+            .required(false)
+            .defaultValue("2.0")
+            .addValidator(StandardValidators.DOUBLE_VALIDATOR)
+            .description("Reconnection delay linear backoff")
+            .build();
+
     PropertyDescriptor CONNECTION_AUTH_USERNAME = new PropertyDescriptor.Builder()
             .name("connection.auth.user")
             .required(false)

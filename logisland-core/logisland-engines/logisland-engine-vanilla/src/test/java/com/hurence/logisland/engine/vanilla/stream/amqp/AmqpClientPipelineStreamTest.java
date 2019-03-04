@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -92,75 +93,86 @@ public class AmqpClientPipelineStreamTest {
 
     @Before
     public void startAmqpDummyServer() throws Exception {
-        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         int port;
         try (ServerSocket tmp = new ServerSocket(0)) {
             port = tmp.getLocalPort();
         }
-        server = ProtonServer.create(Vertx.vertx());
-        server.connectHandler(connection -> {
-            connection.openHandler(res -> {
-                logger.info("Client connection opened, container-id: {}", connection.getRemoteContainer());
-                connection.open();
-            });
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        startAmqpDummyServer(port, completableFuture);
+        completableFuture.get();
 
-            connection.closeHandler(c -> {
-                logger.info("Client closing connection, container-id:  {}", connection.getRemoteContainer());
-                connection.close();
-                connection.disconnect();
-            });
+    }
 
-            connection.disconnectHandler(c -> {
-                logger.info("Client socket disconnected, container-id: {} ", connection.getRemoteContainer());
-                connection.disconnect();
-            });
+    private void startAmqpDummyServer(int port, CompletableFuture<Void> completableFuture) throws Exception {
+        if (server == null) {
+            server = ProtonServer.create(Vertx.vertx());
 
-            connection.sessionOpenHandler(session -> {
-                session.closeHandler(x -> {
-                    session.close();
-                    session.free();
+            server.connectHandler(connection -> {
+                connection.openHandler(res -> {
+                    logger.info("Client connection opened, container-id: {}", connection.getRemoteContainer());
+                    connection.open();
                 });
-                session.open();
-            }).receiverOpenHandler(receiver -> {
-                receiver.setTarget(receiver.getRemoteTarget());
-                receiver.setSource(receiver.getRemoteSource());
-                receiver.setAutoAccept(true);
-                receiver.handler((delivery, message) -> {
-                    try {
-                        outQueue.put(message);
-                        ProtonHelper.accepted(delivery, true);
-                    } catch (Exception e) {
-                        logger.error("Unexpected error during the delivery. Test should fail!", e);
-                        ProtonHelper.rejected(delivery, true);
-                    }
-                }).open();
-            }).senderOpenHandler(sender -> {
-                sender.setSource(sender.getRemoteSource());
-                sender.setTarget(sender.getRemoteTarget());
-                Vertx.currentContext().owner().setPeriodic(1, id -> {
-                    if (sender.isOpen() && !sender.sendQueueFull() && !inQueue.isEmpty()) {
-                        Message m = inQueue.remove();
-                        if (m != null) {
-                            sender.send(m);
+
+                connection.closeHandler(c -> {
+                    logger.info("Client closing connection, container-id:  {}", connection.getRemoteContainer());
+                    connection.close();
+                    connection.disconnect();
+                });
+
+                connection.disconnectHandler(c -> {
+                    logger.info("Client socket disconnected, container-id: {} ", connection.getRemoteContainer());
+                    connection.disconnect();
+                });
+
+                connection.sessionOpenHandler(session -> {
+                    session.closeHandler(x -> {
+                        session.close();
+                        session.free();
+                    });
+                    session.open();
+                }).receiverOpenHandler(receiver -> {
+                    receiver.setTarget(receiver.getRemoteTarget());
+                    receiver.setSource(receiver.getRemoteSource());
+                    receiver.setAutoAccept(true);
+                    receiver.handler((delivery, message) -> {
+                        try {
+                            outQueue.put(message);
+                            ProtonHelper.accepted(delivery, true);
+                        } catch (Exception e) {
+                            logger.error("Unexpected error during the delivery. Test should fail!", e);
+                            ProtonHelper.rejected(delivery, true);
                         }
+                    }).open();
+                }).senderOpenHandler(sender -> {
+                    sender.setSource(sender.getRemoteSource());
+                    sender.setTarget(sender.getRemoteTarget());
+                    Vertx.currentContext().owner().setPeriodic(1, id -> {
+                        if (!sender.sendQueueFull() && !inQueue.isEmpty()) {
+                            final Message m = inQueue.remove();
+                            if (m != null) {
+                                sender.send(m, event -> {
+                                    if (!event.remotelySettled()) {
+                                        inQueue.add(m);
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    sender.open();
 
 
-                    }
                 });
 
-                sender.open();
-
-
             });
-
-        }).listen(port, event -> {
+        }
+        server.listen(port, event -> {
             if (event.failed()) {
                 completableFuture.completeExceptionally(event.cause());
             } else {
                 completableFuture.complete(null);
             }
         });
-        completableFuture.get();
 
     }
 
@@ -285,4 +297,7 @@ public class AmqpClientPipelineStreamTest {
     }
 
 
+
 }
+
+

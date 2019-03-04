@@ -57,6 +57,9 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
     private RecordSerializer deserializer;
     private StreamContext streamContext;
     private String contentType;
+    private ConnectionControl connectionControl;
+    private final Vertx vertx = Vertx.vertx();
+    private ProtonClient protonClient;
 
     private byte[] extractBodyContent(Section body) {
         if (body instanceof AmqpValue) {
@@ -87,12 +90,31 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
                 StreamOptions.WRITE_TOPIC_SERIALIZER,
                 StreamOptions.AVRO_OUTPUT_SCHEMA,
                 StreamOptions.CONTAINER_ID,
-                StreamOptions.WRITE_TOPIC_CONTENT_TYPE
+                StreamOptions.WRITE_TOPIC_CONTENT_TYPE,
+                StreamOptions.CONNECTION_RECONNECT_BACKOFF,
+                StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY,
+                StreamOptions.CONNECTION_RECONNECT_MAX_DELAY
         );
     }
 
     @Override
     public void start() {
+        connectionControl = new ConnectionControl(
+                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_MAX_DELAY).asLong(),
+                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY).asLong(),
+                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_BACKOFF).asDouble());
+
+        CompletableFuture<ProtonConnection> completableFuture = new CompletableFuture<>();
+        try {
+            setupConnection();
+        } catch (Throwable t) {
+            throw new IllegalStateException("Unable to start stream", t);
+        }
+
+        super.start();
+    }
+
+    private CompletableFuture<ProtonConnection> setupConnection() {
         CompletableFuture<ProtonConnection> completableFuture = new CompletableFuture<>();
         String hostname = streamContext.getPropertyValue(StreamOptions.CONNECTION_HOST).asString();
         int port = streamContext.getPropertyValue(StreamOptions.CONNECTION_PORT).asInteger();
@@ -117,84 +139,89 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
             }
 
         }
-        ProtonClient.create(Vertx.vertx()).connect(options, hostname, port, user, password, event -> {
+        protonClient.connect(options, hostname, port, user, password, event -> {
             if (event.failed()) {
                 completableFuture.completeExceptionally(event.cause());
                 return;
             }
+            connectionControl.connected();
+            completableFuture.complete(event.result());
             protonConnection = event.result();
             String containerId = streamContext.getPropertyValue(StreamOptions.CONTAINER_ID).asString();
             if (containerId != null) {
                 protonConnection.setContainer(containerId);
             }
-            protonConnection.openHandler(onOpen -> {
+            protonConnection
+                    .closeHandler(x -> {
+                        handleConnectionFailure(true);
+                    })
+                    .disconnectHandler(x -> {
+                        handleConnectionFailure(false);
+                    })
+                    .openHandler(onOpen -> {
 
-                //setup the output path
-                sender = protonConnection.createSender(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC).asString());
-                sender.setAutoDrained(true);
-                sender.setAutoSettle(true);
-                sender.open();
 
-                //setup the input path
-                receiver = protonConnection.createReceiver(streamContext.getPropertyValue(StreamOptions.READ_TOPIC).asString());
-                receiver.setPrefetch(credits);
-                receiver.handler((delivery, message) -> {
-                    try {
-                        Record record;
-                        if (deserializer == null) {
-                            record = RecordUtils.getKeyValueRecord(StringUtils.defaultIfEmpty(message.getSubject(), ""), new String(extractBodyContent(message.getBody())));
-                        } else {
-                            record = deserializer.deserialize(new ByteArrayInputStream(extractBodyContent(message.getBody())));
-                            if (!record.hasField(FieldDictionary.RECORD_KEY)) {
-                                record.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, message.getSubject());
+                        //setup the output path
+                        sender = protonConnection.createSender(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC).asString());
+                        sender.setAutoDrained(true);
+                        sender.setAutoSettle(true);
+                        sender.open();
+
+                        //setup the input path
+                        receiver = protonConnection.createReceiver(streamContext.getPropertyValue(StreamOptions.READ_TOPIC).asString());
+                        receiver.setPrefetch(credits);
+                        receiver.handler((delivery, message) -> {
+                            try {
+                                Record record;
+                                if (deserializer == null) {
+                                    record = RecordUtils.getKeyValueRecord(StringUtils.defaultIfEmpty(message.getSubject(), ""), new String(extractBodyContent(message.getBody())));
+                                } else {
+                                    record = deserializer.deserialize(new ByteArrayInputStream(extractBodyContent(message.getBody())));
+                                    if (!record.hasField(FieldDictionary.RECORD_KEY)) {
+                                        record.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, message.getSubject());
+                                    }
+                                }
+
+
+                                Collection<Record> r = Collections.singleton(record);
+                                for (ProcessContext processContext : streamContext.getProcessContexts()) {
+                                    r = processContext.getProcessor().process(processContext, r);
+                                }
+                                List<Message> toAdd = new ArrayList<>();
+                                for (Record out : r) {
+                                    ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+                                    serializer.serialize(byteOutputStream, out);
+                                    Message mo = ProtonHelper.message();
+                                    if (out.hasField(FieldDictionary.RECORD_KEY)) {
+                                        mo.setSubject(out.getField(FieldDictionary.RECORD_KEY).asString());
+                                    }
+                                    if (StringUtils.isNotBlank(contentType)) {
+                                        mo.setContentType(contentType);
+                                    }
+                                    mo.setMessageId(out.getId());
+                                    mo.setBody(new Data(Binary.create(ByteBuffer.wrap(byteOutputStream.toByteArray()))));
+                                    toAdd.add(mo);
+                                }
+                                toAdd.forEach(sender::send);
+                                delivery.disposition(Accepted.getInstance(), true);
+                            } catch (Exception e) {
+                                Rejected rejected = new Rejected();
+                                delivery.disposition(rejected, true);
+                                getLogger().warn("Unable to process message : " + e.getMessage());
                             }
-                        }
+                        }).open();
 
-
-                        Collection<Record> r = Collections.singleton(record);
-                        for (ProcessContext processContext : streamContext.getProcessContexts()) {
-                            r = processContext.getProcessor().process(processContext, r);
-                        }
-                        List<Message> toAdd = new ArrayList<>();
-                        for (Record out : r) {
-                            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-                            serializer.serialize(byteOutputStream, out);
-                            Message mo = ProtonHelper.message();
-                            if (out.hasField(FieldDictionary.RECORD_KEY)) {
-                                mo.setSubject(out.getField(FieldDictionary.RECORD_KEY).asString());
-                            }
-                            if (StringUtils.isNotBlank(contentType)) {
-                                mo.setContentType(contentType);
-                            }
-                            mo.setMessageId(out.getId());
-                            mo.setBody(new Data(Binary.create(ByteBuffer.wrap(byteOutputStream.toByteArray()))));
-                            toAdd.add(mo);
-                        }
-                        toAdd.forEach(sender::send);
-                        delivery.disposition(Accepted.getInstance(), true);
-                    } catch (Exception e) {
-                        Rejected rejected = new Rejected();
-                        delivery.disposition(rejected, true);
-                        getLogger().warn("Unable to process message : " + e.getMessage());
-                    }
-                }).open();
-                completableFuture.complete(null);
-
-            }).open();
+                    }).open();
 
         });
-
-        //back to sync world
-        try {
-            completableFuture.get();
-        } catch (Throwable t) {
-            throw new IllegalStateException("Unable to start stream", t);
-        }
-        super.start();
+        return completableFuture;
     }
 
     @Override
     public void stop() {
+        if (connectionControl != null) {
+            connectionControl.setRunning(false);
+        }
         try {
             if (receiver != null) {
                 receiver.close();
@@ -224,6 +251,8 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
         try {
             super.init(context);
             options = new ProtonClientOptions();
+            protonClient = ProtonClient.create(vertx);
+
             streamContext = (StreamContext) context;
             if (streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString().equals(StreamOptions.NO_SERIALIZER.getValue())) {
                 deserializer = null;
@@ -247,6 +276,42 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
             throw new IllegalStateException("Unable to initialize processor pipeline", ie);
         }
     }
+
+
+    private void handleConnectionFailure(boolean remoteClose) {
+        try {
+            if (protonConnection != null) {
+                protonConnection.closeHandler(null);
+                protonConnection.disconnectHandler(null);
+
+                if (remoteClose) {
+                    protonConnection.close();
+                    protonConnection.disconnect();
+                }
+            }
+        } finally {
+            if (connectionControl.shouldReconnect()) {
+                connectionControl.scheduleReconnect((vertx) -> {
+                    CompletableFuture.supplyAsync(this::setupConnection)
+                            .whenComplete((connection, throwable) -> {
+                                try {
+                                    if (connection != null) {
+                                        connection.get();
+                                    }
+                                    getLogger().info("AMQP connection started");
+                                } catch (Throwable throwable1) {
+                                    throwable = throwable1;
+                                }
+                                if (throwable != null) {
+                                    getLogger().warn("Error connecting to remote AMQP peer: " + throwable.getMessage());
+                                    handleConnectionFailure(false);
+                                }
+                            });
+                });
+            }
+        }
+    }
+
 
     /**
      * build a serializer
