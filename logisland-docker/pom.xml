@@ -47,7 +47,7 @@
                                         <resource>
                                             <targetPath>/</targetPath>
                                             <directory>${project.basedir}/../logisland-assembly/target</directory>
-                                            <include>logisland-${project.version}-bin-hdp${hdp}.tar.gz</include>
+                                            <include>logisland-${project.version}-bin.tar.gz</include>
                                         </resource>
                                     </resources>
                                 </configuration>
