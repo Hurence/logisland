@@ -285,6 +285,7 @@ public class SendMail extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         logger.debug("Initializing SendMail Processor");
     }
     

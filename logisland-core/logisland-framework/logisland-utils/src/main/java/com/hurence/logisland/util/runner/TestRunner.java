@@ -55,6 +55,10 @@ public interface TestRunner {
      */
     void run();
 
+    /**
+     * Updates the identifier of the tested processor
+     */
+    void setProcessorIdentifier(String identifier);
 
     /**
      * Updates the value of the property with the given PropertyDescriptor to

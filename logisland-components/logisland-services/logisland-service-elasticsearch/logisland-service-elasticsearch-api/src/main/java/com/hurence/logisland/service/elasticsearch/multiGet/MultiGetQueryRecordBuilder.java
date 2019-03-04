@@ -54,7 +54,7 @@ public class MultiGetQueryRecordBuilder {
 
         // includes is an optional array
         if (includes != null && includes.length > 0) {
-            for (String includeAttr : includes){
+            for (String includeAttr : includes) {
                 t.getOrCreateLeaf(includeAttr, HeadType.INCLUDE);
             }
         }

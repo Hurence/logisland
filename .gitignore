@@ -35,3 +35,4 @@ logs/
 **/log/
 **/chronix/data/
 
+*.factorypath

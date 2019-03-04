@@ -24,6 +24,7 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import com.hurence.logisland.util.time.DateUtil;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class ModifyIdTest {
         outputRecord.assertFieldEquals("string2",  "value2");
         outputRecord.assertFieldEquals("long1",  1);
         outputRecord.assertFieldEquals("long2",  2);
-        outputRecord.assertFieldEquals("record_id",  "3c968317f9e4bf33dfbedd26bf143fd72de9b9dd145441b75f6447ea28e");
+        outputRecord.assertFieldEquals("record_id",  "3c9683017f9e4bf33d0fbedd26bf143fd72de9b9dd145441b75f0604047ea28e");
 
     }
 
@@ -312,7 +313,7 @@ public class ModifyIdTest {
             hexString.append(Integer.toHexString(0xFF & digested[i]));
         }
 
-        String id = hexString.toString();
+        String id = Hex.encodeHexString(digested);
 
         outputRecord.assertFieldEquals(FieldDictionary.RECORD_ID,  id);
 

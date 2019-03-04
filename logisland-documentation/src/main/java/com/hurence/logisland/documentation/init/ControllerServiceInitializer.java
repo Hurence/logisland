@@ -40,7 +40,7 @@ public class ControllerServiceInitializer implements ConfigurableComponentInitia
         ControllerService controllerService = (ControllerService) component;
 
 
-        final ComponentLog logger = new MockComponentLogger();
+        final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
         final MockControllerServiceInitializationContext context = new MockControllerServiceInitializationContext(controllerService, null);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, controllerService, logger, context);
 

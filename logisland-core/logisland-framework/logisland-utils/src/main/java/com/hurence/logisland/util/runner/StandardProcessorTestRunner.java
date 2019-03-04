@@ -39,9 +39,7 @@ import com.hurence.logisland.annotation.lifecycle.OnRemoved;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -107,6 +105,11 @@ public class StandardProcessorTestRunner implements TestRunner {
         Collection<Record> outputRecords = processor.process(context, inputRecordsQueue);
         outputRecordsList.addAll(outputRecords);
         inputRecordsQueue.clear();
+    }
+
+    @Override
+    public void setProcessorIdentifier(String identifier) {
+        this.context.setIdentifier(identifier);
     }
 
 

@@ -79,7 +79,6 @@ trait StructuredStreamProviderService extends ControllerService {
     def load(spark: SparkSession, controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): Dataset[Record] = {
         implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-
         val df = read(spark, streamContext)
 
 
@@ -122,7 +121,7 @@ trait StructuredStreamProviderService extends ControllerService {
                         // injects controller service lookup into processor context
                         if (processor.hasControllerService) {
                             //  val controllerServiceLookup = streamContext.getControllerServiceLookup
-                            processorContext.addControllerServiceLookup(controllerServiceLookup)
+                            processorContext.setControllerServiceLookup(controllerServiceLookup)
                         }
 
                         // processor setup (don't forget that)
@@ -164,7 +163,7 @@ trait StructuredStreamProviderService extends ControllerService {
     def save(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext) = {
 
         // make sure controller service lookup won't be serialized !!
-        streamContext.addControllerServiceLookup(null)
+        streamContext.setControllerServiceLookup(null)
 
         // create serializer
         val serializer = SerializerProvider.getSerializer(

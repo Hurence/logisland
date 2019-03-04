@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
  * Created by gregoire on 09/05/17.
  */
 public abstract class IpAbstractProcessor extends AbstractProcessor {
-    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpAbstractProcessor.class);
 
     protected static final String PROP_IP_ADDRESS_FIELD = "ip.address.field";
 
@@ -62,20 +61,20 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
                 String ipAsString = record.getField(ipAddrField).asString();
                 if (ipAsString == null)
                 {
-                    logger.debug("record has a null IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
+                    getLogger().debug("record has a null IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
                     continue;
                 }
                 ip = ipAsString.trim();
             } else {
-                logger.debug("record has no IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
+                getLogger().debug("record has no IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
                 continue;
             }
             if (ip.isEmpty()) {
-                logger.debug("record has an empty IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
+                getLogger().debug("record has an empty IP_ADDRESS_FIELD : {}. So it is ignored. record : '{}'", new Object[]{ipAddrField, record});
                 continue;
             }
             if (!IPAddressUtil.isIPv4LiteralAddress(ip) && !IPAddressUtil.isIPv6LiteralAddress(ip)) {
-                logger.debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{ip, record});
+                getLogger().debug("record has an invalid ip '{}'. So it is ignored.  record : '{}'", new Object[]{ip, record});
                 continue;
             }
             // ip cannot be null from here
@@ -83,7 +82,7 @@ public abstract class IpAbstractProcessor extends AbstractProcessor {
         }
 
         final long sendMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-        logger.info("Processed {} records in {} milliseconds",
+        getLogger().info("Processed {} records in {} milliseconds",
                 new Object[]{records.size(), sendMillis});
 
         return records;

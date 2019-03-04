@@ -141,7 +141,7 @@ class KafkaRecordStreamParallelProcessing extends AbstractKafkaRecordStream {
                               */
                             if (processor.hasControllerService) {
                                 val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-                                processorContext.addControllerServiceLookup(controllerServiceLookup)
+                                processorContext.setControllerServiceLookup(controllerServiceLookup)
                             }
                             processor.init(processorContext)
                             outgoingEvents = processor.process(processorContext, incomingEvents)

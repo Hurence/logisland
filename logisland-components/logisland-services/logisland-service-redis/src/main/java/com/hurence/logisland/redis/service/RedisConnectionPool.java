@@ -16,7 +16,6 @@
 package com.hurence.logisland.redis.service;
 
 
-import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.redis.RedisType;
 import com.hurence.logisland.redis.util.RedisUtils;

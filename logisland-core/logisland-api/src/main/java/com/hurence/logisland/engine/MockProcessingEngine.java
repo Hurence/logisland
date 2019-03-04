@@ -46,7 +46,6 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
 
     @Override
     public void start(EngineContext engineContext) {
-
         logger.info("engine start");
     }
 
@@ -57,10 +56,12 @@ public class MockProcessingEngine extends AbstractProcessingEngine {
 
     @Override
     public void awaitTermination(EngineContext engineContext) {
+        logger.info("engine awaitTermination");
     }
 
     @Override
     public void reset(EngineContext engineContext) {
+        logger.info("engine reset");
         engineContext.getStreamContexts().clear();
         engineContext.getControllerServiceConfigurations().clear();
     }

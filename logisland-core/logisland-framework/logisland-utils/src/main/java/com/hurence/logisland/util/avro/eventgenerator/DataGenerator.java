@@ -174,8 +174,7 @@ public class DataGenerator {
         try {
             logger.info(new JSONObject(record.toString()).toString(2));
         } catch (JSONException e) {
-            logger.error("Unable to parser json: The Json created by the generator is not valid!");
-            e.printStackTrace();
+            logger.error("Unable to parser json: The Json created by the generator is not valid!", e);
         }
     }
 

@@ -25,10 +25,14 @@ import com.caseystella.analytics.outlier.streaming.OutlierAlgorithm;
 import com.caseystella.analytics.outlier.streaming.OutlierConfig;
 import com.caseystella.analytics.outlier.Severity;
 import com.caseystella.analytics.util.ConfigUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class SketchyMovingMAD implements OutlierAlgorithm{
+
+    private Logger logger = LoggerFactory.getLogger(SketchyMovingMAD.class);
     public static final double ZSCORE = 0.6745;
     private static final double EPSILON = 1e-4;
     private OutlierConfig config;
@@ -120,7 +124,7 @@ public class SketchyMovingMAD implements OutlierAlgorithm{
                         try {
                             Thread.sleep(0);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            logger.error("error while sleeping", e);
                         }
                     }
                 }

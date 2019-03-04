@@ -214,6 +214,7 @@ public class IpToGeo extends IpAbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
 
         /**
          * Get the Ip to Geo Service

@@ -42,8 +42,13 @@ public class StandardComponentLogger implements ComponentLog {
         return newArgs;
     }
 
+    /**
+     *
+     * @param os
+     * @return a copy of array os, but calling toString on last argument (only if last arg is an exception)
+     */
     private Object[] translateException(final Object[] os) {
-        if (os != null && os.length > 0 && (os[os.length - 1] instanceof Throwable)) {
+        if (lastArgIsException(os)) {
             final Object[] osCopy = new Object[os.length];
             osCopy[osCopy.length - 1] = os[os.length - 1].toString();
             System.arraycopy(os, 0, osCopy, 0, os.length - 1);
@@ -52,6 +57,11 @@ public class StandardComponentLogger implements ComponentLog {
         return os;
     }
 
+    /**
+     *
+     * @param os
+     * @return true if os not null, not empty and last arg is a Throwable.
+     */
     private boolean lastArgIsException(final Object[] os) {
         return (os != null && os.length > 0 && (os[os.length - 1] instanceof Throwable));
     }

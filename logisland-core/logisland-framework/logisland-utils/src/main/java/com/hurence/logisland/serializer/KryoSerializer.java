@@ -37,6 +37,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.record.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +49,7 @@ import java.util.zip.InflaterInputStream;
 
 public class KryoSerializer implements RecordSerializer {
     private final boolean compress;
+    private Logger logger = LoggerFactory.getLogger(KryoSerializer.class);
 
     private static final ThreadLocal<Kryo> kryoThreadLocal
             = new ThreadLocal<Kryo>() {
@@ -114,7 +117,7 @@ public class KryoSerializer implements RecordSerializer {
 
             return kryo.readObject(input, StandardRecord.class);
         } catch (Throwable t) {
-            t.printStackTrace();
+            logger.error("error while deserializing", t);
             throw new RecordSerializationException(t.getMessage(), t.getCause());
         }
     }

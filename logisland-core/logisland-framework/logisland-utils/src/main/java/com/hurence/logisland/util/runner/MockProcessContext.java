@@ -18,6 +18,8 @@ package com.hurence.logisland.util.runner;
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardValidationContext;
@@ -30,6 +32,7 @@ import static java.util.Objects.requireNonNull;
 
 public class MockProcessContext extends MockControllerServiceLookup implements ControllerServiceLookup, ProcessContext {
 
+    private String identifier;
     private final ConfigurableComponent component;
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
     private final VariableRegistry variableRegistry;
@@ -44,6 +47,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
     public MockProcessContext(final ConfigurableComponent component, final VariableRegistry variableRegistry) {
         this.component = Objects.requireNonNull(component);
         this.variableRegistry = variableRegistry;
+        this.identifier = component.getIdentifier() == null ? "mock_processor" : component.getIdentifier();
     }
 
     /**
@@ -212,21 +216,21 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public String getIdentifier() {
-        return "";
+        return this.identifier;
+    }
+
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     @Override
-    public String getName() {
-        return "";
+    public ComponentLog getLogger() {
+        return new StandardComponentLogger(this.getIdentifier(), this.component);
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-    @Override
-    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
 
     }
 

@@ -318,13 +318,18 @@ case $MODE in
     SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
     if [ -z "${SPARK_MONITORING_DRIVER_PORT}" ]
     then
-         SPARK_MONITORING_DRIVER_PORT="7094"
+         EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+         EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
+    else
+         EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
+         EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=0 -Dcom.sun.management.jmxremote.rmi.port=0 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:./jmx_prometheus_javaagent-0.10.jar='${SPARK_MONITORING_DRIVER_PORT}':./spark-prometheus.yml'
     fi
 
     CONF_FILE="logisland-configuration.yml"
 
     ${SPARK_HOME}/bin/spark-submit ${VERBOSE_OPTIONS} ${YARN_CLUSTER_OPTIONS} \
-    --conf 'spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties' \
+    --conf "${EXTRA_DRIVER_JAVA_OPTIONS}" \
+    --conf "${EXTRA_PROCESSOR_JAVA_OPTIONS}" \
     --class ${app_mainclass} \
     --jars ${app_classpath} ${engine_jar} \
      -conf ${CONF_FILE}

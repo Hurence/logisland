@@ -24,6 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -81,6 +86,28 @@ public class ElasticsearchRecordConverter {
                         case BOOLEAN:
                             document.field(fieldName, field.asBoolean().booleanValue());
                             break;
+                        case ARRAY:
+                            final Collection collection = (Collection)field.getRawValue();
+                            if ( ! collection.isEmpty() ) {
+                                Object item = collection.iterator().next();
+                                if ( item instanceof Record ) {
+                                    final List<Map> values = new ArrayList<>();
+                                    for(final Record r: (Collection<Record>)collection) {
+                                        values.add(toMap(r));
+                                    }
+                                    document.array(fieldName, values.toArray());
+                                }
+                                else {
+                                    document.field(fieldName, field.getRawValue());
+                                }
+                            }
+                            else {
+                                document.field(fieldName, field.getRawValue());
+                            }
+                            break;
+                        case RECORD:
+                            document.field(fieldName, toMap((Record)field.getRawValue()));
+                            break;
                         default:
                             document.field(fieldName, field.getRawValue());
                             break;
@@ -100,4 +127,44 @@ public class ElasticsearchRecordConverter {
         return null;
     }
 
+    /**
+     * Returns the provided record as a map omitting the special dictionary fields
+     *
+     * @param record the record to translate.
+     *
+     * @return the provided record as a map omitting the special dictionary fields
+     */
+    private static Map<String, Object> toMap(final Record record)
+    {
+        final Map<String, Object> result = new HashMap<>();
+
+        record.getFieldsEntrySet()
+              .stream()
+              .forEach(entry -> {
+                  if ( ! FieldDictionary.contains(entry.getKey()) ) {
+                      Object value = entry.getValue().getRawValue();
+                      switch(entry.getValue().getType()) {
+                          case RECORD:
+                              value = toMap((Record)value);
+                              break;
+                          case ARRAY:
+                              final Collection collection = (Collection)value;
+                              final List list = new ArrayList(((Collection) value).size());
+                              for(final Object item: collection) {
+                                  if ( item instanceof Record ) {
+                                      list.add(toMap((Record)item));
+                                  } else {
+                                      list.add(item);
+                                  }
+                              }
+                              value = list;
+                              break;
+                          default:
+                      }
+                      result.put(entry.getKey(), value);
+                  }
+              });
+
+        return result;
+    }
 }

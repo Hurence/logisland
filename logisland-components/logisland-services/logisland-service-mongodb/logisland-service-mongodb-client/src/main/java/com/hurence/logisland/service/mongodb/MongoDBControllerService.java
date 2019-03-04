@@ -82,6 +82,7 @@ public class MongoDBControllerService extends AbstractMongoDBControllerService i
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             this.createClient(context);
         } catch (IOException e) {

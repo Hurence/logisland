@@ -40,7 +40,7 @@ public class EngineInitializer implements ConfigurableComponentInitializer {
         ProcessingEngine engine = (ProcessingEngine) component;
 
 
-        final ComponentLog logger = new MockComponentLogger();
+        final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
         final MockProcessContext context = new MockProcessContext(null,null);
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, engine, logger, context);
     }
