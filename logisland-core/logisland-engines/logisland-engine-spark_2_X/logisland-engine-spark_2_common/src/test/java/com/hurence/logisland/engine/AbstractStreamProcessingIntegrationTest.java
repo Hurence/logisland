@@ -95,7 +95,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
     public void setUp() throws InterruptedException, IOException {
 
 
-        SparkUtils.customizeLogLevels();
+
         // setup Zookeeper
         zkServer = new EmbeddedZookeeper();
         String zkConnect = ZKHOST + ":" + zkServer.port();
@@ -144,7 +144,7 @@ public abstract class AbstractStreamProcessingIntegrationTest {
         engineContext = instance.get();
 
 
-        SparkUtils.customizeLogLevels();
+
         System.setProperty("hadoop.home.dir", "/");
 
         Runnable testRunnable = () -> {

@@ -106,7 +106,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
         this.ssc = ssc
         this.streamContext = streamContext
         this.engineContext = engineContext
-        SparkUtils.customizeLogLevels
+
     }
 
     override def getStreamContext(): StreamingContext = this.ssc

@@ -61,7 +61,7 @@ class DummyRecordStream extends AbstractRecordStream with SparkRecordStream {
       */
     override def setup(appName: String, ssc: StreamingContext, streamContext: StreamContext, engineContext: EngineContext): Unit = {
         streamingContext = ssc
-        SparkUtils.customizeLogLevels
+
     }
 
     override def getStreamContext(): StreamingContext = streamingContext
