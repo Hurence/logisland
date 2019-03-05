@@ -171,8 +171,8 @@ if [ "$STANDALONE" = true ] ;
 then
   java_cp=$(echo $lib_dir/*.jar | tr ' ' ':')
   engine_jar=`ls ${lib_dir}/engines/logisland-engine-vanilla-*.jar`
-  MIN_MEM=`awk '{ if( $1 == "jvm.heap.min:" ){ print $2 } }' ${CONF_FILE}`
-  MAX_MEM=`awk '{ if( $1 == "jvm.heap.max:" ){ print $2 } }' ${CONF_FILE}`
+  MIN_MEM=`awk '{ if( $1 == "jvm.heap.min:" ){ gsub(/[ \t]+$/, "", $2);print $2 } }' ${CONF_FILE}`
+  MAX_MEM=`awk '{ if( $1 == "jvm.heap.max:" ){ gsub(/[ \t]+$/, "", $2);print $2 } }' ${CONF_FILE}`
 
   JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
 
