@@ -16,10 +16,7 @@
 package com.hurence.logisland.serializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hurence.logisland.record.Field;
-import com.hurence.logisland.record.FieldType;
-import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.record.*;
 import com.hurence.logisland.util.time.DateUtil;
 import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
@@ -181,15 +178,20 @@ public class ExtendedJsonSerializer implements RecordSerializer {
         return json;
     }
 
-
     private Field doDeserializeField(String name, Object value) {
         Field ret;
         if (value == null) {
             ret = new Field(name, FieldType.NULL, null);
         } else if (value.getClass().isArray()) {
-            ArrayList tmp = new ArrayList();
+            ArrayList<Object> tmp = new ArrayList();
             for (int i = 0; i < Array.getLength(value); i++) {
                 tmp.add(doDeserializeField("", Array.get(value, i)).getRawValue());
+            }
+            ret = new Field(name, FieldType.ARRAY, tmp);
+        } else if (value instanceof Collection) {
+            ArrayList<Object> tmp = new ArrayList();
+            for (Object item: (Collection)value) {
+                tmp.add(doDeserializeField("", item).getRawValue());
             }
             ret = new Field(name, FieldType.ARRAY, tmp);
         } else if (value instanceof Map) {
