@@ -118,28 +118,34 @@ public class ConvertSimpleDateFormatFields extends AbstractProcessor {
         }
         fieldsNameMapping.keySet().forEach(addedFieldName -> {
             final String inputDateValue = context.getPropertyValue(addedFieldName).evaluate(record).asString();
-            Date date = null;
-            try {
-                date = dateFormat.parse(inputDateValue);
-            } catch (ParseException e) {
-                // Left the record unchanged but log the failure/reason & cause
-                logger.info("Cannot parse input date: " + inputDateValue +
-                        " - Date Format: " + context.getPropertyValue(INPUT_DATE_FORMAT) +
-                        " - Reason: " + e.getMessage() +
-                        " - Cause:" + e.getCause());
-            }
-            if (date != null) {
-                Long unixEpochTime = date.getTime();
-                // field is already here
-                if (record.hasField(addedFieldName)) {
-                    if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
-                        overwriteObsoleteFieldValue(record, addedFieldName, unixEpochTime);
-                    }
-                } else {
-                    record.setField(addedFieldName, FieldType.LONG, unixEpochTime);
+            if (inputDateValue != null) {
+                Date date = null;
+                try {
+                    date = dateFormat.parse(inputDateValue);
+                } catch (ParseException e) {
+                    // Left the record unchanged but log the failure/reason & cause
+                    logger.info("Cannot parse input date: " + inputDateValue +
+                            " - Date Format: " + context.getPropertyValue(INPUT_DATE_FORMAT) +
+                            " - Reason: " + e.getMessage() +
+                            " - Cause:" + e.getCause());
+                } catch (Exception e) {
+                    logger.info("Cannot parse input date: " + inputDateValue +
+                            " - Date Format: " + context.getPropertyValue(INPUT_DATE_FORMAT) +
+                            " - Reason: " + e.getMessage() +
+                            " - Cause:" + e.getCause());
                 }
-            }
-        });
+                if (date != null) {
+                    Long unixEpochTime = date.getTime();
+                    // field is already here
+                    if (record.hasField(addedFieldName)) {
+                        if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
+                            overwriteObsoleteFieldValue(record, addedFieldName, unixEpochTime);
+                        }
+                    } else {
+                        record.setField(addedFieldName, FieldType.LONG, unixEpochTime);
+                    }
+                }
+            }});
     }
 
     private void overwriteObsoleteFieldValue(Record record, String fieldName, Long newValue) {
