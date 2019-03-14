@@ -275,7 +275,7 @@ public class ExtendedJsonSerializerTest {
     }
 
     @Test
-    public void deserialzeWithObject() throws IOException {
+    public void deserialzeWithObject() {
         //expected record
         Map<String, Object> deviceMap = new HashMap<>();
         deviceMap.put("category", "mobile");
@@ -300,7 +300,7 @@ public class ExtendedJsonSerializerTest {
     }
 
     @Test
-    public void deserialzeWithArrays() throws IOException {
+    public void deserialzeWithArrays() {
         //json
         final String recordStr = "{\"event_params\":[" +
                 "{\"key\":\"category\",\"value\":{\"string_value\":\"api\",\"int_value\":null,\"float_value\":null,\"double_value\":null}}," +
@@ -335,6 +335,27 @@ public class ExtendedJsonSerializerTest {
         Record deserializedRecord = serializer.deserialize(bais);
 
         expectedRecord.setId(deserializedRecord.getId());
+        expectedRecord.setTime(deserializedRecord.getTime());
+        expectedRecord.setType(deserializedRecord.getType());
+
+        assertEquals(expectedRecord, deserializedRecord);
+    }
+
+    @Test
+    public void deserialzeIdToRecordId() {
+        //json
+        final String recordStr = "{\"id\":\"id_record\", \"name\": \"greg\"}";
+        //expected record
+        ArrayList<Map<String, Object>> eventparams = new ArrayList<>();
+
+        final Record expectedRecord = new StandardRecord();
+        expectedRecord.setId("id_record");
+        expectedRecord.setField("name", FieldType.STRING, "greg");
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer();
+        ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(bais);
+
         expectedRecord.setTime(deserializedRecord.getTime());
         expectedRecord.setType(deserializedRecord.getType());
 
