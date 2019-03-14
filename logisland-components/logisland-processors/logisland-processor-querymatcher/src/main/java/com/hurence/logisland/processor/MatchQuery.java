@@ -63,7 +63,6 @@ public class MatchQuery extends AbstractProcessor {
     protected OnMissPolicy onMissPolicy;
     protected OnMatchPolicy onMatchPolicy;
     protected RecordTypeUpdatePolicy recordTypeUpdatePolicy;
-    private static Logger logger = LoggerFactory.getLogger(MatchQuery.class);
 
     public static final PropertyDescriptor NUMERIC_FIELDS = new PropertyDescriptor.Builder()
             .name("numeric.fields")
@@ -183,7 +182,7 @@ public class MatchQuery extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context) {
 
-
+        super.init(context);
         keywordAnalyzer = new KeywordAnalyzer();
         standardAnalyzer = new StandardAnalyzer();
         stopAnalyzer = new StopAnalyzer();
@@ -191,23 +190,13 @@ public class MatchQuery extends AbstractProcessor {
         onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
         onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
         recordTypeUpdatePolicy = RecordTypeUpdatePolicy.valueOf(context.getPropertyValue(RECORD_TYPE_UPDATE_POLICY).asString());
+
         NumericQueryParser queryMatcher = new NumericQueryParser("field");
 
-
-        // loop over dynamic properties to add rules
-        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
-            if (!entry.getKey().isDynamic()) {
-                continue;
-            }
-
-            final String name = entry.getKey().getName();
-            final String query = entry.getValue();
-            matchingRules.put(name, new MatchingRule(name, query));
-        }
+        updateMatchingRules(context);
 
         try {
             monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
-
             // TODO infer numeric type here
             if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
                 final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
@@ -222,23 +211,37 @@ public class MatchQuery extends AbstractProcessor {
                 MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
                 monitor.update(mq);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
-            e.printStackTrace();
+        } catch (IOException|UpdateException e) {
+            getLogger().error("error while creating Monitor", e);
         }
+    }
 
+    protected void updateMatchingRules(ProcessContext context) {
+        // loop over dynamic properties to add rules
+        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
+            if (!entry.getKey().isDynamic()) {
+                continue;
+            }
 
+            final String name = entry.getKey().getName();
+            final String query = entry.getValue();
+            matchingRules.put(name, new MatchingRule(name, query));
+        }
     }
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
         // may have not been initialized
         if (monitor == null)
             init(context);
+        try {
+            return internalProcess(context, records);
+        } finally {
+           stop();
+        }
+    }
 
-
+    protected Collection<Record> internalProcess(ProcessContext context, Collection<Record> records) {
         // convert all numeric fields to double to get numeric range working ...
         final List<Record> outRecords = new ArrayList<>();
         final List<InputDocument> inputDocs = new ArrayList<>();
@@ -278,7 +281,7 @@ public class MatchQuery extends AbstractProcessor {
         try {
             matches = monitor.match(DocumentBatch.of(inputDocs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
-            logger.error("Could not match documents", e);
+            getLogger().error("Could not match documents", e);
             return outRecords;
         }
 
@@ -300,14 +303,32 @@ public class MatchQuery extends AbstractProcessor {
         final MatchHandlers.MatchHandler matchHandler = _matchHandler;
         for (DocumentMatches<QueryMatch> docMatch : matches) {
             docMatch.getMatches().forEach(queryMatch ->
-                matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
-                                         context,
-                                         matchingRules.get(queryMatch.getQueryId()),
-                                         recordTypeUpdatePolicy)
+                    matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
+                            context,
+                            matchingRules.get(queryMatch.getQueryId()),
+                            recordTypeUpdatePolicy)
             );
 
         }
-
         return matchHandler.outputRecords();
+    }
+
+    public void stop() {
+        try {//necessary as currently processor instances are not kept between batches (avoid memory leak)
+            if (monitor != null) {
+                monitor.close();
+            }
+        } catch (IOException ex) {
+            getLogger().error("Error while closing monitor", ex);
+        }
+        if (keywordAnalyzer != null) {
+            keywordAnalyzer.close();
+        }
+        if (standardAnalyzer != null) {
+            standardAnalyzer.close();
+        }
+        if (stopAnalyzer != null) {
+            stopAnalyzer.close();
+        }
     }
 }

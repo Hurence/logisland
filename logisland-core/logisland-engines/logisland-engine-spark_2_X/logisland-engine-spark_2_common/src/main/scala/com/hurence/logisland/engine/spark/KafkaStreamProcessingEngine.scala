@@ -56,19 +56,33 @@ import com.hurence.logisland.component.{AllowableValue, ComponentContext, Proper
 import com.hurence.logisland.engine.spark.remote.PipelineConfigurationBroadcastWrapper
 import com.hurence.logisland.engine.{AbstractProcessingEngine, EngineContext}
 import com.hurence.logisland.stream.spark.{AbstractKafkaRecordStream, SparkRecordStream}
-import com.hurence.logisland.util.spark.SparkUtils
 import com.hurence.logisland.validator.StandardValidators
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.streaming.StreamingQueryListener
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
 
 object KafkaStreamProcessingEngine {
+
+
+    val SPARK_PROPERTIES_FILE_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+      .name("spark.properties.file.path")
+      .description("for using --properties-file option while submitting spark job")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
+    val SPARK_MONITORING_DRIVER_PORT: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+        .name("spark.monitoring.driver.port")
+        .description("The port for exposing monitoring metrics")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+        .build
 
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
@@ -404,8 +418,10 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
 
         @transient val sparkContext = getCurrentSparkContext()
 
-        SparkUtils.customizeLogLevels
         UserMetricsSystem.initialize(sparkContext, "LogislandMetrics")
+
+
+
 
         /**
           * shutdown context gracefully
@@ -465,6 +481,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(KafkaStreamProcessingEngine.SPARK_APP_NAME)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MASTER)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MONITORING_DRIVER_PORT)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_DRIVER_MEMORY)
@@ -491,6 +508,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
 
         Collections.unmodifiableList(descriptors)
     }

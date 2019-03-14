@@ -195,7 +195,7 @@ public class JsonSerializer implements RecordSerializer {
                                 try {
                                     creationDate = new Date(jp.getValueAsLong());
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    logger.error("error while creating a date", e);
                                 }
                             } else {
                                 fields.put(jp.getCurrentName(), new Field(jp.getCurrentName(), FieldType.LONG, jp.getLongValue()));
@@ -244,7 +244,7 @@ public class JsonSerializer implements RecordSerializer {
                                 try {
                                     creationDate = new Date(jp.getValueAsLong());
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    logger.error("error while creating a date", e);
                                 }
                                 break;*/
                                 default:

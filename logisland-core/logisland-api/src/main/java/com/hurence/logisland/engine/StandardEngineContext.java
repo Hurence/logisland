@@ -22,6 +22,9 @@ import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.component.StandardPropertyValue;
 import com.hurence.logisland.config.ControllerServiceConfiguration;
 import com.hurence.logisland.stream.StreamContext;
+import com.hurence.logisland.validator.ValidationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +35,7 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
 
     private final List<StreamContext> streamContexts = new ArrayList<>();
     private final List<ControllerServiceConfiguration> controllerServiceConfigurations = new ArrayList<>();
+    private static Logger logger = LoggerFactory.getLogger(StandardEngineContext.class);
 
     public StandardEngineContext(final ProcessingEngine engine, final String id) {
         super(engine, id);
@@ -81,6 +85,18 @@ public class StandardEngineContext extends AbstractConfiguredComponent implement
 
     }
 
+    @Override
+    public boolean isValid() {
+        boolean engineValid = super.isValid();
+        boolean streamsValid = true;
+        for (final StreamContext streamContext : streamContexts) {
+            if (!streamContext.isValid()) {
+                logger.info("invalid stream {}", streamContext.getIdentifier());
+                streamsValid = false;
+            }
+        }
+        return engineValid && streamsValid;
+    }
 
     @Override
     public Collection<ControllerServiceConfiguration> getControllerServiceConfigurations() {

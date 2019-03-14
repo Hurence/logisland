@@ -41,8 +41,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StringSerializer implements RecordSerializer {
-    
+
+    private Logger logger = LoggerFactory.getLogger(StringSerializer.class);
+
     @Override
     public void serialize(OutputStream out, Record record) throws RecordSerializationException {
 
@@ -50,7 +55,7 @@ public class StringSerializer implements RecordSerializer {
             out.write(record.toString().getBytes());
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("error while serializing", e);
         }
 
     }

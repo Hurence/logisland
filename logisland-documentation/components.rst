@@ -756,7 +756,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**event.serializer**", "the way to serialize event", "Json serialization (serialize events as json blocs), String serialization (serialize events as toString() blocs)", "json", "", ""
-   "record.types", "comma separated list of record to include. all if empty", "", "", "", ""
 
 ----------
 
@@ -977,13 +976,6 @@ EnrichRecordsElasticsearch
 --------------------------
 Enrich input records with content indexed in elasticsearch using multiget queries.
 Each incoming record must be possibly enriched with information stored in elasticsearch. 
-The plugin properties are :
-- es.index (String)            : Name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
-- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
-- es.key (String)              : Name of the elasticsearch key on which the multiget query will be performed. This field is mandatory.
-- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
-- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
-
 Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
 
 Module
@@ -1405,10 +1397,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "", ""
-   "**es.session.index**", "Name of the ES index containing the web session documents.", "", "null", "", ""
-   "**es.session.type**", "Name of the ES type of web session documents.", "", "null", "", ""
-   "**es.event.index**", "Name of the ES index containing the web event documents.", "", "null", "", ""
-   "**es.event.type**", "Name of the ES type of web event documents.", "", "null", "", ""
+   "**es.session.index.field**", "Name of the field in the record defining the ES index containing the web session documents.", "", "null", "", ""
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "", ""
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "", ""
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "", ""
+   "**es.mapping.event.to.session.index.name**", "Name of the ES index containing the mapping of web session documents.", "", "null", "", ""
    "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "", ""
    "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "", ""
    "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "", ""
@@ -1423,11 +1416,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "", ""
    "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "", ""
    "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "", ""
-   "utm_source.field", "Name of the field containing the utm_source value in the session", "", "utm_source", "", ""
-   "utm_campaign.field", "Name of the field containing the utm_campaign value in the session", "", "utm_campaign", "", ""
-   "utm_medium.field", "Name of the field containing the utm_medium value in the session", "", "utm_medium", "", ""
-   "utm_content.field", "Name of the field containing the utm_content value in the session", "", "utm_content", "", ""
-   "utm_term.field", "Name of the field containing the utm_term value in the session", "", "utm_term", "", ""
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "", ""
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "", ""
+   "source_of_traffic.suffix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "", ""
    "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
 
 ----------

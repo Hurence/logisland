@@ -235,7 +235,7 @@ public class SplitText extends AbstractProcessor {
                         String errorMessage = "error while matching key " + key +
                                 " with regex " + keyRegexString +
                                 " : " + e.getMessage();
-                        logger.warn(errorMessage);
+                        getLogger().warn(errorMessage);
                         outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
                         outputRecord.setField(FieldDictionary.RECORD_KEY, FieldType.STRING, value);
                     }
@@ -285,7 +285,7 @@ public class SplitText extends AbstractProcessor {
                         String errorMessage = "error while matching value " + value +
                                 " with regex " + valueRegexString +
                                 " : " + e.getMessage();
-                        logger.warn(errorMessage);
+                        getLogger().warn(errorMessage);
                         outputRecord.addError(ProcessError.REGEX_MATCHING_ERROR.getName(), errorMessage);
                         outputRecord.setField(FieldDictionary.RECORD_VALUE, FieldType.STRING, value);
                     } finally {
@@ -295,7 +295,9 @@ public class SplitText extends AbstractProcessor {
             } catch (Exception e) {
                 // nothing to do here
 
-                logger.warn("issue while matching getting K/V on record {}, exception {}", record, e.getMessage());
+                getLogger().warn("issue while matching getting K/V on record {}, exception {}", new Object[]{
+                        record, e.getMessage()
+                });
             }
         });
 
@@ -352,7 +354,7 @@ public class SplitText extends AbstractProcessor {
                 try {
                     eventDate = DateUtil.parse(outputRecord.getField(FieldDictionary.RECORD_TIME).getRawValue().toString(), timezone);
                 } catch (ParseException e) {
-                    logger.info("issue while parsing date : {} ", e.toString());
+                    getLogger().info("issue while parsing date : {} ", new Object[]{e.toString()} );
                 }
                 if (eventDate != null) {
                     outputRecord.setField(FieldDictionary.RECORD_TIME, FieldType.LONG, eventDate.getTime());

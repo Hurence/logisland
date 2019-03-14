@@ -45,15 +45,15 @@ You can follow one getting started guide through the
 
 Building Logisland
 ------------------
-to build from the source just clone source and package with maven
+to build from the source just clone source and package with maven (logisland requires a **maven 3.5.2** version and beyond)
 
 .. code-block::
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
-    mvn clean install
+    mvn clean install -Pfull
 
-the final package is available at `logisland-assembly/target/logisland-1.0.0-RC1-bin-hdp2.5.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -77,7 +77,7 @@ Alternatively you can deploy **logisland** on any linux server from which Kafka 
     export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
 
     # install Logisland 1.0.0-RC1
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.0.0-RC1-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    curl -s https://github.com/Hurence/logisland/releases/download/v1.0.0-RC2/logisland-1.0.0-RC2-bin.tar.gz  | tar -xz -C /usr/local/
     cd /usr/local/logisland-1.0.0-RC1
 
     # launch a logisland job

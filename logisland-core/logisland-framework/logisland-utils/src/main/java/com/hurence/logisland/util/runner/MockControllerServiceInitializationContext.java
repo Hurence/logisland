@@ -29,12 +29,9 @@ import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
 
 public class MockControllerServiceInitializationContext extends MockControllerServiceLookup
         implements ControllerServiceInitializationContext, ControllerServiceLookup {
@@ -47,7 +44,7 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
         this.identifier = identifier;
         this.controllerService = controllerService;
-        this.logger = new MockComponentLogger();
+        this.logger = new MockComponentLogger(identifier, controllerService);
         this.properties = controllerService.getPropertyDescriptors().stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
@@ -60,12 +57,6 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     public String getIdentifier() {
         return identifier;
     }
-
-    @Override
-    public void setName(String name) {
-
-    }
-
 
     @Override
     public String getProperty(PropertyDescriptor property) {
@@ -158,8 +149,4 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return properties;
     }
 
-    @Override
-    public String getName() {
-        return null;
-    }
 }

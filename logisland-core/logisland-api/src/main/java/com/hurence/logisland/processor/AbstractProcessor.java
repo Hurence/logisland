@@ -38,26 +38,22 @@ public abstract class AbstractProcessor extends AbstractConfigurableComponent im
             .defaultValue("true")
             .build();
 
-    private final ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-        logger.debug("property {} value changed from {} to {}", new Object[]{descriptor.getName(), oldValue, newValue});
+        if (getLogger() != null) {
+            getLogger().debug("property {} value changed from {} to {}", new Object[]{descriptor.getName(), oldValue, newValue});
+        } else {
+            logger.debug("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+        }
     }
 
     @Override
     public void init(ProcessContext context) {
-        logger.debug("init");
+        super.init(context);
     }
 
-
-    /**
-     * @return the logger that has been provided to the component by the
-     * framework in its initialize method
-     */
-    protected ComponentLog getLogger() {
-        return logger;
-    }
 
     @Override
     public boolean hasControllerService() {

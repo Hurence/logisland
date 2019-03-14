@@ -187,7 +187,7 @@ class RemoteApiStreamProcessingEngine extends KafkaStreamProcessingEngine {
       */
     override def reset(engineContext: EngineContext): Unit  = {
         logger.info(s"Resetting engine ${
-            engineContext.getName
+            engineContext.getIdentifier
         }")
         super.stop(engineContext, false)
         engineContext.getStreamContexts.clear()

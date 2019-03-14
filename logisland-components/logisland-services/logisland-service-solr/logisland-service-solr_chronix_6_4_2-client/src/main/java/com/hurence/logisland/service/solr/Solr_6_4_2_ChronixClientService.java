@@ -105,6 +105,7 @@ public class Solr_6_4_2_ChronixClientService extends AbstractControllerService i
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         synchronized (this) {
             try {
                 createSolrClient(context);

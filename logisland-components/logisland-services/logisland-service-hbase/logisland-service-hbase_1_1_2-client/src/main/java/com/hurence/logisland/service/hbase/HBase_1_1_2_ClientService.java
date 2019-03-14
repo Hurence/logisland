@@ -97,6 +97,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        super.init(context);
         try {
             kerberosConfigFile = context.getKerberosConfigurationFile();
             kerberosProperties = getKerberosProperties(kerberosConfigFile);

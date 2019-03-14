@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -268,10 +270,12 @@ public class IncrementalWebSessionTest
     private static final String SESSION_TYPE = "sessions";
     private static final String EVENT_INDEX = "openanalytics_webevents";
     private static final String EVENT_TYPE = "event";
+    private static final String MAPPING_INDEX = "openanalytics_mappings";
 
     private static final String SESSION_ID = "sessionId";
     private static final String TIMESTAMP = "h2kTimestamp";
     private static final String VISITED_PAGE = "VISITED_PAGE";
+    private static final String CURRENT_CART = "currentCart";
     private static final String USER_ID = "Userid";
 
     private static final String SESSION1 = "session1";
@@ -750,6 +754,7 @@ public class IncrementalWebSessionTest
                                   .check(B2BUNIT, null);
     }
 
+
     @Test
     public void testUpdateOneWebSessionNow()
             throws Exception
@@ -782,7 +787,7 @@ public class IncrementalWebSessionTest
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
         // One webSession expected.
-        Assert.assertEquals(1+eventCount, this.elasticsearchClient.documents.size());
+        Assert.assertEquals(1+1+eventCount, this.elasticsearchClient.documents.size());
         testRunner.assertOutputRecordsCount(1);
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
@@ -848,8 +853,8 @@ public class IncrementalWebSessionTest
         testRunner.assertAllInputRecordsProcessed();
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
-        // One webSession expected.
-        Assert.assertEquals(1+eventCount, this.elasticsearchClient.documents.size());
+        // One webSession + 2 webEvents + 1 mapping expected in elasticsearch.
+        Assert.assertEquals(1+eventCount+1, this.elasticsearchClient.documents.size());
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
@@ -899,8 +904,8 @@ public class IncrementalWebSessionTest
         testRunner.assertOutputRecordsCount(2);
         testRunner.getOutputRecords().forEach(record -> this.elasticsearchClient.save(record));
 
-        // Two webSessions expected in elasticsearch.
-        Assert.assertEquals(2+eventCount, this.elasticsearchClient.documents.size());
+        // 2 webSessions + 2 webEvents + 1 mapping expected in elasticsearch.
+        Assert.assertEquals(2+eventCount+1, this.elasticsearchClient.documents.size());
         Set<String> ids = this.elasticsearchClient.documents.keySet().stream().map(id->id.getKeyProperty("id")).collect(Collectors.toSet());
         Assert.assertTrue(ids.contains(SESSION1));
 
@@ -991,6 +996,49 @@ public class IncrementalWebSessionTest
 
     }
 
+
+    @Test
+    public void testEventHandleCorrectlyNullArrays()
+            throws Exception
+    {
+        this.elasticsearchClient.documents.clear();
+        int eventCount = 0;
+
+        TestRunner testRunner = newTestRunner();
+        testRunner.assertValid();
+        testRunner.enqueue(Arrays.asList(new WebEvent(eventCount++, SESSION1, USER1, DAY1, URL1)));
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputErrorCount(0);
+
+        // One webSession expected.
+        testRunner.assertOutputRecordsCount(1);
+        Map event = this.elasticsearchClient.documents.get(ESC.toId(
+                EVENT_INDEX + "." + java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd",
+                Locale.ENGLISH).format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(DAY1),
+                        ZoneId.systemDefault())), EVENT_TYPE, "0"));
+
+        Assert.assertNull(event.get(CURRENT_CART));
+
+        final MockRecord doc = getRecord(SESSION1, testRunner.getOutputRecords());
+
+
+        new WebSessionChecker(doc).sessionId(SESSION1)
+                .Userid(USER1)
+                .record_type("consolidate-session")
+                .record_id(SESSION1)
+                .firstEventDateTime(DAY1)
+                .h2kTimestamp(DAY1)
+                .currentCart(null)
+                .firstVisitedPage(URL1)
+                .eventsCounter(1)
+                .lastEventDateTime(DAY1)
+                .lastVisitedPage(URL1)
+                .sessionDuration(null)
+                .is_sessionActive(false)
+                .sessionInactivityDuration(SESSION_TIMEOUT);
+    }
+
     /**
      * Creates a new TestRunner set with the appropriate properties.
      *
@@ -1008,9 +1056,10 @@ public class IncrementalWebSessionTest
         runner.setProperty(setSourceOfTraffic.ELASTICSEARCH_CLIENT_SERVICE, "elasticsearchClient");
 
         runner.setProperty(IncrementalWebSession.ES_SESSION_INDEX_FIELD, SESSION_INDEX);
-        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_FIELD, SESSION_TYPE);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_FIELD, EVENT_INDEX);
-        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_FIELD, EVENT_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_SESSION_TYPE_NAME, SESSION_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_INDEX_PREFIX, EVENT_INDEX);
+        runner.setProperty(IncrementalWebSession.ES_EVENT_TYPE_NAME, EVENT_TYPE);
+        runner.setProperty(IncrementalWebSession.ES_MAPPING_EVENT_TO_SESSION_INDEX_NAME, MAPPING_INDEX);
 
         runner.setProperty(IncrementalWebSession.SESSION_ID_FIELD, SESSION_ID);
         runner.setProperty(IncrementalWebSession.TIMESTAMP_FIELD, TIMESTAMP);
@@ -1042,7 +1091,9 @@ public class IncrementalWebSessionTest
             this.setField(SESSION_ID, FieldType.STRING, sessionId)
                 .setField(USER_ID, FieldType.STRING, userId)
                 .setField(TIMESTAMP, FieldType.STRING, timestamp)
+                .setField(SESSION_INDEX, FieldType.STRING, SESSION_INDEX)
                 .setField(VISITED_PAGE, FieldType.STRING, url)
+                .setField(CURRENT_CART, FieldType.ARRAY, null)
                 .setField("record_id", FieldType.STRING, String.valueOf(id));
         }
 
@@ -1074,6 +1125,7 @@ public class IncrementalWebSessionTest
         public WebSessionChecker Userid(final Object value) { return check("Userid", value); }
         public WebSessionChecker record_type(final Object value) { return check("record_type", value); }
         public WebSessionChecker record_id(final Object value) { return check("record_id", value); }
+        public WebSessionChecker currentCart(final Object value) { return check(CURRENT_CART, value); }
         public WebSessionChecker firstEventDateTime(final long value) { return check("firstEventDateTime", new Date(value).toString()); }
         public WebSessionChecker h2kTimestamp(final long value) { return check("h2kTimestamp", value); }
         public WebSessionChecker firstVisitedPage(final Object value) { return check("firstVisitedPage", value); }
@@ -1097,7 +1149,7 @@ public class IncrementalWebSessionTest
         public WebSessionChecker check(final String name, final Object expectedValue)
         {
             final Field field = this.record.getField(name);
-            Assert.assertEquals(expectedValue==null?null:expectedValue,
+            Assert.assertEquals(expectedValue,
                                 field!=null?field.getRawValue():null);
             return this;
         }

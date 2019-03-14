@@ -56,7 +56,6 @@ import org.apache.commons.lang3.tuple.Pair;
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
 public class MatchIP extends MatchQuery {
 
-    private static Logger logger = LoggerFactory.getLogger(MatchIP.class);
     private HashMap<String, HashSet<Pair<String, Pattern>>> ipRegexps;
     private HashMap<String, MatchingRule> regexpMatchingRules;
     private final String ipSyntax = "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d+$";
@@ -78,18 +77,13 @@ public class MatchIP extends MatchQuery {
 
     @Override
     public void init(final ProcessContext context) {
-
-        keywordAnalyzer = new KeywordAnalyzer();
-        standardAnalyzer = new StandardAnalyzer();
-        stopAnalyzer = new StopAnalyzer();
-        matchingRules = new HashMap<>();
         regexpMatchingRules = new HashMap<>();
-        onMissPolicy = OnMissPolicy.valueOf(context.getPropertyValue(ON_MISS_POLICY).asString());
-        onMatchPolicy = OnMatchPolicy.valueOf(context.getPropertyValue(ON_MATCH_POLICY).asString());
-        recordTypeUpdatePolicy = RecordTypeUpdatePolicy.valueOf(context.getPropertyValue(RECORD_TYPE_UPDATE_POLICY).asString());
-        NumericQueryParser queryMatcher = new NumericQueryParser("field");
         luceneAttrsToQuery = new HashSet<String>();
+        super.init(context);
+    }
 
+    @Override
+    protected void updateMatchingRules(ProcessContext context) {
         // loop over dynamic properties to add rules
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
@@ -147,43 +141,12 @@ public class MatchIP extends MatchQuery {
                         ipRegexps.put(queryField, regexpVals);
                     }
                 }
-
             }
         }
-
-        try {
-            monitor = new Monitor(queryMatcher, new TermFilteredPresearcher());
-
-            // TODO infer numeric type here
-            if (context.getPropertyValue(NUMERIC_FIELDS).isSet()) {
-                final String[] numericFields = context.getPropertyValue(NUMERIC_FIELDS).asString().split(",");
-                for (String numericField : numericFields) {
-                    queryMatcher.setNumericField(numericField);
-                }
-            }
-
-
-            //monitor = new Monitor(new LuceneQueryParser("field"), new TermFilteredPresearcher());
-            for (MatchingRule rule : matchingRules.values()) {
-                MonitorQuery mq = new MonitorQuery(rule.getName(), rule.getQuery());
-                monitor.update(mq);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
-            e.printStackTrace();
-        }
-
-
     }
 
     @Override
-    public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-
-        // may have not been initialized
-        if (monitor == null)
-            init(context);
-
+    protected Collection<Record> internalProcess(ProcessContext context, Collection<Record> records) {
         // convert all numeric fields to double to get numeric range working ...
         final List<Record> outRecords = new ArrayList<>();
         final List<InputDocument> inputDocs = new ArrayList<>();
@@ -211,7 +174,7 @@ public class MatchIP extends MatchQuery {
         try {
             matches = monitor.match(DocumentBatch.of(inputDocs), SimpleMatcher.FACTORY);
         } catch (IOException e) {
-            logger.error("Could not match documents", e);
+            getLogger().error("Could not match documents", e);
             return outRecords;
         }
 
@@ -234,10 +197,10 @@ public class MatchIP extends MatchQuery {
         final MatchHandlers.MatchHandler matchHandler = _matchHandler;
         for (DocumentMatches<QueryMatch> docMatch : matches) {
             docMatch.getMatches().forEach(queryMatch ->
-                matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
-                                         context,
-                                         matchingRules.get(queryMatch.getQueryId()),
-                                         recordTypeUpdatePolicy)
+                    matchHandler.handleMatch(inputRecords.get(docMatch.getDocId()),
+                            context,
+                            matchingRules.get(queryMatch.getQueryId()),
+                            recordTypeUpdatePolicy)
             );
         }
         if (ipRegexps != null && ipRegexps.size() > 0) {

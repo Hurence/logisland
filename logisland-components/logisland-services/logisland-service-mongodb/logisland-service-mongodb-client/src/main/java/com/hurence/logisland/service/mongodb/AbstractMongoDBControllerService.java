@@ -17,9 +17,9 @@ package com.hurence.logisland.service.mongodb;
 
 import com.hurence.logisland.annotation.lifecycle.OnStopped;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.AbstractControllerService;
-import com.hurence.logisland.controller.ConfigurationContext;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -187,20 +187,20 @@ public abstract class AbstractMongoDBControllerService extends AbstractControlle
         }
     }
 
-    protected MongoDatabase getDatabase(final ConfigurationContext context) {
+    protected MongoDatabase getDatabase(final ComponentContext context) {
         return getDatabase(context, null);
     }
 
-    protected MongoDatabase getDatabase(final ConfigurationContext context, final Record record) {
+    protected MongoDatabase getDatabase(final ComponentContext context, final Record record) {
         final String databaseName = context.getPropertyValue(DATABASE_NAME).evaluate(record).asString();
         return mongoClient.getDatabase(databaseName);
     }
 
-    protected MongoCollection<Document> getCollection(final ConfigurationContext context) {
+    protected MongoCollection<Document> getCollection(final ComponentContext context) {
         return getCollection(context, null);
     }
 
-    protected MongoCollection<Document> getCollection(final ConfigurationContext context, final Record record) {
+    protected MongoCollection<Document> getCollection(final ComponentContext context, final Record record) {
         final String collectionName = context.getPropertyValue(COLLECTION_NAME).evaluate(record).asString();
         return getDatabase(context, record).getCollection(collectionName);
     }

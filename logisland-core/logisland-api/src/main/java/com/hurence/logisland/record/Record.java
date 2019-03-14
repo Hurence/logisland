@@ -79,12 +79,41 @@ public interface Record extends Serializable {
 
     int sizeInBytes();
 
+    /**
+     * add error in record
+     *
+     * @param errorType
+     * @param errorMessage
+     * @return
+     */
     Record addError(String errorType, String errorMessage);
-
+    /**
+     * add error in record
+     *
+     * @param errorType
+     * @return
+     */
     Record addError(String errorType);
 
+    /**
+     * Log error and add it in record
+     *
+     * @param errorType
+     * @param logger
+     * @param errorMessage
+     * @return
+     */
     Record addError(String errorType, ComponentLog logger, String errorMessage);
 
+    /**
+     * Log error and add it in record
+     *
+     * @param errorType
+     * @param logger
+     * @param errorMessage
+     * @param os
+     * @return
+     */
     Record addError(String errorType, ComponentLog logger, String errorMessage, Object[] os);
 
 

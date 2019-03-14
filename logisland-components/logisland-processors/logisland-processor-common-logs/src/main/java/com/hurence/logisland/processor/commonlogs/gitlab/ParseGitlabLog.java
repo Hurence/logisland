@@ -64,6 +64,7 @@ public class ParseGitlabLog extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         logger.debug("Initializing Gitlab log Processor");
     }
     

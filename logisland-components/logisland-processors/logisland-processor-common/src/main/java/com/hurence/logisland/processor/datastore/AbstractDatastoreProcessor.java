@@ -45,6 +45,7 @@ public abstract class AbstractDatastoreProcessor extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
         datastoreClientService = PluginProxy.rewrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
         if (datastoreClientService == null) {
             logger.error("Datastore client service is not initialized!");

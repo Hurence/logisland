@@ -27,23 +27,14 @@ import java.io.IOException;
 
 public abstract class AbstractControllerService extends AbstractConfigurableComponent implements ControllerService {
 
-
     private ControllerServiceLookup serviceLookup;
-    private ComponentLog logger;
     private volatile boolean enabled = true;
 
     @Override
     public void initialize(final ControllerServiceInitializationContext context) throws InitializationException {
-        this.identifier = context.getIdentifier();
         serviceLookup = context.getControllerServiceLookup();
-        logger = context.getLogger();
-        try {
-            init(context);
-        } catch (IOException e) {
-            throw  new InitializationException(e);
-        }
+        init(context);
     }
-
 
     /**
      * @return the {@link ControllerServiceLookup} that was passed to the
@@ -60,17 +51,9 @@ public abstract class AbstractControllerService extends AbstractConfigurableComp
      * @param context of initialization context
      * @throws InitializationException if unable to init
      */
-    protected void init(final ControllerServiceInitializationContext context) throws InitializationException, IOException {
+    protected void init(final ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
     }
-
-    /**
-     * @return the logger that has been provided to the component by the
-     * framework in its initialize method
-     */
-    protected ComponentLog getLogger() {
-        return logger;
-    }
-
 
     @OnEnabled
     public void enabled() {
