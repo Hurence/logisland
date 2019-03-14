@@ -97,6 +97,8 @@ But you should choose the Spark version that is compatible with your environment
     curl -s https://github.com/Hurence/logisland/releases/download/v<logisland-version>/logisland-<logisland-version>.tar.gz  | tar -xz -C /usr/local/
     cd /usr/local/logisland-<logisland-version>
 
+    # VERY IMPORTANT : before launching your indexation, since the examples sometimes use by defaut a hostname with is "sandbox" (instead of localhost) either edit the .yml to redefine the addresses of your zookeeper and ES nodes, or alternatively redefine the used variables with an export prior to launch the indexation, or alternatively edit /etc/hosts file defining an alias for localhost (sandbox)
+
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
