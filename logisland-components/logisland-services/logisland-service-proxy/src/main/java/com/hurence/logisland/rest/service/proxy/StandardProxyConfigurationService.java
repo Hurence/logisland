@@ -104,6 +104,7 @@ public class StandardProxyConfigurationService extends AbstractControllerService
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             configuration = new ProxyConfiguration();
             configuration.setProxyType(Proxy.Type.valueOf(context.getProperty(PROXY_TYPE)));

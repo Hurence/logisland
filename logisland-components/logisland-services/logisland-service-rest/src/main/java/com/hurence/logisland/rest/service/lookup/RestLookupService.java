@@ -194,6 +194,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
                 serializer = SerializerProvider.getSerializer(
