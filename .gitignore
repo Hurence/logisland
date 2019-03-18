@@ -35,4 +35,7 @@ logs/
 **/log/
 **/chronix/data/
 
+.java-version
+
+
 *.factorypath
