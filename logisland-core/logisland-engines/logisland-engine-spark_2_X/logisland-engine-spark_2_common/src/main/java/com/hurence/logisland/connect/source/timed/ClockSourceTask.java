@@ -132,13 +132,13 @@ public class ClockSourceTask extends SourceTask {
             long nextTriggerDateInMs = nextTriggerDate.getTime();
             untilNext = nextTriggerDateInMs - time.milliseconds();
             if (useSnapshot) {
-                recordSnapshot = nextTriggerDateInMs / 1000;
+                recordSnapshot = nextTriggerDateInMs ;
             }
             time.sleep(untilNext);
         }
         else {
             if (useSnapshot){
-                recordSnapshot = (time.milliseconds()+rate) / 1000;
+                recordSnapshot = (time.milliseconds()+rate) ;
             }
             Thread.sleep(rate);
         }
@@ -240,7 +240,7 @@ public class ClockSourceTask extends SourceTask {
      */
     private String secToString(long timeInSec, String dateFormat, String timezone){
         //convert seconds to milliseconds
-        Date date = new Date(timeInSec*1000);
+        Date date = new Date(timeInSec);
         // format of the date
         SimpleDateFormat jdf = new SimpleDateFormat(dateFormat);
         jdf.setTimeZone(TimeZone.getTimeZone(timezone));
