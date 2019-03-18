@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
 
   zookeeper:
@@ -7,22 +7,22 @@ services:
     hostname: zookeeper
     ports:
       - '2181:2181'
+    networks:
+      - logisland
 
   kafka:
     container_name: kafka
     image: hurence/kafka
     hostname: kafka
-    links:
-      - zookeeper
     ports:
       - '9092:9092'
     environment:
       KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_ADVERTISED_HOST_NAME: sandbox
+      KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_JMX_PORT: 7071
-    extra_hosts:
-      - 'sandbox:172.17.0.1'
+    networks:
+      - logisland
 
   # ES container
   # make sure to increase vm.max_map_count kernel setting like documented here :
@@ -40,6 +40,8 @@ services:
     ports:
       - '9200:9200'
       - '9300:9300'
+    networks:
+      - es
 
   # Kibana container
   kibana:
@@ -47,11 +49,10 @@ services:
     environment:
       - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
     image: 'docker.elastic.co/kibana/kibana:5.4.0'
-    links:
-      - elasticsearch
     ports:
       - '5601:5601'
-
+    networks:
+      - es
 
 
   # Logisland container : does nothing but launching
@@ -60,11 +61,6 @@ services:
     image: hurence/logisland:latest
     command: tail -f bin/logisland.sh
     #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
-    links:
-      - zookeeper
-      - kafka
-      - elasticsearch
-      - redis
     ports:
       - '4050:4050'
       - '8082:8082'
@@ -72,11 +68,25 @@ services:
     volumes:
       - ./conf/logisland:/conf
       - ./data/logisland:/data
-    extra_hosts:
-      - 'sandbox:172.17.0.1'
+    networks:
+      - logisland
+      - es
 
   redis:
     container_name: redis
     image: 'redis:latest'
     ports:
       - '6379:6379'
+    networks:
+      - logisland
+
+#This networks hinder containers to communicate with outside world (curl outside world)
+networks:
+  es:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+  logisland:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
