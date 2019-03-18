@@ -86,6 +86,9 @@ public class RestLookupService extends AbstractControllerService implements Reco
     public static final AllowableValue JSON_SERIALIZER =
             new AllowableValue(JsonSerializer.class.getName(), "json serialization", "serialize events as json blocs");
 
+    public static final AllowableValue EXTENDEND_JSON_SERIALIZER =
+            new AllowableValue(ExtendedJsonSerializer.class.getName(), "extended json serialization", "serialize events as json blocs");
+
     public static final AllowableValue STRING_SERIALIZER =
             new AllowableValue(StringSerializer.class.getName(), "json serialization", "serialize events as json blocs");
 
@@ -100,28 +103,28 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .description("the serializer needed for loading the payload and handling it as a record set.")
             .expressionLanguageSupported(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, STRING_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
-            .defaultValue(JSON_SERIALIZER.getValue())
+            .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, STRING_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER, EXTENDEND_JSON_SERIALIZER)
+            .defaultValue(EXTENDEND_JSON_SERIALIZER.getValue())
             .build();
 
     static final PropertyDescriptor RECORD_SCHEMA = new PropertyDescriptor.Builder()
             .name("record.schema")
-            .description("the schema definition for the deserializer (for response payload)")
+            .description("the schema definition for the deserializer (for response payload). You can limit data to retrieve this way")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    static final PropertyDescriptor SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
-            .name("rest-lookup-ssl-context-service")
-            .displayName("SSL Context Service")
-            .description("The SSL Context Service used to provide client certificate information for TLS/SSL "
-                    + "connections.")
-            .required(false)
+//    static final PropertyDescriptor SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
+//            .name("rest.lookup.ssl.context.service")
+//            .displayName("SSL Context Service")
+//            .description("The SSL Context Service used to provide client certificate information for TLS/SSL "
+//                    + "connections.")
+//            .required(false)
 //            .identifiesControllerService(SSLContextService.class) //TODO
-            .build();
+//            .build();
 
     public static final PropertyDescriptor PROP_BASIC_AUTH_USERNAME = new PropertyDescriptor.Builder()
-            .name("rest-lookup-basic-auth-username")
+            .name("rest.lookup.basic.auth.username")
             .displayName("Basic Authentication Username")
             .description("The username to be used by the client to authenticate against the Remote URL.  Cannot include control characters (0-31), ':', or DEL (127).")
             .required(false)
@@ -130,7 +133,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
             .build();
 
     public static final PropertyDescriptor PROP_BASIC_AUTH_PASSWORD = new PropertyDescriptor.Builder()
-            .name("rest-lookup-basic-auth-password")
+            .name("rest.lookup.basic.auth.password")
             .displayName("Basic Authentication Password")
             .description("The password to be used by the client to authenticate against the Remote URL.")
             .required(false)
@@ -166,7 +169,7 @@ public class RestLookupService extends AbstractControllerService implements Reco
                 URL,
                 RECORD_SERIALIZER,
                 RECORD_SCHEMA,
-                SSL_CONTEXT_SERVICE,//TODO
+//                SSL_CONTEXT_SERVICE,//TODO
                 PROXY_CONFIGURATION_SERVICE,
                 PROP_BASIC_AUTH_USERNAME,
                 PROP_BASIC_AUTH_PASSWORD,
