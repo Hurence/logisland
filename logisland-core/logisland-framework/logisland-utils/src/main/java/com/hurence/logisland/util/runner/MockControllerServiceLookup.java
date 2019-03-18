@@ -25,17 +25,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class MockControllerServiceLookup implements ControllerServiceLookup {
+public class MockControllerServiceLookup implements ControllerServiceLookup {
 
-    private final Map<String, ControllerServiceConfiguration> controllerServiceMap = new ConcurrentHashMap<>();
+    private final Map<String, MockControllerService> controllerServiceMap = new ConcurrentHashMap<>();
 
-    public ControllerServiceConfiguration addControllerService(final ControllerService service, final String identifier) {
-        final ControllerServiceConfiguration config = new ControllerServiceConfiguration(service);
+    public MockControllerService addControllerService(final ControllerService service, final String identifier) {
+        final MockControllerService config = new MockControllerService(service);
         controllerServiceMap.put(identifier, config);
         return config;
     }
 
-    public ControllerServiceConfiguration addControllerService(final ControllerService service) {
+    public MockControllerService addControllerService(final ControllerService service) {
         return addControllerService(service, service.getIdentifier());
     }
 
@@ -52,19 +52,19 @@ public abstract class MockControllerServiceLookup implements ControllerServiceLo
         this.controllerServiceMap.putAll(other.controllerServiceMap);
     }
 
-    protected ControllerServiceConfiguration getConfiguration(final String identifier) {
+    protected MockControllerService getConfiguration(final String identifier) {
         return controllerServiceMap.get(identifier);
     }
 
     @Override
     public ControllerService getControllerService(final String identifier) {
-        final ControllerServiceConfiguration status = controllerServiceMap.get(identifier);
+        final MockControllerService status = controllerServiceMap.get(identifier);
         return (status == null) ? null : status.getService();
     }
 
     @Override
     public boolean isControllerServiceEnabled(final String serviceIdentifier) {
-        final ControllerServiceConfiguration status = controllerServiceMap.get(serviceIdentifier);
+        final MockControllerService status = controllerServiceMap.get(serviceIdentifier);
         if (status == null) {
             throw new IllegalArgumentException("No ControllerService exists with identifier " + serviceIdentifier);
         }
@@ -85,17 +85,11 @@ public abstract class MockControllerServiceLookup implements ControllerServiceLo
     @Override
     public Set<String> getControllerServiceIdentifiers(final Class<? extends ControllerService> serviceType) {
         final Set<String> ids = new HashSet<>();
-        for (final Map.Entry<String, ControllerServiceConfiguration> entry : controllerServiceMap.entrySet()) {
+        for (final Map.Entry<String, MockControllerService> entry : controllerServiceMap.entrySet()) {
             if (serviceType.isAssignableFrom(entry.getValue().getService().getClass())) {
                 ids.add(entry.getKey());
             }
         }
         return ids;
-    }
-
-    @Override
-    public String getControllerServiceName(final String serviceIdentifier) {
-        final ControllerServiceConfiguration status = controllerServiceMap.get(serviceIdentifier);
-        return status == null ? null : serviceIdentifier;
     }
 }

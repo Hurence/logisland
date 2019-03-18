@@ -134,11 +134,15 @@ public class MaxmindIpToGeoServiceTest {
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
 
         // create the controller service and link it to the test processor
-        final IpToGeoService service = (IpToGeoService) new MockMaxmindIpToGeoService(locale);
+        final IpToGeoService service = new MaxmindIpToGeoService();
         runner.addControllerService("ipToGeoService", service);
+        runner.setProperty(service, MaxmindIpToGeoService.LOOKUP_TIME, "true");
+        runner.setProperty(service, MaxmindIpToGeoService.MAXMIND_DATABASE_FILE_PATH, getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
+        runner.setProperty(service, MaxmindIpToGeoService.LOCALE, locale);
         runner.enableControllerService(service);
         runner.setProperty(TestProcessor.IP_TO_GEO_SERVICE, "ipToGeoService");
         runner.assertValid(service);
+        runner.assertValid();
 
         final IpToGeoService ipToGeoService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.IP_TO_GEO_SERVICE)
                 .asControllerService());
@@ -154,28 +158,5 @@ public class MaxmindIpToGeoServiceTest {
 
         // Compare maps
         assertEquals("Expected and result maps should be identical", expectedResult, result);
-    }
-
-    /**
-     * Just because
-     * runner.setProperty(service, MaxmindIpToGeoService.MAXMIND_DATABASE_FILE_PATH, "pathToDbFile");
-     * does not work if called after
-     * runner.addControllerService("ipToGeoService", service);
-     * and vice versa (runner controller service not implemented, so workaround for the moment)
-     */
-    public class MockMaxmindIpToGeoService extends MaxmindIpToGeoService {
-        public MockMaxmindIpToGeoService(String locale) {
-            super.locale = locale;
-        }
-
-        // Use a small test DB file we got from https://github.com/maxmind/MaxMind-DB/tree/master/test-data
-        // to avoid embedding a big maxmind db in our workspace
-        public void init(ControllerServiceInitializationContext context) throws InitializationException {
-
-            File file = new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile());
-            dbPath = file.getAbsolutePath();
-            lookupTime = true;
-            super.init(context);
-        }
     }
 }

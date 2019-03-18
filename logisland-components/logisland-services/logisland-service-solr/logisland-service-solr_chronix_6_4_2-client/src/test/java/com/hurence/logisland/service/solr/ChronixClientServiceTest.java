@@ -63,20 +63,14 @@ public class ChronixClientServiceTest {
     }
 
     private DatastoreClientService configureClientService(final TestRunner runner) throws InitializationException {
-        final Solr_6_4_2_ChronixClientService service = new MockSolrClientService();
-
-
         runner.setProperty(TestProcessor.SOLR_CLIENT_SERVICE, "service");
-        runner.setProperty("solr.collection", "chronix");
 
-        //shouldn't be automatic??
-        service.getSupportedPropertyDescriptors().stream()
-                .filter(p->p.getDefaultValue() != null)
-                .forEach(p->runner.setProperty(p, p.getDefaultValue()));
-
+        final Solr_6_4_2_ChronixClientService service = new MockSolrClientService();
         runner.addControllerService("service", service);
+        runner.setProperty(service, Solr_6_4_2_ChronixClientService.SOLR_COLLECTION, "chronix" );
+
         runner.enableControllerService(service);
-        //runner.assertValid(service);
+        runner.assertValid(service);
 
         return service;
     }

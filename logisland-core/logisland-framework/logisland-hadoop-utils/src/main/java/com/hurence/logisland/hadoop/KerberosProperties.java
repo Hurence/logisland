@@ -79,14 +79,15 @@ public class KerberosProperties {
         };
 
         this.kerberosPrincipal = new PropertyDescriptor.Builder()
-                .name("Kerberos Principal")
+                .name("kerberos.principal")
                 .required(false)
                 .description("Kerberos principal to authenticate as. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
                 .addValidator(kerberosConfigValidator)
                 .build();
 
         this.kerberosKeytab = new PropertyDescriptor.Builder()
-                .name("Kerberos Keytab").required(false)
+                .name("kerberos.keytab")
+                .required(false)
                 .description("Kerberos keytab associated with the principal. Requires logisland.kerberos.krb5.file to be set in your logisland.properties")
                 .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
                 .addValidator(kerberosConfigValidator)
