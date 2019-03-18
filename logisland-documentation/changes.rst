@@ -2,7 +2,7 @@ What's new in logisland ?
 =========================
 
 
-v1.0.0-RC1
+v1.1.0
 -------
 
 - add support for JMS kafka connect source
