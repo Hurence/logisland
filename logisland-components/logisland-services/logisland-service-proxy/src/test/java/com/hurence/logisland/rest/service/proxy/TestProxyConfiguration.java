@@ -61,10 +61,10 @@ public class TestProxyConfiguration {
             assertThat(proxyConfService, instanceOf(StandardProxyConfigurationService.class));
 
             ProxyConfiguration conf1 = proxyConfService.getConfiguration();
-            assertEquals(host == null ? "" : host, conf1.getProxyServerHost());
-            assertEquals(userName == null ? "" : userName, conf1.getProxyUserName());
-            assertEquals(password == null ? "" : password, conf1.getProxyUserPassword());
-            assertEquals(Integer.valueOf(port) == null ? "" : Integer.valueOf(port), conf1.getProxyServerPort());
+            assertEquals(host, conf1.getProxyServerHost());
+            assertEquals(userName, conf1.getProxyUserName());
+            assertEquals(password, conf1.getProxyUserPassword());
+            assertEquals(Integer.valueOf(port), conf1.getProxyServerPort());
             assertEquals(type == null ? Proxy.Type.DIRECT : Proxy.Type.valueOf(type), conf1.getProxyType());
 
             Proxy proxy1 = conf1.createProxy();

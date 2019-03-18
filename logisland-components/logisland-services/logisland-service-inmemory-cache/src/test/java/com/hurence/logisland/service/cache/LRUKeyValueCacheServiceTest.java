@@ -55,8 +55,9 @@ public class LRUKeyValueCacheServiceTest {
         runner.assertValid(service);
 
         // try to put a single cell
-        final CacheService cacheService = PluginProxy.unwrap(runner.getProcessContext().getPropertyValue(TestProcessor.CACHE_SERVICE)
-                .asControllerService());
+        final CacheService cacheService = PluginProxy.unwrap(
+                runner.getProcessContext().getPropertyValue(TestProcessor.CACHE_SERVICE).asControllerService()
+        );
 
         cacheService.set("1", "1");
         cacheService.set("2", "2");

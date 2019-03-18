@@ -57,7 +57,6 @@ public class TestHBase_1_1_2_ClientService {
         System.setProperty("java.security.krb5.kdc", "logisland.kdc");
 
         kerberosPropsWithFile = new KerberosProperties(new File("src/test/resources/krb5.conf"));
-
         kerberosPropsWithoutFile = new KerberosProperties(null);
     }
 
@@ -70,43 +69,31 @@ public class TestHBase_1_1_2_ClientService {
         when(table.getName()).thenReturn(TableName.valueOf(tableName));
 
         // no conf file or zk properties so should be invalid
-        MockHBaseClientService service = new MockHBaseClientService(table, kerberosPropsWithFile);
+        final MockHBaseClientService service = new MockHBaseClientService(table);
         runner.addControllerService("hbaseClientService", service);
-        runner.enableControllerService(service);
-
         runner.assertNotValid(service);
-        runner.removeControllerService(service);
 
         // conf file with no zk properties should be valid
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
-        runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES, "src/test/resources/hbase-site.xml");
         runner.enableControllerService(service);
 
         runner.assertValid(service);
-        runner.removeControllerService(service);
+        runner.disableControllerService(service);
 
         // only quorum and no conf file should be invalid
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_QUORUM, "localhost");
-        runner.enableControllerService(service);
 
         runner.assertNotValid(service);
-        runner.removeControllerService(service);
 
         // quorum and port, no znode, no conf file, should be invalid
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_QUORUM, "localhost");
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_CLIENT_PORT, "2181");
-        runner.enableControllerService(service);
 
         runner.assertNotValid(service);
-        runner.removeControllerService(service);
 
         // quorum, port, and znode, no conf file, should be valid
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_QUORUM, "localhost");
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_CLIENT_PORT, "2181");
@@ -114,10 +101,9 @@ public class TestHBase_1_1_2_ClientService {
         runner.enableControllerService(service);
 
         runner.assertValid(service);
-        runner.removeControllerService(service);
+        runner.disableControllerService(service);
 
         // quorum and port with conf file should be valid
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES, "src/test/resources/hbase-site.xml");
         runner.setProperty(service, HBase_1_1_2_ClientService.ZOOKEEPER_QUORUM, "localhost");
@@ -125,13 +111,13 @@ public class TestHBase_1_1_2_ClientService {
         runner.enableControllerService(service);
 
         runner.assertValid(service);
-        runner.removeControllerService(service);
+        runner.disableControllerService(service);
 
         // Kerberos - principal with non-set keytab and only hbase-site-security - valid because we need core-site-security to turn on security
-        service = new MockHBaseClientService(table, kerberosPropsWithFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES, "src/test/resources/hbase-site-security.xml");
         runner.setProperty(service, kerberosPropsWithFile.getKerberosPrincipal(), "test@REALM");
+        runner.setProperty(service, "logisland.kerberos.krb5.file", "src/test/resources/krb5.conf");
         runner.enableControllerService(service);
         runner.assertValid(service);
 
@@ -139,11 +125,9 @@ public class TestHBase_1_1_2_ClientService {
         runner.disableControllerService(service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES,
                 "src/test/resources/hbase-site-security.xml, src/test/resources/core-site-security.xml");
-        runner.enableControllerService(service);
         runner.assertNotValid(service);
 
         // Kerberos - add valid options
-        runner.disableControllerService(service);
         runner.setProperty(service, kerberosPropsWithFile.getKerberosKeytab(), "src/test/resources/fake.keytab");
         runner.setProperty(service, kerberosPropsWithFile.getKerberosPrincipal(), "test@REALM");
         runner.enableControllerService(service);
@@ -152,24 +136,19 @@ public class TestHBase_1_1_2_ClientService {
         // Kerberos - add invalid non-existent keytab file
         runner.disableControllerService(service);
         runner.setProperty(service, kerberosPropsWithFile.getKerberosKeytab(), "src/test/resources/missing.keytab");
-        runner.enableControllerService(service);
         runner.assertNotValid(service);
 
         // Kerberos - add invalid principal
-        runner.disableControllerService(service);
         runner.setProperty(service, kerberosPropsWithFile.getKerberosKeytab(), "src/test/resources/fake.keytab");
         runner.setProperty(service, kerberosPropsWithFile.getKerberosPrincipal(), "");
-        runner.enableControllerService(service);
         runner.assertNotValid(service);
 
         // Kerberos - valid props but the KerberosProperties has a null Kerberos config file so be invalid
-        service = new MockHBaseClientService(table, kerberosPropsWithoutFile);
         runner.addControllerService("hbaseClientService", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES,
                 "src/test/resources/hbase-site-security.xml, src/test/resources/core-site-security.xml");
         runner.setProperty(service, kerberosPropsWithoutFile.getKerberosKeytab(), "src/test/resources/fake.keytab");
         runner.setProperty(service, kerberosPropsWithoutFile.getKerberosPrincipal(), "test@REALM");
-        runner.enableControllerService(service);
         runner.assertNotValid(service);
     }
 
@@ -396,7 +375,7 @@ public class TestHBase_1_1_2_ClientService {
     }
 
     private MockHBaseClientService configureHBaseClientService(final TestRunner runner, final Table table) throws InitializationException {
-        final MockHBaseClientService service = new MockHBaseClientService(table, kerberosPropsWithFile);
+        final MockHBaseClientService service = new MockHBaseClientService(table);
         runner.addControllerService("hbaseClient", service);
         runner.setProperty(service, HBase_1_1_2_ClientService.HADOOP_CONF_FILES, "src/test/resources/hbase-site.xml");
         runner.enableControllerService(service);
@@ -435,20 +414,9 @@ public class TestHBase_1_1_2_ClientService {
 
         private Table table;
         private List<Result> results = new ArrayList<>();
-        private KerberosProperties kerberosProperties;
 
-        public MockHBaseClientService(final Table table, final KerberosProperties kerberosProperties) {
+        public MockHBaseClientService(final Table table) {
             this.table = table;
-            this.kerberosProperties = kerberosProperties;
-        }
-
-        @Override
-        protected KerberosProperties getKerberosProperties(File kerberosConfigFile) {
-            return kerberosProperties;
-        }
-
-        protected void setKerberosProperties(KerberosProperties properties) {
-            this.kerberosProperties = properties;
         }
 
         public void addResult(final String rowKey, final Map<String, String> cells, final long timestamp) {

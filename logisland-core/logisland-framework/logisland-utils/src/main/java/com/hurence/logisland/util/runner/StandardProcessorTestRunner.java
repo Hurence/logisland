@@ -15,23 +15,6 @@
  */
 package com.hurence.logisland.util.runner;
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import com.hurence.logisland.annotation.lifecycle.OnAdded;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
@@ -42,6 +25,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
+import com.hurence.logisland.processor.StandardValidationContext;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.RecordUtils;
@@ -70,8 +54,11 @@ public class StandardProcessorTestRunner implements TestRunner {
     private final Processor processor;
     private final MockProcessContext context;
     private final MockVariableRegistry variableRegistry;
+    private final MockControllerServiceLookup serviceLookup;
+
     private final List<Record> inputRecordsQueue;
     private final List<Record> outputRecordsList;
+
     private static Logger logger = LoggerFactory.getLogger(StandardProcessorTestRunner.class);
     private static final AtomicLong currentId = new AtomicLong(0);
 
@@ -84,20 +71,14 @@ public class StandardProcessorTestRunner implements TestRunner {
         this.inputRecordsQueue = new ArrayList<>();
         this.outputRecordsList = new ArrayList<>();
         this.variableRegistry = new MockVariableRegistry();
-        this.context = new MockProcessContext(processor);
-    }
-
-
-    @Override
-    public Processor getProcessor() {
-        return processor;
+        this.serviceLookup = new MockControllerServiceLookup();
+        this.context = new MockProcessContext(processor, this.serviceLookup);
     }
 
     @Override
     public ProcessContext getProcessContext() {
         return context;
     }
-
 
     @Override
     public void run() {
@@ -112,7 +93,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         this.context.setIdentifier(identifier);
     }
 
-
     @Override
     public void assertValid() {
         assertTrue("Processor is invalid", context.isValid());
@@ -123,12 +103,9 @@ public class StandardProcessorTestRunner implements TestRunner {
         assertFalse("Processor appears to be valid but expected it to be invalid", context.isValid());
     }
 
-
     @Override
     public void enqueue(final Record... records) {
-        for (final Record record : records) {
-            inputRecordsQueue.add(record);
-        }
+        Collections.addAll(inputRecordsQueue, records);
     }
 
     @Override
@@ -144,18 +121,9 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void enqueue(String[] values) {
-        for (final String value : values) {
-            enqueue(null, value);
-        }
-    }
-
-    @Override
     public void enqueue(final String key, String value) {
-
         final Record record = RecordUtils.getKeyValueRecord(key, value);
         enqueue(record);
-
     }
 
     @Override
@@ -234,39 +202,8 @@ public class StandardProcessorTestRunner implements TestRunner {
     }
 
     @Override
-    public void assertAllRecordsContainAttribute(String attributeName) {
-
-    }
-
-    @Override
-    public void assertAllRecords(RecordValidator validator) {
+    public void assertAllOutputRecords(RecordValidator validator) {
         outputRecordsList.forEach(validator::assertRecord);
-    }
-
-
-    @Override
-    public String getVariableValue(final String name) {
-        Objects.requireNonNull(name);
-
-        return null;
-        // return variableRegistry.getVariableValue(name);
-    }
-
-    @Override
-    public void setVariable(final String name, final String value) {
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(value);
-
-       /* final VariableDescriptor descriptor = new VariableDescriptor.Builder(name).build();
-        variableRegistry.setVariable(descriptor, value);*/
-    }
-
-    @Override
-    public String removeVariable(final String name) {
-        Objects.requireNonNull(name);
-
-        return null;
-        // return variableRegistry.removeVariable(new VariableDescriptor.Builder(name).build());
     }
 
     @Override
@@ -294,7 +231,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void disableControllerService(final ControllerService service) {
-        final ControllerServiceConfiguration configuration = context.getConfiguration(service.getIdentifier());
+        final MockControllerService configuration = serviceLookup.getConfiguration(service.getIdentifier());
         if (configuration == null) {
             throw new IllegalArgumentException("Controller Service " + service + " is not known");
         }
@@ -315,7 +252,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void enableControllerService(final ControllerService service) {
-        final ControllerServiceConfiguration configuration = context.getConfiguration(service.getIdentifier());
+        final MockControllerService configuration = serviceLookup.getConfiguration(service.getIdentifier());
         if (configuration == null) {
             throw new IllegalArgumentException("Controller Service " + service + " is not known");
         }
@@ -328,14 +265,20 @@ public class StandardProcessorTestRunner implements TestRunner {
 
         try {
          //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
-            final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(service.getIdentifier()));
-            initContext.addControllerServices(context);
+            final MockControllerServiceInitializationContext initContext =
+                    new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(service.getIdentifier()), this.serviceLookup);
 
-            for(Map.Entry<PropertyDescriptor, String> entry :  configuration.getProperties().entrySet()) {
+            for(Map.Entry<PropertyDescriptor, String> entry : configuration.getProperties().entrySet()) {
                 initContext.setProperty(entry.getKey().getName(), entry.getValue());
             }
 
             ReflectionUtils.invokeMethodsWithAnnotation(OnEnabled.class, service, initContext);
+
+            try {
+                service.initialize(initContext);
+            } catch (InitializationException ex) {
+                logger.error("Error during initialization", ex);
+            }
         } catch (final InvocationTargetException ite) {
             ite.getCause().printStackTrace();
             Assert.fail("Failed to enable Controller Service " + service + " due to " + ite.getCause());
@@ -349,7 +292,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public boolean isControllerServiceEnabled(final ControllerService service) {
-        final ControllerServiceConfiguration configuration = context.getConfiguration(service.getIdentifier());
+        final MockControllerService configuration = serviceLookup.getConfiguration(service.getIdentifier());
         if (configuration == null) {
             throw new IllegalArgumentException("Controller Service " + service + " is not known");
         }
@@ -368,7 +311,7 @@ public class StandardProcessorTestRunner implements TestRunner {
             Assert.fail("Failed to remove Controller Service " + service + " due to " + e);
         }
 
-        context.removeControllerService(service);
+        serviceLookup.removeControllerService(service);
     }
 
     @Override
@@ -378,18 +321,13 @@ public class StandardProcessorTestRunner implements TestRunner {
 
     @Override
     public void addControllerService(final String identifier, final ControllerService service, final Map<String, String> properties) throws InitializationException {
+        context.addControllerService(identifier, service, null);
 
+        final MockControllerServiceInitializationContext initContext =
+                new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier), this.serviceLookup);
 
-        final MockControllerServiceInitializationContext initContext = new MockControllerServiceInitializationContext(requireNonNull(service), requireNonNull(identifier));
-        initContext.addControllerServices(context);
-
-        for(Map.Entry<String, String> entry :  properties.entrySet()) {
+        for(Map.Entry<String, String> entry : properties.entrySet()) {
             initContext.setProperty(entry.getKey(), entry.getValue());
-        }
-
-        final Map<PropertyDescriptor, String> resolvedProps = new HashMap<>();
-        for (final Map.Entry<String, String> entry : properties.entrySet()) {
-            resolvedProps.put(service.getPropertyDescriptor(entry.getKey()), entry.getValue());
         }
 
         try {
@@ -398,18 +336,23 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new InitializationException(e);
         }
 
-        context.addControllerService(identifier, service, resolvedProps, null);
-        //needed to associate identifier to service see AbstractControllerService
         try {
+            //needed to associate identifier to service see AbstractControllerService
             service.initialize(initContext);
-        } catch (InitializationException ex) {
+        } catch (Exception ex) {
             logger.error("Error during initialization", ex);
         }
+        //Needed to save given properties for next use
+        //WARNING ! Must be after service.initialize(initContext) so that service identifier is correctly set
+        for(Map.Entry<String, String> entry : properties.entrySet()) {
+            setProperty(service, entry.getKey(), entry.getValue());
+        }
+
     }
 
     @Override
     public ControllerService getControllerService(final String identifier) {
-        return context.getControllerService(identifier);
+        return this.serviceLookup.getControllerService(identifier);
     }
 
     @Override
@@ -417,23 +360,21 @@ public class StandardProcessorTestRunner implements TestRunner {
 
 
         final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
-        final Collection<ValidationResult> results = context.getControllerService(service.getIdentifier()).validate(validationContext);
+        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
                 return;
             }
         }
-
         Assert.fail("Expected Controller Service " + service + " to be invalid but it is valid");
     }
 
     @Override
     public void assertValid(final ControllerService service) {
+        final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
 
-        final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
-
-        final Collection<ValidationResult> results = context.getControllerService(service.getIdentifier()).validate(validationContext);
+        final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
@@ -442,14 +383,30 @@ public class StandardProcessorTestRunner implements TestRunner {
         }
     }
 
-    private ControllerServiceConfiguration getConfigToUpdate(final ControllerService service) {
-        final ControllerServiceConfiguration configuration = context.getConfiguration(service.getIdentifier());
-        if (configuration == null) {
-            throw new IllegalArgumentException("Controller Service " + service + " is not known");
-        }
+    /**
+     *
+     * @param service
+     * @return config of service if it exists and disabled
+     */
+    private MockControllerService getConfigToUpdate(final ControllerService service) {
+        final MockControllerService configuration = getConfigOfService(service);
 
         if (configuration.isEnabled()) {
             throw new IllegalStateException("Controller service " + service + " cannot be modified because it is not disabled");
+        }
+
+        return configuration;
+    }
+
+    /**
+     *
+     * @param service
+     * @return config of service if it exists
+     */
+    private MockControllerService getConfigOfService(final ControllerService service) {
+        final MockControllerService configuration = this.serviceLookup.getConfiguration(service.getIdentifier());
+        if (configuration == null) {
+            throw new IllegalArgumentException("Controller Service " + service + " is not known");
         }
 
         return configuration;
@@ -464,7 +421,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     public ValidationResult setProperty(final ControllerService service, final PropertyDescriptor property, final String value) {
 
 
-        final ControllerServiceConfiguration configuration = getConfigToUpdate(service);
+        final MockControllerService configuration = getConfigToUpdate(service);
         final Map<PropertyDescriptor, String> curProps = configuration.getProperties();
         final Map<PropertyDescriptor, String> updatedProps = new HashMap<>(curProps);
 

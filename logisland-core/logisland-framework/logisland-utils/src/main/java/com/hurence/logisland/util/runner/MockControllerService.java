@@ -25,14 +25,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ControllerServiceConfiguration {
+public class MockControllerService {
 
     private final ControllerService service;
     private final AtomicBoolean enabled = new AtomicBoolean(false);
     private String annotationData;
     private Map<PropertyDescriptor, String> properties = new HashMap<>();
 
-    public ControllerServiceConfiguration(final ControllerService service) {
+    public MockControllerService(final ControllerService service) {
         this.service = service;
     }
 
@@ -72,4 +72,5 @@ public class ControllerServiceConfiguration {
     public Map<PropertyDescriptor, String> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
+
 }
