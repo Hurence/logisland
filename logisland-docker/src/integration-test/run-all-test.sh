@@ -46,7 +46,7 @@ run_test() {
 
 main() {
     my_dir="$(dirname "$0")"
-    cp ${my_dir}/../../../logisland-assembly/target/logisland-*.tar.gz ${my_dir}/../../full-container/logisland-current-bin.tar.gz
+    cp ${my_dir}/../../../logisland-assembly/target/logisland-*.tar.gz ${my_dir}/../../full-container/
     declare -i FINAL_EXIT_CODE=0
     # catch unexpected failures, do cleanup and output an error message
     trap 'cleanup ; printf "${RED}Tests Failed For Unexpected Reasons${NC}\n"'\

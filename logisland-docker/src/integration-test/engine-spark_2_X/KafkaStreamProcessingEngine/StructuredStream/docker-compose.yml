@@ -16,6 +16,8 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+    volumes:
+      - kafka-home:/opt/kafka_2.11-0.10.0.1/
     environment:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ADVERTISED_HOST_NAME: kafka
@@ -36,6 +38,11 @@ services:
     volumes:
       - .:/conf
       - ../../../docker-compose-shared-volume:/shared
-#    environment:
-#      KAFKA_ADVERTISED_PORT: 9092
-#      KAFKA_ADVERTISED_HOST_NAME: kafka
+      - kafka-home:/opt/kafka
+    environment:
+      KAFKA_HOME: /opt/kafka
+      KAFKA_BROKERS: kafka:9092
+      ZK_QUORUM: zookeeper:2181
+
+volumes:
+  kafka-home:
