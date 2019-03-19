@@ -728,6 +728,50 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.ConvertSimpleDateFormatFields: 
+
+ConvertSimpleDateFormatFields
+-----------------------------
+Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.processor.ConvertSimpleDateFormatFields
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
+   "**input.date.format**", "Simple date format representation of the input field to convert", "", "null", "", ""
+   "**timezone**", "Specify the timezone (default is CET)", "", "CET", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to convert", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
 .. _com.hurence.logisland.processor.DebugStream: 
 
 DebugStream
