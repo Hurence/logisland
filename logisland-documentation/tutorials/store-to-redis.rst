@@ -107,7 +107,7 @@ The second processor  will handle ``Records`` produced by the ``SplitText`` to i
 
 2. Launch the script
 --------------------
-For this tutorial we will handle some apache logs with a splitText parser and send them to Elastiscearch
+For this tutorial we will handle some apache logs with a splitText parser and send them to Redis
 Connect a shell to your logisland container to launch the following streaming jobs.
 
 For ElasticSearch :
