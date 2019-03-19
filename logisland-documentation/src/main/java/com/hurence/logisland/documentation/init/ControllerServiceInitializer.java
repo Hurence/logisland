@@ -27,6 +27,7 @@ import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
 import com.hurence.logisland.util.runner.MockControllerServiceInitializationContext;
+import com.hurence.logisland.util.runner.MockControllerServiceLookup;
 
 public class ControllerServiceInitializer implements ConfigurableComponentInitializer {
 
@@ -41,7 +42,8 @@ public class ControllerServiceInitializer implements ConfigurableComponentInitia
 
 
         final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
-        final MockControllerServiceInitializationContext context = new MockControllerServiceInitializationContext(controllerService, null);
+        final MockControllerServiceInitializationContext context = new MockControllerServiceInitializationContext(controllerService,
+                null, new MockControllerServiceLookup());
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, controllerService, logger, context);
 
     }

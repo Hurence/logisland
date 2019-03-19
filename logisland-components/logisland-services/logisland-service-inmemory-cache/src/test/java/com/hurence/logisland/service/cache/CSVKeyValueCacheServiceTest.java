@@ -31,7 +31,7 @@ public class CSVKeyValueCacheServiceTest {
 
 
     @Test
-    public void testLookup() throws InitializationException, IOException {
+    public void testLookup() throws InitializationException {
 
         final TestRunner runner = TestRunners.newTestRunner(new TestProcessor());
         runner.setProperty(TestProcessor.CACHE_SERVICE, "lookup_service");
@@ -40,21 +40,21 @@ public class CSVKeyValueCacheServiceTest {
         File file = new File(getClass().getClassLoader().getResource("lookup.csv").getFile());
         String dbPath = file.getAbsolutePath();
 
-        runner.setProperty(CSVKeyValueCacheService.DATABASE_FILE_PATH, dbPath);
-        runner.setProperty(CSVKeyValueCacheService.CSV_FORMAT, "excel_fr");
-        runner.setProperty(CSVKeyValueCacheService.FIRST_LINE_HEADER, "true");
-        runner.setProperty(CSVKeyValueCacheService.ROW_KEY, "tagname");
-        runner.setProperty(CSVKeyValueCacheService.ENCODING_CHARSET, "ISO-8859-1");
-        runner.setProperty(CacheService.CACHE_SIZE, "20000");
-
         // create the controller service and link it to the test processor
         final CSVKeyValueCacheService service = new CSVKeyValueCacheService();
         runner.addControllerService("lookup_service", service);
+        runner.setProperty(service, CSVKeyValueCacheService.DATABASE_FILE_PATH, dbPath);
+        runner.setProperty(service, CSVKeyValueCacheService.CSV_FORMAT, "excel_fr");
+        runner.setProperty(service, CSVKeyValueCacheService.FIRST_LINE_HEADER, "true");
+        runner.setProperty(service, CSVKeyValueCacheService.ROW_KEY, "tagname");
+        runner.setProperty(service, CSVKeyValueCacheService.ENCODING_CHARSET, "ISO-8859-1");
+        runner.setProperty(service, CacheService.CACHE_SIZE, "20000");
+
         runner.enableControllerService(service);
 
-        final CSVKeyValueCacheService lookupService = PluginProxy.unwrap(runner.getProcessContext()
-                .getPropertyValue(TestProcessor.CACHE_SERVICE)
-                .asControllerService());
+        final CSVKeyValueCacheService lookupService = PluginProxy.unwrap(
+                runner.getProcessContext().getPropertyValue(TestProcessor.CACHE_SERVICE).asControllerService()
+        );
 
         Record result = lookupService.get("D112.M_TI41.F_CV");
 

@@ -50,8 +50,9 @@ public class CassandraServiceTest {
     // Use these ones instead if you want to use the "docker cassandra start" instead of embedded cassandra server maven plugin instance
     // Or use "mvn -DfailIfNoTests=false [clean] test -Dtest=CassandraServiceTest" If want to use embedded
     // cassandra server maven plugin running only this test out of the IDE
-//    private final static String CASSANDRA_HOST = "172.17.0.2"; // Set the right docker container ip
-//    private final static String CASSANDRA_PORT = "9042";
+
+    // If you want to run these test with IDE tou can use cassandra docker images, running it with this command :
+    // sudo docker run -i -p 19042:9042 cassandra
 
     private final static String TEST_KEYSPACE_A = "testkeyspace_a";
     private final static String TEST_KEYSPACE_B = "testkeyspace_b";
@@ -598,12 +599,18 @@ public class CassandraServiceTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
-        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
-        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
-        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.enableControllerService(service);
+
+        runner.assertNotValid();
+
+        runner.setProperty("default.collection", "just required");
+        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.assertValid();
 
         /**
          * Bulk insert records
@@ -649,11 +656,18 @@ public class CassandraServiceTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
-        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
-        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
-        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
+
+        runner.assertValid(service);
+        runner.assertNotValid();
+
+        runner.setProperty("default.collection", "just required");
+        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.assertValid();
         runner.enableControllerService(service);
 
         // Bulk insert records for table 1
@@ -955,11 +969,13 @@ public class CassandraServiceTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
-        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
-        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
-        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
+
+        runner.assertValid(service);
         runner.enableControllerService(service);
 
         /**

@@ -19,7 +19,7 @@ main() {
     export ZK_QUORUM="zookeeper:2181"
 
     echo "installing needed dependences for kafka connect"
-    bin/components.sh -i com.github.jcustenborder.kafka.connect:kafka-connect-simulator:0.1.118
+    bash bin/components.sh -i com.github.jcustenborder.kafka.connect:kafka-connect-simulator:0.1.118
 
     echo "starting logisland with ${CONF_FILE}"
     nohup bin/logisland.sh --conf /conf/${CONF_FILE} & > ${CONF_FILE}_job.log

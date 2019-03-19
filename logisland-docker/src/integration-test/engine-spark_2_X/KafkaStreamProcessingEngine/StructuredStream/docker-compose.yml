@@ -1,26 +1,30 @@
-version: "2"
+version: "3"
 services:
 
   zookeeper:
-#    container_name: zookeeper
     image: hurence/zookeeper
     hostname: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - logisland
 
   kafka:
-#    container_name: kafka
-    image: hurence/kafka
+    image: hurence/kafka:0.10.2.2-scala-2.11
     hostname: kafka
     links:
       - zookeeper
     ports:
-      - "9092:9092"
+      - '9092:9092'
+    volumes:
+      - kafka-home:/opt/kafka_2.11-0.10.2.2/
     environment:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_JMX_PORT: 7071
+    networks:
+      - logisland
 
   # Logisland container : which does the test
   logisland:
@@ -36,6 +40,16 @@ services:
     volumes:
       - .:/conf
       - ../../../docker-compose-shared-volume:/shared
-#    environment:
-#      KAFKA_ADVERTISED_PORT: 9092
-#      KAFKA_ADVERTISED_HOST_NAME: kafka
+      - kafka-home:/opt/kafka
+    environment:
+      KAFKA_HOME: /opt/kafka
+      KAFKA_BROKERS: kafka:9092
+      ZK_QUORUM: zookeeper:2181
+    networks:
+      - logisland
+
+volumes:
+  kafka-home:
+
+networks:
+  logisland:
