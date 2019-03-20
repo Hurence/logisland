@@ -36,7 +36,7 @@ Contents:
    generate_unique_ids
    index-jms-messages
    index-blockchain-transactions
-   index-excel-spreadsheets
+   index-excel-spreadsheet
    mqtt-to-historian
    iiot-opc-ua
    integrate-kafka-connect

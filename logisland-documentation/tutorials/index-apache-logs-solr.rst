@@ -5,11 +5,10 @@ Apache logs indexing with solr
 In the following getting started tutorial we'll drive you through the process of Apache log mining with LogIsland platform.
 The final data will be stored in solr
 
-.. note::
+This tutorial is very similar to :
 
-    This tutorial is very similar to :
-* `Apache logs indexing into elasticsearch <./index-apache-logs-es.rst>`_
-* `Apache logs indexing into mongodb <./index-apache-logs-mongo.rst>`_
+* `Apache logs indexing into mongodb <./index-apache-logs-mongo.html>`_
+* `Apache logs indexing into elasticsearch <./index-apache-logs-es.html>`_
 
 .. note::
 
