@@ -39,7 +39,8 @@ you have to copy this file into your Dockerfile directory you can now issue
 
 .. code-block:: sh
 
-    docker build --rm -t hurence/logisland:1.1.0 -f logisland-docker/full-container/Dockerfile .
+    docker build --rm -t hurence/logisland -f logisland-docker/full-container/Dockerfile .
+    docker tag hurence/logisland:latest hurence/logisland:1.1.0
 
 
 Running the image
