@@ -24,6 +24,9 @@ Contents:
 
    prerequisites
    index-apache-logs
+   index-apache-logs-es
+   index-apache-logs-mongo
+   index-apache-logs-solr
    store-to-redis
    threshold-alerting
    match-queries
