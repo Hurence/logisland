@@ -14,6 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Memory Cache Service Plugin</name>
+    <description>Module containing all logisland cache services</description>
 
     <dependencies>
         <dependency>

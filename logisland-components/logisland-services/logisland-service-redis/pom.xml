@@ -14,6 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Redis 4 Service Plugin</name>
+    <description>Module containing all logisland redis services</description>
 
     <properties>
         <!-- Versions -->

@@ -25,6 +25,8 @@
     </parent>
 
     <artifactId>logisland-service-hbase-api</artifactId>
+    <name>Logisland Hbase Service API</name>
+    <description>Hbase service api for logisland</description>
     <packaging>jar</packaging>
 
 

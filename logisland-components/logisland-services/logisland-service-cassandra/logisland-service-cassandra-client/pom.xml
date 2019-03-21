@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Cassandra 3 Service Plugin</name>
-
+    <description>Implementation of the cassandra service api</description>
 
     <properties>
         <cassandra.driver.version>3.5.1</cassandra.driver.version>

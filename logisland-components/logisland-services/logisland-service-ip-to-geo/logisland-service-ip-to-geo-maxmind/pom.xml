@@ -12,6 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logisland-service-ip-to-geo-maxmind</artifactId>
     <name>Maxmind IP to Geo Service Plugin</name>
+    <description>Implementation of the Ip2geo service api</description>
     <packaging>jar</packaging>
 
 

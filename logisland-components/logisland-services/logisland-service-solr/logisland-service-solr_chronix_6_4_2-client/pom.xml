@@ -14,6 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Chronix-Solr Service Plugin</name>
+    <description>An Implementation of the datastore logisland api for Chronix</description>
 
     <repositories>
         <repository>

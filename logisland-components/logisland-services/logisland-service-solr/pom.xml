@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <name>Logisland Solr Service Packages</name>
-
+    <description>Module containing all logisland solr services</description>
 
     <properties>
 

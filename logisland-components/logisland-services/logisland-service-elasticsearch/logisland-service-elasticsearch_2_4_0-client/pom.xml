@@ -13,7 +13,7 @@
     <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
     <packaging>jar</packaging>
     <name>Elasticsearch 2.4.0 Service Plugin</name>
-
+    <description>Implementation of the elasticsearch service api</description>
 
     <properties>
         <!-- Versions -->

@@ -27,6 +27,7 @@
     <packaging>pom</packaging>
 
     <name>Logisland Cassandra Service Packages</name>
+    <description>Module containing all logisland cassandra services</description>
 
 
     <modules>

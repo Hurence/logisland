@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Cassandra 3 Service API</name>
-
+    <description>cassandra service api for logisland</description>
 
     <properties>
         <!-- Encoding -->

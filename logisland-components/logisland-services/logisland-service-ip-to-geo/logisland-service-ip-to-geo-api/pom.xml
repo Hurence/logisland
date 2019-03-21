@@ -11,6 +11,7 @@
 
     <artifactId>logisland-service-ip-to-geo-api</artifactId>
     <name>IP2Geo Service API</name>
+    <description>Ip to geo localization service api for logisland</description>
 
     <packaging>jar</packaging>
     <dependencies>

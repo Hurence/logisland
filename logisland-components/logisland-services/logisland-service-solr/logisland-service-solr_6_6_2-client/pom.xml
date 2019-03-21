@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <name>Solr 6.x Service Plugin</name>
-
+    <description>Implementation of the solr service api</description>
 
     <properties>
         <!-- Versions -->

@@ -30,7 +30,7 @@
     <packaging>pom</packaging>
 
     <name>Logisland IP2Geo Service Packages</name>
-
+    <description>Module containing all logisland services that can geo localize an ip</description>
 
     <modules>
         <module>logisland-service-ip-to-geo-api</module>

@@ -13,7 +13,7 @@
     <artifactId>logisland-service-mongodb-api</artifactId>
     <packaging>jar</packaging>
     <name>MongoDB Service API</name>
-
+    <description>MongoDB service api for logisland</description>
 
     <properties>
         <!-- Encoding -->

@@ -12,7 +12,7 @@
     <artifactId>logisland-mongodb</artifactId>
     <packaging>pom</packaging>
     <name>Logisland MongoDB Service Packages</name>
-
+    <description>Module containing all logisland mongodb services</description>
 
     <modules>
         <module>logisland-service-mongodb-api</module>

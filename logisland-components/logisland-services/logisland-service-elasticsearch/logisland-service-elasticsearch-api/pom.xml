@@ -26,6 +26,7 @@
 
     <artifactId>logisland-service-elasticsearch-api</artifactId>
     <name>Logisland Elasticsearch Service API</name>
+    <description>Elasticsearch service api for logisland</description>
     <packaging>jar</packaging>
 
     <dependencies>

@@ -27,6 +27,7 @@
 
     <artifactId>logisland-service-elasticsearch</artifactId>
     <name>Logisland Elasticsearch Services</name>
+    <description>Module containing all logisland elasticsearch services</description>
     <packaging>pom</packaging>
 
     <modules>
