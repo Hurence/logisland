@@ -100,7 +100,7 @@ ___________________
 You can install two things of components:
 
 * A logisland plugin
-* A kafka connect source or sink (more information on `connectors section <connectors.rst>`_)
+* A kafka connect source or sink (more information on `connectors section <connectors.html>`_)
 
 
 The generic syntax for both is:
@@ -144,7 +144,7 @@ Which module contains my component?
 
 You can easily know with module you require to install in case you need a specific component.
 
-The `component documentation <components.rst>`_ contains a *Module* section for each component. It will tell you the artifact you should install.
+The `component documentation <components.html>`_ contains a *Module* section for each component. It will tell you the artifact you should install.
 
 
 
