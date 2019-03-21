@@ -935,7 +935,53 @@ com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC1
 
 Class
 _____
-com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+, and whether a property is considered "sensitive", meaning that its value will be encrypted. Before entering a value in a sensitive property, ensure that the **logisland.properties** file has an entry for the property **logisland.sensitive.props.key**.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "No retry policy (when a request fail there won't be any retry.), wait a fixed amount of time between retries (wait a fixed amount of time between retries, using user put retry number and throttling delay), custom exponential policy (time waited between retries grow exponentially, using user put retry number and throttling delay), es default exponential policy (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "", ""
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "", ""
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "", ""
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "", ""
+   "bulk.size", "bulk size in MB", "", "5", "", ""
+   "flush.interval", "flush interval in sec", "", "5", "", ""
+   "concurrent.requests", "setConcurrentRequests", "", "2", "", ""
+   "**cluster.name**", "Name of the ES cluster (for example, elasticsearch_brew). Defaults to 'elasticsearch'", "", "elasticsearch", "", ""
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "", ""
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "", ""
+   "username", "Username to access the Elasticsearch cluster", "", "null", "", ""
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", ""
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "", ""
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "", ""
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "", ""
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "", ""
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.0.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.0.0-RC1
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
 
 Tags
 ____

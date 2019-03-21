@@ -29,10 +29,12 @@
     <name>Logisland Elasticsearch Services</name>
     <packaging>pom</packaging>
 
+
     <modules>
         <module>logisland-service-elasticsearch-api</module>
         <module>logisland-service-elasticsearch_2_4_0-client</module>
         <module>logisland-service-elasticsearch_5_4_0-client</module>
+        <module>logisland-service-elasticsearch_6_6_2-client</module>
     </modules>
 
 

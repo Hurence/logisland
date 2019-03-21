@@ -116,7 +116,7 @@ Then we also define her Elasticsearch service that will be used later in the ``B
 .. code-block:: yaml
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
       type: service
       documentation: elasticsearch service
       configuration:

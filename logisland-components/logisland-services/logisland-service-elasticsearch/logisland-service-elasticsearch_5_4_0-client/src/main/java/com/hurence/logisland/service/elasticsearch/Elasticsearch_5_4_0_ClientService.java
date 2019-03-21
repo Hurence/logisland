@@ -123,7 +123,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     /**
-     * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
+     * Instantiate ElasticSearch Client. This should be called by subclasses' @OnScheduled method to create a client
      * if one does not yet exist. If called when scheduled, closeClient() should be called by the subclasses' @OnStopped
      * method so the client will be destroyed when the processor is stopped.
      *
@@ -489,10 +489,10 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void copyCollection(String reindexScrollTimeout, String src, String dst)
+    public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex)
             throws DatastoreClientServiceException {
 
-        SearchResponse scrollResp = esClient.prepareSearch(src)
+        SearchResponse scrollResp = esClient.prepareSearch(srcIndex)
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setScroll(reindexScrollTimeout)
                 .setQuery(QueryBuilders.matchAllQuery()) // Match all query
@@ -516,7 +516,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
             }
 
             for (SearchHit hit : scrollResp.getHits()) {
-                IndexRequest request = new IndexRequest(dst, hit.type(), hit.id());
+                IndexRequest request = new IndexRequest(dstIndex, hit.type(), hit.id());
                 Map<String, Object> source = hit.getSource();
                 request.source(source);
                 bulkProcessor.add(request);
@@ -559,7 +559,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         try {
             PutMappingResponse rsp = builder.execute().get();
             if (!rsp.isAcknowledged()) {
-                throw new IOException("Elasticsearch mapping definition not acknowledged");
+                throw new DatastoreClientServiceException("Elasticsearch mapping definition not acknowledged");
             }
             return true;
         } catch (Exception e) {
