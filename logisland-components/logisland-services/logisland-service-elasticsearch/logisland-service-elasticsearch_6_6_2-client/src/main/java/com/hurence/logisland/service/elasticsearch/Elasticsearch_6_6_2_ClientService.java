@@ -371,7 +371,9 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
                     multiGetRequest.add(item);
                 }
             } else {
-                multiGetRequest.add(new MultiGetRequest.Item(index, type, String.valueOf(documentIds)));
+                for (String documentId : documentIds) {
+                    multiGetRequest.add(index, type, documentId);
+                }
             }
         }
 
