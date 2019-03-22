@@ -28,7 +28,6 @@ engine:
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.batchDuration: 2000
     spark.streaming.backpressure.enabled: false
-    spark.streaming.unpersist: false
     spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 3000
     spark.streaming.timeout: -1

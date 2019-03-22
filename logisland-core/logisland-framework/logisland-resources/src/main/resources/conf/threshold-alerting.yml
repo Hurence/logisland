@@ -22,8 +22,6 @@ engine:
     spark.serializer: org.apache.spark.serializer.KryoSerializer
     spark.streaming.batchDuration: 300
     spark.streaming.backpressure.enabled: false
-    spark.streaming.unpersist: false
-    spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 3000
     spark.streaming.timeout: -1
     spark.streaming.unpersist: false
@@ -134,7 +132,7 @@ engine:
             max.memory: 64800000
             max.prepared.statements: 5
             allow.no.brace: false
-            computed1: return cache("logisland.hurence.com").value * 10.2;
+            computed1: return cache("204.138.95.105").value * 10.2;
 
 
         # all the parsed records are added to datastore by bulk
@@ -182,7 +180,7 @@ engine:
             max.memory: 12800000
             max.prepared.statements: 5
             record.ttl: 30000
-            threshold1: cache("logisland.hurence.com").value > 2000.0
+            threshold1: cache("204.138.95.105").value > 2000.0
 
         - processor: compute_alerts1
           component: com.hurence.logisland.processor.alerting.CheckAlerts

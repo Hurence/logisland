@@ -9,6 +9,7 @@ v1.1.0
 - add support for JDBC kafka connect source
 - add Cassandra datastore service
 - support all Kafka connect sinks
+- add KafkaStreams engine
 
 
 v0.14.0
