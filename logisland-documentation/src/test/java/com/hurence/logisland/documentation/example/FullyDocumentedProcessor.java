@@ -34,7 +34,13 @@ import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
 
 @Tags({"one", "two", "three"})
-@CapabilityDescription("This is a processor that is used to test documentation.")
+@CapabilityDescription("This is a processor that is used to test documentation.\n" +
+        "It contains several lines so we verify it works\n" +
+        "Below a list :\n" +
+        "* i am the first element\n" +
+        "* i am the second element\n" +
+        "\n" +
+        "\tI should also support tabulation")
 @WritesAttributes({
     @WritesAttribute(attribute = "first", description = "this is the first attribute i write"),
     @WritesAttribute(attribute = "second")})

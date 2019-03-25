@@ -4,6 +4,7 @@
 
 # generated documentation
 logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/
+logisland-documentation/components.rst
 
 # Eclipse
 **/.project

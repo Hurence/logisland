@@ -22,16 +22,13 @@ import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.documentation.html.HtmlDocumentationWriter;
 import com.hurence.logisland.documentation.html.HtmlProcessorDocumentationWriter;
-import com.hurence.logisland.documentation.init.ControllerServiceInitializer;
-import com.hurence.logisland.documentation.init.EngineInitializer;
-import com.hurence.logisland.documentation.init.ProcessorInitializer;
-import com.hurence.logisland.documentation.init.RecordStreamInitializer;
 import com.hurence.logisland.documentation.json.JsonDocumentationWriter;
 import com.hurence.logisland.documentation.rst.RstDocumentationWriter;
 import com.hurence.logisland.documentation.util.ClassFinder;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.stream.RecordStream;
+import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
@@ -46,39 +43,13 @@ import java.util.TreeMap;
 
 /**
  * Uses the ExtensionManager to get a list of Processor, ControllerService, and
- * Reporting Task classes that were loaded and generate documentation for them.
+ * Connectors classes that were loaded and generate documentation for them.
  */
 public class DocGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(DocGenerator.class);
     public static final String OUTPUT_FILE = "components";
 
-    /**
-     * Generates documentation into the work/docs dir specified
-
-     public static void generate(final File docsDirectory, final String writerType) {
-    @SuppressWarnings("rawtypes") final Set<Class> extensionClasses = new HashSet<>();
-
-    // TODO add extensionmanager here
-    ///extensionClasses.addAll(ExtensionManager.getExtensions(Processor.class));
-
-
-    logger.debug("Generating documentation for: " + extensionClasses.size() + " components in: "
-    + docsDirectory);
-
-    for (final Class<?> extensionClass : extensionClasses) {
-    if (ConfigurableComponent.class.isAssignableFrom(extensionClass)) {
-    final Class<? extends ConfigurableComponent> componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
-    try {
-    logger.debug("Documenting: " + componentClass);
-    document(docsDirectory, componentClass, writerType);
-    } catch (Exception e) {
-    logger.warn("Unable to document: " + componentClass, e);
-    }
-    }
-    }
-    }
-     */
     /**
      * Generates documentation into the work/docs dir specified from a specified set of class
      */
@@ -93,8 +64,7 @@ public class DocGenerator {
                 extensionClasses.put(className, classLoader.loadClass(className));
             } catch (Exception e) {
                 logger.error("Unable to load class " + className, e);
-
-
+                throw new RuntimeException(e);//so we know there is something wrong with doc generation
             }
         });
 
@@ -107,6 +77,7 @@ public class DocGenerator {
                     }
                 } catch (Throwable e) {
                     logger.error("Unable to load class " + clazz + " : " + e.getMessage());
+                    throw new RuntimeException(e);//so we know there is something wrong with doc generation
                 }
             }
 
@@ -117,9 +88,7 @@ public class DocGenerator {
 
 
         // write headers for single rst file
-        if (writerType.equals("rst"))
-
-        {
+        if (writerType.equals("rst")) {
             final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             if (baseDocumenationFile.exists())
                 baseDocumenationFile.delete();
@@ -128,14 +97,13 @@ public class DocGenerator {
                 writer.println("Components");
                 writer.println("==========");
                 writer.println("You'll find here the list of all usable Processors, Engines, Services and other components " +
-                        "that can be usable out of the box in your analytics streams");
+                        "that can be usable out of the box in your logisland jobs");
                 writer.println();
             } catch (FileNotFoundException e) {
                 logger.warn(e.getMessage());
+                throw new RuntimeException(e);//so we know there is something wrong with doc generation
             }
-        } else if (writerType.equals("json"))
-
-        {
+        } else if (writerType.equals("json")) {
             final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             if (baseDocumenationFile.exists())
                 baseDocumenationFile.delete();
@@ -144,17 +112,13 @@ public class DocGenerator {
                 writer.println("[");
             } catch (FileNotFoundException e) {
                 logger.warn(e.getMessage());
+                throw new RuntimeException(e);//so we know there is something wrong with doc generation
             }
         }
 
         Class[] sortedExtensionsClasses = new Class[extensionClasses.size()];
-        extensionClasses.values().
-
-                toArray(sortedExtensionsClasses);
-
-        Arrays.sort(sortedExtensionsClasses, new Comparator<Class>()
-
-        {
+        extensionClasses.values().toArray(sortedExtensionsClasses);
+        Arrays.sort(sortedExtensionsClasses, new Comparator<Class>() {
             @Override
             public int compare(Class s1, Class s2) {
                 // the +1 is to avoid including the '.' in the extension and to avoid exceptions
@@ -176,38 +140,30 @@ public class DocGenerator {
             }
         });
 
-
-        logger.info("Generating " + writerType + " documentation for " + Arrays.stream(sortedExtensionsClasses)
-                .
-
-                        count() + " components in: "
-                + docsDirectory);
+        logger.info("Generating {} documentation for {} components in: {}",
+                writerType,
+                Arrays.stream(sortedExtensionsClasses).count(),
+                docsDirectory);
 
         Arrays.stream(sortedExtensionsClasses)
-                .
-
-                        forEach(extensionClass ->
-
-                        {
-                            final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
-                            try {
-                                document(docsDirectory, componentClass, writerType);
-
-                            } catch (Exception e) {
-                                logger.error("Unexpected error for " + extensionClass, e);
-                            }
-
-                        });
+                .forEach(extensionClass -> {
+                    final Class componentClass = extensionClass.asSubclass(ConfigurableComponent.class);
+                    try {
+                        document(docsDirectory, componentClass, writerType);
+                    } catch (Exception e) {
+                        logger.error("Unexpected error for " + extensionClass, e);
+                        throw new RuntimeException(e);//so we know there is something wrong with doc generation
+                    }
+                });
 
 
-        if (writerType.equals("json"))
-
-        {
+        if (writerType.equals("json")) {
             final File baseDocumenationFile = new File(docsDirectory, OUTPUT_FILE + "." + writerType);
             try (final PrintWriter writer = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
                 writer.println("]");
             } catch (FileNotFoundException e) {
                 logger.warn(e.getMessage());
+                throw new RuntimeException(e);//so we know there is something wrong with doc generation
             }
         }
 
@@ -230,8 +186,6 @@ public class DocGenerator {
 
         logger.info("Documenting: " + componentClass);
         final ConfigurableComponent component = PluginProxy.unwrap(PluginLoader.loadPlugin(componentClass.getCanonicalName()));
-        final ConfigurableComponentInitializer initializer = getComponentInitializer(componentClass);
-        initializer.initialize(component);
 
         final DocumentationWriter writer = getDocumentWriter(componentClass, writerType);
 
@@ -241,8 +195,8 @@ public class DocGenerator {
             writer.write(component, output);
         } catch (Exception e) {
             logger.error("Error occurred documenting " + componentClass, e);
+            throw e;
         } finally {
-            initializer.teardown(component);
             if (writerType.equals("json")) {
                 try (final PrintWriter commaWriter = new PrintWriter(new FileOutputStream(baseDocumenationFile, true))) {
                     commaWriter.println(",");
@@ -254,8 +208,26 @@ public class DocGenerator {
     }
 
     /**
+     * Checks to see if a directory to write to has an additionalDetails.html in
+     * it already.
+     *
+     * @param directory to check
+     * @return true if additionalDetails.html exists, false otherwise.
+     */
+    private static boolean hasAdditionalInfo(File directory) {
+        return directory.list(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.equalsIgnoreCase(RstDocumentationWriter.ADDITIONAL_DETAILS_RST);
+            }
+
+        }).length > 0;
+    }
+
+    /**
      * Returns the DocumentationWriter for the type of component. Currently
-     * Processor, ControllerService, and ReportingTask are supported.
+     * Processor, ControllerService are supported.
      *
      * @param componentClass the class that requires a DocumentationWriter
      * @return a DocumentationWriter capable of generating documentation for
@@ -279,72 +251,69 @@ public class DocGenerator {
                 default:
                     return null;
             }
-        } else {
-            return null;
         }
-    }
-
-    /**
-     * Returns a ConfigurableComponentInitializer for the type of component.
-     * Currently Processor, ControllerService and ReportingTask are supported.
-     *
-     * @param componentClass the class that requires a
-     *                       ConfigurableComponentInitializer
-     * @return a ConfigurableComponentInitializer capable of initializing that
-     * specific type of class
-     */
-    private static ConfigurableComponentInitializer getComponentInitializer(
-            final Class<? extends ConfigurableComponent> componentClass) {
-        if (Processor.class.isAssignableFrom(componentClass)) {
-            return new ProcessorInitializer();
-        } else if (ProcessingEngine.class.isAssignableFrom(componentClass)) {
-            return new EngineInitializer();
-        } else if (RecordStream.class.isAssignableFrom(componentClass)) {
-            return new RecordStreamInitializer();
-        } else if (ControllerService.class.isAssignableFrom(componentClass)) {
-            return new ControllerServiceInitializer();
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks to see if a directory to write to has an additionalDetails.html in
-     * it already.
-     *
-     * @param directory to check
-     * @return true if additionalDetails.html exists, false otherwise.
-     */
-    private static boolean hasAdditionalInfo(File directory) {
-        return directory.list(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.equalsIgnoreCase(HtmlDocumentationWriter.ADDITIONAL_DETAILS_HTML);
-            }
-
-        }).length > 0;
+        throw new IllegalArgumentException("class '" + componentClass + "' is not supported");
     }
 
     public static void main(String[] args) {
-        DocGenerator.generate(new File("."), "rst");
+        Options options = new Options();
+        options.addOption(OptionBuilder
+                .withDescription("Print this help.")
+                .withLongOpt("help")
+                .create("h"));
+        options.addOption(OptionBuilder
+                .withDescription("dir to generate documentation")
+                .withLongOpt("doc-dir")
+                .hasArg()
+                .create("d"));
+
+        String dir = ".";
+        try {
+            CommandLine commandLine = new PosixParser().parse(options, args);
+            System.out.println(commandLine.getArgList());
+            if (commandLine.hasOption("h")) {
+                printUsage(options);
+            }
+            if (commandLine.hasOption("d")) {
+                dir = commandLine.getOptionValue("d");
+            }
+        } catch (ParseException e) {
+            if (!options.hasOption("h")) {
+                System.err.println(e.getMessage());
+                System.out.println();
+            }
+            printUsage(options);
+
+        }
+
+        File rootDocDir = new File(dir);
+        DocGenerator.generate(rootDocDir, "rst");
 
         try {
             FileUtils.copyDirectory(
-                    new File("."),
+                    rootDocDir,
                     new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs"),
                     new WildcardFileFilter("*.rst"));
 
             FileUtils.copyDirectory(
-                    new File("tutorials"),
+                    new File(rootDocDir, "tutorials"),
                     new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
                     new WildcardFileFilter("*.rst"));
 
             FileUtils.copyDirectory(
-                    new File("_static"),
+                    new File(rootDocDir, "_static"),
                     new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/_static"));
         } catch (IOException e) {
             logger.error("I/O error", e);
         }
+    }
+
+    private static void printUsage(Options options) {
+        System.out.println();
+        new HelpFormatter().printHelp(180,
+                "components.sh", "\n", options, "\n",
+                true);
+        System.exit(0);
+
     }
 }
