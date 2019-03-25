@@ -29,12 +29,11 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Add one or more field with a default value\n" +
-        "...")
+@CapabilityDescription("Add one or more field with a default value...")
 @DynamicProperty(name = "field to add",
-        supportsExpressionLanguage = false,
-        value = "a default value",
-        description = "Add a field to the record with the default value")
+        supportsExpressionLanguage = true,
+        value = "a value",
+        description = "Add a field to the record with the specified value")
 public class AddFields extends AbstractProcessor {
 
 

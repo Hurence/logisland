@@ -32,8 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)\n" +
-        "...")
+@CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)...")
 @DynamicProperty(name = "field to convert",
         supportsExpressionLanguage = false,
         value = "a default value",

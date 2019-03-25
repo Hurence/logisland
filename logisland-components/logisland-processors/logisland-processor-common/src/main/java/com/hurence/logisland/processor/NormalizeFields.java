@@ -29,8 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Tags({"record", "fields", "normalizer"})
-@CapabilityDescription("Changes the name of a field according to a provided name mapping\n" +
-        "...")
+@CapabilityDescription("Changes the name of a field according to a provided name mapping...")
 @DynamicProperty(name = "alternative mapping",
         supportsExpressionLanguage = true,
         value = "a comma separated list of possible field name",

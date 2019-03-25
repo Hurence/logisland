@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Compute tag cross from given formulas.\n" +
+@CapabilityDescription("Compute tag cross from given formulas.\n\n" +
         "- each dynamic property will return a new record according to the formula definition\n" +
         "- the record name will be set to the property name\n" +
         "- the record time will be set to the current timestamp\n\n" +

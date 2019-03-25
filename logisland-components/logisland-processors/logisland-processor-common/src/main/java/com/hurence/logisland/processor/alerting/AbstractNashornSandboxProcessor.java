@@ -35,8 +35,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Add one or more field with a default value\n" +
-        "...")
+@CapabilityDescription("Add one or more field with a default value...")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",

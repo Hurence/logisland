@@ -56,12 +56,12 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         " Updates have impacts on fields of the web session such as event counter, last visited page, " +
         " session duration, ...\n" +
         " Before updates are actually applied, checks are performed to detect rules that would trigger the creation" +
-        " of a new session:" +
+        " of a new session:\n\n" +
         "\tthe duration between the web session and the web event must not exceed the specified time-out,\n" +
         "\tthe web session and the web event must have timestamps within the same day (at midnight a new web session " +
         "is created),\n" +
         "\tsource of traffic (campaign, ...) must be the same on the web session and the web event.\n" +
-
+        "\n" +
         " When a breaking rule is detected, a new web session is created with a new session identifier where as" +
         " remaining web-events still have the original session identifier. The new session identifier is the original" +
         " session suffixed with the character '#' followed with an incremented counter. This new session identifier" +

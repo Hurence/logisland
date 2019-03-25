@@ -37,7 +37,6 @@ import java.util.*;
 
 @Tags({"record", "id", "idempotent", "generate", "modify"})
 @CapabilityDescription("modify id of records or generate it following defined rules")
-//TODO add others tags see others processor
 public class ModifyId extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

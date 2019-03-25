@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 @CapabilityDescription("Enrich input records with content indexed in datastore using multiget queries.\n" +
         "Each incoming record must be possibly enriched with information stored in datastore. \n" +
         "The plugin properties are :\n" +
+        "\n" +
         "- es.index (String)            : Name of the datastore index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
         "- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.\n" +
         "- es.key (String)              : Name of the datastore key on which the multiget query will be performed. This field is mandatory.\n" +
