@@ -49,7 +49,7 @@ import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
         "i-e: **" + PROP_UTM_SOURCE + "**, **" + PROP_UTM_MEDIUM + "**, **" + PROP_UTM_CAMPAIGN + "**, **" + PROP_UTM_CONTENT + "**, **" + PROP_UTM_TERM + "**)\n" +
         ", the referer (**" + PROP_REFERER + "** property) and the first visited page of the session (**" + PROP_FIRST_VISITED_PAGE + "** property).\n" +
         "By default the source of traffic information are placed in a flat structure (specified by the **" + PROP_SOURCE_OF_TRAFFIC_SUFFIX + "** property\n" +
-        " with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "_). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
+        "with a default value of " + SOURCE_OF_TRAFFIC_SUFFIX_NAME + "). To work properly the setSourceOfTraffic processor needs to have access to an \n" +
         "Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **" + PROP_ES_INDEX + "** property) " +
         "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field " +
         "(default being " + SEARCH_ENGINE_SITE + ") specified by the property **" + PROP_ES_SEARCH_ENGINE + "** with a value set to true. If the domain is a social network " +

@@ -42,7 +42,7 @@ import java.util.*;
                 + "\t- Flow exporter: aggregates packets into flows and exports flow records (binary format) towards one "
                 + "or more flow collectors\n\n"
                 + "\t- Flow collector: responsible for reception, storage and pre-processing of flow data received from "
-                + "a flow exporter\n"
+                + "a flow exporter\n\n"
                 + "The collected data are then available for analysis purpose (intrusion detection, traffic analysis...)\n"
                 + "Netflow are sent to kafka in order to be processed by logisland.\n"
                 + "In the tutorial we will simulate Netflow traffic using `nfgen <https://github.com/pazdera/NetFlow-Exporter-Simulator>`_. "

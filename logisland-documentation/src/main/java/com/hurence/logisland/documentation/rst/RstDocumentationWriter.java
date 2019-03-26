@@ -202,7 +202,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
             final boolean containsSensitiveProperties = containsSensitiveProperties(configurableComponent);
             rstWriter.print("In the list below, the names of required properties appear in ");
             rstWriter.printStrong("bold");
-            rstWriter.println(". Any other properties (not in bold) are considered optional. " +
+            rstWriter.print(". Any other properties (not in bold) are considered optional. " +
                     "The table also indicates any default values");
             if (containsExpressionLanguage) {
                 if (!containsSensitiveProperties) {
