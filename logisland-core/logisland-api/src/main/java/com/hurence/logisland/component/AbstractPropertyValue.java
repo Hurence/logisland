@@ -42,6 +42,9 @@ public abstract class AbstractPropertyValue implements PropertyValue {
 
     @Override
     public String asString() {
+        if (getRawValue() == null) {
+            return null;
+        }
         return getRawValue().toString();
     }
 
