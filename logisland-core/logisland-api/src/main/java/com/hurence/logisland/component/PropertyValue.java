@@ -21,6 +21,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.record.Record;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**

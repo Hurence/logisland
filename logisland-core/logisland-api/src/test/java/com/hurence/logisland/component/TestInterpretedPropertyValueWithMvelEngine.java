@@ -28,6 +28,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -161,6 +163,55 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         Assert.assertFalse(pv.asBoolean());
     }
 
+    @Test
+    public void validate_MVEL_manipulate_map_2() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${map.containsKey('key') && map[3] == true}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("key", "value");
+        map.put(3, true);
+
+        Assert.assertTrue(map.containsKey("key") && (boolean)map.get(3));
+
+        final Record inputRecord1 = new StandardRecord("es_multiget")
+                .setField("map", FieldType.MAP, map);
+
+        PropertyValue pv = ipv.evaluate(inputRecord1);
+
+        Assert.assertTrue(pv.asBoolean());
+        map.put(3, false);
+        pv = ipv.evaluate(inputRecord1);
+        Assert.assertFalse(pv.asBoolean());
+    }
+
+    @Test
+    public void validate_MVEL_manipulate_map_3() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${map.containsKey('key') && map.trois == true}";//this syntax works only when key is a string
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("key", "value");
+        map.put("trois", true);
+
+        Assert.assertTrue(map.containsKey("key") && (boolean)map.get("trois"));
+
+        final Record inputRecord1 = new StandardRecord("es_multiget")
+                .setField("map", FieldType.MAP, map);
+
+        PropertyValue pv = ipv.evaluate(inputRecord1);
+
+        Assert.assertTrue(pv.asBoolean());
+        map.put("trois", false);
+        pv = ipv.evaluate(inputRecord1);
+        Assert.assertFalse(pv.asBoolean());
+    }
 //    @Test
 //    public void validate_MVEL_manipulate_object() {
 //
@@ -212,6 +263,26 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         Assert.assertEquals(0.3f, pv.asFloat().floatValue(), 0.01f);
     }
 
+    @Test
+    public void validate_MVEL_manipulate_list_2() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${list[0] - list[1]}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        final List<Float> list = new ArrayList<>();
+        list.add(3.5f);
+        list.add(3.2f);
+        Assert.assertEquals(0.3f, list.get(0) - list.get(1), 0.01f);
+
+        final Record inputRecord1 = new StandardRecord("es_multiget")
+                .setField("list", FieldType.ARRAY, list);
+
+        PropertyValue pv = ipv.evaluate(inputRecord1);
+        Assert.assertEquals(0.3f, pv.asFloat().floatValue(), 0.01f);
+    }
+
 
     @Test
     public void validate_MVEL_manipulate_record() {
@@ -237,4 +308,83 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         Assert.assertFalse(pv.asBoolean());
     }
 
+    @Test
+    public void validate_MVEL_use_literal_list() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${[\"Jim\", \"Bob\", \"Smith\"]}";
+        final List<String> list = new ArrayList<>();
+        list.add("Jim");
+        list.add("Bob");
+        list.add("Smith");
+
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(null);
+
+        final List<String> listGenerated =  (List<String>) pv.getRawValue();
+        Assert.assertEquals(list, listGenerated);
+    }
+
+    @Test
+    public void validate_MVEL_use_literal_map() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${[\"Bob\" : \"Bob\", \"Michael\" : \"Michael\"]}";
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("Bob", "Bob");
+        map.put("Michael", "Michael");
+
+
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(null);
+
+        final  Map<Object, Object> mapGenerated =  (Map<Object, Object>) pv.getRawValue();
+        Assert.assertEquals(map, mapGenerated);
+    }
+
+    @Test
+    public void validate_MVEL_use_literal_array() {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${{\"Jim\", \"Bob\", \"Smith\"}}";
+        final String[] array = new String[] {"Jim", "Bob", "Smith"};
+
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(null);
+
+        final Object[] listGenerated = (Object[]) pv.getRawValue();
+        Assert.assertArrayEquals(array, listGenerated);
+    }
+
+    @Test
+    public void validate_MVEL_security_issue() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${new File(\"hacked\").createNewFile()}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(null);
+        Assert.assertNull(pv.asBoolean());//did not execute
+        File hackedFile = new File("hacked");
+        Assert.assertFalse(hackedFile.exists());
+    }
+
+    @Test
+    public void validate_MVEL_string_as_array() throws IOException {
+
+        InterpreterEngineFactory.setInterpreter("mvel");
+
+        String rawValue = "${'bonjour'[1]}";
+        InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
+
+        PropertyValue pv = ipv.evaluate(null);
+        Assert.assertEquals("o", pv.asString());
+    }
 }

@@ -73,7 +73,9 @@ public class InterpretedPropertyValue extends AbstractPropertyValue {
      */
     protected Object getRawValue(Record record) throws InterpreterEngineException {
         ScriptContext context = new SimpleScriptContext();
-        record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue().getRawValue(), ScriptContext.ENGINE_SCOPE));
+        if (record != null) {
+            record.getFieldsEntrySet().forEach(entry -> context.setAttribute(entry.getKey(), entry.getValue().getRawValue(), ScriptContext.ENGINE_SCOPE));
+        }
         return getRawValue(context);
     }
 
