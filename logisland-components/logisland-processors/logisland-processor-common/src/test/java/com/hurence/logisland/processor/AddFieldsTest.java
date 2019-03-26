@@ -26,6 +26,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class AddFieldsTest extends BaseSyslogTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AddFieldsTest.class);
@@ -304,5 +309,95 @@ public class AddFieldsTest extends BaseSyslogTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertFieldEquals("category", "S");
+    }
+
+    @Test
+    public void testOldTypeValueIsKept() {
+
+        Record record1 = new StandardRecord();
+        record1.setField("number", FieldType.LONG, 1L);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("number", "156");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("number", 156L);
+        out.assertFieldTypeEquals("number", FieldType.LONG);
+    }
+
+    @Test
+    public void testChoiceOfTypeForValue() {
+
+        Record record1 = new StandardRecord();
+        record1.setField("number", FieldType.STRING, "1");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("number", "156");
+        testRunner.setProperty("number.type", "LONG");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("number", 156L);
+        out.assertFieldTypeEquals("number", FieldType.LONG);
+    }
+
+    @Test
+    public void testChoiceOfTypeForValue2() {
+
+        Record record1 = new StandardRecord();
+        record1.setField("number", FieldType.STRING, "1");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("number", "156");
+        testRunner.setProperty("number.type", "long");
+        testRunner.assertNotValid();
+    }
+
+    @Test
+    public void testDocExample() {
+
+        Record record1 = new StandardRecord();
+        record1.setField("field1", FieldType.STRING, "value1");
+        record1.setField("field2", FieldType.STRING, "value2");
+        int sizeBeforeProcessing = record1.size();
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("concat2fields", "${field1 + \"_\" + field2}");
+        testRunner.setProperty("my_countries", "${[\"france\", \"allemagne\"]}");
+        testRunner.setProperty("my_countries.type", "ARRAY");
+        testRunner.setProperty("my_employees_by_countries", "${[\"france\" : 100, \"allemagne\" : 50]}");
+        testRunner.setProperty("my_employees_by_countries.type", "MAP");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("concat2fields", "value1_value2");
+        out.assertFieldTypeEquals("concat2fields", FieldType.STRING);
+        final ArrayList<String> expectedArray = new ArrayList<>();
+        expectedArray.add("france");
+        expectedArray.add("allemagne");
+        out.assertFieldEquals("my_countries", expectedArray);
+        out.assertFieldTypeEquals("my_countries", FieldType.ARRAY);
+        final Map<String, Integer> expectedmap = new HashMap<>();
+        expectedmap.put("france", 100);
+        expectedmap.put("allemagne", 50);
+        out.assertFieldEquals("my_employees_by_countries", expectedmap);
+        out.assertFieldTypeEquals("my_employees_by_countries", FieldType.MAP);
+        out.assertRecordSizeEquals(sizeBeforeProcessing + 3);//should only have 3 more fields
     }
 }
