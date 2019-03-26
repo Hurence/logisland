@@ -32,6 +32,11 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -61,21 +66,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 
-
-
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
@@ -143,37 +135,28 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
         }
 
         try {
-            final String clusterName = context.getPropertyValue(CLUSTER_NAME).asString();
-            final String pingTimeout = context.getPropertyValue(PING_TIMEOUT).asString();
-            final String samplerInterval = context.getPropertyValue(SAMPLER_INTERVAL).asString();
             final String username = context.getPropertyValue(USERNAME).asString();
             final String password = context.getPropertyValue(PASSWORD).asString();
-
-            Settings.Builder settingsBuilder = Settings.builder()
-                    .put("cluster.name", clusterName)
-                    .put("client.transport.ping_timeout", pingTimeout)
-                    .put("client.transport.nodes_sampler_interval", samplerInterval);
-
-            String shieldUrl = context.getPropertyValue(PROP_SHIELD_LOCATION).asString();
-
-            // Set username and password for Shield
-            if (!StringUtils.isEmpty(username)) {
-                StringBuffer shieldUser = new StringBuffer(username);
-                if (!StringUtils.isEmpty(password)) {
-                    shieldUser.append(":");
-                    shieldUser.append(password);
-                }
-                settingsBuilder.put("shield.user", shieldUser.toString());
-
-            }
-
-            //initShield(shieldUrl, username, password);
-
             final String hosts = context.getPropertyValue(HOSTS).asString();
+
             esHosts = getEsHosts(hosts);
 
             if (esHosts != null) {
+
                 RestClientBuilder builder = RestClient.builder(esHosts);
+
+                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
+                    final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+                    builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                                @Override
+                                public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                                    return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                                }
+                            });
+                }
+
                 esClient = new RestHighLevelClient(builder);
             }
 
@@ -181,42 +164,6 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
             getLogger().error("Failed to create Elasticsearch client due to {}", new Object[]{e}, e);
             throw new RuntimeException(e);
         }
-    }
-
-    private void initShield(String shieldUrl, String username, String password){
-
-        // See if the Elasticsearch Shield JAR location was specified, and add the plugin if so. Also create the
-        // authorization token if username and password are supplied.
-        final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        if (!StringUtils.isBlank(shieldUrl)) {
-
-
-            try {
-                ClassLoader shieldClassLoader = new URLClassLoader(new URL[]{new File(shieldUrl).toURI().toURL()}, this.getClass().getClassLoader());
-                Thread.currentThread().setContextClassLoader(shieldClassLoader);
-
-                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
-
-                    // Need a couple of classes from the Shield plugin to build the token
-                    Class usernamePasswordTokenClass =
-                            Class.forName("org.elasticsearch.shield.authc.support.UsernamePasswordToken", true, shieldClassLoader);
-
-                    Class securedStringClass =
-                            Class.forName("org.elasticsearch.shield.authc.support.SecuredString", true, shieldClassLoader);
-
-                    Constructor<?> securedStringCtor = securedStringClass.getConstructor(char[].class);
-                    Object securePasswordString = securedStringCtor.newInstance(password.toCharArray());
-
-                    Method basicAuthHeaderValue = usernamePasswordTokenClass.getMethod("basicAuthHeaderValue", String.class, securedStringClass);
-                    authToken = (String) basicAuthHeaderValue.invoke(null, username, securePasswordString);
-                }
-            } catch (Exception shieldLoadException) {
-                getLogger().debug("Did not detect Elasticsearch Shield plugin, secure connections and/or authorization will not be available");
-            }
-        } else {
-            //logger.debug("No Shield plugin location specified, secure connections and/or authorization will not be available");
-        }
-        Thread.currentThread().setContextClassLoader(originalClassLoader);
     }
 
     /**
@@ -623,7 +570,6 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
             sourceBuilder.from(0);
             sourceBuilder.size(60);
             sourceBuilder.explain(true);
-            //TODO docType ?
 
             searchRequest.source(sourceBuilder);
 

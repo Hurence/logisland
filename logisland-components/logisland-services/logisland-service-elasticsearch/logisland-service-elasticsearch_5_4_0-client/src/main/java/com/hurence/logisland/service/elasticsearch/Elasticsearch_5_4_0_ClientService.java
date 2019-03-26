@@ -167,7 +167,6 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
                     shieldUser.append(password);
                 }
                 settingsBuilder.put("shield.user", shieldUser);
-
             }
 
             TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);

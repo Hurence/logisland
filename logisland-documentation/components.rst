@@ -935,7 +935,7 @@ com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC1
 
 Class
 _____
-com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
 
 Tags
 ____

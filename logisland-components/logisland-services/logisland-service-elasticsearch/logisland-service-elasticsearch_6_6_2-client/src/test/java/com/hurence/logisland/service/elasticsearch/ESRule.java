@@ -17,16 +17,12 @@
 package com.hurence.logisland.service.elasticsearch;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-
-import java.time.Duration;
 
  /**
  * A JUnit rule which starts an embedded elastic-search docker container.
@@ -72,16 +68,4 @@ public class ESRule implements TestRule {
         return client;
     }
 
-    /**
-     * When data is added to an index, it is not visible in searches until the next "refresh" has been performed.
-     * Refreshes are normally done every second, but this makes it explicit..
-     */
-    public void refresh(String index) {
-        try {
-            RefreshRequest request = new RefreshRequest(index);
-            client.indices().refresh(request, RequestOptions.DEFAULT);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to refresh index", e);
-        }
-    }
 }

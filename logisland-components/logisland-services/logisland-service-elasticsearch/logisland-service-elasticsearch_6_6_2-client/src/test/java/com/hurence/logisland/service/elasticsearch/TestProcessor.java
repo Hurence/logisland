@@ -20,7 +20,6 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 
 import java.util.ArrayList;
 import java.util.Collection;

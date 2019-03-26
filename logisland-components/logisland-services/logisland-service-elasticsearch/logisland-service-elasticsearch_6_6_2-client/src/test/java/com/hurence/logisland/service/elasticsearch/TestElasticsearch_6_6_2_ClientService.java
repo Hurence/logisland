@@ -172,15 +172,15 @@ public class TestElasticsearch_6_6_2_ClientService {
 
         // Add a mapping to foo
         result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-//        Assert.assertEquals(true, result);
+        Assert.assertEquals(true, result);
 
         // Add the same mapping again
         result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-        //       Assert.assertEquals(true, result);
+        Assert.assertEquals(true, result);
 
         // Update a mapping with an incompatible mapping -- should fail
-        //result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
-        //Assert.assertEquals(false, result);
+        // result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
+        // Assert.assertEquals(false, result);
 
         // create alias
         elasticsearchClientService.createAlias("foo", "aliasFoo");
