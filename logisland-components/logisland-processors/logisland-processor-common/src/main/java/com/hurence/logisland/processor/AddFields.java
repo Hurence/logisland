@@ -60,6 +60,8 @@ public class AddFields extends AbstractProcessor {
         return Collections.singletonList(CONFLICT_RESOLUTION_POLICY);
     }
 
+    Set<PropertyDescriptor> dynamicProperties = Collections.emptySet();
+    String conflictPolicy;
 
     @Override
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {
@@ -72,32 +74,33 @@ public class AddFields extends AbstractProcessor {
                 .build();
     }
 
+
+    @Override
+    public void init(ProcessContext context) {
+        super.init(context);
+        this.dynamicProperties = getDynamicProperties(context);
+        this.conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
+    }
+
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        Map<String, String> fieldsNameMapping = getFieldsNameMapping(context);
         for (Record record : records) {
-            updateRecord(context, record, fieldsNameMapping);
+            updateRecord(context, record);
         }
         return records;
     }
 
 
-    private void updateRecord(ProcessContext context, Record record, Map<String, String> fieldsNameMapping) {
-
-        String conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
-
-        if ((fieldsNameMapping == null) || (fieldsNameMapping.keySet() == null)) {
-            return;
-        }
-        fieldsNameMapping.keySet().forEach(addedFieldName -> {
-            final String defaultValueToAdd = context.getPropertyValue(addedFieldName).evaluate(record).asString();
+    private void updateRecord(ProcessContext context, Record record) {
+        dynamicProperties.forEach(addedFieldDescriptor -> {
+            final String evaluatedValue = context.getPropertyValue(addedFieldDescriptor).evaluate(record).asString();
             // field is already here
-            if (record.hasField(addedFieldName)) {
+            if (record.hasField(addedFieldDescriptor.getName())) {
                 if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
-                    overwriteObsoleteFieldValue(record, addedFieldName, defaultValueToAdd);
+                    overwriteObsoleteFieldValue(record, addedFieldDescriptor.getName(), evaluatedValue);
                 }
             } else {
-                record.setStringField(addedFieldName, defaultValueToAdd);
+                record.setStringField(addedFieldDescriptor.getName(), evaluatedValue);
             }
         });
     }
@@ -108,22 +111,19 @@ public class AddFields extends AbstractProcessor {
         record.setField(fieldName, fieldToUpdate.getType(), newValue);
     }
 
-    private Map<String, String> getFieldsNameMapping(ProcessContext context) {
+    private Set<PropertyDescriptor> getDynamicProperties(ProcessContext context) {
         /**
          * list alternative regex
          */
-        Map<String, String> fieldsNameMappings = new HashMap<>();
+        Set<PropertyDescriptor> dynProperties = new HashSet<>();
         // loop over dynamic properties to add alternative regex
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
                 continue;
             }
-
-            final String fieldName = entry.getKey().getName();
-            final String mapping = entry.getValue();
-
-            fieldsNameMappings.put(fieldName, mapping);
+            dynProperties.add(entry.getKey());
         }
-        return fieldsNameMappings;
+        return dynProperties;
     }
+
 }
