@@ -130,62 +130,6 @@ public final class PropertyDescriptor implements Comparable<PropertyDescriptor>,
                 return csResult;
             }
         }
-/*
-
-        // if the property descriptor identifies a Controller Service, validate that the ControllerService exists, is of the correct type, and is valid
-        if (controllerServiceDefinition != null) {
-            final Set<String> validIdentifiers = context.getControllerServiceLookup().getControllerServiceIdentifiers(controllerServiceDefinition);
-            if (validIdentifiers != null && validIdentifiers.contains(input)) {
-                final ControllerService controllerService = context.getControllerServiceLookup().getControllerService(input);
-                if (!context.isValidationRequired(controllerService)) {
-                    return new ValidationResult.Builder()
-                            .input(input)
-                            .subject(getName())
-                            .valid(true)
-                            .build();
-                }
-
-                final String serviceId = controllerService.getIdentifier();
-                if (!isDependentServiceEnableable(context, serviceId)) {
-                    return new ValidationResult.Builder()
-                            .input(context.getControllerServiceLookup().getControllerServiceName(serviceId))
-                            .subject(getName())
-                            .valid(false)
-                            .explanation("Controller Service " + controllerService + " is disabled")
-                            .build();
-                }
-
-                final Collection<ValidationResult> validationResults = controllerService.validate(context.getControllerServiceValidationContext(controllerService));
-                final List<ValidationResult> invalidResults = new ArrayList<>();
-                for (final ValidationResult result : validationResults) {
-                    if (!result.isValid()) {
-                        invalidResults.add(result);
-                    }
-                }
-                if (!invalidResults.isEmpty()) {
-                    return new ValidationResult.Builder()
-                            .input(input)
-                            .subject(getName())
-                            .valid(false)
-                            .explanation("Controller Service is not valid: " + (invalidResults.size() > 1 ? invalidResults : invalidResults.get(0)))
-                            .build();
-                }
-
-                return new ValidationResult.Builder()
-                        .input(input)
-                        .subject(getName())
-                        .valid(true)
-                        .build();
-            } else {
-                return new ValidationResult.Builder()
-                        .input(input)
-                        .subject(getName())
-                        .valid(false)
-                        .explanation("Invalid Controller Service: " + input + " is not a valid Controller Service Identifier or does not reference the correct type of Controller Service")
-                        .build();
-            }
-        }
-        */
 
         for (final Validator validator : validators) {
             lastResult = validator.validate(this.name, input);
