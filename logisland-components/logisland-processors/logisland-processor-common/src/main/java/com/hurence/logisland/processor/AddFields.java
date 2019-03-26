@@ -40,20 +40,31 @@ import java.util.*;
                 supportsExpressionLanguage = true,
                 value = "Value of the field to add",
                 description = "Add a field to the record with the specified value. Expression language can be used." +
-                        "You can not add a field that end with '.type' as this suffix is used to specify the type of fields to add"),
-        @DynamicProperty(name = "Name of the field to add with the suffix '.type'",
+                        "You can not add a field that end with '.type' as this suffix is used to specify the type of fields to add",
+                nameForDoc = "fakeField"),
+        @DynamicProperty(name = "Name of the field to add with the suffix '.field.type'",
                 supportsExpressionLanguage = false,
                 value = "Type of the field to add",
                 description = "Add a field to the record with the specified type. These properties are only used if a correspondant property without" +
-                        " the suffix '.type' is already defined. If this property is not defined, default type for adding fields is String." +
-                        "You can only use Logisland predefined type fields.")
+                        " the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String." +
+                        "You can only use Logisland predefined type fields.",
+                nameForDoc = "fakeField.field.type"),
+        @DynamicProperty(name = "Name of the field to add with the suffix '.field.name'",
+                supportsExpressionLanguage = true,
+                value = "Name of the field to add using expression language",
+                description = "Add a field to the record with the specified name (which is evaluated using expression language). " +
+                        "These properties are only used if a correspondant property without" +
+                        " the suffix '.field.name' is already defined. If this property is not defined, " +
+                        "the name of the field to add is the key of the dynamic property.",
+                nameForDoc = "fakeField.field.name")
         })
 public class AddFields extends AbstractProcessor {
 
 
     private static final Logger logger = LoggerFactory.getLogger(AddFields.class);
 
-    private static final String DYNAMIC_PROPS_TYPE_SUFFIX = ".type";
+    public static final String DYNAMIC_PROPS_TYPE_SUFFIX = ".field.type";
+    public static final String DYNAMIC_PROPS_NAME_SUFFIX = ".field.name";
 
     private static final AllowableValue OVERWRITE_EXISTING =
             new AllowableValue("overwrite_existing", "overwrite existing field", "if field already exist");
@@ -77,6 +88,7 @@ public class AddFields extends AbstractProcessor {
 
     Set<PropertyDescriptor> dynamicFieldProperties = new HashSet<>();
     Map<String, PropertyDescriptor> dynamicTypeProperties = new HashMap<>();
+    Map<String, PropertyDescriptor> dynamicNameProperties = new HashMap<>();
     String conflictPolicy;
 
     @Override
@@ -87,10 +99,12 @@ public class AddFields extends AbstractProcessor {
                     .expressionLanguageSupported(false)
                     .addValidator(new StandardValidators.EnumValidator(FieldType.class))
                     .allowableValues(FieldType.values())
+                    .defaultValue(FieldType.STRING.getName().toUpperCase())
                     .required(false)
                     .dynamic(true)
                     .build();
-        } else {
+        }
+        if (propertyDescriptorName.endsWith(DYNAMIC_PROPS_NAME_SUFFIX)) {
             return new PropertyDescriptor.Builder()
                     .name(propertyDescriptorName)
                     .expressionLanguageSupported(true)
@@ -99,6 +113,13 @@ public class AddFields extends AbstractProcessor {
                     .dynamic(true)
                     .build();
         }
+        return new PropertyDescriptor.Builder()
+                .name(propertyDescriptorName)
+                .expressionLanguageSupported(true)
+                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                .required(false)
+                .dynamic(true)
+                .build();
     }
 
 
@@ -119,9 +140,13 @@ public class AddFields extends AbstractProcessor {
 
     private void updateRecord(ProcessContext context, Record record) {
         dynamicFieldProperties.forEach(addedFieldDescriptor -> {
-            final PropertyValue propValue = context.getPropertyValue(addedFieldDescriptor).evaluate(record);
-            if (!record.hasField(addedFieldDescriptor.getName()) || conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
-                setFieldValue(record, addedFieldDescriptor.getName(), propValue, context);
+            final PropertyValue propValueOfValue = context.getPropertyValue(addedFieldDescriptor).evaluate(record);
+            String fieldNameToAdd = addedFieldDescriptor.getName();
+            if (dynamicNameProperties.containsKey(fieldNameToAdd)) {
+                fieldNameToAdd = context.getPropertyValue(dynamicNameProperties.get(fieldNameToAdd)).evaluate(record).asString();
+            }
+            if (!record.hasField(fieldNameToAdd) || conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
+                setFieldValue(record, fieldNameToAdd, propValueOfValue, context);
             }
         });
     }
@@ -148,6 +173,7 @@ public class AddFields extends AbstractProcessor {
     private void initDynamicProperties(ProcessContext context) {
         dynamicFieldProperties.clear();
         dynamicTypeProperties.clear();
+        dynamicNameProperties.clear();
         // loop over dynamic properties to add alternative regex
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
@@ -155,10 +181,13 @@ public class AddFields extends AbstractProcessor {
             }
             if (entry.getKey().getName().endsWith(DYNAMIC_PROPS_TYPE_SUFFIX)) {
                 dynamicTypeProperties.put(StringUtils.removeEnd(entry.getKey().getName(), DYNAMIC_PROPS_TYPE_SUFFIX), entry.getKey());
-            } else {
-                dynamicFieldProperties.add(entry.getKey());
+                continue;
             }
-
+            if (entry.getKey().getName().endsWith(DYNAMIC_PROPS_NAME_SUFFIX)) {
+                dynamicNameProperties.put(StringUtils.removeEnd(entry.getKey().getName(), DYNAMIC_PROPS_NAME_SUFFIX), entry.getKey());
+                continue;
+            }
+            dynamicFieldProperties.add(entry.getKey());
         }
     }
 }

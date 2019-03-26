@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hurence.logisland.processor.AddFields.DYNAMIC_PROPS_NAME_SUFFIX;
+import static com.hurence.logisland.processor.AddFields.DYNAMIC_PROPS_TYPE_SUFFIX;
+
 public class AddFieldsTest extends BaseSyslogTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AddFieldsTest.class);
@@ -340,7 +343,7 @@ public class AddFieldsTest extends BaseSyslogTest {
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("number", "156");
-        testRunner.setProperty("number.type", "LONG");
+        testRunner.setProperty("number" + DYNAMIC_PROPS_TYPE_SUFFIX, "LONG");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -361,7 +364,7 @@ public class AddFieldsTest extends BaseSyslogTest {
         TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("number", "156");
-        testRunner.setProperty("number.type", "long");
+        testRunner.setProperty("number" + DYNAMIC_PROPS_TYPE_SUFFIX, "long");
         testRunner.assertNotValid();
     }
 
@@ -376,9 +379,9 @@ public class AddFieldsTest extends BaseSyslogTest {
         testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
         testRunner.setProperty("concat2fields", "${field1 + \"_\" + field2}");
         testRunner.setProperty("my_countries", "${[\"france\", \"allemagne\"]}");
-        testRunner.setProperty("my_countries.type", "ARRAY");
+        testRunner.setProperty("my_countries" + DYNAMIC_PROPS_TYPE_SUFFIX, "ARRAY");
         testRunner.setProperty("my_employees_by_countries", "${[\"france\" : 100, \"allemagne\" : 50]}");
-        testRunner.setProperty("my_employees_by_countries.type", "MAP");
+        testRunner.setProperty("my_employees_by_countries" + DYNAMIC_PROPS_TYPE_SUFFIX, "MAP");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -399,5 +402,30 @@ public class AddFieldsTest extends BaseSyslogTest {
         out.assertFieldEquals("my_employees_by_countries", expectedmap);
         out.assertFieldTypeEquals("my_employees_by_countries", FieldType.MAP);
         out.assertRecordSizeEquals(sizeBeforeProcessing + 3);//should only have 3 more fields
+    }
+
+    @Test
+    public void testWithEexpressionLanguageInName() {
+
+        Record record1 = new StandardRecord();
+        record1.setField("field1", FieldType.STRING, "value1");
+        record1.setField("field2", FieldType.STRING, "value2");
+        int sizeBeforeProcessing = record1.size();
+        TestRunner testRunner = TestRunners.newTestRunner(new AddFields());
+        testRunner.setProperty(NormalizeFields.CONFLICT_RESOLUTION_POLICY, NormalizeFields.OVERWRITE_EXISTING);
+        testRunner.setProperty("caulcalOfA", "${field1 + \"_\" + field2}");
+        testRunner.setProperty("caulcalOfA" + DYNAMIC_PROPS_NAME_SUFFIX, "${\"_\" + field1 + \"_\"}");
+        testRunner.setProperty("caulcalOfA" + DYNAMIC_PROPS_TYPE_SUFFIX, FieldType.STRING.getName().toUpperCase());
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldNotExists("caulcalOfA");
+        out.assertFieldEquals("_value1_", "value1_value2");
+        out.assertFieldTypeEquals("_value1_", FieldType.STRING);
+        out.assertRecordSizeEquals(sizeBeforeProcessing + 1);//should only have 3 more fields
     }
 }

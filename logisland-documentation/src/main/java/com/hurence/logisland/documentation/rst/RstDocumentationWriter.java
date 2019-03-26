@@ -325,22 +325,32 @@ public class RstDocumentationWriter implements DocumentationWriter {
             rstWriter.writeSectionTitle(3, "Dynamic Properties");
             rstWriter.println("Dynamic Properties allow the user to specify both the name and value of a property.");
             rstWriter.printCsvTable("dynamic-properties",
-                    new String[]{"Name", "Value", "Description", "EL"},
-                    new int[]{20, 20, 40, 10},
+                    new String[]{"Name", "Value", "Description", "Allowable Values", "Default Value", "EL"},
+                    new int[]{20, 20, 40, 40, 20, 10},
                     '\\');
 
             for (final DynamicProperty dynamicProperty : dynamicProperties) {
 
                 rstWriter.print("   \"");
-                rstWriter.print(dynamicProperty.name() == null ? null : dynamicProperty.name().replace("\"", "\\\""));
+                rstWriter.print(dynamicProperty.name().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.value() == null ? null : dynamicProperty.value().replace("\"", "\\\""));
+                rstWriter.print(dynamicProperty.value().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.description() == null ? null : dynamicProperty.description().replace("\"", "\\\""));
+                rstWriter.print(dynamicProperty.description().replace("\"", "\\\""));
+                rstWriter.print("\", ");
+
+                final PropertyDescriptor descriptorExample = configurableComponent.getPropertyDescriptor(dynamicProperty.nameForDoc());
+
+                rstWriter.print("\"");
+                writeValidValues(rstWriter, descriptorExample);
+                rstWriter.print("\", ");
+
+                rstWriter.print("\"");
+                rstWriter.print(descriptorExample.getDefaultValue() == null ? null : descriptorExample.getDefaultValue().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 if (dynamicProperty.supportsExpressionLanguage()) {
