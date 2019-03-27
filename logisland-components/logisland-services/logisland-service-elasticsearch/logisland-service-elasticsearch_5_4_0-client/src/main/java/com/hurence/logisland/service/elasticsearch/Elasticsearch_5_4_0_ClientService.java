@@ -25,8 +25,10 @@ import com.hurence.logisland.controller.AbstractControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionRequestValidationException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
@@ -121,7 +123,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     /**
-     * Instantiate ElasticSearch Client. This chould be called by subclasses' @OnScheduled method to create a client
+     * Instantiate ElasticSearch Client. This should be called by subclasses' @OnScheduled method to create a client
      * if one does not yet exist. If called when scheduled, closeClient() should be called by the subclasses' @OnStopped
      * method so the client will be destroyed when the processor is stopped.
      *
@@ -165,7 +167,6 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
                     shieldUser.append(password);
                 }
                 settingsBuilder.put("shield.user", shieldUser);
-
             }
 
             TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);
@@ -333,7 +334,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void flushBulkProcessor() {
+    public void bulkFlush() {
         bulkProcessor.flush();
     }
 
@@ -366,7 +367,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
+    public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords) throws DatastoreClientServiceException {
 
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
 
@@ -413,7 +414,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public boolean existsIndex(String indexName) throws IOException {
+    public boolean existsCollection(String indexName) throws DatastoreClientServiceException {
         // could also use  client.admin().indices().prepareExists(indexName).execute().get();
         IndicesExistsResponse ersp = IndicesExistsAction.INSTANCE.newRequestBuilder(esClient).setIndices(indexName).get();
         // TODO TK : is the following better ?
@@ -422,35 +423,41 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void refreshIndex(String indexName) throws Exception {
-        esClient.admin().indices().prepareRefresh(indexName).execute().get();
-    }
-
-    @Override
-    public void saveAsync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
-        esClient.prepareIndex(indexName, doctype).setSource(doc).execute().get();
+    public void refreshCollection(String indexName) throws DatastoreClientServiceException {
+        try {
+            esClient.admin().indices().prepareRefresh(indexName).execute().get();
+        }
+        catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
     public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
         esClient.prepareIndex(indexName, doctype).setSource(doc).execute().get();
-        refreshIndex(indexName);
+        refreshCollection(indexName);
     }
 
     @Override
-    public long countIndex(String indexName) throws Exception {
+    public long countCollection(String indexName) throws DatastoreClientServiceException {
         // There is no "count" method; instead make a "search for all" and set the desired number of returned
         // records to zero. No actual hits get returned, but the "metadata" for the result includes the total
         // number of matched records, ie the size.
-        SearchResponse rsp = esClient.prepareSearch(indexName)
-                .setQuery(QueryBuilders.matchAllQuery())
-                .setSize(0)
-                .execute().get();
+        SearchResponse rsp;
+        try {
+            rsp = esClient.prepareSearch(indexName)
+                    .setQuery(QueryBuilders.matchAllQuery())
+                    .setSize(0)
+                    .execute().get();
+        }
+        catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
         return rsp.getHits().getTotalHits();
     }
 
     @Override
-    public void createIndex(int numShards, int numReplicas, String indexName) throws IOException {
+    public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {
         // Define the index itself
         CreateIndexRequestBuilder builder = esClient.admin().indices().prepareCreate(indexName);
         builder.setSettings(Settings.builder()
@@ -466,23 +473,23 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
             getLogger().info("Created index {}", new Object[]{indexName});
         } catch (Exception e) {
             getLogger().error("Failed to create ES index", e);
-            throw new IOException("Failed to create ES index", e);
+            throw new DatastoreClientServiceException("Failed to create ES index", e);
         }
     }
 
     @Override
-    public void dropIndex(String indexName) throws IOException {
+    public void dropCollection(String indexName) throws DatastoreClientServiceException {
         try {
             esClient.admin().indices().prepareDelete(indexName).execute().get();
             getLogger().info("Delete index {}", new Object[]{indexName});
         } catch (Exception e) {
-            throw new IOException(String.format("Unable to delete index %s", indexName), e);
+            throw new DatastoreClientServiceException(String.format("Unable to delete index %s", indexName), e);
         }
     }
 
     @Override
-    public void copyIndex(String reindexScrollTimeout, String srcIndex, String dstIndex)
-            throws IOException {
+    public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex)
+            throws DatastoreClientServiceException {
 
         SearchResponse scrollResp = esClient.prepareSearch(srcIndex)
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
@@ -524,26 +531,26 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void createAlias(String indexName, String aliasName) throws IOException {
+    public void createAlias(String indexName, String aliasName) throws DatastoreClientServiceException {
         IndicesAliasesRequestBuilder builder = esClient.admin().indices().prepareAliases().addAlias(indexName, aliasName);
         try {
             IndicesAliasesResponse rsp = builder.execute().get();
             if (!rsp.isAcknowledged()) {
-                throw new IOException(String.format(
+                throw new DatastoreClientServiceException(String.format(
                         "Creation of elasticsearch alias '%s' for index '%s' not acknowledged.", aliasName, indexName));
             }
-        } catch (IOException e) {
+        } catch (DatastoreClientServiceException e) {
             getLogger().error("Failed to create elasticsearch alias {} for index {}", new Object[] {aliasName, indexName, e});
             throw e;
         } catch (ExecutionException | InterruptedException e) {
             String msg = String.format("Failed to create elasticsearch alias '%s' for index '%s'", aliasName, indexName);
-            throw new IOException(msg, e);
+            throw new DatastoreClientServiceException(e);
         }
     }
 
     @Override
     public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
-            throws IOException {
+            throws DatastoreClientServiceException {
 
         PutMappingRequestBuilder builder = esClient.admin().indices().preparePutMapping(indexName);
         builder.setType(doctype).setSource(mappingAsJsonString);
@@ -551,7 +558,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         try {
             PutMappingResponse rsp = builder.execute().get();
             if (!rsp.isAcknowledged()) {
-                throw new IOException("Elasticsearch mapping definition not acknowledged");
+                throw new DatastoreClientServiceException("Elasticsearch mapping definition not acknowledged");
             }
             return true;
         } catch (Exception e) {
@@ -560,6 +567,37 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
             // than throwing an exception.
             return false;
         }
+    }
+
+    @Override
+    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+      // For time being, support it through bulkPut
+        bulkPut(collectionName, record);
+    }
+
+    @Override
+    public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public Collection<Record> query(String query) {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    }
+
+    @Override
+    public long queryCount(String query) {
+        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
     }
 
     @Override

@@ -13,9 +13,9 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 
 import java.time.Duration;
@@ -851,7 +851,7 @@ public class IncrementalWebSession
                                                          map,
                                                          Optional.of((String)map.get(FieldDictionary.RECORD_ID)));
                   });
-            elasticsearchClientService.flushBulkProcessor();
+            elasticsearchClientService.bulkFlush();
 
             // Convert all created sessions to records.
             final Collection<Record> result = rewriters.stream()

@@ -18,16 +18,15 @@ package com.hurence.logisland.processor.elasticsearch;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
-import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecordBuilder;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecordBuilder;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -238,7 +237,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
     }
 
     private static String asUniqueKey(MultiGetResponseRecord mgrr) {
-        return asUniqueKey(mgrr.getIndexName(), mgrr.getTypeName(), mgrr.getDocumentId());
+        return asUniqueKey(mgrr.getCollectionName(), mgrr.getTypeName(), mgrr.getDocumentId());
     }
 
     private static String asUniqueKey(String indexName, String typeName, String documentId) {

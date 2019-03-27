@@ -186,7 +186,7 @@ Here below its configuration:
 .. code-block:: yaml
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
