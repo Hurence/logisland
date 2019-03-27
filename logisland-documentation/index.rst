@@ -25,7 +25,7 @@ Contents:
    intro
    concepts
    architecture
-   developer
+   developer/index
    plugins
    connectors
    tutorials/index

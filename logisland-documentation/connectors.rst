@@ -173,9 +173,13 @@ The recap we can examine the following configuration example:
 In the example both key and value provided by the connector are structured objects.
 
 For this reason we use for that the converter *LogIslandRecordConverter*.
-As well, we provide the serializer to be used for both key and value converter specifying
-*record.serializer=com.hurence.logisland.serializer.KryoSerializer* among the related converter properties.
+We provide the serializer to be used for both key and value converter specifying
 
+.. code-block:: yaml
+
+    record.serializer=com.hurence.logisland.serializer.KryoSerializer
+
+among the related converter properties.
 
 Going further
 -------------

@@ -10,6 +10,9 @@ v1.1.0
 - add Cassandra datastore service
 - support all Kafka connect sinks
 - add KafkaStreams engine
+- update documentation
+- fix test framework (runner)
+- added vanilla java engine
 
 
 v0.14.0

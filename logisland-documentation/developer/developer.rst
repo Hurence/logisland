@@ -54,24 +54,30 @@ Logging
 _______
 
 1. Please take the time to assess the logs when making a change to ensure that the important things are getting logged and there is no junk there.
+
 2. There are six levels of logging TRACE, DEBUG, INFO, WARN, ERROR, and FATAL, they should be used as follows.
-    
+
     2.1. INFO is the level you should assume the software will be run in.
      INFO messages are things which are not bad but which the user will definitely want to know about
      every time they occur.
-    2.2 TRACE and DEBUG are both things you turn on when something is wrong and you want to figure out
-     what is going on. DEBUG should not be so fine grained that it will seriously effect the performance
+
+    2.2 TRACE and DEBUG are both things you turn on when something is wrong and you want to
+     figure out what is going on. DEBUG should not be so fine grained that it will seriously effect the performance
      of the server. TRACE can be anything. Both DEBUG and TRACE statements should be
      wrapped in an if(logger.isDebugEnabled) if an expensive computation in the argument list of log method call.
-    2.3. WARN and ERROR indicate something that is bad. Use WARN if you aren't totally sure it is bad,
-     and ERROR if you are.
+
+    2.3. WARN and ERROR indicate something that is bad.
+     Use WARN if you aren't totally sure it is bad, and ERROR if you are.
+
     2.4. Use FATAL only right before calling System.exit().
-    
+
 3. Logging statements should be complete sentences with proper capitalization that are written to be read by a person not necessarily familiar with the source code. 
-4. String appending using StringBuilders should not be used for building log messages. 
+
+4. String appending using StringBuilders should not be used for building log messages.
     Formatting should be used. For ex:
     LOG.debug("Loaded class [{}] from jar [{}]", className, jarFile);
- 
+
+5. In Logisland class implementing ConfigurableComponent use **getLogger** method to log. Most of components in Logisland are ConfigurableComponent.
 
 TimeZone in Tests
 _________________
@@ -105,6 +111,9 @@ need to:
 You may want to read `Syncing a fork <https://help.github.com/articles/syncing-a-fork>`_ for instructions on how to keep
 your fork up to date with the latest changes of the upstream  `Streams` repository.
 
+We are using gitflow to have standard way of starting features, hotfixes and releases.
+You can check documentation about `gitflow here <https://datasift.github.io/gitflow/GitFlowForGitHub.html>`_.
+
 Git Commit Messages Format
 __________________________
 
@@ -113,7 +122,7 @@ The Git commit messages must be standardized as follows:
 LOGISLAND-XXX: Title matching exactly the github issue Summary (title)
 
 
-    - An optional, bulleted (+, -, ., *), summary of the contents of
+    - An optional, bulleted (+, -, ., \*), summary of the contents of
     - the patch. The goal is not to describe the contents of every file,
     - but rather give a quick overview of the main functional areas
     - addressed by the patch.
@@ -125,59 +134,16 @@ If the github issue summary does not accurately describe what the patch is addre
 
 A summary with the contents of the patch is optional but strongly encouraged if the patch is large and/or the github issue title is not expressive enough to describe what the patch is doing. This text must be bulleted using one of the following bullet points (+, -, ., ). There must be at last a 1 space indent before the bullet char, and exactly one space between bullet char and the first letter of the text. Bullets are not optional, but *required**.
 
+Develop components
+__________________
 
-Merge a pull request or patch
-_____________________________
+You can find help on these topics here :
 
-To pull in a merge request you should generally follow the command line instructions sent out by GitHub.
-
-1. Go to your local copy of the [Apache git repo](https://github.com/hurence/logisland.git), switch
-   to the `master` branch, and make sure it is up to date.
-
-
-    .. code-block:: sh
-
-        git checkout master
-        git fetch origin
-        git merge origin/master
-
-2. Create a local branch for integrating and testing the pull request.  You may want to name the branch according to the
-   Logisland github issue ticket associated with the pull request (example: `LOGISLAND-1234`).
-
-    .. code-block:: sh
-
-        git checkout -b <local_test_branch>  # e.g. git checkout -b LOGISLAND-1234
-
-3. Merge the pull request into your local test branch.
-
-
-    .. code-block:: sh
-
-        git pull <remote_repo_url> <remote_branch>
-
-4.  Assuming that the pull request merges without any conflicts:
-    Update the top-level `changes.rst`, and add in the github issue ticket number (example: `LOGISLAND-1234`) and ticket
-    description to the change log.  Make sure that you place the github issue ticket number in the commit comments where
-    applicable.
-
-5. Run any sanity tests that you think are needed.
-
-6. Once you are confident that everything is ok, you can merge your local test branch into your local `master` branch,
-   and push the changes back to the hurence repo.
-
-    .. code-block:: sh
-
-        # Pull request looks ok, change log was updated, etc.  We are ready for pushing.
-        git checkout master
-        git merge <local_test_branch>  # e.g. git merge LOGISLAND-1234
-
-        # At this point our local master branch is ready, so now we will push the changes
-        # to the official repo.
-        git push origin  HEAD:refs/heads/master
-
-7. The last step is updating the corresponding github issue ticket.  [Go to github issue](https://hwxiot.atlassian.net)
-   and resolve the ticket.
-
+- `Processors <./processors.html>`_
+- `Controller services <./services.html>`_
+- `Kafka connect connectors <./connectors.html>`_
+- `Stream <./streams.html>`_
+- `Engine <./engines.html>`_
 
 Build the code and run the tests
 --------------------------------
@@ -193,9 +159,18 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install -Dhdp=2.4       # or -Dhdp=2.5
+    mvn clean install
 
-If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line. 
+Would build a light version of logisland with only common processors installed.
+
+
+.. code-block:: sh
+
+    mvn clean install -Pfull
+
+Would build a heavy version of logisland with all logisland plugins installed.
+
+If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
 
 Release to maven repositories
@@ -207,7 +182,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
    ./update-version.sh -o 1.1.0 -n 14.4
     mvn license:format
     mvn test
-    mvn -DperformRelease=true clean deploy -Phdp2.5
+    mvn -DperformRelease=true clean deploy -Pfull
     mvn versions:commit
 
 
@@ -222,7 +197,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.0/assets?name=logisland-1.1.0-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.0/assets?name=logisland-1.1.0-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-1.1.0-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 
@@ -233,11 +208,10 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn clean install -DskipTests -Pdocker -Dhdp2.5
+    mvn clean install -DskipTests -Pdocker -Pfull
 
     # verify image build
     docker images
-
 
 then login and push the latest image
 
