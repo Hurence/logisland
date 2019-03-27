@@ -131,10 +131,10 @@ public class AddFields extends AbstractProcessor {
         return Collections.singletonList(CONFLICT_RESOLUTION_POLICY);
     }
 
-    Set<PropertyDescriptor> dynamicFieldProperties = new HashSet<>();
-    Map<String, PropertyDescriptor> dynamicTypeProperties = new HashMap<>();
-    Map<String, PropertyDescriptor> dynamicNameProperties = new HashMap<>();
-    String conflictPolicy;
+    private final Set<PropertyDescriptor> dynamicFieldProperties = new HashSet<>();
+    private final  Map<String, PropertyDescriptor> dynamicTypeProperties = new HashMap<>();
+    private final Map<String, PropertyDescriptor> dynamicNameProperties = new HashMap<>();
+    private String conflictPolicy;
 
     @Override
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(final String propertyDescriptorName) {

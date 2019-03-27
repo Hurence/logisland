@@ -119,8 +119,6 @@ public class MatchQuery extends AbstractProcessor {
         descriptors.add(RECORD_TYPE_UPDATE_POLICY);
         descriptors.add(ON_MATCH_POLICY);
         descriptors.add(ON_MISS_POLICY);
-        descriptors.add(AbstractProcessor.INCLUDE_INPUT_RECORDS);
-
         return Collections.unmodifiableList(descriptors);
     }
 
