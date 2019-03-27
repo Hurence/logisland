@@ -40,9 +40,6 @@
                                         <imageTag>${project.version}</imageTag>
                                     </imageTags>
                                     <pushImage>${push.image}</pushImage>
-                                    <!--buildArgs>
-                                        <LOGISLAND_VERSION>${project.version}</LOGISLAND_VERSION>
-                                    </buildArgs-->
                                     <resources>
                                         <resource>
                                             <targetPath>/</targetPath>
@@ -52,20 +49,6 @@
                                     </resources>
                                 </configuration>
                             </execution>
-                            <!--<execution>
-                               <id>build-elasticsearch-2.4</id>
-                               <phase>package</phase>
-                               <goals>
-                                   <goal>build</goal>
-                               </goals>
-                               <configuration>
-                                   <imageName>hurence/elasticsearch-2.4</imageName>
-                                   <dockerDirectory>${project.basedir}/elasticsearch-2.4</dockerDirectory>
-                                   <imageTags>
-                                       <imageTag>${project.version}</imageTag>
-                                   </imageTags>
-                               </configuration>
-                           </execution>-->
                         </executions>
                     </plugin>
                 </plugins>

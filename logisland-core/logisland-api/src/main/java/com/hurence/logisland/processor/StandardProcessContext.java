@@ -30,7 +30,7 @@ public class StandardProcessContext extends AbstractConfiguredComponent implemen
     }
 
     @Override
-    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) {
         this.controllerServiceLookup = controllerServiceLookup;
     }
 
