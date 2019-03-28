@@ -32,14 +32,15 @@ Building the image
 
     # build logisland
     mvn clean install -Pfull
-    cp logisland-assembly/target/logisland-1.1.0-bin.tar.gz logisland-docker
+    cp logisland-assembly/target/logisland-1.1.0-bin.tar.gz logisland-docker/full-container
 
 The archive is generated under dist directory, 
 you have to copy this file into your Dockerfile directory you can now issue
 
 .. code-block:: sh
 
-    docker build --rm -t hurence/logisland -f logisland-docker/full-container/Dockerfile .
+    cd logisland-docker/full-container/
+    docker build --rm -t hurence/logisland  .
     docker tag hurence/logisland:latest hurence/logisland:1.1.0
 
 

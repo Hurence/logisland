@@ -29,7 +29,7 @@ Elasticsearch on docker needs a special tweak as described `here <https://www.el
 
 .. note::
 
-    you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
+    you should add an entry for **sandbox** and **kafka** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
 
 
 Any logisland script can now be launched by running a `logisland.sh` script within the logisland docker container like in the example below where we launch `index-apache-logs.yml` job :

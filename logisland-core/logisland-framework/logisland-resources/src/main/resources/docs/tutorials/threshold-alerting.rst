@@ -18,7 +18,7 @@ The full logisland job for this tutorial is already packaged in the tar.gz assem
 
 .. code-block:: sh
 
-    docker exec -i -t logisland vim conf/threshold-alerting.yml
+    docker exec -i -t conf_logisland_1 vim conf/threshold-alerting.yml
 
 We will start by explaining each part of the config file.
 
@@ -244,7 +244,7 @@ Connect a shell to your logisland container to launch the following streaming jo
 
 .. code-block:: sh
 
-    docker exec -i -t logisland bin/logisland.sh --conf conf/threshold-alerting.yml
+    docker exec -i -t conf_logisland_1 bin/logisland.sh --conf conf/threshold-alerting.yml
 
 5. Inject some Apache logs into the system
 ------------------------------------------
