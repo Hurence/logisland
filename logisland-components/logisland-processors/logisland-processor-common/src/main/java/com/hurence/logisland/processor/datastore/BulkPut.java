@@ -50,6 +50,20 @@ public class BulkPut extends AbstractDatastoreProcessor
             .expressionLanguageSupported(true)
             .build();
 
+    public static final PropertyDescriptor DEFAULT_TYPE = new PropertyDescriptor.Builder()
+            .name("default.type")
+            .description("The type of this document (used by Elasticsearch for indexing and searching)")
+            .required(true)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor TYPE_FIELD = new PropertyDescriptor.Builder()
+            .name("type.field")
+            .description("the name of the event field containing es doc type => will override type value if set")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
 
     public static final AllowableValue NO_DATE_SUFFIX = new AllowableValue("no", "No date",
             "no date added to default index");
@@ -83,9 +97,11 @@ public class BulkPut extends AbstractDatastoreProcessor
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(DATASTORE_CLIENT_SERVICE);
         props.add(DEFAULT_COLLECTION);
+        props.add(DEFAULT_TYPE);
         props.add(TIMEBASED_INDEX);
         props.add(DATE_FORMAT);
         props.add(COLLECTION_FIELD);
+        props.add(TYPE_FIELD);
 
         return Collections.unmodifiableList(props);
     }
@@ -137,7 +153,21 @@ public class BulkPut extends AbstractDatastoreProcessor
                         collection = eventIndexField.getRawValue().toString();
                     }
                 }
-                datastoreClientService.bulkPut(collection, record);
+
+                if (context.getPropertyValue(DEFAULT_TYPE).isSet()) {
+                    // compute type from event if any
+                    String docType = context.getPropertyValue(DEFAULT_TYPE).asString();
+                    if (context.getPropertyValue(TYPE_FIELD).isSet()) {
+                        Field eventTypeField = record.getField(context.getPropertyValue(TYPE_FIELD).asString());
+                        if (eventTypeField != null && eventTypeField.getRawValue() != null) {
+                            docType = eventTypeField.getRawValue().toString();
+                        }
+                    }
+                    datastoreClientService.bulkPut(collection.concat(","+docType), record);
+                }
+                else {
+                    datastoreClientService.bulkPut(collection, record);
+                }
             }
 
             datastoreClientService.bulkFlush();

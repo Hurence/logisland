@@ -73,7 +73,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 @Tags({ "elasticsearch", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 6.6.0.")
+@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.")
 public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
 
@@ -522,8 +522,19 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
+    public void bulkPut(String indexTypeName, Record record) throws DatastoreClientServiceException {
+
+        final List<String> indexType = Arrays.asList(indexTypeName.split(","));
+
+        if (indexType.size() == 2) {
+            String indexName = indexType.get(0);
+            String typeName = indexType.get(1);
+            this.bulkPut(indexName, typeName, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
+        }
+        else {
+            throw new DatastoreClientServiceException("The Elastic Search type name is missing. Please add at least default.type to the processor parameters");
+        }
+
     }
 
     @Override

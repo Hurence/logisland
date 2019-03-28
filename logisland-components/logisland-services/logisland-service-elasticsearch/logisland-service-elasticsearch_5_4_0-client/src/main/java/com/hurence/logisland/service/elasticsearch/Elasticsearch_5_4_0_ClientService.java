@@ -570,8 +570,17 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public void bulkPut(String collectionName, Record record) throws DatastoreClientServiceException {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+    public void bulkPut(String indexTypeName, Record record) throws DatastoreClientServiceException {
+        final List<String> indexType = Arrays.asList(indexTypeName.split(","));
+
+        if (indexType.size() == 2) {
+            String indexName = indexType.get(0);
+            String typeName = indexType.get(1);
+            this.bulkPut(indexName, typeName, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
+        }
+        else {
+            throw new DatastoreClientServiceException("The Elastic Search type name is missing. Please add at least default.type to the processor parameters");
+        }
     }
 
     @Override

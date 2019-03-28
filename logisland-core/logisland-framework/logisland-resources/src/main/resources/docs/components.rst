@@ -157,9 +157,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "", ""
    "**default.collection**", "The name of the collection/index/table to insert into", "", "null", "", "**true**"
+   "**default.type**", "The type of this document (used by Elasticsearch for indexing and searching)", "", "null", "", "**true**"
    "**timebased.collection**", "do we add a date suffix", "No date (no date added to default index), Today's date (today's date added to default index), yesterday's date (yesterday's date added to default index)", "no", "", ""
    "date.format", "simple date format for date suffix. default : yyyy.MM.dd", "", "yyyy.MM.dd", "", ""
    "collection.field", "the name of the event field containing es index name => will override index value if set", "", "null", "", "**true**"
+   "type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "", ""
 
 ----------
 
@@ -973,7 +975,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
 Elasticsearch_6_6_2_ClientService
 ---------------------------------
-Implementation of ElasticsearchClientService for Elasticsearch 6.6.0.
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
 
 Module
 ______
