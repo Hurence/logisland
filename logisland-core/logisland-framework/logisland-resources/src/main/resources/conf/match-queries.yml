@@ -2,7 +2,7 @@
 # Logisland configuration script template
 #########################################################################################################
 
-version: 1.0.0-RC1
+version: 1.1.0
 documentation: LogIsland analytics main config file. Put here every engine or component config
 
 #########################################################################################################
@@ -32,7 +32,6 @@ engine:
     spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 3000
     spark.streaming.timeout: -1
-    spark.streaming.unpersist: false
     spark.streaming.kafka.maxRetries: 3
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false

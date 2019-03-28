@@ -25,13 +25,14 @@ Contents:
    intro
    concepts
    architecture
-   developer
+   developer/index
    plugins
    connectors
    tutorials/index
    api
    rest-api
    components
+   expression-language
    changes
    faq
 

@@ -151,7 +151,6 @@ And now the real business part with the ``process`` method which handles all the
 
         return outputRecords;
     }
-}
 
 The Processor can then be configured through yaml config files
 

@@ -25,8 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Tags({"record", "fields", "flatmap", "flatten"})
-@CapabilityDescription("Converts each field records into a single flatten record\n" +
-        "...")
+@CapabilityDescription("Converts each field records into a single flatten record...")
 public class FlatMap extends AbstractProcessor {
 
 

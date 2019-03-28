@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.0</version>
     </parent>
     <artifactId>logisland-plugin-support</artifactId>
     <packaging>jar</packaging>

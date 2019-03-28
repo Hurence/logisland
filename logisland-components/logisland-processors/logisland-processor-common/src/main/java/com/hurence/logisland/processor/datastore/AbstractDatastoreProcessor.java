@@ -28,7 +28,7 @@ public abstract class AbstractDatastoreProcessor extends AbstractProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractDatastoreProcessor.class);
 
-    static final PropertyDescriptor DATASTORE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor DATASTORE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("datastore.client.service")
             .description("The instance of the Controller Service to use for accessing datastore.")
             .required(true)

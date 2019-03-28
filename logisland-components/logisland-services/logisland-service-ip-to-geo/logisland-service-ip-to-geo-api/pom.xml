@@ -5,12 +5,13 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-ip-to-geo</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>logisland-service-ip-to-geo-api</artifactId>
     <name>IP2Geo Service API</name>
+    <description>Ip to geo localization service api for logisland</description>
 
     <packaging>jar</packaging>
     <dependencies>

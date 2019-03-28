@@ -32,12 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)\n" +
-        "...")
-@DynamicProperty(name = "field to convert",
-        supportsExpressionLanguage = false,
-        value = "a default value",
-        description = "Add a field to the record with the default value")
+@CapabilityDescription("Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)...")
+@DynamicProperty(name = "field name to add",
+        supportsExpressionLanguage = true,
+        value = "value to convert into Epoch timestamp using given input.date.format",
+        description = "Add a field to the record with the name, converting value using java SimpleDateFormat")
 public class ConvertSimpleDateFormatFields extends AbstractProcessor {
 
 
@@ -95,40 +94,38 @@ public class ConvertSimpleDateFormatFields extends AbstractProcessor {
                 .build();
     }
 
+    Set<PropertyDescriptor> dynamicProperties = Collections.emptySet();
+    SimpleDateFormat inputDateFormat;
+    String conflictPolicy;
+
+    @Override
+    public void init(ProcessContext context) {
+        super.init(context);
+        this.dynamicProperties = getDynamicProperties(context);
+        this.inputDateFormat = new SimpleDateFormat(context.getPropertyValue(INPUT_DATE_FORMAT).asString());
+        TimeZone myTimeZone = TimeZone.getTimeZone(context.getPropertyValue(TIMEZONE).asString());
+        this.inputDateFormat.setTimeZone(myTimeZone);
+        this.conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
+    }
+
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
-        SimpleDateFormat inputDateFormat = new SimpleDateFormat(context.getPropertyValue(INPUT_DATE_FORMAT).asString());
-        TimeZone myTimeZone = TimeZone.getTimeZone(context.getPropertyValue(TIMEZONE).asString());
-        inputDateFormat.setTimeZone(myTimeZone);
-
-        Map<String, String> fieldsNameMapping = getFieldsNameMapping(context);
         for (Record record : records) {
-            updateRecord(context, record, fieldsNameMapping, inputDateFormat, myTimeZone);
+            updateRecord(context, record);
         }
         return records;
     }
 
 
-    private void updateRecord(ProcessContext context, Record record, Map<String, String> fieldsNameMapping, SimpleDateFormat dateFormat, TimeZone tz) {
-
-        String conflictPolicy = context.getPropertyValue(CONFLICT_RESOLUTION_POLICY).asString();
-
-        if ((fieldsNameMapping == null) || (fieldsNameMapping.keySet() == null)) {
-            return;
-        }
-        fieldsNameMapping.keySet().forEach(addedFieldName -> {
-            final String inputDateValue = context.getPropertyValue(addedFieldName).evaluate(record).asString();
+    private void updateRecord(ProcessContext context, Record record) {
+        this.dynamicProperties.forEach(addedFieldDescriptor -> {
+            final String inputDateValue = context.getPropertyValue(addedFieldDescriptor.getName()).evaluate(record).asString();
             if (inputDateValue != null) {
                 Date date = null;
                 try {
-                    date = dateFormat.parse(inputDateValue);
-                } catch (ParseException e) {
-                    // Left the record unchanged but log the failure/reason & cause
-                    logger.info("Cannot parse input date: " + inputDateValue +
-                            " - Date Format: " + context.getPropertyValue(INPUT_DATE_FORMAT) +
-                            " - Reason: " + e.getMessage() +
-                            " - Cause:" + e.getCause());
+                    date =  this.inputDateFormat.parse(inputDateValue);
                 } catch (Exception e) {
+                    // Left the record unchanged but log the failure/reason & cause
                     logger.info("Cannot parse input date: " + inputDateValue +
                             " - Date Format: " + context.getPropertyValue(INPUT_DATE_FORMAT) +
                             " - Reason: " + e.getMessage() +
@@ -137,39 +134,34 @@ public class ConvertSimpleDateFormatFields extends AbstractProcessor {
                 if (date != null) {
                     Long unixEpochTime = date.getTime();
                     // field is already here
-                    if (record.hasField(addedFieldName)) {
+                    if (record.hasField(addedFieldDescriptor.getName())) {
                         if (conflictPolicy.equals(OVERWRITE_EXISTING.getValue())) {
-                            overwriteObsoleteFieldValue(record, addedFieldName, unixEpochTime);
+                            overwriteObsoleteFieldValue(record, addedFieldDescriptor.getName(), unixEpochTime);
                         }
                     } else {
-                        record.setField(addedFieldName, FieldType.LONG, unixEpochTime);
+                        record.setField(addedFieldDescriptor.getName(), FieldType.LONG, unixEpochTime);
                     }
                 }
             }});
     }
 
     private void overwriteObsoleteFieldValue(Record record, String fieldName, Long newValue) {
-        final Field fieldToUpdate = record.getField(fieldName);
         record.removeField(fieldName);
         record.setField(fieldName, FieldType.LONG, newValue);
     }
 
-    private Map<String, String> getFieldsNameMapping(ProcessContext context) {
+    private Set<PropertyDescriptor> getDynamicProperties(ProcessContext context) {
         /**
          * list alternative regex
          */
-        Map<String, String> fieldsNameMappings = new HashMap<>();
+        Set<PropertyDescriptor> dynProperties = new HashSet<>();
         // loop over dynamic properties to add alternative regex
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
                 continue;
             }
-
-            final String fieldName = entry.getKey().getName();
-            final String mapping = entry.getValue();
-
-            fieldsNameMappings.put(fieldName, mapping);
+            dynProperties.add(entry.getKey());
         }
-        return fieldsNameMappings;
+        return dynProperties;
     }
 }

@@ -1,4 +1,4 @@
-version: 1.0.0-RC1
+version: 1.1.0
 documentation: LogIsland IIoT OPC-UA Job
 
 engine:
@@ -7,7 +7,7 @@ engine:
   documentation: Index some OPC-UA tags with Logisland
   configuration:
     spark.app.name: OpcUaLogisland
-    spark.master: local[*]
+    spark.master: local[2]
     spark.driver.memory: 512M
     spark.driver.cores: 1
     spark.executor.memory: 512M
@@ -38,8 +38,9 @@ engine:
       type: service
       documentation: elasticsearch service
       configuration:
-        hosts: sandbox:9300
-        cluster.name: es-logisland
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER_NAME}
+        batch.size: 5000
 
     - controllerService: kc_null
       component: com.hurence.logisland.stream.spark.provider.KafkaConnectStructuredSinkProviderService
@@ -68,7 +69,7 @@ engine:
         kc.connector.properties: |
           session.publicationRate=PT1S
           connection.socketTimeoutMillis=10000
-          server.uri=opc.tcp://sandbox:53530/OPCUA/SimulationServer
+          server.uri=opc.tcp://localhost:53530/OPCUA/SimulationServer
           tags.id=ns=5;s=Sawtooth1
           tags.sampling.rate=PT0.5S
           tags.stream.mode=SUBSCRIBE
@@ -82,7 +83,7 @@ engine:
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         read.topics.client.service: kc_source_service
-        write.topics: logisland_parsed
+        write.topics: /a/out
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         write.topics.client.service: kc_null
