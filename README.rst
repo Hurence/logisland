@@ -239,7 +239,7 @@ Once you've edited your configuration file, you can submit it to execution engin
 
 
 You should jump to the `tutorials section <http://logisland.readthedocs.io/en/latest/tutorials/index.html>`_ of the documentation.
-And then continue with `components documentation<http://logisland.readthedocs.io/en/latest/components.html>`_
+And then continue with `components documentation <http://logisland.readthedocs.io/en/latest/components.html>`_
 
 Contributing
 ------------
