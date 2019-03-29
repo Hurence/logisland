@@ -201,7 +201,7 @@ to the output topic
             kafka.topic.default.replicationFactor: 1
 
 Then come the configurations of all the `Processor` pipeline. Each Record will go through these components.
-Here we first parse raw apache logs and then we add those records to Elasticsearch. Pleas note that the ES processor makes
+Here we first parse raw apache logs and then we add those records to Elasticsearch. Please note that the datastore processor makes
 use of the previously defined ControllerService.
 
 .. code-block:: yaml
@@ -218,16 +218,16 @@ use of the previously defined ControllerService.
                 value.fields: src_ip,identd,user,record_time,http_method,http_query,http_version,http_status,bytes_out
 
             - processor: es_publisher
-              component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+              component: com.hurence.logisland.processor.datastore.BulkPut
               type: processor
               documentation: a processor that indexes processed events in elasticsearch
               configuration:
-                elasticsearch.client.service: elasticsearch_service
-                default.index: logisland
+                datastore.client.service: datastore_service
+                default.collection: logisland
                 default.type: event
-                timebased.index: yesterday
-                es.index.field: search_index
-                es.type.field: record_type
+                timebased.collection: yesterday
+                collection.field: search_index
+                type.field: record_type
 
 
 
