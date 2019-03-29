@@ -52,8 +52,8 @@ public class BulkPut extends AbstractDatastoreProcessor
 
     public static final PropertyDescriptor DEFAULT_TYPE = new PropertyDescriptor.Builder()
             .name("default.type")
-            .description("The type of this document (used by Elasticsearch for indexing and searching)")
-            .required(true)
+            .description("The type of this document (required by Elasticsearch for indexing and searching)")
+            .required(false)
             .expressionLanguageSupported(true)
             .build();
 

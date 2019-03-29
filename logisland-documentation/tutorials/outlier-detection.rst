@@ -153,7 +153,7 @@ and a `RecordSampler </plugins.html#recordsampler>`_  Processor
 4. Setup the indexing Stream
 ----------------------------
 The last Stream use a `KafkaRecordStreamParallelProcessing </plugins.html#kafkarecordstreamparallelprocessing>`_
-and chain of a `SplitText </plugins.html#splittext>`_  and a `BulkAddElasticsearch </plugins.html#bulkaddelasticsearch>`_
+and chain of a `SplitText </plugins.html#splittext>`_  and a `BulkPut </plugins.html#bulkput>`_
 for indexing the whole records
 
 .. code-block:: yaml
@@ -178,16 +178,16 @@ for indexing the whole records
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
           documentation: a processor that trace the processed events
           configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
+            datastore.client.service: datastore_service
+            default.collection: logisland
             default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+            timebased.collection: yesterday
+            collection.field: search_index
+            type.field: record_type
 
 
 4. Start logisland application

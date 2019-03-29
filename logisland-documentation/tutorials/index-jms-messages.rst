@@ -161,21 +161,21 @@ This thanks to a NormalizeFields processor:
     conflict.resolution.policy: overwrite_existing
     record_time: message_timestamp
 
-Last but not least, a ``BulkAddElasticsearch`` takes care of indexing a ``Record`` sending it to elasticsearch.
+Last but not least, a ``BulkPut`` takes care of indexing a ``Record`` sending it to elasticsearch.
 
 .. code-block:: yaml
 
        -  processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
+            datastore.client.service: datastore_service
+            default.collection: logisland
             default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+            timebased.collection: yesterday
+            collection.field: search_index
+            type.field: record_type
 
 
 In details, this processor makes use of a ``Elasticsearch_5_4_0_ClientService`` controller service to interact with our Elasticsearch 5.X backend
@@ -186,7 +186,7 @@ Here below its configuration:
 .. code-block:: yaml
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
       configuration:

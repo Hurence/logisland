@@ -32,7 +32,6 @@ engine:
     spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 3000
     spark.streaming.timeout: -1
-    spark.streaming.unpersist: false
     spark.streaming.kafka.maxRetries: 3
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
@@ -97,14 +96,14 @@ engine:
 
         # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
           documentation: A processor that pushes Bro events into ES
           configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: bro
+            datastore.client.service: datastore_service
+            default.collection: bro
             default.type: events
-            timebased.index: today
-            es.index.field: search_index
-            es.type.field: record_type
+            timebased.collection: today
+            collection.field: search_index
+            type.field: record_type
 

@@ -94,7 +94,6 @@ public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService
         props.add(BULK_SIZE);
         props.add(FLUSH_INTERVAL);
         props.add(CONCURRENT_REQUESTS);
-        props.add(CLUSTER_NAME);
         props.add(PING_TIMEOUT);
         props.add(SAMPLER_INTERVAL);
         props.add(USERNAME);

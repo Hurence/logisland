@@ -164,7 +164,6 @@ engine:
         kafka.input.topics: logisland_sensor_events,logisland_sensor_outliers_events,logisland_sensor_sampled_events
         kafka.output.topics: none
         kafka.error.topics: logisland_errors
-        kafka.input.topics.serializer: none
         kafka.input.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         kafka.output.topics.serializer: none
         kafka.error.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
@@ -175,13 +174,13 @@ engine:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
         - processor: es_publisher
-          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+          component: com.hurence.logisland.processor.datastore.BulkPut
           type: processor
           documentation: a processor that trace the processed events
           configuration:
-            elasticsearch.client.service: elasticsearch_service
-            default.index: logisland
+            datastore.client.service: datastore_service
+            default.collection: logisland
             default.type: event
-            timebased.index: yesterday
-            es.index.field: search_index
-            es.type.field: record_type
+            timebased.collection: yesterday
+            collection.field: search_index
+            type.field: record_type

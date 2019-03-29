@@ -79,12 +79,12 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
         spark.streaming.receiver.writeAheadLog.enable: false
         spark.ui.port: 4050
 
-The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkAddElasticsearch`` processor.
+The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkPut`` processor.
 
 .. code-block:: yaml
 
     - controllerService: elasticsearch_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
@@ -144,16 +144,16 @@ The second processor  will handle ``Records`` produced by the ``SplitText`` to i
 
     # add to elasticsearch
     - processor: es_publisher
-      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
+      component: com.hurence.logisland.processor.datastore.BulkPut
       type: processor
       documentation: a processor that trace the processed events
       configuration:
-        elasticsearch.client.service: elasticsearch_service
-        default.index: logisland
+        datastore.client.service: datastore_service
+        default.collection: logisland
         default.type: event
-        timebased.index: yesterday
-        es.index.field: search_index
-        es.type.field: record_type
+        timebased.collection: yesterday
+        collection.field: search_index
+        type.field: record_type
 
 Solr
 """"
