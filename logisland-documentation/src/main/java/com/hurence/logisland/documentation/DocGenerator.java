@@ -17,6 +17,7 @@ package com.hurence.logisland.documentation;
 
 import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.ComponentContext;
 import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerService;
@@ -58,7 +59,6 @@ public class DocGenerator {
 
         Map<String, Class> extensionClasses = new TreeMap<>();
 
-
         PluginLoader.getRegistry().forEach((className, classLoader) -> {
             try {
                 extensionClasses.put(className, classLoader.loadClass(className));
@@ -69,11 +69,17 @@ public class DocGenerator {
         });
 
         ClassFinder.findClasses(clazz -> {
-            if (!clazz.startsWith("BOOT-INF") && clazz.contains("logisland") && !clazz.contains("Mock") && !clazz.contains("shade")) {
+            if (!clazz.startsWith("BOOT-INF") && clazz.contains("logisland") && !clazz.contains("Mock") && !clazz.contains("shade") &&
+                    (clazz.contains("engine") || clazz.contains("processor") ||
+                            clazz.contains("service") || clazz.contains("stream"))) {
                 try {
                     Class c = Class.forName(clazz);
-                    if (c.isAssignableFrom(ConfigurableComponent.class) && !Modifier.isAbstract(c.getModifiers())) {
-                        extensionClasses.put(c.getSimpleName(), c);
+                    if (ConfigurableComponent.class.isAssignableFrom(c) &&
+                            !Modifier.isAbstract(c.getModifiers()) &&
+                            !Modifier.isInterface(c.getModifiers()) &&
+                            !ComponentContext.class.isAssignableFrom(c)
+                    ) {
+                        extensionClasses.put(c.getCanonicalName(), c);
                     }
                 } catch (Throwable e) {
                     logger.error("Unable to load class " + clazz + " : " + e.getMessage());
@@ -185,7 +191,17 @@ public class DocGenerator {
             throws InstantiationException, IllegalAccessException, IOException, InitializationException, ClassNotFoundException {
 
         logger.info("Documenting: " + componentClass);
-        final ConfigurableComponent component = PluginProxy.unwrap(PluginLoader.loadPlugin(componentClass.getCanonicalName()));
+
+        ConfigurableComponent component;
+        try {
+            component = PluginProxy.unwrap(PluginLoader.loadPlugin(componentClass.getCanonicalName()));
+        } catch (Exception ex) {
+            logger.error("Failed to load component '{}' as a plugin.", componentClass.getCanonicalName());
+            component = componentClass.newInstance();
+            if (component == null) {
+                throw new IllegalArgumentException("Failed to load component '" + componentClass.getCanonicalName() + ".");
+            }
+        }
 
         final DocumentationWriter writer = getDocumentWriter(componentClass, writerType);
 
