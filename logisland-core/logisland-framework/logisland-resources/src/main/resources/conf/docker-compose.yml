@@ -58,7 +58,7 @@ services:
   # Logisland container : does nothing but launching
   logisland:
     container_name: logisland
-    image: hurence/logisland:latest
+    image: hurence/logisland:1.1.0
     command: tail -f bin/logisland.sh
     ports:
       - '4050:4050'

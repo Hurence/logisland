@@ -35,6 +35,9 @@
                     <finalName>logisland-${project.version}-bin</finalName>
                     <attach>false</attach>
                     <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/assembly/dependencies.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <version>3.1.1</version>
                 <executions>
@@ -50,9 +53,6 @@
                                 <directoryMode>0775</directoryMode>
                                 <fileMode>0664</fileMode>
                             </archiverConfig>
-                            <descriptors>
-                                <descriptor>src/main/assembly/dependencies.xml</descriptor>
-                            </descriptors>
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
                     </execution>

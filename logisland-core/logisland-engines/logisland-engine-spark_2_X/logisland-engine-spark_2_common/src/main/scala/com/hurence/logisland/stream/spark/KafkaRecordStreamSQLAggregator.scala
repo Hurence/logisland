@@ -50,7 +50,7 @@ import com.hurence.logisland.stream.StreamProperties._
 
 
 @Tags(Array("stream", "SQL", "query", "record"))
-@CapabilityDescription("This is a stream capable of SQL query interpretations")
+@CapabilityDescription("This is a stream capable of SQL query interpretations.")
 class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
     private val logger = LoggerFactory.getLogger(classOf[KafkaRecordStreamSQLAggregator])
@@ -59,7 +59,6 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
     override def getSupportedPropertyDescriptors: util.List[PropertyDescriptor] = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.addAll(super.getSupportedPropertyDescriptors())
-
         descriptors.add(MAX_RESULTS_COUNT)
         descriptors.add(SQL_QUERY)
         descriptors.add(OUTPUT_RECORD_TYPE)
@@ -69,10 +68,7 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
     override def process(rdd: RDD[ConsumerRecord[Array[Byte], Array[Byte]]]): Option[Array[OffsetRange]] = {
         if (!rdd.isEmpty()) {
             // Cast the rdd to an interface that lets us get an array of OffsetRange
-          //  val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
-
-            // Get the singleton instance of SQLContext
-            //val sqlContext = new org.apache.spark.sql.SQLContext(rdd.sparkContext)
+            // val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
             val sqlContext = SparkSession
                 .builder()
@@ -80,20 +76,17 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
                 .config(ssc.sparkContext.getConf)
                 .getOrCreate()
 
-
             // this is used to implicitly convert an RDD to a DataFrame.
-
             @transient lazy val deserializer = getSerializer(
                 streamContext.getPropertyValue(INPUT_SERIALIZER).asString,
                 streamContext.getPropertyValue(AVRO_INPUT_SCHEMA).asString)
 
-
-
             val inputTopics = streamContext.getPropertyValue(INPUT_TOPICS).asString
-            val outputTopics = streamContext.getPropertyValue(OUTPUT_TOPICS).asString
 
-
-            val records = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
+            //here how to handle elements that are not successfully deserialized ???
+            //currently we lose them !
+            //I think we should create an ErrorRecord containing key, value.
+            val records: RDD[Record] = rdd.mapPartitions(p => deserializeRecords(p, deserializer).iterator)
 
             /**
               * get a Dataframe schema (either from an Avro schema or from the first record)
@@ -111,7 +104,6 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
             if (!records.isEmpty()) {
 
-                val startTime = System.currentTimeMillis()
                 val rows = records.filter(r => !r.hasField(FieldDictionary.RECORD_ERRORS))
                     .map(r => SparkUtils.convertToRow(r, schema))
 
@@ -122,7 +114,6 @@ class KafkaRecordStreamSQLAggregator extends AbstractKafkaRecordStream {
 
 
                 val query = streamContext.getPropertyValue(SQL_QUERY).asString()
-                val maxResultsCount = streamContext.getPropertyValue(MAX_RESULTS_COUNT).asInteger()
                 val outputRecordType = streamContext.getPropertyValue(OUTPUT_RECORD_TYPE).asString()
 
                 sqlContext.sql(query).rdd

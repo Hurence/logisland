@@ -61,7 +61,11 @@ usage() {
   echo "  --help : displays help"
 }
 
-
+# compare versions
+#
+# return 0 if both version are equals
+#        1 if first version is superior than second one
+#        2 if first version is inferior than second one
 compare_versions () {
     if [[ $1 == $2 ]]
     then
