@@ -4,7 +4,12 @@
 
 # generated documentation
 logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/
-logisland-documentation/components.rst
+logisland-documentation/components/*
+!logisland-documentation/components/index.rst
+!logisland-documentation/components/engines/
+logisland-documentation/components/engines/*
+!logisland-documentation/components/engines/index.rst
+
 
 # Eclipse
 **/.project

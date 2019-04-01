@@ -31,7 +31,7 @@ Contents:
    tutorials/index
    api
    rest-api
-   components
+   components/index
    expression-language
    changes
    faq

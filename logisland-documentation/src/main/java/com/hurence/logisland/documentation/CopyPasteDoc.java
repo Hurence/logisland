@@ -16,28 +16,29 @@
 package com.hurence.logisland.documentation;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 
 /**
  * Uses the ExtensionManager to get a list of Processor, ControllerService, and
  * Connectors classes that were loaded and generate documentation for them.
  */
-public class DocGenerator {
+public class CopyPasteDoc {
 
-    private static final Logger logger = LoggerFactory.getLogger(DocGenerator.class);
+    private static final Logger logger = LoggerFactory.getLogger(CopyPasteDoc.class);
     public static final String OUTPUT_FILE = "components";
 
     private final static String HELP_LONG_OPT ="help";
     private final static String HELP_OPT ="h";
     private final static String DIR_LONG_OPT ="doc-dir";
     private final static String DIR_OPT ="d";
-    private final static String FILE_LONG_OPT ="file-name";
-    private final static String FILE_OPT ="f";
-    private final static String APPEND_LONG_OPT ="append";
-    private final static String APPEND_OPT ="a";
 
     public static void main(String[] args) {
         Options options = new Options();
@@ -50,19 +51,9 @@ public class DocGenerator {
                 .withLongOpt(DIR_LONG_OPT)
                 .hasArg()
                 .create(DIR_OPT));
-        options.addOption(OptionBuilder
-                .withDescription("file name to generate documentation about components in classpath")
-                .withLongOpt(FILE_LONG_OPT)
-                .hasArg()
-                .create(FILE_OPT));
-        options.addOption(OptionBuilder
-                .withDescription("Whether to append or replace file")
-                .withLongOpt(APPEND_LONG_OPT)
-                .create(APPEND_OPT));
+
 
         String dir = ".";
-        String fileName = OUTPUT_FILE;
-        boolean append = false;
 
         try {
             final CommandLine commandLine = new PosixParser().parse(options, args);
@@ -73,12 +64,6 @@ public class DocGenerator {
             if (commandLine.hasOption(DIR_OPT)) {
                 dir = commandLine.getOptionValue(DIR_OPT);
             }
-            if (commandLine.hasOption(FILE_OPT)) {
-                fileName = commandLine.getOptionValue(FILE_OPT);
-            }
-            if (commandLine.hasOption(APPEND_OPT)) {
-                append = true;
-            }
         } catch (ParseException e) {
             if (!options.hasOption(HELP_OPT)) {
                 System.err.println(e.getMessage());
@@ -88,13 +73,43 @@ public class DocGenerator {
         }
 
         File rootDocDir = new File(dir);
-        DocGeneratorUtils.generate(rootDocDir, fileName, "rst", append);
+
+        try {
+            copyDirectory(rootDocDir,
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs"),
+                    new WildcardFileFilter("*.rst"));
+
+            copyDirectory( new File(rootDocDir, "tutorials"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/tutorials"),
+                    new WildcardFileFilter("*.rst"));
+
+            copyDirectory( new File(rootDocDir, "components"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/components"),
+                    new WildcardFileFilter("*.rst"));
+
+            copyDirectory(new File(rootDocDir, "_static"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/_static"));
+
+        } catch (IOException e) {
+            logger.error("I/O error", e);
+        }
     }
+
+    private static void copyDirectory(File sourceDir, File destDir, FileFilter filter) throws IOException {
+        FileUtils.copyDirectory(sourceDir, destDir, filter);
+        logger.info("copied {} into {} with filter {}", sourceDir, destDir, filter);
+    }
+
+    private static void copyDirectory(File sourceDir, File destDir) throws IOException {
+        FileUtils.copyDirectory(sourceDir, destDir, true);
+        logger.info("copied {} into {}", sourceDir, destDir);
+    }
+
 
     private static void printUsage(Options options) {
         System.out.println();
         new HelpFormatter().printHelp(180,
-                DocGenerator.class.getCanonicalName(), "\n", options, "\n",
+                CopyPasteDoc.class.getCanonicalName(), "\n", options, "\n",
                 true);
         System.exit(0);
     }
