@@ -30,9 +30,7 @@ If not you can just do it through the components.sh command line:
 
 .. code-block:: sh
 
-    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
-
-    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.0
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.1.0
 
 .. note::
 
@@ -85,7 +83,7 @@ The `controllerServiceConfigurations` part is here to define all services that b
 
 .. code-block:: yaml
 
-    - controllerService: elasticsearch_service
+    - controllerService: datastore_service
       component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service

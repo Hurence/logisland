@@ -99,13 +99,13 @@ engine:
 
         # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.datastore.BulkPut
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes Netflow events into ES
           configuration:
-            datastore.client.service: datastore_service
-            default.collection: netflow
+            elasticsearch.client.service: elasticsearch_service
+            default.index: netflow
             default.type: events
-            timebased.collection: today
-            collection.field: search_index
-            type.field: record_type
+            timebased.index: today
+            es.index.field: search_index
+            es.type.field: record_type

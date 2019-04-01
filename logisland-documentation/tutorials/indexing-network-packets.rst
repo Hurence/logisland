@@ -278,27 +278,27 @@ The second Kafka stream will handle ``Records`` pushed into the ``logisland_pars
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
 
-The only processor in the processor chain of this stream is the ``BulkPut`` processor.
+The only processor in the processor chain of this stream is the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
         # Bulk add into ElasticSearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.datastore.BulkPut
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes network packet records into ES
           configuration:
-            datastore.client.service: datastore_service
-            default.collection: packets_index
+            elasticsearch.client.service: elasticsearch_service
+            default.index: packets_index
             default.type: events
-            timebased.collection: today
-            collection.field: search_index
-            type.field: record_type
+            timebased.index: today
+            es.index.field: search_index
+            es.type.field: record_type
 
-The ``default.collection: packets_index`` configuration parameter tells the elasticsearch processor to index records into an index starting with the ``packets_index`` string.
-The ``timebased.collection: today`` configuration parameter tells the processor to use the current date after the index prefix. Thus the index name is of the form ``/packets_index.2017.03.30``.
+The ``default.index: packets_index`` configuration parameter tells the elasticsearch processor to index records into an index starting with the ``packets_index`` string.
+The ``timebased.index: today`` configuration parameter tells the processor to use the current date after the index prefix. Thus the index name is of the form ``/packets_index.2017.03.30``.
 
-Finally, the ``type.field: record_type`` configuration parameter tells the processor to use the
+Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the
 record field ``record_type`` of the incoming record to determine the ElasticSearch type to use within the index.
 
 5. Stream network packets into the system

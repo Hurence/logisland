@@ -138,7 +138,7 @@ Setup Spark/Kafka streaming engine
 __________________________________
 
 An Engine is needed to handle the stream processing. The ``conf/index-bro-events.yml`` configuration file defines a stream processing job setup.
-The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkPut processor.
+The first section configures the Spark engine (we will use a `KafkaStreamProcessingEngine <../plugins.html#kafkastreamprocessingengine>`_) as well as an Elasticsearch service that will be used later in the BulkAddElasticsearch processor.
 
 .. code-block:: yaml
 
@@ -254,28 +254,28 @@ So there is no need to define an output topic. The input topic is enough:
         kafka.topic.default.replicationFactor: 1
       processorConfigurations:
       
-The only processor in the processor chain of this stream is the ``BulkPut`` processor.
+The only processor in the processor chain of this stream is the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
     # Bulk add into ElasticSearch
     - processor: ES Publisher
-      component: com.hurence.logisland.processor.datastore.BulkPut
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
       documentation: A processor that pushes Bro events into ES
       configuration:
-        datastore.client.service: datastore_service
-        default.collection: bro
+        elasticsearch.client.service: elasticsearch_service
+        default.index: bro
         default.type: events
-        timebased.collection: today
-        collection.field: search_index
-        type.field: record_type
+        timebased.index: today
+        es.index.field: search_index
+        es.type.field: record_type
 
-The ``default.collection: bro`` configuration parameter tells the processor to index events into an index starting with the ``bro`` string.
-The ``timebased.collection: today`` configuration parameter tells the processor to use the current date after the index prefix. Thus the index name
+The ``default.index: bro`` configuration parameter tells the processor to index events into an index starting with the ``bro`` string.
+The ``timebased.index: today`` configuration parameter tells the processor to use the current date after the index prefix. Thus the index name
 is of the form ``/bro.2017.02.23``.
 
-Finally, the ``type.field: record_type`` configuration parameter tells the processor to use the
+Finally, the ``es.type.field: record_type`` configuration parameter tells the processor to use the
 record field ``record_type`` of the incoming record to determine the ElasticSearch type to use within the index.
 
 We will come back to these settings and what they do in the section where we see examples of events to illustrate the workflow.
@@ -525,7 +525,7 @@ Here is a pretty print version of this event. It should look like this one:
       }
     }
 
-The Bro Processor should have processed this event which should have been handled next by the BulkPut processor and
+The Bro Processor should have processed this event which should have been handled next by the BulkAddElasticsearch processor and
 finally the event should have been stored in ElasticSearch in the Logisland container.
 
 To see this stored event, we will query ElasticSearch with the ``curl`` command. Let's browse the ``dns`` type in any index starting with ``bro``:
@@ -586,10 +586,10 @@ type in the index. This allows to easily search only among events of a particula
 type.
 
 The ParseBroEvent processor has used the first level field ``dns`` of the incoming JSON event from Bro to add
-a ``record_type`` field to the record he has created. This field has been used by the BulkPut processor
+a ``record_type`` field to the record he has created. This field has been used by the BulkAddElasticsearch processor
 to determine the index type to use for storing the record.
 
-The ``@timestamp`` field is added by the BulkPut processor before pushing the record into ES. Its value is
+The ``@timestamp`` field is added by the BulkAddElasticsearch processor before pushing the record into ES. Its value is
 derived from the ``record_time`` field which has been added with also the ``record_id`` field by Logisland
 when the event entered Logisland. The ``ts`` field is the Bro timestamp which is the time when the event
 was generated in the Bro system.

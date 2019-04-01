@@ -72,7 +72,7 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
     spark.streaming.receiver.writeAheadLog.enable: false
     spark.ui.port: 4050
 
-The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkPut`` processor.
+The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
@@ -141,16 +141,16 @@ The second processor  will handle ``Records`` produced by the ``ExcelExtract`` t
 
     # add to elasticsearch
     - processor: es_publisher
-      component: com.hurence.logisland.processor.datastore.BulkPut
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
       documentation: a processor that trace the processed events
       configuration:
-        datastore.client.service: datastore_service
-        default.collection: logisland
+        elasticsearch.client.service: elasticsearch_service
+        default.index: logisland
         default.type: event
-        timebased.collection: yesterday
-        collection.field: search_index
-        type.field: record_type
+        timebased.index: yesterday
+        es.index.field: search_index
+        es.type.field: record_type
 
 
 3. Launch the script

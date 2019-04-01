@@ -111,14 +111,14 @@ engine:
           documentation: "Remove unused fields"
           configuration:
             fields.to.remove: bytes_payload
-        - component: com.hurence.logisland.processor.datastore.BulkPut
+        - component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           processor: es_publisher
           type: processor
           documentation: a processor that indexes processed events in elasticsearch
           configuration:
-            datastore.client.service: datastore_service
-            default.collection: logisland
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
             default.type: event
-            timebased.collection: yesterday
-            collection.field: search_index
-            type.field: record_type
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type

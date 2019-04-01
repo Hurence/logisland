@@ -118,14 +118,14 @@ engine:
 
         # Bulk add to elasticsearch
         - processor: es_publisher
-          component: com.hurence.logisland.processor.datastore.BulkPut
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: a processor that trace the processed events
           configuration:
-            datastore.client.service: datastore_service
-            default.collection: logisland
+            elasticsearch.client.service: elasticsearch_service
+            default.index: logisland
             default.type: event
-            timebased.collection: yesterday
-            collection.field: search_index
-            type.field: record_type
+            timebased.index: yesterday
+            es.index.field: search_index
+            es.type.field: record_type
 

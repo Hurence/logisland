@@ -40,12 +40,11 @@ engine:
   controllerServiceConfigurations:
 
     - controllerService: datastore_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
         hosts: ${ES_HOSTS}
-        cluster.name: ${ES_CLUSTER_NAME}
         batch.size: 5000
 
   streamConfigurations:

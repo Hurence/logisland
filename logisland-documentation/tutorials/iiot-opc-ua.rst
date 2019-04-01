@@ -112,7 +112,7 @@ In particular, we have
 Full connector documentation is on javadoc of class ``com.hurence.logisland.connect.opc.ua.OpcUaSourceConnector``
 
 
-Then we also define her Elasticsearch service that will be used later in the ``BulkPut`` processor.
+Then we also define her Elasticsearch service that will be used later in the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
@@ -177,16 +177,16 @@ Then, the last processor will index our records into elasticsearch
 
     # add to elasticsearch
     - processor: es_publisher
-      component: com.hurence.logisland.processor.datastore.BulkPut
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
       documentation: a processor that trace the processed events
       configuration:
-        datastore.client.service: datastore_service
-        default.collection: logisland
+        elasticsearch.client.service: elasticsearch_service
+        default.index: logisland
         default.type: event
-        timebased.collection: yesterday
-        collection.field: search_index
-        type.field: record_type
+        timebased.index: yesterday
+        es.index.field: search_index
+        es.type.field: record_type
 
 
 3. Launch the script

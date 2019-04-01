@@ -100,14 +100,14 @@ engine:
 
         # Bulk add to elasticsearch
         - processor: ES Publisher
-          component: com.hurence.logisland.processor.datastore.BulkPut
+          component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
           type: processor
           documentation: A processor that pushes network packet records into ES
           configuration:
-            datastore.client.service: datastore_service
+            elasticsearch.client.service: elasticsearch_service
             default.index: packets_index
-            default.collection: events
-            timebased.collection: today
-            collection.field: search_index
-            type.field: record_type
+            default.type: events
+            timebased.index: today
+            es.index.field: search_index
+            es.type.field: record_type
 
