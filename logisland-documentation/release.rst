@@ -3,11 +3,12 @@ Releasing guide
 
 This guide will help you to perform the full release process for Logisland framework.
 
-1.
 
+    git hf release start v1.1.0
 
-git hf release start v1.1.0
-
+    # update the version (you should run a dry run first)
+    ./update-version.sh -o 0.14.0 -n 1.1.0 -d
+    ./update-version.sh -o 0.14.0 -n 1.1.0
 
 Build the code and run the tests
 --------------------------------
@@ -17,7 +18,7 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install
+    mvn clean install -pFull
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
@@ -28,12 +29,8 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-    # update the version (you should run a dry run first)
-    ./update-version.sh -o 0.14.0 -n 1.1.0 -d
-    ./update-version.sh -o 0.14.0 -n 1.1.0
     mvn license:format
-    mvn clean install
-    mvn -DperformRelease=true clean deploy -Phdp2.5
+    mvn -DperformRelease=true clean deploy -Pfull
     mvn versions:commit
 
 
