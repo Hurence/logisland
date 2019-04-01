@@ -14,7 +14,7 @@ Add one or more field with a default value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -55,7 +55,7 @@ This processor is used to create a new set of fields from one field (using regex
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -100,7 +100,7 @@ Indexes the content of a Record in Elasticsearch using elasticsearch's bulk proc
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC2
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
 
 Class
 _____
@@ -136,7 +136,7 @@ Indexes the content of a Record in a Datastore using bulk processor
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -171,7 +171,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-cassandra-client:1.1.0
 
 Class
 _____
@@ -210,7 +210,7 @@ Add one or more field with a default value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -360,7 +360,7 @@ Compute threshold cross from given formulas.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -511,7 +511,7 @@ a threshold_cross has the following properties : count, sum, avg, time, duration
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -657,7 +657,7 @@ The ConsolidateSession processor is the Logisland entry point to get and process
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC2
+com.hurence.logisland:logisland-processor-web-analytics:1.1.0
 
 Class
 _____
@@ -702,7 +702,7 @@ Converts a field value into the given type. does nothing if conversion is not po
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -728,6 +728,50 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.ConvertSimpleDateFormatFields: 
+
+ConvertSimpleDateFormatFields
+-----------------------------
+Convert one or more field representing a date into a Unix Epoch Time (time in milliseconds since &st January 1970, 00:00:00 GMT)
+...
+
+Module
+______
+com.hurence.logisland:logisland-processor-common:1.1.0
+
+Class
+_____
+com.hurence.logisland.processor.ConvertSimpleDateFormatFields
+
+Tags
+____
+record, fields, Add
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite existing field (if field already exist), keep only old field value (keep only old field)", "keep_only_old_field", "", ""
+   "**input.date.format**", "Simple date format representation of the input field to convert", "", "null", "", ""
+   "**timezone**", "Specify the timezone (default is CET)", "", "CET", "", ""
+
+Dynamic Properties
+__________________
+Dynamic Properties allow the user to specify both the name and value of a property.
+
+.. csv-table:: dynamic-properties
+   :header: "Name","Value","Description","EL"
+   :widths: 20,20,40,10
+
+   "field to convert", "a default value", "Add a field to the record with the default value", ""
+
+----------
+
 .. _com.hurence.logisland.processor.DebugStream: 
 
 DebugStream
@@ -736,7 +780,7 @@ This is a processor that logs incoming records
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -756,7 +800,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :widths: 20,60,30,20,10,10
 
    "**event.serializer**", "the way to serialize event", "Json serialization (serialize events as json blocs), String serialization (serialize events as toString() blocs)", "json", "", ""
-   "record.types", "comma separated list of record to include. all if empty", "", "", "", ""
 
 ----------
 
@@ -783,7 +826,7 @@ This becomes a data filter which can be attached to a timeseries data stream wit
 
 Module
 ______
-com.hurence.logisland:logisland-processor-outlier-detection:1.0.0-RC2
+com.hurence.logisland:logisland-processor-outlier-detection:1.1.0
 
 Class
 _____
@@ -842,7 +885,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.1.0
 
 Class
 _____
@@ -888,7 +931,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.0
 
 Class
 _____
@@ -943,7 +986,7 @@ Each outcoming record holds at least the input record plus potentially one or mo
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -977,18 +1020,11 @@ EnrichRecordsElasticsearch
 --------------------------
 Enrich input records with content indexed in elasticsearch using multiget queries.
 Each incoming record must be possibly enriched with information stored in elasticsearch. 
-The plugin properties are :
-- es.index (String)            : Name of the elasticsearch index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.
-- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.
-- es.key (String)              : Name of the elasticsearch key on which the multiget query will be performed. This field is mandatory.
-- includes (ArrayList<String>) : List of patterns to filter in (include) fields to retrieve. Supports wildcards. This field is not mandatory.
-- excludes (ArrayList<String>) : List of patterns to filter out (exclude) fields to retrieve. Supports wildcards. This field is not mandatory.
-
 Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC2
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
 
 Class
 _____
@@ -1024,7 +1060,7 @@ Evaluates one or more JsonPath expressions against the content of a FlowFile. Th
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1068,7 +1104,7 @@ Evaluates one or more XPaths against the content of a record. The results of tho
 
 Module
 ______
-com.hurence.logisland:logisland-processor-xml:1.0.0-RC2
+com.hurence.logisland:logisland-processor-xml:1.1.0
 
 Class
 _____
@@ -1111,7 +1147,7 @@ Consumes a Microsoft Excel document and converts each worksheet's line to a stru
 
 Module
 ______
-com.hurence.logisland:logisland-processor-excel:1.0.0-RC2
+com.hurence.logisland:logisland-processor-excel:1.1.0
 
 Class
 _____
@@ -1147,7 +1183,7 @@ Expands the content of a MAP field to the root.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1179,7 +1215,7 @@ Fetches a row from an HBase table. The Destination property controls whether the
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.0.0-RC2
+com.hurence.logisland:logisland-processor-hbase:1.1.0
 
 Class
 _____
@@ -1200,11 +1236,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**hbase.client.service**", "The instance of the Controller Service to use for accessing HBase.", "", "null", "", ""
    "**table.name.field**", "The field containing the name of the HBase Table to fetch from.", "", "null", "", "**true**"
-   "**row.identifier.field**", "The field containing the  identifier of the row to fetch.", "", "null", "", "**true**"
+   "**row.identifier.field**", "The field containing the identifier of the row to fetch.", "", "null", "", "**true**"
    "columns.field", "The field containing an optional comma-separated list of ""<colFamily>:<colQualifier>"" pairs to fetch. To return all columns for a given family, leave off the qualifier such as ""<colFamily1>,<colFamily2>"".", "", "null", "", "**true**"
    "record.serializer", "the serializer needed to i/o the record in the HBase row", "kryo serialization (serialize events as json blocs), json serialization (serialize events as json blocs), avro serialization (serialize events as avro blocs), no serialization (send events as bytes)", "com.hurence.logisland.serializer.KryoSerializer", "", ""
    "record.schema", "the avro schema definition for the Avro serialization", "", "null", "", ""
-   "table.name.default", "The table table to use if table name field is not set", "", "null", "", ""
+   "table.name.default", "The table to use if table name field is not set", "", "null", "", ""
 
 ----------
 
@@ -1216,7 +1252,7 @@ Keep only records based on a given field value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1249,7 +1285,7 @@ Converts each field records into a single flatten record
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1285,7 +1321,7 @@ This is a processor that make random records given an Avro schema
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1318,7 +1354,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.1.0
 
 Class
 _____
@@ -1356,6 +1392,81 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
 ----------
 
+.. _com.hurence.logisland.processor.webAnalytics.IncrementalWebSession: 
+
+IncrementalWebSession
+---------------------
+This processor creates and updates web-sessions based on incoming web-events. Note that both web-sessions and web-events are stored in elasticsearch.
+ Firstly, web-events are grouped by their session identifier and processed in chronological order.
+ Then each web-session associated to each group is retrieved from elasticsearch.
+ In case none exists yet then a new web session is created based on the first web event.
+ The following fields of the newly created web session are set based on the associated web event: session identifier, first timestamp, first visited page. Secondly, once created, or retrieved, the web session is updated by the remaining web-events.
+ Updates have impacts on fields of the web session such as event counter, last visited page,  session duration, ...
+ Before updates are actually applied, checks are performed to detect rules that would trigger the creation of a new session:	the duration between the web session and the web event must not exceed the specified time-out,
+	the web session and the web event must have timestamps within the same day (at midnight a new web session is created),
+	source of traffic (campaign, ...) must be the same on the web session and the web event.
+ When a breaking rule is detected, a new web session is created with a new session identifier where as remaining web-events still have the original session identifier. The new session identifier is the original session suffixed with the character '#' followed with an incremented counter. This new session identifier is also set on the remaining web-events.
+ Finally when all web events were applied, all web events -potentially modified with a new session identifier- are save in elasticsearch. And web sessions are passed to the next processor.
+
+WebSession information are:
+- first and last visited page
+- first and last timestamp of processed event 
+- total number of processed events
+- the userId
+- a boolean denoting if the web-session is still active or not
+- an integer denoting the duration of the web-sessions
+- optional fields that may be retrieved from the processed events
+
+
+
+Module
+______
+com.hurence.logisland:logisland-processor-web-analytics:1.1.0
+
+Class
+_____
+com.hurence.logisland.processor.webAnalytics.IncrementalWebSession
+
+Tags
+____
+analytics, web, session
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values
+.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+
+   "debug", "Enable debug. If enabled, debug information are logged.", "", "false", "", ""
+   "**es.session.index.field**", "Name of the field in the record defining the ES index containing the web session documents.", "", "null", "", ""
+   "**es.session.type.name**", "Name of the ES type of web session documents.", "", "null", "", ""
+   "**es.event.index.prefix**", "Prefix of the index containing the web event documents.", "", "null", "", ""
+   "**es.event.type.name**", "Name of the ES type of web event documents.", "", "null", "", ""
+   "**es.mapping.event.to.session.index.name**", "Name of the ES index containing the mapping of web session documents.", "", "null", "", ""
+   "sessionid.field", "the name of the field containing the session id => will override default value if set", "", "sessionId", "", ""
+   "timestamp.field", "the name of the field containing the timestamp => will override default value if set", "", "h2kTimestamp", "", ""
+   "visitedpage.field", "the name of the field containing the visited page => will override default value if set", "", "location", "", ""
+   "userid.field", "the name of the field containing the userId => will override default value if set", "", "userId", "", ""
+   "fields.to.return", "the list of fields to return", "", "null", "", ""
+   "firstVisitedPage.out.field", "the name of the field containing the first visited page => will override default value if set", "", "firstVisitedPage", "", ""
+   "lastVisitedPage.out.field", "the name of the field containing the last visited page => will override default value if set", "", "lastVisitedPage", "", ""
+   "isSessionActive.out.field", "the name of the field stating whether the session is active or not => will override default value if set", "", "is_sessionActive", "", ""
+   "sessionDuration.out.field", "the name of the field containing the session duration => will override default value if set", "", "sessionDuration", "", ""
+   "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "", ""
+   "session.timeout", "session timeout in sec", "", "1800", "", ""
+   "eventsCounter.out.field", "the name of the field containing the session duration => will override default value if set", "", "eventsCounter", "", ""
+   "firstEventDateTime.out.field", "the name of the field containing the date of the first event => will override default value if set", "", "firstEventDateTime", "", ""
+   "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "", ""
+   "newSessionReason.out.field", "the name of the field containing the reason why a new session was created => will override default value if set", "", "reasonForNewSession", "", ""
+   "transactionIds.out.field", "the name of the field containing all transactionIds => will override default value if set", "", "transactionIds", "", ""
+   "source_of_traffic.suffix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "", ""
+   "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "", ""
+
+----------
+
 .. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
 
 IpToFqdn
@@ -1364,7 +1475,7 @@ Translates an IP address into a FQDN (Fully Qualified Domain Name). An input fie
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.0.0-RC2
+com.hurence.logisland:logisland-processor-enrichment:1.1.0
 
 Class
 _____
@@ -1401,7 +1512,7 @@ Looks up geolocation information for an IP address. The attribute that contains 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.0.0-RC2
+com.hurence.logisland:logisland-processor-enrichment:1.1.0
 
 Class
 _____
@@ -1457,7 +1568,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.0.0-RC2
+com.hurence.logisland:logisland-processor-querymatcher:1.1.0
 
 Class
 _____
@@ -1521,7 +1632,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.0.0-RC2
+com.hurence.logisland:logisland-processor-querymatcher:1.1.0
 
 Class
 _____
@@ -1567,7 +1678,7 @@ modify id of records or generate it following defined rules
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1603,7 +1714,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-mongodb-client:1.1.0
 
 Class
 _____
@@ -1656,7 +1767,7 @@ Each outcoming record holds data of one datastore retrieved document. This data 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1706,7 +1817,7 @@ Each outcoming record holds data of one elasticsearch retrieved document. This d
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC2
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
 
 Class
 _____
@@ -1743,7 +1854,7 @@ Changes the name of a field according to a provided name mapping
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -1874,7 +1985,7 @@ It gets processed and transformed into the following Logisland record by the Par
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC2
+com.hurence.logisland:logisland-processor-cyber-security:1.1.0
 
 Class
 _____
@@ -1905,7 +2016,7 @@ The Gitlab logs processor is the Logisland entry point to get and process `Gitla
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common-logs:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common-logs:1.1.0
 
 Class
 _____
@@ -1943,7 +2054,7 @@ In the tutorial we will simulate Netflow traffic using `nfgen <https://github.co
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC2
+com.hurence.logisland:logisland-processor-cyber-security:1.1.0
 
 Class
 _____
@@ -1976,7 +2087,7 @@ The ParseNetworkPacket processor is the LogIsland entry point to parse network p
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.0.0-RC2
+com.hurence.logisland:logisland-processor-cyber-security:1.1.0
 
 Class
 _____
@@ -2009,7 +2120,7 @@ a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2040,7 +2151,7 @@ The user-agent processor allows to decompose User-Agent value from an HTTP heade
 
 Module
 ______
-com.hurence.logisland:logisland-processor-useragent:1.0.0-RC2
+com.hurence.logisland:logisland-processor-useragent:1.1.0
 
 Class
 _____
@@ -2078,7 +2189,7 @@ Adds the Contents of a Record to HBase as the value of a single cell
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.0.0-RC2
+com.hurence.logisland:logisland-processor-hbase:1.1.0
 
 Class
 _____
@@ -2120,7 +2231,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.0.0-RC2
+com.hurence.logisland:logisland-service-redis:1.1.0
 
 Class
 _____
@@ -2170,7 +2281,7 @@ Removes a list of fields defined by a comma separated list of field names or kee
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2206,7 +2317,7 @@ This processor allows to implement and run a processor written in python. This c
 
 Module
 ______
-com.hurence.logisland:logisland-processor-scripting:1.0.0-RC2
+com.hurence.logisland:logisland-processor-scripting:1.1.0
 
 Class
 _____
@@ -2259,7 +2370,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-sampling:1.0.0-RC2
+com.hurence.logisland:logisland-processor-sampling:1.1.0
 
 Class
 _____
@@ -2293,7 +2404,7 @@ Keep only distinct records based on a given field
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2334,7 +2445,7 @@ The SendMail processor is aimed at sending an email (like for instance an alert 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2378,7 +2489,7 @@ The SetJsonAsFields processor reads the content of a string field containing a j
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2414,7 +2525,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_5_5_5-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-solr_5_5_5-client:1.1.0
 
 Class
 _____
@@ -2452,7 +2563,7 @@ Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.1.0
 
 Class
 _____
@@ -2488,7 +2599,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.0.0-RC2
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.1.0
 
 Class
 _____
@@ -2526,7 +2637,7 @@ This processor is used to create a new set of fields from one field (using split
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2574,7 +2685,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2625,7 +2736,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2658,7 +2769,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.0.0-RC2
+com.hurence.logisland:logisland-processor-common:1.1.0
 
 Class
 _____
@@ -2710,7 +2821,7 @@ Decode one or more field containing an URL with possibly special chars encoded
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC2
+com.hurence.logisland:logisland-processor-web-analytics:1.1.0
 
 Class
 _____
@@ -2750,17 +2861,17 @@ setSourceOfTraffic
 ------------------
 Compute the source of traffic of a web session. Users arrive at a website or application through a variety of sources, 
 including advertising/paying campaigns, search engines, social networks, referring sites or direct access. 
-When analysing user experience on a webshop, it is crucial to collects, processes, and reports the campaign and traffic-source data. 
+When analysing user experience on a webshop, it is crucial to collect, process, and report the campaign and traffic-source data. 
 To compute the source of traffic of a web session, the user has to provide the utm_* related properties if available
 i-e: **utm_source.field**, **utm_medium.field**, **utm_campaign.field**, **utm_content.field**, **utm_term.field**)
 , the referer (**referer.field** property) and the first visited page of the session (**first.visited.page.field** property).
-By default the source of traffic informations are placed in a flat structure (specified by the **source_of_traffic.suffix** property
+By default the source of traffic information are placed in a flat structure (specified by the **source_of_traffic.suffix** property
  with a default value of source_of_traffic_). To work properly the setSourceOfTraffic processor needs to have access to an 
 Elasticsearch index containing a list of the most popular search engines and social networks. The ES index (specified by the **es.index** property) should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field (default being search_engine) specified by the property **es.search_engine.field** with a value set to true. If the domain is a social network , the related ES doc MUST have a boolean field (default being social_network) specified by the property **es.social_network.field** with a value set to true. 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.0.0-RC2
+com.hurence.logisland:logisland-processor-web-analytics:1.1.0
 
 Class
 _____

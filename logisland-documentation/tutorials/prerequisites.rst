@@ -29,7 +29,7 @@ Elasticsearch on docker needs a special tweak as described `here <https://www.el
 
 .. note::
 
-    you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
+    you should add an entry for **sandbox** and **kafka** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
 
 
 Any logisland script can now be launched by running a `logisland.sh` script within the logisland docker container like in the example below where we launch `index-apache-logs.yml` job :
@@ -54,10 +54,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v1.0.0-RC2/logisland-1.0.0-RC2-bin-hdp2.5.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v1.1.0/logisland-1.1.0-bin.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-1.0.0-RC2/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-1.1.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 

@@ -18,6 +18,8 @@ package com.hurence.logisland.util.runner;
 import com.hurence.logisland.component.*;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceLookup;
+import com.hurence.logisland.logging.ComponentLog;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.Processor;
 import com.hurence.logisland.processor.StandardValidationContext;
@@ -28,11 +30,13 @@ import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
-public class MockProcessContext extends MockControllerServiceLookup implements ControllerServiceLookup, ProcessContext {
+public class MockProcessContext implements ProcessContext, ControllerServiceLookup {
 
+    private String identifier;
     private final ConfigurableComponent component;
     private final Map<PropertyDescriptor, String> properties = new HashMap<>();
     private final VariableRegistry variableRegistry;
+    private final MockControllerServiceLookup serviceLookup;
 
 
     /**
@@ -41,9 +45,18 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
      * @param component being mocked
      * @param variableRegistry variableRegistry
      */
-    public MockProcessContext(final ConfigurableComponent component, final VariableRegistry variableRegistry) {
+    public MockProcessContext(final ConfigurableComponent component,
+                              final VariableRegistry variableRegistry) {
+        this(component, variableRegistry, new MockControllerServiceLookup());
+    }
+
+    private MockProcessContext(final ConfigurableComponent component,
+                               final VariableRegistry variableRegistry,
+                               MockControllerServiceLookup serviceLookup) {
         this.component = Objects.requireNonNull(component);
         this.variableRegistry = variableRegistry;
+        this.identifier = component.getIdentifier() == null ? "mock_processor" : component.getIdentifier();
+        this.serviceLookup = serviceLookup;
     }
 
     /**
@@ -55,31 +68,25 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
         this(component, VariableRegistry.EMPTY_REGISTRY);
     }
 
+    /**
+     * Creates a new MockProcessContext for the given Processor
+     *
+     * @param component being mocked
+     */
+    public MockProcessContext(final Processor component, MockControllerServiceLookup serviceLookup) {
+        this(component, VariableRegistry.EMPTY_REGISTRY, serviceLookup);
+    }
+
     public MockProcessContext(final ControllerService component, final MockProcessContext context, final VariableRegistry variableRegistry) {
         this(component, variableRegistry);
 
         try {
-            final Map<PropertyDescriptor, String> props = context.getControllerServiceProperties(component);
+            final Map<PropertyDescriptor, String> props = context.getProperties();
             properties.putAll(props);
-
-            super.addControllerServices(context);
+            this.serviceLookup.addControllerServices(context.serviceLookup);
         } catch (IllegalArgumentException e) {
             // do nothing...the service is being loaded
         }
-    }
-
-
-    Map<PropertyDescriptor, String> getControllerServiceProperties(final ControllerService controllerService) {
-        return super.getConfiguration(controllerService.getIdentifier()).getProperties();
-    }
-
-    /**
-     * Creates a new MockProcessContext for the given ProcessContext
-     *
-     * @param context
-     */
-    public MockProcessContext(final ProcessContext context) {
-        this(context.getProcessor(), VariableRegistry.EMPTY_REGISTRY);
     }
 
     @Override
@@ -97,7 +104,7 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
         final String setPropertyValue = properties.get(descriptor);
         final String propValue = (setPropertyValue == null) ? descriptor.getDefaultValue() : setPropertyValue;
 
-        return new MockPropertyValue(propValue, this, variableRegistry, descriptor);
+        return new MockPropertyValue(propValue, this.serviceLookup, variableRegistry, descriptor);
     }
 
     @Override
@@ -212,21 +219,21 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
 
     @Override
     public String getIdentifier() {
-        return "";
+        return this.identifier;
+    }
+
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     @Override
-    public String getName() {
-        return "";
+    public ComponentLog getLogger() {
+        return new StandardComponentLogger(this.getIdentifier(), this.component);
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-    @Override
-    public void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
+    public void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException {
 
     }
 
@@ -236,12 +243,41 @@ public class MockProcessContext extends MockControllerServiceLookup implements C
     }
 
 
-    public void addControllerService(final String serviceIdentifier, final ControllerService controllerService, final Map<PropertyDescriptor, String> properties, final String annotationData) {
+    public void addControllerService(final String serviceIdentifier,
+                                     final ControllerService controllerService,
+                                     final String annotationData) {
         requireNonNull(controllerService);
-        final ControllerServiceConfiguration config = addControllerService(controllerService, serviceIdentifier);
-        config.setProperties(properties);
-        config.setAnnotationData(annotationData);
+        this.serviceLookup.addControllerService(controllerService, serviceIdentifier)
+                .setAnnotationData(annotationData);
     }
 
 
+    @Override
+    public ControllerService getControllerService(String serviceIdentifier) {
+        return this.serviceLookup.getControllerService(serviceIdentifier);
+    }
+
+    @Override
+    public boolean isControllerServiceEnabled(String serviceIdentifier) {
+        return this.serviceLookup.isControllerServiceEnabled(serviceIdentifier);
+    }
+
+    @Override
+    public boolean isControllerServiceEnabling(String serviceIdentifier) {
+        return this.serviceLookup.isControllerServiceEnabling(serviceIdentifier);
+    }
+
+    @Override
+    public boolean isControllerServiceEnabled(ControllerService service) {
+        return this.serviceLookup.isControllerServiceEnabled(service);
+    }
+
+    @Override
+    public Set<String> getControllerServiceIdentifiers(Class<? extends ControllerService> serviceType) throws IllegalArgumentException {
+        return this.serviceLookup.getControllerServiceIdentifiers(serviceType);
+    }
+
+    public MockControllerServiceLookup getServiceLookup() {
+        return serviceLookup;
+    }
 }

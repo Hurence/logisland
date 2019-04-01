@@ -97,6 +97,7 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        super.init(context);
         try {
             kerberosConfigFile = context.getKerberosConfigurationFile();
             kerberosProperties = getKerberosProperties(kerberosConfigFile);
@@ -130,17 +131,11 @@ public class HBase_1_1_2_ClientService extends AbstractControllerService impleme
 
         List<PropertyDescriptor> props = new ArrayList<>();
         props.add(HADOOP_CONF_FILES);
-        if(kerberosProperties !=null){
-            props.add(kerberosProperties.getKerberosPrincipal());
-            props.add(kerberosProperties.getKerberosKeytab());
-        }
-
         props.add(ZOOKEEPER_QUORUM);
         props.add(ZOOKEEPER_CLIENT_PORT);
         props.add(ZOOKEEPER_ZNODE_PARENT);
         props.add(HBASE_CLIENT_RETRIES);
         props.add(PHOENIX_CLIENT_JAR_LOCATION);
-
         return Collections.unmodifiableList(props);
     }
 

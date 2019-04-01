@@ -90,7 +90,9 @@ public class SplitTextTest {
 
     @Test
     public void testApacheLog() {
+
         final TestRunner testRunner = TestRunners.newTestRunner(new SplitText());
+        testRunner.setProcessorIdentifier("testApacheLog");
         testRunner.setProperty(SplitText.VALUE_REGEX, APACHE_LOG_REGEX);
         testRunner.setProperty(SplitText.VALUE_FIELDS, APACHE_LOG_FIELDS);
         testRunner.assertValid();
@@ -142,7 +144,7 @@ public class SplitTextTest {
         System.out.println(RecordSchemaUtil.generateTestCase(out));
 
         out.assertRecordSizeEquals(8);
-        testRunner.assertAllRecords(avroValidator);
+        testRunner.assertAllOutputRecords(avroValidator);
     }
 
     @Test

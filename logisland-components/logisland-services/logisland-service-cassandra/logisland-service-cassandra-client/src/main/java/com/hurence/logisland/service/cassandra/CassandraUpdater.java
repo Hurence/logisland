@@ -364,7 +364,18 @@ public class CassandraUpdater implements Runnable {
             Object[] values = new Object[insertValues.size()];
             values = insertValues.toArray(values);
             try {
-                ResultSet resultSet = session.execute(boundStatement.bind(values));
+                boundStatement = boundStatement.bind(values);
+                // Handle null values: unset them to avoid unwanted tombstones. See #450
+                int i = 0;
+                for (Object value : values)
+                {
+                    if (value == null)
+                    {
+                        boundStatement.unset(i);
+                    }
+                    i++;
+                }
+                ResultSet resultSet = session.execute(boundStatement);
                 if (!resultSet.wasApplied()) {
                     logger.error("Error inserting " + insertValues);
                 }

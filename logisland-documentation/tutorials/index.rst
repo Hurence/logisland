@@ -24,6 +24,9 @@ Contents:
 
    prerequisites
    index-apache-logs
+   index-apache-logs-es
+   index-apache-logs-mongo
+   index-apache-logs-solr
    store-to-redis
    threshold-alerting
    match-queries
@@ -36,7 +39,7 @@ Contents:
    generate_unique_ids
    index-jms-messages
    index-blockchain-transactions
-   index-excel-spreadsheets
+   index-excel-spreadsheet
    mqtt-to-historian
    iiot-opc-ua
    integrate-kafka-connect

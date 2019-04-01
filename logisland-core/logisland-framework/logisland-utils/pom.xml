@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-framework</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
     <artifactId>logisland-utils</artifactId>
     <packaging>jar</packaging>
@@ -136,6 +136,7 @@
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
+                <version>3.7.0</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>

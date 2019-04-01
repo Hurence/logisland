@@ -105,6 +105,7 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        super.init(context);
         synchronized(this) {
             try {
                 createElasticsearchClient(context);
@@ -365,8 +366,11 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
 
     @Override
     public List<MultiGetResponseRecord> multiGet(List<MultiGetQueryRecord> multiGetQueryRecords){
-
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
+        if (multiGetQueryRecords.isEmpty()) {
+            getLogger().debug("MultiGet query called with empty list");
+            return multiGetResponseRecords;
+        }
 
         MultiGetRequestBuilder multiGetRequestBuilder = esClient.prepareMultiGet();
 
@@ -382,9 +386,36 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
                     MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
                     item.fetchSourceContext(new FetchSourceContext(fieldsToInclude, fieldsToExclude));
                     multiGetRequestBuilder.add(item);
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("MultiGet query adding item\n" +
+                                "index : {}\n" +
+                                "type : {}\n" +
+                                "id : {}\n" +
+                                "fields : {}\n" +
+                                "excludes : {}\n" +
+                                "includes : {}\n" +
+                                "fetchSource : {}\n" +
+                                "transformSource : {}", new Object[]{
+                                item.index(),
+                                item.type(),
+                                item.id(),
+                                item.fields(),
+                                item.fetchSourceContext().excludes(),
+                                item.fetchSourceContext().includes(),
+                                item.fetchSourceContext().fetchSource(),
+                                item.fetchSourceContext().transformSource(),
+                        });
+                    }
                 }
             } else {
                 multiGetRequestBuilder.add(index, type, documentIds);
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("MultiGet query adding item\n" +
+                            "index : {}\n" +
+                            "type : {}\n" +
+                            "ids : {}", new Object[]{index, type, documentIds}
+                    );
+                }
             }
         }
 
@@ -392,7 +423,8 @@ public class Elasticsearch_2_4_0_ClientService extends AbstractControllerService
         try {
             multiGetItemResponses = multiGetRequestBuilder.get();
         } catch (ActionRequestValidationException e) {
-            getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
+            getLogger().error("MultiGet query failed \n: message {}\n cause : {}",
+                    new Object[]{e.getMessage(), e.getCause()});
         }
 
         if (multiGetItemResponses != null) {

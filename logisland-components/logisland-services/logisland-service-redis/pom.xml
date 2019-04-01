@@ -7,13 +7,14 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
 
     <artifactId>logisland-service-redis</artifactId>
     <packaging>jar</packaging>
 
     <name>Redis 4 Service Plugin</name>
+    <description>Module containing all logisland redis services</description>
 
     <properties>
         <!-- Versions -->

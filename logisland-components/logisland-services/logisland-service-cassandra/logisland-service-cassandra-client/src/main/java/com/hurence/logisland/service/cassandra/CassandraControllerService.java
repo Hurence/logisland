@@ -148,7 +148,7 @@ public class CassandraControllerService extends AbstractControllerService implem
         /**
          * Get config and establish connection to cassandra
          */
-
+        super.init(context);
         Cluster.Builder builder = Cluster.builder();
 
         // Hosts

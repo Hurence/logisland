@@ -52,7 +52,7 @@ public class ExpandMapFieldsTest {
         runner.enqueue(createTestRecord());
         runner.run();
         runner.assertOutputRecordsCount(1);
-        runner.assertAllRecords(record -> {
+        runner.assertAllOutputRecords(record -> {
             Assert.assertFalse(record.hasField("map"));
             Assert.assertTrue(record.hasField("f1"));
             Assert.assertTrue(record.hasField("f2"));
@@ -78,7 +78,7 @@ public class ExpandMapFieldsTest {
         runner.enqueue(createTestRecord());
         runner.run();
         runner.assertOutputRecordsCount(1);
-        runner.assertAllRecords(record -> {
+        runner.assertAllOutputRecords(record -> {
             Assert.assertFalse(record.hasField("map"));
             Assert.assertTrue(record.hasField("f1"));
             Assert.assertTrue(record.hasField("f2"));

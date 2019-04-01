@@ -7,14 +7,14 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-solr</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
 
     <artifactId>logisland-service-solr_5_5_5-client</artifactId>
     <packaging>jar</packaging>
 
     <name>Solr 5.x Service Plugin</name>
-
+    <description>Implementation of the solr service api</description>
 
     <properties>
         <!-- Versions -->
@@ -77,7 +77,15 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>                <groupId>com.hurence.logisland</groupId>                <artifactId>logisland-maven-plugin</artifactId>                <executions>                    <execution>                        <phase>package</phase>                    </execution>                </executions>            </plugin>
+            <plugin>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

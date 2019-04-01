@@ -65,6 +65,7 @@ public class LRUKeyValueCacheService<K, V> extends AbstractControllerService imp
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             this.cache = createCache(context);
         } catch (Exception e) {

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-components</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
     <packaging>pom</packaging>
 
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
-            <scope>provided</scope>
+            <optional>true</optional>
             <version>0.10.2.0</version>
         </dependency>
     </dependencies>
@@ -24,5 +24,71 @@
         <module>logisland-connector-opc</module>
     </modules>
 
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>2.0.0.RELEASE</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <layoutFactory implementation="com.hurence.logisland.packaging.LogislandPluginLayoutFactory">
+                            <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
+                        </layoutFactory>
+
+                        <excludeArtifactIds>connect-runtime,connect-json,connect-transforms,kafka-clients,
+                            logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base
+                        </excludeArtifactIds>
+                        <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-plugin-support</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <providedLibFolder>BOOT-INF/lib-provided</providedLibFolder>
+                        <exportedBaseClasses>
+                            <value>org.apache.kafka.connect.connector.Connector</value>
+                        </exportedBaseClasses>
+                        <classloaderParentFirstPatterns>
+                            <value>org.apache.kafka.*</value>
+                        </classloaderParentFirstPatterns>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.hurence.logisland</groupId>
+                            <artifactId>logisland-maven-plugin</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

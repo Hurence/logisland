@@ -22,6 +22,7 @@ import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.engine.ProcessingEngine;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.util.runner.MockControllerServiceLookup;
 import com.hurence.logisland.util.runner.MockProcessContext;
 
 /**
@@ -40,8 +41,8 @@ public class EngineInitializer implements ConfigurableComponentInitializer {
         ProcessingEngine engine = (ProcessingEngine) component;
 
 
-        final ComponentLog logger = new MockComponentLogger();
-        final MockProcessContext context = new MockProcessContext(null,null);
+        final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
+        final MockProcessContext context = new MockProcessContext(null, new MockControllerServiceLookup());
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, engine, logger, context);
     }
 

@@ -32,7 +32,6 @@ engine:
     spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 3000
     spark.streaming.timeout: -1
-    spark.streaming.unpersist: false
     spark.streaming.kafka.maxRetries: 3
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
@@ -45,7 +44,7 @@ engine:
       type: service
       documentation: "Mongo 3.8.0 service"
       configuration:
-        mongo.uri: mongodb://sandbox:27017
+        mongo.uri: ${MONGO_URI}
         mongo.db.name: logisland
         mongo.collection.name: apache
         # possible values ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY

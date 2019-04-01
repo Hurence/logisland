@@ -28,7 +28,6 @@ engine:
     spark.streaming.blockInterval: 500
     spark.streaming.kafka.maxRatePerPartition: 6000
     spark.streaming.timeout: -1
-    spark.streaming.unpersist: false
     spark.streaming.kafka.maxRetries: 60
     spark.streaming.ui.retainedBatches: 200
     spark.streaming.receiver.writeAheadLog.enable: false
@@ -55,7 +54,7 @@ engine:
       documentation: "store an in-memory cache coming from CSV"
       configuration:
         csv.format: excel_fr
-        csv.file.path: "logisland-assembly/target/logisland-1.0.0-RC2-bin-hdp2.5/logisland-1.0.0-RC2/conf/timeseries-lookup.csv"
+        csv.file.path: "logisland-assembly/target/logisland-1.1.0-bin-hdp2.5/logisland-1.1.0/conf/timeseries-lookup.csv"
         first.line.header: true
         row.key: tagname
         encoding.charset: ISO-8859-1

@@ -20,7 +20,7 @@ import com.hurence.logisland.stream.{RecordStream, StreamContext}
 import org.apache.spark.streaming.StreamingContext
 
 
-trait KafkaRecordStream extends RecordStream{
+trait KafkaRecordStream extends RecordStream {
 
     /**
       * ssetup the stream with spark app properties

@@ -6,7 +6,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engine-spark_2_X</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
     <artifactId>logisland-engine-spark_2_1</artifactId>
     <packaging>jar</packaging>
@@ -123,6 +123,26 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.banzaicloud</groupId>
+            <artifactId>spark-metrics_2.11</artifactId>
+            <version>2.2.1-1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+            <version>0.0.23</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_dropwizard</artifactId>
+            <version>0.0.23</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_pushgateway</artifactId>
+            <version>0.0.23</version>
+        </dependency>
     </dependencies>
 
 
@@ -189,4 +209,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>banzaicloud-github</id>
+            <url>https://raw.github.com/banzaicloud/spark-metrics/master/maven-repo/releases</url>
+        </repository>
+    </repositories>
 </project>

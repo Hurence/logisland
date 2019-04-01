@@ -211,6 +211,7 @@ public class RunPython extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         pythonInterpreter = new PythonInterpreter();
         // Get config parameters
         getConfigParams(context);

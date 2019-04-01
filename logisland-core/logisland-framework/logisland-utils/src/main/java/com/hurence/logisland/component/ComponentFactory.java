@@ -74,7 +74,7 @@ public final class ComponentFactory {
 
             ((AbstractConfigurableComponent) engine).init(engineContext);
 
-            logger.info("created engine {}", configuration.getComponent());
+            logger.info("created engine {} with id {}", configuration.getComponent(), currentId.get());
 
 
             return Optional.of(engineContext);
@@ -90,7 +90,7 @@ public final class ComponentFactory {
      * @param configuration
      * @return
      */
-    public static Optional<StreamContext> getStreamContext(StreamConfiguration configuration) {
+    private static Optional<StreamContext> getStreamContext(StreamConfiguration configuration) {
         try {
             final RecordStream recordStream = loadComponent(configuration.getComponent());
             final StreamContext instance =
@@ -105,7 +105,7 @@ public final class ComponentFactory {
             // set the config properties
             configuration.getConfiguration()
                     .entrySet().forEach(e -> instance.setProperty(e.getKey(), e.getValue()));
-            logger.info("created processor {}", configuration.getComponent());
+            logger.info("created stream {} with id {}", configuration.getComponent(), configuration.getStream());
             return Optional.of(instance);
 
         } catch (ClassNotFoundException e) {
@@ -113,7 +113,7 @@ public final class ComponentFactory {
                     ". Please check that your configuration is correct and you installed all the required modules", e);
         }
     }
-
+    //TODO this method should be made private in my opinion (but unfortunately some test class are using it)
     public static Optional<ProcessContext> getProcessContext(ProcessorConfiguration configuration) {
         try {
             final Processor processor = loadComponent(configuration.getComponent());
@@ -124,7 +124,7 @@ public final class ComponentFactory {
             configuration.getConfiguration()
                     .entrySet().forEach(e -> processContext.setProperty(e.getKey(), e.getValue()));
 
-            logger.info("created processor {}", configuration.getComponent());
+            logger.info("Created processor {} with id {}", configuration.getComponent(), configuration.getProcessor());
             return Optional.of(processContext);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("unable to instantiate processor " + configuration.getProcessor() +

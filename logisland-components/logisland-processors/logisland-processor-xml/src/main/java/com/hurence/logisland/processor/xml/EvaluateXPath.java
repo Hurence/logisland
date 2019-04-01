@@ -108,6 +108,7 @@ public class EvaluateXPath extends AbstractProcessor {
 
     @Override
     public void init(ProcessContext context) {
+        super.init(context);
         try {
             factoryRef.set(XPathFactory.newInstance(NamespaceConstant.OBJECT_MODEL_SAXON,
                     XPATH_FACTORY_IMPL,

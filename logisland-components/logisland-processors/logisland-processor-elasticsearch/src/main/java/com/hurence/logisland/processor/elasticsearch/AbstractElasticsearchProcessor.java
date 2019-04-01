@@ -27,8 +27,6 @@ import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
 
 public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
-    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractElasticsearchProcessor.class);
-
     public static final PropertyDescriptor ELASTICSEARCH_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("elasticsearch.client.service")
             .description("The instance of the Controller Service to use for accessing Elasticsearch.")
@@ -46,9 +44,10 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
         elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         if (elasticsearchClientService == null) {
-            logger.error("Elasticsearch client service is not initialized!");
+            getLogger().error("Elasticsearch client service is not initialized!");
         }
     }
 

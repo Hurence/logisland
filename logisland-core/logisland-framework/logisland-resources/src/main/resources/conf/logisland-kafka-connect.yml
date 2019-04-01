@@ -1,4 +1,4 @@
-version: 1.0.0-RC2
+version: 1.1.0
 documentation: LogIsland Kafka Connect Integration
 
 engine:

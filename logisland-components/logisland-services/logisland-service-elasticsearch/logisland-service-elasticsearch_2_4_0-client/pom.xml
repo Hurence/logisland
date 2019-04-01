@@ -7,27 +7,19 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-elasticsearch</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
 
     <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
     <packaging>jar</packaging>
     <name>Elasticsearch 2.4.0 Service Plugin</name>
-
+    <description>Implementation of the elasticsearch service api</description>
 
     <properties>
         <!-- Versions -->
         <elasticsearch.version>2.4.5</elasticsearch.version>
     </properties>
     <dependencies>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.16</version>
-            <optional>true</optional>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -79,13 +71,21 @@
             <scope>test</scope>
         </dependency>
 
+        <!--LOG DEPENDECIES-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+        <!--simple impl of slf4j-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.16</version>
+            <version>${org.slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-
 
     </dependencies>
     <build>

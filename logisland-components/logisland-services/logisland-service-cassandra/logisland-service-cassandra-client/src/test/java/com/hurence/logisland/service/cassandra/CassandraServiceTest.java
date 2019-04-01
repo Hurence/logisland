@@ -44,15 +44,15 @@ public class CassandraServiceTest {
 
     // Embedded cassandra server maven plugin instance connect info
 
-    // TODO: set back cassandra maven plugin usage
     private final static String CASSANDRA_HOST = "localhost";
     private final static String CASSANDRA_PORT = "19042";
 
     // Use these ones instead if you want to use the "docker cassandra start" instead of embedded cassandra server maven plugin instance
     // Or use "mvn -DfailIfNoTests=false [clean] test -Dtest=CassandraServiceTest" If want to use embedded
     // cassandra server maven plugin running only this test out of the IDE
-//    private final static String CASSANDRA_HOST = "172.17.0.6"; // Set the right docker container ip
-//    private final static String CASSANDRA_PORT = "9042";
+
+    // If you want to run these test with IDE tou can use cassandra docker images, running it with this command :
+    // sudo docker run -i -p 19042:9042 cassandra
 
     private final static String TEST_KEYSPACE_A = "testkeyspace_a";
     private final static String TEST_KEYSPACE_B = "testkeyspace_b";
@@ -172,14 +172,14 @@ public class CassandraServiceTest {
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228291"), CassandraType.UUID);
         row.put(new Field("testInt", FieldType.INT, 215461), CassandraType.INT);
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)123.456), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 123.456), CassandraType.FLOAT);
         row.put(new Field("testSmallint", FieldType.INT, 12546), CassandraType.SMALLINT);
         table2.add(row);
 
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228292"), CassandraType.UUID);
         row.put(new Field("testInt", FieldType.INT, 215462), CassandraType.INT);
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)456789.123456), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 456789.123456), CassandraType.FLOAT);
         row.put(new Field("testSmallint", FieldType.INT, -4568), CassandraType.SMALLINT);
         table2.add(row);
 
@@ -199,7 +199,7 @@ public class CassandraServiceTest {
         List<Map<Field, CassandraType>> table3 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, 123), CassandraType.TINYINT);
-        row.put(new Field("testSmallint", FieldType.INT, (short)12546), CassandraType.SMALLINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short) 12546), CassandraType.SMALLINT);
         row.put(new Field("testInt", FieldType.INT, 1563489), CassandraType.INT);
         row.put(new Field("testBigint", FieldType.LONG, 9623545688581L), CassandraType.BIGINT);
         row.put(new Field("testVarint", FieldType.LONG, new BigInteger("11123545688")), CassandraType.VARINT);
@@ -207,7 +207,7 @@ public class CassandraServiceTest {
 
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, -127), CassandraType.TINYINT);
-        row.put(new Field("testSmallint", FieldType.INT, (short)-4568), CassandraType.SMALLINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short) -4568), CassandraType.SMALLINT);
         row.put(new Field("testInt", FieldType.INT, -954123), CassandraType.INT);
         row.put(new Field("testBigint", FieldType.LONG, -8623463688247L), CassandraType.BIGINT);
         row.put(new Field("testVarint", FieldType.LONG, new BigInteger("-10128544682")), CassandraType.VARINT);
@@ -228,13 +228,13 @@ public class CassandraServiceTest {
 
         List<Map<Field, CassandraType>> table4 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)5984632.254893), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 5984632.254893), CassandraType.FLOAT);
         row.put(new Field("testDouble", FieldType.DOUBLE, 14569874235.1254857623), CassandraType.DOUBLE);
         row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("477552233116699.4885451212353")), CassandraType.DECIMAL);
         table4.add(row);
 
         row = new HashMap<Field, CassandraType>();
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)-4712568.6423844), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) -4712568.6423844), CassandraType.FLOAT);
         row.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.31225), CassandraType.DOUBLE);
         row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-342212145454577.24565")), CassandraType.DECIMAL);
         table4.add(row);
@@ -262,7 +262,7 @@ public class CassandraServiceTest {
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, -2), CassandraType.TINYINT);
         row.put(new Field("testBoolean", FieldType.BOOLEAN, false), CassandraType.BOOLEAN);
-        row.put(new Field("testBlob", FieldType.BYTES, new byte[] {0xa, 0x2, (byte) 0xff}), CassandraType.BLOB);
+        row.put(new Field("testBlob", FieldType.BYTES, new byte[]{0xa, 0x2, (byte) 0xff}), CassandraType.BLOB);
         table5.add(row);
 
         /**
@@ -416,14 +416,14 @@ public class CassandraServiceTest {
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228291"), CassandraType.UUID);
         row.put(new Field("testInt", FieldType.INT, 215461), CassandraType.INT);
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)123.456), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 123.456), CassandraType.FLOAT);
         row.put(new Field("testSmallint", FieldType.INT, 12546), CassandraType.SMALLINT);
         table2.add(row);
 
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228292"), CassandraType.UUID);
         row.put(new Field("testInt", FieldType.INT, 215462), CassandraType.INT);
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)456789.123456), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 456789.123456), CassandraType.FLOAT);
         row.put(new Field("testSmallint", FieldType.INT, -4568), CassandraType.SMALLINT);
         table2.add(row);
 
@@ -443,7 +443,7 @@ public class CassandraServiceTest {
         List<Map<Field, CassandraType>> table3 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, 123), CassandraType.TINYINT);
-        row.put(new Field("testSmallint", FieldType.INT, (short)12546), CassandraType.SMALLINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short) 12546), CassandraType.SMALLINT);
         row.put(new Field("testInt", FieldType.INT, 1563489), CassandraType.INT);
         row.put(new Field("testBigint", FieldType.LONG, 9623545688581L), CassandraType.BIGINT);
         row.put(new Field("testVarint", FieldType.LONG, new BigInteger("11123545688")), CassandraType.VARINT);
@@ -451,7 +451,7 @@ public class CassandraServiceTest {
 
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, -127), CassandraType.TINYINT);
-        row.put(new Field("testSmallint", FieldType.INT, (short)-4568), CassandraType.SMALLINT);
+        row.put(new Field("testSmallint", FieldType.INT, (short) -4568), CassandraType.SMALLINT);
         row.put(new Field("testInt", FieldType.INT, -954123), CassandraType.INT);
         row.put(new Field("testBigint", FieldType.LONG, -8623463688247L), CassandraType.BIGINT);
         row.put(new Field("testVarint", FieldType.LONG, new BigInteger("-10128544682")), CassandraType.VARINT);
@@ -472,13 +472,13 @@ public class CassandraServiceTest {
 
         List<Map<Field, CassandraType>> table4 = new ArrayList<Map<Field, CassandraType>>();
         row = new HashMap<Field, CassandraType>();
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)5984632.254893), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) 5984632.254893), CassandraType.FLOAT);
         row.put(new Field("testDouble", FieldType.DOUBLE, 14569874235.1254857623), CassandraType.DOUBLE);
         row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("477552233116699.4885451212353")), CassandraType.DECIMAL);
         table4.add(row);
 
         row = new HashMap<Field, CassandraType>();
-        row.put(new Field("testFloat", FieldType.FLOAT, (float)-4712568.6423844), CassandraType.FLOAT);
+        row.put(new Field("testFloat", FieldType.FLOAT, (float) -4712568.6423844), CassandraType.FLOAT);
         row.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.31225), CassandraType.DOUBLE);
         row.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-342212145454577.24565")), CassandraType.DECIMAL);
         table4.add(row);
@@ -506,7 +506,7 @@ public class CassandraServiceTest {
         row = new HashMap<Field, CassandraType>();
         row.put(new Field("testTinyint", FieldType.INT, -2), CassandraType.TINYINT);
         row.put(new Field("testBoolean", FieldType.BOOLEAN, false), CassandraType.BOOLEAN);
-        row.put(new Field("testBlob", FieldType.BYTES, new byte[] {0xa, 0x2, (byte) 0xff}), CassandraType.BLOB);
+        row.put(new Field("testBlob", FieldType.BYTES, new byte[]{0xa, 0x2, (byte) 0xff}), CassandraType.BLOB);
         table5.add(row);
 
         Object[][] inputs = {
@@ -518,15 +518,13 @@ public class CassandraServiceTest {
         return inputs;
     }
 
-    private static void echo(String msg)
-    {
+    private static void echo(String msg) {
         // Uncomment for debug
 //        System.out.println(msg);
     }
 
     @BeforeClass
-    public static void connect()
-    {
+    public static void connect() {
         Cluster.Builder builder = Cluster.builder();
         builder.addContactPoint(CASSANDRA_HOST).withPort(Integer.valueOf(CASSANDRA_PORT));
         cluster = builder.build();
@@ -535,16 +533,14 @@ public class CassandraServiceTest {
     }
 
     @AfterClass
-    public static void disconnect()
-    {
+    public static void disconnect() {
         session.close();
         cluster.close();
         echo("Disconnected from Cassandra");
     }
 
     @Before
-    public void cleanupCassandra()
-    {
+    public void cleanupCassandra() {
         /**
          * Delete keyspaces
          */
@@ -552,16 +548,14 @@ public class CassandraServiceTest {
         StringBuffer sb = new StringBuffer("DROP KEYSPACE IF EXISTS " + TEST_KEYSPACE_A);
         String statement = sb.toString();
         ResultSet resultSet = session.execute(sb.toString());
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + statement);
         }
 
         sb = new StringBuffer("DROP KEYSPACE IF EXISTS " + TEST_KEYSPACE_B);
         statement = sb.toString();
         resultSet = session.execute(sb.toString());
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + statement);
         }
 
@@ -573,8 +567,7 @@ public class CassandraServiceTest {
                 + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};");
         statement = sb.toString();
         resultSet = session.execute(sb.toString());
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + statement);
         }
 
@@ -582,8 +575,7 @@ public class CassandraServiceTest {
                 + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};");
         statement = sb.toString();
         resultSet = session.execute(sb.toString());
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + statement);
         }
 
@@ -599,8 +591,7 @@ public class CassandraServiceTest {
          * Create the table
          */
         ResultSet resultSet = session.execute(createTableCql);
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + createTableCql);
         }
 
@@ -608,12 +599,18 @@ public class CassandraServiceTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
-        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
-        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
-        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.enableControllerService(service);
+
+        runner.assertNotValid();
+
+        runner.setProperty("default.collection", "just required");
+        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.assertValid();
 
         /**
          * Bulk insert records
@@ -643,8 +640,7 @@ public class CassandraServiceTest {
          * Create the table 1
          */
         ResultSet resultSet = session.execute(createTableCql1);
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + createTableCql1);
         }
 
@@ -652,8 +648,7 @@ public class CassandraServiceTest {
          * Create the table 2
          */
         resultSet = session.execute(createTableCql2);
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + createTableCql2);
         }
 
@@ -661,11 +656,18 @@ public class CassandraServiceTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
 
         final CassandraControllerService service = new CassandraControllerService();
-        runner.setProperty(CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
-        runner.setProperty(CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
-        runner.setProperty(CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
-        runner.setProperty(CassandraControllerService.BATCH_SIZE.getName(), "500");
         runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
+
+        runner.assertValid(service);
+        runner.assertNotValid();
+
+        runner.setProperty("default.collection", "just required");
+        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.assertValid();
         runner.enableControllerService(service);
 
         // Bulk insert records for table 1
@@ -687,8 +689,7 @@ public class CassandraServiceTest {
     }
 
     // Adds the provided list of records to the cassandra service
-    private void bulkInsert(CassandraControllerService service, List<Map<Field, CassandraType>> rows, String tableName)
-    {
+    private void bulkInsert(CassandraControllerService service, List<Map<Field, CassandraType>> rows, String tableName) {
         rows.forEach(
                 row -> {
                     service.bulkPut(tableName, rowToRecord(row));
@@ -697,8 +698,7 @@ public class CassandraServiceTest {
     }
 
     // Create a record from a map of fields
-    private Record rowToRecord(Map<Field, CassandraType> row)
-    {
+    private Record rowToRecord(Map<Field, CassandraType> row) {
 
         Record record = new StandardRecord();
 
@@ -712,13 +712,11 @@ public class CassandraServiceTest {
     }
 
     // Checks that table contains the expected lines
-    private void checkCassandraTable(Session session, List<Map<Field, CassandraType>> expectedRows, String tableName)
-    {
+    private void checkCassandraTable(Session session, List<Map<Field, CassandraType>> expectedRows, String tableName) {
         StringBuffer sb = new StringBuffer("SELECT * FROM " + tableName);
         String statement = sb.toString();
         ResultSet resultSet = session.execute(sb.toString());
-        if (!resultSet.wasApplied())
-        {
+        if (!resultSet.wasApplied()) {
             Assert.fail("Statement not applied: " + statement);
         }
 
@@ -726,8 +724,7 @@ public class CassandraServiceTest {
 
         // Now check that lines are all expected ones
         Iterator<Row> iterator = resultSet.iterator();
-        while(iterator.hasNext())
-        {
+        while (iterator.hasNext()) {
             Row row = iterator.next();
             echo("Trying to find matching expected row for row: " + row);
             findRow(row, expectedRows, tableName);
@@ -735,9 +732,8 @@ public class CassandraServiceTest {
     }
 
     // Checks that a cassandra row is in the expected ones list
-    private void findRow(Row actualRow, List<Map<Field, CassandraType>> expectedRows, String tableName)
-    {
-        for (Map<Field, CassandraType> expectedRow: expectedRows) {
+    private void findRow(Row actualRow, List<Map<Field, CassandraType>> expectedRows, String tableName) {
+        for (Map<Field, CassandraType> expectedRow : expectedRows) {
 
             // Does the returned cassandra row match this current expected one?
             try {
@@ -750,8 +746,7 @@ public class CassandraServiceTest {
                         case UUID:
                             UUID actualUuid = actualRow.getUUID(fieldName);
                             UUID expectedUuid = UUID.fromString(field.asString());
-                            if (!expectedUuid.equals(actualUuid))
-                            {
+                            if (!expectedUuid.equals(actualUuid)) {
                                 throw new Exception("In table " + tableName + ", uuid values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra uuid value is " + actualUuid);
                             }
@@ -759,8 +754,7 @@ public class CassandraServiceTest {
                         case TEXT:
                             String actualString = actualRow.getString(fieldName);
                             String expectedString = field.asString();
-                            if (!expectedString.equals(actualString))
-                            {
+                            if (!expectedString.equals(actualString)) {
                                 throw new Exception("In table " + tableName + ", text values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra text value is " + actualString);
                             }
@@ -769,19 +763,16 @@ public class CassandraServiceTest {
                             LocalDate actualDate = actualRow.getDate(fieldName);
                             LocalDate expectedDate;
                             fieldType = field.getType();
-                            if (fieldType == FieldType.STRING)
-                            {
+                            if (fieldType == FieldType.STRING) {
                                 String expectedDateString = field.asString();
                                 /**
                                  * yyyy-mm-dd (so '2011-02-03')
                                  */
                                 expectedDate = RecordConverter.cassandraDateToLocalDate(expectedDateString);
-                            } else
-                            {
+                            } else {
                                 expectedDate = LocalDate.fromDaysSinceEpoch(field.asLong().intValue());
                             }
-                            if (!expectedDate.equals(actualDate))
-                            {
+                            if (!expectedDate.equals(actualDate)) {
                                 throw new Exception("In table " + tableName + ", date values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra date value is " + actualDate);
                             }
@@ -790,8 +781,7 @@ public class CassandraServiceTest {
                             Long actualTime = actualRow.getTime(fieldName);
                             Long expectedTime;
                             fieldType = field.getType();
-                            if (fieldType == FieldType.STRING)
-                            {
+                            if (fieldType == FieldType.STRING) {
                                 String expectedTimeString = field.asString();
                                 /**
                                  * hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond).
@@ -803,13 +793,11 @@ public class CassandraServiceTest {
                                  *     '08:12:54.123456789'
                                  */
                                 expectedTime = RecordConverter.cassandraTimeToNanosecondsSinceMidnight(expectedTimeString);
-                            } else
-                            {
+                            } else {
                                 expectedTime = field.asLong();
 
                             }
-                            if (!expectedTime.equals(actualTime))
-                            {
+                            if (!expectedTime.equals(actualTime)) {
                                 throw new Exception("In table " + tableName + ", time values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra time value is " + actualTime);
                             }
@@ -818,8 +806,7 @@ public class CassandraServiceTest {
                             Date actualTimestamp = actualRow.getTimestamp(fieldName);
                             Date expectedTimestamp;
                             fieldType = field.getType();
-                            if (fieldType == FieldType.STRING)
-                            {
+                            if (fieldType == FieldType.STRING) {
                                 String expectedTimestampString = field.asString();
                                 /**
                                  * String that represents an ISO 8601 date. For instance, all of the values below are valid timestamp values for Mar 2, 2011, at 04:05:00 AM, GMT:
@@ -833,12 +820,10 @@ public class CassandraServiceTest {
                                  *     '2011-02-03T04:05:00.000+0000'
                                  */
                                 expectedTimestamp = RecordConverter.cassandraTimestampToDate(expectedTimestampString);
-                            } else
-                            {
+                            } else {
                                 expectedTimestamp = new Date(field.asLong());
                             }
-                            if (!expectedTimestamp.equals(actualTimestamp))
-                            {
+                            if (!expectedTimestamp.equals(actualTimestamp)) {
                                 throw new Exception("In table " + tableName + ", timestamp values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra timestamp value is " + actualTimestamp);
                             }
@@ -846,8 +831,7 @@ public class CassandraServiceTest {
                         case TINYINT:
                             Byte actualByte = actualRow.getByte(fieldName);
                             Byte expectedByte = new Byte(field.asInteger().toString());
-                            if (!expectedByte.equals(actualByte))
-                            {
+                            if (!expectedByte.equals(actualByte)) {
                                 throw new Exception("In table " + tableName + ", tinyint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra tinyint value is " + actualByte);
                             }
@@ -855,8 +839,7 @@ public class CassandraServiceTest {
                         case SMALLINT:
                             Short actualShort = actualRow.getShort(fieldName);
                             Short expectedShort = new Short(field.asInteger().toString());
-                            if (!expectedShort.equals(actualShort))
-                            {
+                            if (!expectedShort.equals(actualShort)) {
                                 throw new Exception("In table " + tableName + ", smallint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra smallint value is " + actualShort);
                             }
@@ -864,8 +847,7 @@ public class CassandraServiceTest {
                         case INT:
                             Integer actualInteger = actualRow.getInt(fieldName);
                             Integer expectedInteger = field.asInteger();
-                            if (!expectedInteger.equals(actualInteger))
-                            {
+                            if (!expectedInteger.equals(actualInteger)) {
                                 throw new Exception("In table " + tableName + ", int values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra int value is " + actualInteger);
                             }
@@ -873,8 +855,7 @@ public class CassandraServiceTest {
                         case BIGINT:
                             Long actualLong = actualRow.getLong(fieldName);
                             Long expectedLong = field.asLong();
-                            if (!expectedLong.equals(actualLong))
-                            {
+                            if (!expectedLong.equals(actualLong)) {
                                 throw new Exception("In table " + tableName + ", bigint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra bigint value is " + actualLong);
                             }
@@ -882,8 +863,7 @@ public class CassandraServiceTest {
                         case VARINT:
                             BigInteger actualBigInteger = actualRow.getVarint(fieldName);
                             BigInteger expectedBigInteger = BigInteger.valueOf(field.asLong());
-                            if (!expectedBigInteger.equals(actualBigInteger))
-                            {
+                            if (!expectedBigInteger.equals(actualBigInteger)) {
                                 throw new Exception("In table " + tableName + ", varint values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra varint value is " + actualBigInteger);
                             }
@@ -891,8 +871,7 @@ public class CassandraServiceTest {
                         case FLOAT:
                             Float actualFloat = actualRow.getFloat(fieldName);
                             Float expectedFloat = field.asFloat();
-                            if (!expectedFloat.equals(actualFloat))
-                            {
+                            if (!expectedFloat.equals(actualFloat)) {
                                 throw new Exception("In table " + tableName + ", float values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra float value is " + actualFloat);
                             }
@@ -900,8 +879,7 @@ public class CassandraServiceTest {
                         case DOUBLE:
                             Double actualDouble = actualRow.getDouble(fieldName);
                             Double expectedDouble = field.asDouble();
-                            if (!expectedDouble.equals(actualDouble))
-                            {
+                            if (!expectedDouble.equals(actualDouble)) {
                                 throw new Exception("In table " + tableName + ", double values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra double value is " + actualDouble);
                             }
@@ -909,10 +887,9 @@ public class CassandraServiceTest {
                         case DECIMAL:
                             BigDecimal actualBigDecimal = actualRow.getDecimal(fieldName);
                             BigDecimal expectedBigDecimal = BigDecimal.valueOf(field.asDouble());
-                            if (!expectedBigDecimal.equals(actualBigDecimal))
-                            {
-                                echo("actualBigDecimal="+actualBigDecimal);
-                                echo("expectedBigDecimal="+expectedBigDecimal);
+                            if (!expectedBigDecimal.equals(actualBigDecimal)) {
+                                echo("actualBigDecimal=" + actualBigDecimal);
+                                echo("expectedBigDecimal=" + expectedBigDecimal);
                                 throw new Exception("In table " + tableName + ", decimal values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra decimal value is " + actualBigDecimal);
                             }
@@ -920,8 +897,7 @@ public class CassandraServiceTest {
                         case BOOLEAN:
                             Boolean actualBoolean = actualRow.getBool(fieldName);
                             Boolean expectedBoolean = field.asBoolean();
-                            if (!expectedBoolean.equals(actualBoolean))
-                            {
+                            if (!expectedBoolean.equals(actualBoolean)) {
                                 throw new Exception("In table " + tableName + ", boolean values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra boolean value is " + actualBoolean);
                             }
@@ -929,10 +905,9 @@ public class CassandraServiceTest {
                         case BLOB:
                             ByteBuffer actualByteBuffer = actualRow.getBytes(fieldName);
                             Object rawValue = field.getRawValue();
-                            byte[] bytes = (byte[])rawValue;
+                            byte[] bytes = (byte[]) rawValue;
                             ByteBuffer expectedByteBuffer = ByteBuffer.wrap(bytes);
-                            if (!expectedByteBuffer.equals(actualByteBuffer))
-                            {
+                            if (!expectedByteBuffer.equals(actualByteBuffer)) {
                                 throw new Exception("In table " + tableName + ", blob values for field " + fieldName +
                                         " differ for expected row: " + expectedRow + ". Cassandra blob value is " + actualByteBuffer);
                             }
@@ -945,13 +920,148 @@ public class CassandraServiceTest {
                 // Ok found this row in the expected ones
                 echo("Found a matching row for " + actualRow);
                 return;
-            } catch(Exception e)
-            {
+            } catch (Exception e) {
                 // Does not match this row, let's try the next one
                 echo("Not this row: " + e.getMessage());
             }
         }
 
         Assert.fail("Unable to find this row in the expected ones: " + actualRow);
+    }
+
+    @Test
+    public void testNullValues()
+            throws InitializationException {
+
+        /**
+         * Table1 (simple, simple primary key, uuid)
+         *
+         * testUuid                             testInt1 testInt2 testInt3 testUuid1 testUuid2
+         *
+         * d6328472-b571-4f61-a82e-fe4344228291 1234     null     5678     null      d6328472-b571-4f61-a82e-fe4344228292
+         */
+
+        String tableName1 = TEST_KEYSPACE_A + ".tableWithNulls";
+        String createTableCql1 = "CREATE TABLE IF NOT EXISTS " + tableName1
+                + " (testUuid uuid PRIMARY KEY, testInt1 int, testInt2 int, testInt3 int, testUuid1 uuid, testUuid2 uuid);";
+
+        List<Map<Field, CassandraType>> table1 = new ArrayList<Map<Field, CassandraType>>();
+
+        Map<Field, CassandraType> row = new HashMap<Field, CassandraType>();
+        row = new HashMap<Field, CassandraType>();
+        row.put(new Field("testUuid", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228291"), CassandraType.UUID);
+        row.put(new Field("testInt1", FieldType.INT, 1234), CassandraType.INT);
+        row.put(new Field("testInt2", FieldType.INT, null), CassandraType.INT);
+        row.put(new Field("testInt3", FieldType.INT, 5678), CassandraType.INT);
+        row.put(new Field("testUuid1", FieldType.STRING, null), CassandraType.UUID);
+        row.put(new Field("testUuid2", FieldType.STRING, "d6328472-b571-4f61-a82e-fe4344228292"), CassandraType.UUID);
+        table1.add(row);
+
+        /**
+         * Create the table
+         */
+        ResultSet resultSet = session.execute(createTableCql1);
+        if (!resultSet.wasApplied()) {
+            Assert.fail("Statement not applied: " + createTableCql1);
+        }
+
+
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
+
+        final CassandraControllerService service = new CassandraControllerService();
+        runner.addControllerService("cassandra_service", service);
+        runner.setProperty(service, CassandraControllerService.HOSTS.getName(), CASSANDRA_HOST);
+        runner.setProperty(service, CassandraControllerService.PORT.getName(), CASSANDRA_PORT);
+        runner.setProperty(service, CassandraControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, CassandraControllerService.BATCH_SIZE.getName(), "500");
+
+        runner.assertValid(service);
+        runner.enableControllerService(service);
+
+        /**
+         * Bulk insert records
+         */
+        bulkInsert(service, table1, tableName1);
+
+        service.bulkPut(END_OF_TEST, new StandardRecord()); // Signal end of test
+        service.waitForFlush();
+
+        /**
+         * Check table content
+         */
+
+        StringBuffer sb = new StringBuffer("SELECT * FROM " + tableName1);
+        String statement = sb.toString();
+        resultSet = session.execute(sb.toString());
+        if (!resultSet.wasApplied()) {
+            Assert.fail("Statement not applied: " + statement);
+        }
+
+        assertEquals("Number of found lines in table " + tableName1 + " is not equal to expected ones", table1.size(), resultSet.getAvailableWithoutFetching());
+
+        // Now check that lines are all expected ones
+        Iterator<Row> iterator = resultSet.iterator();
+        Iterator<Map<Field, CassandraType>> expectedIterator = table1.iterator();
+        while (iterator.hasNext()) {
+            Row resultRow = iterator.next();
+            Map<Field, CassandraType> expectedRow = expectedIterator.next();
+            echo("Trying to find matching expected row for row: " + row);
+            checkRowWithNullsEquals(resultRow, expectedRow);
+        }
+
+        runner.disableControllerService(service); // Disconnect service from cassandra
+    }
+
+    /**
+     * Checks that provided rows are equal with respect to potential null values
+     * @param actualRow
+     * @param expectedRow
+     */
+    private void checkRowWithNullsEquals(Row actualRow, Map<Field, CassandraType> expectedRow) {
+
+        // Does the returned cassandra row match the current expected one?
+        for (Map.Entry<Field, CassandraType> entry : expectedRow.entrySet()) {
+            Field field = entry.getKey();
+            String fieldName = field.getName();
+            CassandraType cassandraType = entry.getValue();
+            Object expectedRawValue = field.getRawValue();
+            switch (cassandraType) {
+                case UUID:
+                    UUID actualUuid = actualRow.getUUID(fieldName);
+                    if (expectedRawValue == null)
+                    {
+                        // Null string stay null string
+                        if (actualUuid != null)
+                        {
+                            Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
+                        }
+                    } else
+                    {
+                        UUID expectedUuid = UUID.fromString(field.asString());
+                        if (!expectedUuid.equals(actualUuid)) {
+                            Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
+                        }
+                    }
+                    break;
+                case INT:
+                    Integer actualInteger = actualRow.getInt(fieldName);
+                    if (expectedRawValue == null)
+                    {
+                        // Null number values gives 0
+                        if (!actualInteger.equals(0)) {
+                            Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
+                        }
+                    } else
+                    {
+                        Integer expectedInteger = field.asInteger();
+                        if (!expectedInteger.equals(actualInteger)) {
+                            Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
+                        }
+                    }
+                    break;
+                default:
+                    Assert.fail("Unsupported cassandra type: " + cassandraType);
+            }
+        }
     }
 }

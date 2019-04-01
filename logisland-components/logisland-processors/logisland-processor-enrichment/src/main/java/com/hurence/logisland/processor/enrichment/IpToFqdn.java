@@ -50,8 +50,6 @@ import java.util.concurrent.*;
         " to let the time to the underlying DNS system to be potentially updated.")
 public class IpToFqdn extends IpAbstractProcessor {
 
-    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), IpToFqdn.class);
-
     protected CacheService<String, CacheEntry> cacheService;
 
     protected String fqdnField = null;
@@ -145,9 +143,10 @@ public class IpToFqdn extends IpAbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
         cacheService = PluginProxy.rewrap(context.getPropertyValue(CONFIG_CACHE_SERVICE).asControllerService());
         if (cacheService == null) {
-            logger.error("Cache service is not initialized!");
+            getLogger().error("Cache service is not initialized!");
         }
 
     }
@@ -161,7 +160,7 @@ public class IpToFqdn extends IpAbstractProcessor {
         debug = context.getPropertyValue(CONFIG_DEBUG).asBoolean();
 
         if (!overwrite && record.hasField(fqdnField)) {
-            logger.trace("Skipped domain name resolution for Record (Field is already set and override is set to false):" + record,
+            getLogger().trace("Skipped domain name resolution for Record (Field is already set and override is set to false):" + record,
                     new Object[]{IP_ADDRESS_FIELD,
                             record.getField(fqdnField).getRawValue()});
             return;
@@ -174,7 +173,7 @@ public class IpToFqdn extends IpAbstractProcessor {
         try {
             cacheEntry = cacheService.get(ip);
         } catch (Exception e) {
-            logger.warn("Could not use cache!", e);
+            getLogger().warn("Could not use cache!", e);
         }
 
         /**
@@ -201,7 +200,7 @@ public class IpToFqdn extends IpAbstractProcessor {
             try {
                 addr = InetAddress.getByName(ip);
             } catch (UnknownHostException ex) {
-                logger.error("Error for ip {}, for record {}.", new Object[]{ip, record}, ex);
+                getLogger().error("Error for ip {}, for record {}.", new Object[]{ip, record}, ex);
                 String msg = "Could not translate ip: '" + ip + "' into InetAddress, for record: '" + record.toString() + "'.\n Cause: " + ex.getMessage();
                 record.addError(ProcessError.RUNTIME_ERROR.toString(), msg);
                 return;
@@ -231,12 +230,12 @@ public class IpToFqdn extends IpAbstractProcessor {
                 cacheEntry = new CacheEntry(fqdn, System.currentTimeMillis());
                 cacheService.set(ip, cacheEntry);
             } catch (Exception e) {
-                logger.trace("Could not put entry in the cache:" + e.getMessage());
+                getLogger().trace("Could not put entry in the cache:" + e.getMessage());
             }
         }
 
         if (fqdn.equals(ip)) {
-            logger.debug("Could not find FQDN corresponding to ip {}. This may be an authorization problem.",
+            getLogger().debug("Could not find FQDN corresponding to ip {}. This may be an authorization problem.",
                     new Object[]{ip});
         } else {
             // Ok got a FQDN matching the IP, enrich the record
@@ -245,7 +244,7 @@ public class IpToFqdn extends IpAbstractProcessor {
                 // Add some debug fields
                 record.setField(fqdnField + DEBUG_FROM_CACHE_SUFFIX, FieldType.BOOLEAN, fromCache);
             }
-            logger.trace("set value of field {} to {} for record {}",
+            getLogger().trace("set value of field {} to {} for record {}",
                     new Object[]{fqdnField, fqdn, record});
         }
     }
@@ -315,10 +314,10 @@ public class IpToFqdn extends IpAbstractProcessor {
                 // fqdn stays null which means timeout
             } catch (InterruptedException e) {
                 // Consider also it's a timeout, we gonna stop anyway
-                logger.debug("Interrupted while trying to resolve ip {}.", new Object[]{ip});
+                getLogger().debug("Interrupted while trying to resolve ip {}.", new Object[]{ip});
             } catch (ExecutionException e) {
                 // Too bad but let's say its also a timeout, log however an error
-                logger.error("Error for ip {}, for record {}.", new Object[]{ip, record}, e);
+                getLogger().error("Error for ip {}, for record {}.", new Object[]{ip, record}, e);
                 String msg = "Could not resolve ip: '" + ip + "' , for record: '" + record.toString() + "'.\n Cause: " + e.getMessage();
                 record.addError(ProcessError.RUNTIME_ERROR.toString(), msg);
             }

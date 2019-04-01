@@ -62,6 +62,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.groupon.metrics.UserMetricsSystem
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.StreamingContext
+import org.slf4j.LoggerFactory
 
 class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
@@ -77,7 +78,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
     protected var needMetricsReset = false
 
 
-    private val logger = new StandardComponentLogger(this.getIdentifier, this.getClass)
+    private val logger = LoggerFactory.getLogger(this.getClass)
 
     override def getSupportedPropertyDescriptors() = {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
@@ -99,7 +100,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
         this.ssc = ssc
         this.streamContext = streamContext
         this.engineContext = engineContext
-        SparkUtils.customizeLogLevels
+
     }
 
     override def getStreamContext(): StreamingContext = this.ssc
@@ -122,7 +123,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
 
 
             val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
-            streamContext.addControllerServiceLookup(controllerServiceLookup)
+            streamContext.setControllerServiceLookup(controllerServiceLookup)
 
 
             val readStreamService = streamContext.getPropertyValue(READ_TOPICS_CLIENT_SERVICE)
@@ -133,6 +134,7 @@ class StructuredStream extends AbstractRecordStream with SparkRecordStream {
             streamContext.getProcessContexts().clear();
             streamContext.getProcessContexts().addAll(
                 PipelineConfigurationBroadcastWrapper.getInstance().get(streamContext.getIdentifier))
+
             val readDF = readStreamService.load(spark, controllerServiceLookupSink, streamContext)
 
             // apply windowing

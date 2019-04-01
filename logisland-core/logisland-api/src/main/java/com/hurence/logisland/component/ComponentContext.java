@@ -16,6 +16,7 @@
 package com.hurence.logisland.component;
 
 
+import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.util.Map;
@@ -76,11 +77,9 @@ public interface ComponentContext extends ConfiguredComponent {
      */
     Map<PropertyDescriptor, String> getProperties();
 
-
     /**
-     * @return the configured name of this processor
+     * @return a logger that can be used to log important events in a standard
+     * way and generate bulletins when appropriate
      */
-    String getName();
-
-
+    ComponentLog getLogger();
 }

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -89,7 +90,7 @@ public class Field implements PropertyValue, Serializable {
 
         if (!type.equals(field.type)) return false;
         if (!name.equals(field.name)) return false;
-        return rawValue.equals(field.rawValue);
+        return Objects.deepEquals(rawValue, field.rawValue);
 
     }
 
@@ -97,7 +98,9 @@ public class Field implements PropertyValue, Serializable {
     public int hashCode() {
         int result = type.hashCode();
         result = 31 * result + name.hashCode();
-        result = 31 * result + rawValue.hashCode();
+        if ( rawValue != null ) {
+            result = 31 * result + rawValue.hashCode();
+        }
         return result;
     }
 

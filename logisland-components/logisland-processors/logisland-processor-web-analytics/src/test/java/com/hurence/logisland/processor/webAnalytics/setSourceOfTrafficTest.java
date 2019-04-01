@@ -204,6 +204,110 @@ public class setSourceOfTrafficTest {
         out.assertFieldEquals("source_of_traffic_medium", "referral");
     }
 
+    @Test
+    public void testAdwords() throws InitializationException {
+        // Test the adword case with presence of gclid parameter.
+        Record record1 = new StandardRecord();
+        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.html?gclid=XXX");
+
+        TestRunner testRunner = getTestRunner();
+
+        testRunner.assertValid();
+        testRunner.setProperty("cache.size", "5");
+        testRunner.setProperty("debug", "true");
+        testRunner.setProperty("source.out.field", "source_of_traffic");
+        testRunner.setProperty("source_of_traffic.hierarchical", "false");
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("source_of_traffic_source", "google");
+        out.assertFieldEquals("source_of_traffic_medium", "cpc");
+        out.assertFieldEquals("source_of_traffic_campaign", "adwords");
+        out.assertFieldEquals("source_of_traffic_content", "adwords");
+        out.assertFieldEquals("source_of_traffic_keyword", "adwords");
+    }
+
+    @Test
+    public void testDoubleClick() throws InitializationException {
+        // Test the DoubleClick case with presence of gclsrc parameter.
+        Record record1 = new StandardRecord();
+        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.xyz_website.com/fr/index.html?gclsrc=XXX");
+
+        TestRunner testRunner = getTestRunner();
+
+        testRunner.assertValid();
+        testRunner.setProperty("cache.size", "5");
+        testRunner.setProperty("debug", "true");
+        testRunner.setProperty("source.out.field", "source_of_traffic");
+        testRunner.setProperty("source_of_traffic.hierarchical", "false");
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("source_of_traffic_source", "google");
+        out.assertFieldEquals("source_of_traffic_medium", "cpc");
+        out.assertFieldEquals("source_of_traffic_campaign", "DoubleClick");
+        out.assertFieldEquals("source_of_traffic_content", "DoubleClick");
+        out.assertFieldEquals("source_of_traffic_keyword", "DoubleClick");
+    }
+
+    @Test
+    public void testCampaign() throws InitializationException {
+        // Test the adwords case with presence of campaign parameter.
+        Record record1 = new StandardRecord();
+        record1.setField("firstVisitedPage", FieldType.STRING, "https://www.orexad.com/fr/index.html?campaign=YYY&gclid=XXX");
+
+        TestRunner testRunner = getTestRunner();
+
+        testRunner.assertValid();
+        testRunner.setProperty("cache.size", "5");
+        testRunner.setProperty("debug", "true");
+        testRunner.setProperty("source.out.field", "source_of_traffic");
+        testRunner.setProperty("source_of_traffic.hierarchical", "false");
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("source_of_traffic_source", "google");
+        out.assertFieldEquals("source_of_traffic_medium", "cpc");
+        out.assertFieldEquals("source_of_traffic_campaign", "YYY");
+        out.assertFieldEquals("source_of_traffic_content", "adwords");
+        out.assertFieldEquals("source_of_traffic_keyword", "adwords");
+    }
+
+    @Test
+    public void testAdwordsReferer() throws InitializationException {
+        // Test the adwords case in referer.
+        Record record1 = new StandardRecord();
+        record1.setField("referer", FieldType.STRING, "https://www.orexad.com/fr/index.html?campaign=YYY&gclid=XXX");
+
+        TestRunner testRunner = getTestRunner();
+
+        testRunner.assertValid();
+        testRunner.setProperty("cache.size", "5");
+        testRunner.setProperty("debug", "true");
+        testRunner.setProperty("source.out.field", "source_of_traffic");
+        testRunner.setProperty("source_of_traffic.hierarchical", "false");
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertFieldEquals("source_of_traffic_source", "google");
+        out.assertFieldEquals("source_of_traffic_medium", "cpc");
+        out.assertFieldEquals("source_of_traffic_campaign", "YYY");
+        out.assertFieldEquals("source_of_traffic_content", "adwords");
+        out.assertFieldEquals("source_of_traffic_keyword", "adwords");
+    }
+
     private TestRunner getTestRunner() throws InitializationException {
 
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic");

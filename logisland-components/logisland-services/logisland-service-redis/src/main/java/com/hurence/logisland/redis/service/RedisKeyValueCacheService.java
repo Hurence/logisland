@@ -99,6 +99,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException {
+        super.init(context);
         try {
             this.redisConnectionPool = new RedisConnectionPool();
             this.redisConnectionPool.init(context);
@@ -130,7 +131,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         try {
             return get(key, stringSerializer, (Deserializer<Record>) recordSerializer);
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().error("error while get", e);
             return null;
         }
     }
@@ -140,7 +141,7 @@ public class RedisKeyValueCacheService extends AbstractControllerService impleme
         try {
             put(key, value, stringSerializer, (Serializer<Record>) recordSerializer);
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().error("error while set", e);
         }
     }
 

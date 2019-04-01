@@ -44,17 +44,17 @@ public interface StreamContext extends ComponentContext {
 
 
     /**
-     * Adds the given {@link ControllerServiceLookup}  so that the
-     * configured Processor can access it
+     * set the given {@link ControllerServiceLookup}  so that the
+     * configured stream can access it
      *
      * @param controllerServiceLookup the service
      * @throws InitializationException ie
      */
-    void addControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
+    void setControllerServiceLookup(ControllerServiceLookup controllerServiceLookup) throws InitializationException;
 
     /**
      * get the given {@link ControllerServiceLookup}  so that the
-     * configured Processor can access it
+     * configured stream can access it
      *
      * @throws InitializationException ie
      */

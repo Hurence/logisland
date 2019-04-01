@@ -28,6 +28,8 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import java.io.IOException;
  */
 public class SolrRule extends ExternalResource {
 
+    private Logger logger = LoggerFactory.getLogger(SolrRule.class);
     private EmbeddedSolrServer server;
     private CoreContainer container;
 
@@ -64,7 +67,7 @@ public class SolrRule extends ExternalResource {
         try {
             server.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("error while closing server", e);
         }
     };
 

@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.0.0-RC2</version>
+        <version>1.1.0</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -45,7 +45,7 @@
                             <providedLibDir>BOOT-INF/lib-provided/</providedLibDir>
                         </layoutFactory>
 
-                        <excludeArtifactIds>connect-api,connect-runtime,connect-json,connect-transforms,kafka-clients,
+                        <excludeArtifactIds>connect-runtime,connect-json,connect-transforms,kafka-clients,
                             logisland-utils,logisland-api,commons-logging,logisland-scripting-mvel,logisland-scripting-base
                         </excludeArtifactIds>
                         <excludeGroupIds>org.slf4j,ch.qos.logback,log4j</excludeGroupIds>

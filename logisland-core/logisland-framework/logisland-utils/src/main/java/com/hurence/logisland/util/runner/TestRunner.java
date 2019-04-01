@@ -38,13 +38,6 @@ import java.util.Map;
 public interface TestRunner {
 
     /**
-     * @return the {@link Processor} for which this <code>TestRunner</code> is
-     * configured
-     */
-    Processor getProcessor();
-
-
-    /**
      * @return the {@Link ProcessContext} that this <code>TestRunner</code> will
      * use
      */
@@ -55,6 +48,10 @@ public interface TestRunner {
      */
     void run();
 
+    /**
+     * Updates the identifier of the tested processor
+     */
+    void setProcessorIdentifier(String identifier);
 
     /**
      * Updates the value of the property with the given PropertyDescriptor to
@@ -130,21 +127,12 @@ public interface TestRunner {
 
 
     /**
-     * Asserts that all Records that were transferred contain the given
-     * attribute.
-     *
-     * @param attributeName attribute to look for
-     */
-    void assertAllRecordsContainAttribute(String attributeName);
-
-
-    /**
      * Asserts that all Records that were transferred are compliant with the
      * given validator.
      *
      * @param validator validator to use
      */
-    void assertAllRecords(RecordValidator validator);
+    void assertAllOutputRecords(RecordValidator validator);
 
 
     /**
@@ -183,13 +171,6 @@ public interface TestRunner {
      */
     void enqueue(List<String> values);
 
-    /**
-     * Enqueues the given list of string as Records
-     *
-     * @param values
-     */
-    void enqueue(String[] values);
-
 
     /**
      * Creates a Record with the content set to the given string (in UTF-8 format), with no attributes,
@@ -215,7 +196,15 @@ public interface TestRunner {
 
     /**
      * Creates a Record with the content set to the given inputuStrem (in UTF-8 format), with no attributes,
-     * and adds this Record to the Processor's Input Queue
+     * A key value record will be created
+     * For example if keyValueSeparator is "," and input stream contain those 2 lines :
+     * key1, value1 , example 1
+     * key2, second line
+     *
+     * It will enqueue those 2 records :
+     * key1 => " value1 , example 1"
+     * key2 => " second line"
+     *
      * <p>
      * the key will be set as empty string if keyValueSeparator is empty
      *
@@ -240,37 +229,6 @@ public interface TestRunner {
      * @return <code>true</code> if removed, <code>false</code> if the property was not set
      */
     boolean removeProperty(PropertyDescriptor descriptor);
-
-
-    /**
-     * Sets the value of the variable with the given name to be the given value. This exposes the variable
-     * for use by the Expression Language.
-     *
-     * @param name  the name of the variable to set
-     * @param value the value of the variable
-     * @throws NullPointerException if either the name or the value is null
-     */
-    void setVariable(String name, String value);
-
-    /**
-     * Returns the current value of the variable with the given name
-     *
-     * @param name the name of the variable whose value should be returned.
-     * @return the current value of the variable with the given name or <code>null</code> if no value is currently set
-     * @throws NullPointerException if the name is null
-     */
-    String getVariableValue(String name);
-
-    /**
-     * Removes the variable with the given name from this Test Runner, if it is set.
-     *
-     * @param name the name of the variable to remove
-     * @return the value that was set for the variable, or <code>null</code> if the variable was not set
-     * @throws NullPointerException if the name is null
-     */
-    String removeVariable(String name);
-
-
 
     /**
      * @param identifier of controller service

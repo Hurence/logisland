@@ -24,6 +24,7 @@ import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
 import java.io.File;
@@ -31,20 +32,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
-
-public class MockControllerServiceInitializationContext extends MockControllerServiceLookup
-        implements ControllerServiceInitializationContext, ControllerServiceLookup {
+public class MockControllerServiceInitializationContext implements ControllerServiceInitializationContext {
 
     private final String identifier;
     private final ComponentLog logger;
-    private final Map<PropertyDescriptor, String> properties = new HashMap<>();
+    private final Map<PropertyDescriptor, String> properties;
+    private final ControllerService controllerService;
+    private final MockControllerServiceLookup serviceLookup;
 
-    public MockControllerServiceInitializationContext(final ControllerService controllerService, final String identifier) {
+    public MockControllerServiceInitializationContext(final ControllerService controllerService,
+                                                      final String identifier,
+                                                      MockControllerServiceLookup serviceLookup) {
         this.identifier = identifier;
-        this.logger = new MockComponentLogger();
+        this.controllerService = controllerService;
+        this.logger = new MockComponentLogger(identifier, controllerService);
+        this.serviceLookup = serviceLookup;
+        this.properties = new HashMap<>();
     }
-
 
     @Override
     public String getIdentifier() {
@@ -52,14 +56,8 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
     }
 
     @Override
-    public void setName(String name) {
-
-    }
-
-
-    @Override
     public String getProperty(PropertyDescriptor property) {
-        return null;
+        return properties.getOrDefault(property, getPropertyValue(property).asString());
     }
 
     @Override
@@ -72,14 +70,10 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return null;
     }
 
-    @Override
-    public String getControllerServiceName(final String serviceIdentifier) {
-        return null;
-    }
 
     @Override
     public ControllerServiceLookup getControllerServiceLookup() {
-        return this;
+        return serviceLookup;
     }
 
     @Override
@@ -105,8 +99,15 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public ValidationResult setProperty(final String propertyName, final String propertyValue) {
-        properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
-        return new ValidationResult.Builder().valid(true).build();
+        PropertyDescriptor descriptor = controllerService.getPropertyDescriptor(propertyName);
+        if (!properties.containsKey(descriptor)) {
+            logger.warn("property '" + propertyName + "' does not exist on " + identifier);
+            properties.put(new PropertyDescriptor.Builder().name(propertyName).build(), propertyValue);
+            return new ValidationResult.Builder().valid(true).build();
+        } else {
+            properties.put(descriptor, propertyValue);
+            return descriptor.validate(propertyValue);
+        }
     }
 
     @Override
@@ -121,9 +122,14 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
 
     @Override
     public PropertyValue getPropertyValue(final String propertyName) {
-
-
-       return new MockPropertyValue(properties.get(new PropertyDescriptor.Builder().name(propertyName).build()));
+        PropertyDescriptor descriptor = controllerService.getPropertyDescriptor(propertyName);
+        if (descriptor == null)
+            throw new IllegalArgumentException(String.format("there is no such property '{}' in service '{}'", propertyName, controllerService.getIdentifier()));
+        if (properties.containsKey(descriptor)) {
+            return new MockPropertyValue(properties.get(descriptor), getControllerServiceLookup(), VariableRegistry.EMPTY_REGISTRY, descriptor);
+        } else {
+            return new MockPropertyValue(descriptor.getDefaultValue(), getControllerServiceLookup(), VariableRegistry.EMPTY_REGISTRY, descriptor);
+        }
     }
 
     @Override
@@ -136,8 +142,4 @@ public class MockControllerServiceInitializationContext extends MockControllerSe
         return properties;
     }
 
-    @Override
-    public String getName() {
-        return null;
-    }
 }

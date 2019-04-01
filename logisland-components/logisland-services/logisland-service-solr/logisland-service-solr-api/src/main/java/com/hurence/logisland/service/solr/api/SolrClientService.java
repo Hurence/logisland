@@ -147,6 +147,7 @@ abstract public class SolrClientService extends AbstractControllerService implem
     @Override
     @OnEnabled
     public void init(ControllerServiceInitializationContext context) throws InitializationException  {
+        super.init(context);
         synchronized(this) {
             try {
                 setClient(createSolrClient(context));

@@ -60,7 +60,7 @@ Write your a custom LogParser for your super-plugin in ``/src/main/java/com/hure
 
 Our parser will analyze some Proxy Log String in the following form :
 
-	"Thu Jan 02 08:43:39 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013091.0.0-RC226/Images/RightJauge.gif	724	409	false	false"
+	"Thu Jan 02 08:43:39 CET 2014	GET	10.118.32.164	193.251.214.117	http	webmail.laposte.net	80	/webmail/fr_FR/Images/Images-2013091.1.026/Images/RightJauge.gif	724	409	false	false"
 
 
 .. code-block:: java

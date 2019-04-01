@@ -217,6 +217,7 @@ public class ConsolidateSession extends AbstractProcessor {
     @Override
     public void init(final ProcessContext context)
     {
+        super.init(context);
         logger.debug("Initializing Consolidate Session Processor");
     }
     

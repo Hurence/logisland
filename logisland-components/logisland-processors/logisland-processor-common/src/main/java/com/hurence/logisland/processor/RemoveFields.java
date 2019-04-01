@@ -74,7 +74,7 @@ public class RemoveFields extends AbstractProcessor {
 
     @Override
     public void init(ProcessContext context) {
-
+        super.init(context);
         PropertyValue propertyValue = context.getPropertyValue(FIELDS_TO_REMOVE);
 
         if (propertyValue.asString() == null)

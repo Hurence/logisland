@@ -44,6 +44,7 @@ class KafkaConnectBaseProviderService extends AbstractControllerService with Str
     @OnEnabled
     @throws[InitializationException]
     override def init(context: ControllerServiceInitializationContext): Unit = {
+        super.init(context)
         this.synchronized {
             try {
                 delegateConnectorClass = context.getPropertyValue(StreamOptions.KAFKA_CONNECT_CONNECTOR_CLASS).asString()
@@ -55,8 +56,6 @@ class KafkaConnectBaseProviderService extends AbstractControllerService with Str
                 maxConfigurations = (context getPropertyValue StreamOptions.KAFKA_CONNECT_MAX_TASKS).asInteger()
                 offsetBackingStore = (context getPropertyValue StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE).asString()
                 offsetBackingStoreProperties = context.getPropertyValue(StreamOptions.KAFKA_CONNECT_OFFSET_BACKING_STORE_PROPERTIES).asString()
-
-
             } catch {
                 case e: Exception =>
                     throw new InitializationException(e)

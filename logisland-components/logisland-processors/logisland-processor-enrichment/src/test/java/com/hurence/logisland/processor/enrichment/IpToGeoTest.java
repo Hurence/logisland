@@ -477,13 +477,15 @@ public class IpToGeoTest {
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.enrichment.IpToGeo");
         runner.setProperty(IpToGeo.IP_ADDRESS_FIELD, IP_ADDRESS_FIELD_NAME);
         runner.setProperty(IpToGeo.IP_TO_GEO_SERVICE, "ipToGeoService");
-        runner.setProperty("lookup.time", "true");
-
-        runner.setProperty("maxmind.database.uri", new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile()).toURI().toASCIIString());
 
         // create the controller service and link it to the test processor
         final IpToGeoService service = ComponentFactory.loadComponent("com.hurence.logisland.service.iptogeo.maxmind.MaxmindIpToGeoService");
         runner.addControllerService("ipToGeoService", service);
+
+        runner.setProperty(service, "lookup.time", "true");
+        runner.setProperty(service, "maxmind.database.uri",
+                new File(getClass().getClassLoader().getResource("GeoIP2-City-Test.mmdb").getFile()).toURI().toASCIIString());
+
         runner.enableControllerService(service);
         runner.assertValid(service);
 

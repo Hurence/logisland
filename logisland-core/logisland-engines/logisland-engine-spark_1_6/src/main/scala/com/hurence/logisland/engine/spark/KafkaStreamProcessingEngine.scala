@@ -35,6 +35,20 @@ import scala.collection.JavaConversions._
 
 object KafkaStreamProcessingEngine {
 
+    val SPARK_PROPERTIES_FILE_PATH: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+      .name("spark.properties.file.path")
+      .description("for using --properties-file option while submitting spark job")
+      .required(false)
+      .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+      .build
+
+    val SPARK_MONITORING_DRIVER_PORT: PropertyDescriptor = new PropertyDescriptor.Builder()//Not used in code but in logisland.sh script. Si it must be present !
+        .name("spark.monitoring.driver.port")
+        .description("The port for exposing monitoring metrics")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_LONG_VALIDATOR)
+        .build
+
     val SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("spark.master")
         .description("The url to Spark Master")
@@ -298,6 +312,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         val descriptors: util.List[PropertyDescriptor] = new util.ArrayList[PropertyDescriptor]
         descriptors.add(KafkaStreamProcessingEngine.SPARK_APP_NAME)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MASTER)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MONITORING_DRIVER_PORT)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_DEPLOYMODE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_DRIVER_MEMORY)
@@ -323,6 +338,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
 
         Collections.unmodifiableList(descriptors)
     }
@@ -407,7 +423,7 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
             setConfProperty(conf, engineContext, KafkaStreamProcessingEngine.SPARK_YARN_QUEUE)
         }
 
-        SparkUtils.customizeLogLevels
+
         @transient val sc = new SparkContext(conf)
         @transient val ssc = new StreamingContext(sc, Milliseconds(batchDuration))
         UserMetricsSystem.initialize(sc, "LogislandMetrics")
@@ -423,7 +439,6 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
           */
         engineContext.getStreamContexts.foreach(streamingContext => {
             try {
-
                 val kafkaStream = streamingContext.getStream.asInstanceOf[KafkaRecordStream]
                 kafkaStream.setup(appName, ssc, streamingContext, engineContext)
                 kafkaStream.start()

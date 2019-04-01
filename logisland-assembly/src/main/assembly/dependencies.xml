@@ -40,6 +40,7 @@
                 <exclude>logisland-engine-spark_2_1</exclude>
                 <exclude>logisland-engine-spark_2_3</exclude>
                 <exclude>logisland-engine-spark_1_6</exclude>
+                <exclude>logisland-engine-vanilla</exclude>
             </excludes>
         </dependencySet>
 
@@ -54,6 +55,7 @@
                <include>logisland-engine-spark_2_3</include>
                <include>logisland-engine-spark_2_1</include>
                <include>logisland-engine-spark_1_6</include>
+               <include>logisland-engine-vanilla</include>
            </includes>
         </dependencySet>
 

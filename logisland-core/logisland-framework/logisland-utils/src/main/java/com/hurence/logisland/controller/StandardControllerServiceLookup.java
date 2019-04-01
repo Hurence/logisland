@@ -112,9 +112,4 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
             IllegalArgumentException {
         return null;
     }
-
-    @Override
-    public String getControllerServiceName(String serviceIdentifier) {
-        return null;
-    }
 }

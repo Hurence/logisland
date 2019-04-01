@@ -43,11 +43,6 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractPutHBase extends AbstractProcessor {
 
-    private ComponentLog logger = new StandardComponentLogger(this.getIdentifier(), AbstractPutHBase.class);
-
-
-
-
     public static final PropertyDescriptor HBASE_CLIENT_SERVICE = new PropertyDescriptor.Builder()
             .name("hbase.client.service")
             .description("The instance of the Controller Service to use for accessing HBase.")
@@ -197,9 +192,10 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
+        super.init(context);
         clientService = PluginProxy.rewrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if(clientService == null)
-            logger.error("HBase client service is not initialized!");
+            getLogger().error("HBase client service is not initialized!");
 
         if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {
             serializer = SerializerProvider.getSerializer(
@@ -228,25 +224,25 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             if (putRecord == null) {
                 // sub-classes should log appropriate error messages before returning null
                 record.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(),
-                        logger,
+                        getLogger(),
                         "Failed to produce a put for Record from {}" + record.toString());
             } else if (!putRecord.isValid()) {
                 if (StringUtils.isBlank(putRecord.getTableName())) {
                     record.addError(ProcessError.BAD_RECORD.toString(),
-                            logger,
+                            getLogger(),
                             "Missing table name for Record " + record.toString()                            );
                 } else if (null == putRecord.getRow()) {
                     record.addError(ProcessError.BAD_RECORD.toString(),
-                            logger,
+                            getLogger(),
                             "Missing row id for Record " + record.toString());
                 } else if (putRecord.getColumns() == null || putRecord.getColumns().isEmpty()) {
                     record.addError(ProcessError.BAD_RECORD.toString(),
-                            logger,
+                            getLogger(),
                             "No columns provided for Record " + record.toString());
                 } else {
                     // really shouldn't get here, but just in case
                     record.addError(ProcessError.RECORD_CONVERSION_ERROR.toString(),
-                            logger,
+                            getLogger(),
                             "Failed to produce a put for Record from " + record.toString()
                             );
                 }
@@ -260,7 +256,7 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
             }
         }
 
-        logger.debug("Sending {} Records to HBase in {} put operations", new Object[]{records.size(), tablePuts.size()});
+        getLogger().debug("Sending {} Records to HBase in {} put operations", new Object[]{records.size(), tablePuts.size()});
 
         final long start = System.nanoTime();
         final List<PutRecord> successes = new ArrayList<>();
@@ -270,17 +266,17 @@ public abstract class AbstractPutHBase extends AbstractProcessor {
                 clientService.put(entry.getKey(), entry.getValue());
                 successes.addAll(entry.getValue());
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                getLogger().error(e.getMessage(), e);
 
                 for (PutRecord putRecord : entry.getValue()) {
                     String msg = String.format("Failed to send {} to HBase due to {}; routing to failure", putRecord.getRecord(), e);
-                    putRecord.getRecord().addError("HBASE_PUT_RECORD_FAILURE", logger, msg);
+                    putRecord.getRecord().addError("HBASE_PUT_RECORD_FAILURE", getLogger(), msg);
                 }
             }
         }
 
         final long sendMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-        logger.debug("Sent {} Records to HBase successfully in {} milliseconds", new Object[]{successes.size(), sendMillis});
+        getLogger().debug("Sent {} Records to HBase successfully in {} milliseconds", new Object[]{successes.size(), sendMillis});
 
         for (PutRecord putRecord : successes) {
             final String details = "Put " + putRecord.getColumns().size() + " cells to HBase";

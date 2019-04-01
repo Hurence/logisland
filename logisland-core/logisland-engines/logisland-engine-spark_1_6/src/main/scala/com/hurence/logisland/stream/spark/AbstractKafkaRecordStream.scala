@@ -37,7 +37,7 @@ import java.util.Collections
 import com.hurence.logisland.component.{AllowableValue, PropertyDescriptor}
 import com.hurence.logisland.engine.EngineContext
 import com.hurence.logisland.record.{FieldDictionary, Record}
-import com.hurence.logisland.serializer.{AvroSerializer, JsonSerializer, KryoSerializer, RecordSerializer}
+import com.hurence.logisland.serializer._
 import com.hurence.logisland.stream.{AbstractRecordStream, StreamContext}
 import com.hurence.logisland.util.kafka.KafkaSink
 import com.hurence.logisland.util.spark.{ControllerServiceLookupSink, SparkUtils, ZookeeperSink}
@@ -47,6 +47,7 @@ import kafka.message.MessageAndMetadata
 import kafka.serializer.DefaultDecoder
 import kafka.utils.ZKStringSerializer
 import org.I0Itec.zkclient.ZkClient
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.spark.broadcast.Broadcast
@@ -101,18 +102,28 @@ object AbstractKafkaRecordStream {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build
 
-    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName, "avro serialization", "serialize events as avro blocs")
-    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName, "avro serialization", "serialize events as json blocs")
-    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName, "kryo serialization", "serialize events as json blocs")
+    val AVRO_SERIALIZER = new AllowableValue(classOf[AvroSerializer].getName,
+        "avro serialization", "serialize events as avro blocs")
+    val JSON_SERIALIZER = new AllowableValue(classOf[JsonSerializer].getName,
+        "json serialization", "serialize events as json blocs")
+    val EXTENDED_JSON_SERIALIZER = new AllowableValue(classOf[ExtendedJsonSerializer].getName,
+        "extended json serialization", "serialize events as json blocs supporting nested objects/arrays")
+    val KRYO_SERIALIZER = new AllowableValue(classOf[KryoSerializer].getName,
+        "kryo serialization", "serialize events as binary blocs")
+    val STRING_SERIALIZER = new AllowableValue(classOf[StringSerializer].getName,
+        "string serialization", "serialize events as string")
+    val BYTESARRAY_SERIALIZER = new AllowableValue(classOf[BytesArraySerializer].getName,
+        "byte array serialization", "serialize events as byte arrays")
+    val KURA_PROTOCOL_BUFFER_SERIALIZER = new AllowableValue(classOf[KuraProtobufSerializer].getName,
+        "Kura Protobuf serialization", "serialize events as Kura protocol buffer")
     val NO_SERIALIZER = new AllowableValue("none", "no serialization", "send events as bytes")
-
 
     val INPUT_SERIALIZER = new PropertyDescriptor.Builder()
         .name("kafka.input.topics.serializer")
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -121,7 +132,7 @@ object AbstractKafkaRecordStream {
         .description("")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .defaultValue(KRYO_SERIALIZER.getValue)
         .build
 
@@ -131,7 +142,7 @@ object AbstractKafkaRecordStream {
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue(JSON_SERIALIZER.getValue)
-        .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, AVRO_SERIALIZER, NO_SERIALIZER)
+      .allowableValues(KRYO_SERIALIZER, JSON_SERIALIZER, EXTENDED_JSON_SERIALIZER, AVRO_SERIALIZER, BYTESARRAY_SERIALIZER, STRING_SERIALIZER, NO_SERIALIZER)
         .build
 
 
@@ -241,7 +252,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
         this.ssc = ssc
         this.streamContext = streamContext
         this.engineContext = engineContext
-        SparkUtils.customizeLogLevels
+
     }
 
     override def start() = {
@@ -291,20 +302,35 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
               * previous values :
               *    refresh.leader.backoff.ms -> 1000
               */
-            val kafkaStreamsParams = Map(
-                "metadata.broker.list" -> brokerList,
-                "bootstrap.servers" -> brokerList,
-                "group.id" -> appName,
-                "refresh.leader.backoff.ms" -> "5000",
-                "auto.offset.reset" -> "largest"
+            var kafkaStreamsParams = Map(
+              "metadata.broker.list" -> brokerList,
+              "bootstrap.servers" -> brokerList,
+              "group.id" -> appName,
+              "refresh.leader.backoff.ms" -> "5000"
             )
+            val autoOffsetResetProp = streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET)
+            val autoOffsetReset = if (autoOffsetResetProp.isSet) {
+                val value = autoOffsetResetProp.asString
+                if ( ! AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.validate(value).isValid ) {
+                    logger.error(s"Invalid value '${value}' for property ${AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.getName()}")
+                    throw new IllegalStateException(s"Invalid value '${value}' for property ${AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET.getName()}");
+                }
+                value
+            }
+            else {
+                null
+            }
+
+            if ( autoOffsetReset != null ) {
+                kafkaStreamsParams = kafkaStreamsParams + (ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> autoOffsetReset)
+            }
 
             val offsets = zkSink.value.loadOffsetRangesFromZookeeper(brokerList, appName, inputTopics)
             @transient val kafkaStream = if (
                 streamContext.getPropertyValue(AbstractKafkaRecordStream.KAFKA_MANUAL_OFFSET_RESET).isSet
                     || offsets.isEmpty) {
 
-                logger.info(s"starting Kafka direct stream on topics $inputTopics from largest offsets")
+                logger.info(s"starting Kafka direct stream on topics $inputTopics from offsets $autoOffsetReset")
                 KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
                     ssc,
                     kafkaStreamsParams,
@@ -358,7 +384,7 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Kafka
 
             try {
                 val bais = new ByteArrayInputStream(rawEvent._2)
-                val deserialized = serializer.deserialize(bais)
+                val deserialized: Record = serializer.deserialize(bais)
                 bais.close()
 
                 Some(deserialized)
