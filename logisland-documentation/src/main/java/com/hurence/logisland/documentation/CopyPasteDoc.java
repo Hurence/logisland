@@ -87,6 +87,10 @@ public class CopyPasteDoc {
                     new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/components"),
                     new WildcardFileFilter("*.rst"));
 
+            copyDirectory( new File(rootDocDir, "components/engines"),
+                    new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/components/engines"),
+                    new WildcardFileFilter("*.rst"));
+
             copyDirectory(new File(rootDocDir, "_static"),
                     new File("../logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/_static"));
 

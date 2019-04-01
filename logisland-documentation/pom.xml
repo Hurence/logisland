@@ -724,9 +724,11 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
         </profile>
         <profile>
             <!--MUST be the last profile so it is executed in last-->
-            <id>copy docs</id>
+            <id>copyDoc</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipGenDoc</name>
+                </property>
             </activation>
             <build>
                 <plugins>
