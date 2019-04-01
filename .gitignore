@@ -22,6 +22,9 @@
 # File copy 
 **/*.*~
 
+# PlantUml files
+**/*.plantuml
+
 # Misc
 *.tar.gz
 **/_build/

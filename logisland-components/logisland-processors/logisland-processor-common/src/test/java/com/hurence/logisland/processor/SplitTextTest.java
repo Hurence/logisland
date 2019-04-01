@@ -144,7 +144,7 @@ public class SplitTextTest {
         System.out.println(RecordSchemaUtil.generateTestCase(out));
 
         out.assertRecordSizeEquals(8);
-        testRunner.assertAllRecords(avroValidator);
+        testRunner.assertAllOutputRecords(avroValidator);
     }
 
     @Test

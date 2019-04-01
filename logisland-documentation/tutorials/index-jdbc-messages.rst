@@ -51,7 +51,7 @@ Then run the server on 9999 port
 
 .. code-block:: sh
 
-    docker cp ./h2-1.4.197.jar logisland:/opt/logisland-1.0.0-RC1/lib
+    docker cp ./h2-1.4.197.jar logisland:/opt/logisland-1.1.0/lib
     docker exec logisland java -jar lib/h2-1.4.197.jar   -webAllowOthers -tcpAllowOthers -tcpPort 9999
 
 
