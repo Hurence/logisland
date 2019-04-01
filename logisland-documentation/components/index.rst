@@ -1,7 +1,7 @@
-.. logisland documentation master file for developer section
+.. logisland documentation master file for components section
 
 Components Documentation
-=======================
+========================
 
 Contents:
 
