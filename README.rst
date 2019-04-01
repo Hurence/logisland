@@ -168,13 +168,12 @@ Then comes a list of `ControllerService` which are the shared components that in
 
 .. code-block:: yaml
 
-        - controllerService: elasticsearch_service
-          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_2_3_3_ClientService
+        - controllerService: datastore_service
+          component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
           type: service
           documentation: elasticsearch service
           configuration:
-            hosts: sandbox:9300
-            cluster.name: elasticsearch
+            hosts: sandbox:9200
             batch.size: 5000
 
 Then comes a list of `RecordStream`, each of them route the input batch of `Record` through a pipeline of `Processor`
