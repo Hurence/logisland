@@ -45,6 +45,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "ambiguity.enabled", "Enable ambiguity reporting. Reports a count of ambiguities.", "", "false", "false", "false"
    "fields", "Defines the fields to be returned.", "", "DeviceClass, DeviceName, DeviceBrand, DeviceCpu, DeviceFirmwareVersion, DeviceVersion, OperatingSystemClass, OperatingSystemName, OperatingSystemVersion, OperatingSystemNameVersion, OperatingSystemVersionBuild, LayoutEngineClass, LayoutEngineName, LayoutEngineVersion, LayoutEngineVersionMajor, LayoutEngineNameVersion, LayoutEngineNameVersionMajor, LayoutEngineBuild, AgentClass, AgentName, AgentVersion, AgentVersionMajor, AgentNameVersion, AgentNameVersionMajor, AgentBuild, AgentLanguage, AgentLanguageCode, AgentInformationEmail, AgentInformationUrl, AgentSecurity, AgentUuid, FacebookCarrier, FacebookDeviceClass, FacebookDeviceName, FacebookDeviceVersion, FacebookFBOP, FacebookFBSS, FacebookOperatingSystemName, FacebookOperatingSystemVersion, Anonymized, HackerAttackVector, HackerToolkit, KoboAffiliate, KoboPlatformId, IECompatibilityVersion, IECompatibilityVersionMajor, IECompatibilityNameVersion, IECompatibilityNameVersionMajor, __SyntaxError__, Carrier, GSAInstallationID, WebviewAppName, WebviewAppNameVersionMajor, WebviewAppVersion, WebviewAppVersionMajor", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ParseUserAgent-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch: 
@@ -81,6 +84,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "es.index.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "false"
    "es.type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/BulkAddElasticsearch-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.ConsolidateSession: 
@@ -128,6 +134,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "lastEventDateTime.out.field", "the name of the field containing the date of the last event => will override default value if set", "", "lastEventDateTime", "false", "false"
    "sessionInactivityDuration.out.field", "the name of the field containing the session inactivity duration => will override default value if set", "", "sessionInactivityDuration", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ConsolidateSession-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.DetectOutliers: 
@@ -202,6 +211,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "rpca.spenalty", "No Description Provided.", "", "null", "false", "false"
    "rpca.threshold", "No Description Provided.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/DetectOutliers-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.elasticsearch.EnrichRecordsElasticsearch: 
@@ -240,6 +252,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "es.includes.field", "The name of the ES fields to include in the record.", "", "*", "false", "**true**"
    "es.excludes.field", "The name of the ES fields to exclude.", "", "N/A", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/EnrichRecordsElasticsearch-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.xml.EvaluateXPath: 
@@ -284,6 +299,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "An attribute", "An XPath expression", " the attribute is set to the result of the XPath Expression.", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/EvaluateXPath-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.excel.ExcelExtract: 
@@ -320,6 +338,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.type", "Default type of record", "", "excel_record", "false", "false"
    "field.row.header", "If set, field names mapping will be extracted from the specified row number. You should use either field.names either field.row.header but not both together.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ExcelExtract-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.hbase.FetchHBaseRow: 
@@ -357,6 +378,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "record.schema", "the avro schema definition for the Avro serialization", "", "null", "false", "false"
    "table.name.default", "The table to use if table name field is not set", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/FetchHBaseRow-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.IncrementalWebSession: 
@@ -435,6 +459,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "source_of_traffic.suffix", "Prefix for the source of the traffic related fields", "", "source_of_traffic", "false", "false"
    "**elasticsearch.client.service**", "The instance of the Controller Service to use for accessing Elasticsearch.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/IncrementalWebSession-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.enrichment.IpToFqdn: 
@@ -472,6 +499,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "resolution.timeout", "The amount of time, in milliseconds, to wait at most for the resolution to occur. This avoids to block the stream for too much time. Default value is 1000ms. If the delay expires and no resolution could occur before, the FQDN field is not created. A special value of 0 disables the logisland timeout and the resolution request may last for many seconds if the IP cannot be translated into a FQDN by the underlying operating system. In any case, whether the timeout occurs in logisland of in the operating system, the fact that a timeout occurs is kept in the cache system so that a resolution request for the same IP will not occur before the cache entry expires.", "", "1000", "false", "false"
    "debug", "If true, some additional debug fields are added. If the FQDN field is named X, a debug field named X_os_resolution_time_ms contains the resolution time in ms (using the operating system, not the cache). This field is added whether the resolution occurs or time is out. A debug field named  X_os_resolution_timeout contains a boolean value to indicate if the timeout occurred. Finally, a debug field named X_from_cache contains a boolean value to indicate the origin of the FQDN field. The default value for this property is false (debug is disabled.", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/IpToFqdn-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.enrichment.IpToGeo: 
@@ -510,6 +540,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**cache.service**", "The name of the cache service to use.", "", "null", "false", "false"
    "debug", "If true, an additional debug field is added. If the geo info fields prefix is X, a debug field named X_from_cache contains a boolean value to indicate the origin of the geo fields. The default value for this property is false (debug is disabled).", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/IpToGeo-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.MatchIP: 
@@ -574,6 +607,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/MatchIP-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.MatchQuery: 
@@ -638,6 +674,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "query", "some Lucene query", "generate a new record when this query is matched", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/MatchQuery-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.elasticsearch.MultiGetElasticsearch: 
@@ -691,6 +730,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**es.includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
    "**es.excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/MultiGetElasticsearch-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.bro.ParseBroEvent: 
@@ -812,6 +854,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ParseBroEvent-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.commonlogs.gitlab.ParseGitlabLog: 
@@ -843,6 +888,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "debug", "Enable debug. If enabled, the original JSON string is embedded in the record_value field of the record.", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ParseGitlabLog-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.netflow.ParseNetflowEvent: 
@@ -884,6 +932,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "output.record.type", "the output type of the record", "", "netflowevent", "false", "false"
    "enrich.record", "Enrich data. If enabledthe netflow record is enriched with inferred data", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/ParseNetflowEvent-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.networkpacket.ParseNetworkPacket: 
@@ -915,6 +966,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "debug", "Enable debug.", "", "false", "false", "false"
    "**flow.mode**", "Flow Mode. Indicate whether packets are provided in batch mode (via pcap files) or in stream mode (without headers). Allowed values are batch and stream.", "batch, stream", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -958,6 +1013,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "column.family.default", "The column family to use if column family field is not set", "", "null", "false", "false"
    "column.qualifier.default", "The column qualifier to use if column qualifier field is not set", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/PutHBaseCell-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.scripting.python.RunPython: 
@@ -998,6 +1056,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "dependencies.path", "The path to the additional dependencies for the user's python code, whether using inline or file mode. This is optional as your code may not have additional dependencies. If you defined **script.path** (so using file mode) and if **dependencies.path** is not defined, Logisland will scan a potential directory named **dependencies** in the same directory where the script file resides and if it exists, any python code located there will be loaded as dependency as needed.", "", "null", "false", "false"
    "logisland.dependencies.path", "The path to the directory containing the python dependencies shipped with logisland. You should not have to tune this parameter.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/RunPython-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SampleRecords: 
@@ -1049,6 +1110,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**sampling.algorithm**", "the implementation of the algorithm", "none, lttb, average, first_item, min_max, mode_median", "null", "false", "false"
    "**sampling.parameter**", "the parmater of the algorithm", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/SampleRecords-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.URLDecoder: 
@@ -1093,6 +1157,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "fields to decode", "a default value", "Decode one or more fields from the record ", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/URLDecoder-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic: 
@@ -1147,3 +1214,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "es.type", "Name of the ES type to use.", "", "default", "false", "false"
    "es.search_engine.field", "Name of the ES field used to specify that the domain is a search engine.", "", "search_engine", "false", "false"
    "es.social_network.field", "Name of the ES field used to specify that the domain is a social network.", "", "social_network", "false", "false"
+
+Extra informations
+__________________
+.. include:: ./details/setSourceOfTraffic-Detail.rst

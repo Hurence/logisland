@@ -18,6 +18,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -32,6 +33,7 @@ import java.util.*;
 
 @Tags({"record", "fields", "Expand", "Map"})
 @CapabilityDescription("Expands the content of a MAP field to the root.")
+@ExtraDetailFile("./details/common-processors/ExpandMapFields-Detail.rst")
 public class ExpandMapFields extends AbstractProcessor {
 
     public static final PropertyDescriptor FIELDS_TO_EXPAND = new PropertyDescriptor.Builder()

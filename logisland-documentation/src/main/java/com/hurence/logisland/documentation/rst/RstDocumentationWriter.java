@@ -18,6 +18,7 @@ package com.hurence.logisland.documentation.rst;
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginClassLoader;
@@ -114,9 +115,35 @@ public class RstDocumentationWriter implements DocumentationWriter {
     protected void writeAdditionalBodyInfo(final ConfigurableComponent configurableComponent,
                                            final RstPrintWriter rstWriter) {
 
+        rstWriter.writeSectionTitle(3, "Extra informations");
+        String filepath = getExtraFilePath(configurableComponent);
+        if (filepath == null) {
+            rstWriter.println("No additional information is provided");
+        } else {
+            rstWriter.writeIncludeReference(filepath);
+        }
     }
 
+    /**
+     * Gets a description of the ConfigurableComponent using the
+     * CapabilityDescription annotation.
+     *
+     * @param configurableComponent the component to describe
+     * @return a description of the configurableComponent
+     */
+    private String getExtraFilePath(final ConfigurableComponent configurableComponent) {
+        final ExtraDetailFile extraFilePath = configurableComponent.getClass().getAnnotation(
+                ExtraDetailFile.class);
 
+        final String filePath;
+        if (extraFilePath != null) {
+            filePath = extraFilePath.value();
+        } else {
+            filePath = null;
+        }
+
+        return filePath;
+    }
 
     private void writeTags(final ConfigurableComponent configurableComponent,
                            final RstPrintWriter rstWriter) {
@@ -182,7 +209,6 @@ public class RstDocumentationWriter implements DocumentationWriter {
         }
 
         return description;
-
     }
 
     /**

@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
@@ -32,6 +33,7 @@ import java.util.List;
 
 @Tags({"record", "avro", "generator"})
 @CapabilityDescription("This is a processor that make random records given an Avro schema")
+@ExtraDetailFile("./details/common-processors/GenerateRandomRecord-Detail.rst")
 public class GenerateRandomRecord extends AbstractProcessor {
 
 

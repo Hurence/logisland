@@ -130,6 +130,15 @@ public class RstPrintWriter extends PrintWriter {
         print("`_ ");
     }
 
+    /**
+     * A helper method to include another file.
+     *
+     * @param filepath the file to include
+     */
+    public void writeIncludeReference(final String filepath) {
+        print(".. include:: ");
+        print(filepath);
+    }
 
     /**
      * .. image:: picture.jpeg

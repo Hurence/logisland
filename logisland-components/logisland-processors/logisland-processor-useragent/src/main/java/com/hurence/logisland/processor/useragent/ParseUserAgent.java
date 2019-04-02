@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.useragent;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginLoader;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
         "The user-agent processor allows to decompose User-Agent value from an HTTP header into several attributes of interest."
                 + " There is no standard format for User-Agent strings, hence it is not easily possible to use regexp to handle them."
                 + " This processor rely on the `YAUAA library <https://github.com/nielsbasjes/yauaa>`_ to do the heavy work.")
+@ExtraDetailFile("./details/ParseUserAgent-Detail.rst")
 public class ParseUserAgent extends AbstractProcessor {
 
     private static final Object sync = new Object();

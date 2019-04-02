@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -33,6 +34,7 @@ import java.util.*;
         "- each dynamic property will return a new record according to the formula definition\n" +
         "- the record name will be set to the property name\n" +
         "- the record time will be set to the current timestamp\n")
+@ExtraDetailFile("./details/common-processors/CheckThresholds-Detail.rst")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",

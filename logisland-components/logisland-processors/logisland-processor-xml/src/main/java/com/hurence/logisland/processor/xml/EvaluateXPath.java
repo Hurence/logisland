@@ -21,6 +21,7 @@ package com.hurence.logisland.processor.xml;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.behavior.WritesAttribute;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -64,7 +65,7 @@ import static javax.xml.xpath.XPathConstants.STRING;
 @WritesAttribute(attribute = "user-defined", description = "This processor adds user-defined attributes.")
 @DynamicProperty(name = "An attribute", value = "An XPath expression", description = " "
         + "the attribute is set to the result of the XPath Expression.")
-
+@ExtraDetailFile("./details/EvaluateXPath-Detail.rst")
 public class EvaluateXPath extends AbstractProcessor {
 
     private static final String XPATH_FACTORY_IMPL = "net.sf.saxon.xpath.XPathFactoryImpl";

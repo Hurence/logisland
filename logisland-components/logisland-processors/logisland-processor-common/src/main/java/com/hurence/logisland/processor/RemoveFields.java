@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.component.PropertyValue;
@@ -36,6 +37,7 @@ import java.util.List;
 @Tags({"record", "fields", "remove", "delete", "keep"})
 @CapabilityDescription("Removes a list of fields defined by a comma separated list of field names or keeps only fields " +
         "defined by a comma separated list of field names.")
+@ExtraDetailFile("./details/common-processors/RemoveFields-Detail.rst")
 public class RemoveFields extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

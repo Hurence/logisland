@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Tags({"record", "fields", "remove", "delete"})
 @CapabilityDescription("Keep only records based on a given field value")
+@ExtraDetailFile("./details/common-processors/FilterRecords-Detail.rst")
 public class FilterRecords extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

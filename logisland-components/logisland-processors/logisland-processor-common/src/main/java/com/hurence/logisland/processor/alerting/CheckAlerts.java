@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -33,6 +34,7 @@ import java.util.*;
 
 @Tags({"record", "alerting", "thresholds", "opc", "tag"})
 @CapabilityDescription("Add one or more field with a default value")
+@ExtraDetailFile("./details/common-processors/CheckAlerts-Detail.rst")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",

@@ -16,3 +16,4 @@ Add your engine in the documentation
 
 To add docs about your engine you can check :ref:`dev-add-doc-of-comp`.
 
+.. include:: ./streams/.rst

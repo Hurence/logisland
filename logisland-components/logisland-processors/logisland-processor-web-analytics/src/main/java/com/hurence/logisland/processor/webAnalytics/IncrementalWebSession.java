@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -80,6 +81,7 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         "- optional fields that may be retrieved from the processed events\n" +
         "\n"
 )
+@ExtraDetailFile("./details/IncrementalWebSession-Detail.rst")
 public class IncrementalWebSession
        extends AbstractProcessor
 {

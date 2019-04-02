@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.elasticsearch;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -31,6 +32,7 @@ import java.util.*;
 
 @Tags({"elasticsearch"})
 @CapabilityDescription("Indexes the content of a Record in Elasticsearch using elasticsearch's bulk processor")
+@ExtraDetailFile("./details/BulkAddElasticsearch-Detail.rst")
 public class BulkAddElasticsearch extends AbstractElasticsearchProcessor
 {
 

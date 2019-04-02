@@ -45,6 +45,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "first.line.header", "csv headers grabbed from first line", "", "null", "false", "false"
    "encoding.charset", "charset", "", "UTF-8", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.service.cassandra.CassandraControllerService: 
@@ -83,6 +87,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
    "bulk.size", "bulk size in MB", "", "5", "false", "false"
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -130,6 +138,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
    "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService: 
@@ -175,6 +187,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
    "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
    "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -223,6 +239,10 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.service.cache.LRUKeyValueCacheService: 
@@ -253,6 +273,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    :escape: \
 
    "cache.size", "The maximum number of element in the cache.", "", "16384", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -287,6 +311,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "maxmind.database.path", "Local Path to the Maxmind Geo Enrichment Database File.", "", "null", "false", "false"
    "locale", "Locale to use for geo information. Defaults to 'en'.", "", "en", "false", "false"
    "lookup.time", "Should the additional lookup_micros field be returned or not.", "", "false", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -326,6 +354,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
    "**mongo.write.concern**", "The write concern to use", "ACKNOWLEDGED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED, MAJORITY", "ACKNOWLEDGED", "false", "false"
    "mongo.bulk.upsert.condition", "A custom condition for the bulk upsert (Filter for the bulkwrite). If not specified the standard condition is to match same id ('_id': data._id)", "", "${'{ \"_id\" :\"' + record_id + '\"}'}", "false", "**true**"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -377,6 +409,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**pool.test.while.idle**", "Whether or not connections should be tested while idle.", "true, false", "true", "false", "false"
    "**record.recordSerializer**", "the way to serialize/deserialize the record", "com.hurence.logisland.serializer.KryoSerializer (serialize events as json blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer), none (send events as bytes)", "com.hurence.logisland.serializer.JsonSerializer", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.service.solr.Solr_5_5_5_ClientService: 
@@ -415,6 +451,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
    "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService: 
@@ -450,6 +490,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**solr.connection.string**", "zookeeper quorum host1:2181,host2:2181 for solr cloud or http address of a solr core ", "", "localhost:8983/solr", "false", "false"
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
    "group.by", "The field the chunk should be grouped by", "", "", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
 
 ----------
 
@@ -488,3 +532,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "solr.concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
    "schema.update_timeout", "Schema update timeout interval in s", "", "15", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided

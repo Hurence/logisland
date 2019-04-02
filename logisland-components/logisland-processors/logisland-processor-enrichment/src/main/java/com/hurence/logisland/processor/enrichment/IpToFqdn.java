@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -48,6 +49,7 @@ import java.util.concurrent.*;
         " the real request for the same IP is not re-triggered during a certain period of time, until the cache entry" +
         " expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours" +
         " to let the time to the underlying DNS system to be potentially updated.")
+@ExtraDetailFile("./details/IpToFqdn-Detail.rst")
 public class IpToFqdn extends IpAbstractProcessor {
 
     protected CacheService<String, CacheEntry> cacheService;

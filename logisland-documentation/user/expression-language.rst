@@ -46,7 +46,7 @@ Structure of a Logisland Expression
 Usage of a Logisland Expression
 -------------------------------
 
-    You can check the documentation of AddFields processor :ref:`user-components` that we will use in those example.
+    You can check the documentation of AddFields processor :ref:`com.hurence.logisland.processor.AddFields` that we will use in those example.
 
 Adding a field which is concatenation of two others using '_' as joining string
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -68,7 +68,7 @@ Adding a field which is concatenation of two others using '_' as joining string
 
     By default if no type is specified by a dynamic property it use a type of String or the same type as old value if field already existed and you choose an overwrite policy.
 
-    See AddFields processor doc :ref:`user-components` fore more information.
+    See AddFields processor doc :ref:`com.hurence.logisland.processor.AddFields` fore more information.
 
 Conclusion
 ----------

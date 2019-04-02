@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -38,6 +39,7 @@ import java.util.List;
 
 @Tags({"record", "debug"})
 @CapabilityDescription("This is a processor that logs incoming records")
+@ExtraDetailFile("./details/common-processors/DebugStream-Detail.rst")
 public class DebugStream extends AbstractProcessor {
 
 

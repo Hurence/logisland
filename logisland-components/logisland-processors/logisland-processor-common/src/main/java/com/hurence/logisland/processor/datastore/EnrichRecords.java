@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.datastore;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
         "\n" +
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document."
 )
+@ExtraDetailFile("./details/common-processors/EnrichRecords-Detail.rst")
 public class EnrichRecords extends AbstractDatastoreProcessor {
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()

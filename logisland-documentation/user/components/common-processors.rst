@@ -13,52 +13,7 @@ Find below the list.
 
 AddFields
 ---------
-Add one or more field with constant value or dynamic value using the `expression-language <./expression-language.html>`_.Some examples of settings: 
-
-.. code::
-
-	newStringField: bonjour
-	newIntField: 14
-	newIntField.field.type: INT
-
-Would add those fields in record :
-
-.. code::
-
-	Field{name='newStringField', type='STRING', value='bonjour'}
-	Field{name='newIntField', type='INT', value=14}
-
-Here a second example using expression language, once for the value, once for the key. Note that you can use for both.We suppose that our record got already those fields : 
-
-.. code::
-
-	Field{name='field1', type='STRING', value='bonjour'}
-	Field{name='field2', type='INT', value=14}
-
-This settings :
-.. code::
-
-	newStringField: ${field1 + "-" + field2}
-	fieldToCalulateKey: 555
-	fieldToCalulateKey.field.name: ${"_" + field1 + "-"}
-
-Would add those fields in record :
-
-.. code::
-
-	Field{name='newStringField', type='STRING', value='bonjour-14'}
-	Field{name='_bonjour-', type='STRING', value='555'}
-
-
-As you probably notice, you can not add fields with name ending by either '.field.name' either '.field.type' because they are suffix are used to sort dynamic properties. But if you really want to do this a workaround is to specify the name of the field oui expression language, for example this settings would work:
-
-.. code::
-
-	fieldWithReservedSuffix: bonjour
-	fieldWithReservedSuffix.field.type: INT
-	fieldWithReservedSuffix.field.type: myfield.endind.with.reserved.suffix.field.type
-
-
+Add one or more field to records
 
 Module
 ______
@@ -96,6 +51,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    "Name of the field to add with the suffix '.field.type'", "Type of the field to add", "Add a field to the record with the specified type. These properties are only used if a correspondant property without the suffix '.field.type' is already defined. If this property is not defined, default type for adding fields is String.You can only use Logisland predefined type fields.", "NULL, STRING, INT, LONG, ARRAY, FLOAT, DOUBLE, BYTES, RECORD, MAP, ENUM, BOOLEAN, UNION, DATETIME", "STRING", false
    "Name of the field to add with the suffix '.field.name'", "Name of the field to add using expression language", "Add a field to the record with the specified name (which is evaluated using expression language). These properties are only used if a correspondant property without the suffix '.field.name' is already defined. If this property is not defined, the name of the field to add is the key of the first dynamic property (which is the main and only required dynamic property).", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/AddFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ApplyRegexp: 
@@ -138,6 +96,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "alternative regex & mapping", "another regex that could match", "This processor is used to create a new set of fields from one field (using regexp).", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ApplyRegexp-Detail.rst
 See Also:
 _________
 `com.hurence.logisland.processor.ApplyRegexp`_ 
@@ -177,6 +138,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "date.format", "simple date format for date suffix. default : yyyy.MM.dd", "", "yyyy.MM.dd", "false", "false"
    "collection.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "**true**"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/BulkPut-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.alerting.CheckAlerts: 
@@ -324,6 +288,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "field to add", "a default value", "Add a field to the record with the default value", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/CheckAlerts-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.alerting.CheckThresholds: 
@@ -476,6 +443,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "field to add", "a default value", "Add a field to the record with the default value", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/CheckThresholds-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.alerting.ComputeTags: 
@@ -627,6 +597,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "field to add", "a default value", "Add a field to the record with the default value", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ComputeTags-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ConvertFieldsType: 
@@ -662,6 +635,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "field", "the new type", "convert field value into new type", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ConvertFieldsType-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ConvertSimpleDateFormatFields: 
@@ -706,6 +682,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "field name to add", "value to convert into Epoch timestamp using given input.date.format", "Add a field to the record with the name, converting value using java SimpleDateFormat", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ConvertSimpleDateFormatFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.DebugStream: 
@@ -737,6 +716,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**event.serializer**", "the way to serialize event", "json (serialize events as json blocs), string (serialize events as toString() blocs)", "json", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/DebugStream-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.datastore.EnrichRecords: 
@@ -783,6 +765,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "type.name", "The typle of record to look for", "", "null", "false", "**true**"
    "collection.name", "The name of the collection to look for", "", "null", "false", "**true**"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/EnrichRecords-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.EvaluateJsonPath: 
@@ -828,6 +813,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "A Record field", "A JsonPath expression", "will be set to any JSON objects that match the JsonPath. ", "", "null", false
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/EvaluateJsonPath-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ExpandMapFields: 
@@ -860,6 +848,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**fields.to.expand**", "Comma separated list of fields of type map that will be expanded to the root", "", "null", "false", "false"
    "conflict.resolution.policy", "What to do when a field with the same name already exists ?", "overwrite_existing (if field already exist), keep_only_old_field (keep only old field)", "keep_only_old_field", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ExpandMapFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.FilterRecords: 
@@ -892,6 +883,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**field.name**", "the field name", "", "record_id", "false", "false"
    "**field.value**", "the field value to keep", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/FilterRecords-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.FlatMap: 
@@ -928,6 +922,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "concat.separator", "returns $rootField/$leaf/field", "", "/", "false", "false"
    "include.position", "do we add the original record position in", "", "true", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/FlatMap-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.GenerateRandomRecord: 
@@ -961,6 +958,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**min.events.count**", "the minimum number of generated events each run", "", "10", "false", "false"
    "**max.events.count**", "the maximum number of generated events each run", "", "200", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/GenerateRandomRecord-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ModifyId: 
@@ -997,6 +997,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "java.formatter.string", "the format to use to build id string (e.g. '%4$2s %3$2s %2$2s %1$2s' (see java Formatter)", "", "null", "false", "false"
    "**language.tag**", "the language to use to format numbers in string", "aa, ab, ae, af, ak, am, an, ar, as, av, ay, az, ba, be, bg, bh, bi, bm, bn, bo, br, bs, ca, ce, ch, co, cr, cs, cu, cv, cy, da, de, dv, dz, ee, el, en, eo, es, et, eu, fa, ff, fi, fj, fo, fr, fy, ga, gd, gl, gn, gu, gv, ha, he, hi, ho, hr, ht, hu, hy, hz, ia, id, ie, ig, ii, ik, in, io, is, it, iu, iw, ja, ji, jv, ka, kg, ki, kj, kk, kl, km, kn, ko, kr, ks, ku, kv, kw, ky, la, lb, lg, li, ln, lo, lt, lu, lv, mg, mh, mi, mk, ml, mn, mo, mr, ms, mt, my, na, nb, nd, ne, ng, nl, nn, no, nr, nv, ny, oc, oj, om, or, os, pa, pi, pl, ps, pt, qu, rm, rn, ro, ru, rw, sa, sc, sd, se, sg, si, sk, sl, sm, sn, so, sq, sr, ss, st, su, sv, sw, ta, te, tg, th, ti, tk, tl, tn, to, tr, ts, tt, tw, ty, ug, uk, ur, uz, ve, vi, vo, wa, wo, xh, yi, yo, za, zh, zu", "en", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ModifyId-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.datastore.MultiGet: 
@@ -1050,6 +1053,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**includes.field**", "the name of the incoming records field containing es includes to use in multiget query", "", "null", "false", "false"
    "**excludes.field**", "the name of the incoming records field containing es excludes to use in multiget query", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/MultiGet-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.NormalizeFields: 
@@ -1092,6 +1098,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "alternative mapping", "a comma separated list of possible field name", "when a field has a name contained in the list it will be renamed with this property field name", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/NormalizeFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.ParseProperties: 
@@ -1124,6 +1133,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**properties.field**", "the field containing the properties to split and treat", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/ParseProperties-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.RemoveFields: 
@@ -1156,6 +1168,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "fields.to.remove", "A comma separated list of field names to remove (e.g. 'policyid,date_raw'). Usage of this property is mutually exclusive with the fields.to.keep property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if specified in the list to remove.", "", "null", "false", "false"
    "fields.to.keep", "A comma separated list of field names to keep (e.g. 'policyid,date_raw'. All other fields will be removed. Usage of this property is mutually exclusive with the PropertyDescriptor[fields.to.remove] property. In any case the technical logisland fields record_id, record_time and record_type are not removed even if not specified in the list to keep.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/RemoveFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SelectDistinctRecords: 
@@ -1187,6 +1202,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**field.name**", "the field to distinct records", "", "record_id", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SelectDistinctRecords-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SendMail: 
@@ -1241,6 +1259,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "allow_overwrite", "If true, allows to overwrite processor configuration with special record fields (mail_to, mail_from_address, mail_from_name, mail_bounce_address, mail_replyto_address, mail_subject). If false, special record fields are ignored and only processor configuration keys are used.", "", "true", "false", "false"
    "html.template", "HTML template to use. It is used when the incoming record contains a mail_use_template field. The template may contain some parameters. The parameter format in the template is of the form ${xxx}. For instance ${param_user} in the template means that a field named param_user must be present in the record and its value will replace the ${param_user} string in the HTML template when the mail will be sent. If some parameters are declared in the template, everyone of them must be present in the record as fields, otherwise the record will generate an error record. If an incoming record contains a mail_use_template field, a template must be present in the configuration and the HTML mail format will be used. If the record also contains a mail_text field, its content will be used as an alternative text message to be used in the mail reader program of the recipient if it does not supports HTML.", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SendMail-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SetJsonAsFields: 
@@ -1277,6 +1298,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**omit.null.attributes**", "Omit json attributes with null values. Default is false so to set them as null record fields", "", "false", "false", "false"
    "**omit.empty.string.attributes**", "Omit json attributes with empty string values. Default is false so to set them as empty string record fields", "", "false", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SetJsonAsFields-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SplitField: 
@@ -1322,6 +1346,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "alternative split field", "another split that could match", "This processor is used to create a new set of fields from one field (using split).", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SplitField-Detail.rst
 See Also:
 _________
 `com.hurence.logisland.processor.SplitField`_ 
@@ -1374,6 +1401,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has not matched. It must be in the form alt.value.regex.1 and alt.value.fields.1", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SplitText-Detail.rst
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 
@@ -1411,6 +1441,9 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**fields**", "a comma separated list of fields corresponding to matching groups", "", "null", "false", "false"
    "**event.type**", "the type of event", "", "null", "false", "false"
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SplitTextMultiline-Detail.rst
 ----------
 
 .. _com.hurence.logisland.processor.SplitTextWithProperties: 
@@ -1459,6 +1492,9 @@ Dynamic Properties allow the user to specify both the name and value of a proper
 
    "alternative regex & mapping", "another regex that could match", "this regex will be tried if the main one has not matched. It must be in the form alt.value.regex.1 and alt.value.fields.1", "", "null", **true**
 
+Extra informations
+__________________
+.. include:: ./details/common-processors/SplitTextWithProperties-Detail.rst
 See Also:
 _________
 `com.hurence.logisland.processor.SplitTextMultiline`_ 

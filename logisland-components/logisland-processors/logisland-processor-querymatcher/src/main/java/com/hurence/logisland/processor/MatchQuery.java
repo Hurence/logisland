@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
@@ -51,6 +52,7 @@ import java.util.*;
         ".. warning::\n\n" +
         "\tdon't forget to set numeric fields property to handle correctly numeric ranges queries")
 @DynamicProperty(name = "query", supportsExpressionLanguage = true, value = "some Lucene query", description = "generate a new record when this query is matched")
+@ExtraDetailFile("./details/MatchQuery-Detail.rst")
 public class MatchQuery extends AbstractProcessor {
 
     public final static String ALERT_MATCH_NAME = "alert_match_name";

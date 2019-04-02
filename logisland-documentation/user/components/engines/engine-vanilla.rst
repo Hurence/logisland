@@ -52,6 +52,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "connection.reconnect.initial.delay", "Initial reconnection delay in milliseconds", "", "1000", "false", "false"
    "connection.reconnect.max.delay", "Maximum reconnection delay in milliseconds", "", "30000", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.engine.vanilla.stream.kafka.KafkaStreamsPipelineStream: 
@@ -94,6 +98,10 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "**write.topics**", "The input path for any topic to be written to", "", "", "false", "false"
    "**write.topics.serializer**", "The serializer to use", "com.hurence.logisland.serializer.KryoSerializer (serialize events as binary blocs), com.hurence.logisland.serializer.JsonSerializer (serialize events as json blocs), com.hurence.logisland.serializer.ExtendedJsonSerializer (serialize events as json blocs supporting nested objects/arrays), com.hurence.logisland.serializer.AvroSerializer (serialize events as avro blocs), com.hurence.logisland.serializer.BytesArraySerializer (serialize events as byte arrays), com.hurence.logisland.serializer.StringSerializer (serialize events as string), none (send events as bytes), com.hurence.logisland.serializer.KuraProtobufSerializer (serialize events as Kura protocol buffer)", "none", "false", "false"
 
+Extra informations
+__________________
+No additional information is provided
+
 ----------
 
 .. _com.hurence.logisland.engine.vanilla.PlainJavaEngine: 
@@ -121,3 +129,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "jvm.heap.min", "Minimum memory the JVM should allocate for its heap", "", "null", "false", "false"
    "jvm.heap.max", "Maximum memory the JVM should allocate for its heap", "", "null", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided

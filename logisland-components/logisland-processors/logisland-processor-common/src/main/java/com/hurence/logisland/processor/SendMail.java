@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
@@ -91,6 +92,7 @@ import java.util.regex.Pattern;
                 "\n"
         + " Apart from error records (when he is unable to process the incoming record or to send the mail), this processor"
         + " is not expected to produce any output records.")
+@ExtraDetailFile("./details/common-processors/SendMail-Detail.rst")
 public class SendMail extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(SendMail.class);

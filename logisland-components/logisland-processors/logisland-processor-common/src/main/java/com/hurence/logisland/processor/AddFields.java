@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -33,53 +34,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Tags({"record", "fields", "Add"})
-@CapabilityDescription("Add one or more field with constant value or dynamic value using the `expression-language <./expression-language.html>`_." +
-        "Some examples of settings: \n\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tnewStringField: bonjour\n" +
-        "\tnewIntField: 14\n" +
-        "\tnewIntField"+ AddFields.DYNAMIC_PROPS_TYPE_SUFFIX + ": INT\n" +
-        "\n" +
-        "Would add those fields in record :\n" +
-        "\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tField{name='newStringField', type='STRING', value='bonjour'}\n" +
-        "\tField{name='newIntField', type='INT', value=14}\n" +
-        "\n" +
-        "Here a second example using expression language, once for the value, once for the key. Note that you can use for both." +
-        "We suppose that our record got already those fields : \n" +
-        "\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tField{name='field1', type='STRING', value='bonjour'}\n" +
-        "\tField{name='field2', type='INT', value=14}\n" +
-        "\n" +
-        "This settings :\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tnewStringField: ${field1 + \"-\" + field2}\n" +
-        "\tfieldToCalulateKey: 555\n" +
-        "\tfieldToCalulateKey"+ AddFields.DYNAMIC_PROPS_NAME_SUFFIX + ": ${\"_\" + field1 + \"-\"}\n" +
-        "\n" +
-        "Would add those fields in record :\n" +
-        "\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tField{name='newStringField', type='STRING', value='bonjour-14'}\n" +
-        "\tField{name='_bonjour-', type='STRING', value='555'}\n" +
-        "\n\n" +
-        "As you probably notice, you can not add fields with name ending by either '" + AddFields.DYNAMIC_PROPS_NAME_SUFFIX + "' either '" +
-        AddFields.DYNAMIC_PROPS_TYPE_SUFFIX + "' because they are suffix are used to sort dynamic properties. But if you really want to do this a workaround" +
-        " is to specify the name of the field oui expression language, for example this settings would work:\n\n" +
-        ".. code::\n" +
-        "\n" +
-        "\tfieldWithReservedSuffix: bonjour\n" +
-        "\tfieldWithReservedSuffix"+ AddFields.DYNAMIC_PROPS_TYPE_SUFFIX + ": INT\n" +
-        "\tfieldWithReservedSuffix"+ AddFields.DYNAMIC_PROPS_TYPE_SUFFIX + ": myfield.endind.with.reserved.suffix"+AddFields.DYNAMIC_PROPS_TYPE_SUFFIX+"\n" +
-        "\n")
-
+@CapabilityDescription("Add one or more field to records")
+@ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
 @DynamicProperties(value = {
         @DynamicProperty(name = "Name of the field to add",
                 supportsExpressionLanguage = true,
