@@ -1,8 +1,8 @@
-.. _dev:
+.. _user:
 .. logisland documentation master file for developer section
 
-Developer Documentation
-=======================
+User Documentation
+==================
 
 Contents:
 
@@ -10,7 +10,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   developer
    components/index
-   object-model/index
-   documentation/index
+   dynamic-properties
+   expression-language

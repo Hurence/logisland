@@ -1,3 +1,4 @@
+.. _developer:
 
 Developer Guide
 ===============
@@ -139,11 +140,11 @@ __________________
 
 You can find help on these topics here :
 
-- `Processors <./processors.html>`_
-- `Controller services <./services.html>`_
-- `Kafka connect connectors <./connectors.html>`_
-- `Stream <./streams.html>`_
-- `Engine <./engines.html>`_
+- :ref:`dev-processors`
+- :ref:`dev-services`
+- :ref:`dev-connectors`
+- :ref:`dev-streams`
+- :ref:`dev-engines`
 
 Build the code and run the tests
 --------------------------------

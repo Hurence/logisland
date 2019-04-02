@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to logisland's documentation!
-=====================================
+Tutorials
+=========
 
 
 Chat with us on Gitter
@@ -17,28 +17,30 @@ Chat with us on Gitter
 Download the `latest release build <https://github.com/Hurence/logisland/releases>`_ and unzip on an edge node.
 
 Contents:
----------
+
 
 .. toctree::
    :maxdepth: 2
 
-   intro
-   concepts
-   architecture
-   user/index
-   developer/index
-   plugins
-   connectors
-   tutorials/index
-   api
-   rest-api
-   changes
-   faq
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   prerequisites
+   index-apache-logs
+   index-apache-logs-es
+   index-apache-logs-mongo
+   index-apache-logs-solr
+   store-to-redis
+   threshold-alerting
+   match-queries
+   aggregate-events
+   enrich-apache-logs
+   outlier-detection
+   indexing-bro-events
+   indexing-netflow-events
+   indexing-network-packets
+   generate_unique_ids
+   index-jms-messages
+   index-blockchain-transactions
+   index-excel-spreadsheet
+   mqtt-to-historian
+   iiot-opc-ua
+   integrate-kafka-connect
+   index-jdbc-messages

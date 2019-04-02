@@ -1,4 +1,6 @@
-Engines Guide
-=============
+.. _record:
+
+Record
+======
 
 This documentation is not available yet.

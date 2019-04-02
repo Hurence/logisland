@@ -27,7 +27,7 @@
     <artifactId>logisland-documentation</artifactId>
 
     <properties>
-        <generate-components-dir>./components</generate-components-dir>
+        <generate-components-dir>./user/components</generate-components-dir>
     </properties>
 
     <dependencies>

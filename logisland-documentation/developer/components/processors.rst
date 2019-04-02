@@ -1,3 +1,5 @@
+.. _dev-processors:
+
 Processors Guide
 ================
 
@@ -33,7 +35,7 @@ Here we will present you the objects that you will probably have to use.
 PropertyDescriptor
 ++++++++++++++++++
 
-To implement a Processor you will have to add `PropertyDescriptor <./propertyDescriptors.html>`_ to your processor.
+To implement a Processor you will have to add :ref:`propertyDescriptor` to your processor.
 The standard way to do this is to add them as static variables of your Processor Classes. Then they will be used in the
 processor's methods.
 
@@ -56,12 +58,12 @@ processor's methods.
 ProcessContext
 ++++++++++++++
 
-See `ProcessContext <./processContext.html>`_ for more information.
+See :ref:`processContext` for more information.
 
 Record
 ++++++
 
-See `Record <./record.html>`_ for more information.
+See :ref:`record` for more information.
 
 Important methods
 -----------------
@@ -84,6 +86,7 @@ Here an example with only one supported property
         return Collections.singletonList(CONFLICT_RESOLUTION_POLICY);
     }
 
+.. _proc-getSupportedDynamicPropertyDescriptor:
 
 getSupportedDynamicPropertyDescriptor
 +++++++++++++++++++++++++++++++++++++
@@ -95,6 +98,7 @@ This property descriptor will be used to validate any user key configuration tha
 If you return null, it is considered that the property name is not a valid dynamic property.
 
 You can have several type of supported dynamic properties if you want as in the example below.
+Go there to learn more about :ref:`user-dynamic-properties`.
 
 .. code:: java
 
@@ -168,3 +172,75 @@ Below an example that is just adding a new field to each record (this is obvious
         }
         return records;
     }
+
+
+Add documentation about the processor
+-------------------------------------
+
+The logisland-documentation module contains logisland documentation. See :ref:`dev-documentation-guide` for more information.
+Some part of the documentation is automatically generated at build time. It uses annotation in logisland code.
+
+In our case of a processors you have to add those :ref:`components-annotations`.
+
+Add your processor as a logisland plugin
+----------------------------------------
+
+Unless the new processor you implemented is already in an existing logisland module you will have to do those two steps below.
+
+Make your module a logisland plugin container
++++++++++++++++++++++++++++++++++++++++++++++
+
+You will have to build your module as a plugin in two steps :
+* Using **spring-boot-maven-plugin** that will build a fat jar of your module.
+* Using our custom plugin **logisland-maven-plugin** that will modify the manifest of the jar so that logisland get some meta information.
+
+You just have to add this code in the *pom.xml* of your module.
+
+.. code:: xml
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+Add your module in tar gz assembly
+++++++++++++++++++++++++++++++++++
+
+You will have to add your module as a dependency in the **logisland-assembly** module. Add it in **full** maven profile so that it is automatically
+Added to logisland jar when building with -Pfull option.
+
+.. code:: xml
+
+    <profile>
+        <id>full</id>
+        <activation>
+            <activeByDefault>false</activeByDefault>
+        </activation>
+        <dependencies>
+            ...
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>YOUR_MODULE_NAME</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+         </dependencies>
+    </profile>
+

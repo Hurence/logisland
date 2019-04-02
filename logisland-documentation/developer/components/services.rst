@@ -1,3 +1,5 @@
+.. _dev-services:
+
 Services Guide
 ==============
 
@@ -33,7 +35,7 @@ Here we will present you the objects that you will probably have to use.
 PropertyDescriptor
 ++++++++++++++++++
 
-To implement a Processor you will have to add `PropertyDescriptor <./propertyDescriptors.html>`_ to your processor.
+To implement a Processor you will have to add :ref:`propertyDescriptor` to your processor.
 The standard way to do this is to add them as static variables of your Processor Classes. Then they will be used in the
 processor's methods.
 
@@ -56,12 +58,12 @@ processor's methods.
 ControllerServiceInitializationContext
 ++++++++++++++++++++++++++++++++++++++
 
-See `ControllerServiceInitializationContext <./controllerServiceInitializationContext.html>`_ for more information.
+See :ref:`controllerServiceInitializationContext` for more information.
 
 Record
 ++++++
 
-See `Record <./record.html>`_ for more information.
+See :ref:`record` for more information.
 
 
 Important methods
@@ -160,7 +162,7 @@ Services should implement an interface defining an API. For exemple *com.hurence
 represents a generic api for any datastore. The advantage of using this is that a processor can work with all services implementing
 this interface if it is declared as a *DatastoreClientService* instance.
 
-For example the `BulkPut <../components.html#BulkPut>`_ processor use a *DatastoreClientService* as input so it can inject in using
+For example the BulkPut processor use a *DatastoreClientService* as input so it can inject in using
 any service implementing *DatastoreClientService*. So it can inject potentially in any database.
 
 You can create a special module to create a desired interface that you want your service to implement. This way other services

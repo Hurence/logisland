@@ -1,3 +1,5 @@
+.. _user-expression-language:
+
 Expression Language Guide
 =========================
 
@@ -44,7 +46,7 @@ Structure of a Logisland Expression
 Usage of a Logisland Expression
 -------------------------------
 
-    You can check the documentation of `AddFields <./components.html#addfields>`_ processor that we will use in those example.
+    You can check the documentation of AddFields processor :ref:`user-components` that we will use in those example.
 
 Adding a field which is concatenation of two others using '_' as joining string
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -59,15 +61,16 @@ Adding a field which is concatenation of two others using '_' as joining string
 
     Then if in input of this processor there is processors with fields : field1=value1 and field2=value2, it would have 3 more fields once
     out of this processors:
+
     - field 'concat2fields' of type String with value 'value1_value2'
     - field 'my_countries' of type Array containing values 'france' and 'allemagne'
     - field 'my_employees_by_countries' of type Map with key value pairs "france" : 100 and "allemagne" : 50
 
     By default if no type is specified by a dynamic property it use a type of String or the same type as old value if field already existed and you choose an overwrite policy.
 
-    See `AddFields <./components.html#addfields>`_ processor doc fore more information.
+    See AddFields processor doc :ref:`user-components` fore more information.
 
 Conclusion
 ----------
 
-    As you can see the language expression is very flexible but it's usage is very dependent of the implementatio of the component's developer.
+    As you can see the language expression is very flexible but it's usage is very dependent of the implementation of the component's developer.

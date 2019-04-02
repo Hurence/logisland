@@ -1,5 +1,7 @@
 .. logisland documentation master file for components section
 
+.. _user-components:
+
 Components Documentation
 ========================
 

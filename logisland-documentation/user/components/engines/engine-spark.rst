@@ -1,3 +1,5 @@
+.. _user-engine-spark:
+
 Engine-spark
 ==========
 
