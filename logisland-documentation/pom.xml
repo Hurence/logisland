@@ -28,6 +28,7 @@
 
     <properties>
         <generate-components-dir>./user/components</generate-components-dir>
+        <hadooop.version>0.20.2</hadooop.version>
     </properties>
 
     <dependencies>
@@ -152,6 +153,24 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
             <artifactId>logisland-service-solr_chronix_6.4.2-client</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-inmemory-cache</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-ip-to-geo-maxmind</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${hadooop.version}</version>
         </dependency>
         <!--
 ***********************************************************************************
@@ -408,6 +427,8 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <!--Needed dependencies by logisland-plugin-support-->
                                     <dependency>cglib:cglib-nodep</dependency>
                                     <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--For memory cache-->
+                                    <dependency>org.apache.hadoop:hadoop-core</dependency>
                                     <!--SERVICE-->
                                     <dependency>com.hurence.logisland:logisland-service-hbase_1_1_2-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client</dependency>
@@ -418,6 +439,8 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                     <dependency>com.hurence.logisland:logisland-service-solr_5_5_5-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-solr_6_6_2-client</dependency>
                                     <dependency>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-inmemory-cache</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</dependency>
                                 </classpath>
                                 <argument>com.hurence.logisland.documentation.DocGenerator</argument>
                                 <argument>-d</argument>
