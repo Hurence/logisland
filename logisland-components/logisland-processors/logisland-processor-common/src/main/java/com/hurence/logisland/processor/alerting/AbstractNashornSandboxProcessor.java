@@ -16,8 +16,6 @@
 package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
@@ -34,8 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.Executors;
 
-@Tags({"record", "fields", "Add"})
-@CapabilityDescription("Add one or more field with a default value...")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
         value = "a default value",
@@ -65,7 +61,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
             .addValidator(StandardValidators.LONG_VALIDATOR)
             .build();
 
-    public static final PropertyDescriptor ALLOw_NO_BRACE = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor ALLOW_NO_BRACE = new PropertyDescriptor.Builder()
             .name("allow.no.brace")
             .description("Force, to check if all blocks are enclosed with curly braces \"\"{}\"\".\n" +
                     ".. raw:: html\n" +
@@ -113,7 +109,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
 
     public static final PropertyDescriptor MAX_PREPARED_STATEMENTS = new PropertyDescriptor.Builder()
             .name("max.prepared.statements")
-            .description("The size of prepared statements LRU cache. Default 0 (disabled).\n" +
+            .description("The size of prepared statements LRU cache. If 0, this is disabled.\n" +
                     ".. raw:: html\n" +
                     "  <p>\n" +
                     "  Each statements when setMaxCPUTime(long) is set is prepared to\n" +
@@ -171,7 +167,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(MAX_CPU_TIME);
         properties.add(MAX_MEMORY);
-        properties.add(ALLOw_NO_BRACE);
+        properties.add(ALLOW_NO_BRACE);
         properties.add(MAX_PREPARED_STATEMENTS);
         properties.add(DATASTORE_CLIENT_SERVICE);
         properties.add(DATASTORE_CACHE_COLLECTION);
@@ -227,7 +223,7 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
 
         Long maxCpuTime = context.getPropertyValue(MAX_CPU_TIME).asLong();
         Long maxMemory = context.getPropertyValue(MAX_MEMORY).asLong();
-        Boolean allowNoBrace = context.getPropertyValue(ALLOw_NO_BRACE).asBoolean();
+        Boolean allowNoBrace = context.getPropertyValue(ALLOW_NO_BRACE).asBoolean();
         Integer maxPreparedStatements = context.getPropertyValue(MAX_PREPARED_STATEMENTS).asInteger();
 
 
@@ -236,10 +232,10 @@ public abstract class AbstractNashornSandboxProcessor extends AbstractProcessor 
         sandbox.allowNoBraces(allowNoBrace);
         sandbox.setMaxPreparedStatements(maxPreparedStatements); // because preparing scripts for execution is expensive
         sandbox.setExecutor(Executors.newSingleThreadExecutor());
-
+        //TODO properly shutdown Executor service in stop method when framework will support it
         datastoreClientService = PluginProxy.rewrap(context.getPropertyValue(DATASTORE_CLIENT_SERVICE).asControllerService());
         if (datastoreClientService == null) {
-            logger.error("Datastore client service is not initialized!");
+            getLogger().error("Datastore client service is not initialized!");
         }
 
         sandbox.inject("cache", datastoreClientService);

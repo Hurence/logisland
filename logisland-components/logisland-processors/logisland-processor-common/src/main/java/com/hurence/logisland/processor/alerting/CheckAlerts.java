@@ -33,7 +33,7 @@ import javax.script.ScriptException;
 import java.util.*;
 
 @Tags({"record", "alerting", "thresholds", "opc", "tag"})
-@CapabilityDescription("Add one or more field with a default value")
+@CapabilityDescription("Add one or more records representing alerts. Using a datastore.")
 @ExtraDetailFile("./details/common-processors/CheckAlerts-Detail.rst")
 @DynamicProperty(name = "field to add",
         supportsExpressionLanguage = false,
@@ -94,12 +94,6 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
 
     private String expandCode(String rawCode) {
-       /* return rawCode
-                .replaceAll("cache\\((\\S*\\))", "cache.get(\"test\", new com.hurence.logisland.record.StandardRecord().setId($1)")
-                .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_VALUE).asDouble()")
-                .replaceAll("\\.count", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_COUNT).asDouble()")
-                .replaceAll("\\.value", ".getField(com.hurence.logisland.record.FieldDictionary.RECORD_AVG).asDouble()");*/
-
         return rawCode.replaceAll("cache\\((\\S*)\\).value", "getValue($1)")
                 .replaceAll("cache\\((\\S*)\\).count", "getCount($1)")
                 .replaceAll("cache\\((\\S*)\\).duration", "getDuration($1)");
@@ -172,7 +166,6 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
         List<Record> outputRecords = new ArrayList<>(records);
         for (final Map.Entry<String, String> entry : dynamicTagValuesMap.entrySet()) {
-
             try {
                 sandbox.eval(entry.getValue());
                 Boolean alert = (Boolean) sandbox.get("alert");
@@ -181,7 +174,6 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
                             .setId(entry.getKey())
                             .setStringField(FieldDictionary.RECORD_VALUE, context.getPropertyValue(entry.getKey()).asString());
                     outputRecords.add(alertRecord);
-
 
                     logger.info(alertRecord.toString());
                 }
