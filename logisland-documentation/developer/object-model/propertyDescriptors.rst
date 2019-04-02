@@ -36,7 +36,7 @@ You can use
 
     .identifiesControllerService(ElasticsearchClientService.class)
 
-When you want a property to be used to reference a `controller service <./services.html>`_
+When you want a property to be used to reference a :ref:`dev-services`
 
 properties
 ++++++++++
@@ -71,7 +71,7 @@ To specify a specific set of authorized values (Add a constraint on the expected
 expressionLanguageSupported
 ___________________________
 
-Specify if `expression language <../expression-language.html>`_ is supported for this property or not.
+Specify if :ref:`user-expression-language` is supported for this property or not.
 
 addValidator
 ____________
