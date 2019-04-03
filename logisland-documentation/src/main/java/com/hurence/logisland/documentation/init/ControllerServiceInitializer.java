@@ -17,10 +17,8 @@
 
 package com.hurence.logisland.documentation.init;
 
-import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.annotation.lifecycle.OnShutdown;
 import com.hurence.logisland.component.ConfigurableComponent;
-import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
@@ -32,7 +30,7 @@ import com.hurence.logisland.util.runner.MockControllerServiceLookup;
 public class ControllerServiceInitializer implements ConfigurableComponentInitializer {
 
     @Override
-    public void initialize(ConfigurableComponent component) throws InitializationException {
+    public void initialize(ConfigurableComponent component) {
 
     }
 

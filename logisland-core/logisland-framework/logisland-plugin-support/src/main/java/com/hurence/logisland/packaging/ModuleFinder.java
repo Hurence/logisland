@@ -33,6 +33,14 @@ import java.util.stream.Collectors;
 
 public class ModuleFinder {
 
+    /**
+     *
+     * @param jarFile jar to look for classes
+     * @param locationPrefix location in jar to look for class
+     * @param parentClasses
+     * @return
+     * @throws Exception
+     */
     public static List<String> findOfType(URL jarFile, String locationPrefix, Set<String> parentClasses) throws Exception {
         try (final JarFile file = new JarFile(jarFile.getFile())) {
             try (final PluginClassLoader classLoader = PluginClassloaderBuilder.build(new JarFileArchive(new File(jarFile.toURI())))) {
@@ -47,7 +55,7 @@ public class ModuleFinder {
                             try {
                                 return Class.forName(s, false, classLoader);
                             } catch (Exception e) {
-                                throw new RuntimeException("Unable to resolve classes", e);
+                                throw new RuntimeException("Unable to resolve classes '" + s + "'", e);
                             }
                         })
                         .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
