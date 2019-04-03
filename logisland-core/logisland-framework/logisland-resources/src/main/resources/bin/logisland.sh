@@ -4,7 +4,6 @@
 
 
 case "$(uname -s)" in
-
    Darwin)
      echo "I've detected that you're running Mac OS X, using greadlink instead of readlink"
      lib_dir="$(greadlink -f "$(dirname $0)/../lib")"
@@ -24,9 +23,9 @@ esac
 app_classpath=""
 for entry in "$lib_dir"/*
 do
-  if [ ! -d "$lib$entry" ]
+  if [[ ! -d "$lib$entry" ]]
   then
-      if [ -z "$app_classpath" ]
+      if [[ -z "$app_classpath" ]]
       then
         app_classpath="$lib$entry"
       else
@@ -94,13 +93,13 @@ compare_versions () {
 }
 
 
-if [ $# -eq 0 ]
+if [[ $# -eq 0 ]]
 then
   usage
   exit 1
 fi
 
-while [ $# -gt 0 ]
+while [[ $# -gt 0 ]]
 do
   KEY="$1"
 
@@ -132,16 +131,16 @@ do
   shift
 done
 
-if [ "${STANDALONE}" = false ]
+if [[ "${STANDALONE}" = false ]]
 then
-  if [ -z "${SPARK_HOME}" ]
+  if [[ -z "${SPARK_HOME}" ]]
   then
     echo "Please provide the --spark-home option or set the SPARK_HOME environment variable"
     usage
     exit 1
   fi
 
-  if [ ! -f ${SPARK_HOME}/bin/spark-submit ]
+  if [[ ! -f ${SPARK_HOME}/bin/spark-submit ]]
   then
     echo "Invalid SPARK_HOME provided"
     exit 1
@@ -149,14 +148,14 @@ then
 fi
 
 
-if [ -z "${CONF_FILE}" ]
+if [[ -z "${CONF_FILE}" ]]
 then
     echo "The configuration file is missing"
     usage
     exit 1
 fi
 
-if [ ! -f "${CONF_FILE}" ]
+if [[ ! -f "${CONF_FILE}" ]]
 then
   echo "The configuration file ${CONF_FILE} does not exist"
   usage
@@ -167,7 +166,7 @@ fi
 # find the spark-submit mode
 # can be either local, standalone, mesos or yarn
 # ----------------------------------------------------------------
-if [ "$STANDALONE" = true ] ;
+if [[ "$STANDALONE" = true ]] ;
 then
   java_cp=$(echo $lib_dir/*.jar | tr ' ' ':')
   engine_jar=`ls ${lib_dir}/engines/logisland-engine-vanilla-*.jar`
@@ -176,21 +175,21 @@ then
 
   JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configuration=file:${CONF_DIR}/log4j.properties"
 
-  if [ ! -z "${MIN_MEM}" ]
+  if [[ ! -z "${MIN_MEM}" ]]
   then
     JAVA_OPTS="${JAVA_OPTS} -Xms${MIN_MEM}"
   fi
-  if [ ! -z "${MAX_MEM}" ]
+  if [[ ! -z "${MAX_MEM}" ]]
   then
     JAVA_OPTS="${JAVA_OPTS} -Xmx${MAX_MEM}"
   fi
 
-  if [ ! -z "${VERBOSE_OPTIONS}" ]
+  if [[ ! -z "${VERBOSE_OPTIONS}" ]]
   then
     echo "Using plain java engine with options: ${JAVA_OPTS}"
   fi
 
-  if [ ! -z "${JAVA_HOME}" ]
+  if [[ ! -z "${JAVA_HOME}" ]]
   then
     CURRENT_JAVA_EXEC="${JAVA_HOME}/bin/java"
   fi
@@ -224,13 +223,13 @@ else
       "yarn")
         SPARK_MASTER=${MODE}
         EXTRA_MODE=`awk '{ if( $1 == "spark.yarn.deploy-mode:" ){ print $2 } }' ${CONF_FILE}`
-        if [ -z "${EXTRA_MODE}" ]
+        if [[ -z "${EXTRA_MODE}" ]]
         then
          echo "The property \"spark.yarn.deploy-mode\" is missing in config file \"${CONF_FILE}\""
          exit 1
         fi
 
-        if [ ! ${EXTRA_MODE} = "cluster" -a ! ${EXTRA_MODE} = "client" ]
+        if [[ ! ${EXTRA_MODE} = "cluster" -a ! ${EXTRA_MODE} = "client" ]]
         then
           echo "The property \"spark.yarn.deploy-mode\" value \"${EXTRA_MODE}\" is not supported"
           exit 1
@@ -249,7 +248,7 @@ else
 
 
 
-    if [ ! -z "${VERBOSE_OPTIONS}" ]
+    if [[ ! -z "${VERBOSE_OPTIONS}" ]]
     then
       echo "Starting with mode \"${MODE}\" on master \"${SPARK_MASTER}\""
     fi
@@ -272,93 +271,93 @@ else
         YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties --conf spark.metrics.namespace=\"${APP_NAME}\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
 
 
-        if [ ! -z "$YARN_APP_NAME" ]
+        if [[ ! -z "$YARN_APP_NAME" ]]
         then
           YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
         else
           YARN_APP_NAME=`awk '{ if( $1 == "spark.app.name:" ){ print $2 } }' ${CONF_FILE}`
-          if [ ! -z "${YARN_APP_NAME}" ]
+          if [[ ! -z "${YARN_APP_NAME}" ]]
           then
             YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
           fi
         fi
 
         SPARK_YARN_QUEUE=`awk '{ if( $1 == "spark.yarn.queue:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_YARN_QUEUE}" ]
+        if [[ ! -z "${SPARK_YARN_QUEUE}" ]]
         then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --queue ${SPARK_YARN_QUEUE}"
         fi
 
         DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_CORES}" ]
+        if [[ ! -z "${DRIVER_CORES}" ]]
         then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
         fi
 
         DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_MEMORY}" ]
+        if [[ ! -z "${DRIVER_MEMORY}" ]]
         then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
         fi
 
         EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_CORES}" ]
+        if [[ ! -z "${EXECUTORS_CORES}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
         fi
 
         EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_MEMORY}" ]
+        if [[ ! -z "${EXECUTORS_MEMORY}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
         fi
 
         EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_INSTANCES}" ]
+        if [[ ! -z "${EXECUTORS_INSTANCES}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
         fi
 
         SPARK_YARN_MAX_APP_ATTEMPTS=`awk '{ if( $1 == "spark.yarn.maxAppAttempts:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_YARN_MAX_APP_ATTEMPTS}" ]
+        if [[ ! -z "${SPARK_YARN_MAX_APP_ATTEMPTS}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.maxAppAttempts=${SPARK_YARN_MAX_APP_ATTEMPTS}"
         fi
 
         SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL=`awk '{ if( $1 == "spark.yarn.am.attemptFailuresValidityInterval:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL}" ]
+        if [[ ! -z "${SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.am.attemptFailuresValidityInterval=${SPARK_YARN_AM_ATTEMPT_FAILURES_VALIDITY_INTERVAL}"
         fi
 
         SPARK_YARN_MAX_EXECUTOR_FAILURES=`awk '{ if( $1 == "spark.yarn.max.executor.failures:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_YARN_MAX_EXECUTOR_FAILURES}" ]
+        if [[ ! -z "${SPARK_YARN_MAX_EXECUTOR_FAILURES}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.max.executor.failures=${SPARK_YARN_MAX_EXECUTOR_FAILURES}"
         fi
 
         SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL=`awk '{ if( $1 == "spark.yarn.executor.failuresValidityInterval:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL}" ]
+        if [[ ! -z "${SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.yarn.executor.failuresValidityInterval=${SPARK_YARN_EXECUTOR_FAILURES_VALIDITY_INTERVAL}"
         fi
 
         SPARK_TASK_MAX_FAILURES=`awk '{ if( $1 == "spark.task.maxFailures:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${SPARK_TASK_MAX_FAILURES}" ]
+        if [[ ! -z "${SPARK_TASK_MAX_FAILURES}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --conf spark.task.maxFailures=${SPARK_TASK_MAX_FAILURES}"
         fi
 
 
         PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+        if [[ ! -z "${PROPERTIES_FILE_PATH}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
         fi
 
 
         SPARK_MONITORING_DRIVER_PORT=`awk '{ if( $1 == "spark.monitoring.driver.port:" ){ print $2 } }' ${CONF_FILE}`
-        if [ -z "${SPARK_MONITORING_DRIVER_PORT}" ]
+        if [[ -z "${SPARK_MONITORING_DRIVER_PORT}" ]]
         then
              EXTRA_DRIVER_JAVA_OPTIONS='spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
              EXTRA_PROCESSOR_JAVA_OPTIONS='spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties'
@@ -382,19 +381,19 @@ else
         YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode client --conf spark.metrics.namespace=\"${APP_NAME}\""
 
         DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_CORES}" ]
+        if [[ ! -z "${DRIVER_CORES}" ]]
         then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-cores ${DRIVER_CORES}"
         fi
 
         DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_MEMORY}" ]
+        if [[ ! -z "${DRIVER_MEMORY}" ]]
         then
          YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
         fi
 
         PROPERTIES_FILE_PATH=`awk '{ if( $1 == "spark.properties.file.path:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${PROPERTIES_FILE_PATH}" ]
+        if [[ ! -z "${PROPERTIES_FILE_PATH}" ]]
         then
              YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --properties-file ${PROPERTIES_FILE_PATH}"
         fi
@@ -413,38 +412,38 @@ else
 
 
         DRIVER_CORES=`awk '{ if( $1 == "spark.driver.cores:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_CORES}" ]
+        if [[ ! -z "${DRIVER_CORES}" ]]
         then
          MESOS_OPTIONS="${MESOS_OPTIONS} --driver-cores ${DRIVER_CORES}"
         fi
 
         DRIVER_MEMORY=`awk '{ if( $1 == "spark.driver.memory:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${DRIVER_MEMORY}" ]
+        if [[ ! -z "${DRIVER_MEMORY}" ]]
         then
          MESOS_OPTIONS="${MESOS_OPTIONS} --driver-memory ${DRIVER_MEMORY}"
         fi
 
         EXECUTORS_CORES=`awk '{ if( $1 == "spark.executor.cores:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_CORES}" ]
+        if [[ ! -z "${EXECUTORS_CORES}" ]]
         then
              MESOS_OPTIONS="${MESOS_OPTIONS} --executor-cores ${EXECUTORS_CORES}"
         fi
 
         EXECUTORS_MEMORY=`awk '{ if( $1 == "spark.executor.memory:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_MEMORY}" ]
+        if [[ ! -z "${EXECUTORS_MEMORY}" ]]
         then
              MESOS_OPTIONS="${MESOS_OPTIONS} --executor-memory ${EXECUTORS_MEMORY}"
         fi
 
         EXECUTORS_INSTANCES=`awk '{ if( $1 == "spark.executor.instances:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${EXECUTORS_INSTANCES}" ]
+        if [[ ! -z "${EXECUTORS_INSTANCES}" ]]
         then
              MESOS_OPTIONS="${MESOS_OPTIONS} --num-executors ${EXECUTORS_INSTANCES}"
         fi
 
 
         TOTAL_EXECUTOR_CORES=`awk '{ if( $1 == "spark.cores.max:" ){ print $2 } }' ${CONF_FILE}`
-        if [ ! -z "${TOTAL_EXECUTOR_CORES}" ]
+        if [[ ! -z "${TOTAL_EXECUTOR_CORES}" ]]
         then
              MESOS_OPTIONS="${MESOS_OPTIONS} --total-executor-cores ${TOTAL_EXECUTOR_CORES}"
         fi
