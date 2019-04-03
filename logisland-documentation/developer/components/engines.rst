@@ -1,7 +1,7 @@
 .. _dev-engines:
 
-Engines Guide
-=============
+Engines
+=======
 
 This documentation is not available yet but you can check on existing examples in **logisland-engines** module.
 All engines should be implemented in this module.

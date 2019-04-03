@@ -2,8 +2,8 @@
 
 .. _user-components:
 
-Components Documentation
-========================
+Components
+==========
 
 Contents:
 

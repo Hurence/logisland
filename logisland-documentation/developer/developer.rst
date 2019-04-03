@@ -160,14 +160,14 @@ The following commands must be run from the top-level directory.
 
 .. code-block:: sh
 
-    mvn clean install
+    mvn install
 
 Would build a light version of logisland with only common processors installed.
 
 
 .. code-block:: sh
 
-    mvn clean install -Pfull
+    mvn install -Pfull
 
 Would build a heavy version of logisland with all logisland plugins installed.
 
@@ -209,7 +209,7 @@ Building the image
 .. code-block:: sh
 
     # build logisland
-    mvn clean install -DskipTests -Pdocker -Pfull
+    mvn install -DskipTests -Pdocker -Pfull
 
     # verify image build
     docker images

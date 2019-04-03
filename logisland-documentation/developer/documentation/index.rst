@@ -1,8 +1,8 @@
 .. _dev-documentation:
 .. logisland documentation master file for developer section
 
-Documentation Guide
-===================
+Documentation
+=============
 
 Contents:
 

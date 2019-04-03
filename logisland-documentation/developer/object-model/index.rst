@@ -1,8 +1,8 @@
 .. _object-model:
 .. logisland documentation master file for developer section
 
-Object Model Documentation
-==========================
+Object Model
+============
 
 Contents:
 

@@ -1,7 +1,7 @@
 .. _dev-services:
 
-Services Guide
-==============
+Services
+========
 
 This document summarizes information relevant to develop a logisland controller service.
 
@@ -177,3 +177,77 @@ Here a method for example defined in *DatastoreClientService*.
      * Specify namespace as dotted notation like in `global.users`
      */
     void dropCollection(String name)throws DatastoreClientServiceException;
+
+
+Add documentation about the service
+-----------------------------------
+
+The logisland-documentation module contains logisland documentation. See :ref:`dev-documentation-guide` for more information.
+Some part of the documentation is automatically generated at build time. It uses annotation in logisland code.
+
+In our case of a service you have to add those :ref:`components-annotations`.
+
+Also you need to add your module dependency in documentation module like explained here :ref:`dev-add-doc-of-comp`.
+
+Add your service as a logisland plugin
+----------------------------------------
+
+Unless the new service you implemented is already in an existing logisland module you will have to do those two steps below.
+
+Make your module a logisland plugin container
++++++++++++++++++++++++++++++++++++++++++++++
+
+You will have to build your module as a plugin in two steps :
+* Using **spring-boot-maven-plugin** that will build a fat jar of your module.
+* Using our custom plugin **logisland-maven-plugin** that will modify the manifest of the jar so that logisland get some meta information.
+
+You just have to add this code in the *pom.xml* of your module.
+
+.. code:: xml
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>logisland-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+Add your module in tar gz assembly
+++++++++++++++++++++++++++++++++++
+
+You will have to add your module as a dependency in the **logisland-assembly** module. Add it in **full** maven profile so that it is automatically
+Added to logisland jar when building with -Pfull option.
+
+.. code:: xml
+
+    <profile>
+        <id>full</id>
+        <activation>
+            <activeByDefault>false</activeByDefault>
+        </activation>
+        <dependencies>
+            ...
+            <dependency>
+                <groupId>com.hurence.logisland</groupId>
+                <artifactId>YOUR_MODULE_NAME</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+         </dependencies>
+    </profile>
+

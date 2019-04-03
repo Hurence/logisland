@@ -9,7 +9,7 @@ Find below the list.
 
 ----------
 
-.. _com.hurence.logisland.processor.AddFields: 
+.. _com.hurence.logisland.processor.AddFields:
 
 AddFields
 ---------

@@ -21,46 +21,42 @@ Structure of a dynamic properties
     Dynamic properties are really just like static properties but build on the fly. It allow to use both the name and the value of the property
     by the developer. For example instead of specifying :
 
-.. code:: sh
+    .. code:: sh
 
-    record.name: myName
-    record.value: myValue
+        record.name: myName
+        record.value: myValue
 
-You could specify :
+    You could specify :
 
-.. code:: sh
+    .. code:: sh
 
-    myName: myValue
+        myName: myValue
 
-The advantage is that you can have any number of dynamic property whereas you have to specify in advance all static properties...
+    The advantage is that you can have any number of dynamic property whereas you have to specify in advance all static properties...
 
 
 Usage of a dynamic properties
 -----------------------------
 
-    You can check the documentation of AddFields processor :ref:`com.hurence.logisland.processor.AddFields` that we will use in those example.
+    You can check the documentation of :ref:`com.hurence.logisland.processor.AddFields` processor that we will use in those example.
 
 Adding a field which is concatenation of two others using '_' as joining string
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     set those dynamic properties in  AddFields processor :
 
-    - concat2fields : ${field1 + "_" + field2}
-    - my_countries : ${["france", "allemagne"]}
-    - my_countries.type : array
-    - my_employees_by_countries : ${["france" : 100, "allemagne" : 50]}
-    - my_employees_by_countries.type : map
+    - concat2fields : value1
+    - my_countries : 3
+    - my_countries.type : INT
 
-    Then if in input of this processor there is processors with fields : field1=value1 and field2=value2, it would have 3 more fields once
-    out of this processors:
+    Then records processed by this processor would have 2 more fields out of this processors:
 
-    - field 'concat2fields' of type String with value 'value1_value2'
-    - field 'my_countries' of type Array containing values 'france' and 'allemagne'
-    - field 'my_employees_by_countries' of type Map with key value pairs "france" : 100 and "allemagne" : 50
+    - field 'concat2fields' of type String with value 'value1'
+    - field 'my_countries' of type Int with value '3'
 
     By default if no type is specified by a dynamic property it use a type of String or the same type as old value if field already existed and you choose an overwrite policy.
 
-    See AddFields processor doc :ref:`com.hurence.logisland.processor.AddFields` fore more information.
+    See :ref:`com.hurence.logisland.processor.AddFields` processor doc fore more information.
 
 Conclusion
 ----------

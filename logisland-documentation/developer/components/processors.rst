@@ -1,7 +1,7 @@
 .. _dev-processors:
 
-Processors Guide
-================
+Processors
+==========
 
 This document summarizes information relevant to develop a logisland Processor.
 
@@ -181,6 +181,8 @@ The logisland-documentation module contains logisland documentation. See :ref:`d
 Some part of the documentation is automatically generated at build time. It uses annotation in logisland code.
 
 In our case of a processors you have to add those :ref:`components-annotations`.
+
+Also you need to add your module dependency in documentation module like explained here :ref:`dev-add-doc-of-comp`.
 
 Add your processor as a logisland plugin
 ----------------------------------------

@@ -1,8 +1,8 @@
 .. _dev-components:
 .. logisland documentation master file for developer section
 
-Components Dev Documentation
-============================
+Components
+==========
 
 Contents:
 

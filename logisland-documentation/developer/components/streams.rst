@@ -1,6 +1,6 @@
 .. _dev-streams:
 
-Streams Guide
-=============
+Streams
+=======
 
 This documentation is not available yet.
