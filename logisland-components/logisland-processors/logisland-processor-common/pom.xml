@@ -127,6 +127,12 @@
             <artifactId>delight-nashorn-sandbox</artifactId>
             <version>0.1.15</version>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

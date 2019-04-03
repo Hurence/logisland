@@ -57,6 +57,10 @@
                     <groupId>javax.servlet.jsp</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

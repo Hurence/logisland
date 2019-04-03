@@ -63,8 +63,8 @@ public class PluginLoader {
         while (cl != null) {
             if (cl instanceof URLClassLoader) {
                 urls.addAll(Arrays.asList(((URLClassLoader) cl).getURLs()));
-                cl = cl.getParent();
             }
+            cl = cl.getParent();
         }
 
 
