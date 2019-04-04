@@ -7,13 +7,13 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-mongodb</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-mongodb-client</artifactId>
     <packaging>jar</packaging>
     <name>MongoDB 3.8.0 Service Plugin</name>
-
+    <description>Implementation of the mongodb service api</description>
 
     <properties>
 

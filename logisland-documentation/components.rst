@@ -14,7 +14,7 @@ Add one or more field with a default value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -55,7 +55,7 @@ This processor is used to create a new set of fields from one field (using regex
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -100,7 +100,7 @@ Indexes the content of a Record in Elasticsearch using elasticsearch's bulk proc
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.1
 
 Class
 _____
@@ -136,7 +136,7 @@ Indexes the content of a Record in a Datastore using bulk processor
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -171,7 +171,7 @@ Provides a controller service that for the moment only allows to bulkput records
 
 Module
 ______
-com.hurence.logisland:logisland-service-cassandra-client:1.1.0
+com.hurence.logisland:logisland-service-cassandra-client:1.1.1
 
 Class
 _____
@@ -210,7 +210,7 @@ Add one or more field with a default value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -360,7 +360,7 @@ Compute threshold cross from given formulas.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -511,7 +511,7 @@ a threshold_cross has the following properties : count, sum, avg, time, duration
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -657,7 +657,7 @@ The ConsolidateSession processor is the Logisland entry point to get and process
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.0
+com.hurence.logisland:logisland-processor-web-analytics:1.1.1
 
 Class
 _____
@@ -702,7 +702,7 @@ Converts a field value into the given type. does nothing if conversion is not po
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -737,7 +737,7 @@ Convert one or more field representing a date into a Unix Epoch Time (time in mi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -780,7 +780,7 @@ This is a processor that logs incoming records
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -826,7 +826,7 @@ This becomes a data filter which can be attached to a timeseries data stream wit
 
 Module
 ______
-com.hurence.logisland:logisland-processor-outlier-detection:1.1.0
+com.hurence.logisland:logisland-processor-outlier-detection:1.1.1
 
 Class
 _____
@@ -885,7 +885,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 2.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.1.0
+com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client:1.1.1
 
 Class
 _____
@@ -931,7 +931,7 @@ Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.
 
 Module
 ______
-com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.0
+com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.1
 
 Class
 _____
@@ -986,7 +986,7 @@ Each outcoming record holds at least the input record plus potentially one or mo
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1024,7 +1024,7 @@ Each outcoming record holds at least the input record plus potentially one or mo
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.1
 
 Class
 _____
@@ -1060,7 +1060,7 @@ Evaluates one or more JsonPath expressions against the content of a FlowFile. Th
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1104,7 +1104,7 @@ Evaluates one or more XPaths against the content of a record. The results of tho
 
 Module
 ______
-com.hurence.logisland:logisland-processor-xml:1.1.0
+com.hurence.logisland:logisland-processor-xml:1.1.1
 
 Class
 _____
@@ -1147,7 +1147,7 @@ Consumes a Microsoft Excel document and converts each worksheet's line to a stru
 
 Module
 ______
-com.hurence.logisland:logisland-processor-excel:1.1.0
+com.hurence.logisland:logisland-processor-excel:1.1.1
 
 Class
 _____
@@ -1183,7 +1183,7 @@ Expands the content of a MAP field to the root.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1215,7 +1215,7 @@ Fetches a row from an HBase table. The Destination property controls whether the
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.1.0
+com.hurence.logisland:logisland-processor-hbase:1.1.1
 
 Class
 _____
@@ -1252,7 +1252,7 @@ Keep only records based on a given field value
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1285,7 +1285,7 @@ Converts each field records into a single flatten record
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1321,7 +1321,7 @@ This is a processor that make random records given an Avro schema
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1354,7 +1354,7 @@ Implementation of HBaseClientService for HBase 1.1.2. This service can be config
 
 Module
 ______
-com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.1.0
+com.hurence.logisland:logisland-service-hbase_1_1_2-client:1.1.1
 
 Class
 _____
@@ -1421,7 +1421,7 @@ WebSession information are:
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.0
+com.hurence.logisland:logisland-processor-web-analytics:1.1.1
 
 Class
 _____
@@ -1475,7 +1475,7 @@ Translates an IP address into a FQDN (Fully Qualified Domain Name). An input fie
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.1.0
+com.hurence.logisland:logisland-processor-enrichment:1.1.1
 
 Class
 _____
@@ -1512,7 +1512,7 @@ Looks up geolocation information for an IP address. The attribute that contains 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-enrichment:1.1.0
+com.hurence.logisland:logisland-processor-enrichment:1.1.1
 
 Class
 _____
@@ -1568,7 +1568,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.1.0
+com.hurence.logisland:logisland-processor-querymatcher:1.1.1
 
 Class
 _____
@@ -1632,7 +1632,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-querymatcher:1.1.0
+com.hurence.logisland:logisland-processor-querymatcher:1.1.1
 
 Class
 _____
@@ -1678,7 +1678,7 @@ modify id of records or generate it following defined rules
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1714,7 +1714,7 @@ Provides a controller service that wraps most of the functionality of the MongoD
 
 Module
 ______
-com.hurence.logisland:logisland-service-mongodb-client:1.1.0
+com.hurence.logisland:logisland-service-mongodb-client:1.1.1
 
 Class
 _____
@@ -1767,7 +1767,7 @@ Each outcoming record holds data of one datastore retrieved document. This data 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1817,7 +1817,7 @@ Each outcoming record holds data of one elasticsearch retrieved document. This d
 
 Module
 ______
-com.hurence.logisland:logisland-processor-elasticsearch:1.1.0
+com.hurence.logisland:logisland-processor-elasticsearch:1.1.1
 
 Class
 _____
@@ -1854,7 +1854,7 @@ Changes the name of a field according to a provided name mapping
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -1985,7 +1985,7 @@ It gets processed and transformed into the following Logisland record by the Par
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.0
+com.hurence.logisland:logisland-processor-cyber-security:1.1.1
 
 Class
 _____
@@ -2016,7 +2016,7 @@ The Gitlab logs processor is the Logisland entry point to get and process `Gitla
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common-logs:1.1.0
+com.hurence.logisland:logisland-processor-common-logs:1.1.1
 
 Class
 _____
@@ -2054,7 +2054,7 @@ In the tutorial we will simulate Netflow traffic using `nfgen <https://github.co
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.0
+com.hurence.logisland:logisland-processor-cyber-security:1.1.1
 
 Class
 _____
@@ -2087,7 +2087,7 @@ The ParseNetworkPacket processor is the LogIsland entry point to parse network p
 
 Module
 ______
-com.hurence.logisland:logisland-processor-cyber-security:1.1.0
+com.hurence.logisland:logisland-processor-cyber-security:1.1.1
 
 Class
 _____
@@ -2120,7 +2120,7 @@ a string like "a=1 b=2 c=3" will add a,b & c fields, respectively with values 1,
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2151,7 +2151,7 @@ The user-agent processor allows to decompose User-Agent value from an HTTP heade
 
 Module
 ______
-com.hurence.logisland:logisland-processor-useragent:1.1.0
+com.hurence.logisland:logisland-processor-useragent:1.1.1
 
 Class
 _____
@@ -2189,7 +2189,7 @@ Adds the Contents of a Record to HBase as the value of a single cell
 
 Module
 ______
-com.hurence.logisland:logisland-processor-hbase:1.1.0
+com.hurence.logisland:logisland-processor-hbase:1.1.1
 
 Class
 _____
@@ -2231,7 +2231,7 @@ A controller service for caching records by key value pair with LRU (last recent
 
 Module
 ______
-com.hurence.logisland:logisland-service-redis:1.1.0
+com.hurence.logisland:logisland-service-redis:1.1.1
 
 Class
 _____
@@ -2281,7 +2281,7 @@ Removes a list of fields defined by a comma separated list of field names or kee
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2317,7 +2317,7 @@ This processor allows to implement and run a processor written in python. This c
 
 Module
 ______
-com.hurence.logisland:logisland-processor-scripting:1.1.0
+com.hurence.logisland:logisland-processor-scripting:1.1.1
 
 Class
 _____
@@ -2370,7 +2370,7 @@ Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/query
 
 Module
 ______
-com.hurence.logisland:logisland-processor-sampling:1.1.0
+com.hurence.logisland:logisland-processor-sampling:1.1.1
 
 Class
 _____
@@ -2404,7 +2404,7 @@ Keep only distinct records based on a given field
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2445,7 +2445,7 @@ The SendMail processor is aimed at sending an email (like for instance an alert 
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2489,7 +2489,7 @@ The SetJsonAsFields processor reads the content of a string field containing a j
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2525,7 +2525,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_5_5_5-client:1.1.0
+com.hurence.logisland:logisland-service-solr_5_5_5-client:1.1.1
 
 Class
 _____
@@ -2563,7 +2563,7 @@ Implementation of ChronixClientService for Solr 6 4 2
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.1.0
+com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.1.1
 
 Class
 _____
@@ -2599,7 +2599,7 @@ Implementation of ElasticsearchClientService for Solr 5.5.5.
 
 Module
 ______
-com.hurence.logisland:logisland-service-solr_6_6_2-client:1.1.0
+com.hurence.logisland:logisland-service-solr_6_6_2-client:1.1.1
 
 Class
 _____
@@ -2637,7 +2637,7 @@ This processor is used to create a new set of fields from one field (using split
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2685,7 +2685,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2736,7 +2736,7 @@ No description provided.
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2769,7 +2769,7 @@ This is a processor that is used to split a String into fields according to a gi
 
 Module
 ______
-com.hurence.logisland:logisland-processor-common:1.1.0
+com.hurence.logisland:logisland-processor-common:1.1.1
 
 Class
 _____
@@ -2821,7 +2821,7 @@ Decode one or more field containing an URL with possibly special chars encoded
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.0
+com.hurence.logisland:logisland-processor-web-analytics:1.1.1
 
 Class
 _____
@@ -2871,7 +2871,7 @@ Elasticsearch index containing a list of the most popular search engines and soc
 
 Module
 ______
-com.hurence.logisland:logisland-processor-web-analytics:1.1.0
+com.hurence.logisland:logisland-processor-web-analytics:1.1.1
 
 Class
 _____

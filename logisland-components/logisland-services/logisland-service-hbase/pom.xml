@@ -22,11 +22,12 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-hbase</artifactId>
     <name>Logisland HBase Service Packages</name>
+    <description>Module containing all logisland hbase services</description>
     <packaging>pom</packaging>
 
     <modules>

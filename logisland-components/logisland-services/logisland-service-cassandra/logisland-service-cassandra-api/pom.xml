@@ -7,14 +7,14 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-cassandra</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-cassandra-api</artifactId>
     <packaging>jar</packaging>
 
     <name>Cassandra 3 Service API</name>
-
+    <description>cassandra service api for logisland</description>
 
     <properties>
         <!-- Encoding -->

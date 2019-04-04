@@ -7,13 +7,14 @@
     <parent>
         <artifactId>logisland-services</artifactId>
         <groupId>com.hurence.logisland</groupId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-inmemory-cache</artifactId>
     <packaging>jar</packaging>
 
     <name>Memory Cache Service Plugin</name>
+    <description>Module containing all logisland cache services</description>
 
     <dependencies>
         <dependency>

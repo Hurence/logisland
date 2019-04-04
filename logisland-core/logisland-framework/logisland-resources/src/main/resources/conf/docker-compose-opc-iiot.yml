@@ -1,47 +1,14 @@
 version: '3'
 services:
 
-  zookeeper:
-    image: hurence/zookeeper
-    hostname: zookeeper
-    ports:
-      - '2181:2181'
-    networks:
-      - logisland
-
-  kafka:
-    image: hurence/kafka:0.10.2.2-scala-2.11
-    hostname: kafka
-    ports:
-      - '9092:9092'
-    volumes:
-      - kafka-home:/opt/kafka_2.11-0.10.2.2/
-    environment:
-      KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_ADVERTISED_HOST_NAME: kafka
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_JMX_PORT: 7071
-    networks:
-      - logisland
-
   # Logisland container : does nothing but launching
   logisland:
+    network_mode: host
     image: hurence/logisland:1.1.1
     command: tail -f bin/logisland.sh
-    ports:
-      - '4050:4050'
-      - '8082:8082'
-      - '9999:9999'
-    volumes:
-      - kafka-home:/opt/kafka_2.11-0.10.2.2/ # Just so that kafka scripts are available inside container
     environment:
-      KAFKA_HOME: /opt/kafka_2.11-0.10.2.2
-      KAFKA_BROKERS: kafka:9092
-      ZK_QUORUM: zookeeper:2181
-      ES_HOSTS: elasticsearch:9300
+      ES_HOSTS: localhost:9300
       ES_CLUSTER_NAME: es-logisland
-    networks:
-      - logisland
 
   # ES container
   # make sure to increase vm.max_map_count kernel setting like documented here :
@@ -59,7 +26,6 @@ services:
       - '9200:9200'
       - '9300:9300'
     networks:
-      - logisland
       - es
 
   # Kibana container
@@ -72,9 +38,5 @@ services:
     networks:
       - es
 
-volumes:
-  kafka-home:
-
 networks:
-  logisland:
   es:

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
     <artifactId>logisland-assembly</artifactId>
     <packaging>pom</packaging>
@@ -36,6 +36,7 @@
                     <attach>false</attach>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <id>make shared resource</id>
@@ -580,10 +581,14 @@
                     <artifactId>logisland-processor-excel</artifactId>
                     <version>${project.version}</version>
                 </dependency>
-
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-service-redis</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-connector-opc</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>
