@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -534,8 +534,10 @@ public class CassandraServiceTest {
 
     @AfterClass
     public static void disconnect() {
-        session.close();
-        cluster.close();
+        if (session != null)
+            session.close();
+        if (cluster != null)
+            cluster.close();
         echo("Disconnected from Cassandra");
     }
 
@@ -1014,6 +1016,7 @@ public class CassandraServiceTest {
 
     /**
      * Checks that provided rows are equal with respect to potential null values
+     *
      * @param actualRow
      * @param expectedRow
      */
@@ -1028,15 +1031,12 @@ public class CassandraServiceTest {
             switch (cassandraType) {
                 case UUID:
                     UUID actualUuid = actualRow.getUUID(fieldName);
-                    if (expectedRawValue == null)
-                    {
+                    if (expectedRawValue == null) {
                         // Null string stay null string
-                        if (actualUuid != null)
-                        {
+                        if (actualUuid != null) {
                             Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
                         }
-                    } else
-                    {
+                    } else {
                         UUID expectedUuid = UUID.fromString(field.asString());
                         if (!expectedUuid.equals(actualUuid)) {
                             Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
@@ -1045,14 +1045,12 @@ public class CassandraServiceTest {
                     break;
                 case INT:
                     Integer actualInteger = actualRow.getInt(fieldName);
-                    if (expectedRawValue == null)
-                    {
+                    if (expectedRawValue == null) {
                         // Null number values gives 0
                         if (!actualInteger.equals(0)) {
                             Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);
                         }
-                    } else
-                    {
+                    } else {
                         Integer expectedInteger = field.asInteger();
                         if (!expectedInteger.equals(actualInteger)) {
                             Assert.fail(actualRow + " result row is not equal to expected row " + expectedRow);

@@ -20,7 +20,7 @@ import com.hurence.logisland.component.ConfigurableComponent;
 import com.hurence.logisland.documentation.ConfigurableComponentInitializer;
 import com.hurence.logisland.documentation.util.ReflectionUtils;
 import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.util.runner.MockControllerServiceLookup;
 import com.hurence.logisland.util.runner.MockProcessContext;
 import com.hurence.logisland.stream.RecordStream;
@@ -40,7 +40,7 @@ public class RecordStreamInitializer implements ConfigurableComponentInitializer
         RecordStream recordStream = (RecordStream) component;
 
 
-        final ComponentLog logger = new MockComponentLogger(component.getIdentifier(), component);
+        final ComponentLog logger = new StandardComponentLogger(component.getIdentifier(), component);
         final MockProcessContext context = new MockProcessContext(null, new MockControllerServiceLookup());
         ReflectionUtils.quietlyInvokeMethodsWithAnnotation(OnShutdown.class, recordStream, logger, context);
     }
