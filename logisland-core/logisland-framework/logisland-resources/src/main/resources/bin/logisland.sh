@@ -229,7 +229,7 @@ else
          exit 1
         fi
 
-        if [[ ! ${EXTRA_MODE} = "cluster" -a ! ${EXTRA_MODE} = "client" ]]
+        if [[ ! ${EXTRA_MODE} = "cluster" && ! ${EXTRA_MODE} = "client" ]]
         then
           echo "The property \"spark.yarn.deploy-mode\" value \"${EXTRA_MODE}\" is not supported"
           exit 1
@@ -271,7 +271,7 @@ else
         YARN_CLUSTER_OPTIONS="--master yarn --deploy-mode cluster --files ${CONF_FILE}#logisland-configuration.yml,${CONF_DIR}/../monitoring/jmx_prometheus_javaagent-0.10.jar#jmx_prometheus_javaagent-0.10.jar,${CONF_DIR}/../monitoring/spark-prometheus.yml#spark-prometheus.yml,${CONF_DIR}/../monitoring/metrics.properties#metrics.properties,${CONF_DIR}/log4j.properties#log4j.properties --conf spark.metrics.namespace=\"${APP_NAME}\" --conf \"spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j.properties\" --conf spark.ui.showConsoleProgress=false"
 
 
-        if [[ ! -z "$YARN_APP_NAME" ]]
+        if [[ ! -z "${YARN_APP_NAME}" ]]
         then
           YARN_CLUSTER_OPTIONS="${YARN_CLUSTER_OPTIONS} --name ${YARN_APP_NAME}"
         else
