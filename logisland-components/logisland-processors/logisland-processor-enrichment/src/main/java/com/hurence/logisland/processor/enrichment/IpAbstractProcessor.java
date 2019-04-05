@@ -16,8 +16,6 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
