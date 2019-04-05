@@ -15,10 +15,18 @@
  */
 package com.hurence.logisland.service.cassandra;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.hurence.logisland.processor.ProcessError;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.service.cassandra.CassandraControllerService.RecordToIndex;
+import com.hurence.logisland.service.cassandra.RecordConverter.CassandraType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +36,6 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import com.hurence.logisland.service.cassandra.CassandraControllerService.RecordToIndex;
-import com.hurence.logisland.service.cassandra.RecordConverter.CassandraType;
 
 import static com.hurence.logisland.service.cassandra.CassandraControllerService.END_OF_TEST;
 
@@ -46,8 +52,7 @@ public class CassandraUpdater implements Runnable {
     private volatile long lastTS = 0L;
     volatile boolean stop = false;
 
-    private Cluster cluster;
-    private Session session;
+    private CqlSession session;
 
     private static volatile int threadCount = 0;
 
@@ -81,9 +86,8 @@ public class CassandraUpdater implements Runnable {
         }
     }
 
-    public CassandraUpdater(Cluster cluster, Session session, BlockingQueue<RecordToIndex> records, int batchSize,
+    public CassandraUpdater(CqlSession session, BlockingQueue<RecordToIndex> records, int batchSize,
                             CassandraControllerService service, long flushInterval) {
-        this.cluster = cluster;
         this.session = session;
         this.records = records;
         this.batchSize = batchSize;
@@ -118,8 +122,43 @@ public class CassandraUpdater implements Runnable {
         sb.append(") VALUES (").append(questionMarksSb).append(");");
         String statementString = sb.toString();
         PreparedStatement statement = session.prepare(statementString);
-        return new BoundStatement(statement);
+        return statement.bind();
+//        return new BoundStatement(statement);
     }
+
+    /**
+     * Parse cassandra schema to find the fields and types of a particular collection if it exists
+     * @param metaData Cassandra Metadata to parse TODO
+     * @param collectionName Name of the table to find schema for (with the form: keyspace.table)
+     * @return The found schema for the passed collection (aka table) or null if one could not find schema for any reason
+     * (table does not exist, error while parsing..;)
+     */
+    private LinkedHashMap<String, CassandraType> parseSchemaForCollection(Metadata metaData, String collectionName)
+    {
+//        LinkedHashMap<String, CassandraType> mapping = new LinkedHashMap<String, CassandraType>();
+        String keySpace = null;
+        String tableName = null;
+        String[] tokens = collectionName.split("\\.");
+        if (tokens.length != 2) {
+            logger.error("Error finding keyspace and table name from collection name '{}'", collectionName);
+            return null;
+        }
+        logger.info("keyspace is {}, table name is {}", keySpace, tableName);
+        keySpace = tokens[0].trim();
+        tableName = tokens[1].trim();
+        Optional<KeyspaceMetadata> keySpaceMeta = metaData.getKeyspace(keySpace);
+        Optional<TableMetadata> tableMeta = keySpaceMeta.get().getTable(tableName);
+
+        return parseSchemaForCollection(tableMeta.get().describe(true), collectionName);
+
+//        tableMeta.get().getColumns().entrySet().forEach(c -> {
+//            mapping.put(c.getKey().asInternal(), c.getValue().getType().toString());
+//        });
+//        session.getContext().getSslEngineFactory()
+//        metaData.
+//        return null;
+    }
+
 
     /**
      * Parse cassandra schema to find the fields and types of a particular collection if it exists
@@ -245,10 +284,9 @@ public class CassandraUpdater implements Runnable {
 
         // This table is not yet known, grab its schema from Cassandra if it exists
 
-        Metadata metadata = cluster.getMetadata();
-        String schema = metadata.exportSchemaAsString();
+        Metadata metadata = session.getMetadata();
 
-        LinkedHashMap<String, CassandraType> tableSchema = parseSchemaForCollection(schema, collectionName);
+        LinkedHashMap<String, CassandraType> tableSchema = parseSchemaForCollection(metadata, collectionName);
 
         if (tableSchema == null)
         {
@@ -342,6 +380,7 @@ public class CassandraUpdater implements Runnable {
                 }
             } catch (Throwable t) {
                 logger.error("Error in cassandra updater: " + t.getMessage());
+                throw new RuntimeException(t);
             }
         }
     }
@@ -364,14 +403,14 @@ public class CassandraUpdater implements Runnable {
             Object[] values = new Object[insertValues.size()];
             values = insertValues.toArray(values);
             try {
-                boundStatement = boundStatement.bind(values);
+                boundStatement = boundStatement.getPreparedStatement().bind(values);
                 // Handle null values: unset them to avoid unwanted tombstones. See #450
                 int i = 0;
                 for (Object value : values)
                 {
                     if (value == null)
                     {
-                        boundStatement.unset(i);
+                        boundStatement = boundStatement.unset(i);
                     }
                     i++;
                 }

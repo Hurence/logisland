@@ -15,8 +15,8 @@
  */
 package com.hurence.logisland.service.cassandra;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
@@ -32,9 +32,11 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.NotImplementedException;
-import com.hurence.logisland.service.cassandra.RecordConverter.CassandraType;
 
-import java.util.*;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
 
 @Tags({"cassandra", "service"})
@@ -43,8 +45,7 @@ import java.util.concurrent.*;
 )
 public class CassandraControllerService extends AbstractControllerService implements CassandraClientService {
 
-    private Cluster cluster;
-    private Session session;
+    private CqlSession session;
     private boolean ssl = false;
     private boolean credentials = false;
     private CassandraUpdater updater;
@@ -149,14 +150,17 @@ public class CassandraControllerService extends AbstractControllerService implem
          * Get config and establish connection to cassandra
          */
         super.init(context);
-        Cluster.Builder builder = Cluster.builder();
+        CqlSessionBuilder builder = CqlSession.builder();
 
         // Hosts
         String[] cassandraHosts = context.getPropertyValue(HOSTS).asString().split(" ,");
+        // Port
+        int port = context.getPropertyValue(PORT).asInteger();
+
         List<String> hosts = new ArrayList<String>();
         for (String host : cassandraHosts)
         {
-            builder.addContactPoint(host);
+            builder.addContactPoint(new InetSocketAddress(host, port));
             hosts.add(host);
         }
 
@@ -165,7 +169,8 @@ public class CassandraControllerService extends AbstractControllerService implem
             ssl = context.getPropertyValue(WITH_SSL).asBoolean();
         if (ssl)
         {
-            builder.withSSL();
+//            TODO SSL AND CREDENTIAL
+//            builder.withSSL();
         }
 
         // Use credentials?
@@ -195,12 +200,13 @@ public class CassandraControllerService extends AbstractControllerService implem
             {
                 throw new InitializationException("Credentials are enabled but user password is empty");
             }
-            builder.withCredentials(userName, userPassword);
+//            builder.withCredentials(userName, userPassword);
         }
-
-        // Port
-        int port = context.getPropertyValue(PORT).asInteger();
-        builder.withPort(port);
+//        RemoteEndpointAwareSSLOptions
+//        DriverContext ct = new DriverOptionConfigBuilder().with
+//        DriverConfigLoader ff = DefaultDriverConfigLoaderBuilder.with
+//        builder.withConfigLoader();
+        //See configuration
 
         String credDetails = "credentials=no";
         if (credentials)
@@ -211,8 +217,7 @@ public class CassandraControllerService extends AbstractControllerService implem
                 + " ssl=" + ssl + " " + credDetails);
 
         // Connect
-        cluster = builder.build();
-        session = cluster.connect();
+        session = builder.build();
 
         getLogger().info("Connected to Cassandra");
 
@@ -231,9 +236,6 @@ public class CassandraControllerService extends AbstractControllerService implem
         if (session != null) {
             session.close();
         }
-        if (cluster != null) {
-            cluster.close();
-        }
     }
 
     /**
@@ -249,7 +251,7 @@ public class CassandraControllerService extends AbstractControllerService implem
         // setup a thread pool of cassandra updaters
         int batchSize = context.getPropertyValue(BATCH_SIZE).asInteger();
         flushInterval = context.getPropertyValue(FLUSH_INTERVAL).asLong();
-        updater = new CassandraUpdater(cluster, session, queue , batchSize, this, flushInterval);
+        updater = new CassandraUpdater(session, queue , batchSize, this, flushInterval);
 
         executorService.execute(updater);
     }

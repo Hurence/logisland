@@ -15,7 +15,6 @@
  */
 package com.hurence.logisland.service.cassandra;
 
-import com.datastax.driver.core.LocalDate;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
@@ -26,6 +25,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -223,19 +225,19 @@ public class RecordConverter {
         }
     }
 
-    private static Object convertToCassandraBigintValue(Field field) {
+    private static long convertToCassandraBigintValue(Field field) {
         return field.asLong();
     }
 
-    private static Object convertToCassandraSmallintValue(Field field) {
-        return new Short(field.asInteger().toString());
+    private static Short convertToCassandraSmallintValue(Field field) {
+        return Short.parseShort(field.asInteger().toString());
     }
 
-    private static Object convertToCassandraTinyintValue(Field field) {
-        return new Byte(field.asInteger().toString());
+    private static Byte convertToCassandraTinyintValue(Field field) {
+        return Byte.parseByte(field.asInteger().toString());
     }
 
-    private static Object convertToCassandraBlobValue(Field field) throws Exception {
+    private static ByteBuffer convertToCassandraBlobValue(Field field) throws Exception {
         // We expect the type to be a byte array
         FieldType fieldType = field.getType();
         if (fieldType != FieldType.BYTES)
@@ -248,27 +250,27 @@ public class RecordConverter {
         return ByteBuffer.wrap(bytes); // Cassandra driver expects a ByteBuffer for blob type
     }
 
-    private static Object convertToCassandraBooleanValue(Field field) throws Exception {
+    private static Boolean convertToCassandraBooleanValue(Field field) throws Exception {
         return field.asBoolean();
     }
 
-    private static Object convertToCassandraVarintValue(Field field) throws Exception {
+    private static BigInteger convertToCassandraVarintValue(Field field) throws Exception {
         return new BigInteger(field.asLong().toString());
     }
 
-    private static Object convertToCassandraDecimalValue(Field field) throws Exception {
+    private static BigDecimal convertToCassandraDecimalValue(Field field) throws Exception {
         return new BigDecimal(field.asDouble());
     }
 
-    private static Object convertToCassandraDoubleValue(Field field) throws Exception {
+    private static Double convertToCassandraDoubleValue(Field field) throws Exception {
         return field.asDouble();
     }
 
-    private static Object convertToCassandraFloatValue(Field field) throws Exception {
+    private static Float convertToCassandraFloatValue(Field field) throws Exception {
         return field.asFloat();
     }
 
-    private static Object convertToCassandraTimestampValue(Field field) throws Exception {
+    private static Instant convertToCassandraTimestampValue(Field field) throws Exception {
         // Timestamps may be expressed either in integer or string form:
         // see http://cassandra.apache.org/doc/latest/cql/types.html#timestamps
         FieldType fieldType = field.getType();
@@ -279,11 +281,11 @@ public class RecordConverter {
         {
             // type are encoded as 64-bit signed integers representing a number of milliseconds since the standard base
             // time known as the epoch: January 1 1970 at 00:00:00 GMT.
-            return new Date(field.asLong());
+            return Instant.ofEpochMilli(field.asLong());
         }
     }
 
-    public static Date cassandraTimestampToDate(String timestamp)
+    public static Instant cassandraTimestampToDate(String timestamp)
     {
         /**
          * String that represents an ISO 8601 date. For instance, all of the values below are valid timestamp values for Mar 2, 2011, at 04:05:00 AM, GMT:
@@ -296,10 +298,11 @@ public class RecordConverter {
          *     '2011-02-03T04:05:00+0000'
          *     '2011-02-03T04:05:00.000+0000'
          */
-        return new DateTime(timestamp).toDate(); // Default joda date is ISO 8601
+//        return Instant.parse(timestamp);//field.asLong());
+        return Instant.ofEpochMilli(new DateTime(timestamp).getMillis());// Default joda date is ISO 8601
     }
 
-    private static Object convertToCassandraTimeValue(Field field) throws Exception {
+    private static LocalTime convertToCassandraTimeValue(Field field) throws Exception {
         // Times may be expressed either in integer or string form:
         // see http://cassandra.apache.org/doc/latest/cql/types.html#times
         FieldType fieldType = field.getType();
@@ -309,11 +312,11 @@ public class RecordConverter {
         } else
         {
             // type are encoded as 64-bit signed integers representing the number of nanoseconds since midnight.
-            return field.asLong();
+            return LocalTime.ofNanoOfDay(field.asLong());
         }
     }
 
-    public static long cassandraTimeToNanosecondsSinceMidnight(String time) throws Exception {
+    public static LocalTime cassandraTimeToNanosecondsSinceMidnight(String time) throws Exception {
         /**
          *  The format should be hh:mm:ss[.fffffffff] (where the sub-second precision is optional and if provided, can be less than the nanosecond). So for instance, the following are valid inputs for a time:
          *
@@ -330,14 +333,17 @@ public class RecordConverter {
 
         if ( (dotIndex == 0) || (dotIndex == (time.length() -1)) )
             throw new Exception("Bad string cassandra time format: " + time);
+
+        long nanoSeconds;
         if (dotIndex != -1)
         {
             long firstPart = hhMmSsToNanosecondSinceMidnight(time.substring(0, dotIndex));
-            return firstPart + parseTimeDecimals(time.substring(dotIndex+1));
+            nanoSeconds = firstPart + parseTimeDecimals(time.substring(dotIndex+1));
         } else
         {
-            return hhMmSsToNanosecondSinceMidnight(time);
+            nanoSeconds = hhMmSsToNanosecondSinceMidnight(time);
         }
+        return LocalTime.ofNanoOfDay(nanoSeconds);
     }
 
     /**
@@ -395,7 +401,7 @@ public class RecordConverter {
         }
     }
 
-    private static Object convertToCassandraDateValue(Field field) throws Exception {
+    private static LocalDate convertToCassandraDateValue(Field field) throws Exception {
         // Dates may be expressed either in integer or string form:
         // see http://cassandra.apache.org/doc/latest/cql/types.html#dates
         FieldType fieldType = field.getType();
@@ -404,7 +410,7 @@ public class RecordConverter {
             return cassandraDateToLocalDate(field.asString());
         } else
         {
-            return LocalDate.fromDaysSinceEpoch(field.asLong().intValue()); // date type are encoded as 32-bit unsigned integers representing a number of days with “the epoch”
+            return LocalDate.ofEpochDay(field.asLong().intValue()); // date type are encoded as 32-bit unsigned integers representing a number of days with “the epoch”
         }
     }
 
@@ -417,21 +423,21 @@ public class RecordConverter {
         if (tokens.length != 3) {
             throw new Exception("Illegal Cassandra date: " + date + " : expecting cassandra string date format yyyy-mm-dd");
         }
-        return LocalDate.fromYearMonthDay(
+        return LocalDate.of(
                 Integer.parseInt(tokens[0]),
                 Integer.parseInt(tokens[1]),
                 Integer.parseInt(tokens[2]));
     }
 
-    private static Object convertToCassandraTextValue(Field field) throws Exception {
+    private static String convertToCassandraTextValue(Field field) throws Exception {
         return field.asString();
     }
 
-    private static Object convertToCassandraUuidValue(Field field) throws Exception {
+    private static UUID convertToCassandraUuidValue(Field field) throws Exception {
         return UUID.fromString(field.asString());
     }
 
-    private static Object convertToCassandraIntValue(Field field) throws Exception {
+    private static Integer convertToCassandraIntValue(Field field) throws Exception {
         return field.asInteger();
     }
 }
