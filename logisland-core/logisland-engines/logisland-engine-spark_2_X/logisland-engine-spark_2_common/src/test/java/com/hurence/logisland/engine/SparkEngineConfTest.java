@@ -105,6 +105,54 @@ public class SparkEngineConfTest {
         testConfIsValid(engineConf);
     }
 
+    @Test
+    public void somePropertiesConfigTest() {
+        EngineConfiguration engineConf = getStandardEngineConfiguration();
+
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_APP_NAME().getName(), "FSV-OracleDataCollectionWithSnapshot-2outof4-PROD-Next1");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.JAVA_MESOS_LIBRARY_PATH().getName(), "/opt/mesos-1.6.0/build/src/.libs/libmesos.so");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_DRIVER_MEMORY().getName(), "2G");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_DRIVER_CORES().getName(), "1");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_EXECUTOR_CORES().getName(), "5");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_EXECUTOR_INSTANCES().getName(), "1");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_EXECUTOR_MEMORY().getName(), "4G");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX().getName(), "8");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_TASK_MAX_FAILURES().getName(), "8");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_SERIALIZER().getName(), "org.apache.spark.serializer.KryoSerializer");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_BATCH_DURATION().getName(), "20000");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_BACKPRESSURE_ENABLED().getName(), "false");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_UNPERSIST().getName(), "false");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_BLOCK_INTERVAL().getName(), "500");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAX_RATE_PER_PARTITION().getName(), "10000");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_TIMEOUT().getName(), "-1");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_KAFKA_MAXRETRIES().getName(), "3");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_UI_RETAINED_BATCHES().getName(), "200");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_STREAMING_RECEIVER_WAL_ENABLE().getName(), "false");
+        testConfIsValid(engineConf);
+        engineConf.getConfiguration().put(KafkaStreamProcessingEngine.SPARK_UI_PORT().getName(), "4050");
+        testConfIsValid(engineConf);
+    }
+
+//    spark.executor.uri:  /fabsupervision/software/spark/spark.tgz
+
     private void testConfIsValid(EngineConfiguration engineConf) {
         Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());

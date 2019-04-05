@@ -306,6 +306,18 @@ object KafkaStreamProcessingEngine {
         .addValidator(StandardValidators.FLOAT_VALIDATOR)
         .defaultValue("0.75")
         .build
+
+    val JAVA_MESOS_LIBRARY_PATH = new PropertyDescriptor.Builder()
+      .name("java.library.path")
+      .description("The java library path to use with mesos.")
+      .required(false)
+      .build
+
+    val SPARK_MESOS_CORE_MAX = new PropertyDescriptor.Builder()
+      .name("spark.cores.max")
+      .description("The maximum number of total executor core with mesos.")
+      .required(false)
+      .build
 }
 
 
@@ -345,6 +357,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
+        descriptors.add(KafkaStreamProcessingEngine.JAVA_MESOS_LIBRARY_PATH)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
 
         Collections.unmodifiableList(descriptors)
     }
