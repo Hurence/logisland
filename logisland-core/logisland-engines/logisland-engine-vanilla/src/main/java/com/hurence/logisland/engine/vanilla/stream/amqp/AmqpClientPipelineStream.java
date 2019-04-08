@@ -73,34 +73,34 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return Arrays.asList(
-                StreamOptions.CONNECTION_HOST,
-                StreamOptions.CONNECTION_PORT,
-                StreamOptions.LINK_CREDITS,
-                StreamOptions.CONNECTION_AUTH_USERNAME,
-                StreamOptions.CONNECTION_AUTH_PASSWORD,
-                StreamOptions.CONNECTION_AUTH_TLS_CERT,
-                StreamOptions.CONNECTION_AUTH_TLS_KEY,
-                StreamOptions.CONNECTION_AUTH_CA_CERT,
-                StreamOptions.READ_TOPIC,
-                StreamOptions.READ_TOPIC_SERIALIZER,
-                StreamOptions.AVRO_INPUT_SCHEMA,
-                StreamOptions.WRITE_TOPIC,
-                StreamOptions.WRITE_TOPIC_SERIALIZER,
-                StreamOptions.AVRO_OUTPUT_SCHEMA,
-                StreamOptions.CONTAINER_ID,
-                StreamOptions.WRITE_TOPIC_CONTENT_TYPE,
-                StreamOptions.CONNECTION_RECONNECT_BACKOFF,
-                StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY,
-                StreamOptions.CONNECTION_RECONNECT_MAX_DELAY
+                AmqpStreamProperties.CONNECTION_HOST,
+                AmqpStreamProperties.CONNECTION_PORT,
+                AmqpStreamProperties.LINK_CREDITS,
+                AmqpStreamProperties.CONNECTION_AUTH_USERNAME,
+                AmqpStreamProperties.CONNECTION_AUTH_PASSWORD,
+                AmqpStreamProperties.CONNECTION_AUTH_TLS_CERT,
+                AmqpStreamProperties.CONNECTION_AUTH_TLS_KEY,
+                AmqpStreamProperties.CONNECTION_AUTH_CA_CERT,
+                AmqpStreamProperties.READ_TOPIC,
+                AmqpStreamProperties.READ_TOPIC_SERIALIZER,
+                AmqpStreamProperties.AVRO_INPUT_SCHEMA,
+                AmqpStreamProperties.WRITE_TOPIC,
+                AmqpStreamProperties.WRITE_TOPIC_SERIALIZER,
+                AmqpStreamProperties.AVRO_OUTPUT_SCHEMA,
+                AmqpStreamProperties.CONTAINER_ID,
+                AmqpStreamProperties.WRITE_TOPIC_CONTENT_TYPE,
+                AmqpStreamProperties.CONNECTION_RECONNECT_BACKOFF,
+                AmqpStreamProperties.CONNECTION_RECONNECT_INITIAL_DELAY,
+                AmqpStreamProperties.CONNECTION_RECONNECT_MAX_DELAY
         );
     }
 
     @Override
     public void start() {
         connectionControl = new ConnectionControl(
-                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_MAX_DELAY).asLong(),
-                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_INITIAL_DELAY).asLong(),
-                streamContext.getPropertyValue(StreamOptions.CONNECTION_RECONNECT_BACKOFF).asDouble());
+                streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_RECONNECT_MAX_DELAY).asLong(),
+                streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_RECONNECT_INITIAL_DELAY).asLong(),
+                streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_RECONNECT_BACKOFF).asDouble());
 
         try {
             setupConnection();
@@ -113,18 +113,18 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
 
     private CompletableFuture<ProtonConnection> setupConnection() {
         CompletableFuture<ProtonConnection> completableFuture = new CompletableFuture<>();
-        String hostname = streamContext.getPropertyValue(StreamOptions.CONNECTION_HOST).asString();
-        int port = streamContext.getPropertyValue(StreamOptions.CONNECTION_PORT).asInteger();
-        int credits = streamContext.getPropertyValue(StreamOptions.LINK_CREDITS).asInteger();
+        String hostname = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_HOST).asString();
+        int port = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_PORT).asInteger();
+        int credits = streamContext.getPropertyValue(AmqpStreamProperties.LINK_CREDITS).asInteger();
 
-        String user = streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_USERNAME).asString();
-        String password = streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_PASSWORD).asString();
+        String user = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_USERNAME).asString();
+        String password = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_PASSWORD).asString();
         if (user != null && password != null) {
             options.addEnabledSaslMechanism("PLAIN");
-        } else if (streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_TLS_CERT).isSet()) {
-            String tlsCert = streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_TLS_CERT).asString();
-            String tlsKey = streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_TLS_KEY).asString();
-            String caCert = streamContext.getPropertyValue(StreamOptions.CONNECTION_AUTH_CA_CERT).asString();
+        } else if (streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_TLS_CERT).isSet()) {
+            String tlsCert = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_TLS_CERT).asString();
+            String tlsKey = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_TLS_KEY).asString();
+            String caCert = streamContext.getPropertyValue(AmqpStreamProperties.CONNECTION_AUTH_CA_CERT).asString();
             options.addEnabledSaslMechanism("EXTERNAL")
                     .setHostnameVerificationAlgorithm("")
                     .setPemKeyCertOptions(new PemKeyCertOptions()
@@ -145,7 +145,7 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
             connectionControl.connected();
             completableFuture.complete(event.result());
             protonConnection = event.result();
-            String containerId = streamContext.getPropertyValue(StreamOptions.CONTAINER_ID).asString();
+            String containerId = streamContext.getPropertyValue(AmqpStreamProperties.CONTAINER_ID).asString();
             if (containerId != null) {
                 protonConnection.setContainer(containerId);
             }
@@ -160,13 +160,13 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
 
 
                         //setup the output path
-                        sender = protonConnection.createSender(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC).asString());
+                        sender = protonConnection.createSender(streamContext.getPropertyValue(AmqpStreamProperties.WRITE_TOPIC).asString());
                         sender.setAutoDrained(true);
                         sender.setAutoSettle(true);
                         sender.open();
 
                         //setup the input path
-                        receiver = protonConnection.createReceiver(streamContext.getPropertyValue(StreamOptions.READ_TOPIC).asString());
+                        receiver = protonConnection.createReceiver(streamContext.getPropertyValue(AmqpStreamProperties.READ_TOPIC).asString());
                         receiver.setPrefetch(credits);
                         receiver.handler((delivery, message) -> {
                             try {
@@ -252,16 +252,16 @@ public class AmqpClientPipelineStream extends AbstractRecordStream {
             protonClient = ProtonClient.create(vertx);
 
             streamContext = (StreamContext) context;
-            if (streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString().equals(StreamOptions.NO_SERIALIZER.getValue())) {
+            if (streamContext.getPropertyValue(AmqpStreamProperties.READ_TOPIC_SERIALIZER).asString().equals(AmqpStreamProperties.NO_SERIALIZER.getValue())) {
                 deserializer = null;
             } else {
-                deserializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.READ_TOPIC_SERIALIZER).asString(),
-                        streamContext.getPropertyValue(StreamOptions.AVRO_INPUT_SCHEMA).asString());
+                deserializer = buildSerializer(streamContext.getPropertyValue(AmqpStreamProperties.READ_TOPIC_SERIALIZER).asString(),
+                        streamContext.getPropertyValue(AmqpStreamProperties.AVRO_INPUT_SCHEMA).asString());
             }
-            serializer = buildSerializer(streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_SERIALIZER).asString(),
-                    streamContext.getPropertyValue(StreamOptions.AVRO_OUTPUT_SCHEMA).asString());
+            serializer = buildSerializer(streamContext.getPropertyValue(AmqpStreamProperties.WRITE_TOPIC_SERIALIZER).asString(),
+                    streamContext.getPropertyValue(AmqpStreamProperties.AVRO_OUTPUT_SCHEMA).asString());
 
-            contentType = streamContext.getPropertyValue(StreamOptions.WRITE_TOPIC_CONTENT_TYPE).asString();
+            contentType = streamContext.getPropertyValue(AmqpStreamProperties.WRITE_TOPIC_CONTENT_TYPE).asString();
 
             ControllerServiceLookup controllerServiceLookup = streamContext.getControllerServiceLookup();
             for (ProcessContext processContext : streamContext.getProcessContexts()) {

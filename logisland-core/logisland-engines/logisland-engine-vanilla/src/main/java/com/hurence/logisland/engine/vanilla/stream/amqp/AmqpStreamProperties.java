@@ -20,7 +20,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
 
-public interface StreamOptions {
+public interface AmqpStreamProperties {
 
     PropertyDescriptor CONTAINER_ID = new PropertyDescriptor.Builder()
             .name("container.id")

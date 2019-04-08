@@ -74,14 +74,14 @@ public class LogislandPipelineProcessor extends AbstractProcessor<byte[], byte[]
                 processContext.getProcessor().init(processContext);
             }
             //now init serializers
-            if (streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString().equals(StreamProperties.NO_SERIALIZER.getValue())) {
+            if (streamContext.getPropertyValue(KafkaStreamProperties.READ_TOPICS_SERIALIZER).asString().equals(KafkaStreamProperties.NO_SERIALIZER.getValue())) {
                 deserializer = null;
             } else {
-                deserializer = buildSerializer(streamContext.getPropertyValue(StreamProperties.READ_TOPICS_SERIALIZER).asString(),
-                        streamContext.getPropertyValue(StreamProperties.AVRO_INPUT_SCHEMA).asString());
+                deserializer = buildSerializer(streamContext.getPropertyValue(KafkaStreamProperties.READ_TOPICS_SERIALIZER).asString(),
+                        streamContext.getPropertyValue(KafkaStreamProperties.AVRO_INPUT_SCHEMA).asString());
             }
-            serializer = buildSerializer(streamContext.getPropertyValue(StreamProperties.WRITE_TOPICS_SERIALIZER).asString(),
-                    streamContext.getPropertyValue(StreamProperties.AVRO_OUTPUT_SCHEMA).asString());
+            serializer = buildSerializer(streamContext.getPropertyValue(KafkaStreamProperties.WRITE_TOPICS_SERIALIZER).asString(),
+                    streamContext.getPropertyValue(KafkaStreamProperties.AVRO_OUTPUT_SCHEMA).asString());
 
 
         } catch (InitializationException ie) {

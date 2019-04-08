@@ -21,7 +21,7 @@ import com.hurence.logisland.config.ProcessorConfiguration;
 import com.hurence.logisland.config.StreamConfiguration;
 import com.hurence.logisland.engine.EngineContext;
 import com.hurence.logisland.engine.vanilla.stream.kafka.KafkaStreamsPipelineStream;
-import com.hurence.logisland.engine.vanilla.stream.kafka.StreamProperties;
+import com.hurence.logisland.engine.vanilla.stream.kafka.KafkaStreamProperties;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.serializer.RecordSerializer;
@@ -66,8 +66,8 @@ public class PlainJavaEngineTest {
             Map<String, String> conf = new HashMap<>(props);
             conf.put("application.id", "test");
             conf.put("bootstrap.servers", sharedKafkaTestResource.getKafkaConnectString());
-            conf.put(StreamProperties.READ_TOPICS.getName(), "topic.in");
-            conf.put(StreamProperties.WRITE_TOPICS.getName(), "topic.out1,topic.out2");
+            conf.put(KafkaStreamProperties.READ_TOPICS.getName(), "topic.in");
+            conf.put(KafkaStreamProperties.WRITE_TOPICS.getName(), "topic.out1,topic.out2");
             return conf;
         };
     }
@@ -88,6 +88,7 @@ public class PlainJavaEngineTest {
     @Test
     public void testEmpty() {
         EngineContext engineContext = ComponentFactory.getEngineContext(engineConfiguration()).get();
+        Assert.assertTrue(engineContext.isValid());
         engineContext.getEngine().start(engineContext);
         engineContext.getEngine().awaitTermination(engineContext);
         engineContext.getEngine().shutdown(engineContext);
@@ -117,8 +118,8 @@ public class PlainJavaEngineTest {
     public void testCompletePipeline() {
         EngineConfiguration engineConfiguration = engineConfiguration();
         Map<String, String> props = new HashMap<>();
-        props.put(StreamProperties.READ_TOPICS_SERIALIZER.getName(), StreamProperties.STRING_SERIALIZER.getValue());
-        props.put(StreamProperties.WRITE_TOPICS_SERIALIZER.getName(), StreamProperties.JSON_SERIALIZER.getValue());
+        props.put(KafkaStreamProperties.READ_TOPICS_SERIALIZER.getName(), KafkaStreamProperties.STRING_SERIALIZER.getValue());
+        props.put(KafkaStreamProperties.WRITE_TOPICS_SERIALIZER.getName(), KafkaStreamProperties.JSON_SERIALIZER.getValue());
         StreamConfiguration streamConfiguration = emptyKafkaStream(defaultPropertySupplier(props));
         streamConfiguration.addProcessorConfiguration(processorConfiguration(Collections.emptyMap()));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
@@ -134,7 +135,7 @@ public class PlainJavaEngineTest {
         List<ConsumerRecord<byte[], byte[]>> outRecords2 = sharedKafkaTestResource.getKafkaTestUtils().consumeAllRecordsFromTopic("topic.out2");
         Assert.assertEquals(inRecords.size(), outRecords.size());
         Assert.assertEquals(inRecords.size(), outRecords2.size());
-        RecordSerializer recordSerializer = SerializerProvider.getSerializer(StreamProperties.JSON_SERIALIZER.getValue(), null);
+        RecordSerializer recordSerializer = SerializerProvider.getSerializer(KafkaStreamProperties.JSON_SERIALIZER.getValue(), null);
         for (int i = 0; i < outRecords.size(); i++) {
             ConsumerRecord<byte[], byte[]> cr = outRecords.get(i);
             ProducedKafkaRecord<byte[], byte[]> ir = inRecords.get(i);

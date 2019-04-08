@@ -20,7 +20,7 @@ import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.serializer.*;
 import com.hurence.logisland.validator.StandardValidators;
 
-public interface StreamProperties {
+public interface KafkaStreamProperties {
 
     AllowableValue AVRO_SERIALIZER = new AllowableValue(AvroSerializer.class.getName(),
             "avro serialization", "serialize events as avro blocs");

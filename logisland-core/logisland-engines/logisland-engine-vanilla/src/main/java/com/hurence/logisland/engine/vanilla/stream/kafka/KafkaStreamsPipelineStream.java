@@ -41,14 +41,14 @@ public class KafkaStreamsPipelineStream extends AbstractRecordStream {
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return Arrays.asList(
-                StreamProperties.PROPERTY_BOOTSTRAP_SERVERS,
-                StreamProperties.READ_TOPICS,
-                StreamProperties.AVRO_INPUT_SCHEMA,
-                StreamProperties.AVRO_OUTPUT_SCHEMA,
-                StreamProperties.KAFKA_MANUAL_OFFSET_RESET,
-                StreamProperties.READ_TOPICS_SERIALIZER,
-                StreamProperties.WRITE_TOPICS,
-                StreamProperties.WRITE_TOPICS_SERIALIZER
+                KafkaStreamProperties.PROPERTY_BOOTSTRAP_SERVERS,
+                KafkaStreamProperties.READ_TOPICS,
+                KafkaStreamProperties.AVRO_INPUT_SCHEMA,
+                KafkaStreamProperties.AVRO_OUTPUT_SCHEMA,
+                KafkaStreamProperties.KAFKA_MANUAL_OFFSET_RESET,
+                KafkaStreamProperties.READ_TOPICS_SERIALIZER,
+                KafkaStreamProperties.WRITE_TOPICS,
+                KafkaStreamProperties.WRITE_TOPICS_SERIALIZER
         );
     }
 
@@ -78,9 +78,9 @@ public class KafkaStreamsPipelineStream extends AbstractRecordStream {
         String sourceId = "source_" + streamId;
         String pipelineId = "pipeline_" + streamId;
         String sinkId = "sink_" + streamId;
-        properties.put(StreamProperties.PROPERTY_APPLICATION_ID.getName(), streamId);
-        properties.put(StreamProperties.PROPERTY_BOOTSTRAP_SERVERS.getName(),
-                streamContext.getPropertyValue(StreamProperties.PROPERTY_BOOTSTRAP_SERVERS).asString());
+        properties.put(KafkaStreamProperties.PROPERTY_APPLICATION_ID.getName(), streamId);
+        properties.put(KafkaStreamProperties.PROPERTY_BOOTSTRAP_SERVERS.getName(),
+                streamContext.getPropertyValue(KafkaStreamProperties.PROPERTY_BOOTSTRAP_SERVERS).asString());
 
         context.getProperties().forEach((propertyDescriptor, s) -> {
             if (propertyDescriptor.isDynamic()) {
@@ -88,12 +88,12 @@ public class KafkaStreamsPipelineStream extends AbstractRecordStream {
             }
         });
         topology
-                .addSource(Topology.AutoOffsetReset.valueOf(StringUtils.upperCase(streamContext.getPropertyValue(StreamProperties.KAFKA_MANUAL_OFFSET_RESET).asString())),
-                        sourceId, streamContext.getPropertyValue(StreamProperties.READ_TOPICS).asString().split(","))
+                .addSource(Topology.AutoOffsetReset.valueOf(StringUtils.upperCase(streamContext.getPropertyValue(KafkaStreamProperties.KAFKA_MANUAL_OFFSET_RESET).asString())),
+                        sourceId, streamContext.getPropertyValue(KafkaStreamProperties.READ_TOPICS).asString().split(","))
                 .addProcessor(pipelineId,
                         () -> new LogislandPipelineProcessor(streamContext),
                         sourceId);
-        for (String outTopic : streamContext.getPropertyValue(StreamProperties.WRITE_TOPICS).asString().split(",")) {
+        for (String outTopic : streamContext.getPropertyValue(KafkaStreamProperties.WRITE_TOPICS).asString().split(",")) {
             topology.addSink(sinkId + "_" + outTopic, outTopic, new ByteArraySerializer(),
                     new ByteArraySerializer(), pipelineId);
         }

@@ -48,7 +48,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -194,12 +193,12 @@ public class AmqpClientPipelineStreamTest {
     private final Supplier<Map<String, String>> defaultPropertySupplier(Map<String, String> props) {
         return () -> {
             Map<String, String> conf = new HashMap<>();
-            conf.put(StreamOptions.CONTAINER_ID.getName(), "test");
-            conf.put(StreamOptions.CONNECTION_HOST.getName(), "localhost");
-            conf.put(StreamOptions.CONNECTION_PORT.getName(), Integer.toString(server.actualPort()));
-            conf.put(StreamOptions.READ_TOPIC.getName(), "in_address");
-            conf.put(StreamOptions.WRITE_TOPIC.getName(), "out_address");
-            conf.put(StreamOptions.WRITE_TOPIC_SERIALIZER.getName(), StreamOptions.BSON_SERIALIZER.getValue());
+            conf.put(AmqpStreamProperties.CONTAINER_ID.getName(), "test");
+            conf.put(AmqpStreamProperties.CONNECTION_HOST.getName(), "localhost");
+            conf.put(AmqpStreamProperties.CONNECTION_PORT.getName(), Integer.toString(server.actualPort()));
+            conf.put(AmqpStreamProperties.READ_TOPIC.getName(), "in_address");
+            conf.put(AmqpStreamProperties.WRITE_TOPIC.getName(), "out_address");
+            conf.put(AmqpStreamProperties.WRITE_TOPIC_SERIALIZER.getName(), AmqpStreamProperties.BSON_SERIALIZER.getValue());
             conf.putAll(props);
             return conf;
         };
@@ -249,7 +248,7 @@ public class AmqpClientPipelineStreamTest {
 
         EngineConfiguration engineConfiguration = engineConfiguration();
         StreamConfiguration streamConfiguration = emptyStream(defaultPropertySupplier(
-                Collections.singletonMap(StreamOptions.WRITE_TOPIC_CONTENT_TYPE.getName(), "record/bson")
+                Collections.singletonMap(AmqpStreamProperties.WRITE_TOPIC_CONTENT_TYPE.getName(), "record/bson")
         ));
         streamConfiguration.addProcessorConfiguration(modifyKeyProcessor("i_m_the_new_key"));
         engineConfiguration.addPipelineConfigurations(streamConfiguration);
