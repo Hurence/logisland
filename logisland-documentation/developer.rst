@@ -212,7 +212,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-   ./update-version.sh -o 1.1.2 -n 14.4
+   ./update-version.sh -o 1\\.1\\.2 -n 14.4
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy -Phdp2.5

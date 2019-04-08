@@ -7,8 +7,9 @@ This guide will help you to perform the full release process for Logisland frame
     git hf release start v1.1.2
 
     # update the version (you should run a dry run first)
-    ./update-version.sh -o 0.14.0 -n 1.1.2 -d
-    ./update-version.sh -o 0.14.0 -n 1.1.2
+    # you should double escapte dots so it is correctly parsed, otherwise it will be considered as the any character
+    ./update-version.sh -o 0\\.14\\.0 -n 1.1.2 -d
+    ./update-version.sh -o 0\\.14\\.0 -n 1.1.2
 
 Build the code and run the tests
 --------------------------------
