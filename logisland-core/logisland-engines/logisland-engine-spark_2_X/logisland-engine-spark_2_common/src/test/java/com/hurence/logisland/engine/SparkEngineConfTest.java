@@ -151,8 +151,6 @@ public class SparkEngineConfTest {
         testConfIsValid(engineConf);
     }
 
-//    spark.executor.uri:  /fabsupervision/software/spark/spark.tgz
-
     private void testConfIsValid(EngineConfiguration engineConf) {
         Optional<EngineContext> engineInstance = ComponentFactory.getEngineContext(engineConf);
         Assert.assertTrue(engineInstance.isPresent());
