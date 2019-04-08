@@ -13,12 +13,8 @@ http://www.w3.org/2001/XMLSchema-instance ">
 
 
     <properties>
-
-        <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.3.0</spark.version>
         <kafka.version>0.10.2.1</kafka.version>
-        <scala.version>2.11.8</scala.version>
-
     </properties>
 
 
@@ -42,7 +38,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </dependency>
             <dependency>
                 <groupId>org.apache.bahir</groupId>
-                <artifactId>spark-sql-streaming-mqtt_2.11</artifactId>
+                <artifactId>spark-sql-streaming-mqtt_${scala.binary.version}</artifactId>
                 <version>2.2.0</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
@@ -80,14 +76,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+                <artifactId>spark-streaming-kafka_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
+                <artifactId>spark-sql-kafka_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
@@ -124,7 +120,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
         </dependency>
         <dependency>
             <groupId>com.banzaicloud</groupId>
-            <artifactId>spark-metrics_2.11</artifactId>
+            <artifactId>spark-metrics_${scala.binary.version}</artifactId>
             <version>2.3-1.1.0</version>
         </dependency>
         <dependency>
@@ -143,7 +139,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
             <version>0.0.23</version>
         </dependency>
     </dependencies>
-
 
 
     <build>
