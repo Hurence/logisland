@@ -130,6 +130,7 @@
         <antlr3-maven-plugin>3.5.2</antlr3-maven-plugin>
         <maven-checkstyle-plugin>2.15</maven-checkstyle-plugin>
         <maven-war-plugin>2.5</maven-war-plugin>
+        <maven-surefire-plugin>2.22.1</maven-surefire-plugin>
     </properties>
 
 
