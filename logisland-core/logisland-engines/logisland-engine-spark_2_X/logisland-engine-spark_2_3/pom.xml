@@ -76,14 +76,14 @@ http://www.w3.org/2001/XMLSchema-instance ">
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka_${scala.binary.version}</artifactId>
+                <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql-kafka_${scala.binary.version}</artifactId>
+                <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
                 <scope>runtime</scope>
                 <optional>true</optional>
