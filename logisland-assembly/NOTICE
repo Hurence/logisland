@@ -847,7 +847,7 @@ The following binary components are provided under the Common Development and Di
     (CDDL 1.0) JavaServlet(TM) Specification (javax.servlet:servlet-api:jar:2.5 - no url available)
     (CDDL 1.0) (GPL3) Streaming API For XML (javax.xml.processor:stax-api:jar:1.0-2 - no url provided)
     (CDDL 1.0) JavaBeans Activation Framework (JAF) (javax.activation:activation:jar:1.1 - http://java.sun.com/products/javabeans/jaf/index.jsp)
-    (CDDL 1.0) JSR311 API (javax.ws.rs:jsr311-api:jar:1.1.1 - https://jsr311.dev.java.net)
+    (CDDL 1.0) JSR311 API (javax.ws.rs:jsr311-api:jar:1.1.2 - https://jsr311.dev.java.net)
 
 ************************
 Creative Commons Attribution-ShareAlike 3.0
@@ -922,5 +922,5 @@ The following binary components are provided to the 'Public Domain'.  See projec
 
 The following binary components are provided under the Creative Commons Zero license version 1.0.  See project link for details.
 
-    (CC0v1.0) JSR166e for Twitter (com.twitter:jsr166e:jar:1.1.1 - https://github.com/twitter/jsr166e)
+    (CC0v1.0) JSR166e for Twitter (com.twitter:jsr166e:jar:1.1.2 - https://github.com/twitter/jsr166e)
 

@@ -4,11 +4,11 @@ Releasing guide
 This guide will help you to perform the full release process for Logisland framework.
 
 
-    git hf release start v1.1.1
+    git hf release start v1.1.2
 
     # update the version (you should run a dry run first)
-    ./update-version.sh -o 0.14.0 -n 1.1.1 -d
-    ./update-version.sh -o 0.14.0 -n 1.1.1
+    ./update-version.sh -o 0.14.0 -n 1.1.2 -d
+    ./update-version.sh -o 0.14.0 -n 1.1.2
 
 Build the code and run the tests
 --------------------------------
@@ -45,7 +45,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.1/assets?name=logisland-1.1.1-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.2/assets?name=logisland-1.1.2-bin-hdp2.5.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-0.10.3-bin-hdp2.5.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 
