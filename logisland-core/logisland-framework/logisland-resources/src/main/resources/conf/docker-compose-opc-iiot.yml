@@ -4,7 +4,7 @@ services:
   # Logisland container : does nothing but launching
   logisland:
     network_mode: host
-    image: hurence/logisland:1.1.1
+    image: hurence/logisland:1.1.2
     command: tail -f bin/logisland.sh
     environment:
       ES_HOSTS: localhost:9300

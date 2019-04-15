@@ -3,7 +3,7 @@ What's new in logisland ?
 
 
 
-v1.1.1
+v1.1.2
 ------
 
 - add a clock service

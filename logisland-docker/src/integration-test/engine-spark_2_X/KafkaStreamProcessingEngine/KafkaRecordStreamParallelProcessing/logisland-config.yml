@@ -2,7 +2,7 @@
 # Logisland configuration script tempate
 #########################################################################################################
 
-version: 1.1.1
+version: 1.1.2
 documentation: LogIsland integration test of KafkaStreamProcessingEngine config file.
 
 #########################################################################################################
