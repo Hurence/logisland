@@ -21,7 +21,7 @@ Install the blockchain connector if not already done.
 
 .. code-block:: sh
 
-   bin/components.sh -i com.datamountaineer:kafka-connect-blockchain:1.1.1
+   bin/components.sh -i com.datamountaineer:kafka-connect-blockchain:1.1.2
 
 The logisland job for this tutorial is already packaged in the tar.gz assembly and you can find it here for ElasticSearch :
 

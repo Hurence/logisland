@@ -22,11 +22,11 @@ If not you can just do it through the componentes.sh command line:
 
 .. code-block:: sh
 
-    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.1
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.1
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.2
 
-    bin/components.sh -i com.hurence.logisland:logisland-connector-opc:1.1.1
+    bin/components.sh -i com.hurence.logisland:logisland-connector-opc:1.1.2
 
 
 2. Logisland job setup
@@ -206,7 +206,7 @@ Then you can use the docker-compose file **docker-compose-opc-iiot.yml** availab
 
   logisland:
     network_mode: host
-    image: hurence/logisland:1.1.1
+    image: hurence/logisland:1.1.2
     command: tail -f bin/logisland.sh
     environment:
       ZK_QUORUM: localhost:2181
