@@ -106,7 +106,7 @@ public class CheckAlertsTest {
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
         final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
-        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
+        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "200");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
         runner.setProperty(CheckAlerts.ALLOW_NO_BRACE, "false");

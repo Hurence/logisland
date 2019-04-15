@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-services</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-redis</artifactId>
@@ -18,7 +18,7 @@
 
     <properties>
         <!-- Versions -->
-        <spring.data.redis.version>1.8.11.RELEASE</spring.data.redis.version>
+        <spring.data.redis.version>1.8.20.RELEASE</spring.data.redis.version>
         <jedis.version>2.9.0</jedis.version>
     </properties>
     <dependencies>
@@ -28,7 +28,6 @@
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
 
         <dependency>

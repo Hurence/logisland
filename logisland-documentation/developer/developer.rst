@@ -14,6 +14,13 @@ Workflows
 This section explains how to perform common activities such as reporting a bug or merging a pull request.
 
 
+Internal dev (aka logisland team)
++++++++++++++++++++++++++++++++++
+
+We're using GitFlow for github so read carefully the docs :
+`<https://datasift.github.io/gitflow/GitFlowForGitHub.html>`_
+
+
 Coding Guidelines
 +++++++++++++++++
 
@@ -173,6 +180,7 @@ Would build a heavy version of logisland with all logisland plugins installed.
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
+If you wish to add all the plugins to the build you can do this by adding `-Pfull` to the command line.
 
 Release to maven repositories
 -----------------------------
@@ -180,7 +188,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-   ./update-version.sh -o 1.1.0 -n 14.4
+   ./update-version.sh -o 1.1.1 -n 14.4
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy -Pfull
@@ -198,7 +206,8 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.0/assets?name=logisland-1.1.0-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-1.1.0-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.1/assets?name=logisland-1.1.1-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-1.1.1-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
+
 
 
 

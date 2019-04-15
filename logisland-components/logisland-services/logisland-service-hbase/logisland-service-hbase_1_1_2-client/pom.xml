@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-hbase</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>logisland-service-hbase_1_1_2-client</artifactId>
@@ -100,14 +100,12 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-hbase-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
@@ -148,12 +146,6 @@
                     <classloaderParentFirstPatterns>
                         <classloaderParentFirstPattern>org.apache.hadoop.*</classloaderParentFirstPattern>
                     </classloaderParentFirstPatterns>
-                    <apiArtifacts>
-                        <apiArtifact>
-                            <groupId>com.hurence.logisland</groupId>
-                            <artifactId>logisland-service-hbase-api</artifactId>
-                        </apiArtifact>
-                    </apiArtifacts>
                 </configuration>
             </plugin>
         </plugins>
