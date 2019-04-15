@@ -48,9 +48,9 @@ Some examples, with the suggested artifacts to use, in the following table:
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
 | FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | com.eneco:kafka-connect-ftp:0.1.4                                      |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
-| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | com.datamountaineer:kafka-connect-blockchain:1.1.1                     |
+| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | com.datamountaineer:kafka-connect-blockchain:1.1.2                     |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
-| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | com.datamountaineer:kafka-connect-jms:1.1.1                            |
+| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | com.datamountaineer:kafka-connect-jms:1.1.2                            |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
 | JDBC                     | https://docs.confluent.io/current/connect/connect-jdbc/docs/index.html           | io.confluent:kafka-connect-jdbc:5.0.0                                  |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+

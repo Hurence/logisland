@@ -188,7 +188,7 @@ to release artifacts (if you're allowed to), follow this guide `release to OSS S
 
 .. code-block:: sh
 
-   ./update-version.sh -o 1.1.1 -n 14.4
+   ./update-version.sh -o 1\\.1\\.2 -n 14.4
     mvn license:format
     mvn test
     mvn -DperformRelease=true clean deploy -Pfull
@@ -206,8 +206,7 @@ Publish release assets to github
 
 please refer to `https://developer.github.com/v3/repos/releases <https://developer.github.com/v3/repos/releases>`_
 
-curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.1/assets?name=logisland-1.1.1-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-1.1.1-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
-
+curl -XPOST https://uploads.github.com/repos/Hurence/logisland/releases/v1.1.2/assets?name=logisland-1.1.2-bin.tar.gz -v  --data-binary  @logisland-assembly/target/logisland-1.1.2-bin.tar.gz --user oalam -H 'Content-Type: application/gzip'
 
 
 

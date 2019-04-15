@@ -23,9 +23,9 @@ do it through the componentes.sh command line:
 
 .. code-block:: sh
 
-    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.1
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.1
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.2
 
 
 

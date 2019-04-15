@@ -49,9 +49,6 @@ import java.util.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * Empty Java class for source jar generation (need to publish on OSS sonatype)
- */
 public class SparkRecordStreamProcessingTest {
 
 
