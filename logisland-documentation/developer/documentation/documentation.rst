@@ -53,7 +53,7 @@ but you should still mention those tags for future use.
 CapabilityDescription
 #####################
 
-This tag is used to describe the components. It should be in *.rst* format.
+This tag is used to describe the components. It should be in *.rst* format and too long. For long text please use :ref:`components-annotations-extradetailfile`
 
 DynamicProperty
 ###############
@@ -113,6 +113,20 @@ For example :
                         "the name of the field to add is the key of the first dynamic property (which is the main and only required dynamic property).",
                 nameForDoc = "fakeField" + AddFields.DYNAMIC_PROPS_NAME_SUFFIX)
     })
+
+.. _components-annotations-extradetailfile:
+
+ExtraDetailFile
+###############
+
+This tag is used to add a file in *.rst* format that will be used in section 'extra information' of components documentation.
+It should be a relative path, the root is ./logisland-documentation/user/components . A common path to use is :
+
+.. code:: java
+
+@ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
+
+Be sure to create needed subfolder if not already exist.
 
 ConfigurableComponent Method used
 +++++++++++++++++++++++++++++++++
