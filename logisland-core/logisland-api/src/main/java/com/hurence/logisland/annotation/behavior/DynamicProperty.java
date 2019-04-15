@@ -39,4 +39,10 @@ public @interface DynamicProperty {
     String value();
 
     String description();
+
+    /**
+     *
+     * @return the property name to use for generating documentation (to get the corresponding dynamic property sample)
+     */
+    String nameForDoc() default "fakePropertyThatDoesNotExistSoThatWeGetADynamicPropertySampleToGenerateTheDocumentation";
 }

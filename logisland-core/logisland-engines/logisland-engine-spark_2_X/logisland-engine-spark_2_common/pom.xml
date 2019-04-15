@@ -46,7 +46,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
-
             </dependency>
 
 

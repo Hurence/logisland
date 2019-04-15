@@ -27,6 +27,10 @@ public class RstPrintWriter extends PrintWriter {
         super(out, autoFlush);
     }
 
+
+    public void printDescriptionString(String descriptionString) {
+        println(descriptionString);
+    }
     /**
      * Writes a section title followed by an RST delimiter
      *
@@ -49,7 +53,7 @@ public class RstPrintWriter extends PrintWriter {
 
 
     /**
-     * Writes a transistion. Transitions are commonly seen in novels and short fiction,
+     * Writes a transition. Transitions are commonly seen in novels and short fiction,
      * as a gap spanning one or more lines, with or without a type ornament such as a row of asterisks.
      * Transitions separate other body elements.
      * A transition should not begin or end a section or document,
@@ -126,6 +130,15 @@ public class RstPrintWriter extends PrintWriter {
         print("`_ ");
     }
 
+    /**
+     * A helper method to include another file.
+     *
+     * @param filepath the file to include
+     */
+    public void writeIncludeReference(final String filepath) {
+        print(".. include:: ");
+        print(filepath);
+    }
 
     /**
      * .. image:: picture.jpeg
@@ -177,7 +190,7 @@ public class RstPrintWriter extends PrintWriter {
     }
 
 
-    public void printCsvTable(final String title, final String[] headers, final int[] widths) {
+    public void printCsvTable(final String title, final String[] headers, final int[] widths, final Character escape) {
         println();
         print(".. csv-table:: ");
         println(title);
@@ -205,6 +218,10 @@ public class RstPrintWriter extends PrintWriter {
             }
             print("   :widths: ");
             println(strWidths.toString());
+        }
+        if (escape != null) {
+            print("   :escape: ");
+            println(escape);
         }
 
         println();

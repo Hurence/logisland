@@ -68,7 +68,7 @@ public class ComputeTagsTest {
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
+        runner.setProperty(ComputeTags.ALLOW_NO_BRACE, "false");
         runner.setProperty("cvib3", "return 37.2/10*3;");
         runner.setProperty(ComputeTags.DATASTORE_CLIENT_SERVICE, service.getIdentifier());
         runner.setProperty(ComputeTags.JS_CACHE_SERVICE, "js_cache");
@@ -123,7 +123,7 @@ public class ComputeTagsTest {
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
+        runner.setProperty(ComputeTags.ALLOW_NO_BRACE, "false");
         runner.setProperty("cvib3", "return 37.2/10*3;");
         runner.setProperty("cvib2", "if( cache(\"cached_id2\").value > 10 ) return 0.0; else return 1.0;");
         runner.setProperty("cvib1", "return cache(\"cached_id1\").value * 10.2;");
@@ -166,7 +166,7 @@ public class ComputeTagsTest {
         runner.setProperty(ComputeTags.MAX_CPU_TIME, "100");
         runner.setProperty(ComputeTags.MAX_MEMORY, "12800000");
         runner.setProperty(ComputeTags.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(ComputeTags.ALLOw_NO_BRACE, "false");
+        runner.setProperty(ComputeTags.ALLOW_NO_BRACE, "false");
         runner.setProperty("cvib3", "return 37.2/++10*3;");
        /* runner.setProperty("cvib2", "if( cache(\"cached_id2\").value > 10 ) return 0.0; else return 1.0;");
         runner.setProperty("cvib1", "return cache(\"cached_id1\").value * 10.2;");*/

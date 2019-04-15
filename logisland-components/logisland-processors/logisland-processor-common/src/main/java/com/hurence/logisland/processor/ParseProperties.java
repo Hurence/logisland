@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 @Tags({"record", "properties", "parser"})
 @CapabilityDescription("Parse a field made of key=value fields separated by spaces\n" +
         "a string like \"a=1 b=2 c=3\" will add a,b & c fields, respectively with values 1,2 & 3 to the current Record")
+@ExtraDetailFile("./details/common-processors/ParseProperties-Detail.rst")
 public class ParseProperties extends AbstractProcessor {
 
 	private static final long serialVersionUID = 1L;

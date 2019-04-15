@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.datastore;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 @CapabilityDescription("Enrich input records with content indexed in datastore using multiget queries.\n" +
         "Each incoming record must be possibly enriched with information stored in datastore. \n" +
         "The plugin properties are :\n" +
+        "\n" +
         "- es.index (String)            : Name of the datastore index on which the multiget query will be performed. This field is mandatory and should not be empty, otherwise an error output record is sent for this specific incoming record.\n" +
         "- record.key (String)          : Name of the field in the input record containing the id to lookup document in elastic search. This field is mandatory.\n" +
         "- es.key (String)              : Name of the datastore key on which the multiget query will be performed. This field is mandatory.\n" +
@@ -47,6 +49,7 @@ import java.util.stream.Collectors;
         "\n" +
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one datastore document."
 )
+@ExtraDetailFile("./details/common-processors/EnrichRecords-Detail.rst")
 public class EnrichRecords extends AbstractDatastoreProcessor {
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()

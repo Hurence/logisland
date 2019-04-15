@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -37,7 +38,7 @@ import java.util.*;
 
 @Tags({"record", "id", "idempotent", "generate", "modify"})
 @CapabilityDescription("modify id of records or generate it following defined rules")
-//TODO add others tags see others processor
+@ExtraDetailFile("./details/common-processors/ModifyId-Detail.rst")
 public class ModifyId extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;

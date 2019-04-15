@@ -288,8 +288,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
       */
     def deserializeRecords(partition: Iterator[ConsumerRecord[Array[Byte], Array[Byte]]], serializer: RecordSerializer): List[Record] = {
         partition.flatMap(rawEvent => {
-
-            // TODO handle key also
             try {
                 val bais = new ByteArrayInputStream(rawEvent.value())
                 val deserialized = serializer.deserialize(bais)
@@ -301,7 +299,6 @@ abstract class AbstractKafkaRecordStream extends AbstractRecordStream with Spark
                     logger.error(s"exception while deserializing events ${t.getMessage}")
                     None
             }
-
         }).toList
     }
 

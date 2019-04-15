@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
         "Please read the `Lucene syntax guide <https://lucene.apache.org/core/5_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description>`_ for supported operations\n\n" +
         ".. warning::\n" +
         "   don't forget to set numeric fields property to handle correctly numeric ranges queries")
+@ExtraDetailFile("./details/SampleRecords-Detail.rst")
 public class SampleRecords extends AbstractProcessor {
 
 

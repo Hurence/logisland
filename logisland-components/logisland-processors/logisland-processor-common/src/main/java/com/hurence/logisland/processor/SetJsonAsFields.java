@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
@@ -37,6 +38,7 @@ import java.util.*;
                 "configuration and also to know by advance every one of them. Whereas for this simple case, " +
                 "the SetJsonAsFields processor does not require such a configuration and will work with any " +
                 "incoming json, regardless of the list of first level attributes.")
+@ExtraDetailFile("./details/common-processors/SetJsonAsFields-Detail.rst")
 public class SetJsonAsFields extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(SetJsonAsFields.class);

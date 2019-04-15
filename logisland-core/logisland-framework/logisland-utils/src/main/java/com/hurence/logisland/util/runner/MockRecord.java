@@ -17,6 +17,7 @@ package com.hurence.logisland.util.runner;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.hurence.logisland.record.FieldType;
@@ -87,6 +88,14 @@ public class MockRecord extends StandardRecord {
     public void assertFieldEquals(final String fieldName, final byte[] expectedValue) {
         Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
        // assertedFields.add(fieldName);
+    }
+
+    public <K,V> void assertFieldEquals(final String fieldName, final Map<K, V> expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
+    }
+
+    public <E> void assertFieldEquals(final String fieldName, final List<E> expectedValue) {
+        Assert.assertEquals(expectedValue, getField(fieldName).getRawValue());
     }
 
     public void assertNullField(final String fieldName) {

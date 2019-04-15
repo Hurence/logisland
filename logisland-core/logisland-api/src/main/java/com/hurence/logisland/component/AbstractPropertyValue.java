@@ -23,6 +23,7 @@ import com.hurence.logisland.record.StandardRecord;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.util.FormatUtils;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,47 +36,46 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     protected VariableRegistry variableRegistry;
 
     @Override
-    public String getRawValue() {
-        if (rawValue == null) {
-            return null;
-        }
-
-        return rawValue.toString();
+    public Object getRawValue() {
+        return rawValue;
     }
 
     @Override
     public String asString() {
-        return getRawValue();
+        if (getRawValue() == null) {
+            return null;
+        }
+        return getRawValue().toString();
     }
 
     @Override
     public Integer asInteger() {
-        return (getRawValue() == null) ? null : Integer.parseInt(getRawValue().trim());
+        return (getRawValue() == null) ? null : Integer.parseInt(asString().trim());
     }
 
     @Override
     public Long asLong() {
-        return (getRawValue() == null) ? null : Long.parseLong(getRawValue().trim());
+        return (getRawValue() == null) ? null : Long.parseLong(asString().trim());
     }
 
     @Override
     public Boolean asBoolean() {
-        return (getRawValue() == null) ? null : Boolean.parseBoolean(getRawValue().trim());
+        return (getRawValue() == null) ? null : Boolean.parseBoolean(asString().trim());
     }
 
     @Override
     public Float asFloat() {
-        return (getRawValue() == null) ? null : Float.parseFloat(getRawValue().trim());
+        return (getRawValue() == null) ? null : Float.parseFloat(asString().trim());
     }
 
     @Override
     public Double asDouble() {
-        return (getRawValue() == null) ? null : Double.parseDouble(getRawValue().trim());
+        return (getRawValue() == null) ? null : Double.parseDouble(asString().trim());
     }
 
     @Override
     public Long asTimePeriod(final TimeUnit timeUnit) {
-        return (rawValue == null) ? null : FormatUtils.getTimeDuration(rawValue.toString().trim(), timeUnit);
+        return (rawValue == null) ? null : FormatUtils.getTimeDuration(asString().trim(), timeUnit);
     }
 
 
@@ -87,7 +87,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
     @Override
     public Record asRecord() {
         return (getRawValue() == null) ? null : new StandardRecord()
-                .setStringField(FieldDictionary.RECORD_VALUE,getRawValue().trim());
+                .setStringField(FieldDictionary.RECORD_VALUE, asString().trim());
     }
 
     @Override
@@ -96,7 +96,7 @@ public abstract class AbstractPropertyValue implements PropertyValue {
             return null;
         }
 
-        return serviceLookup.getControllerService(getRawValue());
+        return serviceLookup.getControllerService(asString());
     }
 
     
