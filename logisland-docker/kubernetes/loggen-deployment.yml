@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: loggen-pod
+  namespace: logisland
+spec:
+  containers:
+    - name: loggen
+      image: hurence/loggen
+      imagePullPolicy: IfNotPresent
+      env:
+        - name: LOGGEN_SLEEP
+          valueFrom:
+            configMapKeyRef:
+              name: special-config
+              key: loggen.sleep
+        - name: LOGGEN_NUM
+          valueFrom:
+            configMapKeyRef:
+              name: special-config
+              key: loggen.num
+        - name: LOGGEN_KAFKA
+          valueFrom:
+            configMapKeyRef:
+              name: logisland-config
+              key: kafka.brokers
+        - name: LOGGEN_KAFKA_TOPIC
+          valueFrom:
+            configMapKeyRef:
+              name: special-config
+              key: loggen.topic

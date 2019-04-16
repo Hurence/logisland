@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: special-config
+  namespace: logisland
+data:
+  loggen.sleep: '0.2'
+  loggen.num: '0'
+  loggen.topic: logisland_raw
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logisland-config
+  namespace: logisland
+data:
+  kafka.brokers: kafka:9092
+  zk.quorum: zookeeper:2181
+  es.hosts: elasticsearch:9092
+  es.cluster.name: es-logisland
