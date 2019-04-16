@@ -58,6 +58,9 @@ parser.add_argument("--sleep", "-s", help="Sleep this long between lines (in sec
                     default=os.getenv('LOGGEN_SLEEP', 1.0), type=float)
 parser.add_argument("--kafka-brokers", "-k", dest='kafka_brokers', help="the kafka brokers connection string",
                     default=os.getenv('LOGGEN_KAFKA', "kafka:9092"), type=str)
+parser.add_argument("--kafka-topic", "-t", dest='kafka_topic', help="the kafka topic to publich logs on",
+                    default=os.getenv('LOGGEN_KAFKA_TOPIC', "logisland_raw"), type=str)
+
 
 args = parser.parse_args()
 
@@ -126,7 +129,7 @@ while (flag):
     message = '{} - - [{} {}] "{} {} HTTP/1.0" {} {} "{}" "{}"\n'.format(ip, dt, tz, vrb, uri, resp, byt, referer,
                                                                          useragent)
 
-    producer.send('logisland_raw', str.encode(message))
+    producer.send(args.kafka_topic, str.encode(message))
 
     log_lines = log_lines - 1
     flag = False if log_lines == 0 else True
