@@ -124,7 +124,7 @@ It should be a relative path, the root is ./logisland-documentation/user/compone
 
 .. code:: java
 
-@ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
+    @ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
 
 Be sure to create needed subfolder if not already exist.
 
