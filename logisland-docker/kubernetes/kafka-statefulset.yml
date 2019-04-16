@@ -36,9 +36,9 @@ spec:
             - name: KAFKA_HEAP_OPTS
               value: -Xmx1G -Xms1G
             - name: KAFKA_ZOOKEEPER_CONNECT
-             # value: kafka-zookeeper:2181
+              value: kafka-zookeeper:2181
              # value: 10.105.213.202:2181
-              value: ${KAFKA_ZOOKEEPER_SERVICE_HOST}:2181
+             # value: ${KAFKA_ZOOKEEPER_SERVICE_HOST}:2181
             - name: KAFKA_LOG_DIRS
               value: /opt/kafka/data/logs
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR

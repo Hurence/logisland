@@ -4,12 +4,11 @@ metadata:
   name: kafka
   namespace: logisland
 spec:
-  #clusterIP: None
   ports:
     - name: broker
       port: 9092
       protocol: TCP
-      targetPort: 9092
+      targetPort: kafka
   selector:
     app: kafka
   sessionAffinity: None

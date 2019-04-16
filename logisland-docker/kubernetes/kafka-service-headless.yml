@@ -1,15 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-zookeeper
+  name: kafka-headless
   namespace: logisland
 spec:
+  #clusterIP: None
   ports:
-    - name: client
-      port: 2181
+    - name: broker
+      port: 9092
       protocol: TCP
-      targetPort: client
+      targetPort: 9092
   selector:
-    app: kafka-zookeeper
+    app: kafka
   sessionAffinity: None
   type: ClusterIP

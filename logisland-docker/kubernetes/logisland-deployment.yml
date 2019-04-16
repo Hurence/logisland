@@ -7,14 +7,3 @@ spec:
   containers:
     - name: loggen
       image: hurence/logisland
-      env:
-        - name: SPECIAL_LEVEL_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: special-config
-              key: special.how
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: env-config
-              key: log_level
