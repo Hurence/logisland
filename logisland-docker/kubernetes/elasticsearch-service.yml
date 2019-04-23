@@ -13,3 +13,6 @@ spec:
     - name: http
       port: 9200
       protocol: TCP
+    - name: tcp
+      port: 9300
+      protocol: TCP

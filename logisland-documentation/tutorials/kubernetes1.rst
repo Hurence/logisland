@@ -1,24 +1,42 @@
 ================================================
 Run Logisland stream within Kubernetes : stage 1
 ================================================
-This is the begining of a multiple part series of blog posts going through setting up an Apache log indexation to Elasticsearch in kubernetes.
-This guide will bring you to a fully functionnal Kubernetes logisland setup.
+This is the begining of a multiple part series of tutorials going through setting up a scalable Apache log indexation to Elasticsearch in kubernetes. This guide will bring you to a fully functionnal Kubernetes logisland setup.
 
 Part 1 - Setting up Elasticsearch
 Part 2 - Setting up Kibana
-Part 3 - Setting up Zookeeper
-Part 4 - Setting up Kafka
+Part 3 - Setting up a three-node Zookeeper cluster
+Part 4 - Setting up a three-node Kafka cluster
 Part 5 - Setting up Logisland
 
 
-This guide set up an elasticsearch/kibana stack, a three-node Kafka cluster and a three-node Zookeeper cluster required by Kafka.
-And a logisland instance
 Kafka and Zookeeper can be manually scaled up at any time by altering and re-applying configuration.
 Kubernetes also provides features for autoscaling, read more about auto scaling Kubernetes Pods should that be a requirement.
 
+sources
+"""""""
+    - https://imti.co/kafka-kubernetes/
+    - https://github.com/kiritbasu/Fake-Apache-Log-Generator
+    - https://blog.gruntwork.io/automated-testing-for-kubernetes-and-helm-charts-using-terratest-a4ddc4e67344
 
-0 - Config maps & persistent volumes
-------------------------------------
+
+0 - Pre-requisites & initial setup
+----------------------------------
+First of all you'll a Kubernetes cluster or simply a minikube. For the first option
+
+
+Kubernetes setup
+""""""""""""""""
+The best you can do is to follow the official guides to get the following tools up and running.
+
+The Kubernetes command-line tool, **kubectl**, allows you to run commands against Kubernetes clusters. You can use kubectl to deploy applications, inspect and manage cluster resources, and view logs. `setup kubectl <https://kubernetes.io/docs/tasks/tools/install-kubectl/>`_
+
+Minikube, a tool that runs a single-node Kubernetes cluster in a virtual machine on your laptop is the easiest way to start with. `setup minikube <https://kubernetes.io/docs/tasks/tools/install-minikube/>`_
+
+.. note::
+
+    Deciding where to run Kubernetes depends on what resources you have available and how much flexibility you need. You can run Kubernetes almost anywhere, from your laptop to VMs on a cloud provider to a rack of bare metal servers. You can also set up a fully-managed cluster by running a single command or craft your own customized cluster on your bare metal servers. `setup kubernetes <https://kubernetes.io/docs/setup/>`_
+
 
 Namespace
 """""""""
@@ -45,11 +63,11 @@ Persistent volumes
 """"""""""""""""""
 In Kubernetes, managing storage is a distinct problem from managing compute. The PersistentVolume subsystem provides an API for users and administrators that abstracts details of how storage is provided from how it is consumed. To do this we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.
 
-A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system.
+A **PersistentVolume (PV)** is a piece of storage in the cluster that has been provisioned by an administrator. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system.
 
-A PersistentVolumeClaim (PVC) is a request for storage by a user. It is similar to a pod. Pods consume node resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only).
+A **PersistentVolumeClaim (PVC)** is a request for storage by a user. It is similar to a pod. Pods consume node resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only).
 
-Create th local folders where you want to store your files (change this to wherever you want to store dat on your nodes) :
+Create the local folders where you want to store your files (change this to wherever you want to store data on your nodes) :
 
 .. code-block:: sh
 
@@ -85,15 +103,9 @@ Apply the configuration:
 1 - Setting up Elasticsearch cluster on Kubernetes
 --------------------------------------------------
 
-The main aim of this series of blog posts will be make notes for myself as I try to learn kubernetes and for anyone in the same position.
-
-In this blog post, I will just concentrate on useful Kubernetes getting started resources, commands, and also with an aim of creating a single node Elasticsearch cluster.
-
 Getting Started
 """""""""""""""
-I found the most helpful resource for me was the Kubernetes official website for starting to learn kubernetes. Head over to the Interactive Tutorials section of the website and spend time going through all 6 modules to cover the basics. It should only take you 1 - 2 hours. You won’t have to install anything to try it out.
-
-The next step I took was followed the Hello Minikube tutorial. This helped me to get minikube and kubectl commands installed. (Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetest cluster).
+I would highly recommend to follow the Hello Minikube tutorial for thos who don't have any background with Kubernetes. This will help to get minikube and kubectl commands installed. (Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetes cluster).
 
 Shaving the Yak!
 """"""""""""""""
@@ -155,7 +167,7 @@ You can then open the dashboard with command
 
 .. code-block:: sh
 
-    minikube addons open dashboard
+    minikube dashboard
 
 Single Node Elasticsearch Cluster
 """""""""""""""""""""""""""""""""
@@ -298,7 +310,7 @@ Create the file `kibana-service.yml`:
       labels:
         component: kibana
     spec:
-      type: ClusterIP
+      type: LoadBalancer
       selector:
         run: kibana
       ports:
@@ -358,6 +370,28 @@ Screenshot of kibana dashboard
 ------------------------
 Kafka requires Zookeeper for maintaining configuration information, naming, providing distributed synchronization, and providing group services to coordinate its nodes.
 
+Create the file `zookeeper-service.yml`:
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: kafka-zookeeper
+      namespace: logisland
+    spec:
+      ports:
+      - name: client
+        port: 2181
+        protocol: TCP
+        targetPort: client
+      selector:
+        app: kafka-zookeeper
+      sessionAffinity: None
+      type: ClusterIP
+
+Apply the configuration:
+
+    kubectl create -f ./zookeeper-service.yml
+
 Zookeeper Headless Service
 """"""""""""""""""""""""""
 A Kubernetes Headless Service does not resolve to a single IP; instead, Headless Services returns the IP addresses of any Pods found by their selector, in this case, Pods labeled app: kafka-zookeeper.
@@ -370,11 +404,11 @@ Once Pods labeled app: kafka-zookeeper are running, this Headless Service return
     Server:        10.96.0.10
     Address:    10.96.0.10#53
 
-    Name:    kafka-zookeeper-headless.the-project.svc.cluster.local
+    Name:    kafka-zookeeper-headless.logisland.svc.cluster.local
     Address: 192.168.108.150
-    Name:    kafka-zookeeper-headless.the-project.svc.cluster.local
+    Name:    kafka-zookeeper-headless.logisland.svc.cluster.local
     Address: 192.168.108.181
-    Name:    kafka-zookeeper-headless.the-project.svc.cluster.local
+    Name:    kafka-zookeeper-headless.logisland.svc.cluster.local
     Address: 192.168.108.132
 
 In the example above, the Kubernetes Service kafka-zookeeper-headless returned the internal IP addresses of three individual Pods.
@@ -389,7 +423,7 @@ Create the file `zookeeper-service-headless.yml`:
     kind: Service
     metadata:
       name: kafka-zookeeper
-      namespace: the-project
+      namespace: logisland
     spec:
       clusterIP: None
       ports:
@@ -434,7 +468,7 @@ Create the file `zookeeper-statefulset.yml`:
     kind: StatefulSet
     metadata:
       name: kafka-zookeeper
-      namespace: the-project
+      namespace: logisland
     spec:
       podManagementPolicy: OrderedReady
       replicas: 3
@@ -566,7 +600,7 @@ Create the file `zookeeper-disruptionbudget.yml`:
       labels:
         app: kafka-zookeeper
       name: kafka-zookeeper
-      namespace: the-project
+      namespace: logisland
     spec:
       maxUnavailable: 1
       selector:
@@ -594,7 +628,7 @@ Create the file `kafka-service.yml`:
     kind: Service
     metadata:
       name: kafka
-      namespace: the-project
+      namespace: logisland
     spec:
       ports:
       - name: broker
@@ -622,7 +656,7 @@ Create the file `kafka-service-headless.yml`:
     kind: Service
     metadata:
       name: kafka-headless
-      namespace: the-project
+      namespace: logisland
     spec:
       clusterIP: None
       ports:
@@ -655,7 +689,7 @@ Create the file `kafka-statefulset.yml`:
       labels:
         app: kafka
       name: kafka
-      namespace: the-project
+      namespace: logisland
     spec:
       podManagementPolicy: OrderedReady
       replicas: 3
@@ -760,7 +794,7 @@ Create the file 400-pod-test.yml:
     kind: Pod
     metadata:
       name: kafka-test-client
-      namespace: the-project
+      namespace: logisland
     spec:
       containers:
       - command:
@@ -788,7 +822,7 @@ Create Topic
 """"""""""""
 .. code-block:: sh
 
-    kubectl -n the-project exec kafka-test-client -- \
+    kubectl -n logisland exec kafka-test-client -- \
     /usr/bin/kafka-topics --zookeeper kafka-zookeeper:2181 \
     --topic logisland_raw --create --partitions 3 --replication-factor 1
 
@@ -796,7 +830,7 @@ List Topics
 """""""""""
 .. code-block:: sh
 
-    kubectl -n the-project exec kafka-test-client -- \
+    kubectl -n logisland exec kafka-test-client -- \
 /usr/bin/kafka-topics --zookeeper kafka-zookeeper:2181 --list
 
 Sending logs to Kafka
@@ -853,7 +887,7 @@ make sure some fake apache logs are flowing through kafka topic
 
 .. code-block:: sh
 
-    kubectl -n the-project exec -ti kafka-test-client -- \
+    kubectl -n logisland exec -ti kafka-test-client -- \
     /usr/bin/kafka-console-consumer --bootstrap-server kafka:9092 \
     --topic logisland_raw --from-beginning
 
@@ -871,17 +905,28 @@ Create the file `logisland-deployment.yml`:
         - name: loggen
           image: hurence/logisland
           env:
-            - name: SPECIAL_LEVEL_KEY
+            - name: ES_HOSTS=elasticsearch:9300
               valueFrom:
                 configMapKeyRef:
                   name: special-config
                   key: special.how
-            - name: LOG_LEVEL
+            - name: KAFKA_BROKERS
               valueFrom:
                 configMapKeyRef:
-                  name: env-config
-                  key: log_level
+                  name: logisland-config
+                  key: kafka.brokers
 
 .. code-block:: sh
 
     kubectl create -f ./logisland-deployment.yml
+
+
+
+
+run the following command
+
+
+bin/logisland.sh --standalone --conf conf/index-apache-logs-plainjava.yml
+
+
+

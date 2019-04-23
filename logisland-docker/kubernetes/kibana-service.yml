@@ -6,10 +6,12 @@ metadata:
   labels:
     component: kibana
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
-    run: kibana
+    component: kibana
   ports:
     - name: http
       port: 5601
+      targetPort: 5601
+      nodePort: 30123
       protocol: TCP

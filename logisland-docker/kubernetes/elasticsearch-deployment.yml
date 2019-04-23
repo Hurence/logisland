@@ -14,13 +14,18 @@ spec:
     spec:
       containers:
         - name: elasticsearch
-          image: docker.elastic.co/elasticsearch/elasticsearch:6.2.1
+          image: docker.elastic.co/elasticsearch/elasticsearch:5.4.3
           env:
             - name: discovery.type
               value: single-node
-            - name: ES_HEAP_SIZE
-              value: "256m"
+            - name: cluster.name
+              value: "es-logisland"
+            - name: xpack.security.enabled
+              value: "false"
           ports:
             - containerPort: 9200
               name: http
+              protocol: TCP
+            - containerPort: 9300
+              name: tcp
               protocol: TCP
