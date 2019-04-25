@@ -21,30 +21,30 @@ import java.util.List;
 
 public class FieldDictionary {
 
-    public static String RECORD_ERRORS = "record_errors";
-    public static String RECORD_TYPE = "record_type";
-    public static String RECORD_ID = "record_id";
-    public static String RECORD_TIME = "record_time";
-    public static String RECORD_DAYTIME = "record_daytime";
-    public static String RECORD_KEY = "record_key";
-    public static String RECORD_VALUE = "record_value";
-    public static String RECORD_NAME = "record_name";
-    public static String PROCESSOR_NAME = "processor_name";
-    public static String RECORD_POSITION = "record_position";
-    public static String RECORD_BODY = "record_body";
-    public static String RECORD_COUNT = "record_count";
-    public static String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
+    public static final String RECORD_ERRORS = "record_errors";
+    public static final String RECORD_TYPE = "record_type";
+    public static final String RECORD_ID = "record_id";
+    public static final String RECORD_TIME = "record_time";
+    public static final String RECORD_DAYTIME = "record_daytime";
+    public static final String RECORD_KEY = "record_key";
+    public static final String RECORD_VALUE = "record_value";
+    public static final String RECORD_NAME = "record_name";
+    public static final String PROCESSOR_NAME = "processor_name";
+    public static final String RECORD_POSITION = "record_position";
+    public static final String RECORD_BODY = "record_body";
+    public static final String RECORD_COUNT = "record_count";
+    public static final String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
 
 
-    public static String RECORD_POSITION_LATITUDE = "record_position_latitude";
-    public static String RECORD_POSITION_LONGITUDE = "record_position_longitude";
-    public static String RECORD_POSITION_ALTITUDE = "record_position_altitude";
-    public static String RECORD_POSITION_HEADING = "record_position_heading";
-    public static String RECORD_POSITION_PRECISION = "record_position_precision";
-    public static String RECORD_POSITION_SATELLITES = "record_position_satellites";
-    public static String RECORD_POSITION_SPEED = "record_position_speed";
-    public static String RECORD_POSITION_STATUS = "record_position_status";
-    public static String RECORD_POSITION_TIMESTAMP = "record_position_timestamp";
+    public static final String RECORD_POSITION_LATITUDE = "record_position_latitude";
+    public static final String RECORD_POSITION_LONGITUDE = "record_position_longitude";
+    public static final String RECORD_POSITION_ALTITUDE = "record_position_altitude";
+    public static final String RECORD_POSITION_HEADING = "record_position_heading";
+    public static final String RECORD_POSITION_PRECISION = "record_position_precision";
+    public static final String RECORD_POSITION_SATELLITES = "record_position_satellites";
+    public static final String RECORD_POSITION_SPEED = "record_position_speed";
+    public static final String RECORD_POSITION_STATUS = "record_position_status";
+    public static final String RECORD_POSITION_TIMESTAMP = "record_position_timestamp";
 
     public static Boolean contains(String fieldName) {
         return asList().contains(fieldName);
