@@ -611,7 +611,7 @@ public class CassandraServiceTest {
         runner.assertNotValid();
 
         runner.setProperty("default.collection", "just required");
-        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.setProperty("datastore.client.service", "cassandra_service");
         runner.assertValid();
 
         /**
@@ -668,7 +668,7 @@ public class CassandraServiceTest {
         runner.assertNotValid();
 
         runner.setProperty("default.collection", "just required");
-        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.setProperty("datastore.client.service", "cassandra_service");
         runner.assertValid();
         runner.enableControllerService(service);
 
