@@ -15,6 +15,7 @@
     <artifactId>logisland-services</artifactId>
 
     <modules>
+        <module>logisland-service-influxdb</module>
         <module>logisland-service-cassandra</module>
         <module>logisland-service-mongodb</module>
         <module>logisland-service-inmemory-cache</module>
