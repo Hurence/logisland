@@ -15,7 +15,9 @@
  */
 package com.hurence.logisland.record;
 
+import org.apache.commons.collections.ListUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,12 +32,11 @@ public class FieldDictionary {
     public static final String RECORD_VALUE = "record_value";
     public static final String RECORD_NAME = "record_name";
     public static final String PROCESSOR_NAME = "processor_name";
-    public static final String RECORD_POSITION = "record_position";
     public static final String RECORD_BODY = "record_body";
     public static final String RECORD_COUNT = "record_count";
     public static final String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
 
-
+    public static final String RECORD_POSITION = "record_position";
     public static final String RECORD_POSITION_LATITUDE = "record_position_latitude";
     public static final String RECORD_POSITION_LONGITUDE = "record_position_longitude";
     public static final String RECORD_POSITION_ALTITUDE = "record_position_altitude";
@@ -50,29 +51,49 @@ public class FieldDictionary {
         return asList().contains(fieldName);
     }
 
-    public static List<String> asList() {
-        return Arrays.asList(
-                RECORD_ERRORS,
-                RECORD_TYPE,
-                RECORD_ID,
-                RECORD_TIME,
-                RECORD_DAYTIME,
-                RECORD_KEY,
-                RECORD_VALUE,
-                PROCESSOR_NAME,
-                RECORD_POSITION,
-                RECORD_BODY,
-                RECORD_POSITION_LATITUDE,
-                RECORD_POSITION_LONGITUDE,
-                RECORD_POSITION_ALTITUDE,
-                RECORD_POSITION_HEADING,
-                RECORD_POSITION_PRECISION,
-                RECORD_POSITION_SATELLITES,
-                RECORD_POSITION_SPEED,
-                RECORD_POSITION_STATUS,
-                RECORD_POSITION_TIMESTAMP,
-                RECORD_COUNT,
-                RECORD_LAST_UPDATE_TIME
+    /**
+     * Technical fields. If accessed, do not modify!
+     * Kept accessible for performance purpose (no duplicate on usage like when using asList())
+     */
+    public static final List<String> TECHNICAL_FIELDS = Arrays.asList(
+            RECORD_ERRORS,
+            RECORD_TYPE,
+            RECORD_ID,
+            RECORD_TIME,
+            RECORD_DAYTIME,
+            RECORD_KEY,
+            RECORD_VALUE,
+            RECORD_NAME,
+            PROCESSOR_NAME,
+            RECORD_BODY,
+            RECORD_COUNT,
+            RECORD_LAST_UPDATE_TIME
         );
+
+    /**
+     * Position fields. If accessed, do not modify!
+     * Kept accessible for performance purpose (no duplicate on usage like when using asList())
+     */
+    public static final List<String> POSITION_FIELDS = Arrays.asList(
+            RECORD_POSITION,
+            RECORD_POSITION_LATITUDE,
+            RECORD_POSITION_LONGITUDE,
+            RECORD_POSITION_ALTITUDE,
+            RECORD_POSITION_HEADING,
+            RECORD_POSITION_PRECISION,
+            RECORD_POSITION_SATELLITES,
+            RECORD_POSITION_SPEED,
+            RECORD_POSITION_STATUS,
+            RECORD_POSITION_TIMESTAMP
+    );
+
+    /**
+     * All fields. If accessed, do not modify!
+     * Kept accessible for performance purpose (no duplicate on usage like when using asList())
+     */
+    public static final List<String> ALL = ListUtils.union(TECHNICAL_FIELDS, POSITION_FIELDS);
+
+    public static List<String> asList() {
+        return new ArrayList<String>(ALL);
     }
 }
