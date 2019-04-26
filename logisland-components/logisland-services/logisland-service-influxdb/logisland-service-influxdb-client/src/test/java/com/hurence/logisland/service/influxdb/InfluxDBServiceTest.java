@@ -80,11 +80,14 @@ public class InfluxDBServiceTest {
          */
 
         String measurement0Name = "Measurement0";
-        CONFIG_MODE configMode0 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
-        Set<String> explicitTags0 = new HashSet<String>();
-        Set<String> explicitFields0 = new HashSet(Arrays.asList("testString"));
         String timeField0 = "testTime";
         TimeUnit format0 = TimeUnit.MILLISECONDS;
+        CONFIG_MODE configMode0_0 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
+        Set<String> explicitTags0_0 = new HashSet<String>();
+        Set<String> explicitFields0_0 = new HashSet(Arrays.asList("testString"));
+        CONFIG_MODE configMode0_1 = CONFIG_MODE.ALL_AS_FIELDS;
+        Set<String> explicitTags0_1 =  new HashSet<String>();
+        Set<String> explicitFields0_1 = new HashSet<String>();
 
         List<Map<Field, InfluxDBType>> measurement0 = new ArrayList<Map<Field, InfluxDBType>>();
 
@@ -128,11 +131,12 @@ public class InfluxDBServiceTest {
          */
 
         String measurement1Name = "Measurement1";
+        String timeField1 = "testTime";
+        TimeUnit format1 = TimeUnit.MILLISECONDS;
         CONFIG_MODE configMode1 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
         Set<String> explicitTags1 = new HashSet<String>();
         Set<String> explicitFields1 = new HashSet(Arrays.asList("testTinyint", "testShort", "testInt", "testLong", "testBigint"));
-        String timeField1 = "testTime";
-        TimeUnit format1 = TimeUnit.MILLISECONDS;
+
 
         List<Map<Field, InfluxDBType>> measurement1 = new ArrayList<Map<Field, InfluxDBType>>();
 
@@ -162,11 +166,11 @@ public class InfluxDBServiceTest {
          */
 
         String measurement2Name = "Measurement2";
+        String timeField2 = "testTime";
+        TimeUnit format2 = TimeUnit.MILLISECONDS;
         CONFIG_MODE configMode2 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
         Set<String> explicitTags2 = new HashSet<String>();
         Set<String> explicitFields2 = new HashSet(Arrays.asList("testFloat", "testDouble", "testDecimal"));
-        String timeField2 = "testTime";
-        TimeUnit format2 = TimeUnit.MILLISECONDS;
 
         List<Map<Field, InfluxDBType>> measurement2 = new ArrayList<Map<Field, InfluxDBType>>();
 
@@ -192,11 +196,11 @@ public class InfluxDBServiceTest {
          */
 
         String measurement3Name = "Measurement3";
+        String timeField3 = "testTime";
+        TimeUnit format3 = TimeUnit.MILLISECONDS;
         CONFIG_MODE configMode3 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
         Set<String> explicitTags3 = new HashSet<String>();
         Set<String> explicitFields3 = new HashSet(Arrays.asList("testTinyint", "testBoolean"));
-        String timeField3 = "testTime";
-        TimeUnit format3 = TimeUnit.MILLISECONDS;
 
         List<Map<Field, InfluxDBType>> measurement3 = new ArrayList<Map<Field, InfluxDBType>>();
 
@@ -211,10 +215,11 @@ public class InfluxDBServiceTest {
         measurement3.add(point);
 
         Object[][] inputs = {
-                {measurement0, measurement0Name, configMode0, explicitTags0, explicitFields0, timeField0, format0},
-                {measurement1, measurement1Name, configMode1, explicitTags1, explicitFields1, timeField1, format1},
-                {measurement2, measurement2Name, configMode2, explicitTags2, explicitFields2, timeField2, format2},
-                {measurement3, measurement3Name, configMode3, explicitTags3, explicitFields3, timeField3, format3}
+                {measurement0, measurement0Name, timeField0, format0, configMode0_0, explicitTags0_0, explicitFields0_0},
+                {measurement0, measurement0Name, timeField0, format0, configMode0_1, explicitTags0_1, explicitFields0_1},
+                {measurement1, measurement1Name, timeField1, format1, configMode1, explicitTags1, explicitFields1},
+                {measurement2, measurement2Name, timeField2, format2, configMode2, explicitTags2, explicitFields2},
+                {measurement3, measurement3Name, timeField3, format3, configMode3, explicitTags3, explicitFields3}
         };
 
         return inputs;
@@ -276,8 +281,8 @@ public class InfluxDBServiceTest {
     @Test
     @UseDataProvider("testBulkPutProvider")
     public void testBulkPut(List<Map<Field, InfluxDBType>> insertedAndExpectedPoints, String measurement,
-                            CONFIG_MODE configMode, Set<String> explicitTags, Set<String> explicitFields,
-                            String timeField, TimeUnit format)
+                            String timeField, TimeUnit format, CONFIG_MODE configMode, Set<String> explicitTags,
+                            Set<String> explicitFields)
             throws InitializationException {
 
         final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
@@ -287,6 +292,12 @@ public class InfluxDBServiceTest {
         runner.setProperty(service, InfluxDBControllerService.URL.getName(), INFLUXDB_URL);
         runner.setProperty(service, InfluxDBControllerService.DATABASE.getName(), TEST_DATABASE);
         runner.setProperty(service, InfluxDBControllerService.MODE.getName(), configMode.toString());
+        /**
+         * NOTE: we always use explicit time field declaration as using record_time (which is the default if no time field
+         * is specified with a measurement) will generate a lot of records with the same record_time which ends up with
+         * point being overwritten in InfluxDB. To prevent that, we force usage of a time field that we use in deifferent
+         * formats for testing purpose.
+         */
         String explicitTagsConfigString = makeTagsConfigString(measurement, configMode, explicitTags);
         if (explicitTagsConfigString != null)
         {
@@ -337,7 +348,6 @@ public class InfluxDBServiceTest {
 
         switch(configMode)
         {
-            case ALL_AS_TAGS:
             case ALL_AS_FIELDS:
             case ALL_AS_TAGS_BUT_EXPLICIT_FIELDS:
                 return null;
@@ -365,7 +375,6 @@ public class InfluxDBServiceTest {
 
         switch(configMode)
         {
-            case ALL_AS_TAGS:
             case ALL_AS_FIELDS:
             case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
                 return null;
@@ -419,8 +428,6 @@ public class InfluxDBServiceTest {
 
         switch(configMode)
         {
-            case ALL_AS_TAGS:
-                return fieldsToValues;
             case ALL_AS_FIELDS:
                 return new HashMap<String, String>();
             case EXPLICIT_TAGS_AND_FIELDS:
@@ -484,8 +491,6 @@ public class InfluxDBServiceTest {
                 {
                     case ALL_AS_FIELDS:
                         expectedFieldsAndValues.put(field.getName(), makeExpectedValue(field, type));
-                        break;
-                    case ALL_AS_TAGS:
                         break;
                     case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
                         if (!explicitTags.contains(field.getName()))
@@ -632,13 +637,18 @@ public class InfluxDBServiceTest {
 
         for (Series serie : result.getSeries())
         {
-            Assert.assertEquals("Unexpected serie name in result", measurement, serie.getName());
-            Assert.assertEquals("Unexpected tags in result", expectedTags, serie.getTags());
+            String serieName = serie.getName();
+            echo("Checking serie: " + serieName);
+            Assert.assertEquals("Unexpected serie name in result", measurement, serieName);
+            Map<String, String> tags = serie.getTags();
+            echo("tags: " + tags);
+            Assert.assertEquals("Unexpected tags in result", expectedTags, tags);
 
             /**
              * Compare points values with expected fields
              */
             List<String> columns = serie.getColumns();
+            echo("columns: " + columns);
 
             // First establish a map of field column name to its index in the values (so ignore tag columns)
             Map<String, Integer> fieldToIndex = new HashMap<String, Integer>();
@@ -664,13 +674,15 @@ public class InfluxDBServiceTest {
 
             // Then find the expected point among the influxdb ones
             List<List<Object>> influxDbPoints = serie.getValues();
+            Assert.assertEquals("Number of found points and expected one differ", expectedPoints.size(), influxDbPoints.size());
             for (Map<String, Object> expectedPoint : expectedPoints)
             {
                 boolean foundPoint = false;
                 // For each influx returned point, check each field value, if they all match, this is the expected point
+                echo("Looking for expected point: " + expectedPoint);
                 for (List<Object> influxPoint : influxDbPoints)
                 {
-                    //
+                    echo("\tcomparing with influx db point: " + influxPoint);
                     int nMatchs = 0; // Number of field values that match in the current point
                     for (Map.Entry<String, Object> entry : expectedPoint.entrySet())
                     {
@@ -683,15 +695,18 @@ public class InfluxDBServiceTest {
                         Assert.assertNotNull("Influx field value for field " + expectedField + " should not be null", influxValue);
                         if (!expectedValue.equals(influxValue))
                         {
+                            echo("\t\t-> not matching value for field " + expectedField);
                             break;
                         } else
                         {
+                            echo("\t\t-> matching value for field " + expectedField);
                             nMatchs++;
                         }
                     }
                     if (nMatchs == expectedPoint.size())
                     {
                         // All field values of this point match, go to next expected point
+                        echo("\t-> found matching point");
                         foundPoint = true;
                         break;
                     }

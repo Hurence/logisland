@@ -160,7 +160,6 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     /** Available configuration mode */
     static enum CONFIG_MODE {
         EXPLICIT_TAGS_AND_FIELDS("explicit_tags_and_fields"),
-        ALL_AS_TAGS("all_as_tags"),
         ALL_AS_FIELDS("all_as_fields"),
         ALL_AS_TAGS_BUT_EXPLICIT_FIELDS("all_as_tags_but_explicit_fields"),
         ALL_AS_FIELDS_BUT_EXPLICIT_TAGS("all_as_fields_but_explicit_tags");
@@ -182,8 +181,6 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
             {
                 case "explicit_tags_and_fields":
                     return EXPLICIT_TAGS_AND_FIELDS;
-                case "all_as_tags":
-                    return ALL_AS_TAGS;
                 case "all_as_fields":
                     return ALL_AS_FIELDS;
                 case "all_as_tags_but_explicit_fields":
@@ -201,10 +198,8 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
             .displayName("InfluxDB configuration mode that determines how tags and fields are chosen.")
             .description("Determines the way fields and tags are chosen from the logisland record. " +
                     "Possible values and meaning: " +
-                    CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS.toString() + ": only listed logisland record fields listed in " +
+                    CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS.toString() + ": only logisland record fields listed in " +
                     TAGS.getName() + " and " + FIELDS.getName() + " will be inserted into InfluxDB with the explicit type. " +
-                    CONFIG_MODE.ALL_AS_TAGS.toString() + ": all available logisland record fields will be inserted into " +
-                            " InfluxDB as tags. " +
                     CONFIG_MODE.ALL_AS_FIELDS.toString() + ": all available logisland record fields will be inserted into " +
                     " InfluxDB as fields. " +
                     CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS.toString() + ": all available logisland record fields will be inserted into " +
@@ -214,7 +209,6 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
              )
             .allowableValues(
                     CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS.toString(),
-                    CONFIG_MODE.ALL_AS_TAGS.toString(),
                     CONFIG_MODE.ALL_AS_FIELDS.toString(),
                     CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS.toString(),
                     CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS.toString())
@@ -299,7 +293,6 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
                 parseFields(context.getPropertyValue(FIELDS).asString());
                 checkTagsAndFieldsForDuplicates();
                 break;
-            case ALL_AS_TAGS:
             case ALL_AS_FIELDS:
                 if (context.getPropertyValue(TAGS).isSet())
                 {

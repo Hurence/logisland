@@ -74,9 +74,6 @@ public class RecordConverter {
                 tagFields = (tags != null ? tags : new HashSet<String>());
                 fieldFields = (fields != null ? fields : new HashSet<String>());
                 break;
-            case ALL_AS_TAGS:
-                tagFields = allFields;
-                break;
             case ALL_AS_FIELDS:
                 fieldFields = allFields;
                 break;

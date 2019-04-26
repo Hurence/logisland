@@ -130,8 +130,12 @@ public class InfluxDBUpdater implements Runnable {
                                 service.getTags().get(measurement),
                                 service.getFields().get(measurement),
                                 service.getTimeFields().get(measurement));
-                        batchValues.add(dataToInsert);
-                        batchedUpdates++;
+                        if (dataToInsert.fields.isEmpty() && !dataToInsert.measurement.equals(END_OF_TEST)) {
+                            logger.warn("Skipping this record as it has no InfluxDB fields: " + record);
+                        } else {
+                            batchValues.add(dataToInsert);
+                            batchedUpdates++;
+                        }
                     }
                 } catch (InterruptedException e) {
                     // Here we should exit the loop
