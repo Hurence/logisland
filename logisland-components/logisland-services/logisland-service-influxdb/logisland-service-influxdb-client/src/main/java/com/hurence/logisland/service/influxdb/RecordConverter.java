@@ -254,11 +254,9 @@ public class RecordConverter {
         switch (field.getType())
         {
             case INT:
-                return new InfluxDBField(InfluxDBType.INTEGER, field.asInteger());
             case LONG:
                 return new InfluxDBField(InfluxDBType.INTEGER, field.asLong());
             case FLOAT:
-                return new InfluxDBField(InfluxDBType.FLOAT, field.asFloat());
             case DOUBLE:
                 return new InfluxDBField(InfluxDBType.FLOAT, field.asDouble());
             case BOOLEAN:
@@ -273,7 +271,6 @@ public class RecordConverter {
                     return new InfluxDBField(InfluxDBType.STRING, strValue);
                 }
             case ENUM:
-                return new InfluxDBField(InfluxDBType.STRING, field.getRawValue().toString());
             case DATETIME:
                 return new InfluxDBField(InfluxDBType.STRING, field.getRawValue().toString());
             case ARRAY:

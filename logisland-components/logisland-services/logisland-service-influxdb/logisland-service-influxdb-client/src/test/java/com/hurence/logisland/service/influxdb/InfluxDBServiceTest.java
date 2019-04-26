@@ -86,7 +86,7 @@ public class InfluxDBServiceTest {
         Set<String> explicitTags0_0 = new HashSet<String>();
         Set<String> explicitFields0_0 = new HashSet(Arrays.asList("testString"));
         CONFIG_MODE configMode0_1 = CONFIG_MODE.ALL_AS_FIELDS;
-        Set<String> explicitTags0_1 =  new HashSet<String>();
+        Set<String> explicitTags0_1 = new HashSet<String>();
         Set<String> explicitFields0_1 = new HashSet<String>();
 
         List<Map<Field, InfluxDBType>> measurement0 = new ArrayList<Map<Field, InfluxDBType>>();
@@ -122,7 +122,74 @@ public class InfluxDBServiceTest {
         measurement0.add(point);
 
         /**
-         * Measurement1 (all integers)
+         * Measurement1 (all strings)
+         *
+         * testString    sometimeFlag
+         *
+         * this          sometimeFlagValue
+         * is            sometimeFlagValue
+         * a             sometimeFlagValue
+         * simple        sometimeFlagValue
+         * measurement   sometimeFlagValue
+         * A last one with some spaces, UPPERCASES and a dot as well as accent and special characters: &é"'(-è_çà),;:=%ù$ãẽĩõũ. sometimeFlagValue
+         */
+
+        String measurement1Name = "Measurement1";
+        String timeField1 = "testTime";
+        TimeUnit format1 = TimeUnit.DAYS;
+        CONFIG_MODE configMode1_0 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
+        Set<String> explicitTags1_0 = new HashSet<String>();
+        Set<String> explicitFields1_0 = new HashSet(Arrays.asList("testString"));
+        CONFIG_MODE configMode1_1 = CONFIG_MODE.ALL_AS_FIELDS;
+        Set<String> explicitTags1_1 = new HashSet<String>();
+        Set<String> explicitFields1_1 = new HashSet<String>();
+        CONFIG_MODE configMode1_2 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
+        Set<String> explicitTags1_2 = new HashSet(Arrays.asList("sometimeFlag"));
+        Set<String> explicitFields1_2 = new HashSet(Arrays.asList("testString"));
+        CONFIG_MODE configMode1_3 = CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS;
+        Set<String> explicitTags1_3 = new HashSet(Arrays.asList("sometimeFlag"));
+        Set<String> explicitFields1_3 = new HashSet<String>();
+
+        List<Map<Field, InfluxDBType>> measurement1 = new ArrayList<Map<Field, InfluxDBType>>();
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "1"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "this"), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "2"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "is"), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "3"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "a"), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "4"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "simple"), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "5"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "measurement"), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.STRING, "6"), InfluxDBType.STRING);
+        point.put(new Field("testString", FieldType.STRING, "A last one with some spaces, UPPERCASES and a dot as well as accent and special characters: &é\"'(-è_çà),;:=%ù$ãẽĩõũâêîôû."), InfluxDBType.STRING);
+        point.put(new Field("sometimeFlag", FieldType.STRING, "sometimeFlagValue"), InfluxDBType.STRING);
+        measurement1.add(point);
+
+        /**
+         * Measurement2 (all integers)
          *
          * testTinyint testShort testInt testLong     testBigint
          *
@@ -130,34 +197,48 @@ public class InfluxDBServiceTest {
          * -127        -4568        -954123 -8623463688247 -10128544682
          */
 
-        String measurement1Name = "Measurement1";
-        String timeField1 = "testTime";
-        TimeUnit format1 = TimeUnit.MILLISECONDS;
-        CONFIG_MODE configMode1 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
-        Set<String> explicitTags1 = new HashSet<String>();
-        Set<String> explicitFields1 = new HashSet(Arrays.asList("testTinyint", "testShort", "testInt", "testLong", "testBigint"));
+        String measurement2Name = "Measurement2";
+        String timeField2 = "testTime";
+        TimeUnit format2 = TimeUnit.HOURS;
+        CONFIG_MODE configMode2_0 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
+        Set<String> explicitTags2_0 = new HashSet(Arrays.asList("sometimeIntFlag", "sometimeStringFlag"));
+        Set<String> explicitFields2_0 = new HashSet(Arrays.asList("testTinyint", "testShort", "testInt", "testLong", "testBigint"));
+        CONFIG_MODE configMode2_1 = CONFIG_MODE.ALL_AS_FIELDS;
+        Set<String> explicitTags2_1 = new HashSet<String>();
+        Set<String> explicitFields2_1 = new HashSet<String>();
+        CONFIG_MODE configMode2_2 = CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS;
+        Set<String> explicitTags2_2 = new HashSet(Arrays.asList("sometimeIntFlag", "sometimeStringFlag"));
+        Set<String> explicitFields2_2 = new HashSet<String>();
+        CONFIG_MODE configMode2_3 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
+        Set<String> explicitTags2_3 = new HashSet<String>();
+        Set<String> explicitFields2_3 = new HashSet(Arrays.asList("testTinyint", "testShort", "testInt", "testLong", "testBigint"));
 
-
-        List<Map<Field, InfluxDBType>> measurement1 = new ArrayList<Map<Field, InfluxDBType>>();
+        List<Map<Field, InfluxDBType>> measurement2 = new ArrayList<Map<Field, InfluxDBType>>();
 
         point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.LONG, 1L), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeIntFlag", FieldType.INT, 654321), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeStringFlag", FieldType.STRING, "sometimeStringFlagValue"), InfluxDBType.STRING);
         point.put(new Field("testTinyint", FieldType.INT, 123), InfluxDBType.INTEGER);
         point.put(new Field("testShort", FieldType.INT, (short) 12546), InfluxDBType.INTEGER);
         point.put(new Field("testInt", FieldType.INT, 1563489), InfluxDBType.INTEGER);
         point.put(new Field("testLong", FieldType.LONG, 9623545688581L), InfluxDBType.INTEGER);
         point.put(new Field("testBigint", FieldType.LONG, new BigInteger("11123545688")), InfluxDBType.INTEGER);
-        measurement1.add(point);
+        measurement2.add(point);
 
         point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.LONG, 2L), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeIntFlag", FieldType.INT, 654321), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeStringFlag", FieldType.STRING, "sometimeStringFlagValue"), InfluxDBType.STRING);
         point.put(new Field("testTinyint", FieldType.INT, -127), InfluxDBType.INTEGER);
         point.put(new Field("testShort", FieldType.INT, (short) -4568), InfluxDBType.INTEGER);
         point.put(new Field("testInt", FieldType.INT, -954123), InfluxDBType.INTEGER);
         point.put(new Field("testLong", FieldType.LONG, -8623463688247L), InfluxDBType.INTEGER);
         point.put(new Field("testBigint", FieldType.LONG, new BigInteger("-10128544682")), InfluxDBType.INTEGER);
-        measurement1.add(point);
+        measurement2.add(point);
 
         /**
-         * Measurement2 (all floats)
+         * Measurement3 (all floats)
          *
          * testFloat        testDouble              testDecimal
          *
@@ -165,29 +246,44 @@ public class InfluxDBServiceTest {
          * -4712568.6423844 -74125448522.9985544221 -542212145454577.2151321145451
          */
 
-        String measurement2Name = "Measurement2";
-        String timeField2 = "testTime";
-        TimeUnit format2 = TimeUnit.MILLISECONDS;
-        CONFIG_MODE configMode2 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
-        Set<String> explicitTags2 = new HashSet<String>();
-        Set<String> explicitFields2 = new HashSet(Arrays.asList("testFloat", "testDouble", "testDecimal"));
+        String measurement3Name = "Measurement3";
+        String timeField3 = "testTime";
+        TimeUnit format3 = TimeUnit.SECONDS;
+        CONFIG_MODE configMode3_0 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
+        Set<String> explicitTags3_0 = new HashSet(Arrays.asList("sometimeFloatFlag", "sometimeLongFlag"));
+        Set<String> explicitFields3_0 = new HashSet(Arrays.asList("testFloat", "testDouble", "testDecimal"));
+        CONFIG_MODE configMode3_1 = CONFIG_MODE.ALL_AS_FIELDS;
+        Set<String> explicitTags3_1 = new HashSet<String>();
+        Set<String> explicitFields3_1 = new HashSet<String>();
+        CONFIG_MODE configMode3_2 = CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS;
+        Set<String> explicitTags3_2 = new HashSet(Arrays.asList("sometimeFloatFlag", "sometimeLongFlag"));
+        Set<String> explicitFields3_2 = new HashSet<String>();
+        CONFIG_MODE configMode3_3 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
+        Set<String> explicitTags3_3 = new HashSet<String>();
+        Set<String> explicitFields3_3 = new HashSet(Arrays.asList("testFloat", "testDouble", "testDecimal"));
 
-        List<Map<Field, InfluxDBType>> measurement2 = new ArrayList<Map<Field, InfluxDBType>>();
+        List<Map<Field, InfluxDBType>> measurement3 = new ArrayList<Map<Field, InfluxDBType>>();
 
         point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.FLOAT, (float)1.0), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeFloatFlag", FieldType.FLOAT, (float)654321.54236), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeLongFlag", FieldType.LONG, 54963157L), InfluxDBType.INTEGER);
         point.put(new Field("testFloat", FieldType.FLOAT, (float) 5984632.254893), InfluxDBType.FLOAT);
         point.put(new Field("testDouble", FieldType.DOUBLE, 14569874235.1254857623), InfluxDBType.FLOAT);
         point.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("477552233116699.4885451212353")), InfluxDBType.FLOAT);
-        measurement2.add(point);
+        measurement3.add(point);
 
         point = new HashMap<Field, InfluxDBType>();
+        point.put(new Field("testTime", FieldType.FLOAT, (float)2.0), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeFloatFlag", FieldType.FLOAT, (float)654321.54236), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeLongFlag", FieldType.LONG, 54963157L), InfluxDBType.INTEGER);
         point.put(new Field("testFloat", FieldType.FLOAT, (float) -4712568.6423844), InfluxDBType.FLOAT);
         point.put(new Field("testDouble", FieldType.DOUBLE, -74125448522.31225), InfluxDBType.FLOAT);
         point.put(new Field("testDecimal", FieldType.DOUBLE, new BigDecimal("-342212145454577.24565")), InfluxDBType.FLOAT);
-        measurement2.add(point);
+        measurement3.add(point);
 
         /**
-         * Measurement3 (all booleans)
+         * Measurement4 (all booleans)
          *
          * testTinyint testBoolean
          *
@@ -195,31 +291,62 @@ public class InfluxDBServiceTest {
          * 0          false
          */
 
-        String measurement3Name = "Measurement3";
-        String timeField3 = "testTime";
-        TimeUnit format3 = TimeUnit.MILLISECONDS;
-        CONFIG_MODE configMode3 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
-        Set<String> explicitTags3 = new HashSet<String>();
-        Set<String> explicitFields3 = new HashSet(Arrays.asList("testTinyint", "testBoolean"));
+        String measurement4Name = "Measurement4";
+        String timeField4 = "testTime";
+        TimeUnit format4 = TimeUnit.MICROSECONDS;
+        CONFIG_MODE configMode4_0 = CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS;
+        Set<String> explicitTags4_0 = new HashSet(Arrays.asList("sometimeDoubleFlag", "sometimeBooleanFlag"));
+        Set<String> explicitFields4_0 = new HashSet(Arrays.asList("testBoolean"));
+        CONFIG_MODE configMode4_1 = CONFIG_MODE.ALL_AS_FIELDS;
+        Set<String> explicitTags4_1 = new HashSet<String>();
+        Set<String> explicitFields4_1 = new HashSet<String>();
+        CONFIG_MODE configMode4_2 = CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS;
+        Set<String> explicitTags4_2 = new HashSet(Arrays.asList("sometimeDoubleFlag", "sometimeBooleanFlag"));
+        Set<String> explicitFields4_2 = new HashSet<String>();
+        CONFIG_MODE configMode4_3 = CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS;
+        Set<String> explicitTags4_3 = new HashSet<String>();
+        Set<String> explicitFields4_3 = new HashSet(Arrays.asList("testBoolean"));
 
-        List<Map<Field, InfluxDBType>> measurement3 = new ArrayList<Map<Field, InfluxDBType>>();
+        List<Map<Field, InfluxDBType>> measurement4 = new ArrayList<Map<Field, InfluxDBType>>();
 
         point = new HashMap<Field, InfluxDBType>();
-        point.put(new Field("testTinyint", FieldType.INT, 1), InfluxDBType.BOOLEAN);
+        point.put(new Field("testTime", FieldType.INT, (float)1.0), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeDoubleFlag", FieldType.DOUBLE, 542361.8794), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeBooleanFlag", FieldType.BOOLEAN, true), InfluxDBType.BOOLEAN);
         point.put(new Field("testBoolean", FieldType.BOOLEAN, true), InfluxDBType.BOOLEAN);
-        measurement3.add(point);
+        measurement4.add(point);
 
         point = new HashMap<Field, InfluxDBType>();
-        point.put(new Field("testTinyint", FieldType.INT, 0), InfluxDBType.BOOLEAN);
+        point.put(new Field("testTime", FieldType.INT, (float)2.0), InfluxDBType.INTEGER);
+        point.put(new Field("sometimeDoubleFlag", FieldType.DOUBLE, 542361.8794), InfluxDBType.FLOAT);
+        point.put(new Field("sometimeBooleanFlag", FieldType.BOOLEAN, true), InfluxDBType.BOOLEAN);
         point.put(new Field("testBoolean", FieldType.BOOLEAN, false), InfluxDBType.BOOLEAN);
-        measurement3.add(point);
+        measurement4.add(point);
 
         Object[][] inputs = {
+                // Measurement0
                 {measurement0, measurement0Name, timeField0, format0, configMode0_0, explicitTags0_0, explicitFields0_0},
                 {measurement0, measurement0Name, timeField0, format0, configMode0_1, explicitTags0_1, explicitFields0_1},
-                {measurement1, measurement1Name, timeField1, format1, configMode1, explicitTags1, explicitFields1},
-                {measurement2, measurement2Name, timeField2, format2, configMode2, explicitTags2, explicitFields2},
-                {measurement3, measurement3Name, timeField3, format3, configMode3, explicitTags3, explicitFields3}
+                // Measurement1
+                {measurement1, measurement1Name, timeField1, format1, configMode1_0, explicitTags1_0, explicitFields1_0},
+                {measurement1, measurement1Name, timeField1, format1, configMode1_1, explicitTags1_1, explicitFields1_1},
+                {measurement1, measurement1Name, timeField1, format1, configMode1_2, explicitTags1_2, explicitFields1_2},
+                {measurement1, measurement1Name, timeField1, format1, configMode1_3, explicitTags1_3, explicitFields1_3},
+                // Measurement2
+                {measurement2, measurement2Name, timeField2, format2, configMode2_0, explicitTags2_0, explicitFields2_0},
+                {measurement2, measurement2Name, timeField2, format2, configMode2_1, explicitTags2_1, explicitFields2_1},
+                {measurement2, measurement2Name, timeField2, format2, configMode2_2, explicitTags2_2, explicitFields2_2},
+                {measurement2, measurement2Name, timeField2, format2, configMode2_3, explicitTags2_3, explicitFields2_3},
+                // Measurement3
+                {measurement3, measurement3Name, timeField3, format3, configMode3_0, explicitTags3_0, explicitFields3_0},
+                {measurement3, measurement3Name, timeField3, format3, configMode3_1, explicitTags3_1, explicitFields3_1},
+                {measurement3, measurement3Name, timeField3, format3, configMode3_2, explicitTags3_2, explicitFields3_2},
+                {measurement3, measurement3Name, timeField3, format3, configMode3_3, explicitTags3_3, explicitFields3_3},
+                // Measurement4
+                {measurement4, measurement4Name, timeField4, format4, configMode4_0, explicitTags4_0, explicitFields4_0},
+                {measurement4, measurement4Name, timeField4, format4, configMode4_1, explicitTags4_1, explicitFields4_1},
+                {measurement4, measurement4Name, timeField4, format4, configMode4_2, explicitTags4_2, explicitFields4_2},
+                {measurement4, measurement4Name, timeField4, format4, configMode4_3, explicitTags4_3, explicitFields4_3}
         };
 
         return inputs;
@@ -278,6 +405,7 @@ public class InfluxDBServiceTest {
         echo("InfluxDB test database cleared and prepared");
     }
 
+    // TODO: comment this annotation
     @Test
     @UseDataProvider("testBulkPutProvider")
     public void testBulkPut(List<Map<Field, InfluxDBType>> insertedAndExpectedPoints, String measurement,
@@ -693,9 +821,24 @@ public class InfluxDBServiceTest {
                         Assert.assertNotNull("Field " + expectedField + " not present in fieldIndex: " + fieldIndex, fieldIndex);
                         Object influxValue = influxPoint.get(fieldIndex);
                         Assert.assertNotNull("Influx field value for field " + expectedField + " should not be null", influxValue);
+
+                        // If we add a long, an integer or a float  into influxDB, at the end it alsways return a double
+                        // for numeric values so transform the expected value into double in this case
+                        if (expectedValue instanceof Integer)
+                        {
+                            expectedValue = new Double((int)expectedValue);
+                        } else if (expectedValue instanceof Long)
+                        {
+                            expectedValue = new Double((long)expectedValue);
+                        } else if (expectedValue instanceof Float)
+                        {
+                            expectedValue = new Double((float)expectedValue);
+                        }
+
                         if (!expectedValue.equals(influxValue))
                         {
-                            echo("\t\t-> not matching value for field " + expectedField);
+                            echo("\t\t-> not matching value (" + influxValue.getClass().getName() + ":" + influxValue + ") for field " + expectedField
+                            + "(" + expectedValue.getClass().getName() + ":" + expectedValue + ")");
                             break;
                         } else
                         {

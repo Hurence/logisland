@@ -195,7 +195,7 @@ public class InfluxDBUpdater implements Runnable {
                 switch (type)
                 {
                     case INTEGER:
-                        pointBuilder.addField(fieldName, (int)value);
+                        pointBuilder.addField(fieldName, (long)value);
                         break;
                     case FLOAT:
                         pointBuilder.addField(fieldName, (double)value);
