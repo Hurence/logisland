@@ -32,6 +32,7 @@ import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.NotImplementedException;
 import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDB.ConsistencyLevel;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Pong;
 
@@ -51,6 +52,8 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     private Map<String, Set<String>> fields = new HashMap<String, Set<String>>(); // Fields for each measurement: measurement -> set of fields
     private Map<String, List<Object>> timeFields = new HashMap<String, List<Object>>(); // Time fields for each measurement: measurement -> [timeField,TimeUnit]
     private CONFIG_MODE mode;
+    private ConsistencyLevel consistencyLevel;
+    private String retentionPolicy;
     private InfluxDBUpdater updater;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private long flushInterval;
@@ -215,6 +218,32 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
             .required(true)
             .build();
 
+    protected static final PropertyDescriptor CONSISTENCY_LEVEL = new PropertyDescriptor.Builder()
+            .name("influxdb.consistency_level")
+            .displayName("InfluxDB consistency level.")
+            .description("Determines the consistency level used to write points into InfluxDB. Possible values are: " +
+                    ConsistencyLevel.ANY + ", " + ConsistencyLevel.ONE + ", " + ConsistencyLevel.QUORUM + "and " +
+                    ConsistencyLevel.ALL + ". Default value is " + ConsistencyLevel.ANY + ". This is only useful when " +
+                    " using a clustered InfluxDB infrastructure.")
+            .allowableValues(
+                    ConsistencyLevel.ANY.toString(),
+                    ConsistencyLevel.ONE.toString(),
+                    ConsistencyLevel.QUORUM.toString(),
+                    ConsistencyLevel.ALL.toString())
+            .required(false)
+            .defaultValue(ConsistencyLevel.ANY.toString())
+            .build();
+
+    protected static final PropertyDescriptor RETENTION_POLICY = new PropertyDescriptor.Builder()
+            .name("influxdb.retention_policy")
+            .displayName("InfluxDB retention policy.")
+            .description("Determines the name of the retention policy to use. Defaults to autogen. The defined retention" +
+                    " policy must already be defined in the InfluxDB server.")
+            .defaultValue("autogen")
+            .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
+            .required(false)
+            .build();
+
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> descriptors = new ArrayList<>();
@@ -224,6 +253,8 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         descriptors.add(TAGS);
         descriptors.add(FIELDS);
         descriptors.add(MODE);
+        descriptors.add(CONSISTENCY_LEVEL);
+        descriptors.add(RETENTION_POLICY);
         descriptors.add(TIME_FIELD);
         descriptors.add(BATCH_SIZE);
         descriptors.add(FLUSH_INTERVAL);
@@ -253,6 +284,16 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     String getDatabase()
     {
         return database;
+    }
+
+    ConsistencyLevel getConsistencyLevel()
+    {
+        return consistencyLevel;
+    }
+
+    String getRetentionPolicy()
+    {
+        return retentionPolicy;
     }
 
     @Override
@@ -334,7 +375,19 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
             checkTagsOrFieldsTimeFieldCollision();
         }
 
-        // Hosts
+        // Consistency level
+        if (context.getPropertyValue(CONSISTENCY_LEVEL).isSet())
+        {
+            consistencyLevel = ConsistencyLevel.valueOf(context.getPropertyValue(CONSISTENCY_LEVEL).asString());
+        }
+
+        // Retention policy
+        if (context.getPropertyValue(RETENTION_POLICY).isSet())
+        {
+            retentionPolicy = context.getPropertyValue(RETENTION_POLICY).asString();
+        }
+
+        // Url
         String influxUrl = context.getPropertyValue(URL).asString();
 
         // Sanity checking

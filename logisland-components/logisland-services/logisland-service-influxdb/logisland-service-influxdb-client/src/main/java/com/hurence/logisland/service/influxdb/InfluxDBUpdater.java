@@ -170,6 +170,8 @@ public class InfluxDBUpdater implements Runnable {
     {
         BatchPoints pointsBatch = BatchPoints
                 .database(service.getDatabase())
+                .consistency(service.getConsistencyLevel())
+                .retentionPolicy(service.getRetentionPolicy())
                 .build();
 
         boolean endOfTestFound = false;

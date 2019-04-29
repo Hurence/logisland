@@ -354,7 +354,7 @@ public class InfluxDBServiceTest {
 
     private static void echo(String msg) {
         // Uncomment for debug
-        System.out.println(msg);
+//        System.out.println(msg);
     }
 
     @BeforeClass
@@ -405,8 +405,8 @@ public class InfluxDBServiceTest {
         echo("InfluxDB test database cleared and prepared");
     }
 
-    // TODO: comment this annotation
-    @Test
+    // Uncomment this annotation to enable this test (see top of this class)
+//    @Test
     @UseDataProvider("testBulkPutProvider")
     public void testBulkPut(List<Map<Field, InfluxDBType>> insertedAndExpectedPoints, String measurement,
                             String timeField, TimeUnit format, CONFIG_MODE configMode, Set<String> explicitTags,
