@@ -77,4 +77,112 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
+            https://www.baeldung.com/maven-integration-test
+            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            To run integration tests, run: mvn -Pintegration-tests clean verify -->
+            <id>integration-tests</id>
+            <properties> <!-- Integration tests properties -->
+                <influxdb.version>1.7-alpine</influxdb.version> <!-- InfluxDB docker image tag -->
+            </properties>
+            <build>
+                <plugins>
+                    <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- Workaround as described here:
+                            https://stackoverflow.com/questions/42082131/maven-surefire-verify-java-lang-classnotfoundexception
+                            We need to point to the logisland bits due to spring boot usage otherwise we get
+                             CalssNotFoundException in integration test -->
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${basedir}/../../../logisland-processors/logisland-processor-common/target/classes</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <!-- Force *IT.java naming pattern. Otherwise it would allow to have someone create a
+                            *Test.java test in the integration tests and it would also be executed by the surefire plugin
+                            in unit tests phase (test phase) and this would fail as by definition integration tests
+                            require additional resources (for instance docker container) that would not be launched.
+                             The surefire plugin de facto ignores *IT.java files as they are integration tests. We just
+                             want here to also use a separate folder from unit tests for integration tests using the
+                             build-helper-maven-plugin plugin -->
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin> <!-- Declare a separate source directory from unit tests one for integration tests -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-integration-test-source</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/integration-test/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin> <!-- Docker maven plugin will be launched at pre-integration-test and post-integration-test
+                         phases to start and stop docker images before and after integration tests run. Stop is called even
+                         if integration tests fail to anyway stop and remove every docker container -->
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.30.0</version>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>influxdb:${influxdb.version}</name>
+                                    <run>
+                                        <!-- Assign dynamically mapped ports to maven variables (which can be reused in integration tests) -->
+                                        <ports>
+                                            <port>8086:8086</port>
+                                        </ports>
+                                        <wait>
+                                            <!-- Check for this URL to return a 200 return code .... -->
+                                            <url>http://localhost:8086/debug/pprof</url>
+                                            <!-- ... but at max 2 minutes -->
+                                            <time>120000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

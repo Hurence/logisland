@@ -692,8 +692,6 @@
 
 
     <profiles>
-
-
         <!--    mvn -DperformRelease=true  clean deploy           -->
         <profile>
 
@@ -762,29 +760,6 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <!-- Performs execution of Integration Tests using the Maven FailSafe Plugin. The view of integration tests in this context
-            are those tests interfacing with external sources and services requiring additional resources or credentials that cannot
-            be explicitly provided. -->
-            <id>integration-tests</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
                                 </goals>
                             </execution>
                         </executions>

@@ -46,14 +46,11 @@ import com.hurence.logisland.service.influxdb.InfluxDBControllerService.CONFIG_M
 
 import static com.hurence.logisland.service.influxdb.InfluxDBControllerService.END_OF_TEST;
 
+/**
+ * InfluxDB service Integration Test
+ */
 @RunWith(DataProviderRunner.class)
-public class InfluxDBServiceTest {
-
-    // This test is disabled by default as it requires a docker influx db container
-    // To launch this test do:
-    // - Enable tests (uncomment @Test annotations)
-    // - Run docker image for InfluxDB: docker run -p 8086:8086 -v influxdb:/var/lib/influxdb influxdb
-    // - Run this test: "mvn -DfailIfNoTests=false [clean] test -Dtest=InfluxDBServiceTest"
+public class InfluxDBServiceIT {
 
     private final static String INFLUXDB_HOST = "172.17.0.2";
     private final static String INFLUXDB_PORT = "8086";
@@ -405,8 +402,7 @@ public class InfluxDBServiceTest {
         echo("InfluxDB test database cleared and prepared");
     }
 
-    // Uncomment this annotation to enable this test (see top of this class)
-//    @Test
+    @Test
     @UseDataProvider("testBulkPutProvider")
     public void testBulkPut(List<Map<Field, InfluxDBType>> insertedAndExpectedPoints, String measurement,
                             String timeField, TimeUnit format, CONFIG_MODE configMode, Set<String> explicitTags,
@@ -423,7 +419,7 @@ public class InfluxDBServiceTest {
         /**
          * NOTE: we always use explicit time field declaration as using record_time (which is the default if no time field
          * is specified with a measurement) will generate a lot of records with the same record_time which ends up with
-         * point being overwritten in InfluxDB. To prevent that, we force usage of a time field that we use in deifferent
+         * point being overwritten in InfluxDB. To prevent that, we force usage of a time field that we use in different
          * formats for testing purpose.
          */
         String explicitTagsConfigString = makeTagsConfigString(measurement, configMode, explicitTags);

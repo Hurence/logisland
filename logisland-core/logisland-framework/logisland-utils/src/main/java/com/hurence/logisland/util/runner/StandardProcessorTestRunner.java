@@ -339,7 +339,7 @@ public class StandardProcessorTestRunner implements TestRunner {
             //If it fails we ignore it as the unique purpose is to intialize identifier of service
             service.initialize(initContext);
         } catch (Exception ex) {
-            logger.error("Error during initialization", ex);
+            //logger.error("Error during initialization", ex);
         }
         //Needed to save given properties for next use
         //WARNING ! Must be after service.initialize(initContext) so that service identifier is correctly set
