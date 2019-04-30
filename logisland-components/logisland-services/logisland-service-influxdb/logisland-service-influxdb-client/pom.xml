@@ -90,7 +90,8 @@
             </properties>
             <build>
                 <plugins>
-                    <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
+                    <plugin> <!-- The configuration section here will be merged with the one already defined in the
+                     maven-failsafe-plugin of the root pom.xml. We just add this configuration here for the workaround -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
@@ -99,45 +100,10 @@
                             We need to point to the logisland bits due to spring boot usage otherwise we get
                              CalssNotFoundException in integration test -->
                             <additionalClasspathElements>
+                                <!-- For finding BulkPut -->
                                 <additionalClasspathElement>${basedir}/../../../logisland-processors/logisland-processor-common/target/classes</additionalClasspathElement>
                             </additionalClasspathElements>
-                            <!-- Force *IT.java naming pattern. Otherwise it would allow to have someone create a
-                            *Test.java test in the integration tests and it would also be executed by the surefire plugin
-                            in unit tests phase (test phase) and this would fail as by definition integration tests
-                            require additional resources (for instance docker container) that would not be launched.
-                             The surefire plugin de facto ignores *IT.java files as they are integration tests. We just
-                             want here to also use a separate folder from unit tests for integration tests using the
-                             build-helper-maven-plugin plugin -->
-                            <includes>
-                                <include>**/*IT.java</include>
-                            </includes>
                         </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin> <!-- Declare a separate source directory from unit tests one for integration tests -->
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>add-integration-test-source</id>
-                                <phase>generate-test-sources</phase>
-                                <goals>
-                                    <goal>add-test-source</goal>
-                                </goals>
-                                <configuration>
-                                    <sources>
-                                        <source>src/integration-test/java</source>
-                                    </sources>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin> <!-- Docker maven plugin will be launched at pre-integration-test and post-integration-test
                          phases to start and stop docker images before and after integration tests run. Stop is called even
