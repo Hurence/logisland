@@ -249,6 +249,7 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         List<PropertyDescriptor> descriptors = new ArrayList<>();
         descriptors.add(URL);
         descriptors.add(USER);
+        descriptors.add(DATABASE);
         descriptors.add(PASSWORD);
         descriptors.add(TAGS);
         descriptors.add(FIELDS);

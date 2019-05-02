@@ -438,11 +438,10 @@ public class InfluxDBServiceIT {
         runner.setProperty(service, InfluxDBControllerService.BATCH_SIZE.getName(), "500");
         runner.enableControllerService(service);
 
-        runner.assertNotValid();
-
         runner.setProperty("default.collection", "just required");
         runner.setProperty("datastore.client.service", "influxdb_service");
         runner.assertValid();
+        runner.assertValid(service);
 
         /**
          * Bulk insert records
