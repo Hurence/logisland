@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.hurence.logisland.service.influxdb.InfluxDBUpdater.InfluxDBType;
 import com.hurence.logisland.service.influxdb.InfluxDBControllerService.CONFIG_MODE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.hurence.logisland.service.influxdb.InfluxDBControllerService.END_OF_TEST;
 
@@ -51,6 +53,8 @@ import static com.hurence.logisland.service.influxdb.InfluxDBControllerService.E
  */
 @RunWith(DataProviderRunner.class)
 public class InfluxDBServiceIT {
+
+    private static Logger logger = LoggerFactory.getLogger(InfluxDBServiceIT.class);
 
     private final static String INFLUXDB_HOST = "172.17.0.2";
     private final static String INFLUXDB_PORT = "8086";
@@ -349,9 +353,9 @@ public class InfluxDBServiceIT {
         return inputs;
     }
 
-    private static void echo(String msg) {
-        // Uncomment for debug
-//        System.out.println(msg);
+    private static void debug(String msg) {
+
+        logger.debug(msg);
     }
 
     @BeforeClass
@@ -370,14 +374,14 @@ public class InfluxDBServiceIT {
             Assert.fail("Could not connect to InfluxDB (bad pong)");
         }
 
-        echo("Connected to InfluxDB");
+        debug("Connected to InfluxDB");
     }
 
     @AfterClass
     public static void disconnect() {
         if (influxDB != null)
             influxDB.close();
-        echo("Disconnected from InfluxDB");
+        debug("Disconnected from InfluxDB");
     }
 
     @Before
@@ -399,7 +403,7 @@ public class InfluxDBServiceIT {
         {
             Assert.fail("Error executing query [" +  query.getCommand() + "] : " + queryResult.getError());
         }
-        echo("InfluxDB test database cleared and prepared");
+        debug("InfluxDB test database cleared and prepared");
     }
 
     @Test
@@ -761,17 +765,17 @@ public class InfluxDBServiceIT {
         for (Series serie : result.getSeries())
         {
             String serieName = serie.getName();
-            echo("Checking serie: " + serieName);
+            debug("Checking serie: " + serieName);
             Assert.assertEquals("Unexpected serie name in result", measurement, serieName);
             Map<String, String> tags = serie.getTags();
-            echo("tags: " + tags);
+            debug("tags: " + tags);
             Assert.assertEquals("Unexpected tags in result", expectedTags, tags);
 
             /**
              * Compare points values with expected fields
              */
             List<String> columns = serie.getColumns();
-            echo("columns: " + columns);
+            debug("columns: " + columns);
 
             // First establish a map of field column name to its index in the values (so ignore tag columns)
             Map<String, Integer> fieldToIndex = new HashMap<String, Integer>();
@@ -802,10 +806,10 @@ public class InfluxDBServiceIT {
             {
                 boolean foundPoint = false;
                 // For each influx returned point, check each field value, if they all match, this is the expected point
-                echo("Looking for expected point: " + expectedPoint);
+                debug("Looking for expected point: " + expectedPoint);
                 for (List<Object> influxPoint : influxDbPoints)
                 {
-                    echo("\tcomparing with influx db point: " + influxPoint);
+                    debug("\tcomparing with influx db point: " + influxPoint);
                     int nMatchs = 0; // Number of field values that match in the current point
                     for (Map.Entry<String, Object> entry : expectedPoint.entrySet())
                     {
@@ -832,19 +836,19 @@ public class InfluxDBServiceIT {
 
                         if (!expectedValue.equals(influxValue))
                         {
-                            echo("\t\t-> not matching value (" + influxValue.getClass().getName() + ":" + influxValue + ") for field " + expectedField
+                            debug("\t\t-> not matching value (" + influxValue.getClass().getName() + ":" + influxValue + ") for field " + expectedField
                             + "(" + expectedValue.getClass().getName() + ":" + expectedValue + ")");
                             break;
                         } else
                         {
-                            echo("\t\t-> matching value for field " + expectedField);
+                            debug("\t\t-> matching value for field " + expectedField);
                             nMatchs++;
                         }
                     }
                     if (nMatchs == expectedPoint.size())
                     {
                         // All field values of this point match, go to next expected point
-                        echo("\t-> found matching point");
+                        debug("\t-> found matching point");
                         foundPoint = true;
                         break;
                     }
