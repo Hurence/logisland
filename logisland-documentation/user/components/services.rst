@@ -273,6 +273,7 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
    "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
    "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
    "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
    "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
