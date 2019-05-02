@@ -26,7 +26,15 @@ So you should be familiarized with this if you want to do some advanced document
 Modify auto generated documentation
 -----------------------------------
 
-To generate the documentation, just install the module
+To generate the documentation:
+
+Install from the root directory:
+
+.. code:: sh
+
+    mvn install -DskipTests
+
+Then to regenerate the documentation after some modifications:
 
 .. code:: sh
 
