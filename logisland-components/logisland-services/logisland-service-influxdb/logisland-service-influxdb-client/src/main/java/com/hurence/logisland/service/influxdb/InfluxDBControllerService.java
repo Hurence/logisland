@@ -421,103 +421,83 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
                     .explanation("User name provided without password.")
                     .build());
         }
-
-        if (!context.getPropertyValue(DATABASE).isSet())
-        {
-            problems.add(new ValidationResult.Builder()
-                    .valid(false)
-                    .subject(this.getClass().getSimpleName())
-                    .explanation("Database not provided.")
-                    .build());
-        }
-
-        if (!context.getPropertyValue(MODE).isSet())
-        {
-            problems.add(new ValidationResult.Builder()
-                    .valid(false)
-                    .subject(this.getClass().getSimpleName())
-                    .explanation("Configuration mode not .")
-                    .build());
-        } else
-        {
             mode = CONFIG_MODE.fromValue(context.getPropertyValue(MODE).asString());
 
-            // Parse tags and fields according to defined configuration mode
-            switch (mode)
-            {
-                case EXPLICIT_TAGS_AND_FIELDS:
-                    if (!context.getPropertyValue(TAGS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
-                                .build());
-                    }
-                    if (!context.getPropertyValue(FIELDS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
-                                .build());
-                    }
-                    break;
-                case ALL_AS_FIELDS:
-                    if (context.getPropertyValue(TAGS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
-                                .build());
-                    }
-                    if (context.getPropertyValue(FIELDS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
-                                .build());
-                    }
-                    break;
-                case ALL_AS_TAGS_BUT_EXPLICIT_FIELDS:
-                    if (context.getPropertyValue(TAGS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
-                                .build());
-                    }
-                    if (!context.getPropertyValue(FIELDS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
-                                .build());
-                    }
-                    break;
-                case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
-                    if (!context.getPropertyValue(TAGS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
-                                .build());
-                    }
-                    if (context.getPropertyValue(FIELDS).isSet())
-                    {
-                        problems.add(new ValidationResult.Builder()
-                                .valid(false)
-                                .subject(this.getClass().getSimpleName())
-                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
-                                .build());
-                    }
-                    break;
-            }
+        // Parse tags and fields according to defined configuration mode
+        switch (mode)
+        {
+            case EXPLICIT_TAGS_AND_FIELDS:
+                if (!context.getPropertyValue(TAGS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
+                            .build());
+                }
+                if (!context.getPropertyValue(FIELDS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
+                            .build());
+                }
+                break;
+            case ALL_AS_FIELDS:
+                if (context.getPropertyValue(TAGS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
+                            .build());
+                }
+                if (context.getPropertyValue(FIELDS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
+                            .build());
+                }
+                break;
+            case ALL_AS_TAGS_BUT_EXPLICIT_FIELDS:
+                if (context.getPropertyValue(TAGS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
+                            .build());
+                }
+                if (!context.getPropertyValue(FIELDS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
+                            .build());
+                }
+                break;
+            case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
+                if (!context.getPropertyValue(TAGS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
+                            .build());
+                }
+                if (context.getPropertyValue(FIELDS).isSet())
+                {
+                    problems.add(new ValidationResult.Builder()
+                            .valid(false)
+                            .subject(this.getClass().getSimpleName())
+                            .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
+                            .build());
+                }
+                break;
         }
         return problems;
     }

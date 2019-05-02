@@ -517,7 +517,9 @@ public class InfluxDBServiceIT {
                         CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
                 //     Missing database
                 {false, "url", null, "user", "password", "cpu:timeField,DAYS", "retentionPolicy", "ANY",
-                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"}
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
+                {false, "url", "database", null, null, "cpu:timeField,DAYS", "retentionPolicy", "ONE",
+                        CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS, "cpu:tag1,tag2", null},
         };
 
         return inputs;
@@ -564,14 +566,15 @@ public class InfluxDBServiceIT {
             runner.assertValid(service);
         } else
         {
-            boolean validConfiguration = true;
-            try {
-                runner.assertValid(service);
-            } catch(Throwable t)
-            {
-                validConfiguration = false;
-            }
-            Assert.assertFalse("Configuration is valid but should not", validConfiguration);
+            runner.assertNotValid(service);
+//            boolean validConfiguration = true;
+//            try {
+//                runner.assertValid(service);
+//            } catch(Throwable t)
+//            {
+//                validConfiguration = false;
+//            }
+//            Assert.assertFalse("Configuration is valid but should not", validConfiguration);
         }
     }
 
