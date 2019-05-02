@@ -356,10 +356,8 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertNotValid(final ControllerService service) {
 
-
-        final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
+        final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
         final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
-
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
                 return;
@@ -371,7 +369,6 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertValid(final ControllerService service) {
         final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
-
         final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
@@ -423,7 +420,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         final Map<PropertyDescriptor, String> curProps = configuration.getProperties();
         final Map<PropertyDescriptor, String> updatedProps = new HashMap<>(curProps);
 
-        final ValidationContext validationContext = new MockValidationContext(context,  variableRegistry).getControllerServiceValidationContext(service);
         final ValidationResult validationResult = property.validate(value/*, validationContext*/);
 
         final String oldValue = updatedProps.get(property);
