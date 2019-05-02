@@ -3,45 +3,45 @@
 Documentation Guide
 ===================
 
-Here we will describe you how the doc in logisland is build and how to modify it.
+Here we will describe you how the documentation in logisland is built and how to modify it.
 
 Introduction
 ------------
 
-The documentation in logisland is handled by **logisland-documentation** module which build
-the automated part of the doc. That is why you should correctly annotate your components when developing.
+The documentation in logisland is handled by **logisland-documentation** module which builds
+the automated part of the documentation. That is why you should correctly annotate your components when developing.
 
-All *.rst* files in this module are used to build the doc. We use *Sphinx* and *https://readthedocs.org/* for that.
+All *.rst* files in this module are used to build the documentation. We use *Sphinx* and *https://readthedocs.org/* for that.
 
-So in order to change the documentation you must change these files. But do not modify files that are automatically generated !
+So in order to change the documentation you must change these files. But do not modify files that are automatically generated!
 The auto generated files are in the **components** directory. (Except for the index files)
 
 Modify the hard coded documentation
 -----------------------------------
 
-We use ReStructuredText format for writing the doc. Then we generate html pages with `Sphinx <http://www.sphinx-doc.org>`_.
-So you should be familiarized with this if you wants to do some advanced docs. Otherwise you can just modify files for minor changes.
+We use ReStructuredText format for writing the documentation. Then we generate html pages with `Sphinx <http://www.sphinx-doc.org>`_.
+So you should be familiarized with this if you want to do some advanced documentation. Otherwise you can just modify files for minor changes.
 
 
 Modify auto generated documentation
 -----------------------------------
 
-To generate generated documentation, just install the module
+To generate the documentation, just install the module
 
 .. code:: sh
 
     cd logisland-documentation
     mvn install -DskipTests
 
-By default, it will build all components  doc.
-At the moment you must commit any modification to those files in order for it to appear on online documentation.
+By default, it will build all components documentation.
+At this moment you must commit any modification to those files in order for it to appear on online documentation.
 
 .. _components-annotations:
 
 Annotation of ConfigurableComponent
 +++++++++++++++++++++++++++++++++++
 
-The auto generated documentation use annotation in code.
+The auto generated documentation uses annotation in code.
 So be sure to add below anotations in every Component you develop.
 
 Tags
@@ -53,7 +53,7 @@ but you should still mention those tags for future use.
 CapabilityDescription
 #####################
 
-This tag is used to describe the components. It should be in *.rst* format and too long. For long text please use :ref:`components-annotations-extradetailfile`
+This tag is used to describe the components. It should be in *.rst* format and not too long. For long text please use :ref:`components-annotations-extradetailfile`
 
 DynamicProperty
 ###############
@@ -74,7 +74,7 @@ Means :
 
 * that the name of the property will be the name of a new field created in record.
 * that the value specified can support or not expression language.
-* that the value will be the used as value for the new property.
+* that the value will be the one used as value for the new property.
 * you can add a general description as well.
 
 DynamicProperties
@@ -126,12 +126,12 @@ It should be a relative path, the root is ./logisland-documentation/user/compone
 
     @ExtraDetailFile("./details/common-processors/AddFields-Detail.rst")
 
-Be sure to create needed subfolder if not already exist.
+Be sure to create the needed subfolders if they not already exist.
 
 ConfigurableComponent Method used
 +++++++++++++++++++++++++++++++++
 
-Each components is instantiated as a ConfigurableComponent, then we use the method :
+Each component is instantiated as a ConfigurableComponent, then we use the method :
 
 .. code:: java
 
@@ -141,10 +141,10 @@ To add information about evey supported property by the component.
 
 .. _dev-add-doc-of-comp:
 
-Add a ConfigurableComponent in the auto generate documentation
---------------------------------------------------------------
+Add a ConfigurableComponent in the auto generated documentation
+---------------------------------------------------------------
 
-We have a java job **DocGenerator** which generate documentation about ConfigurableComponent in the classpath of the JVM.
+We have a java job **DocGenerator** which generates documentation about ConfigurableComponent in the classpath of the JVM.
 Here the usage of the job :
 
 .. code:: sh
@@ -211,7 +211,7 @@ For example :
         </goals>
     </execution>
 
-Will generate documentation for all service specified. You can just add your module in there. Then generate docs with
+Will generate documentation for all specified services. You can just add your module in there. Then generate docs with
 
 .. code:: sh
 
