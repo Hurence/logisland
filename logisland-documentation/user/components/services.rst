@@ -85,7 +85,6 @@ In the list below, the names of required properties appear in **bold**. Any othe
    "cassandra.credentials.user", "The user name to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
    "cassandra.credentials.password", "The user password to use for authentication. cassandra.with-credentials must be true for that property to be used.", "", "null", "false", "false"
    "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
-   "bulk.size", "bulk size in MB", "", "5", "false", "false"
    "flush.interval", "flush interval in ms", "", "500", "false", "false"
 
 Extra informations
@@ -238,6 +237,52 @@ Dynamic Properties allow the user to specify both the name and value of a proper
    :escape: \
 
    "The name of an HBase configuration property.", "The value of the given HBase configuration property.", "These properties will be set on the HBase configuration after loading any provided configuration files.", "", "null", false
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.influxdb.InfluxDBControllerService: 
+
+InfluxDBControllerService
+-------------------------
+Provides a controller service that for the moment only allows to bulkput records into influxdb.
+
+Module
+______
+com.hurence.logisland:logisland-service-influxdb-client:1.1.2
+
+Class
+_____
+com.hurence.logisland.service.influxdb.InfluxDBControllerService
+
+Tags
+____
+influxdb, service, time series
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values.
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**influxdb.url**", "InfluxDB connection url", "", "null", "false", "false"
+   "influxdb.user", "The user name to use for authentication.", "", "null", "false", "false"
+   "**influxdb.database**", "InfluxDB database name", "", "null", "false", "false"
+   "influxdb.password", "The user password to use for authentication.", "", "null", "false", "false"
+   "influxdb.tags", "List of tags for each supported measurement.  Syntax: <measurement>:<tag>[,<tag>]...[;<measurement>:<tag>,[<tag>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 tags: core1 and core2 and the mem measurement has 1 tag: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_fields_but_explicit_tags.", "", "null", "false", "false"
+   "influxdb.fields", "List of fields for each supported measurement.  Syntax: <measurement>:<field>[,<field>]...[;<measurement>:<field>,[<field>]]... Example: cpu:core1,core2;mem:used : in this example, the cpu measurement has 2 fields: core1 and core2 and the mem measurement has 1 field: used. This must only be set if configuration mode is explicit_tags_and_fields or all_as_tags_but_explicit_fields.", "", "null", "false", "false"
+   "**influxdb.configuration_mode**", "Determines the way fields and tags are chosen from the logisland record. Possible values and meaning: explicit_tags_and_fields: only logisland record fields listed in influxdb.tags and influxdb.fields will be inserted into InfluxDB with the explicit type. all_as_fields: all available logisland record fields will be inserted into  InfluxDB as fields. all_as_tags_but_explicit_fields: all available logisland record fields will be inserted into  InfluxDB as tags except those listed in influxdb.fields that will be inserted into InfluxDB as fields. all_as_fields_but_explicit_tags: all available logisland record fields will be inserted into  InfluxDB as fields except those listed in influxdb.tags that will be inserted into InfluxDB as tags", "explicit_tags_and_fields, all_as_fields, all_as_fields_but_explicit_tags, all_as_tags_but_explicit_fields", "null", "false", "false"
+   "influxdb.consistency_level", "Determines the consistency level used to write points into InfluxDB. Possible values are: ANY, ONE, QUORUMand ALL. Default value is ANY. This is only useful when  using a clustered InfluxDB infrastructure.", "ANY, ONE, QUORUM, ALL", "ANY", "false", "false"
+   "influxdb.retention_policy", "Determines the name of the retention policy to use. Defaults to autogen. The defined retention policy must already be defined in the InfluxDB server.", "", "autogen", "false", "false"
+   "influxdb.timefield", "Time field for each supported measurement.  Syntax: <measurement>:<field>,<format>...[;<measurement>:<field>,<format>]... With format being any constant defined in  java.util.concurrent.TimeUnit enum: DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS or SECONDS. Example: cpu:time,NANOSECONDS;mem:timeStamp,MILLISECONDS In this example: for the cpu measurement, the time for the influx DB point matching the record will be the value of the time field that represents nanoseconds. For the mem measurement, the time for the influx DB point matching the record will be the value of the timeStamp field that represents milliseconds.  Any measurement for which the time field is not defined will use the content of the record_time technical field as the time (which is a number of milliseconds since epoch).", "", "null", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "flush.interval", "flush interval in ms", "", "500", "false", "false"
 
 Extra informations
 __________________

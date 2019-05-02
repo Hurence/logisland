@@ -40,16 +40,12 @@ import static com.hurence.logisland.service.cassandra.CassandraControllerService
 import static org.junit.Assert.assertEquals;
 
 @RunWith(DataProviderRunner.class)
-public class CassandraServiceTest {
+public class CassandraServiceIT {
 
     // Embedded cassandra server maven plugin instance connect info
 
     private final static String CASSANDRA_HOST = "localhost";
     private final static String CASSANDRA_PORT = "19042";
-
-    // Use these ones instead if you want to use the "docker cassandra start" instead of embedded cassandra server maven plugin instance
-    // Or use "mvn -DfailIfNoTests=false [clean] test -Dtest=CassandraServiceTest" If want to use embedded
-    // cassandra server maven plugin running only this test out of the IDE
 
     // If you want to run these test with IDE tou can use cassandra docker images, running it with this command :
     // sudo docker run -i -p 19042:9042 cassandra
@@ -611,7 +607,7 @@ public class CassandraServiceTest {
         runner.assertNotValid();
 
         runner.setProperty("default.collection", "just required");
-        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.setProperty("datastore.client.service", "cassandra_service");
         runner.assertValid();
 
         /**
@@ -668,7 +664,7 @@ public class CassandraServiceTest {
         runner.assertNotValid();
 
         runner.setProperty("default.collection", "just required");
-        runner.setProperty("datastore.client.service", "com.hurence.logisland.processor.datastore.BulkPut");
+        runner.setProperty("datastore.client.service", "cassandra_service");
         runner.assertValid();
         runner.enableControllerService(service);
 

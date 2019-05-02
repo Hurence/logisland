@@ -692,8 +692,6 @@
 
 
     <profiles>
-
-
         <!--    mvn -DperformRelease=true  clean deploy           -->
         <profile>
 
@@ -769,29 +767,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <!-- Performs execution of Integration Tests using the Maven FailSafe Plugin. The view of integration tests in this context
-            are those tests interfacing with external sources and services requiring additional resources or credentials that cannot
-            be explicitly provided. -->
-            <id>integration-tests</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <!-- Checks style and licensing requirements. This is a good idea to run
             for contributions and for the release process. While it would be nice to
@@ -829,6 +804,58 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
+            https://www.baeldung.com/maven-integration-test
+            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            To run integration tests, run: mvn -Pintegration-tests clean verify -->
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin> <!-- Failsafe plugin is maven plugin for integration tests -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- Force *IT.java naming pattern. Otherwise it would allow to have someone create a
+                            *Test.java test in the integration tests and it would also be executed by the surefire plugin
+                            in unit tests phase (test phase) and this would fail as by definition integration tests
+                            require additional resources (for instance docker container) that would not be launched.
+                             The surefire plugin de facto ignores *IT.java files as they are integration tests. We just
+                             want here to also use a separate folder from unit tests for integration tests using the
+                             build-helper-maven-plugin plugin -->
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin> <!-- Declare a separate source directory from unit tests one for integration tests -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-integration-test-source</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/integration-test/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
-
 </project>

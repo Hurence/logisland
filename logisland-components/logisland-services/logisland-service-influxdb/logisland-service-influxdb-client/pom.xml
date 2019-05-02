@@ -6,45 +6,30 @@
 
     <parent>
         <groupId>com.hurence.logisland</groupId>
-        <artifactId>logisland-service-cassandra</artifactId>
+        <artifactId>logisland-service-influxdb</artifactId>
         <version>1.1.2</version>
     </parent>
 
-    <artifactId>logisland-service-cassandra-client</artifactId>
+    <artifactId>logisland-service-influxdb-client</artifactId>
     <packaging>jar</packaging>
 
-    <name>Cassandra 3 Service Plugin</name>
-    <description>Implementation of the cassandra service api</description>
+    <name>InfluxDB Service Plugin</name>
+    <description>Implementation of the influxdb service api</description>
 
     <properties>
-        <cassandra.driver.version>3.5.1</cassandra.driver.version>
+        <influx.client.version>2.15</influx.client.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>${cassandra.driver.version}</version>
-            <classifier>shaded</classifier>
-            <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>${influx.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-cassandra-api</artifactId>
+            <artifactId>logisland-service-influxdb-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.9.9</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -68,13 +53,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
-        </dependency>
-
-
     </dependencies>
     <build>
         <plugins>
@@ -95,6 +73,7 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+
             </plugin>
         </plugins>
     </build>
@@ -106,6 +85,9 @@
             If you need additional stuff like resources for the integration tests, please this page to know how to do it.
             To run integration tests, run: mvn -Pintegration-tests clean verify -->
             <id>integration-tests</id>
+            <properties> <!-- Integration tests properties -->
+                <influxdb.version>1.7-alpine</influxdb.version> <!-- InfluxDB docker image tag -->
+            </properties>
             <build>
                 <plugins>
                     <plugin> <!-- The configuration section here will be merged with the one already defined in the
@@ -123,27 +105,12 @@
                             </additionalClasspathElements>
                         </configuration>
                     </plugin>
-                    <plugin> <!-- Cassandra maven plugin will be launched at pre-integration-test and post-integration-test
-                         phases to start and stop cassandra before and after integration tests run. Stop is called even
+                    <plugin> <!-- Docker maven plugin will be launched at pre-integration-test and post-integration-test
+                         phases to start and stop docker images before and after integration tests run. Stop is called even
                          if integration tests fail to anyway stop and remove every docker container -->
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>cassandra-maven-plugin</artifactId>
-                        <version>3.6</version>
-                        <dependencies> <!-- be sure to use the targeted cassandra version -->
-                            <dependency>
-                                <groupId>org.apache.cassandra</groupId>
-                                <artifactId>cassandra-all</artifactId>
-                                <version>3.5</version>
-                            </dependency>
-                        </dependencies>
-                        <configuration>
-                            <rpcPort>19160</rpcPort>
-                            <jmxPort>17199</jmxPort>
-                            <storagePort>17000</storagePort>
-                            <stopPort>18081</stopPort>
-                            <startNativeTransport>true</startNativeTransport>
-                            <nativeTransportPort>19042</nativeTransportPort>
-                        </configuration>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.30.0</version>
                         <executions>
                             <execution>
                                 <id>start</id>
@@ -160,6 +127,25 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>influxdb:${influxdb.version}</name>
+                                    <run>
+                                        <!-- Assign dynamically mapped ports to maven variables (which can be reused in integration tests) -->
+                                        <ports>
+                                            <port>8086:8086</port>
+                                        </ports>
+                                        <wait>
+                                            <!-- Check for this URL to return a 200 return code .... -->
+                                            <url>http://localhost:8086/debug/pprof</url>
+                                            <!-- ... but at max 2 minutes -->
+                                            <time>120000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

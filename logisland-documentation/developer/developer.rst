@@ -165,22 +165,46 @@ Building
 
 The following commands must be run from the top-level directory.
 
-.. code-block:: sh
-
-    mvn install
-
-Would build a light version of logisland with only common processors installed.
-
+To build a light version of logisland with only common processors installed, run the unit tests and integration tests:
 
 .. code-block:: sh
 
-    mvn install -Pfull
+    mvn -Pintegration-tests install
 
-Would build a heavy version of logisland with all logisland plugins installed.
+To build a heavy version of logisland with all logisland plugins installed, run the unit tests and integration tests:
 
-If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line.
 
-If you wish to add all the plugins to the build you can do this by adding `-Pfull` to the command line.
+.. code-block:: sh
+
+    mvn -P full,integration-tests install
+
+If you wish to run unit tests and integration tests, no more, use the maven 'verify' phase instead of 'install'
+
+If you wish to skip the unit as well as integration tests you can do this by adding `-DskipTests` to the command line.
+
+If you wish to skip the integration tests, remove the 'integration-tests' profile.
+
+If you wish to add all the plugins to the build, add the 'full' profile.
+
+Unit tests and integration tests guidelines
+-------------------------------------------
+
+While unit tests do only use logisland libraries, integration tests are tests that make interactions between logisland
+and some external systems. For instance, all tests effectively pushing records to external databases from a logisland
+datastore service are integration tests. They require for instance a docker container running for the database being
+automatically launched and stopped for the integration tests.
+
+Do your unit tests in the traditional maven test directory of your component. Integration tests must however be placed
+in a separate folder named integration-test, at the same level of the unit tests test folder. The integration test
+classes should respect the *IT.java naming pattern.
+
+The failsafe maven plugin responsible for launching the integration tests (at the integration-test maven phase) is
+already defined in the root pom.xml. You must however add an integration-tests profile in the pom.xml of your component
+to add the logic for launching and stopping your external system.
+
+For instance to launch a docker container at the pre-integration-test maven phase and to stop it at the
+post-integration-test maven phase, use the io.fabric8/docker-maven-plugin maven plugin in your integration-tests profile.
+For a complete exemple of integration-tests profile declaration, please see and copy what has been done in the influxdb service.
 
 Release to maven repositories
 -----------------------------
