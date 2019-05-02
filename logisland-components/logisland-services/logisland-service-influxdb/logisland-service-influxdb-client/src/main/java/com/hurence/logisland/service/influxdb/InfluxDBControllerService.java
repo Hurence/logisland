@@ -30,6 +30,8 @@ import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.lang3.NotImplementedException;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.ConsistencyLevel;
@@ -43,7 +45,6 @@ import java.util.concurrent.*;
 @CapabilityDescription(
         "Provides a controller service that for the moment only allows to bulkput records into influxdb."
 )
-// TODO: use the new @ExtraDetailFile annotation instead?
 public class InfluxDBControllerService extends AbstractControllerService implements InfluxDBClientService {
 
     private InfluxDB influxDB; // Client object
@@ -58,7 +59,7 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private long flushInterval;
     final BlockingQueue<RecordToIndex> queue = new ArrayBlockingQueue<>(100000);
-    volatile boolean stillSomeRecords = false; // Unit tests only code
+    volatile boolean stillSomeRecords = false; // tests only code
 
     /**
      * Holds a record to index and its meta data
@@ -306,66 +307,24 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         super.init(context);
 
         // Database
-        if (!context.getPropertyValue(DATABASE).isSet())
-        {
-            throw new InitializationException("Database not provided");
-        }
         database = context.getPropertyValue(DATABASE).asString();
 
         // Configuration mode
-        if (!context.getPropertyValue(MODE).isSet())
-        {
-            throw new InitializationException("Configuration mode not provided");
-        }
         mode = CONFIG_MODE.fromValue(context.getPropertyValue(MODE).asString());
 
         // Parse tags and fields according to defined configuration mode
         switch (mode)
         {
             case EXPLICIT_TAGS_AND_FIELDS:
-                if (!context.getPropertyValue(TAGS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.");
-                }
                 parseTags(context.getPropertyValue(TAGS).asString());
-                if (!context.getPropertyValue(FIELDS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.");
-                }
                 parseFields(context.getPropertyValue(FIELDS).asString());
                 checkTagsAndFieldsForDuplicates();
                 break;
-            case ALL_AS_FIELDS:
-                if (context.getPropertyValue(TAGS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.");
-                }
-                if (context.getPropertyValue(FIELDS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.");
-                }
-                break;
             case ALL_AS_TAGS_BUT_EXPLICIT_FIELDS:
-                if (context.getPropertyValue(TAGS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.");
-                }
-                if (!context.getPropertyValue(FIELDS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.");
-                }
                 parseFields(context.getPropertyValue(FIELDS).asString());
                 break;
             case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
-                if (!context.getPropertyValue(TAGS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.");
-                }
                 parseTags(context.getPropertyValue(TAGS).asString());
-                if (context.getPropertyValue(FIELDS).isSet())
-                {
-                    throw new InitializationException("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.");
-                }
                 break;
         }
 
@@ -390,16 +349,6 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
 
         // Url
         String influxUrl = context.getPropertyValue(URL).asString();
-
-        // Sanity checking
-        if (context.getPropertyValue(PASSWORD).isSet() && !context.getPropertyValue(USER).isSet())
-        {
-            throw new InitializationException("Password provided without user name");
-        }
-        if (!context.getPropertyValue(PASSWORD).isSet() && context.getPropertyValue(USER).isSet())
-        {
-            throw new InitializationException("User name provided without password");
-        }
 
         String influxUserName = null;
         if (context.getPropertyValue(USER).isSet())
@@ -448,6 +397,129 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         getLogger().info("Connected to InfluxDB: " + pong);
 
         startUpdater(context);
+    }
+
+    @Override
+    protected Collection<ValidationResult> customValidate(ValidationContext context) {
+
+        final List<ValidationResult> problems = new ArrayList<>();
+
+        // Sanity checking
+        if (context.getPropertyValue(PASSWORD).isSet() && !context.getPropertyValue(USER).isSet())
+        {
+            problems.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(this.getClass().getSimpleName())
+                    .explanation("Password provided without user name.")
+                    .build());
+        }
+        if (!context.getPropertyValue(PASSWORD).isSet() && context.getPropertyValue(USER).isSet())
+        {
+            problems.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(this.getClass().getSimpleName())
+                    .explanation("User name provided without password.")
+                    .build());
+        }
+
+        if (!context.getPropertyValue(DATABASE).isSet())
+        {
+            problems.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(this.getClass().getSimpleName())
+                    .explanation("Database not provided.")
+                    .build());
+        }
+
+        if (!context.getPropertyValue(MODE).isSet())
+        {
+            problems.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject(this.getClass().getSimpleName())
+                    .explanation("Configuration mode not .")
+                    .build());
+        } else
+        {
+            mode = CONFIG_MODE.fromValue(context.getPropertyValue(MODE).asString());
+
+            // Parse tags and fields according to defined configuration mode
+            switch (mode)
+            {
+                case EXPLICIT_TAGS_AND_FIELDS:
+                    if (!context.getPropertyValue(TAGS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
+                                .build());
+                    }
+                    if (!context.getPropertyValue(FIELDS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
+                                .build());
+                    }
+                    break;
+                case ALL_AS_FIELDS:
+                    if (context.getPropertyValue(TAGS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
+                                .build());
+                    }
+                    if (context.getPropertyValue(FIELDS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
+                                .build());
+                    }
+                    break;
+                case ALL_AS_TAGS_BUT_EXPLICIT_FIELDS:
+                    if (context.getPropertyValue(TAGS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to not be set.")
+                                .build());
+                    }
+                    if (!context.getPropertyValue(FIELDS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to be set.")
+                                .build());
+                    }
+                    break;
+                case ALL_AS_FIELDS_BUT_EXPLICIT_TAGS:
+                    if (!context.getPropertyValue(TAGS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + TAGS.getName() + " to be set.")
+                                .build());
+                    }
+                    if (context.getPropertyValue(FIELDS).isSet())
+                    {
+                        problems.add(new ValidationResult.Builder()
+                                .valid(false)
+                                .subject(this.getClass().getSimpleName())
+                                .explanation("Configuration mode " + mode + " requires " + FIELDS.getName() + " to not be set.")
+                                .build());
+                    }
+                    break;
+            }
+        }
+        return problems;
     }
 
     /**
@@ -702,9 +774,9 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         }
     }
 
-    // Note: we use the @OnDisabled facility here so that unit test can call proper disconnection with
+    // Note: we use the @OnDisabled facility here so that test can call proper disconnection with
     // runner.disableControllerService(service); runner has no stopControllerService(service)
-    // This service does not however currently supports disable/enable out of unit test
+    // This service does not however currently supports disable/enable out of test
     @OnDisabled
     @OnStopped
     public final void stop() {
@@ -795,7 +867,7 @@ public class InfluxDBControllerService extends AbstractControllerService impleme
         return false;
     }
 
-    // Special collection name used in unit test to know when the last record of the test is treated
+    // Special collection name used in test to know when the last record of the test is treated
     public static final String END_OF_TEST = "endoftest";
 
     /**

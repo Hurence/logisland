@@ -464,6 +464,117 @@ public class InfluxDBServiceIT {
         runner.disableControllerService(service); // Disconnect service from influxdb
     }
 
+    @DataProvider
+    public static Object[][] testConfigProvider() {
+
+        Object[][] inputs = {
+                // Valid configurations
+                //     Mode, tags and fields
+                {true, "url", "database", "user", "password", "cpu:timeField,DAYS", "retentionPolicy", "ANY",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
+                {true, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1,tag2", "cpu:field1,field2"},
+                {true, "url", "database", "user", "password", "cpu:timeField,DAYS", "retentionPolicy", "ALL",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1,tag2", "cpu:field1,field2"},
+                //     Empty credentials
+                {true, "url", "database", null, null, "cpu:timeField,DAYS", "retentionPolicy", "ONE",
+                        CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS, "cpu:tag1,tag2", null},
+                {true, "url", "database", null, null, "cpu:timeField,DAYS", "retentionPolicy", "ONE",
+                        CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS, null, "cpu:field1,field2"},
+                {true, "url", "database", null, null, "cpu:timeField,DAYS", "retentionPolicy", "ONE",
+                        CONFIG_MODE.ALL_AS_FIELDS, null, null},
+                // Invalid configurations
+                //     Mode, tags and fields
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1,tag2", null},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, null, "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, null, null},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_FIELDS, null, "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_FIELDS, "cpu:tag1,tag2", "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS, "cpu:tag1,tag2", "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS, "cpu:tag1,tag2", null},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_TAGS_BUT_EXPLICIT_FIELDS, null, null},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS, "cpu:tag1,tag2", "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS, null, "cpu:field1,field2"},
+                {false, "url", "database", "user", "password", "cpu:timeField,MILLISECONDS", "retentionPolicy", "QUORUM",
+                        CONFIG_MODE.ALL_AS_FIELDS_BUT_EXPLICIT_TAGS, null, null},
+                //     Wrong credentials
+                {false, "url", "database", null, "password", "cpu:timeField,DAYS", "retentionPolicy", "ANY",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
+                {false, "url", "database", "user", null, "cpu:timeField,DAYS", "retentionPolicy", "ANY",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
+                //     Missing url
+                {false, null, "database", "user", "password", "cpu:timeField,DAYS", "retentionPolicy", "ANY",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"},
+                //     Missing database
+                {false, "url", null, "user", "password", "cpu:timeField,DAYS", "retentionPolicy", "ANY",
+                        CONFIG_MODE.EXPLICIT_TAGS_AND_FIELDS, "cpu:tag1", "cpu:field1"}
+        };
+
+        return inputs;
+    }
+
+    @Test
+    @UseDataProvider("testConfigProvider")
+    public void testConfig(boolean valid, String url, String database, String user, String password, String timeField,
+                                  String retentionPolicy, String consistencyLevel, CONFIG_MODE configMode, String tags,
+                                  String fields)
+            throws InitializationException {
+
+        final TestRunner runner = TestRunners.newTestRunner("com.hurence.logisland.processor.datastore.BulkPut");
+
+        final InfluxDBControllerService service = new InfluxDBControllerService();
+        runner.addControllerService("influxdb_service", service);
+        if (url!=null)
+            runner.setProperty(service, InfluxDBControllerService.URL.getName(), url);
+        if (database!=null)
+            runner.setProperty(service, InfluxDBControllerService.DATABASE.getName(), database);
+        if (user!=null)
+            runner.setProperty(service, InfluxDBControllerService.USER.getName(), user);
+        if (password!=null)
+            runner.setProperty(service, InfluxDBControllerService.PASSWORD.getName(), password);
+        runner.setProperty(service, InfluxDBControllerService.MODE.getName(), configMode.toString());
+        if (tags!=null)
+            runner.setProperty(service, InfluxDBControllerService.TAGS.getName(), tags);
+        if (fields!=null)
+            runner.setProperty(service, InfluxDBControllerService.FIELDS.getName(), fields);
+        if (timeField!=null)
+            runner.setProperty(service, InfluxDBControllerService.TIME_FIELD.getName(), timeField);
+        if (retentionPolicy!=null)
+            runner.setProperty(service, InfluxDBControllerService.RETENTION_POLICY.getName(), retentionPolicy);
+        if (consistencyLevel!=null)
+            runner.setProperty(service, InfluxDBControllerService.CONSISTENCY_LEVEL.getName(), consistencyLevel);
+        runner.setProperty(service, InfluxDBControllerService.FLUSH_INTERVAL.getName(), "1000");
+        runner.setProperty(service, InfluxDBControllerService.BATCH_SIZE.getName(), "500");
+
+        runner.setProperty("default.collection", "just required");
+        runner.setProperty("datastore.client.service", "influxdb_service");
+
+        if (valid)
+        {
+            runner.assertValid(service);
+        } else
+        {
+            boolean validConfiguration = true;
+            try {
+                runner.assertValid(service);
+            } catch(Throwable t)
+            {
+                validConfiguration = false;
+            }
+            Assert.assertFalse("Configuration is valid but should not", validConfiguration);
+        }
+    }
+
     /**
      * Constructs a suitable explicitTags configuration string derived from the passed measurement, config mode
      * and explicit tags
