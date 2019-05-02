@@ -20,10 +20,81 @@ sources
     - https://blog.gruntwork.io/automated-testing-for-kubernetes-and-helm-charts-using-terratest-a4ddc4e67344
 
 
+
+
+
+
+
 0 - Pre-requisites & initial setup
 ----------------------------------
-First of all you'll a Kubernetes cluster or simply a minikube. For the first option
+First of all you'll a Kubernetes cluster or simply a minikube. For the first option I would highly recommend to follow the Hello Minikube tutorial for thos who don't have any background with Kubernetes. This will help to get minikube and kubectl commands installed. (Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetes cluster).
 
+
+Shaving the Yak!
+""""""""""""""""
+One or two commands that used in this post will be mac specific. Reference this guide to get more up to date and OS specific commands.
+Once you’ve got the tools all installed, you can now follow along these steps to create a single node Elasticsearch cluster.
+If you are using Minikube, make sure that its started properly by running this command (for mac):
+
+.. code-block:: sh
+
+    minikube start --vm-driver=hyperkit
+
+Now set the Minikube context. The context is what determines which cluster kubectl is interacting with.
+
+.. code-block:: sh
+
+    kubectl config use-context minikube
+
+Verify that kubectl is configured to communicate with your cluster:
+
+.. code-block:: sh
+
+    kubectl cluster-info
+
+To view the nodes in the cluster, run
+
+.. code-block:: sh
+
+    kubectl get nodes
+
+Kubernetes Dashboard
+""""""""""""""""""""
+Minikube includes the kubernetes dashboard as an addon which you can enable.
+
+.. code-block:: sh
+
+    minikube addons list
+
+returns
+
+.. code-block:: sh
+
+    - default-storageclass: enabled
+    - coredns: disabled
+    - kube-dns: enabled
+    - ingress: disabled
+    - registry: disabled
+    - registry-creds: disabled
+    - addon-manager: enabled
+    - dashboard: enabled
+    - storage-provisioner: enabled
+    - heapster: disabled
+    - efk: disabled
+
+You can enable an addon using:
+
+.. code-block:: sh
+
+    minikube addons enable dashboard
+
+You can then open the dashboard with command
+
+.. code-block:: sh
+
+    minikube dashboard
+
+Please note that on some virtual environments (like VirtualBox) the minikube VM may start with too few resources (you should allocate at least 4 CPUs and 6Go RAM)
 
 Kubernetes setup
 """"""""""""""""
@@ -100,74 +171,53 @@ Apply the configuration:
 
     kubectl create -f ./pv-volume.yml
 
+
+
+
+Configuration maps
+""""""""""""""""""
+We will need a few configuration variables in our setup to bind containers together and define some environment varaiables.
+The first config map is specific to `loggen` tool which is a wrapped python program that sends fake generated apache logs to a given Kafka topic at a specified rate.
+The second one is a set of settings that will be used by the `logisland` job in order to configure itself. We'll go into deeper details in the last section of this post.
+
+Create the file `config-maps.yml` with the following content
+
+.. code-block:: yml
+
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: special-config
+      namespace: logisland
+    data:
+      loggen.sleep: '0.2'
+      loggen.num: '0'
+      loggen.topic: logisland_raw
+    ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: logisland-config
+      namespace: logisland
+    data:
+      kafka.brokers: kafka:9092
+      zk.quorum: zookeeper:2181
+      es.hosts: elasticsearch:9300
+      es.cluster.name: es-logisland
+
+
+Apply the configuration:
+
+.. code-block:: sh
+
+    kubectl create -f ./config-maps.yml
+
+
+
 1 - Setting up Elasticsearch cluster on Kubernetes
 --------------------------------------------------
 
-Getting Started
-"""""""""""""""
-I would highly recommend to follow the Hello Minikube tutorial for thos who don't have any background with Kubernetes. This will help to get minikube and kubectl commands installed. (Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetes cluster).
 
-Shaving the Yak!
-""""""""""""""""
-One or two commands that used in this post will be mac specific. Reference this guide to get more up to date and OS specific commands. Once you’ve got the tools all installed, you can now follow along these steps to create a single node Elasticsearch cluster. If you are using Minikube, make sure that its started properly by running this command (for mac):
-
-.. code-block:: sh
-
-    minikube start --vm-driver=hyperkit
-
-Now set the Minikube context. The context is what determines which cluster kubectl is interacting with.
-
-.. code-block:: sh
-
-    kubectl config use-context minikube
-
-Verify that kubectl is configured to communicate with your cluster:
-
-.. code-block:: sh
-
-    kubectl cluster-info
-
-To view the nodes in the cluster, run
-
-.. code-block:: sh
-
-    kubectl get nodes
-
-Kubernetes Dashboard
-""""""""""""""""""""
-Minikube includes the kubernetes dashboard as an addon which you can enable.
-
-.. code-block:: sh
-
-    minikube addons list
-
-returns
-
-.. code-block:: sh
-
-    - default-storageclass: enabled
-    - coredns: disabled
-    - kube-dns: enabled
-    - ingress: disabled
-    - registry: disabled
-    - registry-creds: disabled
-    - addon-manager: enabled
-    - dashboard: enabled
-    - storage-provisioner: enabled
-    - heapster: disabled
-    - efk: disabled
-
-You can enable an addon using:
-
-.. code-block:: sh
-
-    minikube addons enable dashboard
-
-You can then open the dashboard with command
-
-.. code-block:: sh
-
-    minikube dashboard
 
 Single Node Elasticsearch Cluster
 """""""""""""""""""""""""""""""""
@@ -189,6 +239,9 @@ Create the file `elasticsearch-service.yml`:
       ports:
         - name: http
           port: 9200
+          protocol: TCP
+        - name: tcp
+          port: 9300
           protocol: TCP
 
 Apply the configuration:
@@ -218,17 +271,21 @@ Create the file `elasticsearch-deployment.yml`:
         spec:
           containers:
             - name: elasticsearch
-              image: docker.elastic.co/elasticsearch/elasticsearch:6.2.1
+              image: docker.elastic.co/elasticsearch/elasticsearch:5.4.3
               env:
                 - name: discovery.type
                   value: single-node
-                - name: ES_HEAP_SIZE
-                  value: "256m"
+                - name: cluster.name
+                  value: "es-logisland"
+                - name: xpack.security.enabled
+                  value: "false"
               ports:
                 - containerPort: 9200
                   name: http
                   protocol: TCP
-
+                - containerPort: 9300
+                  name: tcp
+                  protocol: TCP
 
 Apply the configuration:
 
@@ -310,12 +367,14 @@ Create the file `kibana-service.yml`:
       labels:
         component: kibana
     spec:
-      type: LoadBalancer
+      type: NodePort
       selector:
-        run: kibana
+        component: kibana
       ports:
         - name: http
           port: 5601
+          targetPort: 5601
+          nodePort: 30123
           protocol: TCP
 
 Apply the configuration:
@@ -329,7 +388,7 @@ Create the file `kibana-deployment.yml`:
 
 .. code-block:: yml
 
-    apiVersion: apps/v1
+    apiVersion: apps/v1beta2
     kind: Deployment
     metadata:
       name: kibana
@@ -345,7 +404,7 @@ Create the file `kibana-deployment.yml`:
         spec:
           containers:
             - name: kibana
-              image: docker.elastic.co/kibana/kibana:6.2.1
+              image: docker.elastic.co/kibana/kibana:5.4.3
               env:
                 - name: ELASTICSEARCH_URL
                   value: http://elasticsearch:9200
@@ -365,12 +424,41 @@ Apply the configuration:
 Screenshot of kibana dashboard
 
 
+    hurence:kubernetes tom$ minikube ip
+    192.168.99.100
+
+Access kibana through your minikube IP like
+
+    http://192.168.99.100:30123/app/kibana#/management/kibana/index?_g=()
+
 
 3 - Setting up Zookeeper
 ------------------------
 Kafka requires Zookeeper for maintaining configuration information, naming, providing distributed synchronization, and providing group services to coordinate its nodes.
 
+
+Zookeeper Headless Service
+""""""""""""""""""""""""""
+Kubernetes Services are persistent and provide a stable and reliable way to connect to Pods.
+
+Setup a Kubernetes Service named kafka-zookeeper in namespace `logisland`. The kafka-zookeeper service resolves the domain name kafka-zookeeper to an internal ClusterIP. The automatically assigned ClusterIP uses Kubernetes internal proxy to load balance calls to any Pods found from the configured selector, in this case, app: kafka-zookeeper.
+
+After setting up the kafka-zookeeper Service, a DNS lookup from within the cluster may produce a result similar to the following:
+
+.. code-block:: sh
+
+    # nslookup kafka-zookeeper
+    Server:        10.96.0.10
+    Address:    10.96.0.10#53
+
+    Name:    kafka-zookeeper.logisland.svc.cluster.local
+    Address: 10.103.184.71
+
+In the example above, 10.103.184.71 is the internal IP address of the ** kafka-zookeeper* service itself and proxies calls to one of the Zookeeper Pods it finds labeled app: kafka-zookeeper. At this point, no Pods are available until added further down. However, the service finds them when they become active.
+
 Create the file `zookeeper-service.yml`:
+
+.. code-block:: yml
 
     apiVersion: v1
     kind: Service
@@ -379,16 +467,18 @@ Create the file `zookeeper-service.yml`:
       namespace: logisland
     spec:
       ports:
-      - name: client
-        port: 2181
-        protocol: TCP
-        targetPort: client
+        - name: client
+          port: 2181
+          protocol: TCP
+          targetPort: client
       selector:
         app: kafka-zookeeper
       sessionAffinity: None
       type: ClusterIP
 
 Apply the configuration:
+
+.. code-block:: sh
 
     kubectl create -f ./zookeeper-service.yml
 
@@ -422,23 +512,23 @@ Create the file `zookeeper-service-headless.yml`:
     apiVersion: v1
     kind: Service
     metadata:
-      name: kafka-zookeeper
+      name: kafka-zookeeper-headless
       namespace: logisland
     spec:
-      clusterIP: None
+      #clusterIP: None
       ports:
-      - name: client
-        port: 2181
-        protocol: TCP
-        targetPort: 2181
-      - name: election
-        port: 3888
-        protocol: TCP
-        targetPort: 3888
-      - name: server
-        port: 2888
-        protocol: TCP
-        targetPort: 2888
+        - name: client
+          port: 2181
+          protocol: TCP
+          targetPort: 2181
+        - name: election
+          port: 3888
+          protocol: TCP
+          targetPort: 3888
+        - name: server
+          port: 2888
+          protocol: TCP
+          targetPort: 2888
       selector:
         app: kafka-zookeeper
       sessionAffinity: None
@@ -483,84 +573,84 @@ Create the file `zookeeper-statefulset.yml`:
             app: kafka-zookeeper
         spec:
           containers:
-          - command:
-            - /bin/bash
-            - -xec
-            - zkGenConfig.sh && exec zkServer.sh start-foreground
-            env:
-            - name: ZK_REPLICAS
-              value: "3"
-            - name: JMXAUTH
-              value: "false"
-            - name: JMXDISABLE
-              value: "false"
-            - name: JMXPORT
-              value: "1099"
-            - name: JMXSSL
-              value: "false"
-            - name: ZK_CLIENT_PORT
-              value: "2181"
-            - name: ZK_ELECTION_PORT
-              value: "3888"
-            - name: ZK_HEAP_SIZE
-              value: 1G
-            - name: ZK_INIT_LIMIT
-              value: "5"
-            - name: ZK_LOG_LEVEL
-              value: INFO
-            - name: ZK_MAX_CLIENT_CNXNS
-              value: "60"
-            - name: ZK_MAX_SESSION_TIMEOUT
-              value: "40000"
-            - name: ZK_MIN_SESSION_TIMEOUT
-              value: "4000"
-            - name: ZK_PURGE_INTERVAL
-              value: "0"
-            - name: ZK_SERVER_PORT
-              value: "2888"
-            - name: ZK_SNAP_RETAIN_COUNT
-              value: "3"
-            - name: ZK_SYNC_LIMIT
-              value: "10"
-            - name: ZK_TICK_TIME
-              value: "2000"
-            image: gcr.io/google_samples/k8szk:v3
-            imagePullPolicy: IfNotPresent
-            livenessProbe:
-              exec:
-                command:
-                - zkOk.sh
-              failureThreshold: 3
-              initialDelaySeconds: 20
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 1
-            name: zookeeper
-            ports:
-            - containerPort: 2181
-              name: client
-              protocol: TCP
-            - containerPort: 3888
-              name: election
-              protocol: TCP
-            - containerPort: 2888
-              name: server
-              protocol: TCP
-            readinessProbe:
-              exec:
-                command:
-                - zkOk.sh
-              failureThreshold: 3
-              initialDelaySeconds: 20
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 1
-            resources: {}
-            terminationMessagePath: /dev/termination-log
-            terminationMessagePolicy: File
-            volumeMounts:
-            - mountPath: /var/lib/zookeeper
-              name: data
+            - command:
+                - /bin/bash
+                - -xec
+                - zkGenConfig.sh && exec zkServer.sh start-foreground
+              env:
+                - name: ZK_REPLICAS
+                  value: "3"
+                - name: JMXAUTH
+                  value: "false"
+                - name: JMXDISABLE
+                  value: "false"
+                - name: JMXPORT
+                  value: "1099"
+                - name: JMXSSL
+                  value: "false"
+                - name: ZK_CLIENT_PORT
+                  value: "2181"
+                - name: ZK_ELECTION_PORT
+                  value: "3888"
+                - name: ZK_HEAP_SIZE
+                  value: 1G
+                - name: ZK_INIT_LIMIT
+                  value: "5"
+                - name: ZK_LOG_LEVEL
+                  value: INFO
+                - name: ZK_MAX_CLIENT_CNXNS
+                  value: "60"
+                - name: ZK_MAX_SESSION_TIMEOUT
+                  value: "40000"
+                - name: ZK_MIN_SESSION_TIMEOUT
+                  value: "4000"
+                - name: ZK_PURGE_INTERVAL
+                  value: "0"
+                - name: ZK_SERVER_PORT
+                  value: "2888"
+                - name: ZK_SNAP_RETAIN_COUNT
+                  value: "3"
+                - name: ZK_SYNC_LIMIT
+                  value: "10"
+                - name: ZK_TICK_TIME
+                  value: "2000"
+              image: gcr.io/google_samples/k8szk:v3
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                exec:
+                  command:
+                    - zkOk.sh
+                failureThreshold: 3
+                initialDelaySeconds: 20
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              name: zookeeper
+              ports:
+                - containerPort: 2181
+                  name: client
+                  protocol: TCP
+                - containerPort: 3888
+                  name: election
+                  protocol: TCP
+                - containerPort: 2888
+                  name: server
+                  protocol: TCP
+              readinessProbe:
+                exec:
+                  command:
+                    - zkOk.sh
+                failureThreshold: 3
+                initialDelaySeconds: 20
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /var/lib/zookeeper
+                  name: data
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -569,8 +659,8 @@ Create the file `zookeeper-statefulset.yml`:
             runAsUser: 1000
           terminationGracePeriodSeconds: 30
           volumes:
-          - emptyDir: {}
-            name: data
+            - emptyDir: {}
+              name: data
       updateStrategy:
         type: OnDelete
 
@@ -614,6 +704,9 @@ Apply the configuration:
     kubectl create -f ./zookeeper-disruptionbudget.yml
 
 
+
+
+
 4 - Setting up Kafka
 --------------------
 Once Zookeeper is up and running we have satisfied the requirements for Kafka. Kafka is set up in a similar configuration to Zookeeper, utilizing a Service, Headless Service and a StatefulSet.
@@ -631,10 +724,10 @@ Create the file `kafka-service.yml`:
       namespace: logisland
     spec:
       ports:
-      - name: broker
-        port: 9092
-        protocol: TCP
-        targetPort: kafka
+        - name: broker
+          port: 9092
+          protocol: TCP
+          targetPort: kafka
       selector:
         app: kafka
       sessionAffinity: None
@@ -658,12 +751,12 @@ Create the file `kafka-service-headless.yml`:
       name: kafka-headless
       namespace: logisland
     spec:
-      clusterIP: None
+      #clusterIP: None
       ports:
-      - name: broker
-        port: 9092
-        protocol: TCP
-        targetPort: 9092
+        - name: broker
+          port: 9092
+          protocol: TCP
+          targetPort: 9092
       selector:
         app: kafka
       sessionAffinity: None
@@ -704,62 +797,64 @@ Create the file `kafka-statefulset.yml`:
             app: kafka
         spec:
           containers:
-          - command:
-            - sh
-            - -exc
-            - |
-              unset KAFKA_PORT && \
-              export KAFKA_BROKER_ID=${HOSTNAME##*-} && \
-              export KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${POD_IP}:9092 && \
-              exec /etc/confluent/docker/run
-            env:
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: status.podIP
-            - name: KAFKA_HEAP_OPTS
-              value: -Xmx1G -Xms1G
-            - name: KAFKA_ZOOKEEPER_CONNECT
-              value: kafka-zookeeper:2181
-            - name: KAFKA_LOG_DIRS
-              value: /opt/kafka/data/logs
-            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-              value: "3"
-            - name: KAFKA_JMX_PORT
-              value: "5555"
-            image: confluentinc/cp-kafka:4.1.2-2
-            imagePullPolicy: IfNotPresent
-            livenessProbe:
-              exec:
-                command:
+            - command:
                 - sh
-                - -ec
-                - /usr/bin/jps | /bin/grep -q SupportedKafka
-              failureThreshold: 3
-              initialDelaySeconds: 30
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 5
-            name: kafka-broker
-            ports:
-            - containerPort: 9092
-              name: kafka
-              protocol: TCP
-            readinessProbe:
-              failureThreshold: 3
-              initialDelaySeconds: 30
-              periodSeconds: 10
-              successThreshold: 1
-              tcpSocket:
-                port: kafka
-              timeoutSeconds: 5
-            resources: {}
-            terminationMessagePath: /dev/termination-log
-            terminationMessagePolicy: File
-            volumeMounts:
-            - mountPath: /opt/kafka/data
-              name: datadir
+                - -exc
+                - |
+                  unset KAFKA_PORT && \
+                  export KAFKA_BROKER_ID=${HOSTNAME##*-} && \
+                  export KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${POD_IP}:9092 && \
+                  exec /etc/confluent/docker/run
+              env:
+                - name: POD_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.podIP
+                - name: KAFKA_HEAP_OPTS
+                  value: -Xmx1G -Xms1G
+                - name: KAFKA_ZOOKEEPER_CONNECT
+                  value: kafka-zookeeper:2181
+                 # value: 10.105.213.202:2181
+                 # value: ${KAFKA_ZOOKEEPER_SERVICE_HOST}:2181
+                - name: KAFKA_LOG_DIRS
+                  value: /opt/kafka/data/logs
+                - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+                  value: "3"
+                - name: KAFKA_JMX_PORT
+                  value: "5555"
+              image: confluentinc/cp-kafka:4.1.2-2
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                exec:
+                  command:
+                    - sh
+                    - -ec
+                    - /usr/bin/jps | /bin/grep -q SupportedKafka
+                failureThreshold: 3
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 5
+              name: kafka-broker
+              ports:
+                - containerPort: 9092
+                  name: kafka
+                  protocol: TCP
+              readinessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                successThreshold: 1
+                tcpSocket:
+                  port: kafka
+                timeoutSeconds: 5
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /opt/kafka/data
+                  name: datadir-claim
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -768,15 +863,16 @@ Create the file `kafka-statefulset.yml`:
       updateStrategy:
         type: OnDelete
       volumeClaimTemplates:
-      - metadata:
-          name: datadir
-        spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-          storageClassName: rook-block
+        - metadata:
+            name: datadir-claim
+          spec:
+            #storageClassName: "standard"
+            # storageClassName: rook-block
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
 
 Apply the configuration:
 
@@ -788,7 +884,7 @@ Kafka Test Pod
 """"""""""""""
 Add a test Pod to help explore and debug your new Kafka cluster. The Confluent Docker image confluentinc/cp-kafka:4.1.2-2 used for the test Pod is the same as our nodes from the StatefulSet and contain useful command in the /usr/bin/ folder.
 
-Create the file 400-pod-test.yml:
+Create the file kafka-test.yml:
 
     apiVersion: v1
     kind: Pod
@@ -797,22 +893,27 @@ Create the file 400-pod-test.yml:
       namespace: logisland
     spec:
       containers:
-      - command:
-        - sh
-        - -c
-        - exec tail -f /dev/null
-        image: confluentinc/cp-kafka:4.1.2-2
-        imagePullPolicy: IfNotPresent
-        name: kafka
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
+        - command:
+            - sh
+            - -c
+            - exec tail -f /dev/null
+          image: confluentinc/cp-kafka:4.1.2-2
+          imagePullPolicy: IfNotPresent
+          name: kafka
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
 
 Apply the configuration:
 
 .. code-block:: sh
 
-    kubectl create -f ./pod-test.yml
+    kubectl create -f ./kafka-test.yml
+
+
+
+
+
 
 5 - Working with Kafka
 ----------------------
@@ -891,9 +992,25 @@ make sure some fake apache logs are flowing through kafka topic
     /usr/bin/kafka-console-consumer --bootstrap-server kafka:9092 \
     --topic logisland_raw --from-beginning
 
+
+
+
+
+
+
+
+
+
+
+
 6 - Setup logisland
 -------------------
+It's now time time to dive into log mining
+
+
 Create the file `logisland-deployment.yml`:
+
+.. code-block:: yml
 
     apiVersion: v1
     kind: Pod
@@ -902,31 +1019,45 @@ Create the file `logisland-deployment.yml`:
       namespace: logisland
     spec:
       containers:
-        - name: loggen
-          image: hurence/logisland
+        - name: logisland
+          image: hurence/logisland-job
+          imagePullPolicy: IfNotPresent
+          command: ["/opt/logisland/bin/logisland.sh"]
+          args: ["--standalone", "--conf", "/opt/logisland/conf/index-apache-logs-plainjava.yml"]
           env:
-            - name: ES_HOSTS=elasticsearch:9300
+            - name: ES_CLUSTER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: special-config
-                  key: special.how
+                  name: logisland-config
+                  key: es.cluster.name
             - name: KAFKA_BROKERS
               valueFrom:
                 configMapKeyRef:
                   name: logisland-config
                   key: kafka.brokers
+            - name: ES_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: logisland-config
+                  key: es.hosts
+
+
+Apply the configuration:
 
 .. code-block:: sh
 
     kubectl create -f ./logisland-deployment.yml
 
 
+run the following command to see events parsed by logisland flowing through the output topic
 
 
-run the following command
+    kubectl -n logisland exec -ti kafka-test-client --     /usr/bin/kafka-console-consumer --bootstrap-server kafka:9092     --topic logisland_events
 
 
-bin/logisland.sh --standalone --conf conf/index-apache-logs-plainjava.yml
+check that logs are correctly stored into elasticsearch
+
+    kubectl -n logisland exec -ti kafka-test-client --     curl http://elasticsearch:9200/logisland.*/_search?pretty=1
 
 
 

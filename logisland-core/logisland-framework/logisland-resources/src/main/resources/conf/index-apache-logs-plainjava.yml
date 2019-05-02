@@ -37,11 +37,13 @@ engine:
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         bootstrap.servers: ${KAFKA_BROKERS}
       processorConfigurations:
+
         - processor: add_fields
           component: com.hurence.logisland.processor.AddFields
           type: processor
           configuration:
             record_key: dummy
+
         # parse apache logs into logisland records
         - processor: apache_parser
           component: com.hurence.logisland.processor.SplitText

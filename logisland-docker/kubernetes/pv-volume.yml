@@ -13,4 +13,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/Users/tom/Documents/workspace/tmp/data"
+    path: "/tmp/data"

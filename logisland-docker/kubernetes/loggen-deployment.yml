@@ -7,7 +7,7 @@ spec:
   containers:
     - name: loggen
       image: hurence/loggen
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       env:
         - name: LOGGEN_SLEEP
           valueFrom:

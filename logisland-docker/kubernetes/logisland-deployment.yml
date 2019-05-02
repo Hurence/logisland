@@ -8,3 +8,21 @@ spec:
     - name: logisland
       image: hurence/logisland-job
       imagePullPolicy: IfNotPresent
+      command: ["/opt/logisland/bin/logisland.sh"]
+      args: ["--standalone", "--conf", "/opt/logisland/conf/index-apache-logs-plainjava.yml"]
+      env:
+        - name: ES_CLUSTER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: logisland-config
+              key: es.cluster.name
+        - name: KAFKA_BROKERS
+          valueFrom:
+            configMapKeyRef:
+              name: logisland-config
+              key: kafka.brokers
+        - name: ES_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: logisland-config
+              key: es.hosts

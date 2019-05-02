@@ -16,5 +16,5 @@ metadata:
 data:
   kafka.brokers: kafka:9092
   zk.quorum: zookeeper:2181
-  es.hosts: elasticsearch:9092
+  es.hosts: elasticsearch:9300
   es.cluster.name: es-logisland
