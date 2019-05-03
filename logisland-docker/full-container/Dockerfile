@@ -1,25 +1,13 @@
-FROM hurence/kafka-spark:latest
-MAINTAINER support@hurence.com
+FROM hurence/spark:latest
 
-USER root
+LABEL maintainer="support@hurence.com"
 
-# Logisland
-COPY logisland-*.tar.gz /usr/local/logisland-current-bin.tar.gz
-RUN cd /usr/local; \
-    mkdir logisland-current-bin; \
-    tar -xzf logisland-current-bin.tar.gz -C ./logisland-current-bin --strip-components 1; \
-    ln -s /usr/local/logisland-current-bin /usr/local/logisland; \
-    mkdir /usr/local/logisland/log; \
-    rm -f /usr/local/*.gz
-ENV LOGISLAND_HOME /usr/local/logisland
-RUN mv /usr/local/logisland/conf/log4j.properties /usr/local/spark/conf
+COPY ./logisland-*.tar.gz /tmp/
+RUN cd /tmp; \
+        tar -xzf logisland-*.tar.gz; \
+        rm -f /tmp/*.gz; \
+        mv logisland-* /opt
+RUN cd /opt && ln -s $(eval ls | grep logisland) logisland
+ENV LOGISLAND_HOME /opt/logisland
 ENV PATH $PATH:$LOGISLAND_HOME/bin
 WORKDIR $LOGISLAND_HOME/
-
-
-# update boot script
-COPY bootstrap.sh /etc/bootstrap.sh
-RUN chown root:root /etc/bootstrap.sh
-RUN chmod 700 /etc/bootstrap.sh
-
-ENTRYPOINT ["/etc/bootstrap.sh"]

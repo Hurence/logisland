@@ -350,11 +350,11 @@ public class CassandraUpdater implements Runnable {
     {
         for (DataToInsert dataToInsert : batchValues)
         {
-            // Special tets for unit test
+            // Special test for unit test
             if (dataToInsert.collectionName.equals(END_OF_TEST))
             {
                 // Signal end of test stream
-                service.stillSomeRecords = false; // We suppose the unit test code is mono-threaded and never writes more that a batch can handle
+                service.stillSomeRecords = false; // We suppose the unit test code is mono-threaded and never writes more than a batch can handle
                 continue;
             }
 
@@ -364,7 +364,18 @@ public class CassandraUpdater implements Runnable {
             Object[] values = new Object[insertValues.size()];
             values = insertValues.toArray(values);
             try {
-                ResultSet resultSet = session.execute(boundStatement.bind(values));
+                boundStatement = boundStatement.bind(values);
+                // Handle null values: unset them to avoid unwanted tombstones. See #450
+                int i = 0;
+                for (Object value : values)
+                {
+                    if (value == null)
+                    {
+                        boundStatement.unset(i);
+                    }
+                    i++;
+                }
+                ResultSet resultSet = session.execute(boundStatement);
                 if (!resultSet.wasApplied()) {
                     logger.error("Error inserting " + insertValues);
                 }

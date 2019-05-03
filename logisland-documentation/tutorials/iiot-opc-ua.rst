@@ -22,11 +22,11 @@ If not you can just do it through the componentes.sh command line:
 
 .. code-block:: sh
 
-    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.0.0-RC1
+    bin/components.sh -i com.hurence.logisland:logisland-processor-elasticsearch:1.1.2
 
-    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.0.0-RC1
+    bin/components.sh -i com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client:1.1.2
 
-    bin/components.sh -i com.hurence.logisland:logisland-connector-opc:1.0.0-RC1
+    bin/components.sh -i com.hurence.logisland:logisland-connector-opc:1.1.2
 
 
 2. Logisland job setup
@@ -50,7 +50,7 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
         documentation: Index some OPC-UA tagw with Logisland
         configuration:
         spark.app.name: OpcUaLogisland
-        spark.master: local[*]
+        spark.master: local[2]
         spark.driver.memory: 512M
         spark.driver.cores: 1
         spark.executor.memory: 512M
@@ -97,7 +97,7 @@ Here we have the OPC-UA source with all the connection parameters.
         kc.connector.properties: |
           session.publicationRate=PT1S
           connection.socketTimeoutMillis=10000
-          server.uri=opc.tcp://sandbox:53530/OPCUA/SimulationServer
+          server.uri=opc.tcp://localhost:53530/OPCUA/SimulationServer
           tags.id=ns=5;s=Sawtooth1
           tags.sampling.rate=PT0.5S
           tags.stream.mode=SUBSCRIBE
@@ -107,6 +107,7 @@ In particular, we have
 * A tag to be read: *"ns=5;s=Sawtooth1"*
 * The tag will be subscribed and sampled each 0.5s
 * The data will be published by the opc server each second (*session.publicationRate*)
+* Please use your own opc server uri, in our case opc.tcp://localhost:53530/OPCUA/SimulationServer
 
 Full connector documentation is on javadoc of class ``com.hurence.logisland.connect.opc.ua.OpcUaSourceConnector``
 
@@ -120,8 +121,8 @@ Then we also define her Elasticsearch service that will be used later in the ``B
       type: service
       documentation: elasticsearch service
       configuration:
-        hosts: sandbox:9300
-        cluster.name: es-logisland
+        hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER_NAME}
         batch.size: 5000
 
 
@@ -136,7 +137,7 @@ Inside this engine you will run a spark structured stream, taking records from t
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         read.topics.client.service: kc_source_service
-        write.topics: logisland_parsed
+        write.topics: /a/out
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.StringSerializer
         write.topics.client.service: console_service
@@ -192,13 +193,37 @@ Then, the last processor will index our records into elasticsearch
 --------------------
 Just ensure the Prosys OPC-UA server is up and running and that on the *Simulation* tab the simulation is ticked.
 
+Then you can use the docker-compose file **docker-compose-opc-iiot.yml** available in the tar gz assembly in conf directory.
+
+.. note::
+
+    If your simulation server is hosted on local and the hostname is different from 'localhost'. For example if your
+    server uri is 'opc.tcp://${hostname}:53530/OPCUA/SimulationServer'. You can add it to logisland container add
+    a extra_hosts properties to logisland container in docker-compose file so that it is accessible from the container.
+
+
+.. code-block:: yaml
+
+  logisland:
+    network_mode: host
+    image: hurence/logisland:1.1.2
+    command: tail -f bin/logisland.sh
+    environment:
+      ZK_QUORUM: localhost:2181
+      ES_HOSTS: localhost:9300
+      ES_CLUSTER_NAME: es-logisland
+    extra_hosts:
+      - "${hostname}:127.0.0.1"
+
 Then you can execute:
 
 .. code-block:: sh
 
     docker exec -i -t logisland bin/logisland.sh --conf conf/opc-iiot.yml
 
+.. note::
 
+    Be sure to have added your server uri in conf/opc-iiot.yml file.
 
 
 4. Inspect the records
@@ -207,7 +232,7 @@ Then you can execute:
 
 With ElasticSearch, you can use Kibana.
 
-Open up your browser and go to `http://sandbox:5601/ <http://sandbox:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
+Open up your browser and go to `http://localhost:5601/ <http://localhost:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'1995-05-08T12:14:53.216Z',mode:absolute,to:'1995-11-25T05:30:52.010Z'))&_a=(columns:!(_source),filters:!(),index:'li-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:usa)),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:host,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=li-*&type=histogram>`_ and you should be able to explore your apache logs.
 
 
 Configure a new index pattern with ``logisland.*`` as the pattern name and ``@timestamp`` as the time value field.

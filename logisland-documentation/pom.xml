@@ -22,10 +22,23 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.2</version>
     </parent>
     <artifactId>logisland-documentation</artifactId>
+
+    <properties>
+        <generate-components-dir>./user/components</generate-components-dir>
+        <hadooop.version>0.20.2</hadooop.version>
+    </properties>
+
     <dependencies>
+        <!--
+***********************************************************************************
+***********************************************************************************
+THIS MODULE DOCUMENTATION DEPENDENCIES
+***********************************************************************************
+***********************************************************************************
+-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -42,14 +55,11 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-utils</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -57,7 +67,37 @@
             <version>2.6</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-plugin-support</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
+        <!--
+***********************************************************************************
+***********************************************************************************
+    Engines mono version
+***********************************************************************************
+***********************************************************************************
+-->
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-engine-vanilla</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+***********************************************************************************
+***********************************************************************************
+            Services
+***********************************************************************************
+***********************************************************************************
+        -->
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-hbase_1_1_2-client</artifactId>
@@ -98,6 +138,55 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-influxdb-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-solr_5_5_5-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-solr_6_6_2-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-solr_chronix_6.4.2-client</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-inmemory-cache</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
+            <artifactId>logisland-service-ip-to-geo-maxmind</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${hadooop.version}</version>
+        </dependency>
+        <!--
+***********************************************************************************
+***********************************************************************************
+            Processors
+***********************************************************************************
+***********************************************************************************
+        -->
+        <dependency>
+            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-hbase</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -121,12 +210,12 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-sampling</artifactId>
-             <version>${project.version}</version>
-             <optional>true</optional>
-         </dependency>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-scripting</artifactId>
@@ -159,25 +248,6 @@
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_5_5_5-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_6_6_2-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-solr_chronix_6.4.2-client</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-querymatcher</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -188,7 +258,6 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-processor-enrichment</artifactId>
@@ -202,49 +271,521 @@
             <optional>true</optional>
         </dependency>
 
+        <!--LOG-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.5</version>
+            <version>${org.slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
+
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.5.0</version>
-
+                <version>1.6.0</version>
                 <configuration>
-                    <includeProjectDependencies>false</includeProjectDependencies>
+                    <includeProjectDependencies>true</includeProjectDependencies>
                     <includePluginDependencies>true</includePluginDependencies>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-classpath</argument>
-                        <!-- automatically creates the classpath using all project dependencies,
-                             also adding the project build directory -->
-                        <classpath/>
-                        <argument>com.hurence.logisland.documentation.DocGenerator</argument>
-                    </arguments>
-
                 </configuration>
-
-
                 <executions>
                     <execution>
+                        <id>generate doc commons processors</id>
                         <phase>install</phase>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath>
+                                    <dependency>commons-cli:commons-cli</dependency>
+                                    <dependency>commons-io:commons-io</dependency>
+                                    <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>org.slf4j:slf4j-simple</dependency>
+                                    <dependency>org.slf4j:slf4j-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <!--<dependency>com.hurence.logisland:logisland-utils</dependency>-->
+                                    <dependency>com.fasterxml.jackson.core:jackson-core</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-databind</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-annotations</dependency>
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                    <!--Needed dependencies by logisland-plugin-support-->
+                                    <dependency>cglib:cglib-nodep</dependency>
+                                    <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--PROCESSORS-->
+                                    <dependency>com.hurence.logisland:logisland-processor-common</dependency>
+                                </classpath>
+                                <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                <argument>-d</argument>
+                                <argument>${generate-components-dir}</argument>
+                                <argument>-f</argument>
+                                <argument>common-processors</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate doc useragent processors</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath>
+                                    <dependency>commons-cli:commons-cli</dependency>
+                                    <dependency>commons-io:commons-io</dependency>
+                                    <dependency>commons-logging:commons-logging</dependency>
+                                    <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>org.slf4j:slf4j-simple</dependency>
+                                    <dependency>org.slf4j:slf4j-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-core</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-databind</dependency>
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                    <!--Needed dependencies by logisland-plugin-support-->
+                                    <dependency>cglib:cglib-nodep</dependency>
+                                    <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--PROCESSORS-->
+                                    <dependency>com.hurence.logisland:logisland-processor-useragent</dependency>
+                                </classpath>
+                                <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                <argument>-d</argument>
+                                <argument>${generate-components-dir}</argument>
+                                <argument>-f</argument>
+                                <argument>other-processors</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate doc all others processors</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath>
+                                    <dependency>commons-cli:commons-cli</dependency>
+                                    <dependency>commons-io:commons-io</dependency>
+                                    <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>org.slf4j:slf4j-simple</dependency>
+                                    <dependency>org.slf4j:slf4j-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-core</dependency>
+                                    <dependency>com.fasterxml.jackson.core:jackson-databind</dependency>
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                    <!--Needed dependencies by logisland-plugin-support-->
+                                    <dependency>cglib:cglib-nodep</dependency>
+                                    <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--PROCESSORS-->
+                                    <dependency>com.hurence.logisland:logisland-processor-hbase</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-elasticsearch</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-common-logs</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-sampling</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-scripting</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-excel</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-xml</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-web-analytics</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-querymatcher</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-cyber-security</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-enrichment</dependency>
+                                    <dependency>com.hurence.logisland:logisland-processor-outlier-detection</dependency>
+                                </classpath>
+                                <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                <argument>-d</argument>
+                                <argument>${generate-components-dir}</argument>
+                                <argument>-f</argument>
+                                <argument>other-processors</argument>
+                                <argument>-a</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate doc services</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath>
+                                    <dependency>commons-cli:commons-cli</dependency>
+                                    <dependency>commons-io:commons-io</dependency>
+                                    <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>org.slf4j:slf4j-simple</dependency>
+                                    <dependency>org.slf4j:slf4j-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <!--<dependency>com.fasterxml.jackson.core:jackson-core</dependency>-->
+                                    <!--<dependency>com.fasterxml.jackson.core:jackson-databind</dependency>-->
+                                    <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                    <!--Needed dependencies by logisland-plugin-support-->
+                                    <dependency>cglib:cglib-nodep</dependency>
+                                    <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--For memory cache-->
+                                    <dependency>org.apache.hadoop:hadoop-core</dependency>
+                                    <!--SERVICE-->
+                                    <dependency>com.hurence.logisland:logisland-service-hbase_1_1_2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-elasticsearch_2_4_0-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-elasticsearch_5_4_0-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-redis</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-mongodb-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-cassandra-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-influxdb-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_5_5_5-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_6_6_2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-inmemory-cache</dependency>
+                                    <dependency>com.hurence.logisland:logisland-service-ip-to-geo-maxmind</dependency>
+                                </classpath>
+                                <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                <argument>-d</argument>
+                                <argument>${generate-components-dir}</argument>
+                                <argument>-f</argument>
+                                <argument>services</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate doc engines (but spark)</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath>
+                                    <dependency>commons-cli:commons-cli</dependency>
+                                    <dependency>commons-io:commons-io</dependency>
+                                    <dependency>org.apache.commons:commons-lang3</dependency>
+                                    <dependency>org.slf4j:slf4j-simple</dependency>
+                                    <dependency>org.slf4j:slf4j-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-api</dependency>
+                                    <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                    <!--<dependency>com.fasterxml.jackson.core:jackson-core</dependency>-->
+                                    <!--<dependency>com.fasterxml.jackson.core:jackson-databind</dependency>-->
+                                    <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                    <!--Needed dependencies by logisland-plugin-support-->
+                                    <!--<dependency>cglib:cglib-nodep</dependency>-->
+                                    <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                    <!--ENGINE-->
+                                    <dependency>com.hurence.logisland:logisland-engine-vanilla</dependency>
+                                </classpath>
+                                <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                <argument>-d</argument>
+                                <argument>${generate-components-dir}/engines</argument>
+                                <argument>-f</argument>
+                                <argument>engine-vanilla</argument>
+                            </arguments>
+                        </configuration>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
         </plugins>
-
     </build>
+
+    <profiles>
+        <profile>
+            <id>spark2.X</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <scala.binary.version>2.11</scala.binary.version>
+                <spark.version>2.3.0</spark.version>
+                <kafka.version>0.10.2.1</kafka.version>
+                <scala.version>2.11.8</scala.version>
+                <hadooop.version>0.20.2</hadooop.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-engine-spark_2_common</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-engine-spark_2_3</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-network-common_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
+                    <version>${hadooop.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-catalyst_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>generate doc spark engine 2.3</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath>
+                                            <!--<dependency><classpath/></dependency>-->
+                                            <!--<classpath/>-->
+                                            <!--<dependency>com.hurence.logisland:logisland-documentation</dependency>-->
+                                            <dependency>commons-cli:commons-cli</dependency>
+                                            <dependency>commons-io:commons-io</dependency>
+                                            <dependency>org.apache.commons:commons-lang3</dependency>
+                                            <dependency>org.slf4j:slf4j-simple</dependency>
+                                            <dependency>org.slf4j:slf4j-api</dependency>
+                                            <dependency>com.hurence.logisland:logisland-api</dependency>
+                                            <dependency>com.fasterxml.jackson.core:jackson-core</dependency>
+                                            <dependency>com.fasterxml.jackson.core:jackson-databind</dependency>
+                                            <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                            <dependency>com.hurence.logisland:logisland-api</dependency>
+                                            <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                            <!--Needed dependencies by logisland-plugin-support-->
+                                            <dependency>cglib:cglib-nodep</dependency>
+                                            <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                            <!--ENGINE-->
+                                            <dependency>com.hurence.logisland:logisland-engine-spark_2_3</dependency>
+                                            <!--NEEDED BY ENGINE-->
+                                            <dependency>org.scala-lang:scala-library</dependency>
+                                            <dependency>org.apache.spark:spark-sql_2.11</dependency>
+                                            <dependency>org.apache.spark:spark-streaming_2.11</dependency>
+                                            <dependency>org.apache.spark:spark-core_2.11</dependency>
+                                            <dependency>org.apache.spark:spark-sql-kafka-0-10_2.11</dependency>
+
+                                            <dependency>com.hurence.logisland:logisland-engine-spark_2_common</dependency>
+                                            <dependency>org.apache.kafka:kafka-clients</dependency>
+                                            <dependency>org.apache.kafka:kafka_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.kafka:spark-sql-streaming-mqtt_2.11</dependency>
+
+                                            <dependency>org.apache.spark:spark-core_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-streaming_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-sql_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-mllib_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-streaming-kafka-0-10_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-sql-kafka-0-10_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.spark:spark-streaming-kafka-assembly_${scala.binary.version}</dependency>
+
+                                            <dependency>org.apache.spark:spark-catalyst_${scala.binary.version}</dependency>
+                                            <dependency>org.apache.hadoop:hadoop-core</dependency>
+                                            <dependency>org.apache.spark:spark-network-common_2.11</dependency>
+
+                                            <dependency>org.scala-lang:scala-reflect</dependency>
+                                        </classpath>
+                                        <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                        <argument>-d</argument>
+                                        <argument>${generate-components-dir}/engines</argument>
+                                        <argument>-f</argument>
+                                        <argument>engine-spark</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>spark1.6</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <scala.binary.version>2.10</scala.binary.version>
+                <spark.version>1.6.2</spark.version>
+                <kafka.version>0.8.2.1</kafka.version>
+                <scala.version>2.10.6</scala.version>
+                <hadooop.version>0.20.2</hadooop.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-network-common_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-engine-spark_1_6</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
+                    <version>${hadooop.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-catalyst_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>generate doc spark engine 1.6</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath>
+                                            <!--<dependency><classpath/></dependency>-->
+                                            <!--<classpath/>-->
+                                            <!--<dependency>com.hurence.logisland:logisland-documentation</dependency>-->
+                                            <dependency>commons-cli:commons-cli</dependency>
+                                            <dependency>commons-io:commons-io</dependency>
+                                            <dependency>org.apache.commons:commons-lang3</dependency>
+                                            <dependency>org.slf4j:slf4j-simple</dependency>
+                                            <dependency>org.slf4j:slf4j-api</dependency>
+                                            <dependency>com.hurence.logisland:logisland-api</dependency>
+                                            <dependency>com.fasterxml.jackson.core:jackson-core</dependency>
+                                            <dependency>com.fasterxml.jackson.core:jackson-databind</dependency>
+                                            <dependency>com.hurence.logisland:logisland-utils</dependency>
+                                            <dependency>com.hurence.logisland:logisland-api</dependency>
+                                            <dependency>com.hurence.logisland:logisland-plugin-support</dependency>
+                                            <!--Needed dependencies by logisland-plugin-support-->
+                                            <dependency>cglib:cglib-nodep</dependency>
+                                            <dependency>org.springframework.boot:spring-boot-loader</dependency>
+                                            <!--ENGINE-->
+                                            <dependency>com.hurence.logisland:logisland-engine-spark_1_6</dependency>
+                                            <!--NEEDED BY ENGINE-->
+                                            <dependency>org.scala-lang:scala-library</dependency>
+                                            <dependency>org.scala-lang:scala-reflect</dependency>
+                                        </classpath>
+                                        <argument>com.hurence.logisland.documentation.DocGenerator</argument>
+                                        <argument>-d</argument>
+                                        <argument>${generate-components-dir}/engines</argument>
+                                        <argument>-f</argument>
+                                        <argument>engine-spark</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!--MUST be the last profile so it is executed in last-->
+            <id>copyDoc</id>
+            <activation>
+                <property>
+                    <name>!skipGenDoc</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>copy paste to ressources</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath>
+                                            <dependency>org.slf4j:slf4j-simple</dependency>
+                                            <dependency>org.slf4j:slf4j-api</dependency>
+                                            <dependency>commons-cli:commons-cli</dependency>
+                                            <dependency>commons-io:commons-io</dependency>
+                                        </classpath>
+                                        <argument>com.hurence.logisland.documentation.CopyPasteDoc</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -21,10 +21,12 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-hbase</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.2</version>
     </parent>
 
     <artifactId>logisland-service-hbase-api</artifactId>
+    <name>Logisland Hbase Service API</name>
+    <description>Hbase service api for logisland</description>
     <packaging>jar</packaging>
 
 

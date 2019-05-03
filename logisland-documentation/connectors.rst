@@ -48,9 +48,9 @@ Some examples, with the suggested artifacts to use, in the following table:
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
 | FTP                      | https://github.com/Eneco/kafka-connect-ftp                                       | com.eneco:kafka-connect-ftp:0.1.4                                      |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
-| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | com.datamountaineer:kafka-connect-blockchain:1.1.0                     |
+| Blockchain               | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-blockchain   | com.datamountaineer:kafka-connect-blockchain:1.1.2                     |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
-| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | com.datamountaineer:kafka-connect-jms:1.1.0                            |
+| JMS                      | https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-jms          | com.datamountaineer:kafka-connect-jms:1.1.2                            |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
 | JDBC                     | https://docs.confluent.io/current/connect/connect-jdbc/docs/index.html           | io.confluent:kafka-connect-jdbc:5.0.0                                  |
 +--------------------------+----------------------------------------------------------------------------------+------------------------------------------------------------------------+
@@ -173,9 +173,13 @@ The recap we can examine the following configuration example:
 In the example both key and value provided by the connector are structured objects.
 
 For this reason we use for that the converter *LogIslandRecordConverter*.
-As well, we provide the serializer to be used for both key and value converter specifying
-*record.serializer=com.hurence.logisland.serializer.KryoSerializer* among the related converter properties.
+We provide the serializer to be used for both key and value converter specifying
 
+.. code-block:: yaml
+
+    record.serializer=com.hurence.logisland.serializer.KryoSerializer
+
+among the related converter properties.
 
 Going further
 -------------

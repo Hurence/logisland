@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.hbase;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -37,6 +38,7 @@ import java.util.List;
 
 @Tags({"hadoop", "hbase"})
 @CapabilityDescription("Adds the Contents of a Record to HBase as the value of a single cell")
+@ExtraDetailFile("./details/PutHBaseCell-Detail.rst")
 public class PutHBaseCell extends AbstractPutHBase {
 
     private static Logger logger = LoggerFactory.getLogger(PutHBaseCell.class);

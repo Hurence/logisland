@@ -173,7 +173,7 @@ In order to send netflow V5 event (binary format) to ``logisland_raw`` Kafka top
    .. code-block:: sh
 
     docker exec -ti logisland bash
-    cd /usr/local/nifi-1.1.1
+    cd /usr/local/nifi-1.1.2
     bin/nifi.sh start
 
    browse `http://sandbox:8080/nifi/ <http://sandbox:8080/nifi/>`_

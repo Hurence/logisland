@@ -1,20 +1,18 @@
-/*
- *  * Copyright (C) 2018 Hurence (support@hurence.com)
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.packaging;
 
 import com.hurence.logisland.classloading.PluginClassLoader;
@@ -33,6 +31,14 @@ import java.util.stream.Collectors;
 
 public class ModuleFinder {
 
+    /**
+     *
+     * @param jarFile jar to look for classes
+     * @param locationPrefix location in jar to look for class
+     * @param parentClasses
+     * @return
+     * @throws Exception
+     */
     public static List<String> findOfType(URL jarFile, String locationPrefix, Set<String> parentClasses) throws Exception {
         try (final JarFile file = new JarFile(jarFile.getFile())) {
             try (final PluginClassLoader classLoader = PluginClassloaderBuilder.build(new JarFileArchive(new File(jarFile.toURI())))) {
@@ -47,7 +53,7 @@ public class ModuleFinder {
                             try {
                                 return Class.forName(s, false, classLoader);
                             } catch (Exception e) {
-                                throw new RuntimeException("Unable to resolve classes", e);
+                                throw new RuntimeException("Unable to resolve classes '" + s + "'", e);
                             }
                         })
                         .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))

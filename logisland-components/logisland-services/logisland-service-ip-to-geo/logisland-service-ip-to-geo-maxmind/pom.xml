@@ -5,13 +5,14 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-ip-to-geo</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.2</version>
     </parent>
 
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logisland-service-ip-to-geo-maxmind</artifactId>
     <name>Maxmind IP to Geo Service Plugin</name>
+    <description>Implementation of the Ip2geo service api</description>
     <packaging>jar</packaging>
 
 
@@ -21,13 +22,11 @@
             <artifactId>logisland-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-ip-to-geo-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.hurence.logisland</groupId>

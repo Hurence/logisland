@@ -1,33 +1,18 @@
 /**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-/**
-  * Copyright (C) 2016 Hurence (support@hurence.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /**
   * Copyright (C) 2016 Hurence (support@hurence.com)
   *
@@ -90,7 +75,12 @@ object KafkaStreamProcessingEngine {
         .required(true)
         // The regex allows "local[K]" with K as an integer,  "local[*]", "yarn", "yarn-client", "yarn-cluster" and "spark://HOST[:PORT]"
         // there is NO support for "mesos://HOST:PORT"
-        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile("^(yarn(-(client|cluster))?|local\\[[0-9\\*]+\\]|spark:\\/\\/([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?)$")))
+        .addValidator(StandardValidators.createRegexMatchingValidator(Pattern.compile(
+        "^(yarn|" +
+          "local(\\[([0-9]+|\\*)(,[0-9]+)?\\])?|" +
+          "spark:\\/\\/[a-z0-9\\.\\-]+(:[0-9]+)?(,[a-z0-9\\.\\-]+(:[0-9]+)?)*|" +
+          "mesos:\\/\\/((zk:\\/\\/[a-z0-9\\.\\-]+:[0-9]+(,[a-z0-9\\.\\-]+:[0-9]+)*\\/mesos)|(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|[a-z][a-z0-9\\.\\-]+)(:[0-9]+)?))|" +
+          "k8s://.+)$")))
         .defaultValue("local[2]")
         .build
 
@@ -348,6 +338,19 @@ object KafkaStreamProcessingEngine {
         .allowableValues(FAIR, FIFO)
         .defaultValue(FAIR.getValue)
         .build
+
+    val JAVA_MESOS_LIBRARY_PATH = new PropertyDescriptor.Builder()
+      .name("java.library.path")
+      .description("The java library path to use with mesos.")
+      .required(false)
+      .build
+
+    val SPARK_MESOS_CORE_MAX = new PropertyDescriptor.Builder()
+      .name("spark.cores.max")
+      .description("The maximum number of total executor core with mesos.")
+      .required(false)
+      .build
+
 }
 
 
@@ -509,6 +512,8 @@ class KafkaStreamProcessingEngine extends AbstractProcessingEngine {
         descriptors.add(KafkaStreamProcessingEngine.SPARK_MEMORY_STORAGE_FRACTION)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_SCHEDULER_MODE)
         descriptors.add(KafkaStreamProcessingEngine.SPARK_PROPERTIES_FILE_PATH)
+        descriptors.add(KafkaStreamProcessingEngine.JAVA_MESOS_LIBRARY_PATH)
+        descriptors.add(KafkaStreamProcessingEngine.SPARK_MESOS_CORE_MAX)
 
         Collections.unmodifiableList(descriptors)
     }

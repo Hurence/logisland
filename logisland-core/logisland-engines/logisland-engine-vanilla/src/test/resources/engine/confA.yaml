@@ -1,0 +1,4 @@
+engine:
+  component: com.hurence.logisland.engine.vanilla.PlainJavaEngine
+  type: engine
+  documentation: MyEngine

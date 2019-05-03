@@ -16,11 +16,8 @@
 package com.hurence.logisland.component;
 
 
-
 import com.hurence.logisland.controller.ControllerService;
-import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.record.RecordUtils;
 import com.hurence.logisland.record.StandardRecord;
 
 import java.io.Serializable;

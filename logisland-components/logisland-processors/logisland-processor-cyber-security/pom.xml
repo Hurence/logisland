@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-processors</artifactId>
-        <version>1.0.0-RC1</version>
+        <version>1.1.2</version>
     </parent>
 
     <artifactId>logisland-processor-cyber-security</artifactId>

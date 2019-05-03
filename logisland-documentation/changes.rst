@@ -2,13 +2,25 @@ What's new in logisland ?
 =========================
 
 
-v1.0.0-RC1
+
+v1.1.2
+------
+
+- add a clock service
+- improve monitoring
+- improve Cassandra support
+
+v1.0.0
 -------
 
 - add support for JMS kafka connect source
 - add support for JDBC kafka connect source
 - add Cassandra datastore service
 - support all Kafka connect sinks
+- add KafkaStreams engine
+- update documentation
+- fix test framework (runner)
+- added vanilla java engine
 
 
 v0.14.0

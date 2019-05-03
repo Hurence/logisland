@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,12 +22,13 @@ package com.hurence.logisland.serializer;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.util.runner.RecordValidator;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -130,8 +131,9 @@ public class ExtendedJsonSerializerTest {
         serializer.serialize(baos, deserializedRecord);
         baos.close();
 
+        final String desRecordStr = new String(baos.toByteArray());
+        System.out.println(desRecordStr);
 
-        System.out.println(new String(baos.toByteArray()));
     }
 
 
@@ -139,13 +141,19 @@ public class ExtendedJsonSerializerTest {
     public void validateArrays() throws IOException {
 
         final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer();
-
+        Map obj1 = new HashMap<>();
+        obj1.put("name", "greg");
+        obj1.put("numero", 1);
+        Map obj2 = new HashMap<>();
+        obj2.put("name", "greg2");
+        obj2.put("numero", 2);
 
         Record record = new StandardRecord("cisco");
         record.setId("firewall_record1");
         record.addError("fatal_error", "ouille");
-        //record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
-
+        record.setField("tags", FieldType.ARRAY, new ArrayList<>(Arrays.asList("spam", "filter", "mail")));
+        record.setField("numbers", FieldType.ARRAY, new ArrayList<>(Arrays.asList(1, 2, 3)));
+        record.setField("object", FieldType.ARRAY, new ArrayList<>(Arrays.asList(obj1, obj2)));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.serialize(baos, record);
@@ -153,10 +161,13 @@ public class ExtendedJsonSerializerTest {
 
 
         String strEvent = new String(baos.toByteArray());
+        System.out.println(strEvent);
+
+
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         Record deserializedRecord = serializer.deserialize(bais);
 
-        // assertEquals(record.getAllFieldsSorted(), deserializedRecord.getAllFieldsSorted());
+        assertEquals(record, deserializedRecord);
 
     }
 
@@ -189,6 +200,8 @@ public class ExtendedJsonSerializerTest {
 
 
         String strEvent = new String(baos.toByteArray());
+        System.out.println(strEvent);
+
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         Record deserializedRecord = serializer.deserialize(bais);
 
@@ -259,5 +272,93 @@ public class ExtendedJsonSerializerTest {
         assertEquals(FieldType.DATETIME, record.getField("myDateAsString").getType());
         assertEquals(FieldType.LONG, record.getField("unformattedDate").getType());
 
+    }
+
+    @Test
+    public void deserialzeWithObject() {
+        //expected record
+        Map<String, Object> deviceMap = new HashMap<>();
+        deviceMap.put("category", "mobile");
+        deviceMap.put("mobile_brand_name", null);
+        deviceMap.put("mobile_os_hardware_model", "x86_64");
+        deviceMap.put("time_zone_offset_seconds", 7200);
+        final Record expectedRecord = new StandardRecord();
+        expectedRecord.setField("device", FieldType.MAP, deviceMap);
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer();
+        //record from rawJson Deserialization
+        final String recordStr = "{\"device\":{\"category\":\"mobile\",\"mobile_brand_name\":null,\"mobile_os_hardware_model\":\"x86_64\",\"time_zone_offset_seconds\":7200}}";
+        ByteArrayInputStream baisFromRawJson = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(baisFromRawJson);
+
+        expectedRecord.setId(deserializedRecord.getId());
+        expectedRecord.setTime(deserializedRecord.getTime());
+        expectedRecord.setType(deserializedRecord.getType());
+        //tests
+        assertEquals(expectedRecord, deserializedRecord);
+
+    }
+
+    @Test
+    public void deserialzeWithArrays() {
+        //json
+        final String recordStr = "{\"event_params\":[" +
+                "{\"key\":\"category\",\"value\":{\"string_value\":\"api\",\"int_value\":null,\"float_value\":null,\"double_value\":null}}," +
+                "{\"key\":\"firebase_event_origin\",\"value\":{\"string_value\":\"app\",\"int_value\":null,\"float_value\":null,\"double_value\":null}}" +
+        "]}";
+        //expected record
+        ArrayList<Map<String, Object>> eventparams = new ArrayList<>();
+        Map<String, Object> param1 = new HashMap<>();
+        param1.put("key", "category");
+        Map<String, Object> valueParam1 = new HashMap<>();
+        valueParam1.put("string_value", "api");
+        valueParam1.put("int_value", null);
+        valueParam1.put("float_value", null);
+        valueParam1.put("double_value", null);
+        param1.put("value", valueParam1);
+        Map<String, Object> param2 = new HashMap<>();
+        param2.put("key", "firebase_event_origin");
+        Map<String, Object> valueParam2 = new HashMap<>();
+        valueParam2.put("string_value", "app");
+        valueParam2.put("int_value", null);
+        valueParam2.put("float_value", null);
+        valueParam2.put("double_value", null);
+        param2.put("value", valueParam2);
+        eventparams.add(param1);
+        eventparams.add(param2);
+
+        final Record expectedRecord = new StandardRecord();
+        expectedRecord.setField("event_params", FieldType.ARRAY, eventparams);
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer();
+        ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(bais);
+
+        expectedRecord.setId(deserializedRecord.getId());
+        expectedRecord.setTime(deserializedRecord.getTime());
+        expectedRecord.setType(deserializedRecord.getType());
+
+        assertEquals(expectedRecord, deserializedRecord);
+    }
+
+    @Test
+    public void deserialzeIdToRecordId() {
+        //json
+        final String recordStr = "{\"id\":\"id_record\", \"name\": \"greg\"}";
+        //expected record
+        ArrayList<Map<String, Object>> eventparams = new ArrayList<>();
+
+        final Record expectedRecord = new StandardRecord();
+        expectedRecord.setId("id_record");
+        expectedRecord.setField("name", FieldType.STRING, "greg");
+
+        final ExtendedJsonSerializer serializer = new ExtendedJsonSerializer();
+        ByteArrayInputStream bais = new ByteArrayInputStream(recordStr.getBytes());
+        Record deserializedRecord = serializer.deserialize(bais);
+
+        expectedRecord.setTime(deserializedRecord.getTime());
+        expectedRecord.setType(deserializedRecord.getType());
+
+        assertEquals(expectedRecord, deserializedRecord);
     }
 }

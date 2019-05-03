@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.elasticsearch;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
         "Each incoming record must be possibly enriched with information stored in elasticsearch. \n" +
         "Each outcoming record holds at least the input record plus potentially one or more fields coming from of one elasticsearch document."
 )
+@ExtraDetailFile("./details/EnrichRecordsElasticsearch-Detail.rst")
 public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
     public static final PropertyDescriptor RECORD_KEY_FIELD = new PropertyDescriptor.Builder()

@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.commonlogs.gitlab;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
@@ -45,6 +46,7 @@ import java.util.Map;
         + " This allows for instance to monitor activities in your Gitlab server."
         + " The expected input of this processor are records from the production_json.log log file of Gitlab which contains JSON records."
         + " You can for instance use the `kafkacat <https://github.com/edenhill/kafkacat>`_ command to inject those logs into kafka and thus Logisland.")
+@ExtraDetailFile("./details/ParseGitlabLog-Detail.rst")
 public class ParseGitlabLog extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ParseGitlabLog.class);

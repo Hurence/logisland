@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
         value = "another regex that could match",
         description = "this regex will be tried if the main one has not matched. " +
                 "It must be in the form alt.value.regex.1 and alt.value.fields.1")
+@ExtraDetailFile("./details/common-processors/SplitText-Detail.rst")
 public class SplitText extends AbstractProcessor {
 
     static final long serialVersionUID = 1413578915552852739L;

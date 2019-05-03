@@ -1,23 +1,22 @@
-/*
- *  * Copyright (C) 2018 Hurence (support@hurence.com)
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -32,6 +31,7 @@ import java.util.*;
 
 @Tags({"record", "fields", "Expand", "Map"})
 @CapabilityDescription("Expands the content of a MAP field to the root.")
+@ExtraDetailFile("./details/common-processors/ExpandMapFields-Detail.rst")
 public class ExpandMapFields extends AbstractProcessor {
 
     public static final PropertyDescriptor FIELDS_TO_EXPAND = new PropertyDescriptor.Builder()

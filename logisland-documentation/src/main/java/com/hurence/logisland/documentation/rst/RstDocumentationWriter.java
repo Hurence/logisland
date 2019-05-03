@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package com.hurence.logisland.documentation.rst;
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.SeeAlso;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginClassLoader;
@@ -29,9 +30,12 @@ import com.hurence.logisland.documentation.DocumentationWriter;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -49,24 +53,20 @@ public class RstDocumentationWriter implements DocumentationWriter {
     public static final String ADDITIONAL_DETAILS_RST = "additionalDetails.rst";
 
     @Override
-    public void write(final ConfigurableComponent configurableComponent, final OutputStream streamToWriteTo) throws IOException {
+    public void write(final ConfigurableComponent configurableComponent, final OutputStream streamToWriteTo) {
 
-        try {
-            final RstPrintWriter rstWriter = new RstPrintWriter(streamToWriteTo, true);
+        final RstPrintWriter rstWriter = new RstPrintWriter(streamToWriteTo, true);
 
-            rstWriter.writeTransition();
-            rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
-            writeDescription(configurableComponent, rstWriter);
-            writeTags(configurableComponent, rstWriter);
-            writeProperties(configurableComponent, rstWriter);
-            writeDynamicProperties(configurableComponent, rstWriter);
-            writeAdditionalBodyInfo(configurableComponent, rstWriter);
-            writeSeeAlso(configurableComponent, rstWriter);
+        rstWriter.writeTransition();
+        rstWriter.writeInternalReference(configurableComponent.getClass().getCanonicalName());
+        writeDescription(configurableComponent, rstWriter);
+        writeTags(configurableComponent, rstWriter);
+        writeProperties(configurableComponent, rstWriter);
+        writeDynamicProperties(configurableComponent, rstWriter);
+        writeAdditionalBodyInfo(configurableComponent, rstWriter);
+        writeSeeAlso(configurableComponent, rstWriter);
 
-            rstWriter.close();
-        } catch (XMLStreamException | FactoryConfigurationError e) {
-            throw new IOException("Unable to create XMLOutputStream", e);
-        }
+        rstWriter.close();
     }
 
 
@@ -111,16 +111,42 @@ public class RstDocumentationWriter implements DocumentationWriter {
      *
      * @param configurableComponent the component to describe
      * @param rstWriter             the stream writer
-     * @throws XMLStreamException thrown if there was a problem writing to the
-     *                            XML stream
      */
     protected void writeAdditionalBodyInfo(final ConfigurableComponent configurableComponent,
-                                           final RstPrintWriter rstWriter) throws XMLStreamException {
+                                           final RstPrintWriter rstWriter) {
 
+        rstWriter.writeSectionTitle(3, "Extra informations");
+        String filepath = getExtraFilePath(configurableComponent);
+        if (filepath == null) {
+            rstWriter.println("No additional information is provided");
+        } else {
+            rstWriter.writeIncludeReference(filepath);
+        }
+    }
+
+    /**
+     * Gets a description of the ConfigurableComponent using the
+     * CapabilityDescription annotation.
+     *
+     * @param configurableComponent the component to describe
+     * @return a description of the configurableComponent
+     */
+    private String getExtraFilePath(final ConfigurableComponent configurableComponent) {
+        final ExtraDetailFile extraFilePath = configurableComponent.getClass().getAnnotation(
+                ExtraDetailFile.class);
+
+        final String filePath;
+        if (extraFilePath != null) {
+            filePath = extraFilePath.value();
+        } else {
+            filePath = null;
+        }
+
+        return filePath;
     }
 
     private void writeTags(final ConfigurableComponent configurableComponent,
-                           final RstPrintWriter rstWriter) throws XMLStreamException {
+                           final RstPrintWriter rstWriter) {
         final Tags tags = configurableComponent.getClass().getAnnotation(Tags.class);
         rstWriter.writeSectionTitle(3, "Tags");
         if (tags != null) {
@@ -151,7 +177,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
     protected void writeDescription(final ConfigurableComponent configurableComponent,
                                     final RstPrintWriter rstWriter) {
         rstWriter.writeSectionTitle(2, getTitle(configurableComponent));
-        rstWriter.println(getDescription(configurableComponent));
+        rstWriter.printDescriptionString(getDescription(configurableComponent));
 
         PluginClassLoader cl = (PluginClassLoader) PluginLoader.getRegistry().get(configurableComponent.getClass().getCanonicalName());
         if (cl != null) {
@@ -183,7 +209,6 @@ public class RstDocumentationWriter implements DocumentationWriter {
         }
 
         return description;
-
     }
 
     /**
@@ -203,7 +228,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
             final boolean containsSensitiveProperties = containsSensitiveProperties(configurableComponent);
             rstWriter.print("In the list below, the names of required properties appear in ");
             rstWriter.printStrong("bold");
-            rstWriter.println(". Any other properties (not in bold) are considered optional. " +
+            rstWriter.print(". Any other properties (not in bold) are considered optional. " +
                     "The table also indicates any default values");
             if (containsExpressionLanguage) {
                 if (!containsSensitiveProperties) {
@@ -215,18 +240,20 @@ public class RstDocumentationWriter implements DocumentationWriter {
                 rstWriter.writeLink("Expression Language", "expression-language.html");
             }
             if (containsSensitiveProperties) {
-                rstWriter.print(", and whether a property is considered " + "\"sensitive\", meaning that its value will be encrypted. Before entering a "
-                        + "value in a sensitive property, ensure that the ");
+                rstWriter.print(", and whether a property is considered \"sensitive\".");
+//                        ", meaning that its value will be encrypted. Before entering a "
+//                        + "value in a sensitive property, ensure that the ");
 
-                rstWriter.printStrong("logisland.properties");
-                rstWriter.print(" file has " + "an entry for the property ");
-                rstWriter.printStrong("logisland.sensitive.props.key");
+//                rstWriter.printStrong("logisland.properties");
+//                rstWriter.print(" file has " + "an entry for the property ");
+//                rstWriter.printStrong("logisland.sensitive.props.key");
             }
             rstWriter.println(".");
 
             rstWriter.printCsvTable("allowable-values",
                     new String[]{"Name", "Description", "Allowable Values", "Default Value", "Sensitive", "EL"},
-                    new int[]{20, 60, 30, 20, 10, 10});
+                    new int[]{20, 60, 30, 20, 10, 10},
+                    '\\');
 
 
             // write the individual properties
@@ -234,15 +261,15 @@ public class RstDocumentationWriter implements DocumentationWriter {
 
                 rstWriter.print("   \"");
                 if (property.isRequired()) {
-                    rstWriter.printStrong(property.getName());
+                    rstWriter.printStrong(property.getName().replace("\"", "\\\""));
                 } else {
-                    rstWriter.print(property.getName());
+                    rstWriter.print(property.getName().replace("\"", "\\\""));
                 }
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
                 if (property.getDescription() != null && property.getDescription().trim().length() > 0) {
-                    rstWriter.print(property.getDescription().replace("\n", "\n\n   "));
+                    rstWriter.print(property.getDescription().replace("\n", "\n\n   ").replace("\"", "\\\""));
                 } else {
                     rstWriter.print("No Description Provided.");
                 }
@@ -254,7 +281,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
 
 
                 rstWriter.print("\"");
-                rstWriter.print(property.getDefaultValue());
+                rstWriter.print(property.getDefaultValue() == null ? null : property.getDefaultValue().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
 
@@ -262,7 +289,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
                 if (property.isSensitive()) {
                     rstWriter.printStrong("true");
                 } else {
-                    rstWriter.print("");
+                    rstWriter.print("false");
                 }
                 rstWriter.print("\", ");
 
@@ -271,7 +298,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
                 if (property.isExpressionLanguageSupported()) {
                     rstWriter.printStrong("true");
                 } else {
-                    rstWriter.print("");
+                    rstWriter.print("false");
                 }
 
 
@@ -324,27 +351,38 @@ public class RstDocumentationWriter implements DocumentationWriter {
             rstWriter.writeSectionTitle(3, "Dynamic Properties");
             rstWriter.println("Dynamic Properties allow the user to specify both the name and value of a property.");
             rstWriter.printCsvTable("dynamic-properties",
-                    new String[]{"Name", "Value", "Description", "EL"},
-                    new int[]{20, 20, 40, 10});
+                    new String[]{"Name", "Value", "Description", "Allowable Values", "Default Value", "EL"},
+                    new int[]{20, 20, 40, 40, 20, 10},
+                    '\\');
 
             for (final DynamicProperty dynamicProperty : dynamicProperties) {
 
                 rstWriter.print("   \"");
-                rstWriter.print(dynamicProperty.name());
+                rstWriter.print(dynamicProperty.name().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.value());
+                rstWriter.print(dynamicProperty.value().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 rstWriter.print("\"");
-                rstWriter.print(dynamicProperty.description());
+                rstWriter.print(dynamicProperty.description().replace("\"", "\\\""));
+                rstWriter.print("\", ");
+
+                final PropertyDescriptor descriptorExample = configurableComponent.getPropertyDescriptor(dynamicProperty.nameForDoc());
+
+                rstWriter.print("\"");
+                writeValidValues(rstWriter, descriptorExample);
+                rstWriter.print("\", ");
+
+                rstWriter.print("\"");
+                rstWriter.print(descriptorExample.getDefaultValue() == null ? null : descriptorExample.getDefaultValue().replace("\"", "\\\""));
                 rstWriter.print("\", ");
 
                 if (dynamicProperty.supportsExpressionLanguage()) {
                     rstWriter.printStrong("true");
                 } else
-                    rstWriter.print("\"\"");
+                    rstWriter.print("false");
                 rstWriter.println();
             }
 
@@ -355,9 +393,7 @@ public class RstDocumentationWriter implements DocumentationWriter {
         final List<DynamicProperty> dynamicProperties = new ArrayList<>();
         final DynamicProperties dynProps = configurableComponent.getClass().getAnnotation(DynamicProperties.class);
         if (dynProps != null) {
-            for (final DynamicProperty dynProp : dynProps.value()) {
-                dynamicProperties.add(dynProp);
-            }
+            Collections.addAll(dynamicProperties, dynProps.value());
         }
 
         final DynamicProperty dynProp = configurableComponent.getClass().getAnnotation(DynamicProperty.class);
@@ -369,11 +405,8 @@ public class RstDocumentationWriter implements DocumentationWriter {
     }
 
     private void writeValidValueDescription(RstPrintWriter rstWriter, String description) {
-
         rstWriter.print(description);
-
-        //   rstWriter.writeImage("_static/iconInfo.png", description, null, null, null, null);
-
+//        rstWriter.writeImage("_static/iconInfo.png", description, null, null, null, null);
     }
 
     /**
@@ -382,8 +415,6 @@ public class RstDocumentationWriter implements DocumentationWriter {
      *
      * @param rstWriter the stream writer to use
      * @param property  the property to describe
-     * @throws XMLStreamException thrown if there was a problem writing to the
-     *                            XML Stream
      */
     protected void writeValidValues(RstPrintWriter rstWriter, PropertyDescriptor property) {
         if (property.getAllowableValues() != null && property.getAllowableValues().size() > 0) {
@@ -395,9 +426,10 @@ public class RstDocumentationWriter implements DocumentationWriter {
                 } else {
                     first = false;
                 }
-                rstWriter.print(value.getDisplayName());
+                rstWriter.print(value.getValue() == null ? null : value.getValue().replace("\"", "\\\""));
+//                rstWriter.print(value.getDisplayName());
                 if (value.getDescription() != null) {
-                    writeValidValueDescription(rstWriter, " (" + value.getDescription() + ")");
+                    writeValidValueDescription(rstWriter, " (" + value.getDescription().replace("\"", "\\\"") + ")");
                 }
             }
         }

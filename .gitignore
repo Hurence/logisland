@@ -2,6 +2,9 @@
 *.iml
 **/.idea/*
 
+# generated documentation
+logisland-core/logisland-framework/logisland-resources/src/main/resources/docs/
+
 # Eclipse
 **/.project
 **/.settings
@@ -22,6 +25,9 @@
 # File copy 
 **/*.*~
 
+# PlantUml files
+**/*.plantuml
+
 # Misc
 *.tar.gz
 **/_build/
@@ -34,5 +40,8 @@ logs/
 
 **/log/
 **/chronix/data/
+
+.java-version
+
 
 *.factorypath

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -34,7 +35,7 @@ public class ClassFinder {
      */
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
-
+        logger.info("classpath '{}'", classpath);
         String[] paths = classpath.split(System.getProperty("path.separator"));
 
      /*   String javaHome = System.getProperty("java.home");
@@ -47,7 +48,6 @@ public class ClassFinder {
             File file = new File(path);
             if (file.exists() && file.getName().contains("logisland")) {
                 findClasses(file, file, true, visitor);
-
             }
         }
     }
@@ -62,25 +62,26 @@ public class ClassFinder {
         } else {
             if (file.getName().toLowerCase().endsWith(".jar") && includeJars) {
 
-                JarFile jar = null;
+                JarFile jar;
                 try {
                     jar = new JarFile(file);
-                } catch (Exception ex) {
-
+                } catch (IOException ex) {
+                    logger.error("Error during creation of JarFile", ex);
+                    throw new RuntimeException(ex);//so we know there is something wrong with doc generation
                 }
-                if (jar != null) {
-                    Enumeration<JarEntry> entries = jar.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = entries.nextElement();
-                        String name = entry.getName();
-                        int extIndex = name.lastIndexOf(".class");
-                        if (extIndex > 0) {
-                            if (!visitor.visit(name.substring(0, extIndex).replace("/", "."))) {
-                                return false;
-                            }
+
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    int extIndex = name.lastIndexOf(".class");
+                    if (extIndex > 0) {
+                        if (!visitor.visit(name.substring(0, extIndex).replace("/", "."))) {
+                            return false;
                         }
                     }
                 }
+
             }
             else if (file.getName().toLowerCase().endsWith(".class")) {
                 if (!visitor.visit(createClassName(root, file))) {

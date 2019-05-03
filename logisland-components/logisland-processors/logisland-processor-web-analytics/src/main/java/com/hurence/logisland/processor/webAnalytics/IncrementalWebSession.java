@@ -1,6 +1,22 @@
+/**
+ * Copyright (C) 2016 Hurence (support@hurence.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -56,12 +72,12 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         " Updates have impacts on fields of the web session such as event counter, last visited page, " +
         " session duration, ...\n" +
         " Before updates are actually applied, checks are performed to detect rules that would trigger the creation" +
-        " of a new session:" +
+        " of a new session:\n\n" +
         "\tthe duration between the web session and the web event must not exceed the specified time-out,\n" +
         "\tthe web session and the web event must have timestamps within the same day (at midnight a new web session " +
         "is created),\n" +
         "\tsource of traffic (campaign, ...) must be the same on the web session and the web event.\n" +
-
+        "\n" +
         " When a breaking rule is detected, a new web session is created with a new session identifier where as" +
         " remaining web-events still have the original session identifier. The new session identifier is the original" +
         " session suffixed with the character '#' followed with an incremented counter. This new session identifier" +
@@ -80,6 +96,7 @@ value = "This processor creates and updates web-sessions based on incoming web-e
         "- optional fields that may be retrieved from the processed events\n" +
         "\n"
 )
+@ExtraDetailFile("./details/IncrementalWebSession-Detail.rst")
 public class IncrementalWebSession
        extends AbstractProcessor
 {

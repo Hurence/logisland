@@ -47,13 +47,13 @@ Building Logisland
 ------------------
 to build from the source just clone source and package with maven (logisland requires a **maven 3.5.2** version and beyond)
 
-.. code-block::
+.. code-block:: sh
 
     git clone https://github.com/Hurence/logisland.git
     cd logisland
     mvn clean install -Pfull
 
-the final package is available at `logisland-assembly/target/logisland-1.0.0-RC1-bin.tar.gz`
+the final package is available at `logisland-assembly/target/logisland-1.1.2-bin.tar.gz`
 
 You can also download the `latest release build <https://github.com/Hurence/logisland/releases>`_
 
@@ -64,21 +64,31 @@ Local Setup
 +++++++++++
 Alternatively you can deploy **logisland** on any linux server from which Kafka and Spark are available
 
+Replace all versions in the below code by the required versions (spark version, logisland version on specific HDP version, kafka scala version and kafka version etc.) 
+
+The Kafka distributions are available at this address: <https://kafka.apache.org/downloads> 
+
+Last tested version of scala version for kafka is: **2.11** with preferred release of kafka : **0.10.2.2**
+
+Last tested version of Spark is: **2.3.1** on Hadoop version: **2.7** 
+
+But you should choose the Spark version that is compatible with your environment and hadoop installation if you have one (for example Spark **2.1.0** on hadoop **2.7**). Note that hadoop 2.7 can run Spark 2.4.x, 2.3.x, 2.2.x, 2.1.x. Check at this URL what is available : http://d3kbcqa49mib13.cloudfront.net/
+
 .. code-block:: sh
 
-    # install Kafka 0.10.0.0 & start a zookeeper node + a broker
-    curl -s http://apache.crihan.fr/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz | tar -xz -C /usr/local/
-    cd /usr/local/kafka_2.11-0.10.0.0
+    # install Kafka & start a zookeeper node + a broker
+    curl -s https://www-us.apache.org/dist/kafka/<kafka_release>/kafka_scala_version>-<kafka_version>.tgz | tar -xz -C /usr/local/
+    cd /usr/local/kafka_<scala_version>-<kafka_version>
     nohup bin/zookeeper-server-start.sh config/zookeeper.properties > zookeeper.log 2>&1 &
     JMX_PORT=10101 nohup bin/kafka-server-start.sh config/server.properties > kafka.log 2>&1 &
 
-    # install Spark 2.1.0
-    curl -s http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz | tar -xz -C /usr/local/
-    export SPARK_HOME=/usr/local/spark-2.1.0-bin-hadoop2.7
+    # install Spark (choose the spark version compatible with your hadoop distrib if you have one)
+    curl -s http://d3kbcqa49mib13.cloudfront.net/spark-<spark-version>-bin-hadoop<hadoop-version>.tgz | tar -xz -C /usr/local/
+    export SPARK_HOME=/usr/local/spark-<spark-version>-bin-hadoop<hadoop-version>
 
-    # install Logisland 1.0.0-RC1
+    # install Logisland 1.1.2
     curl -s https://github.com/Hurence/logisland/releases/download/v1.0.0-RC2/logisland-1.0.0-RC2-bin.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.0.0-RC1
+    cd /usr/local/logisland-1.1.2
 
     # launch a logisland job
     bin/logisland.sh --conf conf/index-apache-logs.yml
@@ -107,9 +117,9 @@ Launching logisland streaming apps is just easy as unarchiving logisland distrib
 
 .. code-block:: sh
 
-    # install Logisland 1.0.0-RC1
-    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.0.0-RC1-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
-    cd /usr/local/logisland-1.0.0-RC1
+    # install Logisland 1.1.2
+    curl -s https://github.com/Hurence/logisland/releases/download/v0.10.0/logisland-1.1.2-bin-hdp2.5.tar.gz  | tar -xz -C /usr/local/
+    cd /usr/local/logisland-1.1.2
     bin/logisland.sh --conf conf/index-apache-logs.yml
 
 
@@ -130,7 +140,7 @@ The first part is the `ProcessingEngine` configuration (here a Spark streaming e
 
 .. code-block:: yaml
 
-    version: 1.0.0-RC1
+    version: 1.1.2
     documentation: LogIsland job config file
     engine:
       component: com.hurence.logisland.engine.spark.KafkaStreamProcessingEngine
@@ -239,7 +249,7 @@ Once you've edited your configuration file, you can submit it to execution engin
 
 
 You should jump to the `tutorials section <http://logisland.readthedocs.io/en/latest/tutorials/index.html>`_ of the documentation.
-And then continue with `components documentation<http://logisland.readthedocs.io/en/latest/components.html>`_
+And then continue with `components documentation <http://logisland.readthedocs.io/en/latest/components.html>`_
 
 Contributing
 ------------

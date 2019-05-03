@@ -18,6 +18,7 @@ package com.hurence.logisland.processor;
 import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
@@ -35,6 +36,7 @@ import java.util.*;
         supportsExpressionLanguage = true,
         value = "the new type",
         description = "convert field value into new type")
+@ExtraDetailFile("./details/common-processors/ConvertFieldsType-Detail.rst")
 public class ConvertFieldsType extends AbstractProcessor {
 
 

@@ -90,7 +90,7 @@ public class Field implements PropertyValue, Serializable {
 
         if (!type.equals(field.type)) return false;
         if (!name.equals(field.name)) return false;
-        return Objects.equals(rawValue, field.rawValue);
+        return Objects.deepEquals(rawValue, field.rawValue);
 
     }
 

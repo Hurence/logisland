@@ -2,7 +2,6 @@ version: '3'
 services:
 
   zookeeper:
-    container_name: zookeeper
     image: hurence/zookeeper
     hostname: zookeeper
     ports:
@@ -11,11 +10,12 @@ services:
       - logisland
 
   kafka:
-    container_name: kafka
-    image: hurence/kafka
+    image: hurence/kafka:0.10.2.2-scala-2.11
     hostname: kafka
     ports:
       - '9092:9092'
+    volumes:
+      - kafka-home:/opt/kafka_2.11-0.10.2.2/
     environment:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ADVERTISED_HOST_NAME: kafka
@@ -24,69 +24,38 @@ services:
     networks:
       - logisland
 
-  # ES container
-  # make sure to increase vm.max_map_count kernel setting like documented here :
-  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
-  elasticsearch:
-    container_name: elasticsearch
-    environment:
-      - ES_JAVA_OPT='-Xms1G -Xmx1G'
-      - cluster.name=es-logisland
-      - http.host=0.0.0.0
-      - transport.host=0.0.0.0
-      - xpack.security.enabled=false
-    hostname: elasticsearch
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:5.4.0'
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    networks:
-      - es
-
-  # Kibana container
-  kibana:
-    container_name: kibana
-    environment:
-      - 'ELASTICSEARCH_URL=http://elasticsearch:9200'
-    image: 'docker.elastic.co/kibana/kibana:5.4.0'
-    ports:
-      - '5601:5601'
-    networks:
-      - es
-
-
   # Logisland container : does nothing but launching
   logisland:
-    container_name: logisland
-    image: hurence/logisland:latest
+    hostname: logisland
+    image: hurence/logisland:1.1.2
     command: tail -f bin/logisland.sh
-    #command: bin/logisland.sh --conf /conf/index-apache-logs.yml
     ports:
       - '4050:4050'
       - '8082:8082'
       - '9999:9999'
     volumes:
-      - ./conf/logisland:/conf
-      - ./data/logisland:/data
+      - kafka-home:/opt/kafka_2.11-0.10.2.2/ # Just so that kafka scripts are available inside container
+    environment:
+      KAFKA_HOME: /opt/kafka_2.11-0.10.2.2
+      KAFKA_BROKERS: kafka:9092
+      ZK_QUORUM: zookeeper:2181
+      ES_HOSTS: elasticsearch:9300
+      ES_CLUSTER_NAME: es-logisland
+      REDIS_CONNECTION: redis:6379
+      MONGO_URI: mongodb://mongo:27017
     networks:
       - logisland
-      - es
 
   redis:
-    container_name: redis
+    hostname: redis
     image: 'redis:latest'
     ports:
       - '6379:6379'
     networks:
       - logisland
 
-#This networks hinder containers to communicate with outside world (curl outside world)
+volumes:
+  kafka-home:
+
 networks:
-  es:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.enable_ip_masquerade: "false"
   logisland:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.enable_ip_masquerade: "false"

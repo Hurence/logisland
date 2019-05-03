@@ -172,7 +172,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      */
     @Override
     public void onPropertyModified(PropertyDescriptor descriptor, String oldValue, String newValue) {
-        logger.info("property {} value changed from {} to {}", descriptor.getName(), oldValue, newValue);
+        getLogger().info("property {} value changed from {} to {}", new Object[]{descriptor.getName(), oldValue, newValue});
     }
 
     /**
@@ -208,8 +208,6 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
      * @return PropertyDescriptor objects this processor currently supports
      */
     public abstract List<PropertyDescriptor> getSupportedPropertyDescriptors();
-    // {        return Collections.EMPTY_LIST;    }
-
 
     /**
      * Provides subclasses the ability to perform initialization logic
