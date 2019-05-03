@@ -45,6 +45,7 @@ notifications:
   email:
     - bailet.thomas@gmail.com
     - s.h.gregoire@gmail.com
+    - mathieu.rossignol@hurence.com 
 
   webhooks:
     urls:
