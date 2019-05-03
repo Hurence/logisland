@@ -30,10 +30,7 @@ import org.junit.runners.MethodSorters;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author tom
@@ -321,7 +318,7 @@ public class TestInterpretedPropertyValueWithMvelEngine {
 
         InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
 
-        PropertyValue pv = ipv.evaluate(null);
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
 
         final List<String> listGenerated =  (List<String>) pv.getRawValue();
         Assert.assertEquals(list, listGenerated);
@@ -340,7 +337,7 @@ public class TestInterpretedPropertyValueWithMvelEngine {
 
         InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
 
-        PropertyValue pv = ipv.evaluate(null);
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
 
         final  Map<Object, Object> mapGenerated =  (Map<Object, Object>) pv.getRawValue();
         Assert.assertEquals(map, mapGenerated);
@@ -356,7 +353,7 @@ public class TestInterpretedPropertyValueWithMvelEngine {
 
         InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
 
-        PropertyValue pv = ipv.evaluate(null);
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
 
         final Object[] listGenerated = (Object[]) pv.getRawValue();
         Assert.assertArrayEquals(array, listGenerated);
@@ -370,7 +367,7 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         String rawValue = "${new File(\"hacked\").createNewFile()}";
         InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
 
-        PropertyValue pv = ipv.evaluate(null);
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
         Assert.assertNull(pv.asBoolean());//did not execute
         File hackedFile = new File("hacked");
         Assert.assertFalse(hackedFile.exists());
@@ -384,7 +381,7 @@ public class TestInterpretedPropertyValueWithMvelEngine {
         String rawValue = "${'bonjour'[1]}";
         InterpretedPropertyValue ipv = new InterpretedPropertyValue(rawValue, null, null);
 
-        PropertyValue pv = ipv.evaluate(null);
+        PropertyValue pv = ipv.evaluate(Collections.emptyMap());
         Assert.assertEquals("o", pv.asString());
     }
 }
