@@ -50,7 +50,7 @@
                         <phase>package</phase>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/main/assembly/dependencies.xml</descriptor>
+                                <descriptor>src/assembly/dependencies.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
