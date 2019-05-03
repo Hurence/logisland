@@ -13,26 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hurence.logisland.service.elasticsearch.multiGet;
+package com.hurence.logisland.service.elasticsearch;
 
-/**
- * Indicates an invalid MultiGetQueryRecord
- */
-public class InvalidMultiGetQueryRecordException extends Exception {
+public class GeoPoint {
+    double lat, lon;
 
-    public InvalidMultiGetQueryRecordException(String message, Throwable cause) {
-        super(message, cause);
+    public GeoPoint() {
     }
 
-    public InvalidMultiGetQueryRecordException(String message) {
-        super(message);
+    public GeoPoint(double lat, double lon) {
+        this.lat = lat;
+        this.lon = lon;
     }
 
-    public InvalidMultiGetQueryRecordException(Throwable cause) {
-        super(cause);
+    public double getLat() {
+        return lat;
     }
 
-    public InvalidMultiGetQueryRecordException() {
-        super();
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLon() {
+        return lon;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "lat=" + lat +
+                ", lon=" + lon +
+                '}';
     }
 }

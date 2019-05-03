@@ -23,9 +23,9 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -152,15 +152,15 @@ public class TestElasticsearch_5_4_0_ClientService {
 
 
         // Verify the index does not exist
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex("foo"));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection("foo"));
 
         // Define the index
-        elasticsearchClientService.createIndex(2, 1, "foo");
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex("foo"));
+        elasticsearchClientService.createCollection("foo", 2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection("foo"));
 
         // Define another index
-        elasticsearchClientService.createIndex(2, 1, "bar");
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex("foo"));
+        elasticsearchClientService.createCollection("bar", 2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection("foo"));
 
         // Add a mapping to foo
         result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
@@ -180,50 +180,50 @@ public class TestElasticsearch_5_4_0_ClientService {
 
         // create alias
         elasticsearchClientService.createAlias("foo", "aliasFoo");
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex("aliasFoo"));
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection("aliasFoo"));
 
         // Insert a record into foo and count foo
-        Assert.assertEquals(0, elasticsearchClientService.countIndex("foo"));
+        Assert.assertEquals(0, elasticsearchClientService.countCollection("foo"));
         elasticsearchClientService.saveSync("foo", "type1", document1);
-        Assert.assertEquals(1, elasticsearchClientService.countIndex("foo"));
+        Assert.assertEquals(1, elasticsearchClientService.countCollection("foo"));
 
         // copy index foo to bar - should work
-        Assert.assertEquals(0, elasticsearchClientService.countIndex("bar"));
-        elasticsearchClientService.copyIndex(TimeValue.timeValueMinutes(2).toString(), "foo", "bar");
-        elasticsearchClientService.flushBulkProcessor();
+        Assert.assertEquals(0, elasticsearchClientService.countCollection("bar"));
+        elasticsearchClientService.copyCollection(TimeValue.timeValueMinutes(2).toString(), "foo", "bar");
+        elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
-        elasticsearchClientService.refreshIndex("bar");
-        Assert.assertEquals(1, elasticsearchClientService.countIndex("bar"));
+        elasticsearchClientService.refreshCollection("bar");
+        Assert.assertEquals(1, elasticsearchClientService.countCollection("bar"));
 
         // Define incompatible mappings for the same doctype in two different indexes, then try to copy - should fail
         // as a document registered with doctype=type1 in index foo cannot be written as doctype=type1 in index baz.
         //
         // Note: MAPPING2 cannot be added to index foo or bar at all, even under a different doctype, as ES (lucene)
         // does not allow two types for the same field-name in different mappings of the same index. However if
-        // MAPPING2 is added to index baz, then the copyIndex succeeds - because by default ES automatically converts
+        // MAPPING2 is added to index baz, then the copyCollection succeeds - because by default ES automatically converts
         // integers into strings when necessary. Interestingly, this means MAPPING1 and MAPPING2 are not compatible
         // at the "put mapping" level, but are compatible at the "reindex" level..
         //
         // The document (doc1) of type "type1" already in index "foo" cannot be inserted into index "baz" as type1
         // because that means applying its source to MAPPING3 - but MAPPING3 is strict and does not define property
         // "val", so the insert fails.
-        elasticsearchClientService.createIndex(2, 1, "baz");
+        elasticsearchClientService.createCollection("baz",2, 1);
         elasticsearchClientService.putMapping("baz", "type1", MAPPING3.replace('\'', '"'));
 
       /*  try {
-            elasticsearchClientService.copyIndex(TimeValue.timeValueMinutes(2), "foo", "baz");
+            elasticsearchClientService.copyCollection(TimeValue.timeValueMinutes(2), "foo", "baz");
             Assert.fail("Exception not thrown when expected");
         } catch(IOException e) {
             Assert.assertTrue(e.getMessage().contains("Reindex failed"));
         }*/
-        elasticsearchClientService.refreshIndex("baz");
-        Assert.assertEquals(0, elasticsearchClientService.countIndex("baz"));
+        elasticsearchClientService.refreshCollection("baz");
+        Assert.assertEquals(0, elasticsearchClientService.countCollection("baz"));
 
         // Drop index foo
-        elasticsearchClientService.dropIndex("foo");
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex("foo"));
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex("aliasFoo")); // alias for foo disappears too
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex("bar"));
+        elasticsearchClientService.dropCollection("foo");
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection("foo"));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection("aliasFoo")); // alias for foo disappears too
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection("bar"));
     }
 
     @Test
@@ -246,20 +246,20 @@ public class TestElasticsearch_5_4_0_ClientService {
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
 
         // Verify the index does not exist
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection(index));
 
         // Create the index
-        elasticsearchClientService.createIndex(2, 1, index);
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
+        elasticsearchClientService.createCollection(index,2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection(index));
 
         // Put a document in the bulk processor :
         elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
         // Flush the bulk processor :
-        elasticsearchClientService.flushBulkProcessor();
+        elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
         try {
             // Refresh the index :
-            elasticsearchClientService.refreshIndex(index);
+            elasticsearchClientService.refreshCollection(index);
         } catch (Exception e) {
             logger.error("Error while refreshing the index : " + e.toString());
         }
@@ -267,7 +267,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         long documentsNumber = 0;
 
         try {
-            documentsNumber = elasticsearchClientService.countIndex(index);
+            documentsNumber = elasticsearchClientService.countCollection(index);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
@@ -281,7 +281,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         }
 
         try {
-            documentsNumber = elasticsearchClientService.countIndex(index);
+            documentsNumber = elasticsearchClientService.countCollection(index);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
@@ -312,21 +312,21 @@ public class TestElasticsearch_5_4_0_ClientService {
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
 
         // Verify the index does not exist
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection(index));
 
         // Create the index
-        elasticsearchClientService.createIndex(2, 1, index);
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index));
+        elasticsearchClientService.createCollection(index, 2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection(index));
 
         // Put a document in the bulk processor :
         String document1 = ElasticsearchRecordConverter.convertToString(record);
         elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
         // Flush the bulk processor :
-        elasticsearchClientService.flushBulkProcessor();
+        elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
         try {
             // Refresh the index :
-            elasticsearchClientService.refreshIndex(index);
+            elasticsearchClientService.refreshCollection(index);
         } catch (Exception e) {
             logger.error("Error while refreshing the index : " + e.toString());
         }
@@ -334,7 +334,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         long documentsNumber = 0;
 
         try {
-            documentsNumber = elasticsearchClientService.countIndex(index);
+            documentsNumber = elasticsearchClientService.countCollection(index);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
@@ -398,14 +398,14 @@ public class TestElasticsearch_5_4_0_ClientService {
         final ElasticsearchClientService elasticsearchClientService = configureElasticsearchClientService(runner);
 
         // Verify the indexes do not exist
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index1));
-        Assert.assertEquals(false, elasticsearchClientService.existsIndex(index2));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection(index1));
+        Assert.assertEquals(false, elasticsearchClientService.existsCollection(index2));
 
         // Create the indexes
-        elasticsearchClientService.createIndex(2, 1, index1);
-        elasticsearchClientService.createIndex(2, 1, index2);
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index1));
-        Assert.assertEquals(true, elasticsearchClientService.existsIndex(index2));
+        elasticsearchClientService.createCollection(index1, 2, 1);
+        elasticsearchClientService.createCollection(index2, 2, 1);
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection(index1));
+        Assert.assertEquals(true, elasticsearchClientService.existsCollection(index2));
 
         // Put documents in the bulk processor :
         elasticsearchClientService.bulkPut(index1, type1, document1, Optional.of(docId1));
@@ -415,12 +415,12 @@ public class TestElasticsearch_5_4_0_ClientService {
         elasticsearchClientService.bulkPut(index2, type2, document2, Optional.of(docId2));
         elasticsearchClientService.bulkPut(index2, type3, document3, Optional.of(docId3));
         // Flush the bulk processor :
-        elasticsearchClientService.flushBulkProcessor();
+        elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
         try {
             // Refresh the indexes :
-            elasticsearchClientService.refreshIndex(index1);
-            elasticsearchClientService.refreshIndex(index2);
+            elasticsearchClientService.refreshCollection(index1);
+            elasticsearchClientService.refreshCollection(index2);
         } catch (Exception e) {
             logger.error("Error while refreshing the indexes : " + e.toString());
         }
@@ -428,8 +428,8 @@ public class TestElasticsearch_5_4_0_ClientService {
         long countIndex1 = 0;
         long countIndex2 = 0;
         try {
-            countIndex1 = elasticsearchClientService.countIndex(index1);
-            countIndex2 = elasticsearchClientService.countIndex(index2);
+            countIndex1 = elasticsearchClientService.countCollection(index1);
+            countIndex2 = elasticsearchClientService.countCollection(index2);
         } catch (Exception e) {
             logger.error("Error while counting the number of documents in the index : " + e.toString());
         }
@@ -459,7 +459,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
-        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getIndexName());
+        Assert.assertEquals(index1, multiGetResponseRecords.get(0).getCollectionName());
         Assert.assertEquals(type1, multiGetResponseRecords.get(0).getTypeName());
         Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
         Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
@@ -477,7 +477,7 @@ public class TestElasticsearch_5_4_0_ClientService {
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
-        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getIndexName())); // verify that all retrieved are in index1
+        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getCollectionName())); // verify that all retrieved are in index1
         multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(type1, responseRecord.getTypeName())); // verify that the type of all retrieved documents is type1
         multiGetResponseRecords.forEach(responseRecord -> {
             if (responseRecord.getDocumentId() == docId1) {
@@ -515,9 +515,9 @@ public class TestElasticsearch_5_4_0_ClientService {
 
         Assert.assertEquals(5, multiGetResponseRecords.size()); // verify that 5 documents has been retrieved
         multiGetResponseRecords.forEach(responseRecord -> {
-            if (responseRecord.getIndexName() == index1 && !responseRecord.getDocumentId().equals(docId3))
+            if (responseRecord.getCollectionName() == index1 && !responseRecord.getDocumentId().equals(docId3))
                 Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for documents from index1 (except doc3), verify that 3 fields has been retrieved
-            if (responseRecord.getIndexName() == index1 && responseRecord.getDocumentId().equals(docId3))
+            if (responseRecord.getCollectionName() == index1 && responseRecord.getDocumentId().equals(docId3))
                 Assert.assertEquals(2, responseRecord.getRetrievedFields().size()); // for document3 from index1, verify that 2 fields has been retrieved
             if (responseRecord.getDocumentId() == index2 && !responseRecord.getDocumentId().equals(docId3))
                 Assert.assertEquals(4, responseRecord.getRetrievedFields().size()); // for documents from index2 (except doc3), verify that 4 fields has been retrieved

@@ -122,7 +122,7 @@ For instance, if we want to install elasticsearch 5.4 controller service we are 
   Found logisland plugin Elasticsearch 5.4.0 Service Plugin version 1.1.2
 
   It will provide:
-	com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
+	com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
 
   Install done!
 

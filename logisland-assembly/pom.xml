@@ -35,9 +35,6 @@
                     <finalName>logisland-${project.version}-bin</finalName>
                     <attach>false</attach>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <descriptors>
-                        <descriptor>src/assembly/dependencies.xml</descriptor>
-                    </descriptors>
                 </configuration>
                 <version>3.1.1</version>
                 <executions>
@@ -53,6 +50,9 @@
                                 <directoryMode>0775</directoryMode>
                                 <fileMode>0664</fileMode>
                             </archiverConfig>
+                            <descriptors>
+                                <descriptor>src/assembly/dependencies.xml</descriptor>
+                            </descriptors>
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
                     </execution>
@@ -251,14 +251,6 @@
             <artifactId>logisland-documentation</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.hurence.logisland</groupId>
-            <artifactId>logisland-service-elasticsearch_5_4_0-client</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
 
         <!--   <dependency>
          <groupId>com.hurence.logisland</groupId>
@@ -489,6 +481,11 @@
                 <dependency>
                     <groupId>com.hurence.logisland</groupId>
                     <artifactId>logisland-service-elasticsearch_2_4_0-client</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.hurence.logisland</groupId>
+                    <artifactId>logisland-service-elasticsearch_6_6_2-client</artifactId>
                     <version>${project.version}</version>
                 </dependency>
                 <dependency>

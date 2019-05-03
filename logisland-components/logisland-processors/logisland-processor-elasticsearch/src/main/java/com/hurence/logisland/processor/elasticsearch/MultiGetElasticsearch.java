@@ -22,9 +22,9 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
-import com.hurence.logisland.service.elasticsearch.multiGet.InvalidMultiGetQueryRecordException;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetQueryRecord;
-import com.hurence.logisland.service.elasticsearch.multiGet.MultiGetResponseRecord;
+import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
+import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
+import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
 
@@ -200,7 +200,7 @@ public class MultiGetElasticsearch extends AbstractElasticsearchProcessor
 
             multiGetResponseRecords.forEach(responseRecord -> {
                 StandardRecord outputRecord = new StandardRecord();
-                outputRecord.setStringField(indexFieldName, responseRecord.getIndexName());
+                outputRecord.setStringField(indexFieldName, responseRecord.getCollectionName());
                 outputRecord.setStringField(typeFieldName, responseRecord.getTypeName());
                 outputRecord.setStringField(idsFieldName, responseRecord.getDocumentId());
                 if(responseRecord.getRetrievedFields() != null)

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
@@ -30,56 +31,54 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.ActionRequestValidationException;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsAction;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.*;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 
-
-
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 
 @Tags({ "elasticsearch", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 5.4.0.")
-public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService implements ElasticsearchClientService {
+@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.")
+public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
-    protected volatile Client esClient;
-    private volatile List<InetSocketAddress> esHosts;
+
+    protected volatile RestHighLevelClient esClient;
+    private volatile HttpHost[] esHosts;
     private volatile String authToken;
     protected volatile BulkProcessor bulkProcessor;
     protected volatile Map<String/*id*/, String/*errors*/> errors = new HashMap<>();
@@ -95,7 +94,6 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         props.add(BULK_SIZE);
         props.add(FLUSH_INTERVAL);
         props.add(CONCURRENT_REQUESTS);
-        props.add(CLUSTER_NAME);
         props.add(PING_TIMEOUT);
         props.add(SAMPLER_INTERVAL);
         props.add(USERNAME);
@@ -136,54 +134,30 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         }
 
         try {
-            final String clusterName = context.getPropertyValue(CLUSTER_NAME).asString();
-            final String pingTimeout = context.getPropertyValue(PING_TIMEOUT).asString();
-            final String samplerInterval = context.getPropertyValue(SAMPLER_INTERVAL).asString();
             final String username = context.getPropertyValue(USERNAME).asString();
             final String password = context.getPropertyValue(PASSWORD).asString();
-
-          /*  final SSLContextService sslService =
-                    context.getPropertyValue(PROP_SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
-*/
-            Settings.Builder settingsBuilder = Settings.builder()
-                    .put("cluster.name", clusterName)
-                    .put("client.transport.ping_timeout", pingTimeout)
-                    .put("client.transport.nodes_sampler_interval", samplerInterval);
-
-            String shieldUrl = context.getPropertyValue(PROP_SHIELD_LOCATION).asString();
-          /*  if (sslService != null) {
-                settingsBuilder.setField("shield.transport.ssl", "true")
-                        .setField("shield.ssl.keystore.path", sslService.getKeyStoreFile())
-                        .setField("shield.ssl.keystore.password", sslService.getKeyStorePassword())
-                        .setField("shield.ssl.truststore.path", sslService.getTrustStoreFile())
-                        .setField("shield.ssl.truststore.password", sslService.getTrustStorePassword());
-            }*/
-
-            // Set username and password for Shield
-            if (!StringUtils.isEmpty(username)) {
-                StringBuffer shieldUser = new StringBuffer(username);
-                if (!StringUtils.isEmpty(password)) {
-                    shieldUser.append(":");
-                    shieldUser.append(password);
-                }
-                settingsBuilder.put("shield.user", shieldUser);
-            }
-
-            TransportClient transportClient = getTransportClient(settingsBuilder, shieldUrl, username, password);
-
             final String hosts = context.getPropertyValue(HOSTS).asString();
+
             esHosts = getEsHosts(hosts);
 
             if (esHosts != null) {
-                for (final InetSocketAddress host : esHosts) {
-                    try {
-                        transportClient.addTransportAddress(new InetSocketTransportAddress(host));
-                    } catch (IllegalArgumentException iae) {
-                        getLogger().error("Could not add transport address {}", new Object[]{host});
-                    }
+
+                RestClientBuilder builder = RestClient.builder(esHosts);
+
+                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
+                    final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+                    builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                                @Override
+                                public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                                    return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                                }
+                            });
                 }
+
+                esClient = new RestHighLevelClient(builder);
             }
-            esClient = transportClient;
 
         } catch (Exception e) {
             getLogger().error("Failed to create Elasticsearch client due to {}", new Object[]{e}, e);
@@ -191,77 +165,32 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         }
     }
 
-    private TransportClient getTransportClient(Settings.Builder settingsBuilder, String shieldUrl,
-                                               String username, String password)
-            throws MalformedURLException {
-
-        // See if the Elasticsearch Shield JAR location was specified, and add the plugin if so. Also create the
-        // authorization token if username and password are supplied.
-        final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        if (!StringUtils.isBlank(shieldUrl)) {
-            ClassLoader shieldClassLoader =
-                    new URLClassLoader(new URL[]{new File(shieldUrl).toURI().toURL()}, this.getClass().getClassLoader());
-            Thread.currentThread().setContextClassLoader(shieldClassLoader);
-
-            try {
-                //Class shieldPluginClass = Class.forName("org.elasticsearch.shield.ShieldPlugin", true, shieldClassLoader);
-                //builder = builder.addPlugin(shieldPluginClass);
-
-                if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
-
-                    // Need a couple of classes from the Shield plugin to build the token
-                    Class usernamePasswordTokenClass =
-                            Class.forName("org.elasticsearch.shield.authc.support.UsernamePasswordToken", true, shieldClassLoader);
-
-                    Class securedStringClass =
-                            Class.forName("org.elasticsearch.shield.authc.support.SecuredString", true, shieldClassLoader);
-
-                    Constructor<?> securedStringCtor = securedStringClass.getConstructor(char[].class);
-                    Object securePasswordString = securedStringCtor.newInstance(password.toCharArray());
-
-                    Method basicAuthHeaderValue = usernamePasswordTokenClass.getMethod("basicAuthHeaderValue", String.class, securedStringClass);
-                    authToken = (String) basicAuthHeaderValue.invoke(null, username, securePasswordString);
-                }
-            } catch (ClassNotFoundException
-                    | NoSuchMethodException
-                    | InstantiationException
-                    | IllegalAccessException
-                    | InvocationTargetException shieldLoadException) {
-                getLogger().debug("Did not detect Elasticsearch Shield plugin, secure connections and/or authorization will not be available");
-            }
-        } else {
-            //logger.debug("No Shield plugin location specified, secure connections and/or authorization will not be available");
-        }
-        TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
-        Thread.currentThread().setContextClassLoader(originalClassLoader);
-        return transportClient;
-    }
-
-
     /**
      * Get the ElasticSearch hosts.
      *
      * @param hosts A comma-separated list of ElasticSearch hosts (host:port,host2:port2, etc.)
-     * @return List of InetSocketAddresses for the ES hosts
+     * @return List of HttpHost for the ES hosts
      */
-    private List<InetSocketAddress> getEsHosts(String hosts) {
+    private HttpHost[]  getEsHosts(String hosts) {
 
         if (hosts == null) {
             return null;
         }
         final List<String> esList = Arrays.asList(hosts.split(","));
-        List<InetSocketAddress> esHosts = new ArrayList<>();
+        HttpHost[] esHosts = new HttpHost[esList.size()];
+        int indHost = 0;
 
         for (String item : esList) {
-
             String[] addresses = item.split(":");
             final String hostName = addresses[0].trim();
             final int port = Integer.parseInt(addresses[1].trim());
 
-            esHosts.add(new InetSocketAddress(hostName, port));
+            esHosts[indHost] = new HttpHost(hostName, port);
+            indHost++;
         }
         return esHosts;
     }
+
 
     protected void createBulkProcessor(ControllerServiceInitializationContext context)
     {
@@ -269,38 +198,38 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
             return;
         }
 
-        /**
-         * create the bulk processor
-         */
-        bulkProcessor = BulkProcessor.builder(
-                esClient,
-                new BulkProcessor.Listener() {
-                    @Override
-                    public void beforeBulk(long l, BulkRequest bulkRequest) {
-                        getLogger().debug("Going to execute bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-                    }
+        // create the bulk processor
 
-                    @Override
-                    public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                        getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
-                        if (bulkResponse.hasFailures()) {
-                            getLogger().warn("There was failures while executing bulk [id:{}]," +
-                                            " done bulk request in {} ms with failure = {}",
-                                    new Object[]{l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage()});
-                            for (BulkItemResponse item : bulkResponse.getItems()) {
-                                if (item.isFailed()) {
-                                    errors.put(item.getId(), item.getFailureMessage());
-                                }
-                            }
+       BulkProcessor.Listener listener = new BulkProcessor.Listener() {
+            @Override
+            public void beforeBulk(long l, BulkRequest bulkRequest) {
+                getLogger().debug("Going to execute bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
+            }
+
+            @Override
+            public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
+                getLogger().debug("Executed bulk [id:{}] composed of {} actions", new Object[]{l, bulkRequest.numberOfActions()});
+                if (bulkResponse.hasFailures()) {
+                    getLogger().warn("There was failures while executing bulk [id:{}]," +
+                                    " done bulk request in {} ms with failure = {}",
+                            new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
+                    for (BulkItemResponse item : bulkResponse.getItems()) {
+                        if (item.isFailed()) {
+                            errors.put(item.getId(), item.getFailureMessage());
                         }
                     }
+                }
+            }
 
-                    @Override
-                    public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-                        getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
-                    }
+            @Override
+            public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
+                getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
+            }
 
-                })
+        };
+
+        BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer = (request, bulkListener) -> esClient.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
+        bulkProcessor = BulkProcessor.builder(bulkConsumer, listener)
                 .setBulkActions(context.getPropertyValue(BATCH_SIZE).asInteger())
                 .setBulkSize(new ByteSizeValue(context.getPropertyValue(BULK_SIZE).asInteger(), ByteSizeUnit.MB))
                 .setFlushInterval(TimeValue.timeValueSeconds(context.getPropertyValue(FLUSH_INTERVAL).asInteger()))
@@ -333,37 +262,38 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         return backoffPolicy;
     }
 
+
     @Override
-    public void bulkFlush() {
+    public void bulkFlush() throws DatastoreClientServiceException {
         bulkProcessor.flush();
     }
 
     @Override
     public void bulkPut(String docIndex, String docType, String document, Optional<String> OptionalId) {
-        // add it to the bulk
-        IndexRequestBuilder result = esClient
-                .prepareIndex(docIndex, docType)
-                .setSource(document)
-                .setOpType(IndexRequest.OpType.INDEX);
-        if(OptionalId.isPresent())
-        {
-            result.setId(OptionalId.get());
+        // add it to the bulk,
+        IndexRequest request = new IndexRequest(docIndex, docType)
+                .source(document, XContentType.JSON)
+                .opType(IndexRequest.OpType.INDEX);
+
+        if(OptionalId.isPresent()){
+            request.id(OptionalId.get());
         }
-        bulkProcessor.add(result.request());
+
+        bulkProcessor.add(request);
     }
 
     @Override
     public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
         // add it to the bulk
-        IndexRequestBuilder result = esClient
-                .prepareIndex(docIndex, docType)
-                .setSource(document)
-                .setOpType(IndexRequest.OpType.INDEX);
-        if(OptionalId.isPresent())
-        {
-            result.setId(OptionalId.get());
+        IndexRequest request = new IndexRequest(docIndex, docType)
+                .source(document)
+                .opType(IndexRequest.OpType.INDEX);
+
+        if(OptionalId.isPresent()){
+            request.id(OptionalId.get());
         }
-        bulkProcessor.add(result.request());
+
+        bulkProcessor.add(request);
     }
 
     @Override
@@ -371,7 +301,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
 
         List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
 
-        MultiGetRequestBuilder multiGetRequestBuilder = esClient.prepareMultiGet();
+        MultiGetRequest multiGetRequest = new MultiGetRequest();
 
         for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
         {
@@ -384,17 +314,19 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
                 for (String documentId : documentIds) {
                     MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
                     item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
-                    multiGetRequestBuilder.add(item);
+                    multiGetRequest.add(item);
                 }
             } else {
-                multiGetRequestBuilder.add(index, type, documentIds);
+                for (String documentId : documentIds) {
+                    multiGetRequest.add(index, type, documentId);
+                }
             }
         }
 
         MultiGetResponse multiGetItemResponses = null;
         try {
-            multiGetItemResponses = multiGetRequestBuilder.get();
-        } catch (ActionRequestValidationException e) {
+            multiGetItemResponses = esClient.mget(multiGetRequest, RequestOptions.DEFAULT);
+        } catch (Exception e) {
             getLogger().error("MultiGet query failed : {}", new Object[]{e.getMessage()});
         }
 
@@ -415,17 +347,23 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
 
     @Override
     public boolean existsCollection(String indexName) throws DatastoreClientServiceException {
-        // could also use  client.admin().indices().prepareExists(indexName).execute().get();
-        IndicesExistsResponse ersp = IndicesExistsAction.INSTANCE.newRequestBuilder(esClient).setIndices(indexName).get();
-        // TODO TK : is the following better ?
-        boolean exists = esClient.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
-        return ersp.isExists();
+        boolean exists;
+        try {
+            GetIndexRequest request = new GetIndexRequest();
+            request.indices(indexName);
+            exists = esClient.indices().exists(request, RequestOptions.DEFAULT);
+        }
+        catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
+        return exists;
     }
 
     @Override
     public void refreshCollection(String indexName) throws DatastoreClientServiceException {
         try {
-            esClient.admin().indices().prepareRefresh(indexName).execute().get();
+            RefreshRequest request = new RefreshRequest(indexName);
+            esClient.indices().refresh(request, RequestOptions.DEFAULT);
         }
         catch (Exception e){
             throw new DatastoreClientServiceException(e);
@@ -434,39 +372,40 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
 
     @Override
     public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
-        esClient.prepareIndex(indexName, doctype).setSource(doc).execute().get();
+        IndexRequest indexRequest = new IndexRequest(indexName, doctype).source(doc);
+        esClient.index(indexRequest, RequestOptions.DEFAULT);
         refreshCollection(indexName);
     }
 
+
     @Override
     public long countCollection(String indexName) throws DatastoreClientServiceException {
-        // There is no "count" method; instead make a "search for all" and set the desired number of returned
-        // records to zero. No actual hits get returned, but the "metadata" for the result includes the total
-        // number of matched records, ie the size.
-        SearchResponse rsp;
+        CountResponse countResponse;
         try {
-            rsp = esClient.prepareSearch(indexName)
-                    .setQuery(QueryBuilders.matchAllQuery())
-                    .setSize(0)
-                    .execute().get();
+            CountRequest countRequest = new CountRequest(indexName);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            countRequest.source(searchSourceBuilder);
+            countResponse = esClient.count(countRequest, RequestOptions.DEFAULT);
         }
         catch (Exception e){
             throw new DatastoreClientServiceException(e);
         }
-        return rsp.getHits().getTotalHits();
+        return countResponse.getCount();
     }
 
     @Override
     public void createCollection(String indexName, int numShards, int numReplicas) throws DatastoreClientServiceException {
         // Define the index itself
-        CreateIndexRequestBuilder builder = esClient.admin().indices().prepareCreate(indexName);
-        builder.setSettings(Settings.builder()
-                .put("number_of_shards", numShards)
-                .put("number_of_replicas", numReplicas)
-                .build());
+        CreateIndexRequest request = new CreateIndexRequest(indexName);
+
+        request.settings(Settings.builder()
+                .put("index.number_of_shards", numShards)
+                .put("index.number_of_replicas", numReplicas)
+        );
 
         try {
-            CreateIndexResponse rsp = builder.execute().get();
+            CreateIndexResponse rsp = esClient.indices().create(request, RequestOptions.DEFAULT);
             if (!rsp.isAcknowledged()) {
                 throw new IOException("Elasticsearch index definition not acknowledged");
             }
@@ -480,83 +419,95 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     @Override
     public void dropCollection(String indexName) throws DatastoreClientServiceException {
         try {
-            esClient.admin().indices().prepareDelete(indexName).execute().get();
+            DeleteIndexRequest request = new DeleteIndexRequest(indexName);
             getLogger().info("Delete index {}", new Object[]{indexName});
+            esClient.indices().delete(request, RequestOptions.DEFAULT);
         } catch (Exception e) {
             throw new DatastoreClientServiceException(String.format("Unable to delete index %s", indexName), e);
         }
     }
 
     @Override
-    public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex)
-            throws DatastoreClientServiceException {
+    public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex) throws DatastoreClientServiceException {
+        try {
 
-        SearchResponse scrollResp = esClient.prepareSearch(srcIndex)
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setScroll(reindexScrollTimeout)
-                .setQuery(QueryBuilders.matchAllQuery()) // Match all query
-                .setSize(100) // 100 hits per shard will be returned for each scroll
-                .execute().actionGet();
+            SearchRequest searchRequest = new SearchRequest(srcIndex);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+                .query(QueryBuilders.matchAllQuery())
+                .size(100);
+            searchRequest.source(searchSourceBuilder).scroll(reindexScrollTimeout).searchType(SearchType.QUERY_THEN_FETCH);
+            SearchResponse scrollResp = esClient.search(searchRequest, RequestOptions.DEFAULT);
 
-        AtomicBoolean failed = new AtomicBoolean(false);
+            AtomicBoolean failed = new AtomicBoolean(false);
 
-        // A user of a BulkProcessor just keeps adding requests to it, and the BulkProcessor itself decides when
-        // to send a request to the ES nodes, based on its configuration settings. Calls can be triggerd by number
-        // of queued requests, total size of queued requests, and time since previous request. The defaults for
-        // these settings are all sensible, so are not overridden here. The BulkProcessor has an internal threadpool
-        // which allows it to send multiple batches concurrently; the default is "1" meaning that a single completed
-        // batch can be sending in the background while a new batch is being built. When the non-active batch is
-        // "full", the add call blocks until the background batch completes.
+            // A user of a BulkProcessor just keeps adding requests to it, and the BulkProcessor itself decides when
+            // to send a request to the ES nodes, based on its configuration settings. Calls can be triggerd by number
+            // of queued requests, total size of queued requests, and time since previous request. The defaults for
+            // these settings are all sensible, so are not overridden here. The BulkProcessor has an internal threadpool
+            // which allows it to send multiple batches concurrently; the default is "1" meaning that a single completed
+            // batch can be sending in the background while a new batch is being built. When the non-active batch is
+            // "full", the add call blocks until the background batch completes.
 
-        while (true) {
-            if (scrollResp.getHits().getHits().length == 0) {
-                // No more results
-                break;
+            while (true) {
+                if (scrollResp.getHits().getHits().length == 0) {
+                    // No more results
+                    break;
+                }
+
+                for (SearchHit hit : scrollResp.getHits()) {
+                    IndexRequest request = new IndexRequest(dstIndex, hit.getType(), hit.getId());
+                    Map<String, Object> source = hit.getSourceAsMap();
+                    request.source(source);
+                    bulkProcessor.add(request);
+                }
+
+                String scrollId = scrollResp.getScrollId();
+                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+                scrollRequest.scroll(reindexScrollTimeout);
+                scrollResp = esClient.scroll(scrollRequest, RequestOptions.DEFAULT);
             }
 
-            for (SearchHit hit : scrollResp.getHits()) {
-                IndexRequest request = new IndexRequest(dstIndex, hit.type(), hit.id());
-                Map<String, Object> source = hit.getSource();
-                request.source(source);
-                bulkProcessor.add(request);
-            }
-
-            String scrollId = scrollResp.getScrollId();
-            scrollResp = esClient.prepareSearchScroll(scrollId)
-                    .setScroll(reindexScrollTimeout)
-                    .execute().actionGet();
+            getLogger().info("Reindex completed");
         }
-
-        getLogger().info("Reindex completed");
+        catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
     }
 
     @Override
     public void createAlias(String indexName, String aliasName) throws DatastoreClientServiceException {
-        IndicesAliasesRequestBuilder builder = esClient.admin().indices().prepareAliases().addAlias(indexName, aliasName);
         try {
-            IndicesAliasesResponse rsp = builder.execute().get();
+
+            IndicesAliasesRequest request = new IndicesAliasesRequest();
+            IndicesAliasesRequest.AliasActions aliasAction =
+                    new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
+                            .index(indexName)
+                            .alias(aliasName);
+            request.addAliasAction(aliasAction);
+            AcknowledgedResponse rsp = esClient.indices().updateAliases(request, RequestOptions.DEFAULT);
+
             if (!rsp.isAcknowledged()) {
                 throw new DatastoreClientServiceException(String.format(
                         "Creation of elasticsearch alias '%s' for index '%s' not acknowledged.", aliasName, indexName));
             }
         } catch (DatastoreClientServiceException e) {
-            getLogger().error("Failed to create elasticsearch alias {} for index {}", new Object[] {aliasName, indexName, e});
+            getLogger().error("Failed to create elasticsearch alias {} for index {}", new Object[]{aliasName, indexName, e});
             throw e;
-        } catch (ExecutionException | InterruptedException e) {
+        }
+        catch (Exception e){
             String msg = String.format("Failed to create elasticsearch alias '%s' for index '%s'", aliasName, indexName);
             throw new DatastoreClientServiceException(e);
         }
     }
 
     @Override
-    public boolean putMapping(String indexName, String doctype, String mappingAsJsonString)
-            throws DatastoreClientServiceException {
-
-        PutMappingRequestBuilder builder = esClient.admin().indices().preparePutMapping(indexName);
-        builder.setType(doctype).setSource(mappingAsJsonString);
+    public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws DatastoreClientServiceException {
+        PutMappingRequest request = new PutMappingRequest(indexName);
+        request.type(doctype);
+        request.source(mappingAsJsonString, XContentType.JSON);
 
         try {
-            PutMappingResponse rsp = builder.execute().get();
+            AcknowledgedResponse rsp = esClient.indices().putMapping(request, RequestOptions.DEFAULT);
             if (!rsp.isAcknowledged()) {
                 throw new DatastoreClientServiceException("Elasticsearch mapping definition not acknowledged");
             }
@@ -571,6 +522,7 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
 
     @Override
     public void bulkPut(String indexTypeName, Record record) throws DatastoreClientServiceException {
+
         final List<String> indexType = Arrays.asList(indexTypeName.split(","));
 
         if (indexType.size() == 2) {
@@ -581,32 +533,32 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
         else {
             throw new DatastoreClientServiceException("The Elastic Search type name is missing. Please add at least default.type to the processor parameters");
         }
+
     }
 
     @Override
     public void put(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
-      // For time being, support it through bulkPut
-        bulkPut(collectionName, record);
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
     }
 
     @Override
     public void remove(String collectionName, Record record, boolean asynchronous) throws DatastoreClientServiceException {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
     }
 
     @Override
     public Record get(String collectionName, Record record) throws DatastoreClientServiceException {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
     }
 
     @Override
     public Collection<Record> query(String query) {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
     }
 
     @Override
     public long queryCount(String query) {
-        throw new NotImplementedException("Not yet supported for ElasticSearch 5.4.0");
+        throw new NotImplementedException("Not yet supported for ElasticSearch 6.6.2");
     }
 
     @Override
@@ -615,17 +567,28 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
     }
 
     @Override
-    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue)
-    {
-        SearchResponse searchResponse = esClient.prepareSearch(docIndex)
-                .setTypes(docType)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.termQuery(docName, docValue))
-                .setFrom(0).setSize(60).setExplain(true)
-                .execute()
-                .actionGet();
+    public long searchNumberOfHits(String docIndex, String docType, String docName, String docValue) {
 
-        long numberOfHits = searchResponse.getHits().getTotalHits();
+        long numberOfHits;
+
+        try {
+            SearchRequest searchRequest = new SearchRequest(docIndex);
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
+            sourceBuilder.query(QueryBuilders.termQuery(docName, docValue));
+            sourceBuilder.from(0);
+            sourceBuilder.size(60);
+            sourceBuilder.explain(true);
+
+            searchRequest.source(sourceBuilder);
+
+            SearchResponse searchResponse = esClient.search(searchRequest, RequestOptions.DEFAULT);
+            numberOfHits = searchResponse.getHits().getTotalHits();
+        }
+        catch (Exception e){
+            throw new DatastoreClientServiceException(e);
+        }
 
         return numberOfHits;
     }
@@ -647,9 +610,15 @@ public class Elasticsearch_5_4_0_ClientService extends AbstractControllerService
 
         if (esClient != null) {
             getLogger().info("Closing ElasticSearch Client");
-            esClient.close();
+            try {
+                esClient.close();
+            }
+            catch (Exception e){
+                throw new DatastoreClientServiceException(e);
+            }
             esClient = null;
         }
     }
+
 
 }

@@ -134,9 +134,11 @@ In the list below, the names of required properties appear in **bold**. Any othe
 
    "**datastore.client.service**", "The instance of the Controller Service to use for accessing datastore.", "", "null", "false", "false"
    "**default.collection**", "The name of the collection/index/table to insert into", "", "null", "false", "**true**"
+   "default.type", "The type of this document (required by Elasticsearch for indexing and searching)", "", "null", "false", "**true**"
    "**timebased.collection**", "do we add a date suffix", "no (no date added to default index), today (today's date added to default index), yesterday (yesterday's date added to default index)", "no", "false", "false"
    "date.format", "simple date format for date suffix. default : yyyy.MM.dd", "", "yyyy.MM.dd", "false", "false"
    "collection.field", "the name of the event field containing es index name => will override index value if set", "", "null", "false", "**true**"
+   "type.field", "the name of the event field containing es doc type => will override type value if set", "", "null", "false", "false"
 
 Extra informations
 __________________

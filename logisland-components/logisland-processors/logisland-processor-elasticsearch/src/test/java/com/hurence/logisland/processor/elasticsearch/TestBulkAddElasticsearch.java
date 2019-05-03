@@ -103,11 +103,11 @@ public class TestBulkAddElasticsearch {
         runner.assertAllInputRecordsProcessed();
         runner.assertOutputRecordsCount(2);
         runner.assertOutputErrorCount(0);
-        elasticsearchClient.flushBulkProcessor();
+        elasticsearchClient.bulkFlush();
 
         try {
-            elasticsearchClient.refreshIndex(DEFAULT_INDEX);
-            Assert.assertEquals(2, elasticsearchClient.countIndex(DEFAULT_INDEX));
+            elasticsearchClient.refreshCollection(DEFAULT_INDEX);
+            Assert.assertEquals(2, elasticsearchClient.countCollection(DEFAULT_INDEX));
         } catch (Exception e) {
             e.printStackTrace();
         }

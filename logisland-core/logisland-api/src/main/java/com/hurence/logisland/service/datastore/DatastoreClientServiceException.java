@@ -25,4 +25,8 @@ public class DatastoreClientServiceException extends RuntimeException {
     public DatastoreClientServiceException(String message) {
         super(message);
     }
+
+    public DatastoreClientServiceException(String message, Exception e) {
+        super(message, e);
+    }
 }

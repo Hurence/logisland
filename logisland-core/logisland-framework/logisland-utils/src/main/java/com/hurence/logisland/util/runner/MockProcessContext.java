@@ -204,6 +204,7 @@ public class MockProcessContext implements ProcessContext, ControllerServiceLook
     public boolean isValid() {
         for (final ValidationResult result : validate()) {
             if (!result.isValid()) {
+                getLogger().warn("invalid property {}", new Object[]{result.getExplanation()});
                 return false;
             }
         }
