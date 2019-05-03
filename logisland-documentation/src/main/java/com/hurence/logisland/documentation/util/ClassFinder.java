@@ -35,7 +35,7 @@ public class ClassFinder {
      */
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
-
+        logger.info("classpath '{}'", classpath);
         String[] paths = classpath.split(System.getProperty("path.separator"));
 
      /*   String javaHome = System.getProperty("java.home");

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-components</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.2</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -15,6 +15,7 @@
     <artifactId>logisland-services</artifactId>
 
     <modules>
+        <module>logisland-service-influxdb</module>
         <module>logisland-service-cassandra</module>
         <module>logisland-service-mongodb</module>
         <module>logisland-service-inmemory-cache</module>
@@ -23,7 +24,8 @@
         <module>logisland-service-hbase</module>
         <module>logisland-service-solr</module>
         <module>logisland-service-elasticsearch</module>
-
+        <module>logisland-service-rest</module>
+        <module>logisland-service-proxy</module>
     </modules>
 
 

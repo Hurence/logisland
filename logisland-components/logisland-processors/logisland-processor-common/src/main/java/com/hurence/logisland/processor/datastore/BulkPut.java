@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.datastore;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -31,6 +32,7 @@ import java.util.*;
 
 @Tags({"datastore", "record", "put", "bulk"})
 @CapabilityDescription("Indexes the content of a Record in a Datastore using bulk processor")
+@ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")
 public class BulkPut extends AbstractDatastoreProcessor
 {
 

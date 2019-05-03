@@ -68,6 +68,6 @@ else
 
     for i in `grep -r -n -i -l --exclude-dir=\*{.idea,.git,target,nltk,_build,jsm_packages,node_modules} --exclude=\*{.js,.iml,.csv,.dat,.svg,.pdf,.lock,*.log*,.json,.pcap,.txt,.java}  "$old_version" .` ; do
         echo  $i;
-        sed -i '' "$SED_REPLACE" $i
+        sed -i "$SED_REPLACE" $i
      done
 fi

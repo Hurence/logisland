@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.webAnalytics;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -54,6 +55,7 @@ import static com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic.*;
         "should be structured such that the _id of an ES document MUST be the name of the domain. If the domain is a search engine, the related ES doc MUST have a boolean field " +
         "(default being " + SEARCH_ENGINE_SITE + ") specified by the property **" + PROP_ES_SEARCH_ENGINE + "** with a value set to true. If the domain is a social network " +
         ", the related ES doc MUST have a boolean field (default being " + SOCIAL_NETWORK_SITE + ") specified by the property **" + PROP_ES_SOCIAL_NETWORK + "** with a value set to true. ")
+@ExtraDetailFile("./details/setSourceOfTraffic-Detail.rst")
 public class setSourceOfTraffic extends AbstractProcessor {
 
     protected static final String PROP_ES_INDEX = "es.index";

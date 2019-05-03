@@ -79,16 +79,17 @@ The first section configures the Spark engine (we will use a `KafkaStreamProcess
         spark.streaming.receiver.writeAheadLog.enable: false
         spark.ui.port: 4050
 
-The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkPut`` processor.
+The `controllerServiceConfigurations` part is here to define all services that be shared by processors within the whole job, here an Elasticsearch service that will be used later in the ``BulkAddElasticsearch`` processor.
 
 .. code-block:: yaml
 
-    - controllerService: datastore_service
-      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+    - controllerService: elasticsearch_service
+      component: com.hurence.logisland.service.elasticsearch.Elasticsearch_5_4_0_ClientService
       type: service
       documentation: elasticsearch service
       configuration:
         hosts: ${ES_HOSTS}
+        cluster.name: ${ES_CLUSTER_NAME}
         batch.size: 5000
 
 .. note::
@@ -151,16 +152,16 @@ The second processor  will handle ``Records`` produced by the ``SplitText`` to i
 
     # all the parsed records are added to elasticsearch by bulk
     - processor: es_publisher
-      component: com.hurence.logisland.processor.datastore.BulkPut
+      component: com.hurence.logisland.processor.elasticsearch.BulkAddElasticsearch
       type: processor
       documentation: a processor that indexes processed events in elasticsearch
       configuration:
-        datastore.client.service: datastore_service
-        default.collection: logisland
+        elasticsearch.client.service: elasticsearch_service
+        default.index: logisland
         default.type: event
-        timebased.collection: yesterday
-        collection.field: search_index
-        type.field: record_type
+        timebased.index: yesterday
+        es.index.field: search_index
+        es.type.field: record_type
 
 3. Launch the job
 -----------------

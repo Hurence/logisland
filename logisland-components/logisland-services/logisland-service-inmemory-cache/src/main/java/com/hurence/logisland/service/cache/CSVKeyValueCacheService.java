@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -96,7 +96,7 @@ public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Rec
     public static AllowableValue CSV_DEFAULT = new AllowableValue("default", "default", "Standard comma separated format, as for RFC4180 but allowing empty lines. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(true)");
     public static AllowableValue CSV_EXCEL = new AllowableValue("excel", "excel", "Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(',')  withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)");
     public static AllowableValue CSV_EXCEL_FR = new AllowableValue("excel_fr", "excel french", "Excel file format (using a comma as the value delimiter). Note that the actual value delimiter used by Excel is locale dependent, it might be necessary to customize this format to accommodate to your regional settings. withDelimiter(';')  withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(false) withAllowMissingColumnNames(true)");
-    public static AllowableValue CSV_MYSQL = new AllowableValue("mysql", "mysql", "Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations.\n" +
+    public static AllowableValue CSV_MYSQL = new AllowableValue("mysql", "mysql", "Default MySQL format used by the SELECT INTO OUTFILE and LOAD DATA INFILE operations." +
             "This is a tab-delimited format with a LF character as the line separator. Values are not quoted and special characters are escaped with '\\'. The default NULL string is \"\\\\N\". Settings are: withDelimiter('\\t') withQuote(null) withRecordSeparator('\\n') withIgnoreEmptyLines(false) withEscape('\\\\') withNullString(\"\\\\N\") withQuoteMode(QuoteMode.ALL_NON_NULL)");
     public static AllowableValue CSV_RFC4180 = new AllowableValue("rfc4180", "RFC4180", "Comma separated format as defined by RFC 4180. Settings are: withDelimiter(',') withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreEmptyLines(false)");
     public static AllowableValue CSV_TDF = new AllowableValue("tdf", "Tab delimited", "Tab-delimited format. Settings are: withDelimiter('\\t') withQuote('\"') withRecordSeparator(\"\\r\\n\") withIgnoreSurroundingSpaces(true)");

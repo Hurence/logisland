@@ -499,7 +499,7 @@ stream: parsing_stream_source
 classloading proxyfication 
 
 ```
-Using Logisland home: /usr/local/bin/logisland-1.1.0
+Using Logisland home: /usr/local/bin/logisland-1.1.2
 
 usage: components.sh [-h] -i <artifact> | -l | -r <artifact>
  -h,--help                 Print this help.
@@ -513,10 +513,10 @@ usage: components.sh [-h] -i <artifact> | -l | -r <artifact>
 
 
 ```
-Artifact: com.hurence.logisland:logisland-processor-common:1.1.0
+Artifact: com.hurence.logisland:logisland-processor-common:1.1.2
 Name: Common processors bundle
-Version: 1.1.0
-Location: /usr/local/bin/logisland-1.1.0/lib/logisland-processor-common-1.1.0.jar
+Version: 1.1.2
+Location: /usr/local/bin/logisland-1.1.2/lib/logisland-processor-common-1.1.2.jar
 Components provided:
 	com.hurence.logisland.processor.AddFields
 	com.hurence.logisland.processor.ApplyRegexp
@@ -620,7 +620,7 @@ Using Kafka Connect you can use existing connector implementations for common da
 
 Download the latest release from [github](https://github.com/Hurence/logisland/releases)
 
-	tar -xzf logisland-1.1.0-bin.tar.gz
+	tar -xzf logisland-1.1.2-bin.tar.gz
 
 Create a job configuration
 

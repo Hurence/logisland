@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -47,6 +48,7 @@ import static com.hurence.logisland.service.iptogeo.IpToGeoService.*;
         " one must define a comma separated list of fields as a value for the **" + IpToGeo.PROP_GEO_FIELDS + "** property. The list of the available geo fields" +
         " is in the description of the **" + IpToGeo.PROP_GEO_FIELDS + "** property."
 )
+@ExtraDetailFile("./details/IpToGeo-Detail.rst")
 public class IpToGeo extends IpAbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(IpToGeo.class);

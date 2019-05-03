@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -37,6 +38,7 @@ import java.util.*;
         supportsExpressionLanguage = true,
         value = "value to convert into Epoch timestamp using given input.date.format",
         description = "Add a field to the record with the name, converting value using java SimpleDateFormat")
+@ExtraDetailFile("./details/common-processors/ConvertSimpleDateFormatFields-Detail.rst")
 public class ConvertSimpleDateFormatFields extends AbstractProcessor {
 
 

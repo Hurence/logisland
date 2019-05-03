@@ -17,6 +17,7 @@ package com.hurence.logisland.processor.datastore;
 
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -51,6 +52,7 @@ import java.util.*;
         "  - field name : the retrieved field name\n" +
         "  - field value : the retrieved field value"
 )
+@ExtraDetailFile("./details/common-processors/MultiGet-Detail.rst")
 public class MultiGet extends AbstractDatastoreProcessor
 {
 

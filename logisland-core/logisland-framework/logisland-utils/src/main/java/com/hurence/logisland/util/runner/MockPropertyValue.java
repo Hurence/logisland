@@ -163,7 +163,6 @@ public class MockPropertyValue implements PropertyValue {
 
     @Override
     public PropertyValue evaluate(Record record) {
-
         markEvaluated();
 
         if (stdPropValue instanceof InterpretedPropertyValue) {

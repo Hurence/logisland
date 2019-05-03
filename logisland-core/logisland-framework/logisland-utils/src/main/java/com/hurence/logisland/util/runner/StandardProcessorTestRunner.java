@@ -261,6 +261,8 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new IllegalStateException("Cannot enable Controller Service " + service + " because it is not disabled");
         }
 
+        assertValid(service);
+
         try {
          //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
             final MockControllerServiceInitializationContext initContext =
@@ -339,7 +341,7 @@ public class StandardProcessorTestRunner implements TestRunner {
             //If it fails we ignore it as the unique purpose is to intialize identifier of service
             service.initialize(initContext);
         } catch (Exception ex) {
-            logger.error("Error during initialization", ex);
+            //logger.error("Error during initialization", ex);
         }
         //Needed to save given properties for next use
         //WARNING ! Must be after service.initialize(initContext) so that service identifier is correctly set
@@ -356,8 +358,7 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertNotValid(final ControllerService service) {
 
-
-        final ValidationContext validationContext = new MockValidationContext(context, variableRegistry).getControllerServiceValidationContext(service);
+        final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
         final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
@@ -371,7 +372,6 @@ public class StandardProcessorTestRunner implements TestRunner {
     @Override
     public void assertValid(final ControllerService service) {
         final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
-
         final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
 
         for (final ValidationResult result : results) {
@@ -423,7 +423,6 @@ public class StandardProcessorTestRunner implements TestRunner {
         final Map<PropertyDescriptor, String> curProps = configuration.getProperties();
         final Map<PropertyDescriptor, String> updatedProps = new HashMap<>(curProps);
 
-        final ValidationContext validationContext = new MockValidationContext(context,  variableRegistry).getControllerServiceValidationContext(service);
         final ValidationResult validationResult = property.validate(value/*, validationContext*/);
 
         final String oldValue = updatedProps.get(property);

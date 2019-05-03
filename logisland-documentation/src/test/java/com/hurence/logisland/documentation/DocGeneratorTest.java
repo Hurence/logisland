@@ -29,19 +29,12 @@ public class DocGeneratorTest {
 
     @Test
     @Ignore
-    public void testProcessor() throws IOException, ClassNotFoundException {
+    public void testProcessor() throws IOException {
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
-
-
-
-
-
-
-
         /*ExtensionManager.discoverExtensions(NarClassLoaders.getInstance().getExtensionClassLoaders());*/
 
-        DocGenerator.generate(new File("docs"), "rst");
+        DocGeneratorUtils.generate(new File("docs"), "components", "rst", false);
 
         File processorDirectory = new File(temporaryFolder.getRoot(), "com.hurence.logisland.processors.WriteResourceToStream");
         File indexHtml = new File(processorDirectory, "index.html");

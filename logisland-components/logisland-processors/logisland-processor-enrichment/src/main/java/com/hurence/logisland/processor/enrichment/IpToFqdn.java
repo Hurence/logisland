@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.enrichment;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -48,6 +49,7 @@ import java.util.concurrent.*;
         " the real request for the same IP is not re-triggered during a certain period of time, until the cache entry" +
         " expires. This timeout is configurable but by default a request for the same IP is not triggered before 24 hours" +
         " to let the time to the underlying DNS system to be potentially updated.")
+@ExtraDetailFile("./details/IpToFqdn-Detail.rst")
 public class IpToFqdn extends IpAbstractProcessor {
 
     protected CacheService<String, CacheEntry> cacheService;

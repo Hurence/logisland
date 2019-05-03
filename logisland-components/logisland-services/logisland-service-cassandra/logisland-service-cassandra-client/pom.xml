@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-service-cassandra</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.2</version>
     </parent>
 
     <artifactId>logisland-service-cassandra-client</artifactId>
@@ -38,7 +38,6 @@
             <groupId>com.hurence.logisland</groupId>
             <artifactId>logisland-service-cassandra-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -96,38 +95,74 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
-
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cassandra-maven-plugin</artifactId>
-                <version>3.6</version>
-                <dependencies> <!-- be sure to use the targeted cassandra version -->
-                    <dependency>
-                        <groupId>org.apache.cassandra</groupId>
-                        <artifactId>cassandra-all</artifactId>
-                        <version>3.5</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <rpcPort>19160</rpcPort>
-                    <jmxPort>17199</jmxPort>
-                    <storagePort>17000</storagePort>
-                    <stopPort>18081</stopPort>
-                    <startNativeTransport>true</startNativeTransport>
-                    <nativeTransportPort>19042</nativeTransportPort>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Profile for Integration tests run mechanism and separation from unit tests. Inspired from this page:
+            https://www.baeldung.com/maven-integration-test
+            If you need additional stuff like resources for the integration tests, please this page to know how to do it.
+            To run integration tests, run: mvn -Pintegration-tests clean verify -->
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin> <!-- The configuration section here will be merged with the one already defined in the
+                     maven-failsafe-plugin of the root pom.xml. We just add this configuration here for the workaround -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- Workaround as described here:
+                            https://stackoverflow.com/questions/42082131/maven-surefire-verify-java-lang-classnotfoundexception
+                            We need to point to the logisland bits due to spring boot usage otherwise we get
+                             CalssNotFoundException in integration test -->
+                            <additionalClasspathElements>
+                                <!-- For finding BulkPut -->
+                                <additionalClasspathElement>${basedir}/../../../logisland-processors/logisland-processor-common/target/classes</additionalClasspathElement>
+                            </additionalClasspathElements>
+                        </configuration>
+                    </plugin>
+                    <plugin> <!-- Cassandra maven plugin will be launched at pre-integration-test and post-integration-test
+                         phases to start and stop cassandra before and after integration tests run. Stop is called even
+                         if integration tests fail to anyway stop and remove every docker container -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cassandra-maven-plugin</artifactId>
+                        <version>3.6</version>
+                        <dependencies> <!-- be sure to use the targeted cassandra version -->
+                            <dependency>
+                                <groupId>org.apache.cassandra</groupId>
+                                <artifactId>cassandra-all</artifactId>
+                                <version>3.5</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <rpcPort>19160</rpcPort>
+                            <jmxPort>17199</jmxPort>
+                            <storagePort>17000</storagePort>
+                            <stopPort>18081</stopPort>
+                            <startNativeTransport>true</startNativeTransport>
+                            <nativeTransportPort>19042</nativeTransportPort>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

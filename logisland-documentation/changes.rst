@@ -2,7 +2,15 @@ What's new in logisland ?
 =========================
 
 
-v1.1.0
+
+v1.1.2
+------
+
+- add a clock service
+- improve monitoring
+- improve Cassandra support
+
+v1.0.0
 -------
 
 - add support for JMS kafka connect source

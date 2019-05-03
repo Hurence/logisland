@@ -32,4 +32,13 @@ public final class RecordUtils {
         record.setField(FieldDictionary.RECORD_VALUE, FieldType.BYTES, value);
         return record;
     }
+
+    public static Record getRecordOfString(String... kvs) {
+        if (kvs.length % 2 != 0) throw new IllegalArgumentException("input array does not have an even number as length.");
+        final Record record = new StandardRecord("kv_record");
+        for(int i=0;i<kvs.length;i+=2) {
+            record.setField(kvs[i], FieldType.STRING, kvs[i+1]);
+        }
+        return record;
+    }
 }

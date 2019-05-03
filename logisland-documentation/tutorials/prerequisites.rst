@@ -6,14 +6,15 @@ There are two main ways to launch a logisland job :
 - within Docker containers
 - within an Hadoop distribution (Cloudera, Hortonworks, ...)
 
-
 1. Trough a Docker container (testing way)
 ------------------------------------------
 Logisland is packaged as a Docker container that you can build yourself or pull from Docker Hub.
 
-To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the following `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
+To facilitate integration testing and to easily run tutorials, you can use `docker-compose` with the followings :
+* `docker-compose.yml <https://raw.githubusercontent.com/Hurence/logisland/master/logisland-framework/logisland-resources/src/main/resources/conf/docker-compose.yml>`_.
 
-Once you have this file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana and logisland)
+Once you have these file you can run a `docker-compose` command to launch all the needed services (zookeeper, kafka, es, kibana, redis and logisland).
+(You can remove the services that you do not need depending on tutorial).
 
 Elasticsearch on docker needs a special tweak as described `here <https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode>`_
 
@@ -29,7 +30,7 @@ Elasticsearch on docker needs a special tweak as described `here <https://www.el
 
 .. note::
 
-    you should add an entry for **sandbox** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
+    you should add an entry for **sandbox** and **kafka** (with the container ip) in your ``/etc/hosts`` as it will be easier to access to all web services in logisland running container.
 
 
 Any logisland script can now be launched by running a `logisland.sh` script within the logisland docker container like in the example below where we launch `index-apache-logs.yml` job :
@@ -54,10 +55,10 @@ From an edge node of your cluster :
 .. code-block:: sh
 
     cd /opt
-    sudo wget https://github.com/Hurence/logisland/releases/download/v1.1.0/logisland-1.1.0-bin.tar.gz
+    sudo wget https://github.com/Hurence/logisland/releases/download/v1.1.2/logisland-1.1.2-bin.tar.gz
 
     export SPARK_HOME=/opt/spark-2.1.0-bin-hadoop2.7/
     export HADOOP_CONF_DIR=$SPARK_HOME/conf
 
-    sudo /opt/logisland-1.1.0/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
+    sudo /opt/logisland-1.1.2/bin/logisland.sh --conf /home/hurence/tom/logisland-conf/v0.10.0/future-factory.yml
 

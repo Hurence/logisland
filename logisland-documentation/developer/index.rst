@@ -1,3 +1,4 @@
+.. _dev:
 .. logisland documentation master file for developer section
 
 Developer Documentation
@@ -10,11 +11,6 @@ Contents:
    :maxdepth: 2
 
    developer
-   propertyDescriptors
-   processors
-   processContext
-   record
-   services
-   connectors
-   streams
-   engines
+   components/index
+   object-model/index
+   documentation/index

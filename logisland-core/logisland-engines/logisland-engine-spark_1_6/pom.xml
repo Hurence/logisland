@@ -23,7 +23,7 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <parent>
         <groupId>com.hurence.logisland</groupId>
         <artifactId>logisland-engines</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.2</version>
     </parent>
     <artifactId>logisland-engine-spark_1_6</artifactId>
     <packaging>jar</packaging>
@@ -208,13 +208,13 @@ http://www.w3.org/2001/XMLSchema-instance ">
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                  <!--  <execution>
                         <id>attach-scaladocs</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
                 <configuration>
                     <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>

@@ -51,7 +51,7 @@ Then run the server on 9999 port
 
 .. code-block:: sh
 
-    docker cp ./h2-1.4.197.jar logisland:/opt/logisland-1.1.0/lib
+    docker cp ./h2-1.4.197.jar logisland:/opt/logisland-1.1.2/lib
     docker exec logisland java -jar lib/h2-1.4.197.jar   -webAllowOthers -tcpAllowOthers -tcpPort 9999
 
 
@@ -149,7 +149,7 @@ try to insert a few rows and have a look at the console output
     INSERT into apache values (default, 110,'GET','/cgi-bin/imagemap/countdown?99,176','302' ,'HTTP/1.0 ', '1995-07-01 04:01:06' ,'205.189.154.54', '-');
     INSERT into apache values (default,12040,'GET','/shuttle/missions/sts-71/mission-sts-71.html','200','HTTP/1.0', '1995-07-01 04:04:38','pme607.onramp.awinc.com', '-');
     INSERT into apache values (default, 40310,'GET','/shuttle/countdown/count.gif','200' ,'HTTP/1.0 ', '1995-07-01 04:05:18' ,'199.166.39.14', '-');
-    INSERT into apache values (default, 141308,'GET','/images/dual-pad.gif','200' ,'HTTP/1.0 ', '1995-07-01 04:04:10' ,'isdn6-34.dnai.com', '-');
+    INSERT into apache values (default, 1.1.28,'GET','/images/dual-pad.gif','200' ,'HTTP/1.0 ', '1995-07-01 04:04:10' ,'isdn6-34.dnai.com', '-');
     INSERT into apache values (default,  9867,'GET','/software/winvn/winvn.html','200' ,'HTTP/1.0 ', '1995-07-01 04:02:39' ,'dynip42.efn.org', '-');
     INSERT into apache values (default, 1204,'GET','/images/KSC-logosmall.gif','200' ,'HTTP/1.0 ', '1995-07-01 04:04:34' ,'netport-27.iu.net', '-');
 

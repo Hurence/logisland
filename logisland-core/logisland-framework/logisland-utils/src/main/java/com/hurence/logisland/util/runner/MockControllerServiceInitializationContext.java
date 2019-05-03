@@ -23,7 +23,7 @@ import com.hurence.logisland.controller.ControllerService;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.controller.ControllerServiceLookup;
 import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.MockComponentLogger;
+import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.registry.VariableRegistry;
 import com.hurence.logisland.validator.ValidationResult;
 
@@ -45,7 +45,7 @@ public class MockControllerServiceInitializationContext implements ControllerSer
                                                       MockControllerServiceLookup serviceLookup) {
         this.identifier = identifier;
         this.controllerService = controllerService;
-        this.logger = new MockComponentLogger(identifier, controllerService);
+        this.logger = new StandardComponentLogger(identifier, controllerService);
         this.serviceLookup = serviceLookup;
         this.properties = new HashMap<>();
     }

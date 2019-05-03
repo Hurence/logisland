@@ -45,7 +45,7 @@ public class CheckAlertsTest {
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.ALLOW_NO_BRACE, "false");
         runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib4", "cache(\"noone\").value < 5");             // syntax error
         runner.setProperty("avib5", "brousoufparty++++");                      // syntax error
@@ -61,7 +61,7 @@ public class CheckAlertsTest {
         runner.assertOutputRecordsCount(0);
         runner.assertOutputErrorCount(0);
 
-         }
+    }
 
     @Test
     public void testValueRules() throws InitializationException {
@@ -74,7 +74,7 @@ public class CheckAlertsTest {
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.ALLOW_NO_BRACE, "false");
         runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib1", "cache(\"cached_id1\").value > 12.0");     // ok
         runner.setProperty("avib2", "cache(\"cached_id2\").value < 5");        // ok
@@ -106,10 +106,10 @@ public class CheckAlertsTest {
         getCacheRecords().forEach(r -> service.put("test", r, false));
 
         final TestRunner runner = TestRunners.newTestRunner(new CheckAlerts());
-        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
+        runner.setProperty(CheckAlerts.MAX_CPU_TIME, "200");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.ALLOW_NO_BRACE, "false");
         runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib6", "cache(\"cached_id1\").count > 4");        // ok
 
@@ -136,7 +136,7 @@ public class CheckAlertsTest {
         runner.setProperty(CheckAlerts.MAX_CPU_TIME, "100");
         runner.setProperty(CheckAlerts.MAX_MEMORY, "12800000");
         runner.setProperty(CheckAlerts.MAX_PREPARED_STATEMENTS, "100");
-        runner.setProperty(CheckAlerts.ALLOw_NO_BRACE, "false");
+        runner.setProperty(CheckAlerts.ALLOW_NO_BRACE, "false");
         runner.setProperty(CheckAlerts.PROFILE_ACTIVATION_CONDITION, "cache(\"cached_id1\").value > 10.0 && cache(\"cached_id2\").value >= 0");
         runner.setProperty("avib7", "cache(\"cached_id2\").duration > 10000"); // ok
 

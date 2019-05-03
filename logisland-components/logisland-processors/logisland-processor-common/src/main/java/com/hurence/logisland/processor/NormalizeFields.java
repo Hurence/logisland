@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -34,6 +35,7 @@ import java.util.*;
         supportsExpressionLanguage = true,
         value = "a comma separated list of possible field name",
         description = "when a field has a name contained in the list it will be renamed with this property field name")
+@ExtraDetailFile("./details/common-processors/NormalizeFields-Detail.rst")
 public class NormalizeFields extends AbstractProcessor {
 
 

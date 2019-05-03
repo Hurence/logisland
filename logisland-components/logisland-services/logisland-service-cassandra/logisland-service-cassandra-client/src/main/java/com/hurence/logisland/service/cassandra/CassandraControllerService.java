@@ -32,7 +32,6 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.validator.StandardValidators;
 import org.apache.commons.lang3.NotImplementedException;
-import com.hurence.logisland.service.cassandra.RecordConverter.CassandraType;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -137,7 +136,6 @@ public class CassandraControllerService extends AbstractControllerService implem
         descriptors.add(CREDENTIALS_USER);
         descriptors.add(CREDENTIALS_PASSWORD);
         descriptors.add(BATCH_SIZE);
-        descriptors.add(BULK_SIZE);
         descriptors.add(FLUSH_INTERVAL);
         return descriptors;
     }

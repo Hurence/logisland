@@ -17,6 +17,7 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -52,6 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @DynamicProperty(name = "A Record field",
         value = "A JsonPath expression",
         description = "will be set to any JSON objects that match the JsonPath. ")
+@ExtraDetailFile("./details/common-processors/EvaluateJsonPath-Detail.rst")
 public class EvaluateJsonPath extends AbstractJsonPathProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(EvaluateJsonPath.class);

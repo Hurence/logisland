@@ -16,6 +16,7 @@
 package com.hurence.logisland.processor.bro;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
@@ -97,6 +98,7 @@ import java.util.Map;
         + "\"proto\": \"tcp\"\n\n"
         + "\"id_resp_h\": \"172.17.0.3\"\n\n"
         + "\"ts\": 1487596886.953917")
+@ExtraDetailFile("./details/ParseBroEvent-Detail.rst")
 public class ParseBroEvent extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ParseBroEvent.class);
