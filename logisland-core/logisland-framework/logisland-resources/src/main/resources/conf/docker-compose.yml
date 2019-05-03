@@ -46,7 +46,6 @@ services:
     networks:
       - logisland
 
-
   redis:
     hostname: redis
     image: 'redis:latest'
@@ -55,10 +54,8 @@ services:
     networks:
       - logisland
 
-
 volumes:
   kafka-home:
 
 networks:
   logisland:
-

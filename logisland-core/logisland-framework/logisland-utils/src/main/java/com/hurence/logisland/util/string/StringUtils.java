@@ -30,6 +30,22 @@ public class StringUtils {
 
     public static final String EMPTY = "";
 
+    /**
+     * <p>Checks if a CharSequence is empty (""), null or whitespace only.</p>
+     *
+     * <p>Whitespace is defined by {@link Character#isWhitespace(char)}.</p>
+     *
+     * <pre>
+     * StringUtils.isBlank(null)      = true
+     * StringUtils.isBlank("")        = true
+     * StringUtils.isBlank(" ")       = true
+     * StringUtils.isBlank("bob")     = false
+     * StringUtils.isBlank("  bob  ") = false
+     * </pre>
+     *
+     * @param str the String to check, may be null
+     * @return {@code true} if the String is null, empty or whitespace only
+     */
     public static boolean isBlank(final String str) {
         if (str == null || str.isEmpty()) {
             return true;

@@ -261,6 +261,8 @@ public class StandardProcessorTestRunner implements TestRunner {
             throw new IllegalStateException("Cannot enable Controller Service " + service + " because it is not disabled");
         }
 
+        assertValid(service);
+
         try {
          //   final ControllerServiceInitializationContext configContext = new MockConfigurationContext(service, configuration.getProperties(), context, variableRegistry);
             final MockControllerServiceInitializationContext initContext =
@@ -358,6 +360,7 @@ public class StandardProcessorTestRunner implements TestRunner {
 
         final ValidationContext validationContext = new StandardValidationContext(this.getConfigOfService(service).getProperties());
         final Collection<ValidationResult> results = this.serviceLookup.getControllerService(service.getIdentifier()).validate(validationContext);
+
         for (final ValidationResult result : results) {
             if (!result.isValid()) {
                 return;

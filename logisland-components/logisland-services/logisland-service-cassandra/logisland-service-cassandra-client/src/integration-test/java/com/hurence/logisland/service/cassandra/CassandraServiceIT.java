@@ -46,7 +46,6 @@ public class CassandraServiceIT {
 
     private final static String CASSANDRA_HOST = "localhost";
     private final static String CASSANDRA_PORT = "19042";
-
     // If you want to run these test with IDE tou can use cassandra docker images, running it with this command :
     // sudo docker run -i -p 19042:9042 cassandra
 

@@ -24,7 +24,8 @@
         <module>logisland-service-hbase</module>
         <module>logisland-service-solr</module>
         <module>logisland-service-elasticsearch</module>
-
+        <module>logisland-service-rest</module>
+        <module>logisland-service-proxy</module>
     </modules>
 
 
