@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TestSolr_5_5_5_ClientService extends TestSolrClientService {
+public class Solr_5_5_5_ClientServiceIT extends TestSolrClientService {
     private class MockSolrClientService extends Solr_5_5_5_ClientService {
 
         public SolrClient getClient() {

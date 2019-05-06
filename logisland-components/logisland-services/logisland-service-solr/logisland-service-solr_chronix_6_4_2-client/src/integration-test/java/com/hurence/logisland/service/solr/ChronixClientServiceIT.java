@@ -16,15 +16,12 @@
 package com.hurence.logisland.service.solr;
 
 import com.hurence.logisland.component.InitializationException;
-import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.controller.ControllerServiceInitializationContext;
 import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.service.datastore.DatastoreClientService;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import de.qaware.chronix.converter.MetricTimeSeriesConverter;
-import de.qaware.chronix.solr.client.ChronixSolrStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,12 +35,12 @@ import java.util.concurrent.BlockingQueue;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 
-public class ChronixClientServiceTest {
+public class ChronixClientServiceIT {
 
 
     private static final String CHRONIX_COLLECTION = "chronix";
 
-    private static Logger logger = LoggerFactory.getLogger(ChronixClientServiceTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ChronixClientServiceIT.class);
 
     @Rule
     public final SolrRule solrRule = new SolrRule();

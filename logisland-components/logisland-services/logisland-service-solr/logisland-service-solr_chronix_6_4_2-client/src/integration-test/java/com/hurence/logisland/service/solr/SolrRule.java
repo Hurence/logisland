@@ -23,11 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.NodeConfig;
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * A JUnit rule which starts an embedded elastic-search instance.
+ * A JUnit rule which starts an embedded solr instance.
  * <p>
  * Tests which use this rule will run relatively slowly, and should only be used when more conventional unit tests are
  * not sufficient - eg when testing DAO-specific code.
@@ -50,10 +46,8 @@ public class SolrRule extends ExternalResource {
     @Override
     protected void before() throws Throwable {
 
-        String base = getClass().getResource("/solr/").getPath();
-
-        FileUtils.deleteDirectory(new File(base + "chronix/data"));
-        container = new CoreContainer(base);
+        FileUtils.deleteDirectory(new File("src/integration-test/resources/solr/chronix/data"));
+        container = new CoreContainer("src/integration-test/resources/solr/");
         container.load();
 
         server = new EmbeddedSolrServer(container, "chronix" );
