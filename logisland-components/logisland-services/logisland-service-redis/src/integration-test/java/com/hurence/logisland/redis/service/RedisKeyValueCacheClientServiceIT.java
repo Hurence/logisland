@@ -50,7 +50,7 @@ import java.util.*;
 /**
  * This is an integration test that is meant to be run against a real Redis instance.
  */
-public class ITRedisKeyValueCacheClientService {
+public class RedisKeyValueCacheClientServiceIT {
 
     public static final String SERVICE_IDENTIFIER = "redis-map-cache-client";
     private TestRedisProcessor proc;
@@ -90,29 +90,28 @@ public class ITRedisKeyValueCacheClientService {
         try {
             // create, configure, and enable the RedisConnectionPool service
             redisMapCacheClientService = new RedisKeyValueCacheService();
-            redisMapCacheClientService.setIdentifier(SERVICE_IDENTIFIER);
-
-
-            testRunner.setProperty(RedisUtils.CONNECTION_STRING, "localhost:" + redisPort);
-            testRunner.setProperty(RedisUtils.REDIS_MODE, RedisUtils.REDIS_MODE_STANDALONE);
-            testRunner.setProperty(RedisUtils.DATABASE, "0");
-            testRunner.setProperty(RedisUtils.COMMUNICATION_TIMEOUT, "10 seconds");
-
-            testRunner.setProperty(RedisUtils.POOL_MAX_TOTAL, "8");
-            testRunner.setProperty(RedisUtils.POOL_MAX_IDLE, "8");
-            testRunner.setProperty(RedisUtils.POOL_MIN_IDLE, "0");
-            testRunner.setProperty(RedisUtils.POOL_BLOCK_WHEN_EXHAUSTED, "true");
-            testRunner.setProperty(RedisUtils.POOL_MAX_WAIT_TIME, "10 seconds");
-            testRunner.setProperty(RedisUtils.POOL_MIN_EVICTABLE_IDLE_TIME, "60 seconds");
-            testRunner.setProperty(RedisUtils.POOL_TIME_BETWEEN_EVICTION_RUNS, "30 seconds");
-            testRunner.setProperty(RedisUtils.POOL_NUM_TESTS_PER_EVICTION_RUN, "-1");
-            testRunner.setProperty(RedisUtils.POOL_TEST_ON_CREATE, "false");
-            testRunner.setProperty(RedisUtils.POOL_TEST_ON_BORROW, "false");
-            testRunner.setProperty(RedisUtils.POOL_TEST_ON_RETURN, "false");
-            testRunner.setProperty(RedisUtils.POOL_TEST_WHILE_IDLE, "true");
-
-            testRunner.setProperty(RedisKeyValueCacheService.RECORD_SERIALIZER, "com.hurence.logisland.serializer.JsonSerializer");
             testRunner.addControllerService(SERVICE_IDENTIFIER, redisMapCacheClientService);
+
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.CONNECTION_STRING, "localhost:" + redisPort);
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.REDIS_MODE, RedisUtils.REDIS_MODE_STANDALONE);
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.DATABASE, "0");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.COMMUNICATION_TIMEOUT, "10 seconds");
+
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_MAX_TOTAL, "8");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_MAX_IDLE, "8");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_MIN_IDLE, "0");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_BLOCK_WHEN_EXHAUSTED, "true");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_MAX_WAIT_TIME, "10 seconds");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_MIN_EVICTABLE_IDLE_TIME, "60 seconds");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_TIME_BETWEEN_EVICTION_RUNS, "30 seconds");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_NUM_TESTS_PER_EVICTION_RUN, "-1");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_TEST_ON_CREATE, "false");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_TEST_ON_BORROW, "false");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_TEST_ON_RETURN, "false");
+            testRunner.setProperty(redisMapCacheClientService, RedisUtils.POOL_TEST_WHILE_IDLE, "true");
+
+            testRunner.setProperty(redisMapCacheClientService, RedisKeyValueCacheService.RECORD_SERIALIZER, "com.hurence.logisland.serializer.JsonSerializer");
+
 
             // uncomment this to test using a different database index than the default 0
             //testRunner.setProperty(redisConnectionPool, RedisUtils.DATABASE, "1");
@@ -121,8 +120,8 @@ public class ITRedisKeyValueCacheClientService {
             //testRunner.setProperty(redisConnectionPool, RedisUtils.PASSWORD, "foobared");
 
             testRunner.enableControllerService(redisMapCacheClientService);
+            testRunner.setProperty(TestRedisProcessor.REDIS_MAP_CACHE, SERVICE_IDENTIFIER);
 
-            setupRedisMapCacheClientService();
             executeProcessor();
         } finally {
             if (redisMapCacheClientService != null) {
@@ -130,18 +129,6 @@ public class ITRedisKeyValueCacheClientService {
             }
         }
     }
-
-    private void setupRedisMapCacheClientService() throws InitializationException {
-        // create, configure, and enable the RedisDistributedMapCacheClient service
-        redisMapCacheClientService = new RedisKeyValueCacheService();
-        redisMapCacheClientService.setIdentifier(SERVICE_IDENTIFIER);
-
-        testRunner.addControllerService(SERVICE_IDENTIFIER, redisMapCacheClientService);
-        //  testRunner.setProperty(redisMapCacheClientService, RedisKeyValueCacheService.REDIS_CONNECTION_POOL, "redis-connection-pool");
-        testRunner.enableControllerService(redisMapCacheClientService);
-        testRunner.setProperty(TestRedisProcessor.REDIS_MAP_CACHE, "redis-map-cache-client");
-    }
-
 
     private Collection<Record> getRandomMetrics(int size) throws InterruptedException {
 
