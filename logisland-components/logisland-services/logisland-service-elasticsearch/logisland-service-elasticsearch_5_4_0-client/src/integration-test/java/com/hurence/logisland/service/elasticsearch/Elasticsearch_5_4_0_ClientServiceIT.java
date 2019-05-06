@@ -1,19 +1,18 @@
- /**
+/**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.classloading.PluginProxy;
@@ -29,12 +28,10 @@ import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
-import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
@@ -46,22 +43,21 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiConsumer;
 
-public class TestElasticsearch_6_6_2_ClientService {
+public class Elasticsearch_5_4_0_ClientServiceIT {
 
-    private static final String MAPPING1 = "{'properties':{'name':{'type': 'text'},'val':{'type':'integer'}}}";
-    private static final String MAPPING2 = "{'properties':{'name':{'type': 'text'},'val':{'type': 'text'}}}";
+    private static final String MAPPING1 = "{'properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'val':{'type':'integer'}}}";
+    private static final String MAPPING2 = "{'properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'val':{'type': 'string', 'index': 'not_analyzed'}}}";
     private static final String MAPPING3 =
-            "{'dynamic':'strict','properties':{'name':{'type': 'text'},'xyz':{'type': 'text'}}}";
+            "{'dynamic':'strict','properties':{'name':{'type': 'string', 'index': 'not_analyzed'},'xyz':{'type': 'string', 'index': 'not_analyzed'}}}";
 
-    private static Logger logger = LoggerFactory.getLogger(TestElasticsearch_6_6_2_ClientService.class);
+    private static Logger logger = LoggerFactory.getLogger(Elasticsearch_5_4_0_ClientServiceIT.class);
 
     @Rule
     public final ESRule esRule = new ESRule();
 
 
-    private class MockElasticsearchClientService extends Elasticsearch_6_6_2_ClientService {
+    private class MockElasticsearchClientService extends Elasticsearch_5_4_0_ClientService {
 
         @Override
         protected void createElasticsearchClient(ControllerServiceInitializationContext context) throws ProcessException {
@@ -73,14 +69,15 @@ public class TestElasticsearch_6_6_2_ClientService {
 
         @Override
         protected void createBulkProcessor(ControllerServiceInitializationContext context) {
-
             if (bulkProcessor != null) {
                 return;
             }
 
-            // create the bulk processor
-
-            BulkProcessor.Listener listener =
+            /**
+             * create the bulk processor
+             */
+            bulkProcessor = BulkProcessor.builder(
+                    esClient,
                     new BulkProcessor.Listener() {
                         @Override
                         public void beforeBulk(long l, BulkRequest bulkRequest) {
@@ -93,7 +90,7 @@ public class TestElasticsearch_6_6_2_ClientService {
                             if (bulkResponse.hasFailures()) {
                                 getLogger().warn("There was failures while executing bulk [id:{}]," +
                                                 " done bulk request in {} ms with failure = {}",
-                                        new Object[]{l, bulkResponse.getTook().getMillis(), bulkResponse.buildFailureMessage()});
+                                        new Object[]{l, bulkResponse.getTookInMillis(), bulkResponse.buildFailureMessage()});
                                 for (BulkItemResponse item : bulkResponse.getItems()) {
                                     if (item.isFailed()) {
                                         errors.put(item.getId(), item.getFailureMessage());
@@ -107,18 +104,13 @@ public class TestElasticsearch_6_6_2_ClientService {
                             getLogger().error("something went wrong while bulk loading events to es : {}", new Object[]{throwable.getMessage()});
                         }
 
-                    };
-
-            BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer =
-                    (request, bulkListener) -> esClient.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
-            bulkProcessor = BulkProcessor.builder(bulkConsumer, listener)
+                    })
                     .setBulkActions(1000)
                     .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
                     .setFlushInterval(TimeValue.timeValueSeconds(1))
                     .setConcurrentRequests(2)
                     //.setBackoffPolicy(getBackOffPolicy(context))
                     .build();
-
         }
 
         @Override
@@ -172,15 +164,19 @@ public class TestElasticsearch_6_6_2_ClientService {
 
         // Add a mapping to foo
         result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-        Assert.assertEquals(true, result);
+//        Assert.assertEquals(true, result);
 
         // Add the same mapping again
         result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
-        Assert.assertEquals(true, result);
+        //       Assert.assertEquals(true, result);
+
+        // Add the same mapping again under a different doctype
+        result = elasticsearchClientService.putMapping("foo", "type2", MAPPING1.replace('\'', '"'));
+        //       Assert.assertEquals(true, result);
 
         // Update a mapping with an incompatible mapping -- should fail
-        // result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
-        // Assert.assertEquals(false, result);
+        //result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
+        //Assert.assertEquals(false, result);
 
         // create alias
         elasticsearchClientService.createAlias("foo", "aliasFoo");
@@ -368,6 +364,8 @@ public class TestElasticsearch_6_6_2_ClientService {
         final String index1 = "index1";
         final String index2 = "index2";
         final String type1 = "type1";
+        final String type2 = "type2";
+        final String type3 = "type3";
 
         Map<String, Object> document1 = new HashMap<>();
         final String docId1 = "id1";
@@ -414,8 +412,8 @@ public class TestElasticsearch_6_6_2_ClientService {
         elasticsearchClientService.bulkPut(index1, type1, document2, Optional.of(docId2));
         elasticsearchClientService.bulkPut(index1, type1, document3, Optional.of(docId3));
         elasticsearchClientService.bulkPut(index2, type1, document1, Optional.of(docId1));
-        elasticsearchClientService.bulkPut(index2, type1, document2, Optional.of(docId2));
-        elasticsearchClientService.bulkPut(index2, type1, document3, Optional.of(docId3));
+        elasticsearchClientService.bulkPut(index2, type2, document2, Optional.of(docId2));
+        elasticsearchClientService.bulkPut(index2, type3, document3, Optional.of(docId3));
         // Flush the bulk processor :
         elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
@@ -441,7 +439,7 @@ public class TestElasticsearch_6_6_2_ClientService {
         List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
         ArrayList<String> documentIds = new ArrayList<>();
         ArrayList<String> documentIds_2 = new ArrayList<>();
-        List<MultiGetResponseRecord> multiGetResponseRecords;
+        List<MultiGetResponseRecord> multiGetResponseRecords = new ArrayList<>();
         String[] fieldsToInclude = {"field_b*", "field*1"};
         String[] fieldsToExclude = {"field_*2"};
 
