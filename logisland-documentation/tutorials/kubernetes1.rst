@@ -1005,41 +1005,50 @@ make sure some fake apache logs are flowing through kafka topic
 
 6 - Setup logisland
 -------------------
-It's now time time to dive into log mining
+It's now time time to dive into log mining. We'll setup a 3 instances logisland stream that will handle apache logs parsing (coming from loggen script) as a ReplicaSet
 
 
 Create the file `logisland-deployment.yml`:
 
 .. code-block:: yml
 
-    apiVersion: v1
-    kind: Pod
+    apiVersion: apps/v1beta2
+    kind: ReplicaSet
     metadata:
       name: logisland-job
       namespace: logisland
     spec:
-      containers:
-        - name: logisland
-          image: hurence/logisland-job
-          imagePullPolicy: IfNotPresent
-          command: ["/opt/logisland/bin/logisland.sh"]
-          args: ["--standalone", "--conf", "/opt/logisland/conf/index-apache-logs-plainjava.yml"]
-          env:
-            - name: ES_CLUSTER_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: logisland-config
-                  key: es.cluster.name
-            - name: KAFKA_BROKERS
-              valueFrom:
-                configMapKeyRef:
-                  name: logisland-config
-                  key: kafka.brokers
-            - name: ES_HOSTS
-              valueFrom:
-                configMapKeyRef:
-                  name: logisland-config
-                  key: es.hosts
+      replicas: 3
+      selector:
+        matchLabels:
+          app: logisland-job
+      template:
+        metadata:
+          labels:
+            app: logisland-job
+        spec:
+          containers:
+            - name: logisland
+              image: hurence/logisland-job
+              imagePullPolicy: IfNotPresent
+              command: ["/opt/logisland/bin/logisland.sh"]
+              args: ["--standalone", "--conf", "/opt/logisland/conf/index-apache-logs-plainjava.yml"]
+              env:
+                - name: ES_CLUSTER_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: logisland-config
+                      key: es.cluster.name
+                - name: KAFKA_BROKERS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: logisland-config
+                      key: kafka.brokers
+                - name: ES_HOSTS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: logisland-config
+                      key: es.hosts
 
 
 Apply the configuration:
