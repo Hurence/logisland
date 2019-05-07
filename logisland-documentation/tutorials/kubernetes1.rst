@@ -27,18 +27,30 @@ sources
 
 0 - Pre-requisites & initial setup
 ----------------------------------
-First of all you'll a Kubernetes cluster or simply a minikube. For the first option I would highly recommend to follow the Hello Minikube tutorial for thos who don't have any background with Kubernetes. This will help to get minikube and kubectl commands installed. (Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetes cluster).
+First of all you'll need a Kubernetes cluster or a minikube cluster (https://kubernetes.io/docs/tasks/tools/install-minikube/ ).
+For the first option I would highly recommend to follow the Hello Minikube tutorial for those who don't have any background with Kubernetes.
+This will help to get minikube and kubectl commands installed.
+(Minikube is the local development Kubernetes environment and kubectl is the command line interface used to interact with Kubernetes cluster).
 
 
 Shaving the Yak!
 """"""""""""""""
-One or two commands that used in this post will be mac specific. Reference this guide to get more up to date and OS specific commands.
+One or two commands that used in this post will be mac or linux specific. Reference this guide to get more up to date and OS specific commands.
 Once you’ve got the tools all installed, you can now follow along these steps to create a single node Elasticsearch cluster.
-If you are using Minikube, make sure that its started properly by running this command (for mac):
+
+If you are using Minikube, make sure that its started properly by running this command
+
+* for mac:
 
 .. code-block:: sh
 
     minikube start --vm-driver=hyperkit
+
+* for linux (use virtualbox by default, so you have to install it) :
+
+.. code-block:: sh
+
+    minikube start
 
 Now set the Minikube context. The context is what determines which cluster kubectl is interacting with.
 
@@ -57,6 +69,7 @@ To view the nodes in the cluster, run
 .. code-block:: sh
 
     kubectl get nodes
+
 
 Kubernetes Dashboard
 """"""""""""""""""""
@@ -132,11 +145,18 @@ If you wish to use your own namespace for this Kafka installation, be sure to re
 
 Persistent volumes
 """"""""""""""""""
-In Kubernetes, managing storage is a distinct problem from managing compute. The PersistentVolume subsystem provides an API for users and administrators that abstracts details of how storage is provided from how it is consumed. To do this we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.
+In Kubernetes, managing storage is a distinct problem from managing compute.
+The PersistentVolume subsystem provides an API for users and administrators that abstracts details of how storage is provided from how it is consumed.
+To do this we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.
 
-A **PersistentVolume (PV)** is a piece of storage in the cluster that has been provisioned by an administrator. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system.
+A **PersistentVolume (PV)** is a piece of storage in the cluster that has been provisioned by an administrator.
+It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes,
+but have a lifecycle independent of any individual pod that uses the PV. This API object captures the details of the implementation of the storage,
+ be that NFS, iSCSI, or a cloud-provider-specific storage system.
 
-A **PersistentVolumeClaim (PVC)** is a request for storage by a user. It is similar to a pod. Pods consume node resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only).
+A **PersistentVolumeClaim (PVC)** is a request for storage by a user. It is similar to a pod. Pods consume node resources and PVCs consume PV resources.
+Pods can request specific levels of resources (CPU and Memory).
+Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only).
 
 Create the local folders where you want to store your files (change this to wherever you want to store data on your nodes) :
 
@@ -176,7 +196,7 @@ Apply the configuration:
 
 Configuration maps
 """"""""""""""""""
-We will need a few configuration variables in our setup to bind containers together and define some environment varaiables.
+We will need a few configuration variables in our setup to bind containers together and define some environment variables.
 The first config map is specific to `loggen` tool which is a wrapped python program that sends fake generated apache logs to a given Kafka topic at a specified rate.
 The second one is a set of settings that will be used by the `logisland` job in order to configure itself. We'll go into deeper details in the last section of this post.
 
@@ -441,7 +461,9 @@ Zookeeper Headless Service
 """"""""""""""""""""""""""
 Kubernetes Services are persistent and provide a stable and reliable way to connect to Pods.
 
-Setup a Kubernetes Service named kafka-zookeeper in namespace `logisland`. The kafka-zookeeper service resolves the domain name kafka-zookeeper to an internal ClusterIP. The automatically assigned ClusterIP uses Kubernetes internal proxy to load balance calls to any Pods found from the configured selector, in this case, app: kafka-zookeeper.
+Setup a Kubernetes Service named kafka-zookeeper in namespace `logisland`. The kafka-zookeeper service resolves the domain name kafka-zookeeper to an internal ClusterIP.
+The automatically assigned ClusterIP uses Kubernetes internal proxy to load balance calls to any Pods found from the configured selector,
+in this case, app: kafka-zookeeper.
 
 After setting up the kafka-zookeeper Service, a DNS lookup from within the cluster may produce a result similar to the following:
 
@@ -454,7 +476,9 @@ After setting up the kafka-zookeeper Service, a DNS lookup from within the clust
     Name:    kafka-zookeeper.logisland.svc.cluster.local
     Address: 10.103.184.71
 
-In the example above, 10.103.184.71 is the internal IP address of the ** kafka-zookeeper* service itself and proxies calls to one of the Zookeeper Pods it finds labeled app: kafka-zookeeper. At this point, no Pods are available until added further down. However, the service finds them when they become active.
+In the example above, 10.103.184.71 is the internal IP address of the ** kafka-zookeeper* service itself and proxies calls
+to one of the Zookeeper Pods it finds labeled app: kafka-zookeeper. At this point, no Pods are available until added further down.
+However, the service finds them when they become active.
 
 Create the file `zookeeper-service.yml`:
 
@@ -542,13 +566,22 @@ Apply the configuration:
 
 Zookeeper StatefulSet
 """""""""""""""""""""
-Kubernetes StatefulSets offer stable and unique network identifiers, persistent storage, ordered deployments, scaling, deletion, termination, and automated rolling updates.
+Kubernetes StatefulSets offer stable and unique network identifiers, persistent storage, ordered deployments, scaling,
+deletion, termination, and automated rolling updates.
 
-Unique network identifiers and persistent storage are essential for stateful cluster nodes in systems like Zookeeper and Kafka. While it seems strange to have a coordinator like Zookeeper running inside a Kubernetes cluster sitting on its own coordinator Etcd, it makes sense since these systems are built to run independently. Kubernettes supports running services like Zookeeper and Kafka with features like headless services and stateful sets which demonstrates the flexibility of Kubernetes as both a microservices platform and a type of virtual infrastructure.
+Unique network identifiers and persistent storage are essential for stateful cluster nodes in systems like Zookeeper and
+Kafka. While it seems strange to have a coordinator like Zookeeper running inside a Kubernetes cluster sitting on its
+own coordinator Etcd,
+it makes sense since these systems are built to run independently. Kubernetes supports running services like Zookeeper
+and Kafka with features like headless services and stateful sets which demonstrates the flexibility of Kubernetes as
+both a microservices platform and a type of virtual infrastructure.
 
-The following configuration creates three kafka-zookeeper Pods, kafka-zookeeper-0, kafka-zookeeper-1, kafka-zookeeper-2 and can be scaled to as many as desired. Ensure that the number of specified replicas matches the environment variable ZK_REPLICAS specified in the container spec.
+The following configuration creates three kafka-zookeeper Pods, kafka-zookeeper-0, kafka-zookeeper-1, kafka-zookeeper-2
+and can be scaled to as many as desired. Ensure that the number of specified replicas matches the environment variable
+ZK_REPLICAS specified in the container spec.
 
-Pods in this StatefulSet run the Zookeeper Docker image gcr.io/google_samples/k8szk:v3, which is a sample image provided by Google for testing GKE, it is recommended to use custom and maintained Zookeeper image once you are familiar with this setup.
+Pods in this StatefulSet run the Zookeeper Docker image gcr.io/google_samples/k8szk:v3, which is a sample image provided
+by Google for testing GKE, it is recommended to use custom and maintained Zookeeper image once you are familiar with this setup.
 
 Create the file `zookeeper-statefulset.yml`:
 
@@ -672,13 +705,17 @@ Apply the configuration:
 
 Zookeeper PodDisruptionBudget
 """""""""""""""""""""""""""""
-PodDisruptionBudget can help keep the Zookeeper service stable during Kubernetes administrative events such as draining a node or updating Pods.
+PodDisruptionBudget can help keep the Zookeeper service stable during Kubernetes administrative events such as draining
+a node or updating Pods.
 
 From the official documentation for PDB (PodDisruptionBudget):
 
-A PDB specifies the number of replicas that an application can tolerate having, relative to how many it is intended to have. For example, a Deployment which has a .spec.replicas: 5 is supposed to have 5 pods at any given time. If its PDB allows for there to be 4 at a time, then the Eviction API will allow voluntary disruption of one, but not two pods, at a time.
+A PDB specifies the number of replicas that an application can tolerate having, relative to how many it is intended to
+have. For example, a Deployment which has a .spec.replicas: 5 is supposed to have 5 pods at any given time. If its PDB
+allows for there to be 4 at a time, then the Eviction API will allow voluntary disruption of one, but not two pods, at a time.
 
-The configuration below tells Kubernetes that we can only tolerate one of our Zookeeper Pods down at any given time. maxUnavailable may be set to a higher number if we increase the number of Zookeeper Pods in the StatefulSet.
+The configuration below tells Kubernetes that we can only tolerate one of our Zookeeper Pods down at any given time.
+maxUnavailable may be set to a higher number if we increase the number of Zookeeper Pods in the StatefulSet.
 
 Create the file `zookeeper-disruptionbudget.yml`:
 
@@ -709,11 +746,13 @@ Apply the configuration:
 
 4 - Setting up Kafka
 --------------------
-Once Zookeeper is up and running we have satisfied the requirements for Kafka. Kafka is set up in a similar configuration to Zookeeper, utilizing a Service, Headless Service and a StatefulSet.
+Once Zookeeper is up and running we have satisfied the requirements for Kafka. Kafka is set up in a similar
+configuration to Zookeeper, utilizing a Service, Headless Service and a StatefulSet.
 
 Kafka Service
 """""""""""""
-The following Service provides a persistent internal Cluster IP address that proxies and load balance requests to Kafka Pods found with the label app: kafka and exposing the port 9092.
+The following Service provides a persistent internal Cluster IP address that proxies and load balance requests to Kafka
+Pods found with the label app: kafka and exposing the port 9092.
 
 Create the file `kafka-service.yml`:
 
@@ -882,7 +921,9 @@ Apply the configuration:
 
 Kafka Test Pod
 """"""""""""""
-Add a test Pod to help explore and debug your new Kafka cluster. The Confluent Docker image confluentinc/cp-kafka:4.1.2-2 used for the test Pod is the same as our nodes from the StatefulSet and contain useful command in the /usr/bin/ folder.
+Add a test Pod to help explore and debug your new Kafka cluster. The Confluent Docker image
+confluentinc/cp-kafka:4.1.2-2 used for the test Pod is the same as our nodes from the StatefulSet and
+contain useful command in the /usr/bin/ folder.
 
 Create the file kafka-test.yml:
 
