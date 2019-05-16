@@ -297,58 +297,38 @@ Expose the cluster
 """"""""""""""""""
 We can verify that the cluster is running by looking at the logs. But, let’s check if elasticsearch api is responding first.
 
-In a seperate shell window, excute the following to start a proxy into Kubernetest cluster.
+In a seperate shell window, excute the following to start a proxy into Kubernetes cluster.
 
 .. code-block:: sh
 
-    kubectl proxy
+    kubectl -n logisland port-forward svc/elasticsearch 9200:9200
 
-Outputs:
 
-.. code-block:: sh
-
-Starting to serve on 127.0.0.1:8001
 Now, back in the other window, lets execute a curl command to get the response from the pod via the proxy.
 
 .. code-block:: sh
 
-    curl http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/proxy/
+    curl http://localhost:9200
 
 Outputs:
 
 .. code-block:: json
 
     {
-      "name" : "DdWnre5",
-      "cluster_name" : "docker-cluster",
-      "cluster_uuid" : "P2xSeKPeTTSnBSpNyiZQtA",
+      "name" : "19SlwE4",
+      "cluster_name" : "es-logisland",
+      "cluster_uuid" : "ef41SIbWRHmSDoDhcFA9WA",
       "version" : {
-        "number" : "6.2.1",
-        "build_hash" : "7299dc3",
-        "build_date" : "2018-02-07T19:34:26.990113Z",
+        "number" : "5.4.3",
+        "build_hash" : "eed30a8",
+        "build_date" : "2017-06-22T00:34:03.743Z",
         "build_snapshot" : false,
-        "lucene_version" : "7.2.1",
-        "minimum_wire_compatibility_version" : "5.6.0",
-        "minimum_index_compatibility_version" : "5.0.0"
+        "lucene_version" : "6.5.1"
       },
       "tagline" : "You Know, for Search"
     }
 
 Great, everything is working.
-
-Now, lets expose this deployment to outside of Kubernetes network:
-
-.. code-block:: sh
-
-    kubectl expose deployment elasticsearch --type=LoadBalancer
-
-Pro tip Use MiniKube to open the service in your default browser.
-
-.. code-block:: sh
-
-    minikube service elasticsearch
-
-In my case, the port that was assigned to this pod was 31389. But, we have elasticsearch cluster now running in Kubernetes!
 
 
 2 - Setup Kibana
@@ -421,15 +401,12 @@ Apply the configuration:
 
     kubectl create -f ./kibana-deployment.yml
 
-Screenshot of kibana dashboard
 
+To access kibana through your localhost forward the port
 
-    hurence:kubernetes tom$ minikube ip
-    192.168.99.100
+.. code-block:: sh
 
-Access kibana through your minikube IP like
-
-    http://192.168.99.100:30123/app/kibana#/management/kibana/index?_g=()
+    kubectl -n logisland port-forward svc/kibana 5601:5601
 
 
 3 - Setting up Zookeeper
