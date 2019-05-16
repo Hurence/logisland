@@ -27,9 +27,9 @@
     <modules>
         <module>logisland-service-solr-api</module>
         <module>logisland-service-solr-test</module>
-        <module>logisland-service-solr_5_5_5-client</module>
+        <module>logisland-service-solr_8-client</module>
         <module>logisland-service-solr_6_6_2-client</module>
         <module>logisland-service-solr_chronix_6_4_2-client</module>
-
+        <module>logisland-service-solr_chronix_8-client</module>
     </modules>
 </project>

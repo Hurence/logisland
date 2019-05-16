@@ -2567,7 +2567,7 @@ com.hurence.logisland:logisland-service-solr_chronix_6.4.2-client:1.1.2
 
 Class
 _____
-com.hurence.logisland.service.solr.Solr_6_4_2_ChronixClientService
+com.hurence.logisland.service.solr.Solr_8_ChronixClientService
 
 Tags
 ____

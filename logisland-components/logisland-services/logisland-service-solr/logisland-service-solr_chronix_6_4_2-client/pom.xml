@@ -10,7 +10,7 @@
         <version>1.1.2</version>
     </parent>
 
-    <artifactId>logisland-service-solr_chronix_6.4.2-client</artifactId>
+    <artifactId>logisland-service-solr_chronix_6_4_2-client</artifactId>
     <packaging>jar</packaging>
 
     <name>Chronix-Solr Service Plugin</name>
