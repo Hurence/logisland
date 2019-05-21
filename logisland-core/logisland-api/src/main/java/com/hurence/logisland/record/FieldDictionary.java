@@ -35,6 +35,9 @@ public class FieldDictionary {
     public static final String RECORD_BODY = "record_body";
     public static final String RECORD_COUNT = "record_count";
     public static final String RECORD_LAST_UPDATE_TIME = "record_last_update_time";
+    public static final String RECORD_START = "record_start";
+    public static final String RECORD_END = "record_end";
+
 
     public static final String RECORD_POSITION = "record_position";
     public static final String RECORD_POSITION_LATITUDE = "record_position_latitude";

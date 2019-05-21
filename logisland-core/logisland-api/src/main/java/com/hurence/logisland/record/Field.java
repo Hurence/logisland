@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -98,7 +98,7 @@ public class Field implements PropertyValue, Serializable {
     public int hashCode() {
         int result = type.hashCode();
         result = 31 * result + name.hashCode();
-        if ( rawValue != null ) {
+        if (rawValue != null) {
             result = 31 * result + rawValue.hashCode();
         }
         return result;
@@ -142,6 +142,20 @@ public class Field implements PropertyValue, Serializable {
     }
 
     @Override
+    public byte[] asBytes() {
+        if (rawValue == null) {
+            return null;
+        } else if (rawValue instanceof byte[]) {
+            return (byte[]) rawValue;
+        } else {
+
+            logger.error(" : unable to convert " + rawValue.toString() + " as a byte[], returning null");
+            return null;
+        }
+    }
+
+
+    @Override
     public Record asRecord() {
         if (rawValue == null) {
             return null;
@@ -158,7 +172,7 @@ public class Field implements PropertyValue, Serializable {
             if (rawValue instanceof Number) {
                 return ((Number) rawValue).longValue();
             } else if (rawValue instanceof Date) {
-              return ((Date) rawValue).getTime();
+                return ((Date) rawValue).getTime();
             } else {
                 try {
                     return Long.parseLong(rawValue.toString());
@@ -168,12 +182,11 @@ public class Field implements PropertyValue, Serializable {
                 }
             }
         }
-
     }
 
     @Override
     public Boolean asBoolean() {
-        if(rawValue == null)
+        if (rawValue == null)
             return null;
 
         return BooleanUtils.toBoolean(rawValue.toString());
@@ -211,9 +224,9 @@ public class Field implements PropertyValue, Serializable {
                 return Double.parseDouble(rawValue.toString());
             } catch (Exception ex) {
 
-                try{
+                try {
                     return Double.parseDouble(rawValue.toString().replaceAll(",", "."));
-                }catch (Exception ex2) {
+                } catch (Exception ex2) {
                     logger.error(ex2.toString() + " : unable to convert " + rawValue.toString() + " as a double, returning 0");
                     return 0.0;
                 }

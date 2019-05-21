@@ -61,6 +61,12 @@ public interface PropertyValue extends Serializable {
     Integer asInteger();
 
 
+    /**
+     * @return a byte[] representation of the property value, of
+     * <code>null</code> if not set
+     * @throws IllegalArgumentException if not able to parse
+     */
+    byte[] asBytes();
 
     /**
      * @return a Record representation of the property value, or

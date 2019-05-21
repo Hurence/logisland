@@ -104,6 +104,11 @@ public class MockPropertyValue implements PropertyValue {
     }
 
     @Override
+    public byte[] asBytes() {
+        return (rawValue == null) ? null : rawValue.getBytes();
+    }
+
+    @Override
     public Boolean asBoolean() {
         ensureExpressionsEvaluated();
         return stdPropValue.asBoolean();
