@@ -115,41 +115,32 @@ trait StructuredStreamProviderService extends ControllerService {
       processingRecords
         .filter(_.hasField(keys))
         .groupByKey(_.getField(keys).asString())
-        .mapGroupsWithState[Record, Record](GroupStateTimeout.NoTimeout()) {
+        .flatMapGroupsWithState(
+          outputMode = OutputMode.Append,
+          timeoutConf = GroupStateTimeout.NoTimeout)( (sessionId: String, eventsIter: Iterator[Record], state: GroupState[Record]) =>{
 
-        case (sessionId: String, eventsIter: Iterator[Record], state: GroupState[Record]) =>
 
+            val events = executePipeline(controllerServiceLookupSink, streamContext, eventsIter)
+            /*  val updatedSession = if (state.exists) {
+                val existingState = state.get
+                val sum = events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
+                existingState.setField("agg_sum", FieldType.DOUBLE, sum)
+                existingState
+              }
+              else {
+                new StandardRecord()
+                  .setField("tagname", FieldType.STRING, events.head.getField("tagname").asString())
+                  .setField("agg_sum", FieldType.DOUBLE,
+                    events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
+                  )
+                  .setField("agg_count", FieldType.INT, events.size)
 
-          val events = executePipeline(controllerServiceLookupSink, streamContext, eventsIter).toSeq
-          val updatedSession = if (state.exists) {
-            val existingState = state.get
-            val sum = events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
-            existingState.setField("agg_sum", FieldType.DOUBLE, sum)
-            existingState
-          }
-          else {
-            new StandardRecord()
-              .setField("tagname", FieldType.STRING, events.head.getField("tagname").asString())
-              .setField("agg_sum", FieldType.DOUBLE,
-                events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
-              )
-              .setField("agg_count", FieldType.INT, events.size)
+              }
+              state.update(updatedSession)*/
+            //check did we get end signal or not
 
-          }
-          state.update(updatedSession)
-          //check did we get end signal or not
-          val isEndSignal = false //events.filter(value ⇒ value.endSignal.isDefined).length > 0
-          /* if (isEndSignal) {
-             state.remove()
-             SessionUpdate(sessionId, updatedSession.totalSum, true)
-           }
-           else {
-             SessionUpdate(sessionId, updatedSession.totalSum, false)
-           }*/
-          updatedSession
-        case _ =>
-          new StandardRecord()
-      }
+            events
+        })
 
     } else {
       processingRecords.mapPartitions(iterator => {
@@ -263,7 +254,7 @@ trait StructuredStreamProviderService extends ControllerService {
     val df2 = df.mapPartitions(record => record.map(record => serializeRecords(serializer, keySerializer, record)))
 
     write(df2, controllerServiceLookupSink, streamContext).queryName(streamContext.getIdentifier)
-      .outputMode("update")
+     // .outputMode("update")
       .start()
 
 
