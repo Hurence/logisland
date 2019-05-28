@@ -1,4 +1,4 @@
-package com.hurence.logisland.timeseries.processor;
+package com.hurence.logisland.processor;
 
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)
@@ -21,12 +21,8 @@ import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.timeseries.converter.RecordsTimeSeriesConverter;
-import com.hurence.logisland.validator.StandardValidators;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

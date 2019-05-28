@@ -84,8 +84,8 @@ public class StandardControllerServiceLookup implements ControllerServiceLookup,
 
             // now retry finding the service
             if (!controllerServiceMap.containsKey(serviceIdentifier)) {
-                logger.error("service {} is not available", new Object[]{serviceIdentifier});
-                return null;
+                logger.error("service {} is not available, exiting", new Object[]{serviceIdentifier});
+                System.exit(-1);
             }
         }
 

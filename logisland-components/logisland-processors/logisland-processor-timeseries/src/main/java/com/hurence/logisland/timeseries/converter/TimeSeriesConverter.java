@@ -15,13 +15,15 @@
  */
 package com.hurence.logisland.timeseries.converter;
 
+import java.io.Serializable;
+
 /**
  * Defines how a custom time series of type <T> is converted from a binary time series and back
  *
  * @param <T> type of the document returned by the converter
  * @author f.lautenschlager
  */
-public interface TimeSeriesConverter<T> {
+public interface TimeSeriesConverter<T> extends Serializable {
 
     /**
      * Shall create an object of type T from the given time series document.

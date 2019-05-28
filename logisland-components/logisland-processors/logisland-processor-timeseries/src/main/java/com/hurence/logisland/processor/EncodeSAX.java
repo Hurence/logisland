@@ -1,4 +1,4 @@
-package com.hurence.logisland.timeseries.processor;
+package com.hurence.logisland.processor;
 
 /**
  * Copyright (C) 2016 Hurence (support@hurence.com)

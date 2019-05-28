@@ -112,11 +112,11 @@ engine:
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        write.topics.client.service: kafka_out_service
+        write.stream.service.provider: kafka_out_service
       processorConfigurations:
         - processor: flatten
           component: com.hurence.logisland.processor.FlatMap

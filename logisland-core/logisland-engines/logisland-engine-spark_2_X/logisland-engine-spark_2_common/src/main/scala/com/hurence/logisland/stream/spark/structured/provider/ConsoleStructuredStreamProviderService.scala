@@ -94,10 +94,11 @@ class ConsoleStructuredStreamProviderService extends AbstractControllerService w
       */
     override def write(df: Dataset[Record], controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext): DataStreamWriter[_] = {
 
-        //  implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
+        import df.sparkSession.implicits._
+          implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Record]
 
-        df
-            .writeStream
+        df.writeStream
             .format("console")
+
     }
 }

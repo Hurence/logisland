@@ -27,6 +27,7 @@ public class FieldDictionary {
     public static final String RECORD_TYPE = "record_type";
     public static final String RECORD_ID = "record_id";
     public static final String RECORD_TIME = "record_time";
+    public static final String RECORD_PROCESSING_TIME = "record_processing_time";
     public static final String RECORD_DAYTIME = "record_daytime";
     public static final String RECORD_KEY = "record_key";
     public static final String RECORD_VALUE = "record_value";

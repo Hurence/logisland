@@ -8,12 +8,13 @@ import com.hurence.logisland.timeseries.dts.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class RecordsTimeSeriesConverter {
+public class RecordsTimeSeriesConverter implements Serializable {
 
 
     private Logger logger = LoggerFactory.getLogger(RecordsTimeSeriesConverter.class.getName());

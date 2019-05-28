@@ -136,11 +136,11 @@ So that, we can now define the *parsing stream* using those source and sink
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        write.topics.client.service: kafka_out_service
+        write.stream.service.provider: kafka_out_service
 
 
 Within this stream, a ``FlatMap`` processor takes out the value and key (required when using *StructuredStream* as source of records)
@@ -181,11 +181,11 @@ We can define some serializers to marshall all records from and to a topic.
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         read.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        read.topics.client.service: kc_source_service
+        read.stream.service.provider: kc_source_service
         write.topics: logisland_raw
         write.topics.serializer: com.hurence.logisland.serializer.KryoSerializer
         write.topics.key.serializer: com.hurence.logisland.serializer.KryoSerializer
-        write.topics.client.service: kafka_out_service
+        write.stream.service.provider: kafka_out_service
 
 
 Within this stream, a ``BulkAddElasticsearch`` takes care of indexing a ``Record`` sending it to elasticsearch.

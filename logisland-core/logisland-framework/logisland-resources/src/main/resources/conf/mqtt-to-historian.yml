@@ -72,10 +72,10 @@ engine:
       configuration:
         read.topics: /a/in
         read.topics.serializer: com.hurence.logisland.serializer.KuraProtobufSerializer
-        read.topics.client.service: mqtt_service
+        read.stream.service.provider: mqtt_service
         write.topics: /a/out
         write.topics.serializer: com.hurence.logisland.serializer.JsonSerializer
-        write.topics.client.service: console_service
+        write.stream.service.provider: console_service
       processorConfigurations:
 
         - processor: flatten
