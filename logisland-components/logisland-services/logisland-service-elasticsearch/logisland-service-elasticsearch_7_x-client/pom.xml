@@ -88,6 +88,18 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Needed for unit test: logisland-utils depends on jackson core 2.4.4
+          (com.fasterxml.jackson.core:jackson-core:jar:2.4.4) which is not sufficient for
+          the unit tests. Howevern we need logisland-utils for unit tests so adding
+          dependency on higher version of jackson core so that the TokenFilter class is found
+          in classpath -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.9</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>

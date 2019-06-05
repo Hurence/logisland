@@ -47,7 +47,7 @@ public class ESRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.7.1");
+                ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.1.1");
                 container.start();
                 client = new RestHighLevelClient(RestClient.builder(HttpHost.create(container.getHttpHostAddress())));
 
