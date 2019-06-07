@@ -45,8 +45,6 @@ import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.core.CountRequest;
@@ -437,41 +435,8 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     @Override
     public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex) throws DatastoreClientServiceException {
         try {
-            SearchRequest searchRequest = new SearchRequest(srcIndex);
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
-                .query(QueryBuilders.matchAllQuery())
-                .size(100);
-            searchRequest.source(searchSourceBuilder).scroll(reindexScrollTimeout).searchType(SearchType.QUERY_THEN_FETCH);
-            SearchResponse scrollResp = esClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            // A user of a BulkProcessor just keeps adding requests to it, and the BulkProcessor itself decides when
-            // to send a request to the ES nodes, based on its configuration settings. Calls can be triggerd by number
-            // of queued requests, total size of queued requests, and time since previous request. The defaults for
-            // these settings are all sensible, so are not overridden here. The BulkProcessor has an internal threadpool
-            // which allows it to send multiple batches concurrently; the default is "1" meaning that a single completed
-            // batch can be sending in the background while a new batch is being built. When the non-active batch is
-            // "full", the add call blocks until the background batch completes.
-
-            while (true) {
-                if (scrollResp.getHits().getHits().length == 0) {
-                    // No more results
-                    break;
-                }
-
-                for (SearchHit hit : scrollResp.getHits()) {
-                    IndexRequest request = new IndexRequest(dstIndex);
-                    request.id(hit.getId());
-                    Map<String, Object> source = hit.getSourceAsMap();
-                    request.source(source);
-                    bulkProcessor.add(request);
-                }
-
-                String scrollId = scrollResp.getScrollId();
-                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
-                scrollRequest.scroll(reindexScrollTimeout);
-                scrollResp = esClient.scroll(scrollRequest, RequestOptions.DEFAULT);
-            }
-
+            ReindexRequest request = new ReindexRequest().setSourceIndices(srcIndex).setDestIndex(dstIndex);
+            esClient.reindex(request, RequestOptions.DEFAULT);
             getLogger().info("Reindex completed");
         }
         catch (Exception e){
