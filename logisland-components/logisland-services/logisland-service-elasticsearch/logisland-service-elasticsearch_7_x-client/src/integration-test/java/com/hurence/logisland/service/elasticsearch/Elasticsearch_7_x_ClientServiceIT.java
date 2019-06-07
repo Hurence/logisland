@@ -24,6 +24,7 @@ import com.hurence.logisland.processor.ProcessException;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
+import com.hurence.logisland.service.datastore.DatastoreClientServiceException;
 import com.hurence.logisland.service.datastore.InvalidMultiGetQueryRecordException;
 import com.hurence.logisland.service.datastore.MultiGetQueryRecord;
 import com.hurence.logisland.service.datastore.MultiGetResponseRecord;
@@ -59,7 +60,6 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
     @Rule
     public final ESRule esRule = new ESRule();
-
 
     private class MockElasticsearchClientService extends Elasticsearch_7_x_ClientService {
 
@@ -171,16 +171,12 @@ public class Elasticsearch_7_x_ClientServiceIT {
         Assert.assertEquals(true, elasticsearchClientService.existsCollection("foo"));
 
         // Add a mapping to foo
-        result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
+        result = elasticsearchClientService.putMapping("foo", null, MAPPING1.replace('\'', '"'));
         Assert.assertEquals(true, result);
 
         // Add the same mapping again
-        result = elasticsearchClientService.putMapping("foo", "type1", MAPPING1.replace('\'', '"'));
+        result = elasticsearchClientService.putMapping("foo", null, MAPPING1.replace('\'', '"'));
         Assert.assertEquals(true, result);
-
-        // Update a mapping with an incompatible mapping -- should fail
-        // result = elasticsearchClientService.putMapping("foo", "type2", MAPPING2.replace('\'', '"'));
-        // Assert.assertEquals(false, result);
 
         // create alias
         elasticsearchClientService.createAlias("foo", "aliasFoo");
@@ -188,7 +184,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         // Insert a record into foo and count foo
         Assert.assertEquals(0, elasticsearchClientService.countCollection("foo"));
-        elasticsearchClientService.saveSync("foo", "type1", document1);
+        elasticsearchClientService.saveSync("foo", null, document1);
         Assert.assertEquals(1, elasticsearchClientService.countCollection("foo"));
 
         // copy index foo to bar - should work
@@ -199,8 +195,8 @@ public class Elasticsearch_7_x_ClientServiceIT {
         elasticsearchClientService.refreshCollection("bar");
         Assert.assertEquals(1, elasticsearchClientService.countCollection("bar"));
 
-        // Define incompatible mappings for the same doctype in two different indexes, then try to copy - should fail
-        // as a document registered with doctype=type1 in index foo cannot be written as doctype=type1 in index baz.
+        // Define incompatible mappings in two different indexes, then try to copy - should fail
+        // as a document registered in index foo cannot be written in index baz.
         //
         // Note: MAPPING2 cannot be added to index foo or bar at all, even under a different doctype, as ES (lucene)
         // does not allow two types for the same field-name in different mappings of the same index. However if
@@ -212,14 +208,14 @@ public class Elasticsearch_7_x_ClientServiceIT {
         // because that means applying its source to MAPPING3 - but MAPPING3 is strict and does not define property
         // "val", so the insert fails.
         elasticsearchClientService.createCollection("baz",2, 1);
-        elasticsearchClientService.putMapping("baz", "type1", MAPPING3.replace('\'', '"'));
+        elasticsearchClientService.putMapping("baz", null, MAPPING2.replace('\'', '"'));
 
-      /*  try {
-            elasticsearchClientService.copyCollection(TimeValue.timeValueMinutes(2), "foo", "baz");
-            Assert.fail("Exception not thrown when expected");
-        } catch(IOException e) {
-            Assert.assertTrue(e.getMessage().contains("Reindex failed"));
-        }*/
+//       try {
+//            elasticsearchClientService.copyCollection(TimeValue.timeValueMinutes(2).toString(), "foo", "baz");
+//            Assert.fail("Exception not thrown when expected");
+//        } catch(DatastoreClientServiceException e) {
+//            Assert.assertTrue(e.getMessage().contains("Reindex failed"));
+//        }
         elasticsearchClientService.refreshCollection("baz");
         Assert.assertEquals(0, elasticsearchClientService.countCollection("baz"));
 
@@ -233,7 +229,6 @@ public class Elasticsearch_7_x_ClientServiceIT {
     @Test
     public void testBulkPut() throws InitializationException, IOException, InterruptedException {
         final String index = "foo";
-        final String type = "type1";
         final String docId = "id1";
         final String nameKey = "name";
         final String nameValue = "fred";
@@ -257,7 +252,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         Assert.assertEquals(true, elasticsearchClientService.existsCollection(index));
 
         // Put a document in the bulk processor :
-        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
+        elasticsearchClientService.bulkPut(index, null, document1, Optional.of(docId));
         // Flush the bulk processor :
         elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
@@ -279,7 +274,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         Assert.assertEquals(1, documentsNumber);
 
         try {
-            elasticsearchClientService.saveSync(index, type, document1);
+            elasticsearchClientService.saveSync(index, null, document1);
         } catch (Exception e) {
             logger.error("Error while saving the document in the index : " + e.toString());
         }
@@ -292,7 +287,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         Assert.assertEquals(2, documentsNumber);
 
-        long numberOfHits = elasticsearchClientService.searchNumberOfHits(index, type, nameKey, nameValue);
+        long numberOfHits = elasticsearchClientService.searchNumberOfHits(index, null, nameKey, nameValue);
 
         Assert.assertEquals(2, numberOfHits);
 
@@ -300,9 +295,8 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
 
     @Test
-    public void testBulkPutGeopoint() throws InitializationException, IOException, InterruptedException {
+    public void testBulkPutGeopoint() throws InitializationException, InterruptedException {
         final String index = "future_factory";
-        final String type = "factory";
         final String docId = "modane_factory";
         Record record = new StandardRecord("factory")
                 .setId(docId)
@@ -324,7 +318,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         // Put a document in the bulk processor :
         String document1 = ElasticsearchRecordConverter.convertToString(record);
-        elasticsearchClientService.bulkPut(index, type, document1, Optional.of(docId));
+        elasticsearchClientService.bulkPut(index, null, document1, Optional.of(docId));
         // Flush the bulk processor :
         elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
@@ -353,7 +347,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         // Make sure a dummy query returns no result :
         documentIds.add(docId);
         try {
-            multiGetQueryRecords.add(new MultiGetQueryRecord(index, type, new String[]{"location", "id"}, new String[]{}, documentIds));
+            multiGetQueryRecords.add(new MultiGetQueryRecord(index, null, new String[]{"location", "id"}, new String[]{}, documentIds));
         } catch (InvalidMultiGetQueryRecordException e) {
             e.printStackTrace();
         }
@@ -364,10 +358,9 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
 
     @Test
-    public void testMultiGet() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
+    public void testMultiGet() throws InitializationException, InterruptedException, InvalidMultiGetQueryRecordException {
         final String index1 = "index1";
         final String index2 = "index2";
-        final String type1 = "type1";
 
         Map<String, Object> document1 = new HashMap<>();
         final String docId1 = "id1";
@@ -410,12 +403,12 @@ public class Elasticsearch_7_x_ClientServiceIT {
         Assert.assertEquals(true, elasticsearchClientService.existsCollection(index2));
 
         // Put documents in the bulk processor :
-        elasticsearchClientService.bulkPut(index1, type1, document1, Optional.of(docId1));
-        elasticsearchClientService.bulkPut(index1, type1, document2, Optional.of(docId2));
-        elasticsearchClientService.bulkPut(index1, type1, document3, Optional.of(docId3));
-        elasticsearchClientService.bulkPut(index2, type1, document1, Optional.of(docId1));
-        elasticsearchClientService.bulkPut(index2, type1, document2, Optional.of(docId2));
-        elasticsearchClientService.bulkPut(index2, type1, document3, Optional.of(docId3));
+        elasticsearchClientService.bulkPut(index1, null, document1, Optional.of(docId1));
+        elasticsearchClientService.bulkPut(index1, null, document2, Optional.of(docId2));
+        elasticsearchClientService.bulkPut(index1, null, document3, Optional.of(docId3));
+        elasticsearchClientService.bulkPut(index2, null, document1, Optional.of(docId1));
+        elasticsearchClientService.bulkPut(index2, null, document2, Optional.of(docId2));
+        elasticsearchClientService.bulkPut(index2, null, document3, Optional.of(docId3));
         // Flush the bulk processor :
         elasticsearchClientService.bulkFlush();
         Thread.sleep(2000);
@@ -457,12 +450,12 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         // Test : 1 MultiGetQueryRecord record, with 1 index, 1 type, 1 id, WITHOUT includes, WITHOUT excludes :
         documentIds.add(docId1);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, documentIds));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, documentIds));
         multiGetResponseRecords = elasticsearchClientService.multiGet(multiGetQueryRecords);
 
         Assert.assertEquals(1, multiGetResponseRecords.size()); // number of documents retrieved
         Assert.assertEquals(index1, multiGetResponseRecords.get(0).getCollectionName());
-        Assert.assertEquals(type1, multiGetResponseRecords.get(0).getTypeName());
+        Assert.assertEquals("_doc", multiGetResponseRecords.get(0).getTypeName());
         Assert.assertEquals(docId1, multiGetResponseRecords.get(0).getDocumentId());
         Assert.assertEquals(5, multiGetResponseRecords.get(0).getRetrievedFields().size()); // number of fields retrieved for the document
         multiGetResponseRecords.get(0).getRetrievedFields().forEach((k, v) -> document1.get(k).equals(v.toString()));
@@ -480,7 +473,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
 
         Assert.assertEquals(3, multiGetResponseRecords.size()); // verify that 3 documents has been retrieved
         multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(index1, responseRecord.getCollectionName())); // verify that all retrieved are in index1
-        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals(type1, responseRecord.getTypeName())); // verify that the type of all retrieved documents is type1
+        multiGetResponseRecords.forEach(responseRecord -> Assert.assertEquals("_doc", responseRecord.getTypeName())); // verify that the type of all retrieved documents is type1
         multiGetResponseRecords.forEach(responseRecord -> {
             if (responseRecord.getDocumentId() == docId1) {
                 Assert.assertEquals(3, responseRecord.getRetrievedFields().size()); // for document1, verify that 3 fields has been retrieved
@@ -508,7 +501,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
         //    - 2nd : 1 index (index2), 0 type, 3 ids, WITH include, WITHOUT exclude --> expecting : 3 docs retrieved (from index2), 4 fields each (except doc3 : 3 fields)
         documentIds.add(docId1);
         documentIds.add(docId2);
-        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, type1, fieldsToInclude, fieldsToExclude, documentIds));
+        multiGetQueryRecords.add(new MultiGetQueryRecord(index1, null, fieldsToInclude, fieldsToExclude, documentIds));
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
         documentIds_2.add(docId1);
@@ -530,7 +523,7 @@ public class Elasticsearch_7_x_ClientServiceIT {
     }
 
     @Test
-    public void testMultiGetInvalidRecords() throws InitializationException, IOException, InterruptedException, InvalidMultiGetQueryRecordException {
+    public void testMultiGetInvalidRecords() {
 
         List<MultiGetQueryRecord> multiGetQueryRecords = new ArrayList<>();
 

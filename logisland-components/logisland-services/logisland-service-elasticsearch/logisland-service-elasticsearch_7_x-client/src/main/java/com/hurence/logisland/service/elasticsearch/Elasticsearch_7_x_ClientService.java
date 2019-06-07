@@ -36,14 +36,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.get.*;
@@ -56,12 +51,17 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.ReindexRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
@@ -73,7 +73,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 @Tags({ "elasticsearch", "client"})
-@CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 7.x.")
+@CapabilityDescription("Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although " +
+        "Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and " +
+        "will only work at the index level to be already compliant with the ElasticSearch 8.x version that will " +
+        "completely remove type usage.")
 public class Elasticsearch_7_x_ClientService extends AbstractControllerService implements ElasticsearchClientService {
 
 
@@ -114,7 +117,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             try {
                 createElasticsearchClient(context);
                 createBulkProcessor(context);
-            }catch (Exception e){
+            } catch (Exception e){
                 throw new InitializationException(e);
             }
         }
@@ -148,12 +151,9 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                     final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                     credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 
-                    builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-                                @Override
-                                public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                    builder.setHttpClientConfigCallback(httpClientBuilder -> {
                                     return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                                }
-                            });
+                                });
                 }
 
                 esClient = new RestHighLevelClient(builder);
@@ -270,8 +270,12 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public void bulkPut(String docIndex, String docType, String document, Optional<String> OptionalId) {
+
+        // Note: we do not support type anymore but keep it in API (method signature) for backward compatibility
+        // purpose. So the type is ignored, even if filled.
+
         // add it to the bulk,
-        IndexRequest request = new IndexRequest(docIndex, docType)
+        IndexRequest request = new IndexRequest(docIndex)
                 .source(document, XContentType.JSON)
                 .opType(IndexRequest.OpType.INDEX);
 
@@ -284,8 +288,13 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public void bulkPut(String docIndex, String docType, Map<String, ?> document, Optional<String> OptionalId) {
+
+        // Note: we do not support type anymore but keep it in API (method signature) for backward compatibility
+        // purpose. So the type is ignored, even if filled.
+
+
         // add it to the bulk
-        IndexRequest request = new IndexRequest(docIndex, docType)
+        IndexRequest request = new IndexRequest(docIndex)
                 .source(document)
                 .opType(IndexRequest.OpType.INDEX);
 
@@ -306,19 +315,18 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
         for (MultiGetQueryRecord multiGetQueryRecord : multiGetQueryRecords)
         {
             String index = multiGetQueryRecord.getIndexName();
-            String type = multiGetQueryRecord.getTypeName();
             List<String> documentIds = multiGetQueryRecord.getDocumentIds();
             String[] fieldsToInclude = multiGetQueryRecord.getFieldsToInclude();
             String[] fieldsToExclude = multiGetQueryRecord.getFieldsToExclude();
             if ((fieldsToInclude != null && fieldsToInclude.length > 0) || (fieldsToExclude != null && fieldsToExclude.length > 0)) {
                 for (String documentId : documentIds) {
-                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, type, documentId);
+                    MultiGetRequest.Item item = new MultiGetRequest.Item(index, documentId);
                     item.fetchSourceContext(new FetchSourceContext(true, fieldsToInclude, fieldsToExclude));
                     multiGetRequest.add(item);
                 }
             } else {
                 for (String documentId : documentIds) {
-                    multiGetRequest.add(index, type, documentId);
+                    multiGetRequest.add(index, documentId);
                 }
             }
         }
@@ -349,8 +357,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     public boolean existsCollection(String indexName) throws DatastoreClientServiceException {
         boolean exists;
         try {
-            GetIndexRequest request = new GetIndexRequest();
-            request.indices(indexName);
+            GetIndexRequest request = new GetIndexRequest(indexName);
             exists = esClient.indices().exists(request, RequestOptions.DEFAULT);
         }
         catch (Exception e){
@@ -372,7 +379,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
 
     @Override
     public void saveSync(String indexName, String doctype, Map<String, Object> doc) throws Exception {
-        IndexRequest indexRequest = new IndexRequest(indexName, doctype).source(doc);
+        IndexRequest indexRequest = new IndexRequest(indexName).source(doc);
         esClient.index(indexRequest, RequestOptions.DEFAULT);
         refreshCollection(indexName);
     }
@@ -430,15 +437,12 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     @Override
     public void copyCollection(String reindexScrollTimeout, String srcIndex, String dstIndex) throws DatastoreClientServiceException {
         try {
-
             SearchRequest searchRequest = new SearchRequest(srcIndex);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
                 .query(QueryBuilders.matchAllQuery())
                 .size(100);
             searchRequest.source(searchSourceBuilder).scroll(reindexScrollTimeout).searchType(SearchType.QUERY_THEN_FETCH);
             SearchResponse scrollResp = esClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            AtomicBoolean failed = new AtomicBoolean(false);
 
             // A user of a BulkProcessor just keeps adding requests to it, and the BulkProcessor itself decides when
             // to send a request to the ES nodes, based on its configuration settings. Calls can be triggerd by number
@@ -455,7 +459,8 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
                 }
 
                 for (SearchHit hit : scrollResp.getHits()) {
-                    IndexRequest request = new IndexRequest(dstIndex, hit.getType(), hit.getId());
+                    IndexRequest request = new IndexRequest(dstIndex);
+                    request.id(hit.getId());
                     Map<String, Object> source = hit.getSourceAsMap();
                     request.source(source);
                     bulkProcessor.add(request);
@@ -503,7 +508,6 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     @Override
     public boolean putMapping(String indexName, String doctype, String mappingAsJsonString) throws DatastoreClientServiceException {
         PutMappingRequest request = new PutMappingRequest(indexName);
-        request.type(doctype);
         request.source(mappingAsJsonString, XContentType.JSON);
 
         try {
@@ -513,7 +517,7 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             }
             return true;
         } catch (Exception e) {
-            getLogger().error("Failed to load ES mapping {} for index {}", new Object[]{doctype, indexName, e});
+            getLogger().error("Failed to put ES mapping for index {} : {}", new Object[]{indexName, e});
             // This is an error that can be fixed by providing alternative inputs so return boolean rather
             // than throwing an exception.
             return false;
@@ -521,19 +525,29 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
     }
 
     @Override
-    public void bulkPut(String indexTypeName, Record record) throws DatastoreClientServiceException {
+    public void bulkPut(String indexName, Record record) throws DatastoreClientServiceException {
 
-        final List<String> indexType = Arrays.asList(indexTypeName.split(","));
+        // Note: we do not support type anymore but keep it in API (method signature) for backward compatibility
+        // purpose. So the type is ignored, even if filled. So we check for presence of the ',' separator.
+        // If present, a type was provided and we ignore it, if not present, the whole string is used as the
+        // index name.
 
-        if (indexType.size() == 2) {
-            String indexName = indexType.get(0);
-            String typeName = indexType.get(1);
-            this.bulkPut(indexName, typeName, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
+        if (indexName.contains(","))
+        {
+            final List<String> indexType = Arrays.asList(indexName.split(","));
+            if (indexType.size() == 2) {
+                indexName = indexType.get(0);
+                // Ignore type which is at index 1
+            }
+            else {
+                throw new DatastoreClientServiceException("Could not parse index/type name although the provided " +
+                        "string contains a ',' separator: " + indexName);
+            }
+        } else {
+
         }
-        else {
-            throw new DatastoreClientServiceException("The Elastic Search type name is missing. Please add at least default.type to the processor parameters");
-        }
 
+        bulkPut(indexName, null, ElasticsearchRecordConverter.convertToString(record), Optional.of(record.getId()));
     }
 
     @Override
@@ -619,6 +633,4 @@ public class Elasticsearch_7_x_ClientService extends AbstractControllerService i
             esClient = null;
         }
     }
-
-
 }
