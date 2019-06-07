@@ -39,7 +39,7 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
 
     @Override
     public MetricTimeSeries from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
-        LOGGER.debug("Converting {} to MetricTimeSeries starting at {} and ending at {}", binaryTimeSeries, queryStart, queryEnd);
+       // LOGGER.debug("Converting {} to MetricTimeSeries starting at {} and ending at {}", binaryTimeSeries, queryStart, queryEnd);
 
         MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(binaryTimeSeries.getName(), binaryTimeSeries.getType());
 
@@ -83,7 +83,7 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
 
     @Override
     public BinaryTimeSeries to(MetricTimeSeries timeSeries) {
-        LOGGER.debug("Converting {} to BinaryTimeSeries", timeSeries);
+     //   LOGGER.debug("Converting {} to BinaryTimeSeries", timeSeries);
         BinaryTimeSeries.Builder builder = new BinaryTimeSeries.Builder();
 
         //serialize

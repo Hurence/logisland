@@ -256,7 +256,7 @@ trait StructuredStreamProviderService extends ControllerService {
     write(df2, controllerServiceLookupSink, streamContext).queryName(streamContext.getIdentifier)
      // .outputMode("update")
       .start()
-
+     // .processAllAvailable()
 
   }
 
