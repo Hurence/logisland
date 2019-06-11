@@ -3,19 +3,12 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.encryption.ExempleAES;
+import com.hurence.logisland.processor.encryption.ExempleDES;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardValidators;
 
-import javax.crypto.*;
-import javax.crypto.spec.DESKeySpec;
-import javax.crypto.spec.DESedeKeySpec;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.spec.KeySpec;
 import java.util.*;
 
 import java.io.ByteArrayInputStream;
@@ -114,74 +107,13 @@ public class EncryptField extends AbstractProcessor {
         return algorithm.startsWith("A");
     }
 
-    // encrpyt or decript data with DES or DESede algo (with different transformation available)
-    //if encrypt: input object / output byte[]
-    //if decrypt: input field (the field will be in type FieldType.BYTES) / output object
-    public class ExempleDES {
-
-        private static final String UNICODE_FORMAT = "UTF8";
-        public final String DES_ENCRYPTION_SHEME;
-        private KeySpec myKeySpec;
-        private SecretKeyFactory mySecretKeyFactory;
-        private Cipher cipher;
-        byte[] keyAsBytes;
-        private String myEncryptionKey;
-        private String myEncryptionScheme;
-        SecretKey key;
-
-        public ExempleDES(String algo, String myEncKey) throws Exception {
-            DES_ENCRYPTION_SHEME = algo;
-            myEncryptionKey = myEncKey;
-            myEncryptionScheme = DES_ENCRYPTION_SHEME;
-            keyAsBytes = myEncryptionKey.getBytes(UNICODE_FORMAT);
-            if (DES_ENCRYPTION_SHEME.startsWith("DESede")) {
-                myKeySpec = new DESedeKeySpec(keyAsBytes);
-                mySecretKeyFactory = SecretKeyFactory.getInstance("DESede");
-                key = mySecretKeyFactory.generateSecret(myKeySpec);
-            } else {
-                myKeySpec = new DESKeySpec(keyAsBytes);
-                mySecretKeyFactory = SecretKeyFactory.getInstance("DES");
-                key = mySecretKeyFactory.generateSecret(myKeySpec);
-            }
-            cipher = Cipher.getInstance(myEncryptionScheme);
-        }
-
-        public byte[] encrypt (Object unencryptedString) {
-            byte[] encryptedText = null;
-            try {
-                cipher.init(Cipher.ENCRYPT_MODE, key);
-                byte[] plainText = toByteArray(unencryptedString);
-                encryptedText = cipher.doFinal(plainText);
-            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException  e) {
-            }
-            return encryptedText;
-        }
-
-        public Object decrypt(byte[] encrypted) {
-            Object decryptedText = null;
-            try{
-                if (myEncryptionScheme.contains("CBC")) {
-                    byte[] iV = cipher.getIV();
-                    IvParameterSpec spec = new IvParameterSpec(iV);
-                    cipher.init(Cipher.DECRYPT_MODE, key, spec);
-                } else {
-                    cipher.init(Cipher.DECRYPT_MODE, key);
-                }
-                byte[] plainText = cipher.doFinal(encrypted);
-                decryptedText = toObject(plainText);
-
-            } catch (InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | ClassNotFoundException e) {
-            }
-            return decryptedText;
-        }
-
-    }
-
 
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         final boolean encrypt = context.getPropertyValue(MODE).toString().equalsIgnoreCase(ENCRYPT_MODE);
         Collection<String> allfieldsToEncrypt_InString = getFieldsNameMapping(context);
+        Map<String, String> fieldsNameMappings = getFieldsNameTypeMapping(context);
+
         try {
             init(context);
         } catch (Throwable t) {
@@ -190,7 +122,7 @@ public class EncryptField extends AbstractProcessor {
 
         try {
             for (Record record : records) {
-                for (String fieldName : allfieldsToEncrypt_InString) {
+                /*for (String fieldName : allfieldsToEncrypt_InString) {
                     if (!record.hasField(fieldName)) continue;
                     Field field = record.getField(fieldName);
                     try {
@@ -203,6 +135,7 @@ public class EncryptField extends AbstractProcessor {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
                                     continue;
                                 }
+                                // une fonction pour donner le type
                                 FieldType type = FieldType.STRING;//TODO find what type output should be. THe user should be able to choose with config properties
                                 try {
                                     record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
@@ -222,6 +155,155 @@ public class EncryptField extends AbstractProcessor {
                         }
                     } catch (Exception ex) {
                         getLogger().error("error while processing record field" + fieldName, ex);
+                    }
+                }*/
+                if (encrypt) {
+                    for (String fieldName : allfieldsToEncrypt_InString) {
+                        if (!record.hasField(fieldName)) continue;
+                        Field field = record.getField(fieldName);
+                        try {
+                            if (isAESAlgorithm(context.getProperty(ALGO))) {
+                                ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
+                            } else {
+                                ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue()));
+                            }
+                        } catch (Exception ex) {
+                            getLogger().error("error while processing record field" + fieldName, ex);
+                        }
+
+                    }
+
+                } else {
+                    for (final Map.Entry<String, String> entry : fieldsNameMappings.entrySet()) {
+                        String fieldName = entry.getKey();
+                        String fieldType = entry.getValue();
+                        Field field = record.getField(fieldName);
+                        if (!record.hasField(fieldName)) continue;
+                        try {
+                            if (isAESAlgorithm(context.getProperty(ALGO))) {
+                                ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+
+                                if (!field.getType().equals(FieldType.BYTES)) {
+                                    record.addError("Wrong input", getLogger(), "type was instead of");
+                                    continue;
+                                }
+
+                                FieldType type = FieldType.STRING;
+                                switch (fieldType) {
+
+                                    case "string":
+                                        type = FieldType.STRING;
+                                        break;
+                                    case "int":
+                                    case "integer":
+                                        type = FieldType.INT;
+                                        break;
+                                    case "long":
+                                        type = FieldType.LONG;
+                                        break;
+                                    case "bytes":
+                                        type = FieldType.BYTES;
+                                        break;
+                                    case "record":
+                                        type = FieldType.RECORD;
+                                        break;
+                                    case "map":
+                                        type = FieldType.MAP;
+                                        break;
+                                    case "union":
+                                        type = FieldType.UNION;
+                                        break;
+                                    case "datetime":
+                                        type = FieldType.DATETIME;
+                                        break;
+                                    case "enum":
+                                        type = FieldType.ENUM;
+                                        break;
+                                    case "array":
+                                        type = FieldType.ARRAY;
+                                        break;
+                                    case "double":
+                                        type = FieldType.DOUBLE;
+                                        break;
+                                    case "bool":
+                                    case "boolean":
+                                        type = FieldType.BOOLEAN;
+                                        break;
+                                    default:
+                                        /*logger.debug("field type {} is not supported yet", type);*/
+                                        getLogger().error("error while processing record field" + fieldName);
+                                        break;
+                                }//TODO find what type output should be. THe user should be able to choose with config properties
+                                try {
+                                    record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                } catch (Exception ex) {
+                                    //TODO handle
+                                }
+
+
+                            } else {
+                                ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                if (!field.getType().equals(FieldType.BYTES)) {
+                                    record.addError("Wrong input", getLogger(), "type was instead of");
+                                    continue;
+                                }
+                                FieldType type = FieldType.STRING;
+                                switch (fieldType) {
+
+                                    case "string":
+                                        type = FieldType.STRING;
+                                        break;
+                                    case "int":
+                                    case "integer":
+                                        type = FieldType.INT;
+                                        break;
+                                    case "long":
+                                        type = FieldType.LONG;
+                                        break;
+                                    case "bytes":
+                                        type = FieldType.BYTES;
+                                        break;
+                                    case "record":
+                                        type = FieldType.RECORD;
+                                        break;
+                                    case "map":
+                                        type = FieldType.MAP;
+                                        break;
+                                    case "union":
+                                        type = FieldType.UNION;
+                                        break;
+                                    case "datetime":
+                                        type = FieldType.DATETIME;
+                                        break;
+                                    case "enum":
+                                        type = FieldType.ENUM;
+                                        break;
+                                    case "array":
+                                        type = FieldType.ARRAY;
+                                        break;
+                                    case "double":
+                                        type = FieldType.DOUBLE;
+                                        break;
+                                    case "bool":
+                                    case "boolean":
+                                        type = FieldType.BOOLEAN;
+                                        break;
+                                    default:
+                                        /*logger.debug("field type {} is not supported yet", type);*/
+                                        getLogger().error("error while processing record field" + fieldName);
+                                        break;
+                                }
+                                try {
+                                    record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                } catch (Exception ex) {
+                                    //TODO handle
+                                }
+                            }
+                        } catch (Exception ex) {
+                            getLogger().error("error while processing record field" + fieldName, ex);
+                        }
                     }
                 }
 
@@ -283,4 +365,22 @@ public class EncryptField extends AbstractProcessor {
         }
         return fieldsNameMappings;
     }
+
+    private Map<String, String> getFieldsNameTypeMapping(ProcessContext context) {
+
+        Map<String, String> fieldsNameMappings = new HashMap<>();
+        // loop over dynamic properties to add alternative regex
+        for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
+            if (!entry.getKey().isDynamic()) {
+                continue;
+            }
+
+            final String fieldName = entry.getKey().getName();
+            final String fieldType = entry.getValue();
+
+            fieldsNameMappings.put(fieldName, fieldType);
+        }
+        return fieldsNameMappings;
+    }
+
 }
