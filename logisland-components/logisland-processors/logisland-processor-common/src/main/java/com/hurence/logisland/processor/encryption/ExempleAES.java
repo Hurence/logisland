@@ -43,8 +43,8 @@ public class ExempleAES {
         }
         /*Cipher c = Cipher.getInstance(ALGO_AES);
         cipher.init(Cipher.DECRYPT_MODE, key);*/
-        byte[] encryptedDataBytes = EncryptField.toByteArray(encryptedData);
-        byte[] decValue = cipher.doFinal(encryptedDataBytes);
+        /*byte[] encryptedDataBytes = EncryptField.toByteArray(encryptedData);*/
+        byte[] decValue = cipher.doFinal(encryptedData);
         Object decryptedValue = EncryptField.toObject(decValue);
         return decryptedValue;
     }
