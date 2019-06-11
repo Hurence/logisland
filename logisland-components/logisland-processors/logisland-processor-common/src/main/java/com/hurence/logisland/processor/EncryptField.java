@@ -1,38 +1,25 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.AbstractProcessor;
-import com.hurence.logisland.processor.ModifyId;
-import com.hurence.logisland.processor.ProcessContext;
+import com.hurence.logisland.processor.encryption.ExempleAES;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.spec.KeySpec;
-import java.text.ParseException;
 import java.util.*;
-import java.util.logging.Level;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -41,13 +28,11 @@ import java.io.ObjectOutputStream;
         supportsExpressionLanguage = true,
         value = "a default value",
         description = "encrypt the field value")
-
-
 public class EncryptField extends AbstractProcessor {
 
     private static final long serialVersionUID = -270933070438408174L;
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyId.class);
+//    private static final Logger logger = LoggerFactory.getLogger(ModifyId.class);
 
 
     public static final String ENCRYPT_MODE = "Encrypt";
@@ -98,12 +83,7 @@ public class EncryptField extends AbstractProcessor {
 
     @Override
     public void init(final ProcessContext context) {
-        List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(MODE);
-        properties.add(ALGO);
-        properties.add(KEY);
-
-        properties = Collections.unmodifiableList(properties);
+        super.init(context);
         fieldTypes = getFieldsNameMapping(context);
     }
 
@@ -123,7 +103,7 @@ public class EncryptField extends AbstractProcessor {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
                 .expressionLanguageSupported(false)  // TODO understand what expressionLanguage is !!!
-                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+//                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                 .required(false)
                 .dynamic(true)
                 .build();
@@ -132,54 +112,6 @@ public class EncryptField extends AbstractProcessor {
     // check if the algorithm chosen is AES, otherwaie it is DES or DESede
     public static boolean isAESAlgorithm(final String algorithm) {
         return algorithm.startsWith("A");
-    }
-
-    // encrpyt or decript data with AES algo (with different transformation available)
-    //if encrypt: input object / output byte[]
-    //if decrypt: input field (the field will be in type FieldType.BYTES) / output object
-    public class ExempleAES {
-
-        private final String ALGO_AES;
-        private byte[] keyValue;
-        private Cipher cipher;
-
-        public ExempleAES(String ALGO, String key) throws Exception {
-
-            ALGO_AES = ALGO;
-            keyValue = key.getBytes();
-            cipher = Cipher.getInstance(ALGO_AES);
-        }
-
-        public byte[] encrypt (Object Data) throws Exception{
-            Key key = generateKey();
-            /*Cipher c = Cipher.getInstance(ALGO_AES);*/
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] encVal = cipher.doFinal(toByteArray(Data));
-            return  encVal;
-        }
-
-        public Object decrypt (Field encryptedData) throws  Exception {
-            Key key = generateKey();
-            if (ALGO_AES.contains("AES/CBC")) {
-                byte[] iV = cipher.getIV();
-                IvParameterSpec spec = new IvParameterSpec(iV);
-                cipher.init(Cipher.DECRYPT_MODE, key, spec);
-            } else {
-                cipher.init(Cipher.DECRYPT_MODE, key);
-            }
-            /*Cipher c = Cipher.getInstance(ALGO_AES);
-            cipher.init(Cipher.DECRYPT_MODE, key);*/
-            byte[] encryptedDataBytes = toByteArray(encryptedData);
-            byte[] decValue = cipher.doFinal(encryptedDataBytes);
-            Object decryptedValue = toObject(decValue);
-            return decryptedValue;
-        }
-
-        private Key generateKey() throws Exception {
-            Key key = new SecretKeySpec(keyValue, "AES");
-            return key;
-        }
-
     }
 
     // encrpyt or decript data with DES or DESede algo (with different transformation available)
@@ -225,7 +157,7 @@ public class EncryptField extends AbstractProcessor {
             return encryptedText;
         }
 
-        public Object decrypt (Field encryptedString) {
+        public Object decrypt(byte[] encrypted) {
             Object decryptedText = null;
             try{
                 if (myEncryptionScheme.contains("CBC")) {
@@ -235,8 +167,7 @@ public class EncryptField extends AbstractProcessor {
                 } else {
                     cipher.init(Cipher.DECRYPT_MODE, key);
                 }
-                byte[] encryptedStringBytes = toByteArray(encryptedString);
-                byte[] plainText = cipher.doFinal(encryptedStringBytes);
+                byte[] plainText = cipher.doFinal(encrypted);
                 decryptedText = toObject(plainText);
 
             } catch (InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | ClassNotFoundException e) {
@@ -247,56 +178,56 @@ public class EncryptField extends AbstractProcessor {
     }
 
 
-
-
     @Override
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         final boolean encrypt = context.getPropertyValue(MODE).toString().equalsIgnoreCase(ENCRYPT_MODE);
+        Collection<String> allfieldsToEncrypt_InString = getFieldsNameMapping(context);
         try {
             init(context);
         } catch (Throwable t) {
-            logger.error("error while initializing", t);
+            getLogger().error("error while initializing", t);
         }
 
         try {
-            Collection<Field> allfieldsToEncrypt = null;
-            Collection<String> allfieldsToEncrypt_InString ;
-
             for (Record record : records) {
-                // check if user choose some specific field or fields to encrypt, if don't we'll encrypt all fields.
-                if (getFieldsNameMapping(context) == null) {
-                    allfieldsToEncrypt = record.getAllFields();
-                } else {
-                    allfieldsToEncrypt_InString = getFieldsNameMapping(context);
-                    for (String name : allfieldsToEncrypt_InString) {
-                        allfieldsToEncrypt.add(record.getField(name));
-                        /*final Object inputDateValue = context.getPropertyValue(name).evaluate(record);*/ // idea ! : we can take objects as input not fields!
-                    }
+                for (String fieldName : allfieldsToEncrypt_InString) {
+                    if (!record.hasField(fieldName)) continue;
+                    Field field = record.getField(fieldName);
+                    try {
+                        if (isAESAlgorithm(context.getProperty(ALGO))) {
+                            ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                            if (encrypt) {
+                                record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
+                            } else {
+                                if (!field.getType().equals(FieldType.BYTES)) {
+                                    record.addError("Wrong input", getLogger(), "type was instead of");
+                                    continue;
+                                }
+                                FieldType type = FieldType.STRING;//TODO find what type output should be. THe user should be able to choose with config properties
+                                try {
+                                    record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                } catch (Exception ex) {
+                                    //TODO handle
+                                }
 
-                }
+                            }
 
-                for (Field field : allfieldsToEncrypt) {
-                    if (isAESAlgorithm(context.getProperty(ALGO))) {
-                        ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
-                        if (encrypt) {
-                            record.setField(field.getName(), FieldType.BYTES, encryptAES.encrypt(field)); // is field an Object ??!!
                         } else {
-                            record.setField(field.getName(), field.getType(), encryptAES.decrypt(field)); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                            ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                            if (encrypt) {
+                                record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue()));
+                            } else {
+                                record.setField(fieldName, FieldType.STRING, encryptDES.decrypt((byte[]) field.getRawValue()));
+                            }
                         }
-
-                    } else {
-                        ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
-                        if (encrypt) {
-                            record.setField(field.getName(), FieldType.BYTES, encryptDES.encrypt(field));
-                        } else {
-                            record.setField(field.getName(), FieldType.STRING, encryptDES.decrypt(field));
-                        }
+                    } catch (Exception ex) {
+                        getLogger().error("error while processing record field" + fieldName, ex);
                     }
                 }
 
             }
         } catch (Throwable t) {
-            logger.error("error while processing records", t);
+            getLogger().error("error while processing records", t);
         }
         return records;
     }
@@ -342,7 +273,7 @@ public class EncryptField extends AbstractProcessor {
     }
     // get the specific field or fields to encrypt form the dynamic property
     private Collection<String> getFieldsNameMapping(ProcessContext context) {
-        Collection<String> fieldsNameMappings = null;
+        Collection<String> fieldsNameMappings = new ArrayList<>();
         for (final Map.Entry<PropertyDescriptor, String> entry : context.getProperties().entrySet()) {
             if (!entry.getKey().isDynamic()) {
                 continue;
