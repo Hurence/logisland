@@ -18,6 +18,7 @@ public class EncryptFieldTest {
     private Record getRecord1() {
         Record record1 = new StandardRecord();
         record1.setField("string1", FieldType.STRING, "Logisland");
+        record1.setField("string1", FieldType.RECORD, new StandardRecord());
         record1.setField("string2", FieldType.STRING, "Hello world !");
         return record1;
     }
@@ -40,12 +41,46 @@ public class EncryptFieldTest {
 
 
     @Test
-    public void testProcessingString() {
+    public void testProcessingEncryptionString() {
         Record record1 = new StandardRecord();
         record1.setField("string1", FieldType.STRING, "Logisland");
 
         TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
         testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "");
+        testRunner.setProperty("string2", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        //TODO configure and decrypt
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(1);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        byte[] expectedBytes = new byte[]{104, -35};//TODO real array eventually use external tools to determine array of byte
+        out.assertFieldEquals("string1", expectedBytes);
+    }
+
+    @Test
+    public void testProcessingDeccryptionString() {
+        Record record1 = new StandardRecord();
+        byte[] inputBytes = new byte[]{104, -35};//TODO real array eventually use external tools to determine array of byte
+        record1.setField("string1", FieldType.BYTES, inputBytes);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "STRING");
+        testRunner.setProcessorIdentifier("encrypt_1");
         testRunner.assertValid();
         testRunner.enqueue(record1);
         testRunner.run();
@@ -54,8 +89,9 @@ public class EncryptFieldTest {
 
         MockRecord out = testRunner.getOutputRecords().get(0);
         out.assertRecordSizeEquals(1);
-        out.assertFieldTypeEquals("string1", FieldType.BYTES);
-        out.assertFieldEquals("string1", "value1");
+
+        out.assertFieldTypeEquals("string1", FieldType.STRING);
+        out.assertFieldEquals("string1", "Logisland");
     }
 
 }

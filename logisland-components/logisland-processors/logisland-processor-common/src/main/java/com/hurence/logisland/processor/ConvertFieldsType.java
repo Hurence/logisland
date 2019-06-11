@@ -39,7 +39,6 @@ import java.util.*;
 @ExtraDetailFile("./details/common-processors/ConvertFieldsType-Detail.rst")
 public class ConvertFieldsType extends AbstractProcessor {
 
-
     private static final Logger logger = LoggerFactory.getLogger(ConvertFieldsType.class);
 
     @Override
@@ -52,7 +51,7 @@ public class ConvertFieldsType extends AbstractProcessor {
         return new PropertyDescriptor.Builder()
                 .name(propertyDescriptorName)
                 .expressionLanguageSupported(false)
-                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+//                .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                 .required(false)
                 .dynamic(true)
                 .build();
