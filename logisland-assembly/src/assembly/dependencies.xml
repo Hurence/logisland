@@ -16,11 +16,13 @@
     limitations under the License.
 
 -->
-<assembly>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
     <id>bin</id>
     <formats>
         <format>dir</format>
-        <format>tar.gz</format>
+<!--        <format>tar.gz</format>-->
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
     <baseDirectory>logisland-${project.version}</baseDirectory>
@@ -42,8 +44,6 @@
 <!--                //TODO replace with include of all plugins...-->
 <!--                //TODO eventually make lib/engines, lib/services, lib/processors, lib/connectors-->
 <!--                //TODO or maybe lib/plugins-->
-                <exclude>com.hurence.logisland:logisland-resources</exclude>
-                <exclude>com.hurence.logisland:logisland-documentation</exclude>
                 <exclude>com.hurence.logisland:logisland-engine-spark_2_1</exclude>
                 <exclude>com.hurence.logisland:logisland-engine-spark_2_3</exclude>
                 <exclude>com.hurence.logisland:logisland-engine-spark_1_6</exclude>
@@ -93,133 +93,32 @@
             <fileMode>0660</fileMode>
             <useTransitiveFiltering>true</useTransitiveFiltering>
            <includes>
-               <include>logisland-engine-spark_2_3</include>
-               <include>logisland-engine-spark_2_1</include>
-               <include>logisland-engine-spark_1_6</include>
-               <include>logisland-engine-vanilla</include>
+               <include>com.hurence.logisland:logisland-engine-spark_2_3</include>
+               <include>com.hurence.logisland:logisland-engine-spark_2_1</include>
+               <include>com.hurence.logisland:logisland-engine-spark_1_6</include>
+               <include>com.hurence.logisland:logisland-engine-vanilla</include>
            </includes>
-        </dependencySet>
-
-
-        <!-- Write out the conf directory contents -->
-        <dependencySet>
-            <scope>runtime</scope>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>./</outputDirectory>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0664</fileMode>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <includes>
-            	<include>logisland-resources</include>
-            </includes>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <filtered>true</filtered>
-                <includes>
-                    <include>conf/*</include>
-                </includes>
-            </unpackOptions>
-        </dependencySet>
-
-        <!-- Write out the bin directory contents -->
-        <dependencySet>
-            <scope>runtime</scope>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>./</outputDirectory>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0770</fileMode>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <includes>
-            	<include>logisland-resources</include>
-            </includes>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <filtered>true</filtered>
-                <includes>
-                    <include>bin/*</include>
-                </includes>
-            </unpackOptions>
-        </dependencySet>
-
-        <dependencySet>
-            <scope>runtime</scope>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>./</outputDirectory>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0770</fileMode>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <includes>
-                <include>logisland-resources</include>
-            </includes>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <filtered>true</filtered>
-                <includes>
-                    <include>docs/*.rst</include>
-                    <include>docs/tutorials/*.rst</include>
-                </includes>
-            </unpackOptions>
-        </dependencySet>
-
-        <dependencySet>
-            <scope>runtime</scope>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>./</outputDirectory>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0770</fileMode>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <includes>
-                <include>logisland-resources</include>
-            </includes>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <filtered>false</filtered>
-                <includes>
-                    <include>monitoring/*</include>
-                </includes>
-            </unpackOptions>
         </dependencySet>
     </dependencySets>
     <fileSets>
-
+<!--   Embed all resources in logisland-resources module  -->
         <fileSet>
-            <directory>./logisland-framework/logisland-resources/src/main/resources/monitoring</directory>
-            <outputDirectory>./monitoring</outputDirectory>
+            <directory>../logisland-core/logisland-framework/logisland-resources/src/main/resources</directory>
+            <fileMode>0644</fileMode>
+            <outputDirectory>./</outputDirectory>
             <includes>
-                <include>*</include>
+                <include>**/*</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>./logisland-documentation</directory>
-            <outputDirectory>./docs</outputDirectory>
-            <includes>
-                <include>*.rst</include>
-                <include>turorials/*.rst</include>
-            </includes>
-        </fileSet>
-
+        <!--        If we want to add additional jars uncomment this and add jars in assembly module root directory -->
+        <!--        <fileSet>-->
+        <!--            <directory>${project.build.directory}</directory>-->
+        <!--            <outputDirectory>./</outputDirectory>-->
+        <!--            <includes>-->
+        <!--                <include>*.jar</include>-->
+        <!--            </includes>-->
+        <!--        </fileSet>-->
     </fileSets>
     <files>
-        <file>
-            <source>./README.md</source>
-            <outputDirectory>./</outputDirectory>
-            <destName>README</destName>
-            <fileMode>0644</fileMode>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>./LICENSE</source>
-            <outputDirectory>./</outputDirectory>
-            <destName>LICENSE</destName>
-            <fileMode>0644</fileMode>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>./NOTICE</source>
-            <outputDirectory>./</outputDirectory>
-            <destName>NOTICE</destName>
-            <fileMode>0644</fileMode>
-            <filtered>true</filtered>
-        </file>
     </files>
 </assembly>
