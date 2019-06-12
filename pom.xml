@@ -78,6 +78,7 @@
         <module>logisland-components</module>
         <module>logisland-core</module>
         <module>logisland-documentation</module>
+        <module>logisland-resources</module>
         <module>logisland-assembly</module>
     </modules>
 

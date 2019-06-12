@@ -103,7 +103,7 @@
     <fileSets>
 <!--   Embed all resources in logisland-resources module  -->
         <fileSet>
-            <directory>../logisland-core/logisland-framework/logisland-resources/src/main/resources</directory>
+            <directory>../logisland-resources/src/main/resources</directory>
             <fileMode>0644</fileMode>
             <outputDirectory>./</outputDirectory>
             <includes>
