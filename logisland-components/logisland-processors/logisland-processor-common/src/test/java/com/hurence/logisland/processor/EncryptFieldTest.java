@@ -273,13 +273,13 @@ public class EncryptFieldTest {
 
     @Test
     public void testProcessingEncryptionRecord() {
-        Record record1 = new StandardRecord();
+        final Record record1Expected = new StandardRecord();
         Record record2 = new StandardRecord();
         Record record3 = new StandardRecord();
         record2.setField("string9", FieldType.STRING, "Nouri");
         record3.setField("string9", FieldType.STRING, "Feiz");
-        record1.setField("string1", FieldType.RECORD, record2);
-        record1.setField("string2", FieldType.RECORD, record3);
+        record1Expected.setField("string1", FieldType.RECORD, record2);
+        record1Expected.setField("string2", FieldType.RECORD, record3);
 
         TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
         testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
@@ -290,7 +290,7 @@ public class EncryptFieldTest {
         testRunner.setProperty("string3", "");
         testRunner.setProcessorIdentifier("encrypt_1");
         testRunner.assertValid();
-        testRunner.enqueue(record1);
+        testRunner.enqueue(new StandardRecord(record1Expected));//as processor modify inputs records we clone expected record so it is not modified
         testRunner.run();
         testRunner.assertAllInputRecordsProcessed();
         testRunner.assertOutputRecordsCount(1);
@@ -312,15 +312,12 @@ public class EncryptFieldTest {
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
-        //TODO configure and decrypt
 
         MockRecord out1 = testRunner2.getOutputRecords().get(0);
         out1.assertRecordSizeEquals(2);
         out1.assertFieldTypeEquals("string1", FieldType.RECORD);
         out1.assertFieldTypeEquals("string2", FieldType.RECORD);
-        /*out1.assertFieldEquals("string1", record2);
-        out1.assertFieldEquals("string2", record3);*/
-        out1.assertContentEquals(record1);
+        out1.assertContentEquals(record1Expected);
     }
 
     @Test

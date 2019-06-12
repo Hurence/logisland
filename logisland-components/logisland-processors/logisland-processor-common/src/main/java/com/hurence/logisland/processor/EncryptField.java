@@ -164,7 +164,7 @@ public class EncryptField extends AbstractProcessor {
                                 try {
                                     record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                 } catch (Exception ex) {
-                                    //TODO handle
+                                    getLogger().error("error while setting casting value to byte array", ex);
                                 }
 
 
@@ -184,7 +184,7 @@ public class EncryptField extends AbstractProcessor {
                                 try {
                                     record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                 } catch (Exception ex) {
-                                    //TODO handle
+                                    getLogger().error("error while setting casting value to byte array", ex);
                                 }
                             }
                         } catch (Exception ex) {
