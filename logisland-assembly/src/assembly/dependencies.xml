@@ -22,7 +22,7 @@
     <id>bin</id>
     <formats>
         <format>dir</format>
-<!--        <format>tar.gz</format>-->
+        <format>tar.gz</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
     <baseDirectory>logisland-${project.version}</baseDirectory>
