@@ -650,5 +650,51 @@ public class EncryptFieldTest {
 
     }
 
+    @Test
+    public void testProcessingEncryptionCBCPad() {
+        Record record1 = new StandardRecord();
+        record1.setField("string1", FieldType.STRING, "Logisland");
+        record1.setField("string2", FieldType.STRING, "Nouri");
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES/CBC/PKCS5Padding");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "string");
+        testRunner.setProperty("string2", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES/CBC/PKCS5Padding");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "string");
+        testRunner2.setProperty("string2", "string");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.STRING);
+        out1.assertFieldTypeEquals("string2", FieldType.STRING);
+        out1.assertFieldEquals("string1", "Logisland");
+        out1.assertFieldEquals("string2", "Nouri");
+    }
+
 
 }
