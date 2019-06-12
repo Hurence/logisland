@@ -29,7 +29,7 @@
         <!-- Write out all dependency artifacts to lib directory.
              This includes plugins (services...), that is plugin
              fatjars and not their dependencies, but also includes
-             dependencies of the assembly pom -->
+             dependencies of the assembly pom that should be excluded !!! -->
         <dependencySet>
             <scope>runtime</scope>
             <useProjectArtifact>false</useProjectArtifact>
@@ -39,12 +39,25 @@
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <excludes>
-                <exclude>logisland-resources</exclude>
-                <exclude>logisland-documentation</exclude>
-                <exclude>logisland-engine-spark_2_1</exclude>
-                <exclude>logisland-engine-spark_2_3</exclude>
-                <exclude>logisland-engine-spark_1_6</exclude>
-                <exclude>logisland-engine-vanilla</exclude>
+<!--                //TODO replace with include of all plugins...-->
+<!--                //TODO eventually make lib/engines, lib/services, lib/processors, lib/connectors-->
+<!--                //TODO or maybe lib/plugins-->
+                <exclude>com.hurence.logisland:logisland-resources</exclude>
+                <exclude>com.hurence.logisland:logisland-documentation</exclude>
+                <exclude>com.hurence.logisland:logisland-engine-spark_2_1</exclude>
+                <exclude>com.hurence.logisland:logisland-engine-spark_2_3</exclude>
+                <exclude>com.hurence.logisland:logisland-engine-spark_1_6</exclude>
+                <exclude>com.hurence.logisland:logisland-engine-vanilla</exclude>
+                <exclude>com.hurence.logisland:logisland-scripting-base</exclude>
+                <exclude>com.hurence.logisland:logisland-scripting-mvel</exclude>
+                <exclude>com.hurence.logisland:logisland-api</exclude>
+                <exclude>com.hurence.logisland:logisland-utils</exclude>
+                <exclude>com.hurence.logisland:logisland-bootstrap</exclude>
+                <exclude>com.hurence.logisland:logisland-hadoop-utils</exclude>
+                <exclude>com.hurence.logisland:logisland-plugin-support</exclude>
+                <exclude>com.typesafe.scala-logging:scala-logging-*</exclude>
+                <exclude>org.apache.logging.log4j:log4j-to-slf4j</exclude>
+                <exclude>org.slf4j:slf4j-api</exclude>
             </excludes>
         </dependencySet>
 
@@ -59,16 +72,16 @@
            <useTransitiveFiltering>true</useTransitiveFiltering>
            <useTransitiveDependencies>true</useTransitiveDependencies>
            <includes>
-               <include>logisland-api</include>
-               <include>logisland-utils</include>
-               <include>logisland-bootstrap</include>
-               <include>logisland-hadoop-utils</include>
-               <include>logisland-plugin-support</include>
-               <include>logisland-scripting-base</include>
-               <include>logisland-scripting-mvel</include>
-               <include>scala-logging-*</include>
-               <include>log4j-to-slf4j</include>
-               <include>slf4j-api</include>
+               <include>com.hurence.logisland:logisland-api</include>
+               <include>com.hurence.logisland:logisland-utils</include>
+               <include>com.hurence.logisland:logisland-bootstrap</include>
+               <include>com.hurence.logisland:logisland-hadoop-utils</include>
+               <include>com.hurence.logisland:logisland-plugin-support</include>
+               <include>com.hurence.logisland:logisland-scripting-base</include>
+               <include>com.hurence.logisland:logisland-scripting-mvel</include>
+               <include>com.typesafe.scala-logging:scala-logging-*</include>
+               <include>org.apache.logging.log4j:log4j-to-slf4j</include>
+               <include>org.slf4j:slf4j-api</include>
            </includes>
         </dependencySet>
 
