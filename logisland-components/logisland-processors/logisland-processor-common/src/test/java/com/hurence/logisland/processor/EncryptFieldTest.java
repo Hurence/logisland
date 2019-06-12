@@ -1,5 +1,6 @@
 package com.hurence.logisland.processor;
 
+import com.hurence.logisland.processor.encryption.EncryptionMethod;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.record.StandardRecord;
@@ -7,10 +8,15 @@ import com.hurence.logisland.util.runner.MockRecord;
 import com.hurence.logisland.util.runner.TestRunner;
 import com.hurence.logisland.util.runner.TestRunners;
 
+import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.lang.model.type.UnionType;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +52,6 @@ public class EncryptFieldTest {
     @Test
     public void testProcessingEncryptionString() {
         Record record1 = new StandardRecord();
-        /*int a[] = {1, 2, 3};*/
         record1.setField("string1", FieldType.STRING, "Logisland");
         record1.setField("string2", FieldType.STRING, "Nouri");
 
@@ -68,6 +73,9 @@ public class EncryptFieldTest {
         out.assertRecordSizeEquals(2);
         out.assertFieldTypeEquals("string1", FieldType.BYTES);
         out.assertFieldTypeEquals("string2", FieldType.BYTES);
+        byte[] expectedBytes = new byte[] {104, -35, -44, -34, -100, 49, 75, 15, 56, -8, 54, -58, -65, -8, 108, -106, 95, -59, -25, -99, 31, 27, 44, -13, -3, -35, 59, -61, -112, -128, -3, -113};
+        /*out.assertFieldEquals("string1",expectedBytes);*/
+        Assert.assertTrue(Arrays.equals(expectedBytes, (byte[]) out.getField("string1").getRawValue()));
 
 
         TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
@@ -77,7 +85,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "string");
         testRunner2.setProperty("string2", "string");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -93,7 +101,7 @@ public class EncryptFieldTest {
     }
 
     @Test
-    public void testProcessingDeccryptionString() {
+    public void testProcessingDecryptionString() {
         Record record1 = new StandardRecord();
         byte[] inputBytes = new byte[]{104, -35, -44, -34, -100, 49, 75, 15, 56, -8, 54, -58, -65, -8, 108, -106, 95, -59, -25, -99, 31, 27, 44, -13, -3, -35, 59, -61, -112, -128, -3, -113};//TODO real array eventually use external tools to determine array of byte
         record1.setField("string1", FieldType.BYTES, inputBytes);
@@ -120,7 +128,6 @@ public class EncryptFieldTest {
     @Test
     public void testProcessingEncryptionInteger() {
         Record record1 = new StandardRecord();
-        /*int a[] = {1, 2, 3};*/
         record1.setField("string1", FieldType.INT, 1994);
         record1.setField("string2", FieldType.INT, 987654321);
 
@@ -151,7 +158,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "int");
         testRunner2.setProperty("string2", "int");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -199,7 +206,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "long");
         testRunner2.setProperty("string2", "long");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -248,7 +255,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "bytes");
         testRunner2.setProperty("string2", "bytes");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -258,8 +265,10 @@ public class EncryptFieldTest {
         out1.assertRecordSizeEquals(2);
         out1.assertFieldTypeEquals("string1", FieldType.BYTES);
         out1.assertFieldTypeEquals("string2", FieldType.BYTES);
-        out1.assertFieldEquals("string1", a);
-        out1.assertFieldEquals("string2", b);
+        /*out1.assertFieldEquals("string1", a);
+        out1.assertFieldEquals("string2", b);*/
+        Assert.assertTrue(Arrays.equals(a, (byte[]) out1.getField("string1").getRawValue()));
+        Assert.assertTrue(Arrays.equals(b, (byte[]) out1.getField("string2").getRawValue()));
     }
 
     @Test
@@ -267,6 +276,8 @@ public class EncryptFieldTest {
         Record record1 = new StandardRecord();
         Record record2 = new StandardRecord();
         Record record3 = new StandardRecord();
+        record2.setField("string9", FieldType.STRING, "Nouri");
+        record3.setField("string9", FieldType.STRING, "Feiz");
         record1.setField("string1", FieldType.RECORD, record2);
         record1.setField("string2", FieldType.RECORD, record3);
 
@@ -297,7 +308,7 @@ public class EncryptFieldTest {
         testRunner2.setProperty("string1", "record");
         testRunner2.setProperty("string2", "record");
         testRunner2.assertValid();
-        testRunner2.enqueue(record1);
+        testRunner2.enqueue(out);
         testRunner2.run();
         testRunner2.assertAllInputRecordsProcessed();
         testRunner2.assertOutputRecordsCount(1);
@@ -309,6 +320,7 @@ public class EncryptFieldTest {
         out1.assertFieldTypeEquals("string2", FieldType.RECORD);
         /*out1.assertFieldEquals("string1", record2);
         out1.assertFieldEquals("string2", record3);*/
+        out1.assertContentEquals(record1);
     }
 
     @Test
@@ -366,6 +378,279 @@ public class EncryptFieldTest {
         out1.assertFieldTypeEquals("string2", FieldType.MAP);
         out1.assertFieldEquals("string1", map1);
         out1.assertFieldEquals("string2", map2);
+    }
+
+    @Test
+    public void testProcessingEncryptionFloat() {
+        Record record1 = new StandardRecord();
+
+        float a = 3.215f;
+        float b =454.54f;
+        record1.setField("string1", FieldType.FLOAT, a);
+        record1.setField("string2", FieldType.FLOAT, b);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "float");
+        testRunner.setProperty("string2", "");
+        testRunner.setProperty("string3", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "float");
+        testRunner2.setProperty("string2", "float");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.FLOAT);
+        out1.assertFieldTypeEquals("string2", FieldType.FLOAT);
+        out1.assertFieldEquals("string1", a);
+        out1.assertFieldEquals("string2", b);
+    }
+
+    @Test
+    public void testProcessingEncryptionDouble() {
+        Record record1 = new StandardRecord();
+
+        double a = 3.215;
+        double b =454.54;
+        record1.setField("string1", FieldType.DOUBLE, a);
+        record1.setField("string2", FieldType.DOUBLE, b);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "double");
+        testRunner.setProperty("string2", "");
+        testRunner.setProperty("string3", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "double");
+        testRunner2.setProperty("string2", "double");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.DOUBLE);
+        out1.assertFieldTypeEquals("string2", FieldType.DOUBLE);
+        out1.assertFieldEquals("string1", a);
+        out1.assertFieldEquals("string2", b);
+    }
+
+    @Test
+    public void testProcessingEncryptionBoolean() {
+        Record record1 = new StandardRecord();
+
+        record1.setField("string1", FieldType.BOOLEAN, true);
+        record1.setField("string2", FieldType.BOOLEAN, false);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "boolean");
+        testRunner.setProperty("string2", "");
+        testRunner.setProperty("string3", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "boolean");
+        testRunner2.setProperty("string2", "boolean");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.BOOLEAN);
+        out1.assertFieldTypeEquals("string2", FieldType.BOOLEAN);
+        out1.assertFieldEquals("string1", true);
+        out1.assertFieldEquals("string2", false);
+    }
+
+    @Test
+    public void testProcessingEncryptionEnum() throws Exception{
+        Record record1 = new StandardRecord();
+        /*FieldType type = FieldType.ENUM;*/
+        EncryptionMethod type = EncryptionMethod.AES_CTR;
+        EncryptionMethod method = EncryptionMethod.AES_CBC;
+
+        record1.setField("string1", FieldType.ENUM, type);
+        record1.setField("string2", FieldType.ENUM, method);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "enum");
+        testRunner.setProperty("string2", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "enum");
+        testRunner2.setProperty("string2", "enum");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.ENUM);
+        out1.assertFieldTypeEquals("string2", FieldType.ENUM);
+        /*out1.assertFieldEquals("string1",(Object) type);
+        out1.assertFieldEquals("string2", method);*/
+        byte[] expectedBytes = EncryptField.toByteArray(type);
+        byte[] expectedBytes1 = EncryptField.toByteArray(method);
+        Assert.assertTrue(Arrays.equals(expectedBytes,EncryptField.toByteArray(out.getField("string1").getRawValue())));
+        Assert.assertTrue(Arrays.equals( expectedBytes1, EncryptField.toByteArray(out.getField("string2").getRawValue())));
+    }
+
+    @Test
+    public void testProcessingEncryptionDateTime() throws  Exception{
+        Record record1 = new StandardRecord();
+        Date date = new Date();
+        Date date1 = new Date();
+
+        record1.setField("string1", FieldType.DATETIME, date);
+            record1.setField("string2", FieldType.DATETIME, date1);
+
+        TestRunner testRunner = TestRunners.newTestRunner(new EncryptField());
+        testRunner.setProperty(EncryptField.MODE, EncryptField.ENCRYPT_MODE);
+        testRunner.setProperty(EncryptField.ALGO, "AES");
+        testRunner.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner.setProperty("string1", "datetime");
+        testRunner.setProperty("string2", "");
+        testRunner.setProperty("string3", "");
+        testRunner.setProcessorIdentifier("encrypt_1");
+        testRunner.assertValid();
+        testRunner.enqueue(record1);
+        testRunner.run();
+        testRunner.assertAllInputRecordsProcessed();
+        testRunner.assertOutputRecordsCount(1);
+
+        MockRecord out = testRunner.getOutputRecords().get(0);
+        out.assertRecordSizeEquals(2);
+        out.assertFieldTypeEquals("string1", FieldType.BYTES);
+        out.assertFieldTypeEquals("string2", FieldType.BYTES);
+
+
+        TestRunner testRunner2 = TestRunners.newTestRunner(new EncryptField());
+        testRunner2.setProperty(EncryptField.MODE, EncryptField.DECRYPT_MODE);
+        testRunner2.setProperty(EncryptField.ALGO, "AES");
+        testRunner2.setProperty(EncryptField.KEY, "azerty1234567890");
+        testRunner2.setProperty("string1", "datetime");
+        testRunner2.setProperty("string2", "datetime");
+        testRunner2.assertValid();
+        testRunner2.enqueue(out);
+        testRunner2.run();
+        testRunner2.assertAllInputRecordsProcessed();
+        testRunner2.assertOutputRecordsCount(1);
+        //TODO configure and decrypt
+
+        MockRecord out1 = testRunner2.getOutputRecords().get(0);
+        out1.assertRecordSizeEquals(2);
+        out1.assertFieldTypeEquals("string1", FieldType.DATETIME);
+        out1.assertFieldTypeEquals("string2", FieldType.DATETIME);
+        /*out1.assertFieldEquals("string1", date);
+        out1.assertFieldEquals("string2", date1);*/
+        byte[] expectedBytes = EncryptField.toByteArray(date);
+        byte[] expectedBytes1 = EncryptField.toByteArray(date1);
+        Assert.assertTrue(Arrays.equals(expectedBytes,EncryptField.toByteArray(out.getField("string1").getRawValue())) );
+        Assert.assertTrue(Arrays.equals( expectedBytes1, EncryptField.toByteArray(out.getField("string2").getRawValue())));
+    }
+
+    @Test
+    public void testProcessingEncryption() throws Exception{
+        Record record1 = new StandardRecord();
+        Record record2 = new StandardRecord();
+        Record record3 = new StandardRecord();
+        record2.setField("string9", FieldType.STRING, "Nouri");
+        record3.setField("string9", FieldType.STRING, "Feiz");
+        record1.setField("string1", FieldType.RECORD, record2);
+        record1.setField("string2", FieldType.RECORD, record3);
+        byte[] recordByte = EncryptField.toByteArray(record1);
+        Object objectRecord = EncryptField.toObject(recordByte);
+        /*Record objectRecord1 = (Record) EncryptField.toObject(recordByte);*/
+        Assert.assertEquals(record1, objectRecord);
+
+
     }
 
 
