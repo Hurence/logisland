@@ -7,6 +7,7 @@ import com.hurence.logisland.processor.encryption.ExempleDES;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import org.apache.commons.math3.exception.NullArgumentException;
 
 import java.io.IOException;
 import java.util.*;
@@ -153,7 +154,13 @@ public class EncryptField extends AbstractProcessor {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
                                     continue;
                                 }
-                                FieldType type = getFieldType(fieldType,fieldName);
+                                FieldType type;
+                                try{
+                                    type = getFieldType(fieldType);
+                                } catch (IllegalArgumentException | NullPointerException ex) {
+                                    getLogger().error("error while processing record field" + fieldName +" ; ", ex);
+                                    continue;
+                                }
                                 try {
                                     record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                 } catch (Exception ex) {
@@ -167,8 +174,13 @@ public class EncryptField extends AbstractProcessor {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
                                     continue;
                                 }
-                                FieldType type = getFieldType(fieldType,fieldName);
-
+                                FieldType type;
+                                try{
+                                    type = getFieldType(fieldType);
+                                } catch (IllegalArgumentException | NullPointerException ex) {
+                                    getLogger().error("error while processing record field" + fieldName +" ; ", ex);
+                                    continue;
+                                }
                                 try {
                                     record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                 } catch (Exception ex) {
@@ -256,54 +268,8 @@ public class EncryptField extends AbstractProcessor {
         }
         return fieldsNameMappings;
     }
-    private FieldType getFieldType (String fieldType, String fieldName) {
-        FieldType type = FieldType.STRING;
-        switch (fieldType) {
-
-            case "string":
-                type = FieldType.STRING;
-                break;
-            case "int":
-            case "integer":
-                type = FieldType.INT;
-                break;
-            case "long":
-                type = FieldType.LONG;
-                break;
-            case "bytes":
-                type = FieldType.BYTES;
-                break;
-            case "record":
-                type = FieldType.RECORD;
-                break;
-            case "map":
-                type = FieldType.MAP;
-                break;
-            case "union":
-                type = FieldType.UNION;
-                break;
-            case "datetime":
-                type = FieldType.DATETIME;
-                break;
-            case "enum":
-                type = FieldType.ENUM;
-                break;
-            case "array":
-                type = FieldType.ARRAY;
-                break;
-            case "double":
-                type = FieldType.DOUBLE;
-                break;
-            case "bool":
-            case "boolean":
-                type = FieldType.BOOLEAN;
-                break;
-            default:
-                /*logger.debug("field type {} is not supported yet", type);*/
-                getLogger().error("error while processing record field" + fieldName);
-                break;
-        }//TODO find what type output should be. THe user should be able to choose with config properties
-        return type;
+    private FieldType getFieldType (String fieldType) throws IllegalArgumentException, NullPointerException {
+        return FieldType.valueOf(fieldType.toUpperCase());
     }
 
 }
