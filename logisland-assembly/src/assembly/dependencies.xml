@@ -104,7 +104,8 @@
 <!--   Embed all resources in logisland-resources module  -->
         <fileSet>
             <directory>../logisland-resources/src/main/resources</directory>
-            <fileMode>0644</fileMode>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0770</fileMode>
             <outputDirectory>./</outputDirectory>
             <includes>
                 <include>**/*</include>
