@@ -20,8 +20,6 @@
            xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
     <moduleSets>
         <moduleSet>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0660</fileMode>
             <!-- Enable access to all projects in the current multimodule build! -->
             <useAllReactorProjects>true</useAllReactorProjects>
 
@@ -35,14 +33,14 @@
             </includes>
 
             <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
                 <outputDirectory>lib/engines</outputDirectory>
                 <includeDependencies>false</includeDependencies>
                 <unpack>false</unpack>
             </binaries>
         </moduleSet>
         <moduleSet>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0660</fileMode>
             <!-- Enable access to all projects in the current multimodule build! -->
             <useAllReactorProjects>true</useAllReactorProjects>
 
@@ -61,6 +59,8 @@
                 <include>org.slf4j:slf4j-api</include>
             </includes>
             <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
                 <outputDirectory>lib/cores</outputDirectory>
                 <includeDependencies>false</includeDependencies>
                 <!--                <dependencySets></dependencySets>-->

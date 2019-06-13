@@ -28,8 +28,6 @@
     <baseDirectory>logisland-${project.version}</baseDirectory>
     <moduleSets>
         <moduleSet>
-            <directoryMode>0770</directoryMode>
-            <fileMode>0660</fileMode>
             <!-- Enable access to all projects in the current multimodule build! -->
             <useAllReactorProjects>true</useAllReactorProjects>
 
@@ -38,6 +36,8 @@
                 <include>com.hurence.logisland:logisland-processor-common</include>
             </includes>
             <binaries>
+                <directoryMode>0770</directoryMode>
+                <fileMode>0660</fileMode>
                 <outputDirectory>lib/plugins</outputDirectory>
                 <includeDependencies>false</includeDependencies>
                 <unpack>false</unpack>

@@ -18,23 +18,6 @@ case "$(uname -s)" in
      ;;
 esac
 
-
-
-app_classpath=""
-for entry in "$lib_dir"/*
-do
-  if [[ ! -d "$lib$entry" ]]
-  then
-      if [[ -z "$app_classpath" ]]
-      then
-        app_classpath="$lib$entry"
-      else
-        app_classpath="$lib$entry,$app_classpath"
-      fi
-  fi
-done
-
-
 app_mainclass="com.hurence.logisland.runner.StreamProcessingRunner"
 
 
@@ -44,6 +27,31 @@ SPARK_MASTER="local[*]"
 VERBOSE_OPTIONS=""
 YARN_CLUSTER_OPTIONS=""
 APP_NAME=""
+
+getClassPathRecursively() {
+    local -r dir="${1}"
+    for entry in "$dir"/*
+    do
+      local name=$(basename -- "${entry}")
+      if [[ ! -d "$entry" ]]
+      then
+          echo "add jar ${name}"
+          if [[ -z "$app_classpath" ]]
+          then
+            app_classpath="$entry"
+          else
+            app_classpath="$entry,$app_classpath"
+          fi
+      else
+          if [[ ! ${name} == "engines" ]] #TODO not engines ????
+          then
+            getClassPathRecursively "${entry}"
+          fi
+      fi
+    done
+#    echo "app_classpath inside method is ${app_classpath}"
+    return 0;
+}
 
 usage() {
   echo "Usage:"
@@ -201,6 +209,12 @@ run_standalone() {
 
 main() {
     parse_input $@
+    # Load classpath
+    app_classpath=""
+    echo "build classpath"
+    getClassPathRecursively "${lib_dir}"
+
+    echo "app_classpath is ${app_classpath}"
 
     # ----------------------------------------------------------------
     # find the spark-submit mode
@@ -213,10 +227,10 @@ main() {
         SPARK_VERSION=`${SPARK_HOME}/bin/spark-submit --version 2>&1 >/dev/null | grep -m 1 -o '[0-9]*\.[0-9]*\.[0-9]*'`
         engine_jar=""
 
-        compare_versions $SPARK_VERSION 2.0.0
+        compare_versions ${SPARK_VERSION} 2.0.0
             case $? in
                 2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_1_6-*.jar` ;;
-                *) compare_versions $SPARK_VERSION 2.3.0
+                *) compare_versions ${SPARK_VERSION} 2.3.0
                     case $? in
                         2) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_1-*.jar` ;;
                         *) engine_jar=`ls ${lib_dir}/engines/logisland-engine-spark_2_3-*.jar` ;;
