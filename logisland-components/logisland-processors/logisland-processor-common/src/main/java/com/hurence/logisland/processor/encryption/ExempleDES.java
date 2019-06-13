@@ -25,9 +25,28 @@ public class ExempleDES {
     private String myEncryptionKey;
     private String myEncryptionScheme;
     SecretKey key;
+    public byte[] Iv;
 
     public ExempleDES(String algo, String myEncKey) throws Exception {
         DES_ENCRYPTION_SHEME = algo;
+        myEncryptionKey = myEncKey;
+        myEncryptionScheme = DES_ENCRYPTION_SHEME;
+        keyAsBytes = myEncryptionKey.getBytes(UNICODE_FORMAT);
+        if (DES_ENCRYPTION_SHEME.startsWith("DESede")) {
+            myKeySpec = new DESedeKeySpec(keyAsBytes);
+            mySecretKeyFactory = SecretKeyFactory.getInstance("DESede");
+            key = mySecretKeyFactory.generateSecret(myKeySpec);
+        } else {
+            myKeySpec = new DESKeySpec(keyAsBytes);
+            mySecretKeyFactory = SecretKeyFactory.getInstance("DES");
+            key = mySecretKeyFactory.generateSecret(myKeySpec);
+        }
+        cipher = Cipher.getInstance(myEncryptionScheme);
+    }
+
+    public ExempleDES(String algo, String myEncKey, byte[] iv) throws Exception {
+        DES_ENCRYPTION_SHEME = algo;
+        Iv = iv;
         myEncryptionKey = myEncKey;
         myEncryptionScheme = DES_ENCRYPTION_SHEME;
         keyAsBytes = myEncryptionKey.getBytes(UNICODE_FORMAT);
@@ -49,6 +68,7 @@ public class ExempleDES {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] plainText = EncryptField.toByteArray(unencryptedString);
             encryptedText = cipher.doFinal(plainText);
+            Iv = cipher.getIV();
         } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException e) {
         }
         return encryptedText;
@@ -58,8 +78,8 @@ public class ExempleDES {
         Object decryptedText = null;
         try{
             if (myEncryptionScheme.contains("CBC")) {
-                byte[] iV = cipher.getIV();
-                IvParameterSpec spec = new IvParameterSpec(iV);
+                /*byte[] iV = cipher.getIV();*/
+                IvParameterSpec spec = new IvParameterSpec(Iv);
                 cipher.init(Cipher.DECRYPT_MODE, key, spec);
             } else {
                 cipher.init(Cipher.DECRYPT_MODE, key);
@@ -70,6 +90,10 @@ public class ExempleDES {
         } catch (InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | ClassNotFoundException e) {
         }
         return decryptedText;
+    }
+
+    public byte[] getiv() {
+        return Iv;
     }
 
 }
