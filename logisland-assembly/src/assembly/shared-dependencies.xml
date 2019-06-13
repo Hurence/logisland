@@ -53,9 +53,6 @@
                 <include>com.hurence.logisland:logisland-plugin-support</include>
                 <include>com.hurence.logisland:logisland-scripting-base</include>
                 <include>com.hurence.logisland:logisland-scripting-mvel</include>
-<!--                <include>com.typesafe.scala-logging:scala-logging-*</include>-->
-<!--                <include>org.apache.logging.log4j:log4j-to-slf4j</include>-->
-<!--                <include>org.slf4j:slf4j-api</include>-->
             </includes>
             <binaries>
                 <directoryMode>0770</directoryMode>

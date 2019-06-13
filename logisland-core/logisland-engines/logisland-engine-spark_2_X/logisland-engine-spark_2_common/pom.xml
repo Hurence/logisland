@@ -30,17 +30,10 @@ http://www.w3.org/2001/XMLSchema-instance ">
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>2.2.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
                 <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
                 <version>2.1.2</version>
                 <scope>provided</scope>
-
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -113,8 +106,6 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <version>${kafka.version}</version>
                 <scope>test</scope>
             </dependency>
-
-
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -122,7 +113,12 @@ http://www.w3.org/2001/XMLSchema-instance ">
                 <classifier>test</classifier>
                 <scope>test</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <version>2.2.4</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
