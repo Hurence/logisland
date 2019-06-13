@@ -3,12 +3,14 @@ package com.hurence.logisland.processor;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.encryption.ExempleAES;
+import com.hurence.logisland.processor.encryption.ExempleAEScbc;
 import com.hurence.logisland.processor.encryption.ExempleDES;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import org.apache.commons.math3.exception.NullArgumentException;
 
+import javax.crypto.Cipher;
 import java.io.IOException;
 import java.util.*;
 
@@ -33,18 +35,18 @@ public class EncryptField extends AbstractProcessor {
     public static final String DECRYPT_MODE = "Decrypt";
     public static final String AES = "AES";
     public static final String AES_CBC_PKCS5 = "AES/CBC/PKCS5Padding";
-    public static final String AES_CBC_NoPAD = "AES/CBC/NoPadding";
-    public static final String AES_ECB_NoPAD = "AES/ECB/NoPadding";
+    /*public static final String AES_CBC_NoPAD = "AES/CBC/NoPadding";
+    public static final String AES_ECB_NoPAD = "AES/ECB/NoPadding";*/
     public static final String AES_ECB_PKCS5 = "AES/ECB/PKCS5Padding";
     public static final String DES = "DES";
-    public static final String DES_CBC_NoPAD = "DES/CBC/NoPadding";
+    /*public static final String DES_CBC_NoPAD = "DES/CBC/NoPadding";*/
     public static final String DES_CBC_PKCS5 = "DES/CBC/PKCS5Padding";
-    public static final String DES_ECB_NoPAD = "DES/ECB/NoPadding";
+    /*public static final String DES_ECB_NoPAD = "DES/ECB/NoPadding";*/
     public static final String DES_ECB_PKCS5 = "DES/ECB/PKCS5Padding";
     public static final String DESede = "DESede";
-    public static final String DESede_CBC_NoPAD = "DESede/CBC/NoPadding";
+    /*public static final String DESede_CBC_NoPAD = "DESede/CBC/NoPadding";*/
     public static final String DESede_CBC_PKCS5 = "DESede/CBC/PKCS5Padding";
-    public static final String DESede_ECB_NoPAD = "DESede/ECB/NoPadding";
+    /*public static final String DESede_ECB_NoPAD = "DESede/ECB/NoPadding";*/
     public static final String DESede_ECB_PKCS5 = "DESede/ECB/PKCS5Padding";
 
 
@@ -60,7 +62,7 @@ public class EncryptField extends AbstractProcessor {
             .name("Algo")
             .description("Specifies the algorithm that the cipher will use")
             .required(true)
-            .allowableValues(AES, AES_CBC_PKCS5, AES_CBC_NoPAD, AES_ECB_NoPAD, AES_ECB_PKCS5, DES, DES_CBC_NoPAD, DES_CBC_PKCS5, DES_ECB_NoPAD, DES_ECB_PKCS5, DESede, DESede_CBC_NoPAD, DESede_CBC_PKCS5, DESede_ECB_NoPAD, DESede_ECB_PKCS5)
+            .allowableValues(AES, AES_CBC_PKCS5, AES_ECB_PKCS5, DES, DES_CBC_PKCS5, DES_ECB_PKCS5, DESede, DESede_CBC_PKCS5, DESede_ECB_PKCS5)
             .defaultValue(AES)
             .build();
 
@@ -129,11 +131,23 @@ public class EncryptField extends AbstractProcessor {
                         Field field = record.getField(fieldName);
                         try {
                             if (isAESAlgorithm(context.getProperty(ALGO))) {
-                                ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
-                                record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
+                                if (context.getProperty(ALGO).contains("CBC")) {
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
+                                    record.setField("IV", FieldType.BYTES, encryptAES.getiv());
+                                } else {
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
+                                }
                             } else {
-                                ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                if (context.getProperty(ALGO).contains("CBC")) {
+                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue()));
+                                    record.setField("IV", FieldType.BYTES, encryptDES.getiv());
+                                } else {
+                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue())); // is field an Object ??!!
+                                }
                             }
                         } catch (Exception ex) {
                             getLogger().error("error while processing record field" + fieldName, ex);
@@ -149,7 +163,11 @@ public class EncryptField extends AbstractProcessor {
                         if (!record.hasField(fieldName)) continue;
                         try {
                             if (isAESAlgorithm(context.getProperty(ALGO))) {
-                                ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                /*if (context.getProperty(ALGO).contains("AES/CBC")) {
+                                    ///
+                                } else {
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                }*/
                                 if (!field.getType().equals(FieldType.BYTES)) {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
                                     continue;
@@ -161,15 +179,26 @@ public class EncryptField extends AbstractProcessor {
                                     getLogger().error("error while processing record field" + fieldName +" ; ", ex);
                                     continue;
                                 }
-                                try {
-                                    record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
-                                } catch (Exception ex) {
-                                    getLogger().error("error while setting casting value to byte array", ex);
+                                if (context.getProperty(ALGO).contains("CBC")) {
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField("IV").getRawValue());
+                                    try {
+                                        record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                    } catch (Exception ex) {
+                                        getLogger().error("error while setting casting value to byte array", ex);
+                                    }
+                                } else {
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    try {
+                                        record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                    } catch (Exception ex) {
+                                        getLogger().error("error while setting casting value to byte array", ex);
+                                    }
                                 }
+
 
 
                             } else {
-                                ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                /*ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));*/
                                 if (!field.getType().equals(FieldType.BYTES)) {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
                                     continue;
@@ -181,10 +210,20 @@ public class EncryptField extends AbstractProcessor {
                                     getLogger().error("error while processing record field" + fieldName +" ; ", ex);
                                     continue;
                                 }
-                                try {
-                                    record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
-                                } catch (Exception ex) {
-                                    getLogger().error("error while setting casting value to byte array", ex);
+                                if (context.getProperty(ALGO).contains("CBC")) {
+                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField("IV").getRawValue());
+                                    try {
+                                        record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                    } catch (Exception ex) {
+                                        getLogger().error("error while setting casting value to byte array", ex);
+                                    }
+                                } else {
+                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    try {
+                                        record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
+                                    } catch (Exception ex) {
+                                        getLogger().error("error while setting casting value to byte array", ex);
+                                    }
                                 }
                             }
                         } catch (Exception ex) {
