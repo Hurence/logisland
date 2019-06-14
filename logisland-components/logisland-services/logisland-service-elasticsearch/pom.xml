@@ -36,6 +36,7 @@
         <module>logisland-service-elasticsearch_2_4_0-client</module>
         <module>logisland-service-elasticsearch_5_4_0-client</module>
         <module>logisland-service-elasticsearch_6_6_2-client</module>
+        <module>logisland-service-elasticsearch_7_x-client</module>
     </modules>
 
 

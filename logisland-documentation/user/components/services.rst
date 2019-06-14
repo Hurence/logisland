@@ -193,6 +193,104 @@ No additional information is provided
 
 ----------
 
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService: 
+
+Elasticsearch_6_6_2_ClientService
+---------------------------------
+Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_6_6_2-client:1.1.2
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_6_6_2_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
+.. _com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService: 
+
+Elasticsearch_7_x_ClientService
+-------------------------------
+Implementation of ElasticsearchClientService for ElasticSearch 7.x. Note that although Elasticsearch 7.x still accepts type information, this implementation will ignore any type usage and will only work at the index level to be already compliant with the ElasticSearch 8.x version that will completely remove type usage.
+
+Module
+______
+com.hurence.logisland:logisland-service-elasticsearch_7_x-client:1.1.2
+
+Class
+_____
+com.hurence.logisland.service.elasticsearch.Elasticsearch_7_x_ClientService
+
+Tags
+____
+elasticsearch, client
+
+Properties
+__________
+In the list below, the names of required properties appear in **bold**. Any other properties (not in bold) are considered optional. The table also indicates any default values, and whether a property is considered "sensitive"..
+
+.. csv-table:: allowable-values
+   :header: "Name","Description","Allowable Values","Default Value","Sensitive","EL"
+   :widths: 20,60,30,20,10,10
+   :escape: \
+
+   "**backoff.policy**", "strategy for retrying to execute requests in bulkRequest", "noBackoff (when a request fail there won't be any retry.), constantBackoff (wait a fixed amount of time between retries, using user put retry number and throttling delay), exponentialBackoff (time waited between retries grow exponentially, using user put retry number and throttling delay), defaultExponentialBackoff (time waited between retries grow exponentially, using es default parameters)", "defaultExponentialBackoff", "false", "false"
+   "**throttling.delay**", "number of time we should wait between each retry (in milliseconds)", "", "500", "false", "false"
+   "**num.retry**", "number of time we should try to inject a bulk into es", "", "3", "false", "false"
+   "batch.size", "The preferred number of Records to setField to the database in a single transaction", "", "1000", "false", "false"
+   "bulk.size", "bulk size in MB", "", "5", "false", "false"
+   "flush.interval", "flush interval in sec", "", "5", "false", "false"
+   "concurrent.requests", "setConcurrentRequests", "", "2", "false", "false"
+   "**ping.timeout**", "The ping timeout used to determine when a node is unreachable. For example, 5s (5 seconds). If non-local recommended is 30s", "", "5s", "false", "false"
+   "**sampler.interval**", "How often to sample / ping the nodes listed and connected. For example, 5s (5 seconds). If non-local recommended is 30s.", "", "5s", "false", "false"
+   "username", "Username to access the Elasticsearch cluster", "", "null", "false", "false"
+   "password", "Password to access the Elasticsearch cluster", "", "null", "**true**", "false"
+   "shield.location", "Specifies the path to the JAR for the Elasticsearch Shield plugin. If the Elasticsearch cluster has been secured with the Shield plugin, then the Shield plugin JAR must also be available to this processor. Note: Do NOT place the Shield JAR into NiFi's lib/ directory, doing so will prevent the Shield plugin from being loaded.", "", "null", "false", "false"
+   "**hosts**", "ElasticSearch Hosts, which should be comma separated and colon for hostname/port host1:port,host2:port,....  For example testcluster:9300.", "", "null", "false", "false"
+   "ssl.context.service", "The SSL Context Service used to provide client certificate information for TLS/SSL connections. This service only applies if the Shield plugin is available.", "", "null", "false", "false"
+   "**charset**", "Specifies the character set of the document data.", "", "UTF-8", "false", "false"
+
+Extra informations
+__________________
+No additional information is provided
+
+----------
+
 .. _com.hurence.logisland.service.hbase.HBase_1_1_2_ClientService: 
 
 HBase_1_1_2_ClientService
