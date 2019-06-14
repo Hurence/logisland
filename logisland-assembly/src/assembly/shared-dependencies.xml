@@ -76,14 +76,18 @@
                 <include>**/*</include>
             </includes>
         </fileSet>
-        <!--        If we want to add additional jars uncomment this and add jars in assembly module root directory -->
-        <!--        <fileSet>-->
-        <!--            <directory>${project.build.directory}</directory>-->
-        <!--            <outputDirectory>./</outputDirectory>-->
-        <!--            <includes>-->
-        <!--                <include>*.jar</include>-->
-        <!--            </includes>-->
-        <!--        </fileSet>-->
+<!-- Add extra jars for redirecting log4j logging into slf4j api. (This may reduce performance)
+    See https://logging.apache.org/log4j/2.x/log4j-to-slf4j/index.html
+ -->
+        <fileSet>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0660</fileMode>
+            <directory>./src/extra-jars</directory>
+            <outputDirectory>./lib/cores</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
     <files>
     </files>
