@@ -8,10 +8,13 @@ import com.hurence.logisland.processor.encryption.ExempleDES;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
+import com.hurence.logisland.validator.ValidationContext;
+import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.math3.exception.NullArgumentException;
 
 import javax.crypto.Cipher;
 import java.io.IOException;
+import java.security.Key;
 import java.util.*;
 
 import java.io.ByteArrayInputStream;
@@ -105,6 +108,55 @@ public class EncryptField extends AbstractProcessor {
                 .build();
     }
 
+
+    @Override
+    protected Collection<ValidationResult> customValidate(final ValidationContext context) {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+        if (context.getPropertyValue(ALGO).asString().contains("AES"))  {
+            if (context.getPropertyValue(KEY).asString().length()%16 != 0) {
+
+                validationResults.add(
+                        new ValidationResult.Builder()
+                                .input(KEY.getName())
+                                .explanation(String.format("%s is not a valide key for %s algo : key must be multiple of 16",
+                                        KEY.getName(),
+                                        context.getPropertyValue(ALGO).getRawValue()))
+                                .valid(false)
+                                .build());
+
+            }
+        }
+        if (context.getPropertyValue(ALGO).asString().contains("DES"))  {
+            if (context.getPropertyValue(KEY).asString().length()%8 != 0) {
+
+                validationResults.add(
+                        new ValidationResult.Builder()
+                                .input(KEY.getName())
+                                .explanation(String.format("%s is not a valide key for %s algo : key must be multiple of 8",
+                                        KEY.getName(),
+                                        context.getPropertyValue(ALGO).getRawValue()))
+                                .valid(false)
+                                .build());
+
+            }
+        }
+        if (context.getPropertyValue(ALGO).asString().contains("DESede"))  {
+            if (context.getPropertyValue(KEY).asString().length()%24 != 0) {
+
+                validationResults.add(
+                        new ValidationResult.Builder()
+                                .input(KEY.getName())
+                                .explanation(String.format("%s is not a valide key for %s algo : key must be multiple of 24",
+                                        KEY.getName(),
+                                        context.getPropertyValue(ALGO).getRawValue()))
+                                .valid(false)
+                                .build());
+
+            }
+        }
+        return validationResults;
+    }
+
     // check if the algorithm chosen is AES, otherwaie it is DES or DESede
     private static boolean isAESAlgorithm(final String algorithm) {
         return algorithm.startsWith("A");
@@ -134,7 +186,8 @@ public class EncryptField extends AbstractProcessor {
                                 if (context.getProperty(ALGO).contains("CBC")) {
                                     ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
-                                    record.setField("IV", FieldType.BYTES, encryptAES.getiv());
+                                    String IvName = "IV" + fieldName;
+                                    record.setField(IvName, FieldType.BYTES, encryptAES.getiv());
                                 } else {
                                     ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
@@ -143,7 +196,8 @@ public class EncryptField extends AbstractProcessor {
                                 if (context.getProperty(ALGO).contains("CBC")) {
                                     ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue()));
-                                    record.setField("IV", FieldType.BYTES, encryptDES.getiv());
+                                    String IvName = "IV" + fieldName;
+                                    record.setField(IvName, FieldType.BYTES, encryptDES.getiv());
                                 } else {
                                     ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptDES.encrypt(field.getRawValue())); // is field an Object ??!!
@@ -180,7 +234,8 @@ public class EncryptField extends AbstractProcessor {
                                     continue;
                                 }
                                 if (context.getProperty(ALGO).contains("CBC")) {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField("IV").getRawValue());
+                                    String IvName = "IV" + fieldName;
+                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField(IvName).getRawValue());
                                     try {
                                         record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                     } catch (Exception ex) {
@@ -211,7 +266,8 @@ public class EncryptField extends AbstractProcessor {
                                     continue;
                                 }
                                 if (context.getProperty(ALGO).contains("CBC")) {
-                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField("IV").getRawValue());
+                                    String IvName = "IV" + fieldName;
+                                    ExempleDES encryptDES = new ExempleDES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField(IvName).getRawValue());
                                     try {
                                         record.setField(fieldName, type, encryptDES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                     } catch (Exception ex) {
