@@ -16,8 +16,8 @@
 package com.hurence.logisland.rest.service.lookup;
 
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.component.PropertyValue;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.Record;
@@ -59,7 +59,7 @@ public class TestProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         lookupService = PluginProxy.rewrap(context.getPropertyValue(LOOKUP_SERVICE).asControllerService());
         if (lookupService == null) {
             logger.error("LookupService service is not initialized!");

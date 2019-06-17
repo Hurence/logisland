@@ -212,7 +212,7 @@ public abstract class AbstractConfigurableComponent implements ConfigurableCompo
     /**
      * Provides subclasses the ability to perform initialization logic
      */
-    public void init(final ComponentContext context) {
+    public void init(final ComponentContext context) throws InitializationException {
         identifier = context.getIdentifier();
         componentLogger = context.getLogger();
     }

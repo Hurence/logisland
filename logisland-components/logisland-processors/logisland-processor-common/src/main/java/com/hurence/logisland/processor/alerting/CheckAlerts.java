@@ -161,7 +161,11 @@ public class CheckAlerts extends AbstractNashornSandboxProcessor {
 
         // check if we need initialization
         if (datastoreClientService == null) {
-            init(context);
+            try {
+                init(context);
+            } catch (com.hurence.logisland.component.InitializationException e) {
+                e.printStackTrace();
+            }
         }
 
         List<Record> outputRecords = new ArrayList<>(records);

@@ -19,6 +19,7 @@ import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -27,8 +28,6 @@ import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LegacyDoubleField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.co.flax.luwak.*;
 import uk.co.flax.luwak.matchers.SimpleMatcher;
 import uk.co.flax.luwak.presearcher.TermFilteredPresearcher;
@@ -180,7 +179,7 @@ public class MatchQuery extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
 
         super.init(context);
         keywordAnalyzer = new KeywordAnalyzer();
@@ -233,7 +232,11 @@ public class MatchQuery extends AbstractProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
         // may have not been initialized
         if (monitor == null)
-            init(context);
+            try {
+                init(context);
+            } catch (InitializationException e) {
+                e.printStackTrace();
+            }
         try {
             return internalProcess(context, records);
         } finally {

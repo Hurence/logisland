@@ -17,9 +17,8 @@ package com.hurence.logisland.processor.elasticsearch;
 
 
 import com.hurence.logisland.classloading.PluginProxy;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.logging.ComponentLog;
-import com.hurence.logisland.logging.StandardComponentLogger;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.service.elasticsearch.ElasticsearchClientService;
@@ -43,7 +42,7 @@ public abstract class AbstractElasticsearchProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         elasticsearchClientService = PluginProxy.rewrap(context.getPropertyValue(ELASTICSEARCH_CLIENT_SERVICE).asControllerService());
         if (elasticsearchClientService == null) {

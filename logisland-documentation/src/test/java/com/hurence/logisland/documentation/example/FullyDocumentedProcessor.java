@@ -27,6 +27,7 @@ import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnRemoved;
 import com.hurence.logisland.annotation.lifecycle.OnShutdown;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -80,7 +81,7 @@ public class FullyDocumentedProcessor extends AbstractProcessor {
     private int onShutdownArgs = 0;
 
     @Override
-    public void init(final ProcessContext context){
+    public void init(final ProcessContext context) throws InitializationException {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(DIRECTORY);
         properties.add(RECURSE);
