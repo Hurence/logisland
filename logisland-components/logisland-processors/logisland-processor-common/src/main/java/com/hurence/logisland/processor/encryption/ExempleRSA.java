@@ -9,12 +9,14 @@ import com.sun.crypto.provider.SunJCE;
 
 import javax.crypto.SecretKey;
 
-public class ExempleRSA {
+public class ExempleRSA implements Encryptor {
     private final String ALGO_RSA;
     private Cipher cipher;
     public byte[] Iv;
     public byte[] wrapedKey;
-    public  String algoName;
+    public String algoName;
+    public Key key;
+    public String keyString;
 
     public ExempleRSA(String ALGO) throws Exception {
         ALGO_RSA = ALGO;
@@ -26,7 +28,7 @@ public class ExempleRSA {
         Iv = iv;
     }
 
-    public  byte[] encrypt(Object Data, String keyString) throws Exception {
+    public  byte[] encrypt(Object Data) throws Exception {
         Security.addProvider(new SunJCE()); // OR BELOW
         Security.insertProviderAt(new SunJCE(), 1);
         Key keywrap = generateKey(keyString);
@@ -44,7 +46,7 @@ public class ExempleRSA {
         byte[] encVal =cipher.doFinal(inpBytes);
         return encVal;
     }
-    public   Object decrypt(byte[] inpBytes, Key key) throws Exception{
+    public  Object decrypt(byte[] inpBytes) throws Exception {
 
         /*Cipher cipher1 = Cipher.getInstance(ALGO_RSA);
         cipher1.init(Cipher.WRAP_MODE,keywrap);*/

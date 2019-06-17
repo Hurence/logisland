@@ -2,8 +2,8 @@ package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.component.PropertyDescriptor;
-import com.hurence.logisland.processor.encryption.ExempleAES;
-import com.hurence.logisland.processor.encryption.ExempleAEScbc;
+import com.hurence.logisland.processor.encryption.Encryptor;
+import com.hurence.logisland.processor.encryption.EncryptorAES;
 import com.hurence.logisland.processor.encryption.ExempleDES;
 import com.hurence.logisland.processor.encryption.ExempleRSA;
 import com.hurence.logisland.record.Field;
@@ -11,14 +11,12 @@ import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.math3.exception.NullArgumentException;
 
 
-import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.security.Key;
-import java.security.PrivateKey;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 
@@ -80,11 +78,40 @@ public class EncryptField extends AbstractProcessor {
 
 
     private Collection<String> fieldTypes = null;
+    private Encryptor encryptor = null;
 
     @Override
     public void init(final ProcessContext context) {
         super.init(context);
         fieldTypes = getFieldsNameMapping(context);
+        this.encryptor = initEncryptor(context);
+    }
+
+    private Encryptor initEncryptor(ProcessContext context) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException {
+        final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
+        //TODO parse ALgo to get algo,mode and padding
+        final String algo;
+        final Optional<String> mode;
+        final Optional<String> padding;
+        final String[] splittedAlgo = context.getPropertyValue(ALGO).asString().split("/");
+        if (splittedAlgo.length > 3) {
+            //TODO add error
+        } else if (splittedAlgo.length == 3) {
+            //TODO
+        } else if (splittedAlgo.length == 2) {
+            algo = splittedAlgo[0];
+            mode = Optional.of(splittedAlgo[1]);
+            padding = Optional.empty();
+        } else if (splittedAlgo.length == 1) {
+            //TODO
+        }
+
+        if (EncryptorAES.ALGO_AES.equalsIgnoreCase(algo)) {
+            return EncryptorAES.getInstance(mode.orElse(null), padding.orElse(null), null, null);//TODO handle also key and iv, add them as property
+        } else if {
+            //TODO
+            return null;
+        }
     }
 
     @Override
@@ -110,22 +137,56 @@ public class EncryptField extends AbstractProcessor {
     }
 
 
+
+
     @Override
     protected Collection<ValidationResult> customValidate(final ValidationContext context) {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
-        if (context.getPropertyValue(ALGO).asString().contains("AES"))  {
-            if (context.getPropertyValue(KEY).asString().length()%16 != 0) {
+        try {
+            initEncryptor(context);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException ex) {
+            validationResults.add(null);//TODO
+        }
 
-                validationResults.add(
-                        new ValidationResult.Builder()
-                                .input(KEY.getName())
-                                .explanation(String.format("%s is not a valide key for %s algo : key must be multiple of 16",
-                                        KEY.getName(),
-                                        context.getPropertyValue(ALGO).getRawValue()))
-                                .valid(false)
-                                .build());
 
+
+        //TODO parse ALgo to get algo,mode and padding
+        final String algo;
+        final Optional<String> mode;
+        final Optional<String> padding;
+        final String[] splittedAlgo = context.getPropertyValue(ALGO).asString().split("/");
+        if (splittedAlgo.length > 3) {
+            //TODO add error
+        } else if (splittedAlgo.length == 3) {
+            //TODO
+        } else if (splittedAlgo.length == 2) {
+            algo = splittedAlgo[0];
+            mode = Optional.of(splittedAlgo[1]);
+            padding = Optional.empty();
+        } else if (splittedAlgo.length == 1) {
+            //TODO
+        }
+
+        if (EncryptorAES.ALGO_AES.equalsIgnoreCase(algo))  {
+            try {
+                EncryptorAES.getInstance(mode.orElse(null), padding.orElse(null), null, null);//TODO handle also key and iv, add them as property
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalArgumentException ex) {
+                validationResults.add(null);//TODO
             }
+
+            //TODO move this in EncryptorAES
+//            if (context.getPropertyValue(KEY).asString().length()%16 != 0) {
+//
+//                validationResults.add(
+//                        new ValidationResult.Builder()
+//                                .input(KEY.getName())
+//                                .explanation(String.format("%s is not a valide key for %s algo : key must be multiple of 16",
+//                                        KEY.getName(),
+//                                        context.getPropertyValue(ALGO).getRawValue()))
+//                                .valid(false)
+//                                .build());
+//
+//            }
         }
         if (context.getPropertyValue(ALGO).asString().contains("DES"))  {
             if (context.getPropertyValue(KEY).asString().length()%8 != 0) {
@@ -189,26 +250,26 @@ public class EncryptField extends AbstractProcessor {
                             if (isRSAAlgorithm(context.getProperty(ALGO))) {
                                 if (context.getProperty(ALGO).contains("CBC")) {
                                     ExempleRSA encryptRSA = new ExempleRSA(context.getProperty(ALGO));
-                                    record.setField(fieldName, FieldType.BYTES, encryptRSA.encrypt(field.getRawValue(), context.getProperty(KEY))); // is field an Object ??!!
-                                    String IvName = "IV" + fieldName;
+                                    record.setField(fieldName, FieldType.BYTES, encryptRSA.encrypt(field.getRawValue(), context.getProperty(KEY)));
+                                    String IvName = "IV" + fieldName; //TODO ne jamais ajouter de champ technique dans les record !!!! A la place utiliser L'algo
                                     String fieldKeyName = "Key" + fieldName;
                                     record.setField(IvName, FieldType.BYTES, encryptRSA.getiv());
                                     record.setField(fieldKeyName, FieldType.BYTES, encryptRSA.wrapedkey());
                                 } else {
                                     ExempleRSA encryptRSA = new ExempleRSA(context.getProperty(ALGO));
-                                    record.setField(fieldName, FieldType.BYTES, encryptRSA.encrypt(field.getRawValue(), context.getProperty(KEY))); // is field an Object ??!!
+                                    record.setField(fieldName, FieldType.BYTES, encryptRSA.encrypt(field.getRawValue(), context.getProperty(KEY)));
                                     String fieldKeyName = "Key" + fieldName;
                                     record.setField(fieldKeyName, FieldType.BYTES, encryptRSA.wrapedkey());
                                 }
                             }
                             if (isAESAlgorithm(context.getProperty(ALGO))) {
                                 if (context.getProperty(ALGO).contains("CBC")) {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
                                     String IvName = "IV" + fieldName;
                                     record.setField(IvName, FieldType.BYTES, encryptAES.getiv());
                                 } else {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY));
                                     record.setField(fieldName, FieldType.BYTES, encryptAES.encrypt(field.getRawValue())); // is field an Object ??!!
                                 }
                             } else {
@@ -240,7 +301,7 @@ public class EncryptField extends AbstractProcessor {
                                 /*if (context.getProperty(ALGO).contains("AES/CBC")) {
                                     ///
                                 } else {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY));
                                 }*/
                                 if (!field.getType().equals(FieldType.BYTES)) {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
@@ -278,7 +339,7 @@ public class EncryptField extends AbstractProcessor {
                                 /*if (context.getProperty(ALGO).contains("AES/CBC")) {
                                     ///
                                 } else {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY));
                                 }*/
                                 if (!field.getType().equals(FieldType.BYTES)) {
                                     record.addError("Wrong input", getLogger(), "type was instead of");
@@ -293,14 +354,14 @@ public class EncryptField extends AbstractProcessor {
                                 }
                                 if (context.getProperty(ALGO).contains("CBC")) {
                                     String IvName = "IV" + fieldName;
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField(IvName).getRawValue());
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY),(byte[]) record.getField(IvName).getRawValue());
                                     try {
                                         record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                     } catch (Exception ex) {
                                         getLogger().error("error while setting casting value to byte array", ex);
                                     }
                                 } else {
-                                    ExempleAES encryptAES = new ExempleAES(context.getProperty(ALGO), context.getProperty(KEY));
+                                    EncryptorAES encryptAES = new EncryptorAES(context.getProperty(ALGO), context.getProperty(KEY));
                                     try {
                                         record.setField(fieldName, type, encryptAES.decrypt((byte[]) field.getRawValue())); // !!!!!!!!!!! how to know the original type of the field before encrypting
                                     } catch (Exception ex) {
