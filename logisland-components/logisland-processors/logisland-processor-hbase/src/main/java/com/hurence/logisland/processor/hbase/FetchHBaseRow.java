@@ -22,6 +22,7 @@ import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
 import com.hurence.logisland.logging.StandardComponentLogger;
@@ -163,7 +164,7 @@ public class FetchHBaseRow extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         this.clientService = PluginProxy.rewrap(context.getPropertyValue(HBASE_CLIENT_SERVICE).asControllerService());
         if (context.getPropertyValue(RECORD_SCHEMA).isSet()) {

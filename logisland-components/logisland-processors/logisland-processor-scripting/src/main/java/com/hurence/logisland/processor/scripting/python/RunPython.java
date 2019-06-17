@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.scripting.python;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Record;
@@ -211,7 +212,7 @@ public class RunPython extends AbstractProcessor {
     }
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         pythonInterpreter = new PythonInterpreter();
@@ -492,7 +493,11 @@ public class RunPython extends AbstractProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records)
     {
         if(pythonInterpreter == null)
-            init(context);
+            try {
+                init(context);
+            } catch (InitializationException e) {
+                e.printStackTrace();
+            }
 
         Collection<Record> outputRecords = null;
         

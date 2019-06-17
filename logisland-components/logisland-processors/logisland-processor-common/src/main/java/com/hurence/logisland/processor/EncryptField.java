@@ -1,6 +1,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.encryption.Encryptor;
 import com.hurence.logisland.processor.encryption.EncryptorAES;
@@ -81,13 +82,17 @@ public class EncryptField extends AbstractProcessor {
     private Encryptor encryptor = null;
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         fieldTypes = getFieldsNameMapping(context);
-        this.encryptor = initEncryptor(context);
+        try {
+            this.encryptor = initEncryptor(new StandardValidationContext(context.getProperties()));
+        } catch (Exception ex) {
+            throw new InitializationException(ex);
+        }
     }
 
-    private Encryptor initEncryptor(ProcessContext context) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException {
+    private Encryptor initEncryptor(ValidationContext context) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException {
         final List<ValidationResult> validationResults = new ArrayList<>(super.customValidate(context));
         //TODO parse ALgo to get algo,mode and padding
         final String algo;
@@ -108,7 +113,7 @@ public class EncryptField extends AbstractProcessor {
 
         if (EncryptorAES.ALGO_AES.equalsIgnoreCase(algo)) {
             return EncryptorAES.getInstance(mode.orElse(null), padding.orElse(null), null, null);//TODO handle also key and iv, add them as property
-        } else if {
+        } else if (true) {//TODO
             //TODO
             return null;
         }

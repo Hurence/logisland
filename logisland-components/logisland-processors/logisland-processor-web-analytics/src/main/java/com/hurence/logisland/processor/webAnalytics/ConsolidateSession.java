@@ -18,6 +18,7 @@ package com.hurence.logisland.processor.webAnalytics;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.*;
@@ -217,7 +218,7 @@ public class ConsolidateSession extends AbstractProcessor {
             .build();
 
     @Override
-    public void init(final ProcessContext context)
+    public void init(final ProcessContext context) throws InitializationException
     {
         super.init(context);
         logger.debug("Initializing Consolidate Session Processor");

@@ -15,16 +15,15 @@
  */
 package com.hurence.logisland.processor;
 
-import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
 import com.hurence.logisland.record.Record;
-import com.hurence.logisland.validator.StandardValidators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +59,7 @@ public class ConvertFieldsType extends AbstractProcessor {
     private Map<String, FieldType> fieldTypes = null;
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         fieldTypes = getStringFieldTypes(context);
     }
 
@@ -68,7 +67,11 @@ public class ConvertFieldsType extends AbstractProcessor {
     public Collection<Record> process(ProcessContext context, Collection<Record> records) {
 
         if(fieldTypes == null)
-            init(context);
+            try {
+                init(context);
+            } catch (InitializationException e) {
+                e.printStackTrace();
+            }
 
         for (Record record : records) {
             fieldTypes.keySet().forEach(fieldName -> {

@@ -120,7 +120,11 @@ public class BulkPut extends AbstractDatastoreProcessor
 
         // check if we need initialization
         if(datastoreClientService == null) {
-            init(context);
+            try {
+                init(context);
+            } catch (com.hurence.logisland.component.InitializationException e) {
+                e.printStackTrace();
+            }
         }
 
         // bail out if init has failed

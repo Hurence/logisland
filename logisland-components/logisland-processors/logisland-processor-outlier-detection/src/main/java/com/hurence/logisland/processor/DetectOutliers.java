@@ -29,6 +29,7 @@ import com.hurence.logisland.annotation.behavior.Stateful;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
@@ -351,7 +352,7 @@ public class DetectOutliers extends AbstractProcessor {
 
 
     @Override
-    public void init(ProcessContext context) {
+    public void init(ProcessContext context) throws InitializationException {
         super.init(context);
         logger.info("init");
 
@@ -583,7 +584,11 @@ public class DetectOutliers extends AbstractProcessor {
 
         // context may not have been initialized
         if(outlierConfig == null)
-            init(context);
+            try {
+                init(context);
+            } catch (InitializationException e) {
+                e.printStackTrace();
+            }
 
         Collection<Record> list = new ArrayList<>();
 

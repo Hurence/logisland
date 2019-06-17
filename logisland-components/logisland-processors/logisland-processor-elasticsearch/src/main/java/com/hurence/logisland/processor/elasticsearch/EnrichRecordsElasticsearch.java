@@ -19,6 +19,7 @@ package com.hurence.logisland.processor.elasticsearch;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
 import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
 import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.component.InitializationException;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -109,7 +110,7 @@ public class EnrichRecordsElasticsearch extends AbstractElasticsearchProcessor {
 
 
     @Override
-    public void init(final ProcessContext context) {
+    public void init(final ProcessContext context) throws InitializationException {
         super.init(context);
         String excludesFieldName = context.getPropertyValue(ES_EXCLUDES_FIELD).asString();
         if ((excludesFieldName != null) && (!excludesFieldName.isEmpty())) {
