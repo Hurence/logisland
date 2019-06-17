@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.alerting;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.record.*;
@@ -29,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.util.*;
 
+@Category(ComponentCategory.ALERTING)
 @Tags({"record", "threshold", "tag", "alerting"})
 @CapabilityDescription("Compute threshold cross from given formulas.\n\n" +
         "- each dynamic property will return a new record according to the formula definition\n" +

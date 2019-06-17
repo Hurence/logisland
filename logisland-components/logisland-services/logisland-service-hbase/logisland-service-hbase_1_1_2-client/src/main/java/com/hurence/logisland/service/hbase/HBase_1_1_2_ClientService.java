@@ -17,6 +17,8 @@ package com.hurence.logisland.service.hbase;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
@@ -67,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({ "hbase", "client"})
 @CapabilityDescription("Implementation of HBaseClientService for HBase 1.1.2. This service can be configured by providing " +
         "a comma-separated list of configuration files, or by specifying values for the other properties. If configuration files " +

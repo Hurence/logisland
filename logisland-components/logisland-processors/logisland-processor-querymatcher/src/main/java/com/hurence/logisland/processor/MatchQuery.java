@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -37,6 +35,7 @@ import java.io.IOException;
 import java.util.*;
 
 
+@Category(ComponentCategory.ALERTING)
 @Tags({"analytic", "percolator", "record", "record", "query", "lucene"})
 @CapabilityDescription("Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_\n\n" +
         "you can use this processor to handle custom events defined by lucene queries\n" +

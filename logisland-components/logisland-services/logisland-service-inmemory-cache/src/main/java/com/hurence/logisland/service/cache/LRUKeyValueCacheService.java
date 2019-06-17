@@ -16,6 +16,8 @@
 package com.hurence.logisland.service.cache;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
@@ -46,6 +48,7 @@ import java.util.List;
  *
  * @see LinkedHashMap
  */
+@Category(ComponentCategory.DATASTORE)
 @Tags({"cache", "service", "key", "value", "pair", "LRU"})
 @CapabilityDescription("A controller service for caching data by key value pair with LRU (last recently used) strategy. using LinkedHashMap")
 public class LRUKeyValueCacheService<K, V> extends AbstractControllerService implements CacheService<K, V> {

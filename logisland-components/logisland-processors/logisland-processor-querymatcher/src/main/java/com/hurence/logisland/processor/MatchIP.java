@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.validator.StandardValidators;
@@ -40,6 +38,8 @@ import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+
+@Category(ComponentCategory.ALERTING)
 @Tags({"analytic", "percolator", "record", "record", "query", "lucene"})
 @CapabilityDescription("IP address Query matching (using `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>)`_\n\n" +
         "You can use this processor to handle custom events matching IP address (CIDR)\n" +

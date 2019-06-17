@@ -16,10 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.SeeAlso;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldType;
@@ -32,6 +29,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 
+@Category(ComponentCategory.PARSING)
 @Tags({"parser", "split", "log", "record"})
 @CapabilityDescription("This processor is used to create a new set of fields from one field (using split).")
 @SeeAlso(value = {SplitField.class}, classNames = {"com.hurence.logisland.processor.SplitField"})

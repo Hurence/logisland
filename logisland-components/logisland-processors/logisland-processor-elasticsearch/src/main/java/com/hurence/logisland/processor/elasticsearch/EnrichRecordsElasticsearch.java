@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.elasticsearch;
 
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
 import com.hurence.logisland.processor.ProcessError;
@@ -38,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.ENRICHMENT)
 @Tags({"elasticsearch"})
 @CapabilityDescription("Enrich input records with content indexed in elasticsearch using multiget queries.\n" +
         "Each incoming record must be possibly enriched with information stored in elasticsearch. \n" +

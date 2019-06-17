@@ -16,6 +16,8 @@
 package com.hurence.logisland.rest.service.proxy;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
 import com.hurence.logisland.component.InitializationException;
@@ -40,6 +42,7 @@ import java.util.List;
  *      Processor inspired from StandardProxyConfigurationService nifi processor
  *     </a>
  */
+@Category(ComponentCategory.UTILS)
 @CapabilityDescription("Provides a set of configurations for different NiFi components to use a proxy server.")
 @Tags({"Proxy"})
 public class StandardProxyConfigurationService extends AbstractControllerService implements ProxyConfigurationService {

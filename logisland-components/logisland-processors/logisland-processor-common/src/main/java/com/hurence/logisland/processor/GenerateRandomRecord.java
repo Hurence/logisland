@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Record;
 import com.hurence.logisland.util.avro.eventgenerator.DataGenerator;
@@ -31,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "avro", "generator"})
 @CapabilityDescription("This is a processor that make random records given an Avro schema")
 @ExtraDetailFile("./details/common-processors/GenerateRandomRecord-Detail.rst")

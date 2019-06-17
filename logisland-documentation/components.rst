@@ -2875,7 +2875,7 @@ com.hurence.logisland:logisland-processor-web-analytics:1.1.2
 
 Class
 _____
-com.hurence.logisland.processor.webAnalytics.setSourceOfTraffic
+com.hurence.logisland.processor.webAnalytics.SetSourceOfTraffic
 
 Tags
 ____

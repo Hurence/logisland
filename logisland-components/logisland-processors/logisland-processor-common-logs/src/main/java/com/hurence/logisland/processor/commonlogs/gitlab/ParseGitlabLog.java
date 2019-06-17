@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.commonlogs.gitlab;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -37,9 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gitlab logs processor
- */
+@Category(ComponentCategory.PARSING)
 @Tags({"logs", "gitlab"})
 @CapabilityDescription(
         "The Gitlab logs processor is the Logisland entry point to get and process `Gitlab <https://www.gitlab.com>`_ logs."

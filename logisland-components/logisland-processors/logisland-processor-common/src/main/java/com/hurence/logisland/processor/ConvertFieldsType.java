@@ -15,11 +15,8 @@
  */
 package com.hurence.logisland.processor;
 
-import com.google.common.collect.Lists;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldType;
@@ -30,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"type", "fields", "update", "convert"})
 @CapabilityDescription("Converts a field value into the given type. does nothing if conversion is not possible")
 @DynamicProperty(name = "field",

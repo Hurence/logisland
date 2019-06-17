@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.*;
 import com.hurence.logisland.validator.StandardValidators;
@@ -25,6 +23,7 @@ import com.hurence.logisland.validator.StandardValidators;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "fields", "flatmap", "flatten"})
 @CapabilityDescription("Converts each field records into a single flatten record...")
 @ExtraDetailFile("./details/common-processors/FlatMap-Detail.rst")

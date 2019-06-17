@@ -16,6 +16,8 @@
 package com.hurence.logisland.processor.networkpacket;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
@@ -42,6 +44,7 @@ import static com.hurence.logisland.processor.networkpacket.PcapHelper.ETHERNET_
 /**
  * PCap processor
  */
+@Category(ComponentCategory.SECURITY)
 @Tags({"PCap", "security", "IDS", "NIDS"})
 @CapabilityDescription(
         "The ParseNetworkPacket processor is the LogIsland entry point to parse network packets captured either off-the-wire (stream mode) or in pcap format (batch mode). "

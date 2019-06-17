@@ -18,6 +18,8 @@ package com.hurence.logisland.service.cassandra;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnStopped;
@@ -36,6 +38,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.util.*;
 import java.util.concurrent.*;
 
+
+@Category(ComponentCategory.DATASTORE)
 @Tags({"cassandra", "service"})
 @CapabilityDescription(
         "Provides a controller service that for the moment only allows to bulkput records into cassandra."

@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor.datastore;
 
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -30,6 +28,7 @@ import org.joda.time.DateTime;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"datastore", "record", "put", "bulk"})
 @CapabilityDescription("Indexes the content of a Record in a Datastore using bulk processor")
 @ExtraDetailFile("./details/common-processors/BulkPut-Detail.rst")

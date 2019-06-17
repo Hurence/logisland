@@ -24,7 +24,7 @@ class CooperStore(object):
         self.featstruct = featstruct
         self.readings = []
         try:
-            self.core = featstruct['CORE']
+            self.core = featstruct['UTILS']
             self.store = featstruct['STORE']
         except KeyError:
             print("%s is not a Cooper storage structure" % featstruct)

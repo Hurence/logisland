@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.excel;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -41,9 +39,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Consumes a Microsoft Excel document and converts each spreadsheet row to a {@link Record}.
- */
+@Category(ComponentCategory.PARSING)
 @Tags({"excel", "processor", "poi"})
 @CapabilityDescription("Consumes a Microsoft Excel document and converts each worksheet's line to a structured " +
         "record. The processor is assuming to receive raw excel file as input record.")

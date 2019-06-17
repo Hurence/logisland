@@ -17,9 +17,7 @@ package com.hurence.logisland.processor.hbase;
 
 import com.hurence.logisland.annotation.behavior.WritesAttribute;
 import com.hurence.logisland.annotation.behavior.WritesAttributes;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
@@ -43,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"hbase", "scan", "fetch", "get", "enrich"})
 @CapabilityDescription("Fetches a row from an HBase table. The Destination property controls whether the cells are added as flow file attributes, " +
         "or the row is written to the flow file content as JSON. This processor may be used to fetch a fixed row on a interval by specifying the " +

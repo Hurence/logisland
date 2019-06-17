@@ -22,6 +22,8 @@ import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.hurence.logisland.annotation.behavior.DynamicProperties;
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
@@ -59,6 +61,7 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
  *      Processor inspired from RestLookupService nifi processor
  *     </a>
  */
+@Category(ComponentCategory.DATASTORE)
 @Tags({ "rest", "lookup", "json", "xml", "http" })
 @CapabilityDescription("Use a REST service to look up values.")
 @DynamicProperties({

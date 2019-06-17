@@ -17,6 +17,8 @@
 package com.hurence.logisland.service.elasticsearch;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.annotation.lifecycle.OnDisabled;
 import com.hurence.logisland.annotation.lifecycle.OnEnabled;
@@ -72,6 +74,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({ "elasticsearch", "client"})
 @CapabilityDescription("Implementation of ElasticsearchClientService for Elasticsearch 6.6.2.")
 public class Elasticsearch_6_6_2_ClientService extends AbstractControllerService implements ElasticsearchClientService {

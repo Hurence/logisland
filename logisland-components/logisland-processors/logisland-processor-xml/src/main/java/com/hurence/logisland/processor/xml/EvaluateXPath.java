@@ -17,9 +17,7 @@ package com.hurence.logisland.processor.xml;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
 import com.hurence.logisland.annotation.behavior.WritesAttribute;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.logging.ComponentLog;
@@ -53,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static javax.xml.xpath.XPathConstants.STRING;
 
 
+@Category(ComponentCategory.PARSING)
 @Tags({"XML", "evaluate", "XPath"})
 @CapabilityDescription("Evaluates one or more XPaths against the content of a record. The results of those XPaths are assigned to "
         + "new attributes in the records, depending on configuration of the "

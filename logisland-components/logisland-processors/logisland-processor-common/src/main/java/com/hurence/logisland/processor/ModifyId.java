@@ -16,9 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.google.common.collect.Lists;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -27,7 +25,6 @@ import com.hurence.logisland.validator.StandardValidators;
 import com.hurence.logisland.validator.ValidationContext;
 import com.hurence.logisland.validator.ValidationResult;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +33,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+@Category(ComponentCategory.PROCESSING)
 @Tags({"record", "id", "idempotent", "generate", "modify"})
 @CapabilityDescription("modify id of records or generate it following defined rules")
 @ExtraDetailFile("./details/common-processors/ModifyId-Detail.rst")

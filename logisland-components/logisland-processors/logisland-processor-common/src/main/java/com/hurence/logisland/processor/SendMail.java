@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.*;
 import com.hurence.logisland.record.Field;
@@ -64,6 +62,7 @@ import java.util.regex.Pattern;
  * and the format of src attribute in the img html tag should be like:
  * <img src="path/in/classpath/spectacular_image.gif" alt="Spectacular Image">
  */
+@Category(ComponentCategory.ALERTING)
 @Tags({"smtp", "email", "e-mail", "mail", "mailer", "sendmail", "message", "alert", "html"})
 @CapabilityDescription(
         "The SendMail processor is aimed at sending an email (like for instance an alert email) from an incoming record."

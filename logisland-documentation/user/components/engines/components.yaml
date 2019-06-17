@@ -1,0 +1,24 @@
+---  # document start
+
+categories:
+  -  processing
+  -  parsing
+  -  datastore
+  -  alerting
+  -  security
+  -  enrichment
+  -  analytics
+  -  timeseries
+extensions:
+  - name: AmqpClientPipelineStream
+    description: No description provided.
+    category: misc
+    class: com.hurence.logisland.engine.vanilla.stream.amqp.AmqpClientPipelineStream
+  - name: KafkaStreamsPipelineStream
+    description: No description provided.
+    category: misc
+    class: com.hurence.logisland.engine.vanilla.stream.kafka.KafkaStreamsPipelineStream
+  - name: PlainJavaEngine
+    description: No description provided.
+    category: misc
+    class: com.hurence.logisland.engine.vanilla.PlainJavaEngine

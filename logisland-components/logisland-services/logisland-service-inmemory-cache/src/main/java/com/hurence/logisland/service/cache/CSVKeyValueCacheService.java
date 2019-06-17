@@ -16,6 +16,8 @@
 package com.hurence.logisland.service.cache;
 
 import com.hurence.logisland.annotation.documentation.CapabilityDescription;
+import com.hurence.logisland.annotation.documentation.Category;
+import com.hurence.logisland.annotation.documentation.ComponentCategory;
 import com.hurence.logisland.annotation.documentation.Tags;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.InitializationException;
@@ -45,6 +47,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Category(ComponentCategory.DATASTORE)
 @Tags({"csv", "service", "cache"})
 @CapabilityDescription("A cache that store csv lines as records loaded from a file")
 public class CSVKeyValueCacheService extends LRUKeyValueCacheService<String, Record> implements DatastoreClientService {

@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.netflow;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
 import com.hurence.logisland.processor.ProcessContext;
@@ -34,6 +32,7 @@ import java.util.*;
 /**
  * Netflow (http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html) processor
  */
+@Category(ComponentCategory.SECURITY)
 @Tags({"netflow", "security"})
 @CapabilityDescription(
         "The `Netflow V5 <http://www.cisco.com/c/en/us/td/docs/ios/solutions_docs/netflow/nfwhite.html>`_ processor "

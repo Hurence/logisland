@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.AllowableValue;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
@@ -37,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+@Category(ComponentCategory.TIMESERIES)
 @Tags({"analytic", "sampler", "record", "iot", "timeseries"})
 @CapabilityDescription("Query matching based on `Luwak <http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/>`_\n\n" +
         "you can use this processor to handle custom events defined by lucene queries\n" +

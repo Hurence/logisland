@@ -16,10 +16,7 @@
 package com.hurence.logisland.processor;
 
 import com.hurence.logisland.annotation.behavior.DynamicProperty;
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.SeeAlso;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.FieldDictionary;
 import com.hurence.logisland.record.FieldType;
@@ -37,7 +34,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Category(ComponentCategory.PARSING)
 @Tags({"parser", "regex", "log", "record"})
 @CapabilityDescription("This is a processor that is used to split a String into fields according to a given Record mapping")
 @SeeAlso(value = {SplitTextMultiline.class}, classNames = {"com.hurence.logisland.processor.SplitTextMultiline"})

@@ -364,6 +364,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                 <argument>${generate-components-dir}</argument>
                                 <argument>-f</argument>
                                 <argument>other-processors</argument>
+                                <argument>-a</argument>
                             </arguments>
                         </configuration>
                         <goals>
@@ -460,6 +461,7 @@ THIS MODULE DOCUMENTATION DEPENDENCIES
                                 <argument>${generate-components-dir}</argument>
                                 <argument>-f</argument>
                                 <argument>services</argument>
+                                <argument>-a</argument>
                             </arguments>
                         </configuration>
                         <goals>

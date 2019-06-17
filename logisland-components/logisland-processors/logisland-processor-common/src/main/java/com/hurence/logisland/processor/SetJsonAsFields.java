@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.record.Field;
 import com.hurence.logisland.record.FieldDictionary;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Category(ComponentCategory.PARSING)
 @Tags({"json"})
 @CapabilityDescription(
         "The SetJsonAsFields processor reads the content of a string field containing a json  string and sets each " +

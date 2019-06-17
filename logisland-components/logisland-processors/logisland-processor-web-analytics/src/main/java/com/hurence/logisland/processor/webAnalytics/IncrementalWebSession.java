@@ -15,9 +15,7 @@
  */
 package com.hurence.logisland.processor.webAnalytics;
 
-import com.hurence.logisland.annotation.documentation.CapabilityDescription;
-import com.hurence.logisland.annotation.documentation.ExtraDetailFile;
-import com.hurence.logisland.annotation.documentation.Tags;
+import com.hurence.logisland.annotation.documentation.*;
 import com.hurence.logisland.classloading.PluginProxy;
 import com.hurence.logisland.component.PropertyDescriptor;
 import com.hurence.logisland.processor.AbstractProcessor;
@@ -57,6 +55,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Category(ComponentCategory.ANALYTICS)
 @Tags({"analytics", "web", "session"})
 @CapabilityDescription(
 value = "This processor creates and updates web-sessions based on incoming web-events." +
