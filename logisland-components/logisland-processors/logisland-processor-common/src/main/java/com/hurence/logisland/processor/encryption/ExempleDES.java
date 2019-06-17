@@ -14,7 +14,7 @@ import java.security.spec.KeySpec;
 // encrpyt or decript data with DES or DESede algo (with different transformation available)
 //if encrypt: input object / output byte[]
 //if decrypt: input field (the field will be in type FieldType.BYTES) / output object
-public class ExempleDES {
+public class ExempleDES  implements Encryptor {
 
     private static final String UNICODE_FORMAT = "UTF8";
     public final String DES_ENCRYPTION_SHEME;

@@ -7,7 +7,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 
-public class ExempleAEScbc {
+public class ExempleAEScbc  implements Encryptor {
     private final String ALGO_AES;
     private byte[] keyValue;
     private Cipher cipher;
@@ -38,7 +38,7 @@ public class ExempleAEScbc {
         return (EncryptField.toByteArray(cipher));
     }
 
-    public Object decrypt (byte[] encryptedData, Cipher c) throws  Exception {
+    public Object decrypt (byte[] encryptedData) throws  Exception {
         Key key = generateKey();
         if (ALGO_AES.contains("AES/CBC")) {
             cipher = c;
