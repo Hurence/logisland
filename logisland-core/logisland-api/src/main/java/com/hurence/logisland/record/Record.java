@@ -57,6 +57,30 @@ public interface Record extends Serializable {
 
     Record setStringField(String fieldName, String value);
 
+    Record setCheckedField(String fieldName, FieldType fieldType, Object value) throws FieldTypeException;
+
+    Record setLongField(String fieldName, Long value);
+
+    Record setIntField(String fieldName, Integer value);
+
+    Record setFloatField(String fieldName, Float value);
+
+    Record setDoubleField(String fieldName, Double value);
+
+    Record setBooleanField(String fieldName, Boolean value);
+
+    Record setRecordField(String fieldName, Record value);
+
+    Record setBytesField(String fieldName, byte[] value);
+
+    Record setBytesField(String fieldName, Byte[] value);
+
+    Record setArrayField(String fieldName, Collection value);
+
+    Record setDateTimeField(String fieldName, Date value);
+
+    Record setMapField(String fieldName, Map value);
+
     Field removeField(String fieldName);
 
     Field getField(String fieldName);

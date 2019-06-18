@@ -25,8 +25,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author tom
@@ -170,5 +172,126 @@ public class StandardRecordTest {
         assertTrue(rootRecord.getPosition().getSpeed() == 8.0 );
         assertTrue(rootRecord.getPosition().getTimestamp().getTime() == 10L );
 
+    }
+
+    /**
+     * tests
+     *     NULL,
+     *     STRING,
+     *     INT,
+     *     LONG,
+     *     FLOAT,
+     *     DOUBLE,
+     *     BYTES,
+     *     BOOLEAN,
+     * @throws FieldTypeException
+     */
+    @Test
+    public void testStrongTypeCheckingBasicTypes() throws FieldTypeException {
+        final Record record = new StandardRecord();
+        //INT
+        record.setCheckedField("request_size", FieldType.INT, 1399);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.INT, 1L);
+        });
+        //LONG
+        record.setCheckedField("request_size", FieldType.LONG, 1399L);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.LONG, 154);
+        });
+        //DOUBLE
+        record.setCheckedField("request_size", FieldType.DOUBLE, 1399d);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.DOUBLE, 1L);
+        });
+        //FLOAT
+        record.setCheckedField("request_size", FieldType.FLOAT, 1399f);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.FLOAT, 145);
+        });
+        //String
+        record.setCheckedField("request_size", FieldType.STRING, "ffff");
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.STRING, 1L);
+        });
+        //NULL
+        record.setCheckedField("request_size", FieldType.NULL, null);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.NULL, 1L);
+        });
+        //BYTES
+        record.setCheckedField("request_size", FieldType.BYTES, new byte[]{122, -2});
+        record.setCheckedField("request_size", FieldType.BYTES, new Byte[]{122, -2});
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.BYTES, 1L);
+        });
+        //BOOLEAN
+        record.setCheckedField("request_size", FieldType.BOOLEAN, true);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.BOOLEAN, 1L);
+        });
+    }
+
+    /**
+     * tests
+     *     ARRAY,
+     *     RECORD,
+     *     MAP,
+     *     ENUM,
+     *     UNION,
+     *     DATETIME;
+     * @throws FieldTypeException
+     */
+    @Test
+    public void testStrongTypeCheckingComplexTypes() throws FieldTypeException {
+        final Record record = new StandardRecord();
+        //ARRAY
+        record.setCheckedField("request_size", FieldType.ARRAY, new String[]{"a", "b"});
+        assertTrue(record.isValid());
+        record.setCheckedField("request_size", FieldType.ARRAY, new Long[]{1L, 2L});
+        assertTrue(record.isValid());
+        record.setCheckedField("request_size", FieldType.ARRAY, new Record[]{record, record});
+        assertTrue(record.isValid());
+        record.setCheckedField("request_size", FieldType.ARRAY, Arrays.asList("a", "b"));
+        assertTrue(record.isValid());
+        record.setCheckedField("request_size", FieldType.ARRAY, Arrays.asList(1L, 2L));
+        assertTrue(record.isValid());
+        record.setCheckedField("request_size", FieldType.ARRAY, Arrays.asList(record, record));
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.ARRAY, 1L);
+        });
+        //RECORD
+        record.setCheckedField("request_size", FieldType.RECORD, record);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.RECORD, 154);
+        });
+        //MAP
+        record.setCheckedField("request_size", FieldType.MAP, new HashMap<>());
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.MAP, 1L);
+        });
+        //ENUM
+        record.setCheckedField("request_size", FieldType.ENUM, FieldType.BOOLEAN);
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.ENUM, record);
+        });
+        //DATETIME
+        record.setCheckedField("request_size", FieldType.DATETIME, new Date());
+        assertTrue(record.isValid());
+        assertThrows(FieldTypeException.class, () -> {
+            record.setCheckedField("request_size", FieldType.DATETIME, 1L);
+        });
     }
 }
