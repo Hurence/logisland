@@ -118,28 +118,7 @@ trait StructuredStreamProviderService extends ControllerService {
         .flatMapGroupsWithState(
           outputMode = OutputMode.Append,
           timeoutConf = GroupStateTimeout.NoTimeout)( (sessionId: String, eventsIter: Iterator[Record], state: GroupState[Record]) =>{
-
-
-            val events = executePipeline(controllerServiceLookupSink, streamContext, eventsIter)
-            /*  val updatedSession = if (state.exists) {
-                val existingState = state.get
-                val sum = events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
-                existingState.setField("agg_sum", FieldType.DOUBLE, sum)
-                existingState
-              }
-              else {
-                new StandardRecord()
-                  .setField("tagname", FieldType.STRING, events.head.getField("tagname").asString())
-                  .setField("agg_sum", FieldType.DOUBLE,
-                    events.map(event => event.getField(FieldDictionary.RECORD_VALUE).asDouble()).reduce(_ + _)
-                  )
-                  .setField("agg_count", FieldType.INT, events.size)
-
-              }
-              state.update(updatedSession)*/
-            //check did we get end signal or not
-
-            events
+            executePipeline(controllerServiceLookupSink, streamContext, eventsIter)
         })
 
     } else {
@@ -152,39 +131,6 @@ trait StructuredStreamProviderService extends ControllerService {
   }
 
 
-  def executeGroupedPipeleine(
-                               id: String,
-                               userEvents: Iterator[Record],
-                               state: GroupState[Record]): Record = {
-    if (state.hasTimedOut) {
-      // We've timed out, lets extract the state and send it down the stream
-      state.remove()
-      state.get
-    } else {
-      /*
-        New data has come in for the given user id. We'll look up the current state
-        to see if we already have something stored. If not, we'll just take the current user events
-        and update the state, otherwise will concatenate the user events we already have with the
-        new incoming events.
-      */
-      val currentState = state.getOption
-      //  val updatedUserSession = currentState.fold(RecordSession(userEvents.toSeq))(currentUserSession => RecordSession(currentUserSession.userEvents ++ userEvents.toSeq))
-
-      /* if (updatedUserSession.userEvents.exists(_.isLast)) {
-
-       //  If we've received a flag indicating this should be the last event batch, let's close
-       //  the state and send the user session downstream.
-
-         state.remove()
-         updatedUserSession
-       } else {
-         state.update(updatedUserSession)
-         state.setTimeoutDuration("1 minute")
-         None
-       }*/
-      new StandardRecord()
-    }
-  }
 
   private def executePipeline(controllerServiceLookupSink: Broadcast[ControllerServiceLookupSink], streamContext: StreamContext, iterator: Iterator[Record]) = {
     val controllerServiceLookup = controllerServiceLookupSink.value.getControllerServiceLookup()
