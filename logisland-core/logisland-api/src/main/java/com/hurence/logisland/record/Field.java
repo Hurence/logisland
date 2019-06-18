@@ -23,7 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -45,10 +47,11 @@ public class Field implements PropertyValue, Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Field.class);
 
-    private final String name;
-    private final FieldType type;
-    private final Object rawValue;
+    protected final String name;
+    protected final FieldType type;
+    protected final Object rawValue;
 
+    //TODO can we get rid of that ? May be needed for serialization ?
     public Field() {
         this("", FieldType.STRING, null);
     }
@@ -57,6 +60,62 @@ public class Field implements PropertyValue, Serializable {
         this.name = name;
         this.type = type;
         this.rawValue = rawValue;
+    }
+
+    public Field(String name, String value) {
+        this(name, FieldType.STRING, value);
+    }
+
+    public Field(String name, long value) {
+        this(name, FieldType.LONG, value);
+    }
+
+    public Field(String name, int value) {
+        this(name, FieldType.INT, value);
+    }
+
+    public Field(String name, float value) {
+        this(name, FieldType.FLOAT, value);
+    }
+
+    public Field(String name, double value) {
+        this(name, FieldType.DOUBLE, value);
+    }
+
+    public Field(String name, byte[] value) {
+        this(name, FieldType.BYTES, value);
+    }
+
+    public <T>Field(String name, T[] value) {
+        this(name, FieldType.ARRAY, value);
+    }
+
+    public Field(String name, Collection value) {
+        this(name, FieldType.ARRAY, value);
+    }
+
+    public Field(String name, Map value) {
+        this(name, FieldType.MAP, value);
+    }
+
+    public Field(String name, boolean value) {
+        this(name, FieldType.BOOLEAN, value);
+    }
+
+    public Field(String name, Date value) {
+        this(name, FieldType.DATETIME, value);
+    }
+
+    public Field(String name, Record value) {
+        this(name, FieldType.RECORD, value);
+    }
+
+    public Field(String name, Enum value) {
+        this(name, FieldType.ENUM, value);
+    }
+
+    public Field(String name) {
+        this(name, FieldType.NULL, null);
     }
 
     public Boolean isReserved() {
