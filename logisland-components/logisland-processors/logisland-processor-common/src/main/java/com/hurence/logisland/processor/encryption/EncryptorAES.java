@@ -7,10 +7,7 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.AlgorithmParameters;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
+import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
 
 // encrpyt or decript data with AES algo (with different transformation available)
@@ -26,18 +23,20 @@ public class EncryptorAES implements Encryptor {
     private Cipher cipher;
 
     public static EncryptorAES getInstance(String mode, String padding, byte[] key, byte[] iv)
-            throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException {
+            throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalArgumentException, InvalidKeyException, InvalidAlgorithmParameterException {
         //TODO validate that parameters are correct depending on mode padding etc
+        if (key.length%16 != 0) throw new InvalidKeyException("Invalid AES key length"+key.length+"bytes");
         if (mode == null) {
-            if (iv == null) throw new IllegalArgumentException("iv is required");
-            return new EncryptorAES(null, null, key, iv);
+            return new EncryptorAES(null, null, key, null);
         }
         switch (mode) {
             case "CBC":
-                //TODO
+                if (iv != null) throw new IllegalArgumentException("iv is required");
+                if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_AES+"/"+mode);
                 break;
             case "ECB":
-                //TODO
+                if (iv != null) throw new InvalidAlgorithmParameterException("ECB mode cannot use IV");
+                if (padding == null) throw new NoSuchAlgorithmException("Invalid transformation format:"+ALGO_AES+"/"+mode);
                 break;
         }
         return new EncryptorAES(mode, padding, key, iv);
@@ -48,7 +47,9 @@ public class EncryptorAES implements Encryptor {
         this.padding = padding;
         this.key = key;
         this.iv = iv;
-        cipher = Cipher.getInstance(ALGO_AES);
+        if (mode == null) {
+            cipher = Cipher.getInstance(ALGO_AES);
+        } else {cipher = Cipher.getInstance(ALGO_AES+"/"+mode+"/"+padding);}
     }
 
     public byte[] encrypt (Object Data) throws Exception{
@@ -59,10 +60,23 @@ public class EncryptorAES implements Encryptor {
         } else {
             cipher.init(Cipher.ENCRYPT_MODE, key);
         }
-        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
+        if ("NoPadding".equalsIgnoreCase(padding)) {
+            try {
+                String DataString = (String) Data;
+                byte[] x = DataString.getBytes();
+                byte[] encVal = cipher.doFinal(x);
+                return encVal;
+            } catch (ClassCastException e) {
+                //ToDo how to handel this try!
+            }
+        }
         byte[] x = EncryptField.toByteArray(Data);
         byte[] encVal = cipher.doFinal(x);
         return  encVal;
+
+
+        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
+
     }
 
     public Object decrypt (byte[] encryptedData) throws  Exception {
@@ -74,9 +88,18 @@ public class EncryptorAES implements Encryptor {
             cipher.init(Cipher.DECRYPT_MODE, key);
         }
         byte[] decValue = cipher.doFinal(encryptedData);
-        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
+        if ("NoPadding".equalsIgnoreCase(padding)){
+            try {
+                String decryptedData = new String(decValue);
+                return decryptedData;
+            } catch (ClassCastException e) {
+                //ToDo how to handel this try!
+            }
+        }
         Object decryptedValue = EncryptField.toObject(decValue);
         return decryptedValue;
+
+        //TODO handle case of strings, not using ObjectStream just getBytes for example or 64BaseEcncoding
     }
 
     private Key generateKey() throws Exception {

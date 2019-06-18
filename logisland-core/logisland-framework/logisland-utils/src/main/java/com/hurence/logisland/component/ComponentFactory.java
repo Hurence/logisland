@@ -79,7 +79,7 @@ public final class ComponentFactory {
 
             return Optional.of(engineContext);
 
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | InitializationException e) {
             throw new IllegalStateException("unable to instantiate engine " + configuration.getComponent(), e);
         }
     }
